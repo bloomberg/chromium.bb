@@ -33,8 +33,10 @@
 
 #include <base/json/json_reader.h>
 #include <base/message_loop/message_loop.h>
+#include <base/strings/utf_string_conversions.h>
 #include <base/threading/thread.h>
 #include <base/threading/platform_thread.h>
+#include <chrome/services/printing/public/mojom/constants.mojom.h>
 #include <content/public/browser/browser_main_parts.h>
 #include <content/public/browser/render_view_host.h>
 #include <content/public/browser/render_process_host.h>
@@ -62,6 +64,8 @@
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
+
+#include <chrome/browser/printing/printing_message_filter.h>
 
 namespace blpwtk2 {
 namespace {
@@ -122,6 +126,9 @@ void ContentBrowserClientImpl::RenderProcessWillLaunch(
     service_manager::mojom::ServiceRequest* service_request)
 {
     DCHECK(Statics::isInBrowserMainThread());
+
+    int id = host->GetID();
+    host->AddFilter(new printing::PrintingMessageFilter(id, nullptr));
 
     // Start a new instance of chrome_renderer service for the "to be"
     // launched renderer process.  This is a requirement for chrome services
@@ -202,7 +209,7 @@ void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
         content::RenderProcessHost* render_process_host)
 {
     ProcessHostImpl::registerMojoInterfaces(registry);
-}            
+}
 
 void ContentBrowserClientImpl::StartInProcessRendererThread(
     mojo::OutgoingInvitation* broker_client_invitation,
@@ -252,6 +259,9 @@ void ContentBrowserClientImpl::RegisterIOThreadServiceHandlers(
 
 void ContentBrowserClientImpl::RegisterOutOfProcessServices(OutOfProcessServiceMap* services)
 {
+    (*services)[printing::mojom::kChromePrintingServiceName] =
+        OutOfProcessServiceInfo(base::BindRepeating(
+            base::ASCIIToUTF16, "Printing Service"));
 }
 
 std::string ContentBrowserClientImpl::GetUserAgent() const

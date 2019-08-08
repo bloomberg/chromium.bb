@@ -59,7 +59,7 @@
 #include "components/services/pdf_compositor/public/cpp/manifest.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINTING) || BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/services/printing/public/cpp/manifest.h"
 #endif
 
@@ -143,7 +143,7 @@ GetChromePackagedServiceManifests() {
 #if BUILDFLAG(ENABLE_PRINTING)
       printing::GetPdfCompositorManifest(),
 #endif
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINTING) || BUILDFLAG(ENABLE_PRINT_PREVIEW)
       GetChromePrintingManifest(),
 #endif
 #if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
