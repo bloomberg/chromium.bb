@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
@@ -77,8 +78,11 @@ SearchController::SearchController(AppListModelUpdater* model_updater,
           chromeos::ProfileHelper::IsEphemeralUserProfile(profile))),
       list_controller_(list_controller) {
   std::unique_ptr<SearchResultRanker> ranker =
-      std::make_unique<SearchResultRanker>(profile,
-                                           content::GetSystemConnector());
+      std::make_unique<SearchResultRanker>(
+          profile,
+          HistoryServiceFactory::GetForProfile(
+              profile, ServiceAccessType::EXPLICIT_ACCESS),
+          content::GetSystemConnector());
   ranker->InitializeRankers();
   mixer_->SetNonAppSearchResultRanker(std::move(ranker));
 }
