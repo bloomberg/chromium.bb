@@ -5,7 +5,7 @@
 #
 #+locale: en
 #+type: computer
-#+contraction: no
+#+dots: 8
 #+system: nabcc
 # -----------
 #
