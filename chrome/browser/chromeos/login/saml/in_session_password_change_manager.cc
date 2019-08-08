@@ -347,6 +347,8 @@ void InSessionPasswordChangeManager::ChangePassword(
     const std::string& old_password,
     const std::string& new_password,
     PasswordSource password_source) {
+  CHECK(!old_password.empty() && !new_password.empty());
+
   password_source_ = password_source;
   NotifyObservers(Event::START_CRYPTOHOME_PASSWORD_CHANGE);
   UserContext user_context(*primary_user_);
