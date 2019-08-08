@@ -12,6 +12,20 @@
 namespace blink {
 namespace test {
 
+class AccessibilityLayoutTest : public testing::WithParamInterface<bool>,
+                                private ScopedLayoutNGForTest,
+                                public AccessibilityTest {
+ public:
+  AccessibilityLayoutTest() : ScopedLayoutNGForTest(GetParam()) {}
+
+ protected:
+  bool LayoutNGEnabled() const { return GetParam(); }
+};
+
+INSTANTIATE_TEST_SUITE_P(AccessibilityTest,
+                         AccessibilityLayoutTest,
+                         testing::Bool());
+
 TEST_F(AccessibilityTest, IsDescendantOf) {
   SetBodyInnerHTML(R"HTML(<button id="button">button</button>)HTML");
 
@@ -294,6 +308,28 @@ TEST_F(AccessibilityTest, AxNodeObjectContainsInPageLinkTarget) {
 
   EXPECT_FALSE(anchor->Url().IsEmpty());
   EXPECT_EQ(anchor->Url(), KURL("http://test.com/#target"));
+}
+
+TEST_P(AccessibilityLayoutTest, NextOnLine) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    html {
+      font-size: 10px;
+    }
+    /* TODO(kojii): |NextOnLine| doesn't work for culled-inline.
+       Ensure spans are not culled to avoid hitting the case. */
+    span {
+      background: gray;
+    }
+    </style>
+    <div><span id="span1">a</span><span>b</span></div>
+  )HTML");
+  const AXObject* span1 = GetAXObjectByElementId("span1");
+  ASSERT_NE(nullptr, span1);
+
+  const AXObject* next = span1->NextOnLine();
+  ASSERT_NE(nullptr, next);
+  EXPECT_EQ("b", next->GetNode()->textContent());
 }
 
 }  // namespace test
