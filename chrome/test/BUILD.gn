@@ -5539,6 +5539,7 @@ if (!is_android) {
         "../browser/ui/ash/split_view_interactive_uitest.cc",
         "../browser/ui/ash/tablet_mode_transition_interactive_uitest.cc",
         "../browser/ui/ash/window_resize_interactive_uitest.cc",
+        "../browser/ui/views/tabs/tab_hover_interactive_uitest.cc",
         "base/perf/drag_event_generator.cc",
         "base/perf/drag_event_generator.h",
       ]
