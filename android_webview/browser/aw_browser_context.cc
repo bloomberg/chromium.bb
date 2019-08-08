@@ -57,7 +57,6 @@
 #include "media/mojo/buildflags.h"
 #include "net/proxy_resolution/proxy_config_service_android.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
-#include "services/network/public/cpp/features.h"
 #include "services/preferences/tracked/segregated_pref_store.h"
 
 using base::FilePath;
