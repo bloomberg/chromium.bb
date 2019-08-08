@@ -2732,7 +2732,6 @@ test("base_unittests") {
     "template_util_unittest.cc",
     "test/gmock_callback_support_unittest.cc",
     "test/launcher/test_launcher_unittest.cc",
-    "test/launcher/unit_test_launcher_unittest.cc",
     "test/metrics/histogram_enum_reader_unittest.cc",
     "test/metrics/histogram_tester_unittest.cc",
     "test/metrics/user_action_tester_unittest.cc",
@@ -2910,9 +2909,12 @@ test("base_unittests") {
       add_unwind_tables_in_apk = true
       sources += [ "trace_event/cfi_backtrace_android_unittest.cc" ]
     }
+
+    # Android does not use test_launcher to run gtests.
     sources -= [
       "process/process_unittest.cc",
       "process/process_util_unittest.cc",
+      "test/launcher/test_launcher_unittest.cc",
     ]
     deps += [
       ":base_java",
@@ -2922,6 +2924,7 @@ test("base_unittests") {
   }
 
   if (is_ios) {
+    # ios does not use test_launcher to run gtests.
     sources -= [
       "files/file_path_watcher_unittest.cc",
       "memory/discardable_shared_memory_unittest.cc",
@@ -2932,7 +2935,6 @@ test("base_unittests") {
       "sync_socket_unittest.cc",
       "synchronization/waitable_event_watcher_unittest.cc",
       "test/launcher/test_launcher_unittest.cc",
-      "test/launcher/unit_test_launcher_unittest.cc",
     ]
 
     # Pull in specific Mac files for iOS (which have been filtered out by file
