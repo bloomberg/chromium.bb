@@ -1610,8 +1610,6 @@ jumbo_split_static_library("browser") {
     "signin/chrome_signin_url_loader_throttle.cc",
     "signin/chrome_signin_url_loader_throttle.h",
     "signin/header_modification_delegate.h",
-    "signin/header_modification_delegate_on_io_thread_impl.cc",
-    "signin/header_modification_delegate_on_io_thread_impl.h",
     "signin/header_modification_delegate_on_ui_thread_impl.cc",
     "signin/header_modification_delegate_on_ui_thread_impl.h",
     "signin/identity_manager_factory.cc",
