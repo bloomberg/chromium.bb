@@ -2821,6 +2821,11 @@ crbug.com/957181 virtual/omt-worker-fetch/external/wpt/resource-timing/nested-co
 # Chrome touch-action computation ignores div transforms.
 crbug.com/715148 external/wpt/pointerevents/pointerevent_touch-action-rotated-divs_touch-manual.html  [ Skip ]
 
+# Rebaseline after next v8 roll.
+crbug.com/v8/9509 inspector-protocol/runtime/runtime-callFunctionOn-async.js [ Failure Pass ]
+crbug.com/v8/9509 inspector-protocol/runtime/runtime-await-promise.js [ Failure Pass ]
+crbug.com/v8/9509 inspector-protocol/runtime/runtime-runScript-async.js [ Failure Pass ]
+
 # Stack trace layout changes, disabled until v8 roll.
 crbug.com/v8/8742 fast/events/window-onerror-11.html [ Failure Pass ]
 crbug.com/v8/8742 fast/events/window-onerror-12.html [ Failure Pass ]
