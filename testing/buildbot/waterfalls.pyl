@@ -586,7 +586,7 @@
           'walleye',
         ],
         'test_suites': {
-          'gtest_tests': 'android_oreo_rel_gtests',
+          'gtest_tests': 'webview_bot_gtests',
         },
         'use_swarming': True,
         'os_type': 'android',
