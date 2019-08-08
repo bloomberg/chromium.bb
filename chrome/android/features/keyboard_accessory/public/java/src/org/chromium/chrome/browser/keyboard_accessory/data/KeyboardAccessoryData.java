@@ -267,7 +267,6 @@ public class KeyboardAccessoryData {
      */
     public final static class AccessorySheetData {
         private final String mTitle;
-        private final String mWarning;
         private final @AccessoryTabType int mSheetType;
         private final List<UserInfo> mUserInfoList = new ArrayList<>();
         private final List<FooterCommand> mFooterCommands = new ArrayList<>();
@@ -275,12 +274,10 @@ public class KeyboardAccessoryData {
         /**
          * Creates the AccessorySheetData object.
          * @param title The title of accessory sheet tab.
-         * @param warning An optional warning to be displayed the beginning of the sheet.
          */
-        public AccessorySheetData(@AccessoryTabType int sheetType, String title, String warning) {
+        public AccessorySheetData(@AccessoryTabType int sheetType, String title) {
             mSheetType = sheetType;
             mTitle = title;
-            mWarning = warning;
         }
 
         public @AccessoryTabType int getSheetType() {
@@ -292,13 +289,6 @@ public class KeyboardAccessoryData {
          */
         public String getTitle() {
             return mTitle;
-        }
-
-        /**
-         * Returns a warning to be displayed at the beginning of the sheet. Empty string otherwise.
-         */
-        public String getWarning() {
-            return mWarning;
         }
 
         /**

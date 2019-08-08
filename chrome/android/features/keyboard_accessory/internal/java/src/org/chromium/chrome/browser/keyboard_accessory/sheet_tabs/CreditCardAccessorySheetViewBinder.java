@@ -21,7 +21,6 @@ import org.chromium.ui.widget.ChipView;
 class CreditCardAccessorySheetViewBinder {
     static ElementViewHolder create(ViewGroup parent, @AccessorySheetDataPiece.Type int viewType) {
         switch (viewType) {
-            case AccessorySheetDataPiece.Type.WARNING: // Fallthrough to reuse title container.
             case AccessorySheetDataPiece.Type.TITLE:
                 return new AccessorySheetTabViewBinder.TitleViewHolder(
                         parent, R.layout.keyboard_accessory_sheet_tab_title);
@@ -49,10 +48,7 @@ class CreditCardAccessorySheetViewBinder {
             bindChipView(view.getExpMonth(), info.getFields().get(1));
             bindChipView(view.getExpYear(), info.getFields().get(2));
             bindChipView(view.getCardholder(), info.getFields().get(3));
-            view.getExpiryGroup().setVisibility(view.getExpYear().getVisibility() == View.VISIBLE
-                                    || view.getExpMonth().getVisibility() == View.VISIBLE
-                            ? View.VISIBLE
-                            : View.GONE);
+
             // TODO(crbug.com/969708): Replace placeholder icon with data-specific icon.
             view.setIcon(AppCompatResources.getDrawable(
                     view.getContext(), R.drawable.infobar_autofill_cc));
@@ -61,11 +57,11 @@ class CreditCardAccessorySheetViewBinder {
         void bindChipView(ChipView chip, UserInfoField field) {
             chip.getPrimaryTextView().setText(field.getDisplayText());
             chip.getPrimaryTextView().setContentDescription(field.getA11yDescription());
-            chip.setVisibility(field.getDisplayText().isEmpty() ? View.GONE : View.VISIBLE);
-            if (!field.isSelectable()) {
-                chip.setEnabled(false);
+            if (!field.isSelectable() || field.getDisplayText().isEmpty()) {
+                chip.setVisibility(View.GONE);
                 return;
             }
+            chip.setVisibility(View.VISIBLE);
             chip.setOnClickListener(src -> field.triggerSelection());
             chip.setClickable(true);
             chip.setEnabled(true);
