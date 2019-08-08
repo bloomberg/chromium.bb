@@ -2027,6 +2027,9 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kTrySupportedChannelLayouts)},
 #endif  // OS_WIN
 #if defined(OS_MACOSX)
+    {"mac-syscall-sandbox", flag_descriptions::kMacSyscallSandboxName,
+     flag_descriptions::kMacSyscallSandboxDescription, kOsMac,
+     FEATURE_VALUE_TYPE(features::kMacSyscallSandbox)},
     {"mac-v2-gpu-sandbox", flag_descriptions::kMacV2GPUSandboxName,
      flag_descriptions::kMacV2GPUSandboxDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kMacV2GPUSandbox)},

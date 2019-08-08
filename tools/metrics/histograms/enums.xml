@@ -35217,6 +35217,7 @@ from previous Chrome versions.
   <int value="-660160292" label="enable-apps-show-on-first-paint"/>
   <int value="-656345197" label="CrossOriginEmbedderPolicy:disabled"/>
   <int value="-654196854" label="PasswordsKeyboardAccessory:enabled"/>
+  <int value="-653616608" label="MacSyscallSandbox:disabled"/>
   <int value="-650504533" label="enable-speculative-launch-service-worker"/>
   <int value="-650213879" label="OmniboxZeroSuggestionsOnNTP:disabled"/>
   <int value="-650176557" label="OfflinePagesSvelteConcurrentLoading:enabled"/>
@@ -36701,6 +36702,7 @@ from previous Chrome versions.
   <int value="1481562816" label="disable-password-link"/>
   <int value="1482039233" label="SearchSuggestionsOnLocalNtp:disabled"/>
   <int value="1482839038" label="AutofillCreditCardAuthentication:enabled"/>
+  <int value="1483980996" label="MacSyscallSandbox:enabled"/>
   <int value="1486171015" label="disable-fill-on-account-select"/>
   <int value="1486784197" label="MouseSubframeNoImplicitCapture:disabled"/>
   <int value="1487341558" label="MacViewsAutofillPopup:enabled"/>
