@@ -40,7 +40,7 @@ SignImageArgs = {
 ValidImageTypes = (
     'ssd', 'base', 'usb', 'recovery', 'factory', 'install', 'firmware',
     'nv_lp0_firmware', 'kernel', 'recovery_kernel', 'update_payload',
-    'accessory_usbpd', 'accessory_rwsig', 'oci-container',
+    'accessory_usbpd', 'accessory_rwsig',
 )
 
 
@@ -68,6 +68,6 @@ def main(argv):
 
   # TODO(lamontjones): implement signing for the other supported image types:
   # firmware, nv_lp0_firmware, kernel, recovery_kernel, update_payload,
-  # accessory_usbpd, accessory_rwsig, oci-container
+  # accessory_usbpd, accessory_rwsig.
   logging.error('Unimplemented --type %s', options.image_type)
   return 2
