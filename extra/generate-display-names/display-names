@@ -40,6 +40,7 @@
 * ../../tables/en-gb-g1.utb                     U.K. English uncontracted braille
 * ../../tables/en_GB.tbl                        U.K. English contracted braille
 * ../../tables/en-gb-comp8.ctb                  U.K. English computer braille
+  ../../tables/en-nabcc.utb                     North American Braille Computer Code
   ../../tables/en-us-g1.ctb                     U.S. English (EBAE) uncontracted braille
   ../../tables/en-us-comp6.ctb                  U.S. English (EBAE) 6-dot computer braille
   ../../tables/en_US-comp8-ext.tbl              U.S. English (EBAE) 8-dot computer braille
