@@ -6563,3 +6563,6 @@ crbug.com/981522 [ Linux ] external/wpt/svg/animations/correct-events-for-short-
 crbug.com/991243 [ Linux ] external/wpt/workers/semantics/multiple-workers/003.html [ Pass Timeout ]
 crbug.com/991243 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/semantics/multiple-workers/003.html [ Pass Timeout ]
 crbug.com/991243 [ Linux ] virtual/not-omt-sw-fetch/external/wpt/workers/semantics/multiple-workers/003.html [ Pass Timeout ]
+
+# Sheriff 2019-08-08
+crbug.com/992148 [ Linux ] virtual/disable-blink-gen-property-trees/animations/stability/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
