@@ -2545,13 +2545,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll | kExpireM77,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillLocalCardMigrationUsesStrikeSystemV2)},
-    {"enable-autofill-send-experiment-ids-in-payments-rpcs",
-     flag_descriptions::kEnableAutofillSendExperimentIdsInPaymentsRPCsName,
-     flag_descriptions::
-         kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription,
-     kOsAll | kExpireM77,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillSendExperimentIdsInPaymentsRPCs)},
 
 #if defined(OS_ANDROID)
     {"enable-autofill-manual-fallback",

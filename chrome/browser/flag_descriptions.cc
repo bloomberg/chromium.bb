@@ -509,12 +509,6 @@ const char kEnableAutofillSaveCreditCardUsesImprovedMessagingDescription[] =
     "If enabled, four variations of new messaging will be used in credit card "
     "upload bubble.";
 
-const char kEnableAutofillSendExperimentIdsInPaymentsRPCsName[] =
-    "Send experiment flag IDs in calls to Google Payments";
-const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[] =
-    "If enabled, adds the status of certain experiment variations when making "
-    "calls to Google Payments.";
-
 const char kEnableAutofillUpdatedCardUnmaskPromptUiName[] =
     "Enable new card unmask prompt UI";
 const char kEnableAutofillUpdatedCardUnmaskPromptUiDescription[] =

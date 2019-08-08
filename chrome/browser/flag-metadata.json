@@ -952,11 +952,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "enable-autofill-send-experiment-ids-in-payments-rpcs",
-    "owners": [ "dlkumar@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "autofill-off-no-server-data",
     "owners": [ "seblalancette" ],
     "expiry_milestone": 79

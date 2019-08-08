@@ -106,12 +106,6 @@ const base::Feature kAutofillSaveCreditCardUsesImprovedMessaging{
     "AutofillSaveCreditCardUsesImprovedMessaging",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether experiment ids should be sent through
-// Google Payments RPCs or not.
-const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs{
-    "AutofillSendExperimentIdsInPaymentsRPCs",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether to show updated UI for the card unmask prompt.
 const base::Feature kAutofillUpdatedCardUnmaskPromptUi{
     "AutofillUpdatedCardUnmaskPromptUi", base::FEATURE_DISABLED_BY_DEFAULT};
