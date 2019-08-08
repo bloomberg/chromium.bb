@@ -1597,6 +1597,8 @@ bool RenderFrameHostImpl::AccessibilityIsMainFrame() const {
 void RenderFrameHostImpl::RenderProcessExited(
     RenderProcessHost* host,
     const ChildProcessTerminationInfo& info) {
+  render_process_has_died_ = true;
+
   if (base::FeatureList::IsEnabled(features::kCrashReporting))
     MaybeGenerateCrashReport(info.status, info.exit_code);
 

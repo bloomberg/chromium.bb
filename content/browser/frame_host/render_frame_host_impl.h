@@ -1015,6 +1015,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
           validated_params);
 
+  // Return true if the process this RenderFrameHost is using has crashed.
+  //
+  // This is not exactly the opposite of IsRenderFrameLive().
+  // IsRenderFrameLive() is false when the RenderProcess died, but it is also
+  // false when it hasn't been initialized.
+  bool render_process_has_died() const { return render_process_has_died_; }
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -2008,6 +2015,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   PreviewsState last_navigation_previews_state_;
 
   bool has_committed_any_navigation_ = false;
+  bool render_process_has_died_ = false;
+
   mojo::AssociatedBinding<mojom::FrameHost> frame_host_associated_binding_;
   mojom::FramePtr frame_;
   mojom::FrameBindingsControlAssociatedPtr frame_bindings_control_;
