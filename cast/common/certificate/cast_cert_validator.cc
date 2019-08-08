@@ -235,14 +235,13 @@ bool IsDateTimeBefore(const DateTime& a, const DateTime& b) {
   return false;
 }
 
-bool VerifyCertTime(X509* cert, const DateTime& time, CastCertError* error) {
+CastCertError VerifyCertTime(X509* cert, const DateTime& time) {
   ASN1_GENERALIZEDTIME* not_before_asn1 = ASN1_TIME_to_generalizedtime(
       cert->cert_info->validity->notBefore, nullptr);
   ASN1_GENERALIZEDTIME* not_after_asn1 = ASN1_TIME_to_generalizedtime(
       cert->cert_info->validity->notAfter, nullptr);
   if (!not_before_asn1 || !not_after_asn1) {
-    *error = CastCertError::kErrCertsVerifyGeneric;
-    return false;
+    return CastCertError::kErrCertsVerifyGeneric;
   }
   DateTime not_before;
   DateTime not_after;
@@ -251,14 +250,12 @@ bool VerifyCertTime(X509* cert, const DateTime& time, CastCertError* error) {
   ASN1_GENERALIZEDTIME_free(not_before_asn1);
   ASN1_GENERALIZEDTIME_free(not_after_asn1);
   if (!times_valid) {
-    *error = CastCertError::kErrCertsVerifyGeneric;
-    return false;
+    return CastCertError::kErrCertsVerifyGeneric;
   }
   if (IsDateTimeBefore(time, not_before) || IsDateTimeBefore(not_after, time)) {
-    *error = CastCertError::kErrCertsDateInvalid;
-    return false;
+    return CastCertError::kErrCertsDateInvalid;
   }
-  return true;
+  return CastCertError::kNone;
 }
 
 bool VerifyPublicKeyLength(EVP_PKEY* public_key) {
@@ -283,59 +280,152 @@ bssl::UniquePtr<ASN1_BIT_STRING> GetKeyUsage(X509* cert) {
 CastCertError VerifyCertificateChain(const std::vector<CertPathStep>& path,
                                      uint32_t step_index,
                                      const DateTime& time) {
-  X509* root = path[step_index].cert;
-  int basic_constraints_index =
-      X509_get_ext_by_NID(root, NID_basic_constraints, -1);
-  uint32_t pathlen = 0;
-  if (basic_constraints_index == -1) {
-    return CastCertError::kErrCertsVerifyGeneric;
-  }
-  X509_EXTENSION* basic_constraints_extension =
-      X509_get_ext(root, basic_constraints_index);
-  const uint8_t* in = basic_constraints_extension->value->data;
-  bssl::UniquePtr<BASIC_CONSTRAINTS> basic_constraints{d2i_BASIC_CONSTRAINTS(
-      nullptr, &in, basic_constraints_extension->value->length)};
-  if (!basic_constraints || !basic_constraints->ca) {
-    return CastCertError::kErrCertsVerifyGeneric;
-  }
-  bssl::UniquePtr<ASN1_BIT_STRING> key_usage = GetKeyUsage(root);
-  if (key_usage) {
-    int bit =
-        ASN1_BIT_STRING_get_bit(key_usage.get(), KeyUsageBits::kKeyCertSign);
-    if (bit == 0) {
-      return CastCertError::kErrCertsVerifyGeneric;
-    }
-  }
+  // Default max path length is the number of intermediate certificates.
+  int max_pathlen = path.size() - 2;
 
-  if (basic_constraints->pathlen) {
-    if (basic_constraints->pathlen->length > 1) {
-      return CastCertError::kErrCertsVerifyGeneric;
-    } else {
-      pathlen = *basic_constraints->pathlen->data;
-      // TODO(btolsch): Exclude self-issued from pathlen.
-      if ((pathlen + 2) < (path.size() - step_index)) {
-        return CastCertError::kErrCertsPathlen;
-      }
-    }
-  }
-
+  std::vector<NAME_CONSTRAINTS*> path_name_constraints;
   CastCertError error = CastCertError::kNone;
   uint32_t i = step_index;
   for (; i < path.size() - 1; ++i) {
     X509* subject = path[i + 1].cert;
     X509* issuer = path[i].cert;
     bool is_root = (i == step_index);
-    // Root does not have its validity time verified for Cast chains.
-    if (!is_root && !VerifyCertTime(issuer, time, &error)) {
-      return error;
+    if (!is_root) {
+      if ((error = VerifyCertTime(issuer, time)) != CastCertError::kNone) {
+        return error;
+      }
+      if (X509_NAME_cmp(X509_get_subject_name(issuer),
+                        X509_get_issuer_name(issuer)) != 0) {
+        if (max_pathlen == 0) {
+          return CastCertError::kErrCertsPathlen;
+        }
+        --max_pathlen;
+      } else {
+        issuer->ex_flags |= EXFLAG_SI;
+      }
+    } else {
+      issuer->ex_flags |= EXFLAG_SI;
     }
+
+    bssl::UniquePtr<ASN1_BIT_STRING> key_usage = GetKeyUsage(issuer);
+    if (key_usage) {
+      const int bit =
+          ASN1_BIT_STRING_get_bit(key_usage.get(), KeyUsageBits::kKeyCertSign);
+      if (bit == 0) {
+        return CastCertError::kErrCertsVerifyGeneric;
+      }
+    }
+
+    // Check that basicConstraints is present, specifies the CA bit, and use
+    // pathLenConstraint if present.
+    const int basic_constraints_index =
+        X509_get_ext_by_NID(issuer, NID_basic_constraints, -1);
+    if (basic_constraints_index == -1) {
+      return CastCertError::kErrCertsVerifyGeneric;
+    }
+    X509_EXTENSION* const basic_constraints_extension =
+        X509_get_ext(issuer, basic_constraints_index);
+    bssl::UniquePtr<BASIC_CONSTRAINTS> basic_constraints{
+        reinterpret_cast<BASIC_CONSTRAINTS*>(
+            X509V3_EXT_d2i(basic_constraints_extension))};
+
+    if (!basic_constraints || !basic_constraints->ca) {
+      return CastCertError::kErrCertsVerifyGeneric;
+    }
+
+    if (basic_constraints->pathlen) {
+      if (basic_constraints->pathlen->length != 1) {
+        return CastCertError::kErrCertsVerifyGeneric;
+      } else {
+        const int pathlen = *basic_constraints->pathlen->data;
+        if (pathlen < 0) {
+          return CastCertError::kErrCertsVerifyGeneric;
+        }
+        if (pathlen < max_pathlen) {
+          max_pathlen = pathlen;
+        }
+      }
+    }
+
     if (X509_ALGOR_cmp(issuer->sig_alg, issuer->cert_info->signature) != 0) {
       return CastCertError::kErrCertsVerifyGeneric;
     }
+
     bssl::UniquePtr<EVP_PKEY> public_key{X509_get_pubkey(issuer)};
     if (!VerifyPublicKeyLength(public_key.get())) {
       return CastCertError::kErrCertsVerifyGeneric;
     }
+
+    // NOTE: (!self-issued || target) -> verify name constraints.  Target case
+    // is after the loop.
+    const bool is_self_issued = issuer->ex_flags & EXFLAG_SI;
+    if (!is_self_issued) {
+      for (NAME_CONSTRAINTS* name_constraints : path_name_constraints) {
+        if (NAME_CONSTRAINTS_check(subject, name_constraints) != X509_V_OK) {
+          return CastCertError::kErrCertsVerifyGeneric;
+        }
+      }
+    }
+
+    if (issuer->nc) {
+      path_name_constraints.push_back(issuer->nc);
+    } else {
+      const int index = X509_get_ext_by_NID(issuer, NID_name_constraints, -1);
+      if (index != -1) {
+        X509_EXTENSION* ext = X509_get_ext(issuer, index);
+        auto* nc = reinterpret_cast<NAME_CONSTRAINTS*>(X509V3_EXT_d2i(ext));
+        if (nc) {
+          issuer->nc = nc;
+          path_name_constraints.push_back(nc);
+        } else {
+          return CastCertError::kErrCertsVerifyGeneric;
+        }
+      }
+    }
+
+    // Check that any policy mappings present are _not_ the anyPolicy OID.  Even
+    // though we don't otherwise handle policies, this is required by RFC 5280
+    // 6.1.4(a).
+    const int policy_mappings_index =
+        X509_get_ext_by_NID(issuer, NID_policy_mappings, -1);
+    if (policy_mappings_index != -1) {
+      X509_EXTENSION* policy_mappings_extension =
+          X509_get_ext(issuer, policy_mappings_index);
+      auto* policy_mappings = reinterpret_cast<POLICY_MAPPINGS*>(
+          X509V3_EXT_d2i(policy_mappings_extension));
+      const uint32_t policy_mapping_count =
+          sk_POLICY_MAPPING_num(policy_mappings);
+      const ASN1_OBJECT* any_policy = OBJ_nid2obj(NID_any_policy);
+      for (uint32_t i = 0; i < policy_mapping_count; ++i) {
+        POLICY_MAPPING* policy_mapping =
+            sk_POLICY_MAPPING_value(policy_mappings, i);
+        const bool either_matches =
+            ((OBJ_cmp(policy_mapping->issuerDomainPolicy, any_policy) == 0) ||
+             (OBJ_cmp(policy_mapping->subjectDomainPolicy, any_policy) == 0));
+        if (either_matches) {
+          error = CastCertError::kErrCertsVerifyGeneric;
+          break;
+        }
+      }
+      sk_POLICY_MAPPING_free(policy_mappings);
+      if (error != CastCertError::kNone) {
+        return error;
+      }
+    }
+
+    // Check that we don't have any unhandled extensions marked as critical.
+    int extension_count = X509_get_ext_count(issuer);
+    for (int i = 0; i < extension_count; ++i) {
+      X509_EXTENSION* extension = X509_get_ext(issuer, i);
+      if (extension->critical > 0) {
+        const int nid = OBJ_obj2nid(extension->object);
+        if (nid != NID_name_constraints && nid != NID_basic_constraints &&
+            nid != NID_key_usage) {
+          return CastCertError::kErrCertsVerifyGeneric;
+        }
+      }
+    }
+
     int nid = OBJ_obj2nid(subject->sig_alg->algorithm);
     const EVP_MD* digest;
     switch (nid) {
@@ -360,6 +450,13 @@ CastCertError VerifyCertificateChain(const std::vector<CertPathStep>& path,
              static_cast<uint32_t>(subject->cert_info->enc.len)},
             {subject->signature->data,
              static_cast<uint32_t>(subject->signature->length)})) {
+      return CastCertError::kErrCertsVerifyGeneric;
+    }
+  }
+  // NOTE: Other half of ((!self-issued || target) -> check name constraints).
+  for (NAME_CONSTRAINTS* name_constraints : path_name_constraints) {
+    if (NAME_CONSTRAINTS_check(path.back().cert, name_constraints) !=
+        X509_V_OK) {
       return CastCertError::kErrCertsVerifyGeneric;
     }
   }
@@ -473,8 +570,8 @@ openscreen::Error VerifyDeviceCert(
   }
 
   // Basic checks on the target certificate.
-  CastCertError error = CastCertError::kNone;
-  if (!VerifyCertTime(target_cert.get(), time, &error)) {
+  CastCertError error = VerifyCertTime(target_cert.get(), time);
+  if (error != CastCertError::kNone) {
     return error;
   }
   bssl::UniquePtr<EVP_PKEY> public_key{X509_get_pubkey(target_cert.get())};
@@ -578,11 +675,6 @@ openscreen::Error VerifyDeviceCert(
       }
     }
 
-    // TODO(btolsch): unless not target + self-issued, verify subject name in
-    // 'permitted_subtress' and not within 'excluded_subtrees'
-    // TODO(btolsch): 6.1.3f
-    // TODO(btolsch): 6.1.4a,k,l,n,o
-    // TODO(btolsch): 6.1.5: wrap-up
     // TODO(btolsch): Check against revocation list
     if (path_cert_in_trust_store) {
       last_error = VerifyCertificateChain(path, path_index, time);

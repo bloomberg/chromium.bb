@@ -181,10 +181,6 @@ void RunTest(CastCertError expected_result,
 }
 
 // Creates a time in UTC at midnight.
-//
-// The maximum date usable here is limited to year 2038 on 32 bit systems due to
-// base::Time::FromExploded clamping the range to what is supported by mktime
-// and timegm.
 DateTime CreateDate(int year, int month, int day) {
   DateTime time = {};
   time.year = year;
@@ -195,10 +191,13 @@ DateTime CreateDate(int year, int month, int day) {
 
 // Returns 2016-04-01 00:00:00 UTC.
 //
-// This is a time when most of the test certificate paths are
-// valid.
+// This is a time when most of the test certificate paths are valid.
 DateTime AprilFirst2016() {
   return CreateDate(2016, 4, 1);
+}
+
+DateTime AprilFirst2020() {
+  return CreateDate(2020, 4, 1);
 }
 
 // Returns 2015-01-01 00:00:00 UTC.
@@ -208,8 +207,8 @@ DateTime JanuaryFirst2015() {
 
 // Returns 2037-03-01 00:00:00 UTC.
 //
-// This is so far in the future that the test chains in this unit-test
-// should all be invalid.
+// This is so far in the future that the test chains in this unit-test should
+// all be invalid.
 DateTime MarchFirst2037() {
   return CreateDate(2037, 3, 1);
 }
@@ -618,6 +617,25 @@ TEST(VerifyCastDeviceCertTest, DeviceCertHas2048BitRsaKey) {
           TEST_DATA_PREFIX "certificates/rsa2048_device_cert.pem",
           AprilFirst2016(), TRUST_STORE_FROM_TEST_FILE,
           TEST_DATA_PREFIX "signeddata/rsa2048_device_cert_data.pem");
+}
+
+// Tests verifying a certificate chain where an intermediate certificate has a
+// nameConstraints extension but the leaf certificate is still permitted under
+// these constraints.
+TEST(VerifyCastDeviceCertTest, NameConstraintsObeyed) {
+  RunTest(CastCertError::kNone, "Device", CastDeviceCertPolicy::kUnrestricted,
+          TEST_DATA_PREFIX "certificates/nc.pem", AprilFirst2020(),
+          TRUST_STORE_FROM_TEST_FILE, "");
+}
+
+// Tests verifying a certificate chain where an intermediate certificate has a
+// nameConstraints extension and the leaf certificate is not permitted under
+// these constraints.
+TEST(VerifyCastDeviceCertTest, NameConstraintsViolated) {
+  RunTest(CastCertError::kErrCertsVerifyGeneric, "Device",
+          CastDeviceCertPolicy::kUnrestricted,
+          TEST_DATA_PREFIX "certificates/nc_fail.pem", AprilFirst2020(),
+          TRUST_STORE_FROM_TEST_FILE, "");
 }
 
 }  // namespace
