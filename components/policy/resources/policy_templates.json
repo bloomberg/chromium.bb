@@ -12502,7 +12502,7 @@
         If set to 2, <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware will be updated at the next reboot after user acknowledges the update.
         If set to 3, <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware will be updated at the next reboot.
         If set to 4, <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware will be updated after enrollment, before user sign-in.
-        This option is available starting from version 74.
+        This option is available starting from version 75.
 
       If the policy is not set, <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update functionality will not be available.''',
     },
