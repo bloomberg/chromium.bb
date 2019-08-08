@@ -82,12 +82,11 @@ class WebRtcAudioDebugRecordingsBrowserTest
   ~WebRtcAudioDebugRecordingsBrowserTest() override {}
 };
 
-#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 // Renderer crashes under Android: https://crbug.com/820934.
 // Failures on Android M. https://crbug.com/535728.
 // Flaky on Linux: https://crbug.com/871182
-// Failures on ASAN: https://crbug.com/991935
 #define MAYBE_CallWithAudioDebugRecordings DISABLED_CallWithAudioDebugRecordings
 #else
 #define MAYBE_CallWithAudioDebugRecordings CallWithAudioDebugRecordings
@@ -182,10 +181,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
 // TODO(grunell): Add test for multiple dumps when re-use of
 // MediaStreamAudioProcessor in AudioCapturer has been removed.
 
-#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_ANDROID)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 // Renderer crashes under Android: https://crbug.com/820934.
-// Failures on ASAN: https://crbug.com/991935
 #define MAYBE_CallWithAudioDebugRecordingsEnabledThenDisabled \
   DISABLED_CallWithAudioDebugRecordingsEnabledThenDisabled
 #else
