@@ -2822,13 +2822,6 @@ crbug.com/957181 virtual/omt-worker-fetch/external/wpt/resource-timing/nested-co
 # Chrome touch-action computation ignores div transforms.
 crbug.com/715148 external/wpt/pointerevents/pointerevent_touch-action-rotated-divs_touch-manual.html  [ Skip ]
 
-# Disabled until v8 roll.
-crbug.com/906847 inspector-protocol/runtime/runtime-getProperties.js [ Skip ]
-crbug.com/906847 inspector-protocol/debugger/debugger-scope-skip-variables-with-empty-name.js [ Skip ]
-crbug.com/v8/8672 http/tests/devtools/bindings/suspendtarget-bindings.js [ Skip ]
-crbug.com/v8/8672 http/tests/devtools/bindings/suspendtarget-navigator.js [ Skip ]
-crbug.com/v8/8672 http/tests/devtools/tracing/decode-resize.js [ Skip ]
-
 # Stack trace layout changes, disabled until v8 roll.
 crbug.com/v8/8742 fast/events/window-onerror-11.html [ Failure Pass ]
 crbug.com/v8/8742 fast/events/window-onerror-12.html [ Failure Pass ]
