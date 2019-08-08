@@ -30,10 +30,6 @@
 #include "components/mirroring/service/manifest.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/services/removable_storage_writer/public/cpp/manifest.h"
-#endif
-
 #if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
 #include "chrome/services/media_gallery_util/public/cpp/manifest.h"
 #endif
@@ -59,9 +55,6 @@ const std::vector<service_manager::Manifest>&
 GetChromeBuiltinServiceManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{{
       quarantine::GetQuarantineManifest(),
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-      GetRemovableStorageWriterManifest(),
-#endif
 #if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
       GetMediaGalleryUtilManifest(),
 #endif

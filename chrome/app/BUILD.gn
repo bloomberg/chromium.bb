@@ -564,10 +564,6 @@ source_set("builtin_service_manifests") {
     "//services/service_manager/public/cpp",
   ]
 
-  if (enable_extensions) {
-    deps += [ "//chrome/services/removable_storage_writer/public/cpp:manifest" ]
-  }
-
   if (enable_extensions || is_android) {
     deps += [ "//chrome/services/media_gallery_util/public/cpp:manifest" ]
   }

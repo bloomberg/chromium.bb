@@ -48,13 +48,9 @@
 #include "chrome/services/isolated_xr_device/xr_device_service.h"
 #endif
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/services/removable_storage_writer/public/mojom/constants.mojom.h"
-#include "chrome/services/removable_storage_writer/removable_storage_writer_service.h"
-#if defined(OS_WIN)
+#if BUILDFLAG(ENABLE_EXTENSIONS) && defined(OS_WIN)
 #include "chrome/services/wifi_util_win/public/mojom/constants.mojom.h"
 #include "chrome/services/wifi_util_win/wifi_util_win_service.h"
-#endif
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
@@ -228,12 +224,6 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
   }
 #endif
 
-#if BUILDFLAG(ENABLE_EXTENSIONS) && !defined(OS_WIN)
-  // On Windows the service is running elevated.
-  if (service_name == chrome::mojom::kRemovableStorageWriterServiceName)
-    return std::make_unique<RemovableStorageWriterService>(std::move(request));
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS) && !defined(OS_WIN)
-
 #if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
   if (service_name == chrome::mojom::kMediaGalleryUtilServiceName)
     return std::make_unique<MediaGalleryUtilService>(std::move(request));
@@ -270,9 +260,6 @@ ChromeContentUtilityClient::MaybeCreateElevatedService(
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_EXTENSIONS)
   if (service_name == chrome::mojom::kWifiUtilWinServiceName)
     return std::make_unique<WifiUtilWinService>(std::move(request));
-
-  if (service_name == chrome::mojom::kRemovableStorageWriterServiceName)
-    return std::make_unique<RemovableStorageWriterService>(std::move(request));
 #endif
 
   return nullptr;
@@ -286,6 +273,8 @@ void ChromeContentUtilityClient::RegisterNetworkBinders(
 
 mojo::ServiceFactory*
 ChromeContentUtilityClient::GetMainThreadServiceFactory() {
+  if (utility_process_running_elevated_)
+    return ::GetElevatedMainThreadServiceFactory();
   return ::GetMainThreadServiceFactory();
 }
 

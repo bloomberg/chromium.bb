@@ -86,7 +86,6 @@ specific_include_rules = {
     "+chrome/services/isolated_xr_device/manifest.h",
     "+chrome/services/media_gallery_util/public",
     "+chrome/services/printing/public",
-    "+chrome/services/removable_storage_writer/public",
     "+chrome/services/util_win/public",
     "+chrome/services/wifi_util_win/public",
     "+chrome/utility/importer/profile_import_manifest.h",
