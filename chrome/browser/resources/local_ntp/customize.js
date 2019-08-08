@@ -1209,7 +1209,7 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
       tileId = 'coll_' + collIndex + '_' + tileId;
     }
     const tile = customize.createTileThumbnail(
-        tileId, collImg[i].imageUrl, dataset, tileOnClickInteraction,
+        tileId, collImg[i].thumbnailImageUrl, dataset, tileOnClickInteraction,
         customize.tileOnKeyDownInteraction);
 
     tile.setAttribute('aria-label', collImg[i].attributions[0]);
