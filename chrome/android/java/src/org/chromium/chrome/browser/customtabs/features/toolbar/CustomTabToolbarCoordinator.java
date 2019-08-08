@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.customtabs.features.toolbar;
 import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQualifiers.APP_CONTEXT;
 
 import android.content.Context;
-import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
 import android.view.View;
 
@@ -39,6 +38,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import androidx.browser.customtabs.CustomTabsIntent;
 import dagger.Lazy;
 
 /**
