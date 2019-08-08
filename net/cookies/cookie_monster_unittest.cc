@@ -3438,7 +3438,7 @@ TEST_F(CookieMonsterTest, CookiesWithoutSameSiteMustBeSecure) {
       auto cookies = GetAllCookiesForURL(cm.get(), url);
       ASSERT_EQ(1u, cookies.size());
       EXPECT_EQ(test.expected_effective_samesite,
-                cookies[0].GetEffectiveSameSite())
+                cookies[0].GetEffectiveSameSiteForTesting())
           << "Test case " << i << " failed.";
       DeleteCanonicalCookie(cm.get(), cookie_copy);
     }

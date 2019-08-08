@@ -1172,9 +1172,7 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
 
   // See InitializeHistograms() for details.
   int32_t type_sample =
-      cc_ptr->GetEffectiveSameSite() != CookieSameSite::NO_RESTRICTION
-          ? 1 << COOKIE_TYPE_SAME_SITE
-          : 0;
+      !cc_ptr->IsEffectivelySameSiteNone() ? 1 << COOKIE_TYPE_SAME_SITE : 0;
   type_sample |= cc_ptr->IsHttpOnly() ? 1 << COOKIE_TYPE_HTTPONLY : 0;
   type_sample |= cc_ptr->IsSecure() ? 1 << COOKIE_TYPE_SECURE : 0;
   histogram_cookie_type_->Add(type_sample);
@@ -1219,8 +1217,7 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
   // are enabled, non-SameSite cookies without the Secure attribute will be
   // rejected.
   if (cookie_util::IsCookiesWithoutSameSiteMustBeSecureEnabled() &&
-      cc->GetEffectiveSameSite() == CookieSameSite::NO_RESTRICTION &&
-      !cc->IsSecure()) {
+      cc->IsEffectivelySameSiteNone() && !cc->IsSecure()) {
     DVLOG(net::cookie_util::kVlogSetCookies)
         << "SetCookie() rejecting insecure cookie with SameSite=None.";
     status =

@@ -488,7 +488,7 @@ CanonicalCookie::CookieInclusionStatus CookieWouldBeExcludedDueToSameSite(
   bool cross_site_context = options.same_site_cookie_context() ==
                             CookieOptions::SameSiteCookieContext::CROSS_SITE;
   if (cross_site_context && cookie.SameSite() == CookieSameSite::UNSPECIFIED) {
-    DCHECK_EQ(CookieSameSite::NO_RESTRICTION, cookie.GetEffectiveSameSite());
+    DCHECK(cookie.IsEffectivelySameSiteNone());
     return CanonicalCookie::CookieInclusionStatus::
         EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX;
   }

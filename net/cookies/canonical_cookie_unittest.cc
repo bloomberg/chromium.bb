@@ -463,7 +463,8 @@ TEST(CanonicalCookieTest, GetEffectiveSameSite) {
                              base::Time(), base::Time(), true /* secure */,
                              false /* httponly */, test_case.same_site,
                              COOKIE_PRIORITY_DEFAULT);
-      EXPECT_EQ(test_case.effective_same_site, cookie.GetEffectiveSameSite());
+      EXPECT_EQ(test_case.effective_same_site,
+                cookie.GetEffectiveSameSiteForTesting());
     }
   }
   {
@@ -482,7 +483,8 @@ TEST(CanonicalCookieTest, GetEffectiveSameSite) {
                              base::Time(), base::Time(), true /* secure */,
                              false /* httponly */, test_case.same_site,
                              COOKIE_PRIORITY_DEFAULT);
-      EXPECT_EQ(test_case.effective_same_site, cookie.GetEffectiveSameSite());
+      EXPECT_EQ(test_case.effective_same_site,
+                cookie.GetEffectiveSameSiteForTesting());
     }
   }
 
@@ -504,7 +506,8 @@ TEST(CanonicalCookieTest, GetEffectiveSameSite) {
                              expiry_time, base::Time(), true /* secure */,
                              false /* httponly */, test_case.same_site,
                              COOKIE_PRIORITY_DEFAULT);
-      EXPECT_EQ(test_case.effective_same_site, cookie.GetEffectiveSameSite());
+      EXPECT_EQ(test_case.effective_same_site,
+                cookie.GetEffectiveSameSiteForTesting());
     }
   }
   {
@@ -523,7 +526,8 @@ TEST(CanonicalCookieTest, GetEffectiveSameSite) {
                              expiry_time, base::Time(), true /* secure */,
                              false /* httponly */, test_case.same_site,
                              COOKIE_PRIORITY_DEFAULT);
-      EXPECT_EQ(test_case.effective_same_site, cookie.GetEffectiveSameSite());
+      EXPECT_EQ(test_case.effective_same_site,
+                cookie.GetEffectiveSameSiteForTesting());
     }
   }
 
@@ -546,7 +550,8 @@ TEST(CanonicalCookieTest, GetEffectiveSameSite) {
                              base::Time(), base::Time(), true /* secure */,
                              false /* httponly */, test_case.same_site,
                              COOKIE_PRIORITY_DEFAULT);
-      EXPECT_EQ(test_case.effective_same_site, cookie.GetEffectiveSameSite());
+      EXPECT_EQ(test_case.effective_same_site,
+                cookie.GetEffectiveSameSiteForTesting());
     }
   }
   {
@@ -565,7 +570,8 @@ TEST(CanonicalCookieTest, GetEffectiveSameSite) {
                              base::Time(), base::Time(), true /* secure */,
                              false /* httponly */, test_case.same_site,
                              COOKIE_PRIORITY_DEFAULT);
-      EXPECT_EQ(test_case.effective_same_site, cookie.GetEffectiveSameSite());
+      EXPECT_EQ(test_case.effective_same_site,
+                cookie.GetEffectiveSameSiteForTesting());
     }
   }
 
@@ -589,7 +595,8 @@ TEST(CanonicalCookieTest, GetEffectiveSameSite) {
                              expiry_time, base::Time(), true /* secure */,
                              false /* httponly */, test_case.same_site,
                              COOKIE_PRIORITY_DEFAULT);
-      EXPECT_EQ(test_case.effective_same_site, cookie.GetEffectiveSameSite());
+      EXPECT_EQ(test_case.effective_same_site,
+                cookie.GetEffectiveSameSiteForTesting());
     }
   }
   {
@@ -608,7 +615,8 @@ TEST(CanonicalCookieTest, GetEffectiveSameSite) {
                              expiry_time, base::Time(), true /* secure */,
                              false /* httponly */, test_case.same_site,
                              COOKIE_PRIORITY_DEFAULT);
-      EXPECT_EQ(test_case.effective_same_site, cookie.GetEffectiveSameSite());
+      EXPECT_EQ(test_case.effective_same_site,
+                cookie.GetEffectiveSameSiteForTesting());
     }
   }
 }
@@ -866,7 +874,8 @@ TEST(CanonicalCookieTest, IncludeForRequestURLSameSite) {
     std::unique_ptr<CanonicalCookie> cookie = CanonicalCookie::Create(
         url, test.cookie_line, creation_time, base::nullopt /* server_time */);
     EXPECT_EQ(test.expected_samesite, cookie->SameSite());
-    EXPECT_EQ(test.expected_effective_samesite, cookie->GetEffectiveSameSite())
+    EXPECT_EQ(test.expected_effective_samesite,
+              cookie->GetEffectiveSameSiteForTesting())
         << "Test case " << i << " failed.";
 
     CookieOptions request_options;
@@ -894,7 +903,8 @@ TEST(CanonicalCookieTest, IncludeCookiesWithoutSameSiteMustBeSecure) {
   ASSERT_TRUE(cookie.get());
   EXPECT_FALSE(cookie->IsSecure());
   EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie->SameSite());
-  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie->GetEffectiveSameSite());
+  EXPECT_EQ(CookieSameSite::NO_RESTRICTION,
+            cookie->GetEffectiveSameSiteForTesting());
 
   {
     base::test::ScopedFeatureList feature_list;
