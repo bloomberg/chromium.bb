@@ -116,6 +116,8 @@ def main(argv):
   parsed_args, emerge_args = parser.parse_known_args(argv)
   parsed_args = vars(parsed_args)
 
+  os.environ['CLEAN_DELAY'] = '0'
+
   if parsed_args.get('sysroot'):
     emerge_args.extend(['--sysroot', parsed_args['sysroot']])
     os.environ['PORTAGE_CONFIGROOT'] = parsed_args['sysroot']
