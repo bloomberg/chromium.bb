@@ -130,13 +130,6 @@ void EmbeddedWorkerInstanceClientImpl::AddMessageToConsole(
       blink::WebConsoleMessage(level, blink::WebString::FromUTF8(message)));
 }
 
-void EmbeddedWorkerInstanceClientImpl::BindDevToolsAgent(
-    blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
-    blink::mojom::DevToolsAgentAssociatedRequest request) {
-  service_worker_context_client_->worker().BindDevToolsAgent(
-      host.PassHandle(), request.PassHandle());
-}
-
 EmbeddedWorkerInstanceClientImpl::EmbeddedWorkerInstanceClientImpl(
     blink::mojom::EmbeddedWorkerInstanceClientRequest request,
     scoped_refptr<base::SingleThreadTaskRunner> starter_thread_task_runner)

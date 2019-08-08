@@ -69,9 +69,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
   void ResumeAfterDownload() override;
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override;
-  void BindDevToolsAgent(
-      blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
-      blink::mojom::DevToolsAgentAssociatedRequest request) override;
 
   // Handler of connection error bound to |binding_|.
   void OnError();

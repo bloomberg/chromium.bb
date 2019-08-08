@@ -277,7 +277,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // These functions all run on the IO thread.
   void RequestTermination(RequestTerminationCallback callback) override;
   void CountFeature(blink::mojom::WebFeature feature) override;
-  void OnReadyForInspection() override;
+  void OnReadyForInspection(blink::mojom::DevToolsAgentPtr,
+                            blink::mojom::DevToolsAgentHostRequest) override;
   void OnScriptLoaded() override;
   void OnScriptEvaluationStart() override;
   // Changes the internal worker status from STARTING to RUNNING.

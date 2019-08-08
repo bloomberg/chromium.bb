@@ -180,9 +180,17 @@ blink::WebEmbeddedWorker& ServiceWorkerContextClient::worker() {
   return *worker_;
 }
 
-void ServiceWorkerContextClient::WorkerReadyForInspectionOnMainThread() {
+void ServiceWorkerContextClient::WorkerReadyForInspectionOnMainThread(
+    mojo::ScopedMessagePipeHandle devtools_agent_ptr_info,
+    mojo::ScopedMessagePipeHandle devtools_agent_host_request) {
   DCHECK(starter_thread_task_runner_->RunsTasksInCurrentSequence());
-  (*instance_host_)->OnReadyForInspection();
+  blink::mojom::DevToolsAgentPtrInfo ptr_info(
+      std::move(devtools_agent_ptr_info),
+      blink::mojom::DevToolsAgent::Version_);
+  blink::mojom::DevToolsAgentPtr ptr(std::move(ptr_info));
+  blink::mojom::DevToolsAgentHostRequest request(
+      std::move(devtools_agent_host_request));
+  (*instance_host_)->OnReadyForInspection(std::move(ptr), std::move(request));
 }
 
 void ServiceWorkerContextClient::WorkerContextFailedToStartOnMainThread() {

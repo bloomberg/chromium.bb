@@ -63,9 +63,11 @@ class SharedWorkerHost::ScopedDevToolsHandle {
     SharedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(owner_);
   }
 
-  void WorkerReadyForInspection() {
+  void WorkerReadyForInspection(
+      blink::mojom::DevToolsAgentPtr agent_ptr,
+      blink::mojom::DevToolsAgentHostRequest agent_host_request) {
     SharedWorkerDevToolsManager::GetInstance()->WorkerReadyForInspection(
-        owner_);
+        owner_, std::move(agent_ptr), std::move(agent_host_request));
   }
 
  private:
@@ -393,9 +395,13 @@ void SharedWorkerHost::OnContextClosed() {
   }
 }
 
-void SharedWorkerHost::OnReadyForInspection() {
-  if (devtools_handle_)
-    devtools_handle_->WorkerReadyForInspection();
+void SharedWorkerHost::OnReadyForInspection(
+    blink::mojom::DevToolsAgentPtr agent_ptr,
+    blink::mojom::DevToolsAgentHostRequest agent_host_request) {
+  if (devtools_handle_) {
+    devtools_handle_->WorkerReadyForInspection(std::move(agent_ptr),
+                                               std::move(agent_host_request));
+  }
 }
 
 void SharedWorkerHost::OnScriptLoadFailed() {
@@ -458,12 +464,6 @@ void SharedWorkerHost::AddClient(blink::mojom::SharedWorkerClientPtr client,
       &SharedWorkerHost::OnClientConnectionLost, weak_factory_.GetWeakPtr()));
 
   worker_->Connect(info.connection_request_id, port.ReleaseHandle());
-}
-
-void SharedWorkerHost::BindDevToolsAgent(
-    blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
-    blink::mojom::DevToolsAgentAssociatedRequest request) {
-  worker_->BindDevToolsAgent(std::move(host), std::move(request));
 }
 
 void SharedWorkerHost::SetAppCacheHandle(
