@@ -1499,27 +1499,6 @@
     ]
   },
   "V8 Blink Win": {
-    "gtest_tests": [
-      {
-        "args": [
-          "--disable-blink-features=LayoutNG"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "webkit_unit_tests_ng",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-7-SP1"
-            }
-          ]
-        },
-        "test": "blink_unittests"
-      }
-    ],
     "isolated_scripts": [
       {
         "args": [
@@ -1538,7 +1517,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-7-SP1"
+              "os": "Windows-10-15063"
             }
           ],
           "shards": 12
