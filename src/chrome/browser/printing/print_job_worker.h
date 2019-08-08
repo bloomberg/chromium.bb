@@ -50,6 +50,7 @@ class PrintJobWorker {
                    int document_page_count,
                    bool has_selection,
                    MarginType margin_type,
+                   HWND hwnd,
                    bool is_scripted,
                    bool is_modifiable);
 
@@ -132,6 +133,7 @@ class PrintJobWorker {
   // but sticks with this for consistency.
   void GetSettingsWithUI(
       int document_page_count,
+      HWND hwnd,
       bool has_selection,
       bool is_scripted);
 

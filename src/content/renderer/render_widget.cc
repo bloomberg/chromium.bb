@@ -754,6 +754,10 @@ void RenderWidget::OnClose() {
 
 void RenderWidget::OnSynchronizeVisualProperties(
     const VisualProperties& original_params) {
+  if (bb_ignore_synchronize_visual_properties_ipc_) {
+    return;
+  }
+
   TRACE_EVENT0("renderer", "RenderWidget::OnSynchronizeVisualProperties");
 
   VisualProperties params = original_params;
@@ -1214,6 +1218,12 @@ void RenderWidget::bbHandleInputEvent(const blink::WebInputEvent& event) {
   bb_OnHandleInputEvent_no_ack_ = false;
 }
 
+void RenderWidget::bbIgnoreSynchronizeVisualPropertiesIPC(
+                               bool ignore_synchronize_visual_properties_ipc) {
+  bb_ignore_synchronize_visual_properties_ipc_ =
+    ignore_synchronize_visual_properties_ipc;
+}
+
 void RenderWidget::SetShowPaintRects(bool show) {
   cc::LayerTreeHost* host = layer_tree_view_->layer_tree_host();
   cc::LayerTreeDebugState debug_state = host->GetDebugState();
@@ -1529,6 +1539,10 @@ bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetScreenMetricsDelegate
+void RenderWidget::Redraw() {
+  if (layer_tree_view_)
+    layer_tree_view_->SetNeedsRedrawRect(gfx::Rect(size_));
+}
 
 void RenderWidget::ResizeWebWidget() {
   gfx::Size size = GetSizeForWebWidget();
