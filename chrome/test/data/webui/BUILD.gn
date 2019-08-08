@@ -4,6 +4,7 @@
 
 import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
+import("//ui/webui/resources/tools/js_modulizer.gni")
 
 js2gtest("interactive_ui_tests_js_webui") {
   test_type = "webui"
@@ -26,6 +27,7 @@ js2gtest("interactive_ui_tests_js_webui") {
   ]
 
   deps = [
+    ":modulize",
     "//chrome/browser/ui",
   ]
 
@@ -141,6 +143,7 @@ js2gtest("browser_tests_js_webui") {
     sources += [ "print_preview/print_preview_ui_browsertest.js" ]
   }
   deps = [
+    ":modulize",
     "//chrome/browser/ui",
     "//skia",
   ]
@@ -218,4 +221,8 @@ js2gtest("unit_tests_js") {
       "../../../browser/resources/chromeos/switch_access/rect_helper.js",
     ]
   }
+}
+
+js_modulizer("modulize") {
+  input_files = [ "test_util.js" ]
 }
