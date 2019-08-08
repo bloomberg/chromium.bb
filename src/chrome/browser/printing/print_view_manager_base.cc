@@ -36,7 +36,9 @@
 #include "components/printing/browser/print_manager_utils.h"
 #include "components/printing/common/print_messages.h"
 #include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_types.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -70,8 +72,6 @@ void ShowWarningMessageBox(const base::string16& message) {
     return;
   // Block opening dialog from nested task.
   base::AutoReset<bool> auto_reset(&is_dialog_shown, true);
-
-  chrome::ShowWarningMessageBox(nullptr, base::string16(), message);
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -102,17 +102,18 @@ void CreateQueryWithSettings(base::Value job_settings,
 
 }  // namespace
 
+PrintJobManager* g_print_job_manager = NULL;
+
 PrintViewManagerBase::PrintViewManagerBase(content::WebContents* web_contents)
     : PrintManager(web_contents),
       printing_rfh_(nullptr),
       printing_succeeded_(false),
-      queue_(g_browser_process->print_job_manager()->queue()),
+      queue_(g_print_job_manager->queue()),
       weak_ptr_factory_(this) {
   DCHECK(queue_);
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   printing_enabled_.Init(
-      prefs::kPrintingEnabled, profile->GetPrefs(),
+      prefs::kPrintingEnabled,
+      user_prefs::UserPrefs::Get(web_contents->GetBrowserContext()),
       base::Bind(&PrintViewManagerBase::UpdatePrintingEnabled,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -255,7 +256,7 @@ void PrintViewManagerBase::NavigationStopped() {
 base::string16 PrintViewManagerBase::RenderSourceName() {
   base::string16 name(web_contents()->GetTitle());
   if (name.empty())
-    name = l10n_util::GetStringUTF16(IDS_DEFAULT_PRINT_DOCUMENT_TITLE);
+    name = L"Default Print Document Title";  // TODO(LEVI): Set this to what it really should be
   return name;
 }
 
@@ -692,11 +693,6 @@ void PrintViewManagerBase::ReleasePrinterQuery() {
 
   int cookie = cookie_;
   cookie_ = 0;
-
-  PrintJobManager* print_job_manager = g_browser_process->print_job_manager();
-  // May be NULL in tests.
-  if (!print_job_manager)
-    return;
 
   scoped_refptr<PrinterQuery> printer_query;
   printer_query = queue_->PopPrinterQuery(cookie);
