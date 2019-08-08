@@ -13,20 +13,22 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-#include "common_types.h"  // NOLINT(build/include)
+#include "api/array_view.h"
 #include "modules/rtp_rtcp/include/flexfec_sender.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/rtp_rtcp/source/playout_delay_oracle.h"
 #include "modules/rtp_rtcp/source/rtp_rtcp_config.h"
 #include "modules/rtp_rtcp/source/rtp_sender.h"
+#include "modules/rtp_rtcp/source/rtp_sequence_number_map.h"
 #include "modules/rtp_rtcp/source/ulpfec_generator.h"
 #include "rtc_base/critical_section.h"
 #include "rtc_base/one_time_event.h"
 #include "rtc_base/rate_statistics.h"
-#include "rtc_base/sequenced_task_checker.h"
+#include "rtc_base/synchronization/sequence_checker.h"
 #include "rtc_base/thread_annotations.h"
 
 namespace webrtc {
@@ -59,7 +61,7 @@ class RTPSenderVideo {
                  const WebRtcKeyValueConfig& field_trials);
   virtual ~RTPSenderVideo();
 
-  bool SendVideo(FrameType frame_type,
+  bool SendVideo(VideoFrameType frame_type,
                  int8_t payload_type,
                  uint32_t capture_timestamp,
                  int64_t capture_time_ms,
@@ -93,6 +95,14 @@ class RTPSenderVideo {
   // the payload overhead, eg the VP8 payload headers, not the RTP headers
   // or extension/
   uint32_t PacketizationOverheadBps() const;
+
+  // For each sequence number in |sequence_number|, recall the last RTP packet
+  // which bore it - its timestamp and whether it was the first and/or last
+  // packet in that frame. If all of the given sequence numbers could be
+  // recalled, return a vector with all of them (in corresponding order).
+  // If any could not be recalled, return an empty vector.
+  std::vector<RtpSequenceNumberMap::Info> GetSentRtpPacketInfos(
+      rtc::ArrayView<const uint16_t> sequence_numbers) const;
 
  protected:
   static uint8_t GetTemporalId(const RTPVideoHeader& header);
@@ -166,6 +176,13 @@ class RTPSenderVideo {
   // and decides whether the current RTP frame should include the playout
   // delay extension on header.
   PlayoutDelayOracle* const playout_delay_oracle_;
+
+  // Maps sent packets' sequence numbers to a tuple consisting of:
+  // 1. The timestamp, without the randomizing offset mandated by the RFC.
+  // 2. Whether the packet was the first in its frame.
+  // 3. Whether the packet was the last in its frame.
+  const std::unique_ptr<RtpSequenceNumberMap> rtp_sequence_number_map_
+      RTC_PT_GUARDED_BY(crit_);
 
   // RED/ULPFEC.
   int red_payload_type_ RTC_GUARDED_BY(crit_);

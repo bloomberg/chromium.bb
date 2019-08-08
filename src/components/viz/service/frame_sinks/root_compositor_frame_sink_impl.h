@@ -53,6 +53,8 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
 #if defined(OS_ANDROID)
   void SetVSyncPaused(bool paused) override;
   void UpdateRefreshRate(float refresh_rate) override;
+  void SetSupportedRefreshRates(
+      const std::vector<float>& supported_refresh_rates) override;
 #endif
 
   // mojom::CompositorFrameSink:
@@ -96,8 +98,9 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override;
   void DisplayDidCompleteSwapWithSize(const gfx::Size& pixel_size) override;
-  void DidSwapAfterSnapshotRequestReceived(
-      const std::vector<ui::LatencyInfo>& latency_info) override;
+  void SetPreferredFrameInterval(base::TimeDelta interval) override;
+  base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
+      const FrameSinkId& id) override;
 
   BeginFrameSource* begin_frame_source();
 

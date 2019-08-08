@@ -862,7 +862,7 @@ KeyEvent* KeyEvent::last_ibus_key_event_ = nullptr;
 
 // static
 bool KeyEvent::IsRepeated(const KeyEvent& event) {
-  // A safe guard in case if there were continous key pressed events that are
+  // A safe guard in case if there were continuous key pressed events that are
   // not auto repeat.
   const int kMaxAutoRepeatTimeMs = 2000;
   KeyEvent** last_key_event;

@@ -22,6 +22,7 @@
 #include "base/win/scoped_process_information.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,6 +40,18 @@ HRESULT CreateArbitrarySid(DWORD subauth0, PSID* sid) {
 }
 
 }  // namespace
+
+///////////////////////////////////////////////////////////////////////////////
+
+void InitializeRegistryOverrideForTesting(
+    registry_util::RegistryOverrideManager* registry_override) {
+  ASSERT_NO_FATAL_FAILURE(
+      registry_override->OverrideRegistry(HKEY_LOCAL_MACHINE));
+  base::win::RegKey key;
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Create(HKEY_LOCAL_MACHINE, kGcpRootKeyName, KEY_WRITE));
+  ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(kRegMdmUrl, L""));
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -179,6 +192,21 @@ HRESULT FakeOSUserManager::ChangeUserPassword(const wchar_t* domain,
   return HRESULT_FROM_WIN32(NERR_UserNotFound);
 }
 
+HRESULT FakeOSUserManager::SetUserPassword(const wchar_t* domain,
+                                           const wchar_t* username,
+                                           const wchar_t* new_password) {
+  DCHECK(domain);
+  DCHECK(username);
+  DCHECK(new_password);
+
+  if (username_to_info_.count(username) > 0) {
+    username_to_info_[username].password = new_password;
+    return S_OK;
+  }
+
+  return HRESULT_FROM_WIN32(NERR_UserNotFound);
+}
+
 HRESULT FakeOSUserManager::IsWindowsPasswordValid(const wchar_t* domain,
                                                   const wchar_t* username,
                                                   const wchar_t* password) {
@@ -286,6 +314,13 @@ HRESULT FakeOSUserManager::GetUserFullname(const wchar_t* domain,
   }
 
   return HRESULT_FROM_WIN32(NERR_UserNotFound);
+}
+
+HRESULT FakeOSUserManager::ModifyUserAccessWithLogonHours(
+    const wchar_t* domain,
+    const wchar_t* username,
+    bool allow) {
+  return S_OK;
 }
 
 FakeOSUserManager::UserInfo::UserInfo(const wchar_t* domain,
@@ -411,11 +446,6 @@ HRESULT FakeScopedLsaPolicy::AddAccountRights(PSID sid, const wchar_t* right) {
   return S_OK;
 }
 
-HRESULT FakeScopedLsaPolicy::RemoveAccountRights(PSID sid,
-                                                 const wchar_t* right) {
-  return S_OK;
-}
-
 HRESULT FakeScopedLsaPolicy::RemoveAccount(PSID sid) {
   return S_OK;
 }
@@ -451,8 +481,7 @@ FakeScopedUserProfile::FakeScopedUserProfile(const base::string16& sid,
 
 FakeScopedUserProfile::~FakeScopedUserProfile() {}
 
-HRESULT FakeScopedUserProfile::SaveAccountInfo(
-    const base::DictionaryValue& properties) {
+HRESULT FakeScopedUserProfile::SaveAccountInfo(const base::Value& properties) {
   if (!is_valid_)
     return E_INVALIDARG;
 
@@ -570,11 +599,6 @@ FakeAssociatedUserValidator::~FakeAssociatedUserValidator() {
   *GetInstanceStorage() = original_validator_;
 }
 
-bool FakeAssociatedUserValidator::IsUserAccessBlocked(
-    const base::string16& sid) const {
-  return locked_user_sids_.find(sid) != locked_user_sids_.end();
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 FakeInternetAvailabilityChecker::FakeInternetAvailabilityChecker(
@@ -590,6 +614,11 @@ FakeInternetAvailabilityChecker::~FakeInternetAvailabilityChecker() {
 
 bool FakeInternetAvailabilityChecker::HasInternetConnection() {
   return has_internet_connection_ == kHicForceYes;
+}
+
+void FakeInternetAvailabilityChecker::SetHasInternetConnection(
+    HasInternetConnectionCheckType has_internet_connection) {
+  has_internet_connection_ = has_internet_connection;
 }
 
 }  // namespace credential_provider

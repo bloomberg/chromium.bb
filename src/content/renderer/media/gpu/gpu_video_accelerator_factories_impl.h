@@ -19,12 +19,14 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/unguessable_token.h"
+#include "components/viz/common/gpu/context_lost_observer.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/content_export.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "media/mojo/interfaces/video_decoder.mojom.h"
 #include "media/mojo/interfaces/video_encode_accelerator.mojom.h"
 #include "media/video/gpu_video_accelerator_factories.h"
+#include "media/video/supported_video_decoder_config.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gpu {
@@ -49,7 +51,8 @@ namespace content {
 // |context_provider| should not support locking and will be bound to
 // |task_runner_| where all the operations on the context should also happen.
 class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
-    : public media::GpuVideoAcceleratorFactories {
+    : public media::GpuVideoAcceleratorFactories,
+      public viz::ContextLostObserver {
  public:
   // Takes a ref on |gpu_channel_host| and tests |context| for loss before each
   // use.  Safe to call from any thread.
@@ -71,8 +74,10 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   int32_t GetCommandBufferRouteId() override;
   std::unique_ptr<media::VideoDecoder> CreateVideoDecoder(
       media::MediaLog* media_log,
+      media::VideoDecoderImplementation implementation,
       const media::RequestOverlayInfoCB& request_overlay_info_cb) override;
   bool IsDecoderConfigSupported(
+      media::VideoDecoderImplementation implementation,
       const media::VideoDecoderConfig& config) override;
   std::unique_ptr<media::VideoDecodeAccelerator> CreateVideoDecodeAccelerator()
       override;
@@ -157,11 +162,12 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       media::mojom::InterfaceFactoryPtrInfo interface_factory_info,
       media::mojom::VideoEncodeAcceleratorProviderPtrInfo vea_provider_info);
 
-  void SetContextProviderLost();
+  // viz::ContextLostObserver implementation.
+  void OnContextLost() override;
   void SetContextProviderLostOnMainThread();
 
   void OnSupportedDecoderConfigs(
-      const std::vector<media::SupportedVideoDecoderConfig>& supported_configs);
+      const media::SupportedVideoDecoderConfigMap& supported_configs);
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -198,7 +204,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   // If the Optional is empty, then we have not yet gotten the configs.  If the
   // Optional contains an empty vector, then we have gotten the result and there
   // are no supported configs.
-  base::Optional<std::vector<media::SupportedVideoDecoderConfig>>
+  base::Optional<media::SupportedVideoDecoderConfigMap>
       supported_decoder_configs_ GUARDED_BY(supported_decoder_configs_lock_);
 
   // For sending requests to allocate shared memory in the Browser process.

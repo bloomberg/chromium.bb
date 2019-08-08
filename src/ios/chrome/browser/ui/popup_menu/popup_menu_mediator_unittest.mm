@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_mediator.h"
 #include "base/time/default_clock.h"
 #include "components/feature_engagement/test/mock_tracker.h"
+#include "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_tools_item.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
@@ -123,7 +124,14 @@ class PopupMenuMediatorTest : public ChromeWebTest {
                                     WebStateOpener());
   }
 
-  void SetUpActiveWebState() { web_state_list_->ActivateWebStateAt(0); }
+  void SetUpActiveWebState() {
+    // PopupMenuMediator expects an language::IOSLanguageDetectionTabHelper for
+    // the currently active WebState.
+    language::IOSLanguageDetectionTabHelper::CreateForWebState(
+        web_state_list_->GetWebStateAt(0), /*url_language_histogram=*/nullptr);
+
+    web_state_list_->ActivateWebStateAt(0);
+  }
 
   // Checks that the popup_menu_ is receiving a number of items corresponding to
   // |number_items|.
@@ -272,5 +280,5 @@ TEST_F(PopupMenuMediatorTest, TestItemsStatusOnNTP) {
   web_state_->OnNavigationFinished(&context);
 
   EXPECT_TRUE(HasItem(consumer, kToolsMenuNewTabId, /*enabled=*/YES));
-  EXPECT_TRUE(HasItem(consumer, kToolsMenuSiteInformation, /*enabled=*/NO));
+  EXPECT_TRUE(HasItem(consumer, kToolsMenuSiteInformation, /*enabled=*/YES));
 }

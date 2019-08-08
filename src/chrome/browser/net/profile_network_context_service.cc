@@ -462,13 +462,6 @@ ProfileNetworkContextService::CreateNetworkContextParams(
   // ProfileIOData::SetUpJobFactoryDefaultsForBuilder in sync with
   // ProfileIOData::IsHandledProtocol().
   // TODO(mmenke): Find a better way of handling tracking supported schemes.
-  network_context_params->enable_data_url_support = true;
-  // File support is needed for PAC scripts that use file or data URLs.
-  // TODO(crbug.com/839566): remove file support for all cases.
-  // It is disabled with the network service as it is not responsible for
-  // loading files.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    network_context_params->enable_file_url_support = true;
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   network_context_params->enable_ftp_url_support = true;
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)

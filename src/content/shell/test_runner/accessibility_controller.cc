@@ -45,6 +45,7 @@ class AccessibilityControllerBindings
   v8::Local<v8::Object> FocusedElement();
   v8::Local<v8::Object> RootElement();
   v8::Local<v8::Object> AccessibleElementById(const std::string& id);
+  void Reset();
 
   base::WeakPtr<AccessibilityController> controller_;
 
@@ -103,7 +104,8 @@ AccessibilityControllerBindings::GetObjectTemplateBuilder(
       .SetMethod("addNotificationListener",
                  &AccessibilityControllerBindings::SetNotificationListener)
       .SetMethod("removeNotificationListener",
-                 &AccessibilityControllerBindings::UnsetNotificationListener);
+                 &AccessibilityControllerBindings::UnsetNotificationListener)
+      .SetMethod("reset", &AccessibilityControllerBindings::Reset);
 }
 
 void AccessibilityControllerBindings::LogAccessibilityEvents() {
@@ -136,6 +138,11 @@ v8::Local<v8::Object> AccessibilityControllerBindings::AccessibleElementById(
                      : v8::Local<v8::Object>();
 }
 
+void AccessibilityControllerBindings::Reset() {
+  if (controller_)
+    controller_->Reset();
+}
+
 AccessibilityController::AccessibilityController(
     WebViewTestProxy* web_view_test_proxy)
     : log_accessibility_events_(false),
@@ -148,6 +155,7 @@ void AccessibilityController::Reset() {
   elements_.Clear();
   notification_callback_.Reset();
   log_accessibility_events_ = false;
+  ax_context_.reset();
 }
 
 void AccessibilityController::Install(blink::WebLocalFrame* frame) {
@@ -260,7 +268,6 @@ AccessibilityController::FindAccessibleElementByIdRecursive(
   blink::WebNode node = obj.GetNode();
   if (!node.IsNull() && node.IsElementNode()) {
     blink::WebElement element = node.To<blink::WebElement>();
-    element.GetAttribute("id");
     if (element.GetAttribute("id") == id)
       return elements_.GetOrCreate(obj);
   }
@@ -269,7 +276,7 @@ AccessibilityController::FindAccessibleElementByIdRecursive(
   for (unsigned i = 0; i < childCount; i++) {
     v8::Local<v8::Object> result =
         FindAccessibleElementByIdRecursive(obj.ChildAt(i), id);
-    if (*result)
+    if (!result.IsEmpty())
       return result;
   }
 

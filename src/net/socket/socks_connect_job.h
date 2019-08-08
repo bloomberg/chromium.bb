@@ -20,13 +20,14 @@
 
 namespace net {
 
+class SocketTag;
 class StreamSocket;
 class TransportSocketParams;
 
 class NET_EXPORT_PRIVATE SOCKSSocketParams
     : public base::RefCounted<SOCKSSocketParams> {
  public:
-  SOCKSSocketParams(const scoped_refptr<TransportSocketParams>& proxy_server,
+  SOCKSSocketParams(scoped_refptr<TransportSocketParams> proxy_server_params,
                     bool socks_v5,
                     const HostPortPair& host_port_pair,
                     const NetworkTrafficAnnotationTag& traffic_annotation);
@@ -62,8 +63,9 @@ class NET_EXPORT_PRIVATE SOCKSConnectJob : public ConnectJob,
                                            public ConnectJob::Delegate {
  public:
   SOCKSConnectJob(RequestPriority priority,
-                  const CommonConnectJobParams& common_connect_job_params,
-                  const scoped_refptr<SOCKSSocketParams>& socks_params,
+                  const SocketTag& socket_tag,
+                  const CommonConnectJobParams* common_connect_job_params,
+                  scoped_refptr<SOCKSSocketParams> socks_params,
                   ConnectJob::Delegate* delegate,
                   const NetLogWithSource* net_log);
   ~SOCKSConnectJob() override;
@@ -72,8 +74,8 @@ class NET_EXPORT_PRIVATE SOCKSConnectJob : public ConnectJob,
   LoadState GetLoadState() const override;
   bool HasEstablishedConnection() const override;
 
-  // Returns the connection timeout used by SOCKSConnectJobs.
-  static base::TimeDelta ConnectionTimeout();
+  // Returns the handshake timeout used by SOCKSConnectJobs.
+  static base::TimeDelta HandshakeTimeoutForTesting();
 
  private:
   enum State {

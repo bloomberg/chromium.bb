@@ -5,6 +5,7 @@
 #include "ios/web/navigation/error_retry_state_machine.h"
 
 #include "ios/web/navigation/wk_navigation_util.h"
+#import "ios/web/public/web_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -67,10 +68,16 @@ TEST_F(ErrorRetryStateMachineTest, OfflineThenReload) {
   // Reload fails again in provisional navigation (e.g. still in airplane mode).
   {
     ErrorRetryStateMachine clone(machine);
-    ASSERT_EQ(ErrorRetryCommand::kLoadErrorView,
-              clone.DidFailProvisionalNavigation(test_url, test_url));
-    ASSERT_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
-              clone.state());
+    if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+      ASSERT_EQ(ErrorRetryCommand::kLoadPlaceholder,
+                clone.DidFailProvisionalNavigation(test_url, test_url));
+      ASSERT_EQ(ErrorRetryState::kLoadingPlaceholder, clone.state());
+    } else {
+      ASSERT_EQ(ErrorRetryCommand::kLoadErrorView,
+                clone.DidFailProvisionalNavigation(test_url, test_url));
+      ASSERT_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
+                clone.state());
+    }
   }
 
   // Reload fails after navigation is committed.
@@ -130,10 +137,16 @@ TEST_F(ErrorRetryStateMachineTest, WebErrorPageThenReload) {
   // Reload fails again in provisional navigation.
   {
     ErrorRetryStateMachine clone(machine);
-    ASSERT_EQ(ErrorRetryCommand::kLoadErrorView,
-              clone.DidFailProvisionalNavigation(test_url, test_url));
-    ASSERT_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
-              clone.state());
+    if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+      ASSERT_EQ(ErrorRetryCommand::kLoadPlaceholder,
+                clone.DidFailProvisionalNavigation(test_url, test_url));
+      ASSERT_EQ(ErrorRetryState::kLoadingPlaceholder, clone.state());
+    } else {
+      ASSERT_EQ(ErrorRetryCommand::kLoadErrorView,
+                clone.DidFailProvisionalNavigation(test_url, test_url));
+      ASSERT_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
+                clone.state());
+    }
   }
 
   // Reload fails after navigation is committed.
@@ -193,10 +206,16 @@ TEST_F(ErrorRetryStateMachineTest, SuccessThenReloadOffline) {
   // Reloads fails provisional navigation.
   {
     ErrorRetryStateMachine clone(machine);
-    ASSERT_EQ(ErrorRetryCommand::kLoadErrorView,
-              clone.DidFailProvisionalNavigation(test_url, test_url));
-    ASSERT_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
-              clone.state());
+    if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+      ASSERT_EQ(ErrorRetryCommand::kLoadPlaceholder,
+                clone.DidFailProvisionalNavigation(test_url, test_url));
+      ASSERT_EQ(ErrorRetryState::kLoadingPlaceholder, clone.state());
+    } else {
+      ASSERT_EQ(ErrorRetryCommand::kLoadErrorView,
+                clone.DidFailProvisionalNavigation(test_url, test_url));
+      ASSERT_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
+                clone.state());
+    }
   }
 
   // Reload fails after commit.
@@ -225,6 +244,35 @@ TEST_F(ErrorRetryStateMachineTest, OfflineAfterColdStart) {
   // Simulate failure in restore_session.html client redirect.
   ASSERT_EQ(ErrorRetryCommand::kLoadErrorView,
             machine.DidFailProvisionalNavigation(redirect_url, test_url));
+  ASSERT_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
+            machine.state());
+}
+
+// Tests retrying a placeholder navigation.
+TEST_F(ErrorRetryStateMachineTest, RetryPlaceholderNavigation) {
+  GURL test_url(kTestUrl);
+  ErrorRetryStateMachine machine;
+  machine.SetURL(test_url);
+  ASSERT_EQ(ErrorRetryState::kNewRequest, machine.state());
+
+  // First trigger the cached placeholder load.
+  const GURL placeholder_url =
+      wk_navigation_util::CreatePlaceholderUrlForUrl(test_url);
+  ASSERT_EQ(ErrorRetryCommand::kDoNothing,
+            machine.DidFinishNavigation(placeholder_url));
+  ASSERT_EQ(ErrorRetryState::kNoNavigationError, machine.state());
+
+  // Then trigger a retry.
+  machine.SetRetryPlaceholderNavigation();
+  ASSERT_EQ(ErrorRetryCommand::kRewriteWebViewURL,
+            machine.DidFinishNavigation(placeholder_url));
+  ASSERT_EQ(ErrorRetryState::kRetryPlaceholderNavigation, machine.state());
+
+  // Lastly trigger the error view.
+  const GURL target_url =
+      wk_navigation_util::ExtractUrlFromPlaceholderUrl(placeholder_url);
+  ASSERT_EQ(ErrorRetryCommand::kLoadErrorView,
+            machine.DidFinishNavigation(target_url));
   ASSERT_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
             machine.state());
 }

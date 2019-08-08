@@ -7,6 +7,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 js_type_check("closure_compile") {
   deps = [
     ":crostini_browser_proxy",
+    ":crostini_export_import",
     ":crostini_page",
     ":crostini_shared_paths",
     ":crostini_shared_usb_devices",
@@ -17,7 +18,12 @@ js_type_check("closure_compile") {
 js_library("crostini_browser_proxy") {
   deps = [
     "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:web_ui_listener_behavior",
+  ]
+}
+
+js_library("crostini_export_import") {
+  deps = [
+    ":crostini_browser_proxy",
   ]
 }
 
@@ -43,7 +49,7 @@ js_library("crostini_shared_usb_devices") {
   deps = [
     ":crostini_browser_proxy",
     "..:route",
-    "../prefs:prefs_behavior",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
 }
 

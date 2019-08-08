@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -31,6 +32,8 @@
     GoogleServicesSettingsViewControllerPresentationDelegate,
     ManageSyncSettingsCoordinatorDelegate>
 
+// Google services settings mode.
+@property(nonatomic, assign, readonly) GoogleServicesSettingsMode mode;
 // Google services settings mediator.
 @property(nonatomic, strong) GoogleServicesSettingsMediator* mediator;
 // Returns the authentication service.
@@ -47,10 +50,28 @@
 // Coordinator to present the manage sync settings.
 @property(nonatomic, strong)
     ManageSyncSettingsCoordinator* manageSyncSettingsCoordinator;
+// YES if stop has been called.
+@property(nonatomic, assign) BOOL stopDone;
 
 @end
 
 @implementation GoogleServicesSettingsCoordinator
+
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+                                      mode:(GoogleServicesSettingsMode)mode {
+  if ([super initWithBaseViewController:viewController
+                           browserState:browserState]) {
+    _mode = mode;
+  }
+  return self;
+}
+
+- (void)dealloc {
+  // -[GoogleServicesSettingsCoordinator stop] needs to be called explicitly.
+  DCHECK(self.stopDone);
+}
 
 - (void)start {
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
@@ -68,7 +89,8 @@
   self.mediator = [[GoogleServicesSettingsMediator alloc]
       initWithUserPrefService:self.browserState->GetPrefs()
              localPrefService:GetApplicationContext()->GetLocalState()
-             syncSetupService:syncSetupService];
+             syncSetupService:syncSetupService
+                         mode:self.mode];
   self.mediator.consumer = viewController;
   self.mediator.authService = self.authService;
   self.mediator.identityManager =
@@ -81,6 +103,35 @@
   DCHECK(self.navigationController);
   [self.navigationController pushViewController:self.viewController
                                        animated:YES];
+}
+
+- (void)stop {
+  if (self.stopDone) {
+    return;
+  }
+  // Sync changes should only be commited if the user is authenticated and
+  // there is no sign-in progress.
+  if (self.authService->IsAuthenticated() &&
+      !self.signinInteractionCoordinator) {
+    SyncSetupService* syncSetupService =
+        SyncSetupServiceFactory::GetForBrowserState(self.browserState);
+    if (self.mode == GoogleServicesSettingsModeSettings &&
+        syncSetupService->GetSyncServiceState() ==
+            SyncSetupService::kSyncSettingsNotConfirmed) {
+      // If Sync is still in aborted state, this means the user didn't turn on
+      // sync, and wants Sync off. To acknowledge, Sync has to be turned off.
+      syncSetupService->SetSyncEnabled(false);
+    }
+    syncSetupService->CommitSyncChanges();
+  }
+  if (self.signinInteractionCoordinator) {
+    [self.signinInteractionCoordinator cancel];
+    // |self.signinInteractionCoordinator| is set to nil by
+    // the completion block called by -[GoogleServicesSettingsCoordinator
+    // signInInteractionCoordinatorDidComplete]
+    DCHECK(!self.signinInteractionCoordinator);
+  }
+  self.stopDone = YES;
 }
 
 #pragma mark - Private

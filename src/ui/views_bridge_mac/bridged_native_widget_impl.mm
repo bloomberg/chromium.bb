@@ -387,6 +387,19 @@ void BridgedNativeWidgetImpl::SetParent(uint64_t new_parent_id) {
     [parent_->ns_window() addChildWindow:window_ ordered:NSWindowAbove];
 }
 
+void BridgedNativeWidgetImpl::StackAbove(uint64_t sibling_id) {
+  BridgedNativeWidgetImpl* sibling_bridge =
+      BridgedNativeWidgetImpl::GetFromId(sibling_id);
+  DCHECK(sibling_bridge);
+
+  NSInteger sibling = sibling_bridge->ns_window().windowNumber;
+  [window_ orderWindow:NSWindowAbove relativeTo:sibling];
+}
+
+void BridgedNativeWidgetImpl::StackAtTop() {
+  [window_ setOrderedIndex:0];
+}
+
 void BridgedNativeWidgetImpl::ShowEmojiPanel() {
   ui::ShowEmojiPanel();
 }

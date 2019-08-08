@@ -83,6 +83,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":translate",
+    "//components/language/ios/browser",
     "//components/translate/core/browser:test_support",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/translate",

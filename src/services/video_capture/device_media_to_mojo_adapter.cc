@@ -19,7 +19,7 @@ namespace {
 
 std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-    media::MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback,
+    media::MojoMjpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback,
     media::VideoCaptureJpegDecoder::DecodeDoneCB decode_done_cb,
     base::RepeatingCallback<void(const std::string&)> send_log_message_cb) {
   return std::make_unique<media::ScopedVideoCaptureJpegDecoder>(
@@ -36,7 +36,7 @@ namespace video_capture {
 DeviceMediaToMojoAdapter::DeviceMediaToMojoAdapter(
     std::unique_ptr<service_manager::ServiceContextRef> service_ref,
     std::unique_ptr<media::VideoCaptureDevice> device,
-    media::MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback,
+    media::MojoMjpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback,
     scoped_refptr<base::SequencedTaskRunner> jpeg_decoder_task_runner)
     : service_ref_(std::move(service_ref)),
       device_(std::move(device)),

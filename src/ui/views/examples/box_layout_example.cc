@@ -30,7 +30,7 @@ namespace examples {
 
 BoxLayoutExample::BoxLayoutExample() : LayoutExampleBase("Box Layout") {}
 
-BoxLayoutExample::~BoxLayoutExample() {}
+BoxLayoutExample::~BoxLayoutExample() = default;
 
 void BoxLayoutExample::CreateAdditionalControls(int vertical_pos) {
   static const char* orientation_values[2] = {"Horizontal", "Vertical"};
@@ -124,8 +124,8 @@ void BoxLayoutExample::UpdateLayoutManager() {
   View* const panel = layout_panel();
   layout_ = panel->SetLayoutManager(std::move(layout));
   UpdateBorderInsets();
-  for (int i = 0; i < panel->child_count(); ++i) {
-    ChildPanel* child_panel = static_cast<ChildPanel*>(panel->child_at(i));
+  for (View* child : panel->children()) {
+    ChildPanel* child_panel = static_cast<ChildPanel*>(child);
     int flex = child_panel->GetFlex();
     if (flex < 0)
       layout_->ClearFlexForView(child_panel);

@@ -114,7 +114,7 @@ std::pair<bool, bool> StorageTable::IsOrdered(
 
   const auto& ob = obs[0];
   auto col = static_cast<size_t>(ob.iColumn);
-  return std::make_pair(schema_.GetColumn(col).IsNaturallyOrdered(), ob.desc);
+  return std::make_pair(schema_.GetColumn(col).HasOrdering(), ob.desc);
 }
 
 std::vector<QueryConstraints::OrderBy> StorageTable::RemoveRedundantOrderBy(
@@ -159,6 +159,16 @@ std::vector<uint32_t> StorageTable::CreateSortedIndexVector(
   std::sort(sorted_rows.begin(), sorted_rows.end(), comparator);
 
   return sorted_rows;
+}
+
+bool StorageTable::HasEqConstraint(const QueryConstraints& qc,
+                                   const std::string& col_name) {
+  size_t c_idx = schema().ColumnIndexFromName(col_name);
+  auto fn = [c_idx](const QueryConstraints::Constraint& c) {
+    return c.iColumn == static_cast<int>(c_idx) && sqlite_utils::IsOpEq(c.op);
+  };
+  const auto& cs = qc.constraints();
+  return std::find_if(cs.begin(), cs.end(), fn) != cs.end();
 }
 
 StorageTable::Cursor::Cursor(std::unique_ptr<RowIterator> iterator,

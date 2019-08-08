@@ -20,12 +20,14 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/grit/components_scaled_resources.h"
 #include "components/history/core/browser/default_top_sites_provider.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/top_sites_impl.h"
@@ -33,6 +35,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -56,6 +59,14 @@ struct RawPrepopulatedPage {
 #if !defined(OS_ANDROID)
 // Android does not use prepopulated pages.
 const RawPrepopulatedPage kRawPrepopulatedPages[] = {
+#if defined(GOOGLE_CHROME_BUILD)
+    {
+        IDS_NTP_DEFAULT_SEARCH_URL,
+        IDS_NTP_DEFAULT_SEARCH_TITLE,
+        IDS_ONBOARDING_WELCOME_SEARCH,
+        SkColorSetRGB(63, 132, 197),
+    },
+#endif
     {
         IDS_WEBSTORE_URL,
         IDS_EXTENSION_WEB_STORE_TITLE_SHORT,
@@ -66,16 +77,37 @@ const RawPrepopulatedPage kRawPrepopulatedPages[] = {
 #endif
 
 void InitializePrepopulatedPageList(
-    PrefService* prefs,
+    Profile* profile,
     history::PrepopulatedPageList* prepopulated_pages) {
 #if !defined(OS_ANDROID)
   DCHECK(prepopulated_pages);
-  bool hide_web_store_icon = prefs->GetBoolean(prefs::kHideWebStoreIcon);
+  PrefService* pref_service = profile->GetPrefs();
+  bool hide_web_store_icon = pref_service->GetBoolean(prefs::kHideWebStoreIcon);
+
+  // The default shortcut is shown for new profiles, beginning at first run, if
+  // the feature is enabled. A pref is persisted so that the shortcut continues
+  // to be shown through browser restarts, when the profile is no longer
+  // considered "new".
+  bool is_search_shortcut_feature_enabled =
+      base::FeatureList::IsEnabled(features::kFirstRunDefaultSearchShortcut);
+  if (profile->IsNewProfile() && is_search_shortcut_feature_enabled) {
+    pref_service->SetBoolean(prefs::kShowFirstRunDefaultSearchShortcut, true);
+  }
+  bool show_default_search_shortcut =
+      is_search_shortcut_feature_enabled &&
+      pref_service->GetBoolean(prefs::kShowFirstRunDefaultSearchShortcut);
+
   prepopulated_pages->reserve(base::size(kRawPrepopulatedPages));
   for (size_t i = 0; i < base::size(kRawPrepopulatedPages); ++i) {
     const RawPrepopulatedPage& page = kRawPrepopulatedPages[i];
     if (hide_web_store_icon && page.url_id == IDS_WEBSTORE_URL)
       continue;
+
+    if (!show_default_search_shortcut &&
+        page.url_id == IDS_NTP_DEFAULT_SEARCH_URL) {
+      continue;
+    }
+
     prepopulated_pages->push_back(history::PrepopulatedPage(
         GURL(l10n_util::GetStringUTF8(page.url_id)),
         l10n_util::GetStringUTF16(page.title_id), page.favicon_id, page.color));
@@ -143,8 +175,8 @@ TopSitesFactory::~TopSitesFactory() {
 scoped_refptr<RefcountedKeyedService> TopSitesFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   history::PrepopulatedPageList prepopulated_pages;
-  InitializePrepopulatedPageList(
-      Profile::FromBrowserContext(context)->GetPrefs(), &prepopulated_pages);
+  InitializePrepopulatedPageList(Profile::FromBrowserContext(context),
+                                 &prepopulated_pages);
   return BuildTopSites(context, prepopulated_pages);
 }
 

@@ -18,7 +18,9 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_void_request_script_promise_resolver_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/web_rtc_stats_report_callback_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
@@ -326,14 +328,14 @@ RTCDtlsTransport* RTCRtpSender::transport() {
   return transport_;
 }
 
-RTCDtlsTransport* RTCRtpSender::rtcp_transport() {
+RTCDtlsTransport* RTCRtpSender::rtcpTransport() {
   // Chrome does not support turning off RTCP-mux.
   return nullptr;
 }
 
 ScriptPromise RTCRtpSender::replaceTrack(ScriptState* script_state,
                                          MediaStreamTrack* with_track) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   if (pc_->IsClosed()) {
     resolver->Reject(DOMException::Create(DOMExceptionCode::kInvalidStateError,
@@ -413,7 +415,7 @@ RTCRtpSendParameters* RTCRtpSender::getParameters() {
 ScriptPromise RTCRtpSender::setParameters(
     ScriptState* script_state,
     const RTCRtpSendParameters* parameters) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (!last_returned_parameters_) {
@@ -452,10 +454,11 @@ void RTCRtpSender::ClearLastReturnedParameters() {
 }
 
 ScriptPromise RTCRtpSender::getStats(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
-  sender_->GetStats(WebRTCStatsReportCallbackResolver::Create(resolver),
-                    GetRTCStatsFilter(script_state));
+  sender_->GetStats(
+      WTF::Bind(WebRTCStatsReportCallbackResolver, WrapPersistent(resolver)),
+      GetExposedGroupIds(script_state));
   return promise;
 }
 

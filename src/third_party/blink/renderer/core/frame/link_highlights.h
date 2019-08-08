@@ -33,10 +33,6 @@ class LayoutObject;
 class CORE_EXPORT LinkHighlights final
     : public GarbageCollectedFinalized<LinkHighlights> {
  public:
-  static LinkHighlights* Create(Page& page) {
-    return MakeGarbageCollected<LinkHighlights>(page);
-  }
-
   explicit LinkHighlights(Page&);
   virtual ~LinkHighlights();
 

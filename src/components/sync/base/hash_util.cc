@@ -5,7 +5,7 @@
 #include "components/sync/base/hash_util.h"
 
 #include "base/base64.h"
-#include "base/sha1.h"
+#include "base/hash/sha1.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace syncer {

@@ -184,7 +184,7 @@ WebRtcLogsDOMHandler::WebRtcLogsDOMHandler(Profile* profile)
 
 WebRtcLogsDOMHandler::~WebRtcLogsDOMHandler() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  text_log_upload_list_->CancelCallback();
+  text_log_upload_list_->CancelLoadCallback();
 }
 
 void WebRtcLogsDOMHandler::RegisterMessages() {

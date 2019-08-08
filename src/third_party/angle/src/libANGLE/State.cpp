@@ -256,6 +256,8 @@ State::State(ContextID contextIn,
       mPathManager(AllocateOrGetSharedResourceManager(shareContextState, &State::mPathManager)),
       mFramebufferManager(new FramebufferManager()),
       mProgramPipelineManager(new ProgramPipelineManager()),
+      mMemoryObjectManager(
+          AllocateOrGetSharedResourceManager(shareContextState, &State::mMemoryObjectManager)),
       mMaxDrawBuffers(0),
       mMaxCombinedTextureImageUnits(0),
       mDepthClearValue(0),
@@ -540,9 +542,12 @@ ANGLE_INLINE void State::updateActiveTextureState(const Context *context,
 
     if (mProgram)
     {
+        const SamplerState &samplerState =
+            sampler ? sampler->getSamplerState() : texture->getSamplerState();
         mTexturesIncompatibleWithSamplers[textureIndex] =
             !texture->getTextureState().compatibleWithSamplerFormat(
-                mProgram->getState().getSamplerFormatForTextureUnitIndex(textureIndex));
+                mProgram->getState().getSamplerFormatForTextureUnitIndex(textureIndex),
+                samplerState);
     }
     else
     {
@@ -704,7 +709,7 @@ void State::setStencilTest(bool enabled)
 void State::setStencilParams(GLenum stencilFunc, GLint stencilRef, GLuint stencilMask)
 {
     mDepthStencil.stencilFunc = stencilFunc;
-    mStencilRef               = (stencilRef > 0) ? stencilRef : 0;
+    mStencilRef               = gl::clamp(stencilRef, 0, std::numeric_limits<uint8_t>::max());
     mDepthStencil.stencilMask = stencilMask;
     mDirtyBits.set(DIRTY_BIT_STENCIL_FUNCS_FRONT);
 }
@@ -714,7 +719,7 @@ void State::setStencilBackParams(GLenum stencilBackFunc,
                                  GLuint stencilBackMask)
 {
     mDepthStencil.stencilBackFunc = stencilBackFunc;
-    mStencilBackRef               = (stencilBackRef > 0) ? stencilBackRef : 0;
+    mStencilBackRef = gl::clamp(stencilBackRef, 0, std::numeric_limits<uint8_t>::max());
     mDepthStencil.stencilBackMask = stencilBackMask;
     mDirtyBits.set(DIRTY_BIT_STENCIL_FUNCS_BACK);
 }
@@ -1139,8 +1144,11 @@ void State::detachTexture(const Context *context, const TextureMap &zeroTextures
                 // Zero textures are the "default" textures instead of NULL
                 Texture *zeroTexture = zeroTextures[type].get();
                 ASSERT(zeroTexture != nullptr);
+                if (mCompleteTextureBindings[bindingIndex].getSubject() == binding.get())
+                {
+                    updateActiveTexture(context, bindingIndex, zeroTexture);
+                }
                 binding.set(context, zeroTexture);
-                updateActiveTexture(context, bindingIndex, zeroTexture);
             }
         }
     }
@@ -1193,6 +1201,7 @@ void State::setSamplerBinding(const Context *context, GLuint textureUnit, Sample
     // This is overly conservative as it assumes the sampler has never been bound.
     setSamplerDirty(textureUnit);
     onActiveTextureChange(context, textureUnit);
+    onActiveTextureStateChange(context, textureUnit);
 }
 
 void State::detachSampler(const Context *context, GLuint sampler)
@@ -1201,12 +1210,11 @@ void State::detachSampler(const Context *context, GLuint sampler)
     // If a sampler object that is currently bound to one or more texture units is
     // deleted, it is as though BindSampler is called once for each texture unit to
     // which the sampler is bound, with unit set to the texture unit and sampler set to zero.
-    for (BindingPointer<Sampler> &samplerBinding : mSamplers)
+    for (size_t i = 0; i < mSamplers.size(); i++)
     {
-        if (samplerBinding.id() == sampler)
+        if (mSamplers[i].id() == sampler)
         {
-            samplerBinding.set(context, nullptr);
-            mDirtyBits.set(DIRTY_BIT_SAMPLER_BINDINGS);
+            setSamplerBinding(context, i, nullptr);
         }
     }
 }

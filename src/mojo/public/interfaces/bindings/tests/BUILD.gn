@@ -320,7 +320,7 @@ component("test_export_component") {
 if (!is_ios) {
   component("test_export_blink_component") {
     testonly = true
-    deps = [
+    public_deps = [
       ":test_export_blink",
     ]
   }

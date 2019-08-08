@@ -17,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromeos/login/login_state/login_state.h"
+#include "chromeos/network/device_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_handler.h"
@@ -25,10 +26,10 @@
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_utils.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
@@ -217,6 +218,32 @@ arc::mojom::ConnectionStateType TranslateONCConnectionState(
   return arc::mojom::ConnectionStateType::NOT_CONNECTED;
 }
 
+// Translates a shill connection state into a mojo ConnectionStateType.
+// This is effectively the inverse function of shill.Service::GetStateString
+// defined in platform2/shill/service.cc, with in addition some of shill's
+// connection states translated to the same ConnectionStateType value.
+arc::mojom::ConnectionStateType TranslateConnectionState(
+    const std::string& state) {
+  if (state == shill::kStateReady)
+    return arc::mojom::ConnectionStateType::CONNECTED;
+  if (state == shill::kStateAssociation ||
+      state == shill::kStateConfiguration)
+    return arc::mojom::ConnectionStateType::CONNECTING;
+  if ((state == shill::kStateIdle) || (state == shill::kStateFailure) ||
+      (state == ""))
+    return arc::mojom::ConnectionStateType::NOT_CONNECTED;
+  if (state == shill::kStatePortal)
+    return arc::mojom::ConnectionStateType::PORTAL;
+  if (state == shill::kStateOnline)
+    return arc::mojom::ConnectionStateType::ONLINE;
+
+  // The remaining cases defined in shill dbus-constants are legacy values from
+  // Flimflam and are not expected to be encountered. These are: kStateCarrier,
+  // kStateActivationFailure, kStateDisconnect, and kStateOffline.
+  NOTREACHED() << "Unknown connection state: " << state;
+  return arc::mojom::ConnectionStateType::NOT_CONNECTED;
+}
+
 void TranslateONCNetworkTypeDetails(const base::DictionaryValue* dict,
                                     arc::mojom::NetworkConfiguration* mojo) {
   std::string type = GetStringFromONCDictionary(
@@ -240,11 +267,12 @@ void TranslateONCNetworkTypeDetails(const base::DictionaryValue* dict,
   } else if (type == onc::network_type::kWimax) {
     mojo->type = arc::mojom::NetworkType::WIMAX;
   } else {
-    NOTREACHED();
+    NOTREACHED() << "Unknown network type: " << type;
   }
 }
 
 arc::mojom::NetworkConfigurationPtr TranslateONCConfiguration(
+    const chromeos::NetworkState* network_state,
     const base::DictionaryValue* dict) {
   arc::mojom::NetworkConfigurationPtr mojo =
       arc::mojom::NetworkConfiguration::New();
@@ -276,7 +304,24 @@ arc::mojom::NetworkConfigurationPtr TranslateONCConfiguration(
       dict, onc::network_config::kMacAddress, false /* required */);
   TranslateONCNetworkTypeDetails(dict, mojo.get());
 
+  if (network_state) {
+    mojo->connection_state =
+        TranslateConnectionState(network_state->connection_state());
+    const chromeos::DeviceState* device_state =
+        GetStateHandler()->GetDeviceState(network_state->device_path());
+    if (device_state)
+      mojo->network_interface = device_state->interface();
+  }
+
   return mojo;
+}
+
+// Convenience helper for returning a mojo NetworkConfiguration from
+// a NetworkState.
+arc::mojom::NetworkConfigurationPtr TranslateNetworkState(
+    const chromeos::NetworkState* state) {
+  return TranslateONCConfiguration(
+      state, chromeos::network_util::TranslateNetworkStateToONC(state).get());
 }
 
 const chromeos::NetworkState* GetShillBackedNetwork(
@@ -344,8 +389,11 @@ void GetDefaultNetworkSuccessCallback(
   // TODO(cernekee): Figure out how to query Chrome for the default physical
   // service if a VPN is connected, rather than just reporting the
   // default logical service in both fields.
-  std::move(callback).Run(TranslateONCConfiguration(&dictionary),
-                          TranslateONCConfiguration(&dictionary));
+  const chromeos::NetworkState* network_state =
+      GetStateHandler()->GetNetworkState(service_path);
+  std::move(callback).Run(
+      TranslateONCConfiguration(network_state, &dictionary),
+      TranslateONCConfiguration(network_state, &dictionary));
 }
 
 void GetDefaultNetworkFailureCallback(
@@ -353,14 +401,14 @@ void GetDefaultNetworkFailureCallback(
                             arc::mojom::NetworkConfigurationPtr)> callback,
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
-  LOG(ERROR) << "Failed to query default logical network";
+  LOG(ERROR) << "Failed to query default logical network: " << error_name;
   std::move(callback).Run(nullptr, nullptr);
 }
 
 void DefaultNetworkFailureCallback(
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
-  LOG(ERROR) << "Failed to query default logical network";
+  LOG(ERROR) << "Failed to query default logical network: " << error_name;
 }
 
 void ArcVpnSuccessCallback() {
@@ -470,23 +518,25 @@ void ArcNetHostImpl::GetNetworks(mojom::GetNetworksRequestType type,
                                  GetNetworksCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // Retrieve list of configured or visible WiFi networks.
-  bool configured_only = type == mojom::GetNetworksRequestType::CONFIGURED_ONLY;
-  chromeos::NetworkTypePattern network_pattern =
-      chromeos::onc::NetworkTypePatternFromOncType(onc::network_type::kWiFi);
-  std::unique_ptr<base::ListValue> network_properties_list =
-      chromeos::network_util::TranslateNetworkListToONC(
-          network_pattern, configured_only, !configured_only /* visible_only */,
-          kGetNetworksListLimit);
-
-  std::vector<mojom::NetworkConfigurationPtr> networks;
-  for (const auto& value : *network_properties_list) {
-    const base::DictionaryValue* network_dict = nullptr;
-    value.GetAsDictionary(&network_dict);
-    DCHECK(network_dict);
-    networks.push_back(TranslateONCConfiguration(network_dict));
+  chromeos::NetworkStateHandler::NetworkStateList network_states;
+  if (type == mojom::GetNetworksRequestType::ACTIVE_ONLY) {
+    // Retrieve list of currently active networks.
+    GetStateHandler()->GetActiveNetworkListByType(
+        chromeos::NetworkTypePattern::Default(), &network_states);
+  } else {
+    // Otherwise retrieve list of configured or visible WiFi networks.
+    bool configured_only =
+        type == mojom::GetNetworksRequestType::CONFIGURED_ONLY;
+    chromeos::NetworkTypePattern network_pattern =
+        chromeos::onc::NetworkTypePatternFromOncType(onc::network_type::kWiFi);
+    GetStateHandler()->GetNetworkListByType(
+        network_pattern, configured_only, !configured_only /* visible_only */,
+        kGetNetworksListLimit, &network_states);
   }
 
+  std::vector<mojom::NetworkConfigurationPtr> networks;
+  for (const chromeos::NetworkState* state : network_states)
+    networks.push_back(TranslateNetworkState(state));
   std::move(callback).Run(mojom::GetNetworksResponseType::New(
       arc::mojom::NetworkResult::SUCCESS, std::move(networks)));
 }
@@ -717,8 +767,11 @@ void ArcNetHostImpl::DefaultNetworkSuccessCallback(
   if (!net_instance)
     return;
 
-  net_instance->DefaultNetworkChanged(TranslateONCConfiguration(&dictionary),
-                                      TranslateONCConfiguration(&dictionary));
+  const chromeos::NetworkState* network_state =
+      GetStateHandler()->GetNetworkState(service_path);
+  net_instance->DefaultNetworkChanged(
+      TranslateONCConfiguration(network_state, &dictionary),
+      TranslateONCConfiguration(network_state, &dictionary));
 }
 
 void ArcNetHostImpl::UpdateDefaultNetwork() {
@@ -963,6 +1016,19 @@ void ArcNetHostImpl::NetworkConnectionStateChanged(
   // all other VPN services to avoid a conflict.
   VLOG(1) << "NetworkConnectionStateChanged " << shill_backed_network->path();
   DisconnectArcVpn();
+}
+
+void ArcNetHostImpl::ActiveNetworksChanged(
+    const std::vector<const chromeos::NetworkState*>& active_networks) {
+  auto* net_instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->net(),
+                                                   ActiveNetworksChanged);
+  if (!net_instance)
+    return;
+
+  std::vector<arc::mojom::NetworkConfigurationPtr> network_configurations;
+  for (const chromeos::NetworkState* state : active_networks)
+    network_configurations.push_back(TranslateNetworkState(state));
+  net_instance->ActiveNetworksChanged(std::move(network_configurations));
 }
 
 void ArcNetHostImpl::NetworkListChanged() {

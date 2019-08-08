@@ -157,6 +157,13 @@ bool VerifyBeginNavigationCommonParams(SiteInstance* site_instance,
     return false;
   }
 
+  // Verify |transition| is webby.
+  if (!PageTransitionIsWebTriggerable(common_params->transition)) {
+    bad_message::ReceivedBadMessage(
+        process, bad_message::RFHI_BEGIN_NAVIGATION_NON_WEBBY_TRANSITION);
+    return false;
+  }
+
   // Verify |initiator_origin|.
   if (!common_params->initiator_origin.has_value()) {
     bad_message::ReceivedBadMessage(

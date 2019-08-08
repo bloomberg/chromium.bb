@@ -5,6 +5,8 @@
 
 """Optional usage logging for Software Construction Toolkit."""
 
+from __future__ import print_function
+
 import atexit
 import os
 import platform
@@ -265,13 +267,13 @@ def AtModuleLoad():
 
 def FileDumpWriter(log):
   """Dumps the log to the specified file."""
-  print 'Writing usage log to %s...' % log.dump_to_file
+  print('Writing usage log to %s...' % log.dump_to_file)
   f = open(log.dump_to_file, 'wt')
   doc = log.ConvertToXml()
   doc.writexml(f, encoding='UTF-8', addindent='  ', newl='\n')
   doc.unlink()
   f.close()
-  print 'Done writing log.'
+  print('Done writing log.')
 
 
 # Create the initial log (can't do this in AtModuleLoad() without 'global')

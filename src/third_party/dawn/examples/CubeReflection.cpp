@@ -156,28 +156,15 @@ void init() {
             fragColor = vec4(mix(f_col, vec3(0.5, 0.5, 0.5), 0.5), 1.0);
         })");
 
-    dawn::VertexAttributeDescriptor attribute1;
-    attribute1.shaderLocation = 0;
-    attribute1.inputSlot = 0;
-    attribute1.offset = 0;
-    attribute1.format = dawn::VertexFormat::FloatR32G32B32;
+    utils::ComboInputStateDescriptor inputState;
+    inputState.numAttributes = 2;
+    inputState.cAttributes[0].format = dawn::VertexFormat::Float3;
+    inputState.cAttributes[1].shaderLocation = 1;
+    inputState.cAttributes[1].offset = 3 * sizeof(float);
+    inputState.cAttributes[1].format = dawn::VertexFormat::Float3;
 
-    dawn::VertexAttributeDescriptor attribute2;
-    attribute2.shaderLocation = 1;
-    attribute2.inputSlot = 0;
-    attribute2.offset = 3 * sizeof(float);
-    attribute2.format = dawn::VertexFormat::FloatR32G32B32;
-
-    dawn::VertexInputDescriptor input;
-    input.inputSlot = 0;
-    input.stride = 6 * sizeof(float);
-    input.stepMode = dawn::InputStepMode::Vertex;
-
-    auto inputState = device.CreateInputStateBuilder()
-                          .SetAttribute(&attribute1)
-                          .SetAttribute(&attribute2)
-                          .SetInput(&input)
-                          .GetResult();
+    inputState.numInputs = 1;
+    inputState.cInputs[0].stride = 6 * sizeof(float);
 
     auto bgl = utils::MakeBindGroupLayout(
         device, {
@@ -214,7 +201,7 @@ void init() {
     descriptor.layout = pl;
     descriptor.cVertexStage.module = vsModule;
     descriptor.cFragmentStage.module = fsModule;
-    descriptor.inputState = inputState;
+    descriptor.inputState = &inputState;
     descriptor.depthStencilState = &descriptor.cDepthStencilState;
     descriptor.cDepthStencilState.format = dawn::TextureFormat::D32FloatS8Uint;
     descriptor.cColorStates[0]->format = GetPreferredSwapChainTextureFormat();
@@ -227,7 +214,7 @@ void init() {
     pDescriptor.layout = pl;
     pDescriptor.cVertexStage.module = vsModule;
     pDescriptor.cFragmentStage.module = fsModule;
-    pDescriptor.inputState = inputState;
+    pDescriptor.inputState = &inputState;
     pDescriptor.depthStencilState = &pDescriptor.cDepthStencilState;
     pDescriptor.cDepthStencilState.format = dawn::TextureFormat::D32FloatS8Uint;
     pDescriptor.cColorStates[0]->format = GetPreferredSwapChainTextureFormat();
@@ -241,7 +228,7 @@ void init() {
     rfDescriptor.layout = pl;
     rfDescriptor.cVertexStage.module = vsModule;
     rfDescriptor.cFragmentStage.module = fsReflectionModule;
-    rfDescriptor.inputState = inputState;
+    rfDescriptor.inputState = &inputState;
     rfDescriptor.depthStencilState = &rfDescriptor.cDepthStencilState;
     rfDescriptor.cDepthStencilState.format = dawn::TextureFormat::D32FloatS8Uint;
     rfDescriptor.cColorStates[0]->format = GetPreferredSwapChainTextureFormat();
@@ -262,7 +249,7 @@ void frame() {
     s.a = (s.a + 1) % 256;
     s.b += 0.01f;
     if (s.b >= 1.0f) {s.b = 0.0f;}
-    static const uint32_t vertexBufferOffsets[1] = {0};
+    static const uint64_t vertexBufferOffsets[1] = {0};
 
     cameraData.view = glm::lookAt(
         glm::vec3(8.f * std::sin(glm::radians(s.b * 360.f)), 2.f, 8.f * std::cos(glm::radians(s.b * 360.f))),
@@ -273,27 +260,27 @@ void frame() {
     cameraBuffer.SetSubData(0, sizeof(CameraData), reinterpret_cast<uint8_t*>(&cameraData));
 
     dawn::Texture backbuffer = swapchain.GetNextTexture();
-    utils::ComboRenderPassDescriptor renderPass({backbuffer.CreateDefaultTextureView()},
+    utils::ComboRenderPassDescriptor renderPass({backbuffer.CreateDefaultView()},
                                                 depthStencilView);
 
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     {
         dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
         pass.SetPipeline(pipeline);
-        pass.SetBindGroup(0, bindGroup[0]);
+        pass.SetBindGroup(0, bindGroup[0], 0, nullptr);
         pass.SetVertexBuffers(0, 1, &vertexBuffer, vertexBufferOffsets);
         pass.SetIndexBuffer(indexBuffer, 0);
         pass.DrawIndexed(36, 1, 0, 0, 0);
 
         pass.SetStencilReference(0x1);
         pass.SetPipeline(planePipeline);
-        pass.SetBindGroup(0, bindGroup[0]);
+        pass.SetBindGroup(0, bindGroup[0], 0, nullptr);
         pass.SetVertexBuffers(0, 1, &planeBuffer, vertexBufferOffsets);
         pass.DrawIndexed(6, 1, 0, 0, 0);
 
         pass.SetPipeline(reflectionPipeline);
         pass.SetVertexBuffers(0, 1, &vertexBuffer, vertexBufferOffsets);
-        pass.SetBindGroup(0, bindGroup[1]);
+        pass.SetBindGroup(0, bindGroup[1], 0, nullptr);
         pass.DrawIndexed(36, 1, 0, 0, 0);
 
         pass.EndPass();

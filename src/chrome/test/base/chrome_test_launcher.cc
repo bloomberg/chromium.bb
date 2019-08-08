@@ -20,7 +20,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/test_file_util.h"
-#include "build/build_config.h"
 #include "chrome/app/chrome_main_delegate.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -59,8 +58,10 @@
 
 #if defined(OS_WIN)
 #include "base/win/registry.h"
+#include "base/win/scoped_com_initializer.h"
 #include "chrome/app/chrome_crash_reporter_client_win.h"
 #include "chrome/install_static/install_util.h"
+#include "chrome/installer/util/firewall_manager_win.h"
 #endif
 
 ChromeTestSuiteRunner::ChromeTestSuiteRunner() {}
@@ -72,6 +73,37 @@ int ChromeTestSuiteRunner::RunTestSuite(int argc, char** argv) {
   test_suite.DisableCheckForLeakedGlobals();
   return test_suite.Run();
 }
+
+#if defined(OS_WIN)
+
+// A helper class that adds Windows firewall rules for the duration of the test.
+class ChromeTestLauncherDelegate::ScopedFirewallRules {
+ public:
+  ScopedFirewallRules() {
+    CHECK(com_initializer_.Succeeded());
+    base::FilePath exe_path;
+    CHECK(base::PathService::Get(base::FILE_EXE, &exe_path));
+    firewall_manager_ = installer::FirewallManager::Create(exe_path);
+    CHECK(firewall_manager_);
+    rules_added_ = firewall_manager_->AddFirewallRules();
+    LOG_IF(WARNING, !rules_added_)
+        << "Failed to add Windows firewall rules -- Windows firewall dialogs "
+           "may appear.";
+  }
+
+  ~ScopedFirewallRules() {
+    if (rules_added_)
+      firewall_manager_->RemoveFirewallRules();
+  }
+
+ private:
+  base::win::ScopedCOMInitializer com_initializer_;
+  std::unique_ptr<installer::FirewallManager> firewall_manager_;
+  bool rules_added_ = false;
+  DISALLOW_COPY_AND_ASSIGN(ScopedFirewallRules);
+};
+
+#endif  // defined(OS_WIN)
 
 ChromeTestLauncherDelegate::ChromeTestLauncherDelegate(
     ChromeTestSuiteRunner* runner)
@@ -127,6 +159,16 @@ void ChromeTestLauncherDelegate::PreSharding() {
   result = distrubution_key.DeleteKey(L"PreferenceMACs");
   LOG_IF(ERROR, result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND)
       << "Failed to cleanup PreferenceMACs: " << result;
+
+  // Add firewall rules for the test binary so that Windows doesn't show a
+  // firewall dialog during the test run.
+  firewall_rules_ = std::make_unique<ScopedFirewallRules>();
+#endif
+}
+
+void ChromeTestLauncherDelegate::OnDoneRunningTests() {
+#if defined(OS_WIN)
+  firewall_rules_.reset();
 #endif
 }
 

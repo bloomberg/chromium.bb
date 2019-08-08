@@ -39,10 +39,10 @@ void CSSPerspective::setLength(CSSNumericValue* length,
 }
 
 CSSPerspective* CSSPerspective::FromCSSValue(const CSSFunctionValue& value) {
-  DCHECK_EQ(value.FunctionType(), CSSValuePerspective);
+  DCHECK_EQ(value.FunctionType(), CSSValueID::kPerspective);
   DCHECK_EQ(value.length(), 1U);
   CSSNumericValue* length =
-      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
+      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(0)));
   return MakeGarbageCollected<CSSPerspective>(length);
 }
 
@@ -75,7 +75,8 @@ const CSSFunctionValue* CSSPerspective::ToCSSValue() const {
   }
 
   DCHECK(length);
-  CSSFunctionValue* result = CSSFunctionValue::Create(CSSValuePerspective);
+  auto* result =
+      MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kPerspective);
   result->Append(*length);
   return result;
 }

@@ -14,22 +14,22 @@
 #include "base/sequenced_task_runner.h"
 #include "components/leveldb_proto/public/proto_database.h"
 
+namespace leveldb_proto {
+class ProtoDatabaseProvider;
+}  // namespace leveldb_proto
+
 namespace feed {
 
 class ContentMutation;
 class ContentOperation;
 class ContentStorageProto;
 
+using InitStatus = leveldb_proto::Enums::InitStatus;
+
 // FeedContentDatabase is leveldb backend store for Feed's content storage data.
 // Feed's content data are key-value pairs.
 class FeedContentDatabase {
  public:
-  enum State {
-    UNINITIALIZED,
-    INITIALIZED,
-    INIT_FAILURE,
-  };
-
   using KeyAndData = std::pair<std::string, std::string>;
 
   // Returns the storage data as a vector of key-value pairs when calling
@@ -46,13 +46,15 @@ class FeedContentDatabase {
   // the entry's existence.
   using ConfirmationCallback = base::OnceCallback<void(bool)>;
 
-  // Initializes the database with |database_folder|.
-  explicit FeedContentDatabase(const base::FilePath& database_folder);
-
-  // Initializes the database with |database_folder|. Creates storage using the
-  // given |storage_database| for local storage. Useful for testing.
+  // Initializes the database with |proto_database_provider| and
+  // |database_folder|.
   FeedContentDatabase(
-      const base::FilePath& database_folder,
+      leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
+      const base::FilePath& database_folder);
+
+  // Creates storage using the given |storage_database| for local storage.
+  // Useful for testing.
+  explicit FeedContentDatabase(
       std::unique_ptr<leveldb_proto::ProtoDatabase<ContentStorageProto>>
           storage_database);
 
@@ -101,7 +103,7 @@ class FeedContentDatabase {
                         ConfirmationCallback callback);
 
   // Callback methods given to |storage_database_| for async responses.
-  void OnDatabaseInitialized(bool success);
+  void OnDatabaseInitialized(InitStatus status);
   void OnLoadEntriesForLoadContent(
       base::TimeTicks start_time,
       ContentLoadCallback callback,
@@ -117,7 +119,7 @@ class FeedContentDatabase {
                             bool success);
 
   // Status of the database initialization.
-  State database_status_;
+  InitStatus database_status_;
 
   // The database for storing content storage information.
   std::unique_ptr<leveldb_proto::ProtoDatabase<ContentStorageProto>>

@@ -58,12 +58,12 @@ component("ui") {
     "base/assistant_scroll_view.h",
     "caption_bar.cc",
     "caption_bar.h",
-    "dialog_plate/action_view.cc",
-    "dialog_plate/action_view.h",
     "dialog_plate/dialog_plate.cc",
     "dialog_plate/dialog_plate.h",
-    "logo_view/base_logo_view.cc",
-    "logo_view/base_logo_view.h",
+    "dialog_plate/mic_view.cc",
+    "dialog_plate/mic_view.h",
+    "logo_view/logo_view.cc",
+    "logo_view/logo_view.h",
     "main_stage/assistant_card_element_view.cc",
     "main_stage/assistant_card_element_view.h",
     "main_stage/assistant_footer_view.cc",
@@ -111,8 +111,8 @@ component("ui") {
 
   if (enable_cros_libassistant) {
     sources += [
-      "logo_view/logo_view.cc",
-      "logo_view/logo_view.h",
+      "logo_view/logo_view_impl.cc",
+      "logo_view/logo_view_impl.h",
       "logo_view/shape/mic_part_shape.cc",
       "logo_view/shape/mic_part_shape.h",
       "logo_view/shape/shape.cc",

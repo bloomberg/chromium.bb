@@ -14,25 +14,9 @@
 
 namespace views {
 
-FrameBackground::FrameBackground()
-    : frame_color_(0),
-      use_custom_frame_(true),
-      is_active_(true),
-      incognito_(false),
-      theme_image_y_inset_(0),
-      top_area_height_(0),
-      left_edge_(nullptr),
-      top_edge_(nullptr),
-      right_edge_(nullptr),
-      bottom_edge_(nullptr),
-      top_left_corner_(nullptr),
-      top_right_corner_(nullptr),
-      bottom_left_corner_(nullptr),
-      bottom_right_corner_(nullptr),
-      maximized_top_inset_(0) {}
+FrameBackground::FrameBackground() = default;
 
-FrameBackground::~FrameBackground() {
-}
+FrameBackground::~FrameBackground() = default;
 
 void FrameBackground::SetSideImages(const gfx::ImageSkia* left,
                                     const gfx::ImageSkia* top,
@@ -141,8 +125,7 @@ void FrameBackground::PaintMaximized(gfx::Canvas* canvas,
   if (!theme_image_.isNull()) {
     canvas->TileImageInt(theme_image_, 0, theme_image_y_inset_, 0, 0,
                          view->width(), top_area_height_, 1.0f,
-                         SkShader::kRepeat_TileMode,
-                         SkShader::kMirror_TileMode);
+                         SkTileMode::kRepeat, SkTileMode::kMirror);
   }
   if (!theme_overlay_image_.isNull())
     canvas->DrawImageInt(theme_overlay_image_, 0, -maximized_top_inset_);

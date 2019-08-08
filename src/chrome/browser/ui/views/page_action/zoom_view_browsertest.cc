@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
-#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
 using ZoomViewBrowserTest = InProcessBrowserTest;
@@ -18,12 +18,12 @@ IN_PROC_BROWSER_TEST_F(ZoomViewBrowserTest, SharedPageVisibility) {
   views::View* zoom_icon =
       BrowserView::GetBrowserViewForBrowser(browser())
           ->toolbar_button_provider()
-          ->GetPageActionIconContainerView()
+          ->GetOmniboxPageActionIconContainerView()
           ->GetPageActionIconView(PageActionIconType::kZoom);
   views::View* second_zoom_icon =
       BrowserView::GetBrowserViewForBrowser(CreateBrowser(browser()->profile()))
           ->toolbar_button_provider()
-          ->GetPageActionIconContainerView()
+          ->GetOmniboxPageActionIconContainerView()
           ->GetPageActionIconView(PageActionIconType::kZoom);
 
   // Initially no icon.

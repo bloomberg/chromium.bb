@@ -57,11 +57,6 @@ jumbo_component("views") {
   all_dependent_configs = [ ":flags" ]
 
   public = [
-    # TODO(ccameron): Move these sources to the views_bridge_mac component
-    "../views_bridge_mac/bridge_factory_impl.h",
-    "../views_bridge_mac/bridged_native_widget_impl.h",
-    "../views_bridge_mac/native_widget_mac_nswindow.h",
-    "../views_bridge_mac/window_touch_bar_delegate.h",
     "accessibility/ax_event_manager.h",
     "accessibility/ax_event_observer.h",
     "accessibility/ax_virtual_view.h",
@@ -73,6 +68,7 @@ jumbo_component("views") {
     "animation/flood_fill_ink_drop_ripple.h",
     "animation/ink_drop.h",
     "animation/ink_drop_animation_ended_reason.h",
+    "animation/ink_drop_event_handler.h",
     "animation/ink_drop_highlight.h",
     "animation/ink_drop_highlight_observer.h",
     "animation/ink_drop_host_view.h",
@@ -85,6 +81,7 @@ jumbo_component("views") {
     "animation/ink_drop_state.h",
     "animation/ink_drop_stub.h",
     "animation/ink_drop_util.h",
+    "animation/installable_ink_drop.h",
     "animation/scroll_animator.h",
     "animation/square_ink_drop_ripple.h",
     "background.h",
@@ -102,6 +99,8 @@ jumbo_component("views") {
     "context_menu_controller.h",
     "controls/animated_image_view.h",
     "controls/button/button.h",
+    "controls/button/button_controller.h",
+    "controls/button/button_controller_delegate.h",
     "controls/button/checkbox.h",
     "controls/button/image_button.h",
     "controls/button/image_button_factory.h",
@@ -109,12 +108,13 @@ jumbo_component("views") {
     "controls/button/label_button_border.h",
     "controls/button/md_text_button.h",
     "controls/button/menu_button.h",
-    "controls/button/menu_button_event_handler.h",
+    "controls/button/menu_button_controller.h",
     "controls/button/menu_button_listener.h",
     "controls/button/radio_button.h",
     "controls/button/toggle_button.h",
     "controls/combobox/combobox.h",
     "controls/combobox/combobox_listener.h",
+    "controls/combobox/combobox_util.h",
     "controls/editable_combobox/editable_combobox.h",
     "controls/editable_combobox/editable_combobox_listener.h",
     "controls/focus_ring.h",
@@ -157,7 +157,6 @@ jumbo_component("views") {
     "controls/resize_area.h",
     "controls/resize_area_delegate.h",
     "controls/scroll_view.h",
-    "controls/scrollbar/base_scroll_bar.h",
     "controls/scrollbar/base_scroll_bar_button.h",
     "controls/scrollbar/base_scroll_bar_thumb.h",
     "controls/scrollbar/cocoa_scroll_bar.h",
@@ -207,6 +206,11 @@ jumbo_component("views") {
     "linux_ui/status_icon_linux.h",
     "linux_ui/window_button_order_observer.h",
     "masked_targeter_delegate.h",
+    "metadata/metadata_cache.h",
+    "metadata/metadata_macros.h",
+    "metadata/metadata_macros_internal.h",
+    "metadata/metadata_types.h",
+    "metadata/type_conversion.h",
     "metrics.h",
     "mouse_constants.h",
     "mouse_watcher.h",
@@ -220,7 +224,6 @@ jumbo_component("views") {
     "round_rect_painter.h",
     "selection_controller.h",
     "selection_controller_delegate.h",
-    "shadow_border.h",
     "style/platform_style.h",
     "style/typography.h",
     "style/typography_provider.h",
@@ -235,6 +238,7 @@ jumbo_component("views") {
     "view_tracker.h",
     "views_delegate.h",
     "views_export.h",
+    "views_features.h",
     "views_switches.h",
     "views_touch_selection_controller_factory.h",
     "widget/drop_helper.h",
@@ -274,9 +278,6 @@ jumbo_component("views") {
   ]
 
   sources = [
-    # TODO(ccameron): Move these sources to the views_bridge_mac component
-    "../views_bridge_mac/bridged_native_widget_impl.mm",
-    "../views_bridge_mac/native_widget_mac_nswindow.mm",
     "accessibility/ax_event_manager.cc",
     "accessibility/ax_event_observer.cc",
     "accessibility/ax_virtual_view.cc",
@@ -287,6 +288,7 @@ jumbo_component("views") {
     "animation/flood_fill_ink_drop_ripple.cc",
     "animation/ink_drop.cc",
     "animation/ink_drop_animation_ended_reason.cc",
+    "animation/ink_drop_event_handler.cc",
     "animation/ink_drop_highlight.cc",
     "animation/ink_drop_host_view.cc",
     "animation/ink_drop_impl.cc",
@@ -296,6 +298,7 @@ jumbo_component("views") {
     "animation/ink_drop_state.cc",
     "animation/ink_drop_stub.cc",
     "animation/ink_drop_util.cc",
+    "animation/installable_ink_drop.cc",
     "animation/scroll_animator.cc",
     "animation/square_ink_drop_ripple.cc",
     "background.cc",
@@ -311,6 +314,7 @@ jumbo_component("views") {
     "context_menu_controller.cc",
     "controls/animated_image_view.cc",
     "controls/button/button.cc",
+    "controls/button/button_controller.cc",
     "controls/button/checkbox.cc",
     "controls/button/image_button.cc",
     "controls/button/image_button_factory.cc",
@@ -318,10 +322,11 @@ jumbo_component("views") {
     "controls/button/label_button_border.cc",
     "controls/button/md_text_button.cc",
     "controls/button/menu_button.cc",
-    "controls/button/menu_button_event_handler.cc",
+    "controls/button/menu_button_controller.cc",
     "controls/button/radio_button.cc",
     "controls/button/toggle_button.cc",
     "controls/combobox/combobox.cc",
+    "controls/combobox/combobox_util.cc",
     "controls/editable_combobox/editable_combobox.cc",
     "controls/focus_ring.cc",
     "controls/focusable_border.cc",
@@ -329,7 +334,6 @@ jumbo_component("views") {
     "controls/image_view_base.cc",
     "controls/label.cc",
     "controls/link.cc",
-    "controls/menu/display_change_listener_mac.cc",
     "controls/menu/menu_closure_animation_mac.mm",
     "controls/menu/menu_cocoa_watcher_mac.mm",
     "controls/menu/menu_config.cc",
@@ -359,7 +363,6 @@ jumbo_component("views") {
     "controls/progress_bar.cc",
     "controls/resize_area.cc",
     "controls/scroll_view.cc",
-    "controls/scrollbar/base_scroll_bar.cc",
     "controls/scrollbar/base_scroll_bar_button.cc",
     "controls/scrollbar/base_scroll_bar_thumb.cc",
     "controls/scrollbar/cocoa_scroll_bar.mm",
@@ -406,6 +409,9 @@ jumbo_component("views") {
     "linux_ui/status_icon_linux.cc",
     "linux_ui/window_button_order_provider.cc",
     "masked_targeter_delegate.cc",
+    "metadata/metadata_cache.cc",
+    "metadata/metadata_types.cc",
+    "metadata/type_conversion.cc",
     "metrics.cc",
     "metrics_mac.cc",
     "mouse_watcher.cc",
@@ -417,7 +423,6 @@ jumbo_component("views") {
     "repeat_controller.cc",
     "round_rect_painter.cc",
     "selection_controller.cc",
-    "shadow_border.cc",
     "style/platform_style.cc",
     "style/platform_style_mac.mm",
     "style/typography.cc",
@@ -431,6 +436,7 @@ jumbo_component("views") {
     "view_targeter_delegate.cc",
     "view_tracker.cc",
     "views_delegate.cc",
+    "views_features.cc",
     "views_switches.cc",
     "views_touch_selection_controller_factory_mac.cc",
     "widget/drop_helper.cc",
@@ -466,21 +472,6 @@ jumbo_component("views") {
   # Internal sources. TODO(https://crbug.com/871123): Move more headers from
   # public into this list, along with the implementation file.
   sources += [
-    # TODO(ccameron): Move these sources to the views_bridge_mac component
-    "../views_bridge_mac/bridge_factory_impl.mm",
-    "../views_bridge_mac/bridged_content_view.h",
-    "../views_bridge_mac/bridged_content_view.mm",
-    "../views_bridge_mac/bridged_content_view_touch_bar.mm",
-    "../views_bridge_mac/browser_native_widget_window_mac.h",
-    "../views_bridge_mac/browser_native_widget_window_mac.mm",
-    "../views_bridge_mac/cocoa_window_move_loop.h",
-    "../views_bridge_mac/cocoa_window_move_loop.mm",
-    "../views_bridge_mac/native_widget_mac_frameless_nswindow.h",
-    "../views_bridge_mac/native_widget_mac_frameless_nswindow.mm",
-    "../views_bridge_mac/views_nswindow_delegate.h",
-    "../views_bridge_mac/views_nswindow_delegate.mm",
-    "../views_bridge_mac/views_scrollbar_bridge.h",
-    "../views_bridge_mac/views_scrollbar_bridge.mm",
     "cocoa/bridge_factory_host.cc",
     "cocoa/bridged_native_widget_host_impl.mm",
     "cocoa/drag_drop_client_mac.h",
@@ -525,7 +516,7 @@ jumbo_component("views") {
     "//ui/accessibility:ax_enums_mojo",
     "//ui/base",
     "//ui/base/clipboard",
-    "//ui/base/ime",
+    "//ui/base/ime/init",
     "//ui/compositor",
     "//ui/display",
     "//ui/events",
@@ -543,7 +534,10 @@ jumbo_component("views") {
 
   if (is_linux && !is_chromeos) {
     sources -= [ "window/window_button_order_provider.cc" ]
-    deps += [ "//ui/shell_dialogs" ]
+    deps += [
+      "//ui/base/ime/linux",
+      "//ui/shell_dialogs",
+    ]
   } else {
     public -= [
       "linux_ui/linux_ui.h",
@@ -562,10 +556,6 @@ jumbo_component("views") {
       "linux_ui/status_icon_linux.cc",
     ]
     sources += [ "widget/desktop_aura/desktop_window_tree_host_chromeos.cc" ]
-
-    # TODO(edinkadric): Add EditableCombobox support on ChromeOS.
-    public -= [ "controls/editable_combobox/editable_combobox.h" ]
-    sources -= [ "controls/editable_combobox/editable_combobox.cc" ]
   }
 
   if (is_win) {
@@ -597,10 +587,6 @@ jumbo_component("views") {
       "//third_party/iaccessible2",
       "//third_party/wtl",
     ]
-
-    # TODO(edinkadric): Add EditableCombobox support on Windows.
-    public -= [ "controls/editable_combobox/editable_combobox.h" ]
-    sources -= [ "controls/editable_combobox/editable_combobox.cc" ]
   }
 
   if (use_ozone) {
@@ -669,7 +655,6 @@ jumbo_component("views") {
       "accessibility/ax_virtual_view_wrapper.cc",
       "accessibility/ax_widget_obj_wrapper.cc",
       "accessibility/ax_window_obj_wrapper.cc",
-      "controls/menu/display_change_listener_aura.cc",
       "controls/menu/menu_pre_target_handler_aura.cc",
       "controls/menu/menu_pre_target_handler_aura.h",
       "controls/native/native_view_host_aura.cc",
@@ -794,7 +779,7 @@ jumbo_component("views") {
       "CoreGraphics.framework",
       "Foundation.framework",
       "IOSurface.framework",
-      "QuartzCore.framework",  # Required by bridged_native_widget.mm.
+      "QuartzCore.framework",
     ]
   }
 
@@ -841,6 +826,8 @@ jumbo_source_set("test_support") {
     "animation/test/test_ink_drop_ripple_observer.h",
     "controls/textfield/textfield_test_api.cc",
     "controls/textfield/textfield_test_api.h",
+    "test/button_test_api.cc",
+    "test/button_test_api.h",
     "test/capture_tracking_view.cc",
     "test/capture_tracking_view.h",
     "test/combobox_test_api.cc",
@@ -890,6 +877,7 @@ jumbo_source_set("test_support") {
     "test/widget_test_mac.mm",
     "test/x11_property_change_waiter.cc",
     "test/x11_property_change_waiter.h",
+    "view_test_api.h",
     "views_test_suite.cc",
     "views_test_suite.h",
   ]
@@ -908,7 +896,7 @@ jumbo_source_set("test_support") {
     "//ui/base",
     "//ui/base:test_support",
     "//ui/base/clipboard:clipboard_test_support",
-    "//ui/base/ime",
+    "//ui/base/ime/init",
     "//ui/compositor",
     "//ui/compositor:test_support",
     "//ui/events",
@@ -945,6 +933,16 @@ jumbo_source_set("test_support") {
       "//services/ws/ime/test_ime_driver",
       "//ui/resources:ui_test_pak_data",
     ]
+  }
+
+  if (is_win) {
+    sources += [
+      "test/desktop_window_tree_host_win_test_api.cc",
+      "test/desktop_window_tree_host_win_test_api.h",
+    ]
+  }
+  if (is_mac) {
+    deps += [ "//ui/views_bridge_mac" ]
   }
 
   if (use_aura) {
@@ -1001,6 +999,7 @@ test("views_unittests") {
     "animation/ink_drop_impl_unittest.cc",
     "animation/ink_drop_ripple_unittest.cc",
     "animation/ink_drop_unittest.cc",
+    "animation/installable_ink_drop_unittest.cc",
     "animation/square_ink_drop_ripple_unittest.cc",
     "border_unittest.cc",
     "bubble/bubble_border_unittest.cc",
@@ -1028,6 +1027,8 @@ test("views_unittests") {
     "controls/menu/menu_runner_cocoa_unittest.mm",
     "controls/menu/menu_runner_unittest.cc",
     "controls/menu/submenu_view_unittest.cc",
+    "controls/menu/test_menu_item_view.cc",
+    "controls/menu/test_menu_item_view.h",
     "controls/native/native_view_host_mac_unittest.mm",
     "controls/native/native_view_host_test_base.cc",
     "controls/native/native_view_host_test_base.h",
@@ -1056,6 +1057,8 @@ test("views_unittests") {
     "layout/fill_layout_unittest.cc",
     "layout/flex_layout_unittest.cc",
     "layout/grid_layout_unittest.cc",
+    "metadata/metadata_unittest.cc",
+    "metadata/type_conversion_unittest.cc",
     "paint_info_unittest.cc",
     "rect_based_targeting_utils_unittest.cc",
     "run_all_unittests_main.cc",
@@ -1103,7 +1106,7 @@ test("views_unittests") {
     "//ui/base",
     "//ui/base:test_support",
     "//ui/base/clipboard",
-    "//ui/base/ime",
+    "//ui/base/ime/init",
     "//ui/compositor:test_support",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
@@ -1146,11 +1149,6 @@ test("views_unittests") {
     ]
   }
 
-  if (is_chromeos) {
-    # TODO(edinkadric): Add EditableCombobox support on ChromeOS.
-    sources -= [ "controls/editable_combobox/editable_combobox_unittest.cc" ]
-  }
-
   if (is_win) {
     public_deps = [
       "//build/win:default_exe_manifest",
@@ -1162,15 +1160,17 @@ test("views_unittests") {
       "imm32.lib",
       "oleacc.lib",
       "comctl32.lib",
+      "uiautomationcore.lib",
     ]
 
     sources += [
       "accessibility/view_ax_platform_node_delegate_win_unittest.cc",
       "win/pen_event_processor_unittest.cc",
     ]
+  }
 
-    # TODO(edinkadric): Add EditableCombobox support on Windows.
-    sources -= [ "controls/editable_combobox/editable_combobox_unittest.cc" ]
+  if (is_linux && !is_chromeos) {
+    deps += [ "//ui/base/ime/linux" ]
   }
 
   if (has_native_accessibility) {
@@ -1217,6 +1217,11 @@ test("views_unittests") {
     if (is_mac) {
       # views_unittests not yet compiling on Mac. http://crbug.com/378134
       sources -= [ "widget/window_reorderer_unittest.cc" ]
+    }
+
+    if (is_win) {
+      sources +=
+          [ "widget/desktop_aura/desktop_window_tree_host_win_unittest.cc" ]
     }
 
     if (use_x11) {
@@ -1266,6 +1271,7 @@ source_set("views_interactive_ui_tests") {
     "//skia",
     "//testing/gtest",
     "//ui/base:test_support",
+    "//ui/base/ime",
     "//ui/compositor",
     "//ui/events:test_support",
     "//ui/gl:test_support",
@@ -1283,6 +1289,7 @@ source_set("views_interactive_ui_tests") {
       "cocoa/bridged_native_widget_interactive_uitest.mm",
       "widget/native_widget_mac_interactive_uitest.mm",
     ]
+    deps += [ "//ui/views_bridge_mac" ]
   }
 
   if (use_aura) {

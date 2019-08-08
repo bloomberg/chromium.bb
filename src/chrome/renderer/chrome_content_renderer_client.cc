@@ -22,7 +22,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
@@ -65,6 +64,7 @@
 #include "chrome/renderer/prerender/prerenderer_client.h"
 #include "chrome/renderer/tts_dispatcher.h"
 #include "chrome/renderer/url_loader_throttle_provider_impl.h"
+#include "chrome/renderer/v8_unwinder.h"
 #include "chrome/renderer/websocket_handshake_throttle_provider_impl.h"
 #include "chrome/renderer/worker_content_settings_client.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
@@ -90,7 +90,7 @@
 #include "components/subresource_filter/content/renderer/subresource_filter_agent.h"
 #include "components/subresource_filter/content/renderer/unverified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/common_features.h"
-#include "components/task_scheduler_util/variations_util.h"
+#include "components/thread_pool_util/variations_util.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_switches.h"
 #include "components/version_info/version_info.h"
@@ -114,6 +114,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "printing/buildflags/buildflags.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -146,6 +147,9 @@
 #include "chrome/renderer/searchbox/search_bouncer.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
+#endif
+
+#if defined(OS_WIN)
 #endif
 
 #if defined(FULL_SAFE_BROWSING)
@@ -293,52 +297,13 @@ class MediaLoadDeferrer : public content::RenderFrameObserver {
   DISALLOW_COPY_AND_ASSIGN(MediaLoadDeferrer);
 };
 
-#if defined(OS_WIN)
-// Binds |module_event_sink| to the provided |interface_ptr_info|. This function
-// is used to do the binding on the IO thread.
-void BindModuleEventSink(mojom::ModuleEventSinkPtr* module_event_sink,
-                         mojom::ModuleEventSinkPtrInfo interface_ptr_info) {
-  DCHECK(!module_event_sink->is_bound());
-
-  module_event_sink->Bind(std::move(interface_ptr_info));
-}
-
-// Dispatches a module |event| to the provided |module_event_sink| interface.
-// It is expected that this only be called from the IO thread. This is only safe
-// because the underlying |module_event_sink| object is never deleted, being
-// owned by the leaked ChromeContentRendererClient object. If this ever changes
-// then a WeakPtr mechanism would have to be used.
-void HandleModuleEventOnIOThread(
-    const mojom::ModuleEventSinkPtr& module_event_sink,
-    const ModuleWatcher::ModuleEvent& event) {
-  DCHECK(module_event_sink.is_bound());
-
-  // Simply send the module load address. The browser can validate this and look
-  // up the module details on its own.
-  module_event_sink->OnModuleEvent(
-      event.event_type, reinterpret_cast<uintptr_t>(event.module_load_address));
-}
-
-// Receives notifications from the ModuleWatcher on any thread. Bounces these
-// over to the provided |io_task_runner| where they are subsequently dispatched
-// to the |module_event_sink| interface.
-void OnModuleEvent(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-                   const mojom::ModuleEventSinkPtr& module_event_sink,
-                   const ModuleWatcher::ModuleEvent& event) {
-  // The Mojo interface can only be used from a single thread. Bounce tasks
-  // over to it. It is safe to pass an unretained pointer to
-  // |module_event_sink|: it is owned by a ChromeContentRendererClient, which is
-  // a leaked singleton in the process.
-  io_task_runner->PostTask(FROM_HERE,
-                           base::BindOnce(&HandleModuleEventOnIOThread,
-                                          std::cref(module_event_sink), event));
-}
-#endif
-
 }  // namespace
 
 ChromeContentRendererClient::ChromeContentRendererClient()
     : main_entry_time_(base::TimeTicks::Now()),
+#if defined(OS_WIN)
+      remote_module_watcher_(nullptr, base::OnTaskRunnerDeleter(nullptr)),
+#endif
       main_thread_profiler_(ThreadProfiler::CreateAndStartOnMainThread()) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   EnsureExtensionsClientInitialized();
@@ -356,6 +321,9 @@ ChromeContentRendererClient::~ChromeContentRendererClient() = default;
 void ChromeContentRendererClient::RenderThreadStarted() {
   RenderThread* thread = RenderThread::Get();
 
+  main_thread_profiler_->AddAuxUnwinder(std::make_unique<V8Unwinder>(
+      v8::Isolate::GetCurrent()->GetUnwindState()));
+
   thread->SetRendererProcessType(
       IsStandaloneContentExtensionProcess()
           ? blink::scheduler::WebRendererProcessType::kExtensionRenderer
@@ -370,26 +338,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   }
 
 #if defined(OS_WIN)
-  // Bind the ModuleEventSink interface.
-  thread->GetConnector()->BindInterface(
-      service_manager::ServiceFilter::ByName(
-          content::mojom::kBrowserServiceName),
-      &module_event_sink_);
-
-  // Rebind the ModuleEventSink to the IO task runner.
-  // The use of base::Unretained() is safe here because |module_event_sink_|
-  // is never deleted and is only used on the IO task runner.
-  thread->GetIOTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&BindModuleEventSink,
-                                base::Unretained(&module_event_sink_),
-                                module_event_sink_.PassInterface()));
-
-  // It is safe to pass an unretained pointer to |module_event_sink_|, as it
-  // is owned by the process singleton ChromeContentRendererClient, which is
-  // leaked.
-  module_watcher_ = ModuleWatcher::Create(
-      base::BindRepeating(&OnModuleEvent, thread->GetIOTaskRunner(),
-                          std::cref(module_event_sink_)));
+  remote_module_watcher_ = RemoteModuleWatcher::Create(
+      thread->GetIOTaskRunner(), thread->GetConnector());
 #endif
 
   chrome_observer_.reset(new ChromeRenderThreadObserver());
@@ -463,15 +413,14 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   pdf::PepperPDFHost::SetPrintClient(pdf_print_client_.get());
 #endif
 
-  for (auto& origin_or_hostname_pattern :
-       secure_origin_whitelist::GetWhitelist()) {
-    WebSecurityPolicy::AddOriginTrustworthyWhiteList(
+  for (auto& origin_or_hostname_pattern : network::GetSecureOriginAllowlist()) {
+    WebSecurityPolicy::AddOriginToTrustworthySafelist(
         WebString::FromUTF8(origin_or_hostname_pattern));
   }
 
   for (auto& scheme :
        secure_origin_whitelist::GetSchemesBypassingSecureContextCheck()) {
-    WebSecurityPolicy::AddSchemeToBypassSecureContextWhitelist(
+    WebSecurityPolicy::AddSchemeToSecureContextSafelist(
         WebString::FromASCII(scheme));
   }
 
@@ -523,7 +472,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
   new nacl::NaClHelper(render_frame);
 #endif
 
-#if defined(FULL_SAFE_BROWSING) || defined(SAFE_BROWSING_DB_REMOTE)
+#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
   safe_browsing::ThreatDOMDetails::Create(render_frame, registry);
 #endif
 
@@ -574,8 +523,10 @@ void ChromeContentRendererClient::RenderFrameCreated(
   new AutofillAgent(render_frame, password_autofill_agent,
                     password_generation_agent, associated_interfaces);
 
-  if (content_capture::features::IsContentCaptureEnabled())
-    new content_capture::ContentCaptureSender(render_frame);
+  if (content_capture::features::IsContentCaptureEnabled()) {
+    new content_capture::ContentCaptureSender(render_frame,
+                                              associated_interfaces);
+  }
 
   // Owned by |render_frame|.
   page_load_metrics::MetricsRenderFrameObserver* metrics_render_frame_observer =
@@ -1318,13 +1269,13 @@ bool ChromeContentRendererClient::IsPrefetchOnly(
          prerender::PREFETCH_ONLY;
 }
 
-unsigned long long ChromeContentRendererClient::VisitedLinkHash(
-    const char* canonical_url, size_t length) {
+uint64_t ChromeContentRendererClient::VisitedLinkHash(const char* canonical_url,
+                                                      size_t length) {
   return chrome_observer_->visited_link_slave()->ComputeURLFingerprint(
       canonical_url, length);
 }
 
-bool ChromeContentRendererClient::IsLinkVisited(unsigned long long link_hash) {
+bool ChromeContentRendererClient::IsLinkVisited(uint64_t link_hash) {
   return chrome_observer_->visited_link_slave()->IsVisited(link_hash);
 }
 
@@ -1529,6 +1480,7 @@ void ChromeContentRendererClient::
 // that do not have a Web Share Mojo implementation.
 #if defined(OS_ANDROID)
   blink::WebRuntimeFeatures::EnableWebShare(true);
+  blink::WebRuntimeFeatures::EnableWebShareV2(true);
 #endif
 
   if (base::FeatureList::IsEnabled(subresource_filter::kAdTagging))
@@ -1590,9 +1542,9 @@ GURL ChromeContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
   return FlashEmbedRewrite::RewriteFlashEmbedURL(url);
 }
 
-std::unique_ptr<base::TaskScheduler::InitParams>
-ChromeContentRendererClient::GetTaskSchedulerInitParams() {
-  return task_scheduler_util::GetTaskSchedulerInitParamsForRenderer();
+std::unique_ptr<base::ThreadPool::InitParams>
+ChromeContentRendererClient::GetThreadPoolInitParams() {
+  return thread_pool_util::GetThreadPoolInitParamsForRenderer();
 }
 
 void ChromeContentRendererClient::CreateRendererService(

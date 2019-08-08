@@ -215,6 +215,17 @@ const char kPluginVmServiceInterface[] =
 const char kPluginVmServiceGetLicenseDataMethod[] =
     "GetLicenseData";
 
+const char kGesturePropertiesServiceName[] =
+    "org.chromium.GesturePropertiesService";
+const char kGesturePropertiesServicePath[] =
+    "/org/chromium/GesturePropertiesService";
+const char kGesturePropertiesServiceInterface[] =
+    "org.chromium.GesturePropertiesServiceInterface";
+const char kGesturePropertiesServiceListDevicesMethod[] = "ListDevices";
+const char kGesturePropertiesServiceListPropertiesMethod[] = "ListProperties";
+const char kGesturePropertiesServiceGetPropertyMethod[] = "GetProperty";
+const char kGesturePropertiesServiceSetPropertyMethod[] = "SetProperty";
+
 }  // namespace chromeos
 
 namespace cromo {
@@ -971,10 +982,6 @@ constexpr char kMachineLearningInterfaceName[] = "org.chromium.MachineLearning";
 constexpr char kBootstrapMojoConnectionMethod[] = "BootstrapMojoConnection";
 // Token identifying the primordial Mojo pipe passed to BootstrapMojoConnection.
 constexpr char kBootstrapMojoConnectionChannelToken[] = "ml-service-bootstrap";
-// Deprecated, use longer names above:
-constexpr char kMlServiceName[] = "org.chromium.MachineLearning";
-constexpr char kMlServicePath[] = "/org/chromium/MachineLearning";
-constexpr char kMlInterfaceName[] = "org.chromium.MachineLearning";
 }  // namespace ml
 
 namespace virtual_file_provider {
@@ -1036,13 +1043,13 @@ constexpr char kOpenFileMethod[] = "OpenFile";
 
 }  // namespace arc
 
-namespace anomaly_collector {
+namespace anomaly_detector {
 const char kAnomalyEventServiceName[] = "org.chromium.AnomalyEventService";
 const char kAnomalyEventServicePath[] = "/org/chromium/AnomalyEventService";
 const char kAnomalyEventServiceInterface[] =
     "org.chromium.AnomalyEventServiceInterface";
 const char kAnomalyEventSignalName[] = "AnomalyEvent";
-}  // namespace anomaly_collector
+}  // namespace anomaly_detector
 
 namespace libvda {
 const char kLibvdaServiceInterface[] = "org.chromium.LibvdaService";
@@ -1052,5 +1059,27 @@ const char kLibvdaServicePath[] = "/org/chromium/LibvdaService";
 // Method names.
 const char kProvideMojoConnectionMethod[] = "ProvideMojoConnection";
 }  // namespace libvda
+
+namespace printing {
+constexpr char kCupsProxyDaemonName[] = "org.chromium.CupsProxyDaemon";
+constexpr char kCupsProxyDaemonPath[] = "/org/chromium/CupsProxyDaemon";
+constexpr char kCupsProxyDaemonInterface[] = "org.chromium.CupsProxyDaemon";
+
+// Method names.
+constexpr char kBootstrapMojoConnectionMethod[] = "BootstrapMojoConnection";
+
+// Token identifying the primordial Mojo pipe passed to BootstrapMojoConnection.
+constexpr char kBootstrapMojoConnectionChannelToken[] =
+    "cups-proxy-service-bootstrap";
+}  // namespace printing
+
+namespace arc_camera {
+constexpr char kArcCameraServiceName[] = "org.chromium.ArcCamera";
+constexpr char kArcCameraServicePath[] = "/org/chromium/ArcCamera";
+constexpr char kArcCameraServiceInterface[] = "org.chromium.ArcCamera";
+
+// Method names.
+constexpr char kStartServiceMethod[] = "StartService";
+}  // namespace arc_camera
 
 #endif  // SYSTEM_API_DBUS_SERVICE_CONSTANTS_H_

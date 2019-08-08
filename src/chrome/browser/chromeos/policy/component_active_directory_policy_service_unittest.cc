@@ -6,8 +6,7 @@
 
 #include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
 #include "components/policy/core/common/policy_bundle.h"
@@ -117,14 +116,10 @@ class ComponentActiveDirectoryPolicyServiceTest : public testing::Test {
                          POLICY_SOURCE_ACTIVE_DIRECTORY,
                          std::make_unique<base::Value>("maybe"), nullptr);
 
+    chromeos::SessionManagerClient::InitializeFakeInMemory();
+
     SetPolicy(kTestPolicy);
     SetSchema(kTestSchema);
-
-    auto session_manager_client =
-        std::make_unique<chromeos::FakeSessionManagerClient>();
-    session_manager_client_ = session_manager_client.get();
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        std::move(session_manager_client));
 
     service_ = std::make_unique<ComponentActiveDirectoryPolicyService>(
         POLICY_SCOPE_USER, POLICY_DOMAIN_EXTENSIONS,
@@ -133,6 +128,7 @@ class ComponentActiveDirectoryPolicyServiceTest : public testing::Test {
   }
 
   ~ComponentActiveDirectoryPolicyServiceTest() override {
+    chromeos::SessionManagerClient::Shutdown();
     // Make sure all StorePolicy() calls succeeded.
     EXPECT_EQ(store_policy_call_count_, store_policy_succeeded_count_);
   }
@@ -168,7 +164,7 @@ class ComponentActiveDirectoryPolicyServiceTest : public testing::Test {
     descriptor.set_component_id(component_id);
 
     builder_.Build();
-    session_manager_client_->StorePolicy(
+    chromeos::SessionManagerClient::Get()->StorePolicy(
         descriptor, builder_.GetBlob(),
         base::BindOnce(
             &ComponentActiveDirectoryPolicyServiceTest::OnPolicyStored,
@@ -215,7 +211,6 @@ class ComponentActiveDirectoryPolicyServiceTest : public testing::Test {
   }
 
   ComponentActiveDirectoryPolicyBuilder builder_;
-  chromeos::FakeSessionManagerClient* session_manager_client_;  // Not owned.
   std::string curr_schema_;
   int store_policy_call_count_ = 0;
   int store_policy_succeeded_count_ = 0;

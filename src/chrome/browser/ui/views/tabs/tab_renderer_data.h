@@ -8,12 +8,12 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/tabs/tab_network_state.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
-#include "chrome/browser/ui/views/chrome_views_export.h"
+#include "chrome/browser/ui/thumbnails/thumbnail_image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
 // Wraps the state needed by the renderers.
-struct CHROME_VIEWS_EXPORT TabRendererData {
+struct TabRendererData {
   TabRendererData();
   TabRendererData(const TabRendererData& other);
   TabRendererData(TabRendererData&& other);
@@ -30,6 +30,7 @@ struct CHROME_VIEWS_EXPORT TabRendererData {
   bool IsCrashed() const;
 
   gfx::ImageSkia favicon;
+  ThumbnailImage thumbnail;
   TabNetworkState network_state = TabNetworkState::kNone;
   base::string16 title;
   GURL url;

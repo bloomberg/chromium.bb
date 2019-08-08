@@ -125,8 +125,7 @@ void OfflinePageMHTMLArchiver::GenerateMHTML(
   params.remove_popup_overlay = create_archive_params.remove_popup_overlay;
   params.use_page_problem_detectors =
       create_archive_params.use_page_problem_detectors;
-  params.use_mojo_for_mhtml_serialization =
-      IsOnTheFlyMhtmlHashComputationEnabled();
+  params.compute_contents_hash = IsOnTheFlyMhtmlHashComputationEnabled();
 
   web_contents->GenerateMHTML(
       params,
@@ -191,10 +190,7 @@ bool OfflinePageMHTMLArchiver::HasConnectionSecurityError(
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(web_contents);
   DCHECK(helper);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  return security_state::SecurityLevel::DANGEROUS ==
-         security_info.security_level;
+  return security_state::SecurityLevel::DANGEROUS == helper->GetSecurityLevel();
 }
 
 content::PageType OfflinePageMHTMLArchiver::GetPageType(

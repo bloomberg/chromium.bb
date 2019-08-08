@@ -140,7 +140,7 @@ TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, ModifyHeaders) {
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = kTestURL;
   request->referrer = kTestReferrer;
-  request->resource_type = static_cast<int>(content::RESOURCE_TYPE_MAIN_FRAME);
+  request->resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request->is_main_frame = true;
   request->headers.SetHeader("X-Request-1", "Foo");
 
@@ -160,7 +160,7 @@ TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, ModifyHeaders) {
           Invoke([&](ChromeRequestAdapter* adapter, const GURL& redirect_url) {
             EXPECT_EQ(kTestURL, adapter->GetUrl());
             EXPECT_TRUE(adapter->IsMainRequestContext(nullptr /* io_data */));
-            EXPECT_EQ(content::RESOURCE_TYPE_MAIN_FRAME,
+            EXPECT_EQ(content::ResourceType::kMainFrame,
                       adapter->GetResourceType());
             EXPECT_EQ(GURL("https://chrome.com"), adapter->GetReferrerOrigin());
 
@@ -178,7 +178,7 @@ TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, ModifyHeaders) {
       .WillOnce(
           Invoke([&](ChromeRequestAdapter* adapter, const GURL& redirect_url) {
             EXPECT_TRUE(adapter->IsMainRequestContext(nullptr));
-            EXPECT_EQ(content::RESOURCE_TYPE_MAIN_FRAME,
+            EXPECT_EQ(content::ResourceType::kMainFrame,
                       adapter->GetResourceType());
 
             // Changes to the URL and referrer take effect after the redirect
@@ -202,12 +202,23 @@ TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, ModifyHeaders) {
             adapter->SetDestructionCallback(ignored_destruction_callback.Get());
           }));
 
+  const void* const kResponseUserDataKey = &kResponseUserDataKey;
+  std::unique_ptr<base::SupportsUserData::Data> response_user_data =
+      std::make_unique<base::SupportsUserData::Data>();
+  base::SupportsUserData::Data* response_user_data_ptr =
+      response_user_data.get();
+
   // The delegate will also be called twice to process a response, first when
   // the redirect is received and again for the redirect response.
   EXPECT_CALL(*delegate, ProcessResponse(_, _))
       .WillOnce(Invoke([&](ResponseAdapter* adapter, const GURL& redirect_url) {
         EXPECT_EQ(GURL("https://google.com"), adapter->GetOrigin());
         EXPECT_TRUE(adapter->IsMainFrame());
+
+        adapter->SetUserData(kResponseUserDataKey,
+                             std::move(response_user_data));
+        EXPECT_EQ(response_user_data_ptr,
+                  adapter->GetUserData(kResponseUserDataKey));
 
         const net::HttpResponseHeaders* headers = adapter->GetHeaders();
         EXPECT_TRUE(headers->HasHeader("X-Response-1"));
@@ -219,6 +230,9 @@ TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, ModifyHeaders) {
       .WillOnce(Invoke([&](ResponseAdapter* adapter, const GURL& redirect_url) {
         EXPECT_EQ(GURL("https://youtube.com"), adapter->GetOrigin());
         EXPECT_TRUE(adapter->IsMainFrame());
+
+        EXPECT_EQ(response_user_data_ptr,
+                  adapter->GetUserData(kResponseUserDataKey));
 
         const net::HttpResponseHeaders* headers = adapter->GetHeaders();
         // This is a new response and so previous headers should not carry over.

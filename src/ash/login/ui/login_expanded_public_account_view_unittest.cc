@@ -228,7 +228,7 @@ TEST_P(LoginExpandedPublicAccountViewTest, ShowLanguageAndKeyboardMenu) {
   // First language item is selected, and selected item should have focus.
   EXPECT_EQ(test_api.selected_language_item().value, kEnglishLanguageCode);
   LoginMenuView::TestApi language_test_api(test_api.language_menu_view());
-  EXPECT_TRUE(language_test_api.contents()->child_count() == 2);
+  EXPECT_EQ(2u, language_test_api.contents()->children().size());
   EXPECT_TRUE(language_test_api.contents()->child_at(0)->HasFocus());
 
   // Select language item should close the language menu.
@@ -242,7 +242,7 @@ TEST_P(LoginExpandedPublicAccountViewTest, ShowLanguageAndKeyboardMenu) {
   // Second keyboard item is selected, and selected item should have focus.
   EXPECT_EQ(test_api.selected_keyboard_item().value, kKeyboardIdForItem2);
   LoginMenuView::TestApi keyboard_test_api(test_api.keyboard_menu_view());
-  EXPECT_TRUE(keyboard_test_api.contents()->child_count() == 2);
+  EXPECT_EQ(2u, keyboard_test_api.contents()->children().size());
   EXPECT_TRUE(keyboard_test_api.contents()->child_at(1)->HasFocus());
 
   // Select keyboard item should close the keyboard menu.

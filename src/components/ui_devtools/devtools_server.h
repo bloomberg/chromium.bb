@@ -81,7 +81,7 @@ class UI_DEVTOOLS_EXPORT UiDevToolsServer
   void OnWebSocketRequest(
       int connection_id,
       const network::server::HttpServerRequestInfo& info) override;
-  void OnWebSocketMessage(int connection_id, const std::string& data) override;
+  void OnWebSocketMessage(int connection_id, std::string data) override;
   void OnClose(int connection_id) override;
 
   using ClientsList = std::vector<std::unique_ptr<UiDevToolsClient>>;

@@ -317,15 +317,6 @@ void Receiver::OnVideoOpacityChange(bool opaque) {
   rpc_broker_->SendMessageToRemote(std::move(rpc));
 }
 
-void Receiver::OnDurationChange(base::TimeDelta duration) {
-  DVLOG(3) << __func__ << ": Issues RPC_RC_ONDURATIONCHANGE message.";
-  std::unique_ptr<pb::RpcMessage> rpc(new pb::RpcMessage());
-  rpc->set_handle(remote_handle_);
-  rpc->set_proc(pb::RpcMessage::RPC_RC_ONDURATIONCHANGE);
-  rpc->set_integer_value(duration.InMicroseconds());
-  rpc_broker_->SendMessageToRemote(std::move(rpc));
-}
-
 void Receiver::OnRemotePlayStateChange(MediaStatus::State state) {
   // Only used with the FlingingRenderer.
   NOTREACHED();

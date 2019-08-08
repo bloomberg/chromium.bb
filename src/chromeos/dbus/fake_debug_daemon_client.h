@@ -53,12 +53,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeDebugDaemonClient
                      const std::vector<std::string>& perf_args,
                      int file_descriptor,
                      DBusMethodCallback<uint64_t> callback) override;
-  void GetScrubbedLogs(const GetLogsCallback& callback) override;
-  void GetScrubbedBigLogs(const GetLogsCallback& callback) override;
-  void GetAllLogs(const GetLogsCallback& callback) override;
+  void GetScrubbedBigLogs(GetLogsCallback callback) override;
+  void GetAllLogs(GetLogsCallback callback) override;
   void GetLog(const std::string& log_name,
               DBusMethodCallback<std::string> callback) override;
-  void GetUserLogFiles(const GetLogsCallback& callback) override;
   void TestICMP(const std::string& ip_address,
                 const TestICMPCallback& callback) override;
   void TestICMPWithOptions(const std::string& ip_address,
@@ -85,10 +83,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeDebugDaemonClient
                                     const std::string& uri,
                                     CupsAddPrinterCallback callback) override;
   void CupsRemovePrinter(const std::string& name,
-                         const CupsRemovePrinterCallback& callback,
+                         CupsRemovePrinterCallback callback,
                          const base::Closure& error_callback) override;
   void StartConcierge(ConciergeCallback callback) override;
   void StopConcierge(ConciergeCallback callback) override;
+  void StartPluginVmDispatcher(PluginVmDispatcherCallback callback) override;
+  void StopPluginVmDispatcher(PluginVmDispatcherCallback callback) override;
   void SetRlzPingSent(SetRlzPingSentCallback callback) override;
   void SetSchedulerConfiguration(const std::string& config_name,
                                  VoidDBusMethodCallback callback) override;

@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
@@ -20,10 +21,10 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/browser/service_worker/service_worker_write_to_cache_job.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "net/base/net_errors.h"
@@ -99,10 +100,18 @@ void ServiceWorkerRegisterJob::AddCallback(RegistrationCallback callback) {
 }
 
 void ServiceWorkerRegisterJob::Start() {
-  BrowserThread::PostAfterStartupTask(
-      FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
-      base::BindOnce(&ServiceWorkerRegisterJob::StartImpl,
-                     weak_factory_.GetWeakPtr()));
+  // Schedule the job based on job type. For registration, give it the
+  // current task priority as it's an explicit JavaScript API and sites
+  // may show a message like "offline enabled". For update, give it a lower
+  // priority as (soft) update doesn't affect user interactions directly.
+  // TODO(bashi): For explicit update() API, we may want to prioritize it too.
+  auto traits = (job_type_ == REGISTRATION_JOB)
+                    ? base::TaskTraits(BrowserThread::IO)
+                    : base::TaskTraits(BrowserThread::IO,
+                                       base::TaskPriority::BEST_EFFORT);
+  base::PostTaskWithTraits(FROM_HERE, std::move(traits),
+                           base::BindOnce(&ServiceWorkerRegisterJob::StartImpl,
+                                          weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerRegisterJob::StartImpl() {
@@ -690,8 +699,7 @@ void ServiceWorkerRegisterJob::OnPausedAfterDownload() {
     // OnPausedAfterDownload() signifies a successful network load, which
     // translates into a script cache error only in the byte-for-byte identical
     // case.
-    DCHECK_EQ(status.error(),
-              ServiceWorkerWriteToCacheJob::kIdenticalScriptError);
+    DCHECK_EQ(status.error(), net::ERR_FILE_EXISTS);
 
     BumpLastUpdateCheckTimeIfNeeded();
     ResolvePromise(blink::ServiceWorkerStatusCode::kOk, std::string(),

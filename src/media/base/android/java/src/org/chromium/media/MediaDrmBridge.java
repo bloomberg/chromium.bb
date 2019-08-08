@@ -19,14 +19,13 @@ import org.chromium.base.annotations.MainDex;
 import org.chromium.media.MediaDrmSessionManager.SessionId;
 import org.chromium.media.MediaDrmSessionManager.SessionInfo;
 
-import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Queue;
-import java.util.Scanner;
 import java.util.UUID;
 
 // Implementation Notes of MediaDrmBridge:
@@ -313,8 +312,7 @@ public class MediaDrmBridge {
             Log.d(TAG, "Not provisioned during openSession()");
 
             if (!sMediaCryptoDeferrer.isProvisioning()) {
-                startProvisioning();
-                return true;
+                return startProvisioning();
             }
 
             // Cannot provision. Defer MediaCrypto creation and try again later.
@@ -412,18 +410,13 @@ public class MediaDrmBridge {
     @CalledByNative
     private static int getFirstApiLevel() {
         int firstApiLevel = 0;
-        Scanner scanner = null;
-        // If first_api_level property is set, return it.
         try {
-            Process process = new ProcessBuilder("getprop", FIRST_API_LEVEL).start();
-            scanner = new Scanner(process.getInputStream());
-            firstApiLevel = Integer.parseInt(scanner.nextLine().trim());
-        } catch (IOException | NumberFormatException e) {
+            final Class<?> systemProperties = Class.forName("android.os.SystemProperties");
+            final Method getInt = systemProperties.getMethod("getInt", String.class, int.class);
+            firstApiLevel = (Integer) getInt.invoke(null, FIRST_API_LEVEL, 0);
+        } catch (Exception e) {
+            Log.e("Exception while getting system property %s. Using default.", FIRST_API_LEVEL, e);
             firstApiLevel = 0;
-        } finally {
-            if (scanner != null) {
-                scanner.close();
-            }
         }
         return firstApiLevel;
     }
@@ -462,10 +455,12 @@ public class MediaDrmBridge {
         }
 
         if (!securityLevel.isEmpty() && !mediaDrmBridge.setSecurityLevel(securityLevel)) {
+            mediaDrmBridge.release();
             return null;
         }
 
         if (!securityOrigin.isEmpty() && !mediaDrmBridge.setOrigin(securityOrigin)) {
+            mediaDrmBridge.release();
             return null;
         }
 
@@ -474,6 +469,7 @@ public class MediaDrmBridge {
         // process, in which case MediaCrypto will be created after provision
         // is finished.
         if (requiresMediaCrypto && !mediaDrmBridge.createMediaCrypto()) {
+            // No need to call release() as createMediaCrypto() does if it fails.
             return null;
         }
 
@@ -526,8 +522,15 @@ public class MediaDrmBridge {
         assert mMediaDrm != null;
         assert !securityLevel.isEmpty();
 
-        String currentSecurityLevel = mMediaDrm.getPropertyString(SECURITY_LEVEL);
-        Log.e(TAG, "Security level: current %s, new %s", currentSecurityLevel, securityLevel);
+        String currentSecurityLevel;
+        try {
+            currentSecurityLevel = mMediaDrm.getPropertyString(SECURITY_LEVEL);
+        } catch (java.lang.IllegalStateException e) {
+            Log.e(TAG, "Failed to get current security level", e);
+            return false;
+        }
+
+        Log.i(TAG, "Security level: current %s, new %s", currentSecurityLevel, securityLevel);
         if (securityLevel.equals(currentSecurityLevel)) {
             // No need to set the same security level again. This is not just
             // a shortcut! Setting the same security level actually causes an
@@ -583,15 +586,41 @@ public class MediaDrmBridge {
     private void provision() {
         // This should only be called if no MediaCrypto needed.
         assert mMediaDrm != null;
+        assert !mProvisioningPending;
         assert !mRequiresMediaCrypto;
 
         // Provision only works for origin isolated storage.
         if (!mOriginSet) {
+            Log.e(TAG, "Calling provision() without an origin.");
             nativeOnProvisioningComplete(mNativeMediaDrmBridge, false);
             return;
         }
 
-        startProvisioning();
+        // The security level used for provisioning cannot be set and is cached from when a need for
+        // provisioning is last detected. So if we call startProvisioning() it will use the default
+        // security level, which may not match the security level needed. As a result this code must
+        // call openSession(), which will result in the security level being cached. We don't care
+        // about the session, so if it opens simply close it.
+        try {
+            // This will throw a NotProvisionedException if provisioning needed. If it succeeds,
+            // assume this origin ID is already provisioned.
+            byte[] drmId = openSession();
+
+            // Provisioning is not required. If a session was actually opened, close it.
+            if (drmId != null) {
+                SessionId sessionId = SessionId.createTemporarySessionId(drmId);
+                closeSessionNoException(sessionId);
+            }
+
+            // Indicate that provisioning succeeded.
+            nativeOnProvisioningComplete(mNativeMediaDrmBridge, true);
+
+        } catch (android.media.NotProvisionedException e) {
+            if (!startProvisioning()) {
+                // Indicate that provisioning failed.
+                nativeOnProvisioningComplete(mNativeMediaDrmBridge, false);
+            }
+        }
     }
 
     /**
@@ -1105,7 +1134,11 @@ public class MediaDrmBridge {
     }
 
     /**
-     * Return the security level of this DRM object.
+     * Return the security level of this DRM object. In case of failure this
+     * returns the empty string, which is treated by the native side as
+     * "DEFAULT".
+     * TODO(jrummell): Revisit this in the future if the security level gets
+     * used for more things.
      */
     @CalledByNative
     private String getSecurityLevel() {
@@ -1113,32 +1146,55 @@ public class MediaDrmBridge {
             Log.e(TAG, "getSecurityLevel(): MediaDrm is null or security level is not supported.");
             return "";
         }
-        return mMediaDrm.getPropertyString("securityLevel");
+
+        try {
+            return mMediaDrm.getPropertyString(SECURITY_LEVEL);
+        } catch (java.lang.IllegalStateException e) {
+            Log.e(TAG, "Failed to get current security level", e);
+            return "";
+        }
     }
 
-    private void startProvisioning() {
+    /**
+     * Start provisioning. Returns true if a provisioning request can be
+     * generated and has been forwarded to C++ code for handling, false
+     * otherwise.
+     */
+    private boolean startProvisioning() {
         Log.d(TAG, "startProvisioning");
         assert !mProvisioningPending;
         mProvisioningPending = true;
         assert mMediaDrm != null;
 
         if (!isNativeMediaDrmBridgeValid()) {
-            return;
+            return false;
         }
 
         if (mRequiresMediaCrypto) {
             sMediaCryptoDeferrer.onProvisionStarted();
         }
 
-        MediaDrm.ProvisionRequest request = mMediaDrm.getProvisionRequest();
+        // getProvisionRequest() may fail with android.media.MediaDrm.MediaDrmStateException or
+        // android.media.MediaDrmResetException, both of which extend IllegalStateException. As
+        // these specific exceptions are only available in API 21 and 23 respectively, using the
+        // base exception so that this will work for all API versions.
+        MediaDrm.ProvisionRequest request;
+        try {
+            request = mMediaDrm.getProvisionRequest();
+        } catch (java.lang.IllegalStateException e) {
+            Log.e(TAG, "Failed to get provisioning request", e);
+            return false;
+        }
+
         nativeOnProvisionRequest(mNativeMediaDrmBridge, request.getDefaultUrl(), request.getData());
+        return true;
     }
 
     /**
      * Called when the provision response is received.
      *
-     * @param isResponseReceived Flag set to true if commincation with provision server was
-     * successful.
+     * @param isResponseReceived Flag set to true if communication with
+     * provision server was successful.
      * @param response Response data from the provision server.
      */
     @CalledByNative
@@ -1317,7 +1373,7 @@ public class MediaDrmBridge {
         public void onEvent(
                 MediaDrm mediaDrm, byte[] drmSessionId, int event, int extra, byte[] data) {
             if (drmSessionId == null) {
-                Log.e(TAG, "EventListener: Null session.");
+                Log.e(TAG, "EventListener: No session for event %d.", event);
                 return;
             }
             SessionId sessionId = getSessionIdByDrmId(drmSessionId);

@@ -41,6 +41,7 @@ VideoEncodeAccelerator::Config::Config(
     VideoCodecProfile output_profile,
     uint32_t initial_bitrate,
     base::Optional<uint32_t> initial_framerate,
+    base::Optional<uint32_t> gop_length,
     base::Optional<uint8_t> h264_output_level,
     base::Optional<StorageType> storage_type,
     ContentType content_type)
@@ -50,6 +51,7 @@ VideoEncodeAccelerator::Config::Config(
       initial_bitrate(initial_bitrate),
       initial_framerate(initial_framerate.value_or(
           VideoEncodeAccelerator::kDefaultFramerate)),
+      gop_length(gop_length),
       h264_output_level(h264_output_level.value_or(
           VideoEncodeAccelerator::kDefaultH264Level)),
       storage_type(storage_type),
@@ -68,6 +70,9 @@ std::string VideoEncodeAccelerator::Config::AsHumanReadableString() const {
     str += base::StringPrintf(", initial_framerate: %u",
                               initial_framerate.value());
   }
+  if (gop_length)
+    str += base::StringPrintf(", gop_length: %u", gop_length.value());
+
   if (h264_output_level &&
       VideoCodecProfileToVideoCodec(output_profile) == kCodecH264) {
     str += base::StringPrintf(", h264_output_level: %u",

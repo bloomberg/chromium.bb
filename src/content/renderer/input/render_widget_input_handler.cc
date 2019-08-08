@@ -192,8 +192,11 @@ blink::WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
 viz::FrameSinkId GetRemoteFrameSinkId(const blink::WebNode& node) {
   blink::WebFrame* result_frame = blink::WebFrame::FromFrameOwnerElement(node);
   if (result_frame && result_frame->IsWebRemoteFrame()) {
-    return RenderFrameProxy::FromWebFrame(result_frame->ToWebRemoteFrame())
-        ->frame_sink_id();
+    blink::WebRemoteFrame* remote_frame = result_frame->ToWebRemoteFrame();
+    if (remote_frame->IsIgnoredForHitTest())
+      return viz::FrameSinkId();
+
+    return RenderFrameProxy::FromWebFrame(remote_frame)->frame_sink_id();
   }
   auto* plugin = BrowserPlugin::GetFromNode(node);
   return plugin ? plugin->frame_sink_id() : viz::FrameSinkId();
@@ -429,7 +432,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
       input_event.GetType() == WebInputEvent::kGestureScrollUpdate) {
     const WebGestureEvent& gesture_event =
         static_cast<const WebGestureEvent&>(input_event);
-    if (gesture_event.SourceDevice() == blink::kWebGestureDeviceTouchpad) {
+    if (gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchpad) {
       gfx::Vector2dF latest_overscroll_delta =
           event_overscroll ? event_overscroll->latest_overscroll_delta
                            : gfx::Vector2dF();
@@ -501,11 +504,10 @@ void RenderWidgetInputHandler::DidOverscrollFromBlink(
 }
 
 bool RenderWidgetInputHandler::DidChangeCursor(const WebCursor& cursor) {
-  if (!current_cursor_ || !current_cursor_->IsEqual(cursor)) {
-    current_cursor_ = cursor;
-    return true;
-  }
-  return false;
+  if (current_cursor_.has_value() && current_cursor_.value() == cursor)
+    return false;
+  current_cursor_ = cursor;
+  return true;
 }
 
 bool RenderWidgetInputHandler::ProcessTouchAction(

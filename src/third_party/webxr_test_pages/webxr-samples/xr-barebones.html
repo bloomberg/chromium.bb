@@ -48,7 +48,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       </details>
     </header>
     <main style='text-align: center;'>
-      <p>Click 'Enter XR' to see content</p> 
+      <p>Click 'Enter XR' to see content</p>
     </main>
     <script type="module">
       // XR globals.
@@ -59,20 +59,37 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // WebGL scene globals.
       let gl = null;
 
+      function checkSupportedState() {
+          // If the device allows creation of exclusive sessions enable the
+          // button.  If the supportsSessionMode request is rejected, then
+          // disable the button because it means that XR is not supported.
+          navigator.xr.supportsSessionMode('immersive-vr').then(() => {
+            // Updates the button to start an XR session when clicked.
+            xrButton.innerHTML = 'Enter XR';
+            xrButton.disabled = false;
+          }, () => {
+            xrButton.innerHTML = 'XR not found';
+            xrButton.disabled = true;
+          });
+      }
+
       // Checks to see if WebXR is available and, if so, requests an XRDevice
       // that is connected to the system and tests it to ensure it supports the
       // desired session options.
       function initXR() {
         // Is WebXR available on this UA?
         if (navigator.xr) {
-          // If the device allows creation of exclusive sessions set it as the
-          // target of the 'Enter XR' button.
-          navigator.xr.supportsSessionMode('immersive-vr').then(() => {
-            // Updates the button to start an XR session when clicked.
-            xrButton.addEventListener('click', onButtonClicked);
-            xrButton.innerHTML = 'Enter XR';
-            xrButton.disabled = false;
-          });
+          // Register our click handler
+          xrButton.addEventListener('click', onButtonClicked);
+
+          // Register for device change events, this indicates that a device has
+          // been added or removed and that whether or not XR is supported has
+          // likely changed.
+          navigator.xr.addEventListener('devicechange',checkSupportedState);
+
+          // Just in case the devicechange event has already fired, call it now
+          // as well.
+          checkSupportedState();
         }
       }
 
@@ -80,7 +97,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // session already we'll request one, and if we do we'll end it.
       function onButtonClicked() {
         if (!xrSession) {
-          navigator.xr.requestSession({mode: 'immersive-vr'}).then(onSessionStarted);
+          navigator.xr.requestSession('immersive-vr').then(onSessionStarted);
         } else {
           xrSession.end();
         }

@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -571,11 +572,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                          "5687444770914304 for more details",
                          MilestoneString(kM71))};
 
-    case WebFeature::kCacheStorageAddAllSuccessWithDuplicate:
-      return {"CacheStorageAddAllSuccessWithDuplicate", kM72,
-              WillBeRemoved("Cache.addAll() with duplicate requests", kM72,
-                            "5622587912617984")};
-
     case WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics:
       return {"RTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics", kM72,
               String::Format(
@@ -616,40 +612,10 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               "native UI",
               kM75, "5825971391299584")};
 
-#define REMOVE_APPEARANCE_KEYWORD_M75(id, keyword)                 \
-  case WebFeature::kCSSValueAppearance##id:                        \
-    return {"CSSValueAppearance" #id, kM75,                        \
-            WillBeRemoved("The keyword '" keyword                  \
-                          "' for -webkit-appearance CSS property", \
-                          kM75, "5075579829223424")}
-
-      REMOVE_APPEARANCE_KEYWORD_M75(ButtonBevel, "button-bevel");
-      REMOVE_APPEARANCE_KEYWORD_M75(Caret, "caret");
-      REMOVE_APPEARANCE_KEYWORD_M75(Listitem, "listitem");
-      REMOVE_APPEARANCE_KEYWORD_M75(MediaControlsBackground,
-                                    "media-controls-background");
-      REMOVE_APPEARANCE_KEYWORD_M75(MediaControlsFullscreenBackground,
-                                    "media-controls-fullscreen-background");
-      REMOVE_APPEARANCE_KEYWORD_M75(MediaCurrentTimeDisplay,
-                                    "media-current-time-display");
-      REMOVE_APPEARANCE_KEYWORD_M75(MediaEnterFullscreenButton,
-                                    "media-enter-fullscreen-button");
-      REMOVE_APPEARANCE_KEYWORD_M75(MediaExitFullscreenButton,
-                                    "media-exit-fullscreen-button");
-      REMOVE_APPEARANCE_KEYWORD_M75(MediaMuteButton, "media-mute-button");
-      REMOVE_APPEARANCE_KEYWORD_M75(MediaOverlayPlayButton,
-                                    "media-overlay-play-button");
-      REMOVE_APPEARANCE_KEYWORD_M75(MediaPlayButton, "media-play-button");
-      REMOVE_APPEARANCE_KEYWORD_M75(MediaTimeRemainingDisplay,
-                                    "media-time-remaining-display");
-      REMOVE_APPEARANCE_KEYWORD_M75(MediaToggleClosedCaptionsButton,
-                                    "media-toggle-closed-captions-button");
-      REMOVE_APPEARANCE_KEYWORD_M75(MediaVolumeSliderContainer,
-                                    "media-volume-slider-container");
-      REMOVE_APPEARANCE_KEYWORD_M75(MenulistTextfield, "menulist-textfield");
-      REMOVE_APPEARANCE_KEYWORD_M75(MenulistText, "menulist-text");
-      REMOVE_APPEARANCE_KEYWORD_M75(ProgressBarValue, "progress-bar-value");
-#undef REMOVE_APPEARANCE_KEYWORD_M75
+    case WebFeature::kV8AtomicsWake:
+      return {"V8AtomicsWake", kM76,
+              ReplacedWillBeRemoved("Atomics.wake", "Atomics.notify", kM76,
+                                    "6228189936353280")};
 
     // Features that aren't deprecated don't have a deprecation message.
     default:
@@ -684,12 +650,14 @@ void Deprecation::UnmuteForInspector() {
 
 void Deprecation::Suppress(CSSPropertyID unresolved_property) {
   DCHECK(isCSSPropertyIDWithName(unresolved_property));
-  css_property_deprecation_bits_.QuickSet(unresolved_property);
+  css_property_deprecation_bits_.QuickSet(
+      static_cast<int>(unresolved_property));
 }
 
 bool Deprecation::IsSuppressed(CSSPropertyID unresolved_property) {
   DCHECK(isCSSPropertyIDWithName(unresolved_property));
-  return css_property_deprecation_bits_.QuickGet(unresolved_property);
+  return css_property_deprecation_bits_.QuickGet(
+      static_cast<int>(unresolved_property));
 }
 
 void Deprecation::SetReported(WebFeature feature) {
@@ -712,7 +680,7 @@ void Deprecation::WarnOnDeprecatedProperties(
   if (!message.IsEmpty()) {
     page->GetDeprecation().Suppress(unresolved_property);
     ConsoleMessage* console_message =
-        ConsoleMessage::Create(kDeprecationMessageSource,
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kDeprecation,
                                mojom::ConsoleMessageLevel::kWarning, message);
     frame->Console().AddMessage(console_message);
   }
@@ -725,22 +693,35 @@ String Deprecation::DeprecationMessage(CSSPropertyID unresolved_property) {
   return g_empty_string;
 }
 
-// TODO(loonybear): Replace CountDeprecation(LocalFrame*) by CountDeprecation(
-// DocumentLoader*) eventually.
-void Deprecation::CountDeprecation(const LocalFrame* frame,
-                                   WebFeature feature) {
-  if (!frame)
-    return;
-  DocumentLoader* loader = frame->GetDocument()
-                               ? frame->GetDocument()->Loader()
-                               : frame->Loader().GetProvisionalDocumentLoader();
-  Deprecation::CountDeprecation(loader, feature);
-}
-
 void Deprecation::CountDeprecation(ExecutionContext* context,
                                    WebFeature feature) {
   if (!context)
     return;
+
+  // TODO(yoichio): We should remove these counters when v0 APIs are removed.
+  // crbug.com/946875.
+  if (const OriginTrialContext* origin_trial_context =
+          OriginTrialContext::FromOrCreate(context)) {
+    if (feature == WebFeature::kHTMLImports &&
+        origin_trial_context->IsFeatureEnabled(
+            OriginTrialFeature::kHTMLImports) &&
+        !RuntimeEnabledFeatures::HTMLImportsEnabledByRuntimeFlag()) {
+      UseCounter::Count(context, WebFeature::kHTMLImportsOnReverseOriginTrials);
+    } else if (feature == WebFeature::kElementCreateShadowRoot &&
+               origin_trial_context->IsFeatureEnabled(
+                   OriginTrialFeature::kShadowDOMV0) &&
+               !RuntimeEnabledFeatures::ShadowDOMV0EnabledByRuntimeFlag()) {
+      UseCounter::Count(
+          context, WebFeature::kElementCreateShadowRootOnReverseOriginTrials);
+    } else if (feature == WebFeature::kDocumentRegisterElement &&
+               origin_trial_context->IsFeatureEnabled(
+                   OriginTrialFeature::kCustomElementsV0) &&
+               !RuntimeEnabledFeatures::
+                   CustomElementsV0EnabledByRuntimeFlag()) {
+      UseCounter::Count(
+          context, WebFeature::kDocumentRegisterElementOnReverseOriginTrials);
+    }
+  }
   // TODO(dcheng): Maybe this should be a virtual on ExecutionContext?
   if (auto* document = DynamicTo<Document>(context)) {
     Deprecation::CountDeprecation(*document, feature);
@@ -771,23 +752,19 @@ void Deprecation::CountDeprecation(DocumentLoader* loader, WebFeature feature) {
   GenerateReport(frame, feature);
 }
 
-void Deprecation::CountDeprecationCrossOriginIframe(const LocalFrame* frame,
+void Deprecation::CountDeprecationCrossOriginIframe(const Document& document,
                                                     WebFeature feature) {
+  LocalFrame* frame = document.GetFrame();
+  if (!frame)
+    return;
+
   // Check to see if the frame can script into the top level document.
   const SecurityOrigin* security_origin =
       frame->GetSecurityContext()->GetSecurityOrigin();
   Frame& top = frame->Tree().Top();
   if (!security_origin->CanAccess(
           top.GetSecurityContext()->GetSecurityOrigin()))
-    CountDeprecation(frame, feature);
-}
-
-void Deprecation::CountDeprecationCrossOriginIframe(const Document& document,
-                                                    WebFeature feature) {
-  LocalFrame* frame = document.GetFrame();
-  if (!frame)
-    return;
-  CountDeprecationCrossOriginIframe(frame, feature);
+    CountDeprecation(document, feature);
 }
 
 void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
@@ -796,8 +773,8 @@ void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
   // Send the deprecation message to the console as a warning.
   DCHECK(!info.message.IsEmpty());
   ConsoleMessage* console_message = ConsoleMessage::Create(
-      kDeprecationMessageSource, mojom::ConsoleMessageLevel::kWarning,
-      info.message);
+      mojom::ConsoleMessageSource::kDeprecation,
+      mojom::ConsoleMessageLevel::kWarning, info.message);
   frame->Console().AddMessage(console_message);
 
   if (!frame || !frame->Client())
@@ -808,26 +785,13 @@ void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
   // Construct the deprecation report.
   double removal_date = MilestoneDate(info.anticipated_removal);
   DeprecationReportBody* body = MakeGarbageCollected<DeprecationReportBody>(
-      info.id, removal_date, info.message, SourceLocation::Capture());
+      info.id, removal_date, info.message);
   Report* report = MakeGarbageCollected<Report>(
       "deprecation", document->Url().GetString(), body);
 
-  // Send the deprecation report to any ReportingObservers.
+  // Send the deprecation report to the Reporting API and any
+  // ReportingObservers.
   ReportingContext::From(document)->QueueReport(report);
-
-  // Send the deprecation report to the Reporting API.
-  mojom::blink::ReportingServiceProxyPtr service;
-  Platform* platform = Platform::Current();
-  platform->GetConnector()->BindInterface(platform->GetBrowserServiceName(),
-                                          &service);
-  bool is_null;
-  int line_number = body->lineNumber(is_null);
-  line_number = is_null ? 0 : line_number;
-  int column_number = body->columnNumber(is_null);
-  column_number = is_null ? 0 : column_number;
-  service->QueueDeprecationReport(
-      document->Url(), info.id, WTF::Time::FromDoubleT(removal_date),
-      info.message, body->sourceFile(), line_number, column_number);
 }
 
 // static

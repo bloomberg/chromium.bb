@@ -8,6 +8,9 @@ traits_headers = [ "//content/public/common/resource_type_struct_traits.h" ]
 sources = [
   "//content/public/common/resource_type_struct_traits.cc",
 ]
+public_deps = [
+  "//content/public/common:resource_type_header",
+]
 deps = [
   "//content:export",
 ]

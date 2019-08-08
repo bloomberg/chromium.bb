@@ -145,7 +145,7 @@ sk_sp<cc::PaintShader> CreateFadeShader(const FontList& font_list,
                               PointToSkPoint(text_rect.top_right()) };
   return cc::PaintShader::MakeLinearGradient(
       &points[0], &colors[0], &positions[0], static_cast<int>(colors.size()),
-      SkShader::kClamp_TileMode);
+      SkTileMode::kClamp);
 }
 
 // Converts a FontRenderParams::Hinting value to the corresponding
@@ -1593,6 +1593,16 @@ base::string16 RenderText::Elide(const base::string16& text,
       // the preceding text using LTR or RTL markers.
       base::i18n::TextDirection trailing_text_direction =
           base::i18n::GetLastStrongCharacterDirection(new_text);
+
+      // Ensures that the |new_text| will always be smaller or equal to the
+      // original text. There is a corner case when only one character is elided
+      // and two characters are added back (ellipsis and directional marker).
+      if (trailing_text_direction != text_direction &&
+          new_text.length() + 2 > text.length() && guess >= 1) {
+        new_text = slicer.CutString(guess - 1, false);
+      }
+
+      // Append the ellipsis and the optional directional marker characters.
       new_text.append(ellipsis);
       if (trailing_text_direction != text_direction) {
         if (trailing_text_direction == base::i18n::LEFT_TO_RIGHT)
@@ -1601,6 +1611,10 @@ base::string16 RenderText::Elide(const base::string16& text,
           new_text += base::i18n::kRightToLeftMark;
       }
     }
+
+    // The elided text must be smaller in bytes. Otherwise, break-lists are not
+    // consistent and the characters after the last range are not styled.
+    DCHECK_LE(new_text.size(), text.size());
     render_text->SetText(new_text);
 
     // Restore styles and baselines without breaking multi-character graphemes.

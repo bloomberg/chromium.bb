@@ -115,11 +115,12 @@ QuickViewUma.prototype.onOpened = function(entry, wayToOpen) {
   }
   // Record stats of dialog types. It must be in sync with
   // FileDialogType enum in tools/metrics/histograms/histogram.xml.
-  metrics.recordEnum('QuickView.DialogType', this.dialogType_,
-      [DialogType.SELECT_FOLDER,
-       DialogType.SELECT_UPLOAD_FOLDER,
-       DialogType.SELECT_SAVEAS_FILE,
-       DialogType.SELECT_OPEN_FILE,
-       DialogType.SELECT_OPEN_MULTI_FILE,
-       DialogType.FULL_PAGE]);
+  metrics.recordEnum('QuickView.DialogType', this.dialogType_, [
+    DialogType.SELECT_FOLDER,
+    DialogType.SELECT_UPLOAD_FOLDER,
+    DialogType.SELECT_SAVEAS_FILE,
+    DialogType.SELECT_OPEN_FILE,
+    DialogType.SELECT_OPEN_MULTI_FILE,
+    DialogType.FULL_PAGE,
+  ]);
 };

@@ -39,3 +39,12 @@ imageset("infobar_passwords_icon") {
     "infobar_passwords_icon.imageset/infobar_passwords_icon@3x.png",
   ]
 }
+
+imageset("infobar_settings_icon") {
+  sources = [
+    "infobar_settings_icon.imageset/Contents.json",
+    "infobar_settings_icon.imageset/infobar_settings_icon.png",
+    "infobar_settings_icon.imageset/infobar_settings_icon@2x.png",
+    "infobar_settings_icon.imageset/infobar_settings_icon@3x.png",
+  ]
+}

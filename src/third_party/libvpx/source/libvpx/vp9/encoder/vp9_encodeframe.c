@@ -8,6 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include <float.h>
 #include <limits.h>
 #include <math.h>
 #include <stdio.h>
@@ -239,6 +240,8 @@ static void set_segment_index(VP9_COMP *cpi, MACROBLOCK *const x, int mi_row,
   if (cpi->roi.enabled)
     mi->segment_id = get_segment_id(cm, map, bsize, mi_row, mi_col);
 
+  if (cpi->sf.enable_wiener_variance) mi->segment_id = x->segment_id;
+
   vp9_init_plane_quantizers(cpi, x);
 }
 
@@ -251,13 +254,32 @@ static INLINE void set_mode_info_offsets(VP9_COMMON *const cm,
   const int idx_str = xd->mi_stride * mi_row + mi_col;
   xd->mi = cm->mi_grid_visible + idx_str;
   xd->mi[0] = cm->mi + idx_str;
+  xd->mi_row = mi_row;
+  xd->mi_col = mi_col;
   x->mbmi_ext = x->mbmi_ext_base + (mi_row * cm->mi_cols + mi_col);
+}
+
+static double get_ssim_rdmult_scaling_factor(VP9_COMP *const cpi, int mi_row,
+                                             int mi_col) {
+  const VP9_COMMON *const cm = &cpi->common;
+
+  // SSIM rdmult scaling factors are currently 64x64 based.
+  const int num_8x8_w = 8;
+  const int num_8x8_h = 8;
+  const int num_cols = (cm->mi_cols + num_8x8_w - 1) / num_8x8_w;
+  const int row = mi_row / num_8x8_h;
+  const int col = mi_col / num_8x8_w;
+  const int index = row * num_cols + col;
+
+  assert(cpi->oxcf.tuning == VP8_TUNE_SSIM);
+  return cpi->mi_ssim_rdmult_scaling_factors[index];
 }
 
 static void set_offsets(VP9_COMP *cpi, const TileInfo *const tile,
                         MACROBLOCK *const x, int mi_row, int mi_col,
                         BLOCK_SIZE bsize) {
   VP9_COMMON *const cm = &cpi->common;
+  const VP9EncoderConfig *const oxcf = &cpi->oxcf;
   MACROBLOCKD *const xd = &x->e_mbd;
   const int mi_width = num_8x8_blocks_wide_lookup[bsize];
   const int mi_height = num_8x8_blocks_high_lookup[bsize];
@@ -288,6 +310,11 @@ static void set_offsets(VP9_COMP *cpi, const TileInfo *const tile,
   // R/D setup.
   x->rddiv = cpi->rd.RDDIV;
   x->rdmult = cpi->rd.RDMULT;
+  if (oxcf->tuning == VP8_TUNE_SSIM) {
+    const double ssim_factor =
+        get_ssim_rdmult_scaling_factor(cpi, mi_row, mi_col);
+    x->rdmult = (int)(ssim_factor * x->rdmult);
+  }
 
   // required by vp9_append_sub8x8_mvs_for_idx() and vp9_find_best_ref_mvs()
   xd->tile = *tile;
@@ -550,7 +577,8 @@ static void set_vbp_thresholds(VP9_COMP *cpi, int64_t thresholds[], int q,
                                int content_state) {
   VP9_COMMON *const cm = &cpi->common;
   const int is_key_frame = frame_is_intra_only(cm);
-  const int threshold_multiplier = is_key_frame ? 20 : 1;
+  const int threshold_multiplier =
+      is_key_frame ? 20 : cpi->sf.variance_part_thresh_mult;
   int64_t threshold_base =
       (int64_t)(threshold_multiplier * cpi->y_dequant[q][1]);
 
@@ -961,12 +989,12 @@ static int scale_partitioning_svc(VP9_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
   const int has_rows = (mi_row_high + bs_high) < cm->mi_rows;
   const int has_cols = (mi_col_high + bs_high) < cm->mi_cols;
 
-  const int row_boundary_block_scale_factor[BLOCK_SIZES] = {
-    13, 13, 13, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0
-  };
-  const int col_boundary_block_scale_factor[BLOCK_SIZES] = {
-    13, 13, 13, 2, 2, 0, 2, 2, 0, 2, 2, 0, 0
-  };
+  const int row_boundary_block_scale_factor[BLOCK_SIZES] = { 13, 13, 13, 1, 0,
+                                                             1,  1,  0,  1, 1,
+                                                             0,  1,  0 };
+  const int col_boundary_block_scale_factor[BLOCK_SIZES] = { 13, 13, 13, 2, 2,
+                                                             0,  2,  2,  0, 2,
+                                                             2,  0,  0 };
   int start_pos;
   BLOCK_SIZE bsize_low;
   PARTITION_TYPE partition_high;
@@ -1265,10 +1293,11 @@ static int choose_partitioning(VP9_COMP *cpi, const TileInfo *const tile,
   int pixels_wide = 64, pixels_high = 64;
   int64_t thresholds[4] = { cpi->vbp_thresholds[0], cpi->vbp_thresholds[1],
                             cpi->vbp_thresholds[2], cpi->vbp_thresholds[3] };
-  int force_64_split =
-      cpi->rc.high_source_sad ||
-      (cpi->use_svc && cpi->svc.high_source_sad_superframe) ||
-      (cpi->oxcf.content == VP9E_CONTENT_SCREEN && !x->zero_temp_sad_source);
+  int force_64_split = cpi->rc.high_source_sad ||
+                       (cpi->use_svc && cpi->svc.high_source_sad_superframe) ||
+                       (cpi->oxcf.content == VP9E_CONTENT_SCREEN &&
+                        cpi->compute_source_sad_onepass &&
+                        cpi->sf.use_source_sad && !x->zero_temp_sad_source);
 
   // For the variance computation under SVC mode, we treat the frame as key if
   // the reference (base layer frame) is key frame (i.e., is_key_frame == 1).
@@ -1348,6 +1377,11 @@ static int choose_partitioning(VP9_COMP *cpi, const TileInfo *const tile,
   } else {
     set_vbp_thresholds(cpi, thresholds, cm->base_qindex, content_state);
   }
+  // Decrease 32x32 split threshold for screen on base layer, for scene
+  // change/high motion frames.
+  if (cpi->oxcf.content == VP9E_CONTENT_SCREEN &&
+      cpi->svc.spatial_layer_id == 0 && force_64_split)
+    thresholds[1] = 3 * thresholds[1] >> 2;
 
   // For non keyframes, disable 4x4 average for low resolution when speed = 8
   threshold_4x4avg = (cpi->oxcf.speed < 8) ? thresholds[1] << 1 : INT64_MAX;
@@ -1902,6 +1936,7 @@ static void set_segment_rdmult(VP9_COMP *const cpi, MACROBLOCK *const x,
                                int mi_row, int mi_col, BLOCK_SIZE bsize,
                                AQ_MODE aq_mode) {
   VP9_COMMON *const cm = &cpi->common;
+  const VP9EncoderConfig *const oxcf = &cpi->oxcf;
   const uint8_t *const map =
       cm->seg.update_map ? cpi->segmentation_map : cm->last_frame_seg_map;
 
@@ -1909,19 +1944,28 @@ static void set_segment_rdmult(VP9_COMP *const cpi, MACROBLOCK *const x,
   vpx_clear_system_state();
 
   if (aq_mode == NO_AQ || aq_mode == PSNR_AQ) {
-    if (cpi->sf.enable_tpl_model) x->rdmult = x->cb_rdmult;
-    return;
-  }
-
-  if (aq_mode == CYCLIC_REFRESH_AQ) {
+    if (cpi->sf.enable_tpl_model || cpi->sf.enable_wiener_variance)
+      x->rdmult = x->cb_rdmult;
+  } else if (aq_mode == CYCLIC_REFRESH_AQ) {
     // If segment is boosted, use rdmult for that segment.
     if (cyclic_refresh_segment_id_boosted(
             get_segment_id(cm, map, bsize, mi_row, mi_col)))
       x->rdmult = vp9_cyclic_refresh_get_rdmult(cpi->cyclic_refresh);
-    return;
+  } else {
+    x->rdmult = vp9_compute_rd_mult(cpi, cm->base_qindex + cm->y_dc_delta_q);
+    if (cpi->sf.enable_wiener_variance && cm->show_frame) {
+      if (cm->seg.enabled)
+        x->rdmult = vp9_compute_rd_mult(
+            cpi, vp9_get_qindex(&cm->seg, x->e_mbd.mi[0]->segment_id,
+                                cm->base_qindex));
+    }
   }
 
-  x->rdmult = vp9_compute_rd_mult(cpi, cm->base_qindex + cm->y_dc_delta_q);
+  if (oxcf->tuning == VP8_TUNE_SSIM) {
+    const double ssim_factor =
+        get_ssim_rdmult_scaling_factor(cpi, mi_row, mi_col);
+    x->rdmult = (int)(ssim_factor * x->rdmult);
+  }
 }
 
 static void rd_pick_sb_modes(VP9_COMP *cpi, TileDataEnc *tile_data,
@@ -2158,8 +2202,16 @@ static void encode_b(VP9_COMP *cpi, const TileInfo *const tile, ThreadData *td,
   MACROBLOCK *const x = &td->mb;
   set_offsets(cpi, tile, x, mi_row, mi_col, bsize);
 
-  if (cpi->sf.enable_tpl_model && cpi->oxcf.aq_mode == NO_AQ)
+  if ((cpi->sf.enable_tpl_model || cpi->sf.enable_wiener_variance) &&
+      cpi->oxcf.aq_mode == NO_AQ) {
+    const VP9EncoderConfig *const oxcf = &cpi->oxcf;
     x->rdmult = x->cb_rdmult;
+    if (oxcf->tuning == VP8_TUNE_SSIM) {
+      const double ssim_factor =
+          get_ssim_rdmult_scaling_factor(cpi, mi_row, mi_col);
+      x->rdmult = (int)(ssim_factor * x->rdmult);
+    }
+  }
 
   update_state(cpi, td, ctx, mi_row, mi_col, bsize, output_enabled);
   encode_superblock(cpi, td, tp, output_enabled, mi_row, mi_col, bsize, ctx);
@@ -3028,15 +3080,15 @@ const int num_16x16_blocks_wide_lookup[BLOCK_SIZES] = { 1, 1, 1, 1, 1, 1, 1,
                                                         1, 2, 2, 2, 4, 4 };
 const int num_16x16_blocks_high_lookup[BLOCK_SIZES] = { 1, 1, 1, 1, 1, 1, 1,
                                                         2, 1, 2, 4, 2, 4 };
-const int qindex_skip_threshold_lookup[BLOCK_SIZES] = {
-  0, 10, 10, 30, 40, 40, 60, 80, 80, 90, 100, 100, 120
-};
-const int qindex_split_threshold_lookup[BLOCK_SIZES] = {
-  0, 3, 3, 7, 15, 15, 30, 40, 40, 60, 80, 80, 120
-};
-const int complexity_16x16_blocks_threshold[BLOCK_SIZES] = {
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 4, 6
-};
+const int qindex_skip_threshold_lookup[BLOCK_SIZES] = { 0,   10,  10, 30, 40,
+                                                        40,  60,  80, 80, 90,
+                                                        100, 100, 120 };
+const int qindex_split_threshold_lookup[BLOCK_SIZES] = { 0,  3,  3,  7,  15,
+                                                         15, 30, 40, 40, 60,
+                                                         80, 80, 120 };
+const int complexity_16x16_blocks_threshold[BLOCK_SIZES] = { 1, 1, 1, 1, 1,
+                                                             1, 1, 1, 1, 1,
+                                                             4, 4, 6 };
 
 typedef enum {
   MV_ZERO = 0,
@@ -3568,6 +3620,102 @@ static void ml_predict_var_rd_paritioning(const VP9_COMP *const cpi,
 }
 #undef FEATURES
 
+static double log_wiener_var(int64_t wiener_variance) {
+  return log(1.0 + wiener_variance) / log(2.0);
+}
+
+static void build_kmeans_segmentation(VP9_COMP *cpi) {
+  VP9_COMMON *cm = &cpi->common;
+  BLOCK_SIZE bsize = BLOCK_64X64;
+  KMEANS_DATA *kmeans_data;
+
+  vp9_disable_segmentation(&cm->seg);
+  if (cm->show_frame) {
+    int mi_row, mi_col;
+    cpi->kmeans_data_size = 0;
+    cpi->kmeans_ctr_num = 8;
+
+    for (mi_row = 0; mi_row < cm->mi_rows; mi_row += MI_BLOCK_SIZE) {
+      for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MI_BLOCK_SIZE) {
+        int mb_row_start = mi_row >> 1;
+        int mb_col_start = mi_col >> 1;
+        int mb_row_end = VPXMIN(
+            (mi_row + num_8x8_blocks_high_lookup[bsize]) >> 1, cm->mb_rows);
+        int mb_col_end = VPXMIN(
+            (mi_col + num_8x8_blocks_wide_lookup[bsize]) >> 1, cm->mb_cols);
+        int row, col;
+        int64_t wiener_variance = 0;
+
+        for (row = mb_row_start; row < mb_row_end; ++row)
+          for (col = mb_col_start; col < mb_col_end; ++col)
+            wiener_variance += cpi->mb_wiener_variance[row * cm->mb_cols + col];
+
+        wiener_variance /=
+            (mb_row_end - mb_row_start) * (mb_col_end - mb_col_start);
+
+#if CONFIG_MULTITHREAD
+        pthread_mutex_lock(&cpi->kmeans_mutex);
+#endif  // CONFIG_MULTITHREAD
+
+        kmeans_data = &cpi->kmeans_data_arr[cpi->kmeans_data_size++];
+        kmeans_data->value = log_wiener_var(wiener_variance);
+        kmeans_data->pos = mi_row * cpi->kmeans_data_stride + mi_col;
+#if CONFIG_MULTITHREAD
+        pthread_mutex_unlock(&cpi->kmeans_mutex);
+#endif  // CONFIG_MULTITHREAD
+      }
+    }
+
+    vp9_kmeans(cpi->kmeans_ctr_ls, cpi->kmeans_boundary_ls,
+               cpi->kmeans_count_ls, cpi->kmeans_ctr_num, cpi->kmeans_data_arr,
+               cpi->kmeans_data_size);
+
+    vp9_perceptual_aq_mode_setup(cpi, &cm->seg);
+  }
+}
+
+static int wiener_var_segment(VP9_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
+                              int mi_col) {
+  VP9_COMMON *cm = &cpi->common;
+  int mb_row_start = mi_row >> 1;
+  int mb_col_start = mi_col >> 1;
+  int mb_row_end =
+      VPXMIN((mi_row + num_8x8_blocks_high_lookup[bsize]) >> 1, cm->mb_rows);
+  int mb_col_end =
+      VPXMIN((mi_col + num_8x8_blocks_wide_lookup[bsize]) >> 1, cm->mb_cols);
+  int row, col, idx;
+  int64_t wiener_variance = 0;
+  int segment_id;
+  int8_t seg_hist[MAX_SEGMENTS] = { 0 };
+  int8_t max_count = 0, max_index = -1;
+
+  vpx_clear_system_state();
+
+  assert(cpi->norm_wiener_variance > 0);
+
+  for (row = mb_row_start; row < mb_row_end; ++row) {
+    for (col = mb_col_start; col < mb_col_end; ++col) {
+      wiener_variance = cpi->mb_wiener_variance[row * cm->mb_cols + col];
+      segment_id =
+          vp9_get_group_idx(log_wiener_var(wiener_variance),
+                            cpi->kmeans_boundary_ls, cpi->kmeans_ctr_num);
+      ++seg_hist[segment_id];
+    }
+  }
+
+  for (idx = 0; idx < cpi->kmeans_ctr_num; ++idx) {
+    if (seg_hist[idx] > max_count) {
+      max_count = seg_hist[idx];
+      max_index = idx;
+    }
+  }
+
+  assert(max_index >= 0);
+  segment_id = max_index;
+
+  return segment_id;
+}
+
 static int get_rdmult_delta(VP9_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
                             int mi_col, int orig_rdmult) {
   const int gf_group_index = cpi->twopass.gf_group.index;
@@ -3627,6 +3775,7 @@ static void rd_pick_partition(VP9_COMP *cpi, ThreadData *td,
                               RD_COST *rd_cost, int64_t best_rd,
                               PC_TREE *pc_tree) {
   VP9_COMMON *const cm = &cpi->common;
+  const VP9EncoderConfig *const oxcf = &cpi->oxcf;
   TileInfo *const tile_info = &tile_data->tile_info;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -3666,12 +3815,17 @@ static void rd_pick_partition(VP9_COMP *cpi, ThreadData *td,
   int64_t dist_breakout_thr = cpi->sf.partition_search_breakout_thr.dist;
   int rate_breakout_thr = cpi->sf.partition_search_breakout_thr.rate;
   int must_split = 0;
-  int partition_mul = cpi->sf.enable_tpl_model && cpi->oxcf.aq_mode == NO_AQ
-                          ? x->cb_rdmult
-                          : cpi->rd.RDMULT;
+
   // Ref frames picked in the [i_th] quarter subblock during square partition
   // RD search. It may be used to prune ref frame selection of rect partitions.
   uint8_t ref_frames_used[4] = { 0, 0, 0, 0 };
+
+  int partition_mul = x->cb_rdmult;
+  if (oxcf->tuning == VP8_TUNE_SSIM) {
+    const double ssim_factor =
+        get_ssim_rdmult_scaling_factor(cpi, mi_row, mi_col);
+    partition_mul = (int)(ssim_factor * partition_mul);
+  }
 
   (void)*tp_orig;
 
@@ -4213,6 +4367,7 @@ static void encode_rd_sb_row(VP9_COMP *cpi, ThreadData *td,
     RD_COST dummy_rdc;
     int i;
     int seg_skip = 0;
+    int orig_rdmult = cpi->rd.RDMULT;
 
     const int idx_str = cm->mi_stride * mi_row + mi_col;
     MODE_INFO **mi = cm->mi_grid_visible + idx_str;
@@ -4245,6 +4400,9 @@ static void encode_rd_sb_row(VP9_COMP *cpi, ThreadData *td,
     }
 
     x->source_variance = UINT_MAX;
+
+    x->cb_rdmult = orig_rdmult;
+
     if (sf->partition_search_type == FIXED_PARTITION || seg_skip) {
       const BLOCK_SIZE bsize =
           seg_skip ? BLOCK_64X64 : sf->always_this_block_size;
@@ -4265,12 +4423,16 @@ static void encode_rd_sb_row(VP9_COMP *cpi, ThreadData *td,
       rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, BLOCK_64X64,
                        &dummy_rate, &dummy_dist, 1, td->pc_root);
     } else {
-      int orig_rdmult = cpi->rd.RDMULT;
-      x->cb_rdmult = orig_rdmult;
       if (cpi->twopass.gf_group.index > 0 && cpi->sf.enable_tpl_model) {
         int dr =
             get_rdmult_delta(cpi, BLOCK_64X64, mi_row, mi_col, orig_rdmult);
         x->cb_rdmult = dr;
+      }
+
+      if (cpi->sf.enable_wiener_variance && cm->show_frame) {
+        x->segment_id = wiener_var_segment(cpi, BLOCK_64X64, mi_row, mi_col);
+        x->cb_rdmult = vp9_compute_rd_mult(
+            cpi, vp9_get_qindex(&cm->seg, x->segment_id, cm->base_qindex));
       }
 
       // If required set upper and lower partition size limits
@@ -5631,6 +5793,107 @@ static int input_fpmb_stats(FIRSTPASS_MB_STATS *firstpass_mb_stats,
 }
 #endif
 
+static int compare_kmeans_data(const void *a, const void *b) {
+  if (((const KMEANS_DATA *)a)->value > ((const KMEANS_DATA *)b)->value) {
+    return 1;
+  } else if (((const KMEANS_DATA *)a)->value <
+             ((const KMEANS_DATA *)b)->value) {
+    return -1;
+  } else {
+    return 0;
+  }
+}
+
+static void compute_boundary_ls(const double *ctr_ls, int k,
+                                double *boundary_ls) {
+  // boundary_ls[j] is the upper bound of data centered at ctr_ls[j]
+  int j;
+  for (j = 0; j < k - 1; ++j) {
+    boundary_ls[j] = (ctr_ls[j] + ctr_ls[j + 1]) / 2.;
+  }
+  boundary_ls[k - 1] = DBL_MAX;
+}
+
+int vp9_get_group_idx(double value, double *boundary_ls, int k) {
+  int group_idx = 0;
+  while (value >= boundary_ls[group_idx]) {
+    ++group_idx;
+    if (group_idx == k - 1) {
+      break;
+    }
+  }
+  return group_idx;
+}
+
+void vp9_kmeans(double *ctr_ls, double *boundary_ls, int *count_ls, int k,
+                KMEANS_DATA *arr, int size) {
+  double min, max;
+  double step;
+  int i, j;
+  int itr;
+  int group_idx;
+  double sum;
+  int count;
+
+  vpx_clear_system_state();
+
+  assert(k >= 2 && k <= MAX_KMEANS_GROUPS);
+
+  qsort(arr, size, sizeof(*arr), compare_kmeans_data);
+
+  min = arr[0].value;
+  max = arr[size - 1].value;
+
+  // initialize the center points
+  step = (max - min) * 1. / k;
+  for (j = 0; j < k; ++j) {
+    ctr_ls[j] = min + j * step + step / 2;
+  }
+
+  for (itr = 0; itr < 10; ++itr) {
+    compute_boundary_ls(ctr_ls, k, boundary_ls);
+    group_idx = 0;
+    count = 0;
+    sum = 0;
+    for (i = 0; i < size; ++i) {
+      while (arr[i].value >= boundary_ls[group_idx]) {
+        ++group_idx;
+        if (group_idx == k - 1) {
+          break;
+        }
+      }
+
+      sum += arr[i].value;
+      ++count;
+
+      if (i + 1 == size || arr[i + 1].value >= boundary_ls[group_idx]) {
+        if (count > 0) {
+          ctr_ls[group_idx] = sum / count;
+        }
+        count = 0;
+        sum = 0;
+      }
+    }
+  }
+
+  // compute group_idx, boundary_ls and count_ls
+  for (j = 0; j < k; ++j) {
+    count_ls[j] = 0;
+  }
+  compute_boundary_ls(ctr_ls, k, boundary_ls);
+  group_idx = 0;
+  for (i = 0; i < size; ++i) {
+    while (arr[i].value >= boundary_ls[group_idx]) {
+      ++group_idx;
+      if (group_idx == k - 1) {
+        break;
+      }
+    }
+    arr[i].group_idx = group_idx;
+    ++count_ls[group_idx];
+  }
+}
+
 static void encode_frame_internal(VP9_COMP *cpi) {
   SPEED_FEATURES *const sf = &cpi->sf;
   ThreadData *const td = &cpi->td;
@@ -5728,6 +5991,9 @@ static void encode_frame_internal(VP9_COMP *cpi) {
     if (tpl_frame->is_valid)
       cpi->rd.r0 = (double)intra_cost_base / mc_dep_cost_base;
   }
+
+  // Frame segmentation
+  if (cpi->sf.enable_wiener_variance) build_kmeans_segmentation(cpi);
 
   {
     struct vpx_usec_timer emr_timer;

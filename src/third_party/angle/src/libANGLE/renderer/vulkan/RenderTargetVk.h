@@ -20,7 +20,6 @@ namespace rx
 {
 namespace vk
 {
-class CommandBuffer;
 struct Format;
 class FramebufferHelper;
 class ImageHelper;
@@ -52,12 +51,14 @@ class RenderTargetVk final : public FramebufferAttachmentRenderTarget
     void reset();
 
     // Note: RenderTargets should be called in order, with the depth/stencil onRender last.
-    void onColorDraw(vk::FramebufferHelper *framebufferVk,
-                     vk::CommandBuffer *commandBuffer,
-                     vk::RenderPassDesc *renderPassDesc);
-    void onDepthStencilDraw(vk::FramebufferHelper *framebufferVk,
-                            vk::CommandBuffer *commandBuffer,
-                            vk::RenderPassDesc *renderPassDesc);
+    angle::Result onColorDraw(ContextVk *contextVk,
+                              vk::FramebufferHelper *framebufferVk,
+                              vk::CommandBuffer *commandBuffer,
+                              vk::RenderPassDesc *renderPassDesc);
+    angle::Result onDepthStencilDraw(ContextVk *contextVk,
+                                     vk::FramebufferHelper *framebufferVk,
+                                     vk::CommandBuffer *commandBuffer,
+                                     vk::RenderPassDesc *renderPassDesc);
 
     vk::ImageHelper &getImage();
     const vk::ImageHelper &getImage() const;
@@ -72,7 +73,7 @@ class RenderTargetVk final : public FramebufferAttachmentRenderTarget
     vk::ImageView *getReadImageView() const;
 
     const vk::Format &getImageFormat() const;
-    const gl::Extents &getImageExtents() const;
+    gl::Extents getExtents() const;
     size_t getLevelIndex() const { return mLevelIndex; }
     size_t getLayerIndex() const { return mLayerIndex; }
 

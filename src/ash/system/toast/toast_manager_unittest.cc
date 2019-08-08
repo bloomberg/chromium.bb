@@ -10,6 +10,7 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -199,7 +200,8 @@ TEST_F(ToastManagerTest, PositionWithVisibleBottomShelf) {
   gfx::Rect root_bounds =
       screen_util::GetDisplayBoundsWithShelf(shelf->GetWindow());
 
-  EXPECT_TRUE(toast_bounds.Intersects(shelf->GetUserWorkAreaBounds()));
+  EXPECT_TRUE(toast_bounds.Intersects(
+      GetPrimaryWorkAreaInsets()->user_work_area_bounds()));
   EXPECT_NEAR(root_bounds.CenterPoint().x(), toast_bounds.CenterPoint().x(), 1);
 
   gfx::Rect shelf_bounds = shelf->GetIdealBounds();
@@ -226,7 +228,8 @@ TEST_F(ToastManagerTest, PositionWithAutoHiddenBottomShelf) {
   gfx::Rect root_bounds =
       screen_util::GetDisplayBoundsWithShelf(shelf->GetWindow());
 
-  EXPECT_TRUE(toast_bounds.Intersects(shelf->GetUserWorkAreaBounds()));
+  EXPECT_TRUE(toast_bounds.Intersects(
+      GetPrimaryWorkAreaInsets()->user_work_area_bounds()));
   EXPECT_NEAR(root_bounds.CenterPoint().x(), toast_bounds.CenterPoint().x(), 1);
   EXPECT_EQ(root_bounds.bottom() - kHiddenShelfInScreenPortion -
                 ToastOverlay::kOffset,
@@ -246,7 +249,8 @@ TEST_F(ToastManagerTest, PositionWithHiddenBottomShelf) {
   gfx::Rect root_bounds =
       screen_util::GetDisplayBoundsWithShelf(shelf->GetWindow());
 
-  EXPECT_TRUE(toast_bounds.Intersects(shelf->GetUserWorkAreaBounds()));
+  EXPECT_TRUE(toast_bounds.Intersects(
+      GetPrimaryWorkAreaInsets()->user_work_area_bounds()));
   EXPECT_NEAR(root_bounds.CenterPoint().x(), toast_bounds.CenterPoint().x(), 1);
   EXPECT_EQ(root_bounds.bottom() - ToastOverlay::kOffset,
             toast_bounds.bottom());
@@ -265,7 +269,8 @@ TEST_F(ToastManagerTest, PositionWithVisibleLeftShelf) {
   gfx::Rect root_bounds =
       screen_util::GetDisplayBoundsWithShelf(shelf->GetWindow());
 
-  EXPECT_TRUE(toast_bounds.Intersects(shelf->GetUserWorkAreaBounds()));
+  EXPECT_TRUE(toast_bounds.Intersects(
+      GetPrimaryWorkAreaInsets()->user_work_area_bounds()));
   EXPECT_EQ(root_bounds.bottom() - ToastOverlay::kOffset,
             toast_bounds.bottom());
 
@@ -291,7 +296,8 @@ TEST_F(ToastManagerTest, PositionWithUnifiedDesktop) {
   gfx::Rect root_bounds =
       screen_util::GetDisplayBoundsWithShelf(shelf->GetWindow());
 
-  EXPECT_TRUE(toast_bounds.Intersects(shelf->GetUserWorkAreaBounds()));
+  EXPECT_TRUE(toast_bounds.Intersects(
+      GetPrimaryWorkAreaInsets()->user_work_area_bounds()));
   EXPECT_TRUE(root_bounds.Contains(toast_bounds));
   EXPECT_NEAR(root_bounds.CenterPoint().x(), toast_bounds.CenterPoint().x(), 1);
 

@@ -507,17 +507,6 @@ void TraceWithAllMacroVariants(WaitableEvent* task_complete_event) {
     TRACE_EVENT_LEAVE_CONTEXT("all", "TRACE_EVENT_LEAVE_CONTEXT call",
                               TRACE_ID_WITH_SCOPE("scope", context_id));
 
-    TRACE_LINK_IDS("all", "TRACE_LINK_IDS simple call", 0x1000, 0x2000);
-    TRACE_LINK_IDS("all", "TRACE_LINK_IDS scoped call",
-                   TRACE_ID_WITH_SCOPE("scope 1", 0x1000),
-                   TRACE_ID_WITH_SCOPE("scope 2", 0x2000));
-    TRACE_LINK_IDS("all", "TRACE_LINK_IDS to a local ID", 0x1000,
-                   TRACE_ID_LOCAL(0x2000));
-    TRACE_LINK_IDS("all", "TRACE_LINK_IDS to a global ID", 0x1000,
-                   TRACE_ID_GLOBAL(0x2000));
-    TRACE_LINK_IDS("all", "TRACE_LINK_IDS to a composite ID", 0x1000,
-                   TRACE_ID_WITH_SCOPE("scope 1", 0x2000, 0x3000));
-
     TRACE_EVENT_ASYNC_BEGIN0("all", "async default process scope", 0x1000);
     TRACE_EVENT_ASYNC_BEGIN0("all", "async local id", TRACE_ID_LOCAL(0x2000));
     TRACE_EVENT_ASYNC_BEGIN0("all", "async global id", TRACE_ID_GLOBAL(0x3000));
@@ -936,97 +925,6 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
     EXPECT_EQ("scope", scope);
     EXPECT_TRUE((item && item->GetString("id", &id)));
     EXPECT_EQ("0x20151021", id);
-  }
-
-  EXPECT_FIND_("TRACE_LINK_IDS simple call");
-  {
-    std::string ph;
-    EXPECT_TRUE((item && item->GetString("ph", &ph)));
-    EXPECT_EQ("=", ph);
-
-    EXPECT_FALSE((item && item->HasKey("scope")));
-    std::string id1;
-    EXPECT_TRUE((item && item->GetString("id", &id1)));
-    EXPECT_EQ("0x1000", id1);
-
-    EXPECT_FALSE((item && item->HasKey("args.linked_id.scope")));
-    std::string id2;
-    EXPECT_TRUE((item && item->GetString("args.linked_id.id", &id2)));
-    EXPECT_EQ("0x2000", id2);
-  }
-
-  EXPECT_FIND_("TRACE_LINK_IDS scoped call");
-  {
-    std::string ph;
-    EXPECT_TRUE((item && item->GetString("ph", &ph)));
-    EXPECT_EQ("=", ph);
-
-    std::string scope1;
-    EXPECT_TRUE((item && item->GetString("scope", &scope1)));
-    EXPECT_EQ("scope 1", scope1);
-    std::string id1;
-    EXPECT_TRUE((item && item->GetString("id", &id1)));
-    EXPECT_EQ("0x1000", id1);
-
-    std::string scope2;
-    EXPECT_TRUE((item && item->GetString("args.linked_id.scope", &scope2)));
-    EXPECT_EQ("scope 2", scope2);
-    std::string id2;
-    EXPECT_TRUE((item && item->GetString("args.linked_id.id", &id2)));
-    EXPECT_EQ("0x2000", id2);
-  }
-
-  EXPECT_FIND_("TRACE_LINK_IDS to a local ID");
-  {
-    std::string ph;
-    EXPECT_TRUE((item && item->GetString("ph", &ph)));
-    EXPECT_EQ("=", ph);
-
-    EXPECT_FALSE((item && item->HasKey("scope")));
-    std::string id1;
-    EXPECT_TRUE((item && item->GetString("id", &id1)));
-    EXPECT_EQ("0x1000", id1);
-
-    EXPECT_FALSE((item && item->HasKey("args.linked_id.scope")));
-    std::string id2;
-    EXPECT_TRUE((item && item->GetString("args.linked_id.id2.local", &id2)));
-    EXPECT_EQ("0x2000", id2);
-  }
-
-  EXPECT_FIND_("TRACE_LINK_IDS to a global ID");
-  {
-    std::string ph;
-    EXPECT_TRUE((item && item->GetString("ph", &ph)));
-    EXPECT_EQ("=", ph);
-
-    EXPECT_FALSE((item && item->HasKey("scope")));
-    std::string id1;
-    EXPECT_TRUE((item && item->GetString("id", &id1)));
-    EXPECT_EQ("0x1000", id1);
-
-    EXPECT_FALSE((item && item->HasKey("args.linked_id.scope")));
-    std::string id2;
-    EXPECT_TRUE((item && item->GetString("args.linked_id.id2.global", &id2)));
-    EXPECT_EQ("0x2000", id2);
-  }
-
-  EXPECT_FIND_("TRACE_LINK_IDS to a composite ID");
-  {
-    std::string ph;
-    EXPECT_TRUE((item && item->GetString("ph", &ph)));
-    EXPECT_EQ("=", ph);
-
-    EXPECT_FALSE(item->HasKey("scope"));
-    std::string id1;
-    EXPECT_TRUE(item->GetString("id", &id1));
-    EXPECT_EQ("0x1000", id1);
-
-    std::string scope;
-    EXPECT_TRUE(item->GetString("args.linked_id.scope", &scope));
-    EXPECT_EQ("scope 1", scope);
-    std::string id2;
-    EXPECT_TRUE(item->GetString("args.linked_id.id", &id2));
-    EXPECT_EQ(id2, "0x2000/0x3000");
   }
 
   EXPECT_FIND_("async default process scope");

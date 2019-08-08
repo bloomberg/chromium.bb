@@ -38,6 +38,7 @@
 #include "ios/chrome/browser/ui/omnibox/web_omnibox_edit_controller_impl.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
@@ -244,16 +245,16 @@ const int kLocationAuthorizationStatusCount = 4;
     // |loadURL|?  It doesn't seem to be causing major problems.  If we call
     // cancel before load, then any prerendered pages get destroyed before the
     // call to load.
-    web::NavigationManager::WebLoadParams params =
+    web::NavigationManager::WebLoadParams web_params =
         web_navigation_util::CreateWebLoadParams(url, transition, postContent);
     NSMutableDictionary* combinedExtraHeaders =
         [[self variationHeadersForURL:url] mutableCopy];
-    [combinedExtraHeaders addEntriesFromDictionary:params.extra_headers];
-    params.extra_headers = [combinedExtraHeaders copy];
-    ChromeLoadParams chromeParams(params);
-    chromeParams.disposition = disposition;
+    [combinedExtraHeaders addEntriesFromDictionary:web_params.extra_headers];
+    web_params.extra_headers = [combinedExtraHeaders copy];
+    UrlLoadParams params = UrlLoadParams::InCurrentTab(web_params);
+    params.disposition = disposition;
     UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-        ->LoadUrlInCurrentTab(chromeParams);
+        ->Load(params);
 
     if (google_util::IsGoogleSearchUrl(url)) {
       UMA_HISTOGRAM_ENUMERATION(
@@ -384,6 +385,14 @@ const int kLocationAuthorizationStatusCount = 4;
   [self.viewController displayInfobarButton:display];
 }
 
+- (void)selectInfobarBadge:(BOOL)select {
+  [self.viewController setInfobarButtonStyleSelected:select];
+}
+
+- (void)activeInfobarBadge:(BOOL)active {
+  [self.viewController setInfobarButtonStyleActive:active];
+}
+
 #pragma mark - private
 
 // Returns a dictionary with variation headers for qualified URLs. Can be empty.
@@ -395,10 +404,13 @@ const int kLocationAuthorizationStatusCount = 4;
                                           : variations::InIncognito::kNo,
       &resource_request);
   NSMutableDictionary* result = [NSMutableDictionary dictionary];
-  if (!resource_request.client_data_header.empty()) {
-    NSString* name = base::SysUTF8ToNSString("X-Client-Data");
-    NSString* value =
-        base::SysUTF8ToNSString(resource_request.client_data_header);
+  // The variations header appears in cors_exempt_headers rather than in
+  // headers.
+  net::HttpRequestHeaders::Iterator header_iterator(
+      resource_request.cors_exempt_headers);
+  while (header_iterator.GetNext()) {
+    NSString* name = base::SysUTF8ToNSString(header_iterator.name());
+    NSString* value = base::SysUTF8ToNSString(header_iterator.value());
     result[name] = value;
   }
   return [result copy];
@@ -419,12 +431,11 @@ const int kLocationAuthorizationStatusCount = 4;
     // It is necessary to include PAGE_TRANSITION_FROM_ADDRESS_BAR in the
     // transition type is so that query-in-the-omnibox is triggered for the
     // URL.
-    web::NavigationManager::WebLoadParams params(searchURL);
-    params.transition_type = ui::PageTransitionFromInt(
+    UrlLoadParams params = UrlLoadParams::InCurrentTab(searchURL);
+    params.web_params.transition_type = ui::PageTransitionFromInt(
         ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-    ChromeLoadParams chromeParams(params);
     UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-        ->LoadUrlInCurrentTab(chromeParams);
+        ->Load(params);
   }
 }
 

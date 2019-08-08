@@ -53,16 +53,16 @@ class WebElement(object):
     self._Execute(Command.CLEAR_ELEMENT)
 
   def SendKeys(self, *values):
-    typing = []
-    for value in values:
-      if isinstance(value, int):
-        value = str(value)
-      for i in range(len(value)):
-        typing.append(value[i])
-    self._Execute(Command.SEND_KEYS_TO_ELEMENT, {'value': typing})
-
-  def SendKeysW3c(self, text):
-    self._Execute(Command.SEND_KEYS_TO_ELEMENT, {'text': text})
+    if self._chromedriver.w3c_compliant:
+      self._Execute(Command.SEND_KEYS_TO_ELEMENT, {'text': str(*values)})
+    else:
+      typing = []
+      for value in values:
+        if isinstance(value, int):
+          value = str(value)
+        for i in range(len(value)):
+          typing.append(value[i])
+        self._Execute(Command.SEND_KEYS_TO_ELEMENT, {'value': typing})
 
   def GetLocation(self):
     return self._Execute(Command.GET_ELEMENT_LOCATION)

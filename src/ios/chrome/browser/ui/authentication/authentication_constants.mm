@@ -8,12 +8,11 @@
 #error "This file requires ARC support."
 #endif
 
-const CGFloat kAuthenticationHeaderImageHeight = 88.;
+const CGFloat kAuthenticationHeaderImageHeight = 180.;
 
 const UIFontTextStyle kAuthenticationTitleFontStyle = UIFontTextStyleTitle1;
 const UIFontTextStyle kAuthenticationTextFontStyle = UIFontTextStyleSubheadline;
 
-const int kAuthenticationHeaderBackgroundColor = 0xf8f9fa;
 const CGFloat kAuthenticationHorizontalMargin = 16.;
 const CGFloat kAuthenticationHeaderTitleMargin = 19.;
 

@@ -72,7 +72,8 @@ class RTCRtpSenderTest : public ::testing::Test {
         blink::WebString::FromUTF8(id), blink::WebMediaStreamSource::kTypeAudio,
         blink::WebString::FromUTF8("local_audio_track"), false);
     blink::MediaStreamAudioSource* audio_source =
-        new blink::MediaStreamAudioSource(true);
+        new blink::MediaStreamAudioSource(
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting(), true);
     // Takes ownership of |audio_source|.
     web_source.SetPlatformSource(base::WrapUnique(audio_source));
     blink::WebMediaStreamTrack web_track;
@@ -120,8 +121,7 @@ class RTCRtpSenderTest : public ::testing::Test {
   scoped_refptr<WebRTCStatsReportObtainer> CallGetStats() {
     scoped_refptr<WebRTCStatsReportObtainer> obtainer =
         new WebRTCStatsReportObtainer();
-    sender_->GetStats(obtainer->GetStatsCallbackWrapper(),
-                      blink::RTCStatsFilter::kIncludeOnlyStandardMembers);
+    sender_->GetStats(obtainer->GetStatsCallbackWrapper(), {});
     return obtainer;
   }
 
@@ -140,7 +140,7 @@ class RTCRtpSenderTest : public ::testing::Test {
   }
 
   // Code under test expects to be run in a process with an initialized
-  // ChildProcess, which requires TaskScheduler, and a main-thread MessageLoop,
+  // ChildProcess, which requires ThreadPool, and a main-thread MessageLoop,
   // which the ScopedTaskEnvironment also provides.
   base::test::ScopedTaskEnvironment task_environment_;
   ChildProcess child_process_;

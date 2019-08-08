@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "content/common/content_export.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
@@ -22,12 +21,15 @@ namespace content {
 
 // TODO(https://crbug.com/868868): Similar methods to this exist in many content
 // unittests. Move to a separate file and reuse it in all of them.
-blink::WebMediaStreamTrack CreateWebMediaStreamTrack(const std::string& id);
+blink::WebMediaStreamTrack CreateWebMediaStreamTrack(
+    const std::string& id,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-class CONTENT_EXPORT FakeRTCRtpSender : public blink::WebRTCRtpSender {
+class FakeRTCRtpSender : public blink::WebRTCRtpSender {
  public:
   FakeRTCRtpSender(base::Optional<std::string> track_id,
-                   std::vector<std::string> stream_ids);
+                   std::vector<std::string> stream_ids,
+                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   FakeRTCRtpSender(const FakeRTCRtpSender&);
   ~FakeRTCRtpSender() override;
   FakeRTCRtpSender& operator=(const FakeRTCRtpSender&);
@@ -46,18 +48,20 @@ class CONTENT_EXPORT FakeRTCRtpSender : public blink::WebRTCRtpSender {
   void SetParameters(blink::WebVector<webrtc::RtpEncodingParameters>,
                      webrtc::DegradationPreference,
                      blink::WebRTCVoidRequest) override;
-  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
-                blink::RTCStatsFilter) override;
+  void GetStats(blink::WebRTCStatsReportCallback,
+                const std::vector<webrtc::NonStandardGroupId>&) override;
 
  private:
   base::Optional<std::string> track_id_;
   std::vector<std::string> stream_ids_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
-class CONTENT_EXPORT FakeRTCRtpReceiver : public blink::WebRTCRtpReceiver {
+class FakeRTCRtpReceiver : public blink::WebRTCRtpReceiver {
  public:
   FakeRTCRtpReceiver(const std::string& track_id,
-                     std::vector<std::string> stream_ids);
+                     std::vector<std::string> stream_ids,
+                     scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   FakeRTCRtpReceiver(const FakeRTCRtpReceiver&);
   ~FakeRTCRtpReceiver() override;
   FakeRTCRtpReceiver& operator=(const FakeRTCRtpReceiver&);
@@ -70,17 +74,18 @@ class CONTENT_EXPORT FakeRTCRtpReceiver : public blink::WebRTCRtpReceiver {
   blink::WebVector<blink::WebString> StreamIds() const override;
   blink::WebVector<std::unique_ptr<blink::WebRTCRtpSource>> GetSources()
       override;
-  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
-                blink::RTCStatsFilter) override;
+  void GetStats(blink::WebRTCStatsReportCallback,
+                const std::vector<webrtc::NonStandardGroupId>&) override;
   std::unique_ptr<webrtc::RtpParameters> GetParameters() const override;
+  void SetJitterBufferMinimumDelay(
+      base::Optional<double> delay_seconds) override;
 
  private:
   blink::WebMediaStreamTrack track_;
   std::vector<std::string> stream_ids_;
 };
 
-class CONTENT_EXPORT FakeRTCRtpTransceiver
-    : public blink::WebRTCRtpTransceiver {
+class FakeRTCRtpTransceiver : public blink::WebRTCRtpTransceiver {
  public:
   FakeRTCRtpTransceiver(
       base::Optional<std::string> mid,

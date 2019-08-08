@@ -32,7 +32,7 @@
 #include "components/infobars/core/infobar_manager.h"
 #include "components/password_manager/core/browser/form_parsing/ios_form_parser.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
-#include "components/password_manager/core/browser/password_generation_manager.h"
+#include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
@@ -81,7 +81,7 @@ using password_manager::AccountSelectFillData;
 using password_manager::FillData;
 using password_manager::GetPageURLAndCheckTrustLevel;
 using password_manager::PasswordFormManagerForUI;
-using password_manager::PasswordGenerationManager;
+using password_manager::PasswordGenerationFrameHelper;
 using password_manager::PasswordManager;
 using password_manager::PasswordManagerClient;
 using password_manager::PasswordManagerDriver;
@@ -97,8 +97,10 @@ enum class PasswordInfoBarType { SAVE, UPDATE };
 enum class PasswordSuggestionType {
   // Credentials are listed.
   CREDENTIALS = 0,
-  // Only "Show All" is listed.
+  // "Show All" is listed.
   SHOW_ALL = 1,
+  // "Suggest Password" is listed.
+  SUGGESTED = 2,
   COUNT
 };
 
@@ -172,7 +174,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
 @implementation PasswordController {
   std::unique_ptr<PasswordManager> _passwordManager;
-  std::unique_ptr<PasswordGenerationManager> _passwordGenerationManager;
+  std::unique_ptr<PasswordGenerationFrameHelper> _passwordGenerationHelper;
   std::unique_ptr<PasswordManagerClient> _passwordManagerClient;
   std::unique_ptr<PasswordManagerDriver> _passwordManagerDriver;
   std::unique_ptr<CredentialManager> _credentialManager;
@@ -224,7 +226,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
     if (features::IsAutomaticPasswordGenerationEnabled() &&
         !_passwordManagerClient->IsIncognito()) {
-      _passwordGenerationManager.reset(new PasswordGenerationManager(
+      _passwordGenerationHelper.reset(new PasswordGenerationFrameHelper(
           _passwordManagerClient.get(), _passwordManagerDriver.get()));
     }
 
@@ -364,11 +366,11 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
   if (self.isPasswordGenerated &&
       [fieldIdentifier isEqualToString:self.passwordGeneratedIdentifier]) {
-    // TODO(crbug.com/886583):  On other platforms, when the user clicks on
-    // generation field, we show password in clear text. And the user has
-    // the possibility to edit it. On iOS, it's harder to do (it's probably
-    // bad idea to change field type from password to text).
-    // We probably need to show some additionaly UI.  Waiting on UX.
+    // On other platforms, when the user clicks on generation field, we show
+    // password in clear text. And the user has the possibility to edit it. On
+    // iOS, it's harder to do (it's probably bad idea to change field type from
+    // password to text). The decision was to give everything to the automatic
+    // flow and avoid the manual flow, for a cleaner and simpler UI.
     if (typedValue.length < kMinimumLengthForEditedPassword) {
       self.isPasswordGenerated = NO;
       self.passwordGeneratedIdentifier = nil;
@@ -385,8 +387,8 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   if (self.isPasswordGenerated) {
     // Always update, in case, for example, that username has been edited.
     self.passwordManager->UpdateGeneratedPasswordOnUserInput(
-        self.passwordManagerDriver, SysNSStringToUTF16(formName),
-        SysNSStringToUTF16(fieldIdentifier), SysNSStringToUTF16(typedValue));
+        SysNSStringToUTF16(formName), SysNSStringToUTF16(fieldIdentifier),
+        SysNSStringToUTF16(typedValue));
   }
 }
 
@@ -403,9 +405,6 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       [self.suggestionHelper retrieveSuggestionsWithFormName:formName
                                              fieldIdentifier:fieldIdentifier
                                                    fieldType:fieldType];
-  PasswordSuggestionType suggestion_type =
-      rawSuggestions.count > 0 ? PasswordSuggestionType::CREDENTIALS
-                               : PasswordSuggestionType::SHOW_ALL;
 
   NSMutableArray<FormSuggestion*>* suggestions = [NSMutableArray array];
   for (FormSuggestion* rawSuggestion in rawSuggestions) {
@@ -417,6 +416,9 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                        displayDescription:rawSuggestion.displayDescription
                                      icon:nil
                                identifier:0]];
+  }
+  if (suggestions.count) {
+    LogSuggestionShown(PasswordSuggestionType::CREDENTIALS);
   }
 
   if ([self canGeneratePasswordForForm:formName
@@ -432,6 +434,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                                icon:nil
                          identifier:autofill::
                                         POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY]];
+    LogSuggestionShown(PasswordSuggestionType::SUGGESTED);
   }
 
   // Once Manual Fallback is enabled the access to settings will exist as an
@@ -448,9 +451,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                          identifier:
                              autofill::
                                  POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY]];
-  }
-  if (suggestions.count) {
-    LogSuggestionShown(suggestion_type);
+    LogSuggestionShown(PasswordSuggestionType::SHOW_ALL);
   }
 
   completion([suggestions copy], self);
@@ -475,7 +476,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                         if (injected)
                           completion();
                       }];
-      // TODO(crbug.com/886583): add metrics.
+      LogSuggestionClicked(PasswordSuggestionType::SUGGESTED);
       return;
     }
     default: {
@@ -585,8 +586,8 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   [self.suggestionHelper processWithNoSavedCredentials];
 }
 
-- (PasswordGenerationManager*)passwordGenerationManager {
-  return _passwordGenerationManager.get();
+- (PasswordGenerationFrameHelper*)passwordGenerationHelper {
+  return _passwordGenerationHelper.get();
 }
 
 - (void)formEligibleForGenerationFound:
@@ -693,7 +694,11 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 - (BOOL)canGeneratePasswordForForm:(NSString*)formName
                    fieldIdentifier:(NSString*)fieldIdentifier
                          fieldType:(NSString*)fieldType {
-  if (!features::IsAutomaticPasswordGenerationEnabled())
+  if (!features::IsAutomaticPasswordGenerationEnabled() ||
+      _passwordManagerClient->IsIncognito() ||
+      !_passwordManagerDriver->GetPasswordGenerationHelper()
+           ->IsGenerationEnabled(
+               /*log_debug_data*/ true))
     return NO;
   if (![fieldType isEqualToString:@"password"])
     return NO;
@@ -722,30 +727,15 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
 - (void)generatePasswordForFormName:(NSString*)formName
                   completionHandler:(void (^)(BOOL))completionHandler {
-  const NewPasswordFormGenerationData* generation_data =
-      [self getFormForGenerationFromFormName:formName];
-  if (!generation_data)
+  if (![self getFormForGenerationFromFormName:formName])
     return;
-  NSString* newPasswordIdentifier =
-      SysUTF16ToNSString(generation_data->new_password_element);
-  NSString* confirmPasswordIdentifier =
-      SysUTF16ToNSString(generation_data->confirmation_password_element);
-  [self generatePasswordForFormName:formName
-              newPasswordIdentifier:newPasswordIdentifier
-          confirmPasswordIdentifier:confirmPasswordIdentifier
-                  completionHandler:completionHandler];
-}
 
-- (void)generatePasswordForFormName:(NSString*)formName
-              newPasswordIdentifier:(NSString*)newPasswordIdentifier
-          confirmPasswordIdentifier:(NSString*)confirmPasswordIdentifier
-                  completionHandler:(void (^)(BOOL))completionHandler {
   // TODO(crbug.com/886583): form_signature, field_signature, max_length and
   // spec_priority in PGM::GeneratePassword are being refactored, passing 0 for
   // now to get a generic random password.
   base::string16 generatedPassword =
-      _passwordGenerationManager->GeneratePassword([self lastCommittedURL], 0,
-                                                   0, 0, nullptr);
+      _passwordGenerationHelper->GeneratePassword([self lastCommittedURL], 0, 0,
+                                                  0, nullptr);
 
   NSString* title = GetNSStringF(IDS_IOS_SUGGESTED_PASSWORD, generatedPassword);
   NSString* message = GetNSString(IDS_IOS_SUGGESTED_PASSWORD_HINT);
@@ -770,9 +760,6 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                 action:^{
                   [weakSelf
                       injectGeneratedPasswordForFormName:formName
-                                   newPasswordIdentifier:newPasswordIdentifier
-                               confirmPasswordIdentifier:
-                                   confirmPasswordIdentifier
                                        generatedPassword:nsPassword
                                        completionHandler:completionHandler];
                 }
@@ -799,28 +786,14 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       SysUTF16ToNSString(generation_data->new_password_element);
   NSString* confirmPasswordIdentifier =
       SysUTF16ToNSString(generation_data->confirmation_password_element);
-  [self injectGeneratedPasswordForFormName:formName
-                     newPasswordIdentifier:newPasswordIdentifier
-                 confirmPasswordIdentifier:confirmPasswordIdentifier
-                         generatedPassword:generatedPassword
-                         completionHandler:completionHandler];
-}
 
-- (void)injectGeneratedPasswordForFormName:(NSString*)formName
-                     newPasswordIdentifier:(NSString*)newPasswordIdentifier
-                 confirmPasswordIdentifier:(NSString*)confirmPasswordIdentifier
-                         generatedPassword:(NSString*)generatedPassword
-                         completionHandler:(void (^)(BOOL))completionHandler {
   auto generatedPasswordInjected = ^(BOOL success) {
     auto passwordPresaved = ^(BOOL found, const autofill::FormData& form) {
       if (found) {
-        // TODO(crbug.com/886583): set is_manually_triggered when we show a
-        // prompt.
         self.passwordManager->PresaveGeneratedPassword(
             self.passwordManagerDriver, form,
             SysNSStringToUTF16(generatedPassword),
-            SysNSStringToUTF16(newPasswordIdentifier),
-            /* is_manually_triggered */ false);
+            SysNSStringToUTF16(newPasswordIdentifier));
       }
       // If the form isn't found, it disappeared between fillPasswordForm below
       // and here. There isn't much that can be done.

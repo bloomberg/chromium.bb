@@ -17,11 +17,6 @@ declare_args() {
   # when the default value is used.
   cast_build_incremental = "999999"
 
-  # If true, IS_CAST_DEBUG_BUILD() will evaluate to 1 in version.h. Otherwise,
-  # it will evaluate to 0. Overriding this when is_debug=false is useful for
-  # doing engineering builds.
-  cast_is_debug = is_debug
-
   if (is_android) {
     # If true, run receiver apps in an Android service instead of an activity.
     display_web_contents_in_service = is_cast_audio_only
@@ -121,6 +116,9 @@ declare_args() {
   # within cast_shell. Enable for desktop builds to ensure that Chromium CQ
   # builds the external Mojo broker code.
   enable_external_mojo_services = is_cast_desktop_build
+
+  # Recording happens at this sample rate. Must be 16000, 48000 or 96000 Hz.
+  audio_input_sample_rate = 16000
 }
 
 declare_args() {

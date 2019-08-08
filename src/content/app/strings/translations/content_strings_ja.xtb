@@ -88,7 +88,7 @@
 <translation id="4151657705144244502">グラフィック</translation>
 <translation id="4193965531860883258">前書き</translation>
 <translation id="4201051445878709314">前の月を表示</translation>
-<translation id="421884353938374759">色の選択</translation>
+<translation id="421884353938374759">カラー選択ツール</translation>
 <translation id="4248100235867064564">メニューバー</translation>
 <translation id="4254339807215791271">コンテンツ情報</translation>
 <translation id="4360991593054037559">有効な値を入力してください。有効な値として最も近いのは <ph name="VALID_VALUE_LOW" /> と <ph name="VALID_VALUE_HIGHER" /> です。</translation>
@@ -176,7 +176,9 @@
 <translation id="6941933287844615239">メディアをダウンロード</translation>
 <translation id="6981594929165378967">挿入</translation>
 <translation id="6989848892321993519">このテキストは <ph name="MIN_CHARACTERS" /> 文字以上で指定してください（現在 1 文字で指定されています）。</translation>
+<translation id="7033340931668032222">音量を変更するには上か下を押します</translation>
 <translation id="709897737746224366">指定されている形式で入力してください。</translation>
+<translation id="7118469954320184356">説明はありません。</translation>
 <translation id="7139483182332611405">序文</translation>
 <translation id="7263440858009898357">リスト内の項目を選択してください。</translation>
 <translation id="727747134524199931">列見出し</translation>
@@ -226,6 +228,7 @@
 <translation id="8550857728288566671">図形記号</translation>
 <translation id="8583702881314752957">定義リスト</translation>
 <translation id="8597182159515967513">見出し</translation>
+<translation id="8603553056539299761">再生位置を移動するには左か右を押します</translation>
 <translation id="860475260694818407">目次</translation>
 <translation id="8613126697340063924">リモート再生をコントロール</translation>
 <translation id="862370744433916922">副題</translation>

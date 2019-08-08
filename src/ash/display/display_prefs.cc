@@ -918,6 +918,11 @@ void DisplayPrefs::MaybeStoreDisplayPrefs() {
   StoreDisplayTouchAssociations(pref_service);
   StoreExternalDisplayMirrorInfo(pref_service);
   StoreCurrentDisplayMixedMirrorModeParams(pref_service);
+
+  // The display prefs need to be committed immediately to guarantee they're not
+  // lost, and are restored properly on reboot. https://crbug.com/936884.
+  // This sends a request via mojo to commit the prefs to disk.
+  pref_service->CommitPendingWrite();
 }
 
 void DisplayPrefs::LoadDisplayPreferences() {
@@ -928,6 +933,14 @@ void DisplayPrefs::LoadDisplayPreferences() {
   LoadDisplayMixedMirrorModeParams(local_state);
   LoadDisplayRotationState(local_state);
   LoadDisplayTouchAssociations(local_state);
+
+  // Now that the display prefs have been loaded, request to reconfigure the
+  // displays, but signal the display manager to restore the mirror state of
+  // external displays from the loaded prefs (if any).
+  Shell::Get()
+      ->display_manager()
+      ->set_should_restore_mirror_mode_from_display_prefs(true);
+  Shell::Get()->display_configurator()->OnConfigurationChanged();
 
   // Ensure that we have a reasonable initial display power state if
   // powerd fails to send us one over D-Bus. Otherwise, we won't restore

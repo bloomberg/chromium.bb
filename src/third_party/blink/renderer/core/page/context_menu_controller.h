@@ -46,8 +46,6 @@ struct WebContextMenuData;
 class CORE_EXPORT ContextMenuController final
     : public GarbageCollectedFinalized<ContextMenuController> {
  public:
-  static ContextMenuController* Create(Page*);
-
   explicit ContextMenuController(Page*);
   ~ContextMenuController();
   void Trace(blink::Visitor*);

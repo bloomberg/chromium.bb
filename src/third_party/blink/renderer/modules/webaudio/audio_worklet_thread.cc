@@ -67,7 +67,8 @@ WorkerOrWorkletGlobalScope* AudioWorkletThread::CreateWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("audio-worklet"),
                "AudioWorkletThread::createWorkerGlobalScope");
-  return AudioWorkletGlobalScope::Create(std::move(creation_params), this);
+  return MakeGarbageCollected<AudioWorkletGlobalScope>(
+      std::move(creation_params), this);
 }
 
 }  // namespace blink

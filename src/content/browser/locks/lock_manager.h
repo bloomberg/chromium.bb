@@ -13,7 +13,7 @@
 #include "base/sequence_checker.h"
 #include "content/public/browser/browser_context.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "third_party/blink/public/platform/modules/locks/lock_manager.mojom.h"
+#include "third_party/blink/public/mojom/locks/lock_manager.mojom.h"
 #include "url/origin.h"
 
 namespace content {

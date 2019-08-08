@@ -15,7 +15,7 @@ namespace blink {
 namespace v8_gc_integration_test {
 
 void PreciselyCollectGarbage() {
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
 }
 
 // The following directly calls testing GCs in V8 to avoid cluttering a globally

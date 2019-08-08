@@ -92,9 +92,29 @@ void WriteEchoLikelihoodGraphFileFooter(std::ofstream* output_file) {
                  << "  plt.plot(x, y)" << std::endl
                  << "  plt.ylabel('Echo likelihood')" << std::endl
                  << "  plt.xlabel('Time (s)')" << std::endl
-                 << "  plt.ylim([0,1])" << std::endl
                  << "  plt.show()" << std::endl;
 }
+
+// RAII class for execution time measurement. Updates the provided
+// ApiCallStatistics based on the time between ScopedTimer creation and
+// leaving the enclosing scope.
+class ScopedTimer {
+ public:
+  ScopedTimer(ApiCallStatistics* api_call_statistics_,
+              ApiCallStatistics::CallType call_type)
+      : start_time_(rtc::TimeNanos()),
+        call_type_(call_type),
+        api_call_statistics_(api_call_statistics_) {}
+
+  ~ScopedTimer() {
+    api_call_statistics_->Add(rtc::TimeNanos() - start_time_, call_type_);
+  }
+
+ private:
+  const int64_t start_time_;
+  const ApiCallStatistics::CallType call_type_;
+  ApiCallStatistics* const api_call_statistics_;
+};
 
 }  // namespace
 
@@ -151,13 +171,6 @@ AudioProcessingSimulator::~AudioProcessingSimulator() {
   }
 }
 
-AudioProcessingSimulator::ScopedTimer::~ScopedTimer() {
-  int64_t interval = rtc::TimeNanos() - start_time_;
-  proc_time_->sum += interval;
-  proc_time_->max = std::max(proc_time_->max, interval);
-  proc_time_->min = std::min(proc_time_->min, interval);
-}
-
 void AudioProcessingSimulator::ProcessStream(bool fixed_interface) {
   // Optionally use the fake recording device to simulate analog gain.
   if (settings_.simulate_mic_gain) {
@@ -189,12 +202,14 @@ void AudioProcessingSimulator::ProcessStream(bool fixed_interface) {
   // Process the current audio frame.
   if (fixed_interface) {
     {
-      const auto st = ScopedTimer(mutable_proc_time());
+      const auto st = ScopedTimer(&api_call_statistics_,
+                                  ApiCallStatistics::CallType::kCapture);
       RTC_CHECK_EQ(AudioProcessing::kNoError, ap_->ProcessStream(&fwd_frame_));
     }
     CopyFromAudioFrame(fwd_frame_, out_buf_.get());
   } else {
-    const auto st = ScopedTimer(mutable_proc_time());
+    const auto st = ScopedTimer(&api_call_statistics_,
+                                ApiCallStatistics::CallType::kCapture);
     RTC_CHECK_EQ(AudioProcessing::kNoError,
                  ap_->ProcessStream(in_buf_->channels(), in_config_,
                                     out_config_, out_buf_->channels()));
@@ -223,13 +238,16 @@ void AudioProcessingSimulator::ProcessStream(bool fixed_interface) {
 
 void AudioProcessingSimulator::ProcessReverseStream(bool fixed_interface) {
   if (fixed_interface) {
-    const auto st = ScopedTimer(mutable_proc_time());
-    RTC_CHECK_EQ(AudioProcessing::kNoError,
-                 ap_->ProcessReverseStream(&rev_frame_));
+    {
+      const auto st = ScopedTimer(&api_call_statistics_,
+                                  ApiCallStatistics::CallType::kRender);
+      RTC_CHECK_EQ(AudioProcessing::kNoError,
+                   ap_->ProcessReverseStream(&rev_frame_));
+    }
     CopyFromAudioFrame(rev_frame_, reverse_out_buf_.get());
-
   } else {
-    const auto st = ScopedTimer(mutable_proc_time());
+    const auto st = ScopedTimer(&api_call_statistics_,
+                                ApiCallStatistics::CallType::kRender);
     RTC_CHECK_EQ(AudioProcessing::kNoError,
                  ap_->ProcessReverseStream(
                      reverse_in_buf_->channels(), reverse_in_config_,
@@ -366,8 +384,10 @@ void AudioProcessingSimulator::CreateAudioProcessor() {
   }
   if (settings_.use_pre_amplifier) {
     apm_config.pre_amplifier.enabled = *settings_.use_pre_amplifier;
-    apm_config.pre_amplifier.fixed_gain_factor =
-        settings_.pre_amplifier_gain_factor;
+    if (settings_.pre_amplifier_gain_factor) {
+      apm_config.pre_amplifier.fixed_gain_factor =
+          *settings_.pre_amplifier_gain_factor;
+    }
   }
 
   const bool use_legacy_aec = settings_.use_aec && *settings_.use_aec &&

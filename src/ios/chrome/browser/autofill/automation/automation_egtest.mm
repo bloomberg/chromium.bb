@@ -26,7 +26,6 @@
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "ios/chrome/browser/autofill/form_suggestion_label.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
@@ -194,6 +193,7 @@ static const int kRecipeRetryLimit = 5;
   autofill::PersonalDataManager* personal_data_manager =
       autofill_manager->client()->GetPersonalDataManager();
 
+  personal_data_manager->ClearAllLocalData();
   personal_data_manager->AddCreditCard(credit_card);
   personal_data_manager->SaveImportedProfile(profile);
 }

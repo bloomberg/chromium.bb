@@ -30,7 +30,8 @@ class ExternalVkImageFactory : public SharedImageBackingFactory {
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
-      uint32_t usage) override;
+      uint32_t usage,
+      bool is_thread_safe) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
       viz::ResourceFormat format,

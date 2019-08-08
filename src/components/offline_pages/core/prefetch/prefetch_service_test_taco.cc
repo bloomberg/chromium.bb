@@ -46,7 +46,7 @@ class StubPrefetchBackgroundTaskHandler : public PrefetchBackgroundTaskHandler {
   StubPrefetchBackgroundTaskHandler() = default;
   ~StubPrefetchBackgroundTaskHandler() override = default;
   void CancelBackgroundTask() override {}
-  void EnsureTaskScheduled() override {}
+  void EnsureTaskScheduled(const std::string& gcm_token) override {}
   void Backoff() override {}
   void ResetBackoff() override {}
   void PauseBackoffUntilNextRun() override {}

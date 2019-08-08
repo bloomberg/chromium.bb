@@ -40,12 +40,6 @@ namespace blink {
 class PLATFORM_EXPORT ArchiveResource final
     : public GarbageCollectedFinalized<ArchiveResource> {
  public:
-  static ArchiveResource* Create(scoped_refptr<SharedBuffer>,
-                                 const KURL&,
-                                 const String& content_id,
-                                 const AtomicString& mime_type,
-                                 const AtomicString& text_encoding);
-
   ArchiveResource(scoped_refptr<SharedBuffer>,
                   const KURL&,
                   const String& content_id,

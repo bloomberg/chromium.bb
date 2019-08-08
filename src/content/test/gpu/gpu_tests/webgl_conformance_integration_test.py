@@ -57,11 +57,6 @@ extension_harness_additional_script = r"""
   window.onload = function() { window._loaded = true; }
 """
 
-def _GenerateTestNameFromTestPath(test_path):
-  return ('WebglConformance.%s' %
-          test_path.replace('/', '_').replace('-', '_').
-          replace('\\', '_').rpartition('.')[0].replace('.', '_'))
-
 def _CompareVersion(version1, version2):
   ver_num1 = [int(x) for x in version1.split('.')]
   ver_num2 = [int(x) for x in version2.split('.')]
@@ -110,11 +105,12 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         int(x) for x in options.webgl_conformance_version.split('.')][0]
     cls._is_asan = options.is_asan
     for test_path in test_paths:
-      # generated test name cannot contain '.'
-      name = _GenerateTestNameFromTestPath(test_path).replace(
-          '.', '_')
-      yield (name,
-             os.path.join(webgl_test_util.conformance_relpath, test_path),
+      test_path_with_args = test_path
+      if cls._webgl_version > 1:
+        test_path_with_args += '?webglVersion=' + str(cls._webgl_version)
+      yield (test_path,
+             os.path.join(
+                 webgl_test_util.conformance_relpath, test_path_with_args),
              ('_RunConformanceTest'))
 
     #
@@ -145,6 +141,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'EXT_blend_minmax',
         'EXT_color_buffer_half_float',
         'EXT_disjoint_timer_query',
+        'EXT_float_blend',
         'EXT_frag_depth',
         'EXT_shader_texture_lod',
         'EXT_sRGB',
@@ -170,14 +167,17 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'WEBGL_lose_context',
         'WEBGL_multi_draw',
         'WEBGL_multi_draw_instanced',
+        'WEBGL_video_texture',
       ]
     else:
       return [
         'EXT_color_buffer_float',
         'EXT_disjoint_timer_query_webgl2',
+        'EXT_float_blend',
         'EXT_texture_filter_anisotropic',
         'KHR_parallel_shader_compile',
         'OES_texture_float_linear',
+        'OVR_multiview2',
         'WEBGL_compressed_texture_astc',
         'WEBGL_compressed_texture_etc',
         'WEBGL_compressed_texture_etc1',
@@ -189,7 +189,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'WEBGL_lose_context',
         'WEBGL_multi_draw',
         'WEBGL_multi_draw_instanced',
-        'WEBGL_multiview',
+        'WEBGL_video_texture',
       ]
 
   def RunActualGpuTest(self, test_path, *args):
@@ -335,7 +335,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       '--disable-domain-blocking-for-3d-apis',
       '--disable-gpu-process-crash-limit',
       '--test-type=gpu',
-      '--enable-experimental-web-platform-features',
+      '--enable-webgl-draft-extensions',
       # Try disabling the GPU watchdog to see if this affects the
       # intermittent GPU process hangs that have been seen on the
       # waterfall. crbug.com/596622 crbug.com/609252
@@ -414,7 +414,6 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     current_dir = os.path.dirname(path)
     full_path = os.path.normpath(os.path.join(webgl_test_util.conformance_path,
                                               path))
-    webgl_version = int(version.split('.')[0])
 
     if not os.path.exists(full_path):
       raise Exception('The WebGL conformance test path specified ' +
@@ -467,11 +466,17 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
               include_path, version, webgl2_only, min_version_to_compare)
         else:
           test = os.path.join(current_dir, test_name)
-          if webgl_version > 1:
-            test += '?webglVersion=' + str(webgl_version)
           test_paths.append(test)
 
     return test_paths
+
+  @classmethod
+  def GetPlatformTags(cls, browser):
+    tags = super(WebGLConformanceIntegrationTest, cls).GetPlatformTags(browser)
+    tags.extend(
+        [['no-asan', 'asan'][cls._is_asan],
+         'webgl-version-%d' % cls._webgl_version])
+    return tags
 
 
 def load_tests(loader, tests, pattern):

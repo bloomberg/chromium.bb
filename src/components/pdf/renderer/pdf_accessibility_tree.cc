@@ -224,6 +224,14 @@ void PdfAccessibilityTree::Finish() {
 }
 
 void PdfAccessibilityTree::UpdateAXTreeDataFromSelection() {
+  tree_data_.sel_is_backward = false;
+  if (selection_start_page_index_ > selection_end_page_index_) {
+    tree_data_.sel_is_backward = true;
+  } else if (selection_start_page_index_ == selection_end_page_index_ &&
+             selection_start_char_index_ > selection_end_char_index_) {
+    tree_data_.sel_is_backward = true;
+  }
+
   FindNodeOffset(selection_start_page_index_, selection_start_char_index_,
                  &tree_data_.sel_anchor_object_id,
                  &tree_data_.sel_anchor_offset);
@@ -420,6 +428,7 @@ void PdfAccessibilityTree::AddWordStartsAndEnds(
 //
 
 bool PdfAccessibilityTree::GetTreeData(ui::AXTreeData* tree_data) const {
+  tree_data->sel_is_backward = tree_data_.sel_is_backward;
   tree_data->sel_anchor_object_id = tree_data_.sel_anchor_object_id;
   tree_data->sel_anchor_offset = tree_data_.sel_anchor_offset;
   tree_data->sel_focus_object_id = tree_data_.sel_focus_object_id;

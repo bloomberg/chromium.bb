@@ -15,7 +15,7 @@
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/browser_sync/profile_sync_components_factory_impl.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/model/fake_model_type_sync_bridge.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
@@ -85,7 +85,7 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
       std::unique_ptr<syncer::MetadataChangeList> metadata_changes,
       syncer::EntityChangeList entity_changes) override {
     auto error = FakeModelTypeSyncBridge::ApplySyncChanges(
-        std::move(metadata_changes), entity_changes);
+        std::move(metadata_changes), std::move(entity_changes));
     NotifyObservers();
     return error;
   }
@@ -192,11 +192,11 @@ class MetadataAbsentChecker : public KeyChecker {
 // Wait for PREFERENCES to no longer be running.
 class PrefsNotRunningChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit PrefsNotRunningChecker(browser_sync::ProfileSyncService* service)
+  explicit PrefsNotRunningChecker(syncer::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied() override {
-    return !service()->IsDataTypeControllerRunning(syncer::PREFERENCES);
+    return !service()->IsDataTypeControllerRunningForTest(syncer::PREFERENCES);
   }
 
   std::string GetDebugMessage() const override {
@@ -207,11 +207,12 @@ class PrefsNotRunningChecker : public SingleClientStatusChangeChecker {
 // Wait for sync cycle failure.
 class SyncCycleFailedChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit SyncCycleFailedChecker(browser_sync::ProfileSyncService* service)
+  explicit SyncCycleFailedChecker(syncer::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied() override {
-    const syncer::SyncCycleSnapshot& snap = service()->GetLastCycleSnapshot();
+    const syncer::SyncCycleSnapshot& snap =
+        service()->GetLastCycleSnapshotForDebugging();
     return HasSyncerError(snap.model_neutral_state());
   }
 
@@ -310,9 +311,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, DisableEnable) {
   ASSERT_EQ(1U, model1->db().metadata_count());
 
   // Disable PREFERENCES.
-  syncer::ModelTypeSet types = syncer::UserSelectableTypes();
-  types.Remove(syncer::PREFERENCES);
-  GetSyncService(0)->GetUserSettings()->SetChosenDataTypes(false, types);
+  syncer::UserSelectableTypeSet types = syncer::UserSelectableTypeSet::All();
+  types.Remove(syncer::UserSelectableType::kPreferences);
+  GetSyncService(0)->GetUserSettings()->SetSelectedTypes(false, types);
 
   // Wait for it to take effect and remove the metadata.
   ASSERT_TRUE(MetadataAbsentChecker(model0, kKey1).Wait());
@@ -323,8 +324,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, DisableEnable) {
   ASSERT_EQ(1U, model1->db().metadata_count());
 
   // Re-enable PREFERENCES.
-  GetSyncService(0)->GetUserSettings()->SetChosenDataTypes(
-      true, syncer::UserSelectableTypes());
+  GetSyncService(0)->GetUserSettings()->SetSelectedTypes(
+      true, syncer::UserSelectableTypeSet::All());
 
   // Wait for metadata to be re-added.
   ASSERT_TRUE(MetadataPresentChecker(model0, kKey1).Wait());

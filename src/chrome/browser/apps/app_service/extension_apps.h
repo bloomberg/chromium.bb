@@ -51,7 +51,8 @@ class ExtensionApps : public apps::mojom::Publisher,
   // apps::mojom::Publisher overrides.
   void Connect(apps::mojom::SubscriberPtr subscriber,
                apps::mojom::ConnectOptionsPtr opts) override;
-  void LoadIcon(apps::mojom::IconKeyPtr icon_key,
+  void LoadIcon(const std::string& app_id,
+                apps::mojom::IconKeyPtr icon_key,
                 apps::mojom::IconCompression icon_compression,
                 int32_t size_hint_in_dip,
                 bool allow_placeholder_icon,
@@ -87,8 +88,15 @@ class ExtensionApps : public apps::mojom::Publisher,
   bool RunExtensionEnableFlow(const std::string& app_id);
 
   static bool IsBlacklisted(const std::string& app_id);
+
+  static void SetShowInFields(apps::mojom::AppPtr& app,
+                              const extensions::Extension* extension,
+                              Profile* profile);
+  static bool ShouldShow(const extensions::Extension* extension,
+                         Profile* profile);
   static apps::mojom::OptionalBool ShouldShowInAppManagement(
       const extensions::Extension* extension);
+
   void PopulatePermissions(const extensions::Extension* extension,
                            std::vector<mojom::PermissionPtr>* target);
   apps::mojom::AppPtr Convert(const extensions::Extension* extension,

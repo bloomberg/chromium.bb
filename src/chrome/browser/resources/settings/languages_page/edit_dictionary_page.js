@@ -134,6 +134,12 @@ Polymer({
       Polymer.dom.flush();
       this.$$('#list').notifyResize();
     }
+
+    // Update input enable to reflect new additions/removals.
+    // TODO(hsuregan): Remove hack when notifyPath() or notifySplices()
+    // is successful at creating DOM changes when applied to words_ (when
+    // attached to input newWord), OR when array changes are registered.
+    this.$.addWord.disabled = !this.$.newWord.validate();
   },
 
   /**

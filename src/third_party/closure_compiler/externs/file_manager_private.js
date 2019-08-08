@@ -476,6 +476,7 @@ chrome.fileManagerPrivate.LinuxPackageInfo;
 /**
  * @typedef {{
  * eventType: chrome.fileManagerPrivate.CrostiniEventType,
+ * vmName: string,
  * entries: !Array<!Entry>,
  * }}
  */
@@ -776,6 +777,13 @@ chrome.fileManagerPrivate.searchFilesByHashes = function(volumeId, hashes,
     callback) {};
 
 /**
+ * Search files in My Files.
+ * @param {!chrome.fileManagerPrivate.SearchMetadataParams} searchParams
+ * @param {function(!Array<Object>):void} callback
+ */
+chrome.fileManagerPrivate.searchFiles = function(searchParams, callback) {};
+
+/**
  * Create a zip file for the selected files. |parentEntry| Entry of the
  * directory containing the selected files. |entries| Selected entries.
  * The files must be under the directory specified by |parentEntry|. |destName|
@@ -877,12 +885,6 @@ chrome.fileManagerPrivate.openSettingsSubpage = function(sub_page) {};
 chrome.fileManagerPrivate.computeChecksum = function(entry, callback) {};
 
 /**
- * Gets a flag indicating whether user metrics reporting is enabled.
- * @param {function((boolean|undefined))} callback
- */
-chrome.fileManagerPrivate.isUMAEnabled = function(callback) {};
-
-/**
  * Sets a tag on a file or a directory. Only Drive files are supported.
  * @param {!Entry} entry
  * @param {string} visibility 'private' or 'public'
@@ -967,22 +969,25 @@ chrome.fileManagerPrivate.mountCrostini = function(callback) {};
 
 /**
  * Shares paths with crostini container.
- * @param {!Array<!Entry>} entries Entries of the files and directories to share.
+ * @param {string} vmName VM to share path with.
+ * @param {!Array<!Entry>} entries Entries of the files and directories to
+ *     share.
  * @param {boolean} persist If true, share will persist across restarts.
  * @param {function()} callback Callback called after the paths are shared.
  *     chrome.runtime.lastError will be set if there was an error.
  */
 chrome.fileManagerPrivate.sharePathsWithCrostini = function(
-    entries, persist, callback) {};
+    vmName, entries, persist, callback) {};
 
 /**
  * Unshares path with crostini container.
+ * @param {string} vmName VM to unshare path from.
  * @param {!Entry} entry Entry of the file or directory to unshare.
  * @param {function()} callback Callback called after the path is unshared.
  *     chrome.runtime.lastError will be set if there was an error.
  */
 chrome.fileManagerPrivate.unsharePathWithCrostini = function(
-    entry, callback) {};
+    vmName, entry, callback) {};
 
 /**
  * Returns list of paths shared with the crostini container, and whether this is
@@ -990,10 +995,11 @@ chrome.fileManagerPrivate.unsharePathWithCrostini = function(
  * @param {boolean} observeFirstForSession If true, callback provides whether
  *     this is the first time this function has been called with
  *     observeFirstForSession true.
+ * @param {string} vmName VM to get shared paths of.
  * @param {function(!Array<!Entry>, boolean)} callback
  */
 chrome.fileManagerPrivate.getCrostiniSharedPaths = function(
-    observeFirstForSession, callback) {};
+    observeFirstForSession, vmName, callback) {};
 
 /**
  * Requests information about a Linux package.

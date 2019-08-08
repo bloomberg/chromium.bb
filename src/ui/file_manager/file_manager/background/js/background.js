@@ -31,7 +31,8 @@ function FileBrowserBackgroundImpl() {
    *
    * @type {!importer.HistoryLoader}
    */
-  this.historyLoader = new importer.RuntimeHistoryLoader();
+  this.historyLoader =
+      new importer.SynchronizedHistoryLoader(importer.getHistoryFiles);
 
   /**
    * Event handler for progress center.
@@ -67,8 +68,7 @@ function FileBrowserBackgroundImpl() {
    * @type {!importer.MediaScanner}
    */
   this.mediaScanner = new importer.DefaultMediaScanner(
-      importer.createMetadataHashcode,
-      this.dispositionChecker_,
+      importer.createMetadataHashcode, this.dispositionChecker_,
       importer.DefaultDirectoryWatcher.create);
 
   /**
@@ -82,6 +82,9 @@ function FileBrowserBackgroundImpl() {
 
   /** @type {!Crostini} */
   this.crostini = new CrostiniImpl();
+
+  /** @type {!MountMetrics} */
+  this.mountMetrics = new MountMetrics();
 
   /**
    * String assets.
@@ -161,32 +164,31 @@ FileBrowserBackgroundImpl.prototype.handleViewEvent_ = function(event) {
  * @private
  */
 FileBrowserBackgroundImpl.prototype.handleViewEventInternal_ = function(event) {
-  volumeManagerFactory.getInstance()
-      .then(
-          /**
-          * Retrieves the root file entry of the volume on the requested
-          * device.
-          * @param {!VolumeManager} volumeManager
-          */
-          volumeManager => {
-            if (event.devicePath) {
-              let volume = volumeManager.findByDevicePath(event.devicePath);
-              if (volume) {
-                this.navigateToVolumeRoot_(volume, event.filePath);
-              } else {
-                console.error('Got view event with invalid volume id.');
-              }
-            } else if (event.volumeId) {
-              if (event.type === VolumeManagerCommon.VOLUME_ALREADY_MOUNTED) {
-                this.navigateToVolumeInFocusedWindowWhenReady_(
-                    event.volumeId, event.filePath);
-              } else {
-                this.navigateToVolumeWhenReady_(event.volumeId, event.filePath);
-              }
-            } else {
-              console.error('Got view event with no actionable destination.');
-            }
-          });
+  volumeManagerFactory.getInstance().then(
+      /**
+       * Retrieves the root file entry of the volume on the requested
+       * device.
+       * @param {!VolumeManager} volumeManager
+       */
+      volumeManager => {
+        if (event.devicePath) {
+          let volume = volumeManager.findByDevicePath(event.devicePath);
+          if (volume) {
+            this.navigateToVolumeRoot_(volume, event.filePath);
+          } else {
+            console.error('Got view event with invalid volume id.');
+          }
+        } else if (event.volumeId) {
+          if (event.type === VolumeManagerCommon.VOLUME_ALREADY_MOUNTED) {
+            this.navigateToVolumeInFocusedWindowWhenReady_(
+                event.volumeId, event.filePath);
+          } else {
+            this.navigateToVolumeWhenReady_(event.volumeId, event.filePath);
+          }
+        } else {
+          console.error('Got view event with no actionable destination.');
+        }
+      });
 };
 
 /**
@@ -248,16 +250,17 @@ FileBrowserBackgroundImpl.prototype.navigateToVolumeInFocusedWindowWhenReady_ =
  * @return {!Promise<!DirectoryEntry>}
  * @private
  */
-FileBrowserBackgroundImpl.prototype.retrieveEntryInVolume_ = (volume, opt_directoryPath) => {
-  return volume.resolveDisplayRoot().then(root => {
-    if (opt_directoryPath) {
-      return new Promise(
-          root.getDirectory.bind(root, opt_directoryPath, {create: false}));
-    } else {
-      return Promise.resolve(root);
-    }
-  });
-};
+FileBrowserBackgroundImpl.prototype.retrieveEntryInVolume_ =
+    (volume, opt_directoryPath) => {
+      return volume.resolveDisplayRoot().then(root => {
+        if (opt_directoryPath) {
+          return new Promise(
+              root.getDirectory.bind(root, opt_directoryPath, {create: false}));
+        } else {
+          return Promise.resolve(root);
+        }
+      });
+    };
 
 /**
  * Opens the volume root (or opt directoryPath) in main UI.
@@ -387,10 +390,10 @@ const GPLUS_PHOTOS_APP_ID = 'efjnaogkjbogokcnohkmnjdojkikgobo';
  */
 FileBrowserBackgroundImpl.prototype.onExternalMessageReceived_ =
     (message, sender) => {
-  if ('id' in sender && sender.id === GPLUS_PHOTOS_APP_ID) {
-    importer.handlePhotosAppMessage(message);
-  }
-};
+      if ('id' in sender && sender.id === GPLUS_PHOTOS_APP_ID) {
+        importer.handlePhotosAppMessage(message);
+      }
+    };
 
 /**
  * Restarted the app, restore windows.
@@ -429,20 +432,22 @@ FileBrowserBackgroundImpl.prototype.onContextMenuClicked_ = function(info) {
   if (info.menuItemId == 'new-window') {
     // Find the focused window (if any) and use it's current url for the
     // new window. If not found, then launch with the default url.
-    this.findFocusedWindow_().then(key => {
-      if (!key) {
-        launcher.launchFileManager();
-        return;
-      }
-      const appState = {
-        // Do not clone the selection url, only the current directory.
-        currentDirectoryURL: window.appWindows[key].
-            contentWindow.appState.currentDirectoryURL
-      };
-      launcher.launchFileManager(appState);
-    }).catch(error => {
-      console.error(error.stack || error);
-    });
+    this.findFocusedWindow_()
+        .then(key => {
+          if (!key) {
+            launcher.launchFileManager();
+            return;
+          }
+          const appState = {
+            // Do not clone the selection url, only the current directory.
+            currentDirectoryURL: window.appWindows[key]
+                                     .contentWindow.appState.currentDirectoryURL
+          };
+          launcher.launchFileManager(appState);
+        })
+        .catch(error => {
+          console.error(error.stack || error);
+        });
   }
 };
 

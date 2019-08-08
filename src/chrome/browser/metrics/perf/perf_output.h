@@ -48,7 +48,7 @@ class PerfOutputCall {
   std::vector<std::string> perf_args_;
   DoneCallback done_callback_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // To pass around the "this" pointer across threads safely.
   base::WeakPtrFactory<PerfOutputCall> weak_factory_;

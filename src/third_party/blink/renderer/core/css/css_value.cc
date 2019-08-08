@@ -106,37 +106,37 @@ CSSValue* CSSValue::Create(const Length& value, float zoom) {
 
 bool CSSValue::HasFailedOrCanceledSubresources() const {
   if (IsValueList())
-    return ToCSSValueList(this)->HasFailedOrCanceledSubresources();
+    return To<CSSValueList>(this)->HasFailedOrCanceledSubresources();
   if (GetClassType() == kFontFaceSrcClass)
-    return ToCSSFontFaceSrcValue(this)->HasFailedOrCanceledSubresources();
+    return To<CSSFontFaceSrcValue>(this)->HasFailedOrCanceledSubresources();
   if (GetClassType() == kImageClass)
-    return ToCSSImageValue(this)->HasFailedOrCanceledSubresources();
+    return To<CSSImageValue>(this)->HasFailedOrCanceledSubresources();
   if (GetClassType() == kCrossfadeClass)
-    return ToCSSCrossfadeValue(this)->HasFailedOrCanceledSubresources();
+    return To<CSSCrossfadeValue>(this)->HasFailedOrCanceledSubresources();
   if (GetClassType() == kImageSetClass)
-    return ToCSSImageSetValue(this)->HasFailedOrCanceledSubresources();
+    return To<CSSImageSetValue>(this)->HasFailedOrCanceledSubresources();
 
   return false;
 }
 
 bool CSSValue::MayContainUrl() const {
   if (IsValueList())
-    return ToCSSValueList(*this).MayContainUrl();
+    return To<CSSValueList>(*this).MayContainUrl();
   return IsImageValue() || IsURIValue();
 }
 
 void CSSValue::ReResolveUrl(const Document& document) const {
   // TODO(fs): Should handle all values that can contain URLs.
   if (IsImageValue()) {
-    ToCSSImageValue(*this).ReResolveURL(document);
+    To<CSSImageValue>(*this).ReResolveURL(document);
     return;
   }
   if (IsURIValue()) {
-    ToCSSURIValue(*this).ReResolveUrl(document);
+    To<CSSURIValue>(*this).ReResolveUrl(document);
     return;
   }
   if (IsValueList()) {
-    ToCSSValueList(*this).ReResolveUrl(document);
+    To<CSSValueList>(*this).ReResolveUrl(document);
     return;
   }
 }
@@ -262,105 +262,105 @@ bool CSSValue::operator==(const CSSValue& other) const {
 String CSSValue::CssText() const {
   switch (GetClassType()) {
     case kAxisClass:
-      return ToCSSAxisValue(this)->CustomCSSText();
+      return To<CSSAxisValue>(this)->CustomCSSText();
     case kBasicShapeCircleClass:
-      return ToCSSBasicShapeCircleValue(this)->CustomCSSText();
+      return To<CSSBasicShapeCircleValue>(this)->CustomCSSText();
     case kBasicShapeEllipseClass:
-      return ToCSSBasicShapeEllipseValue(this)->CustomCSSText();
+      return To<CSSBasicShapeEllipseValue>(this)->CustomCSSText();
     case kBasicShapePolygonClass:
-      return ToCSSBasicShapePolygonValue(this)->CustomCSSText();
+      return To<CSSBasicShapePolygonValue>(this)->CustomCSSText();
     case kBasicShapeInsetClass:
-      return ToCSSBasicShapeInsetValue(this)->CustomCSSText();
+      return To<CSSBasicShapeInsetValue>(this)->CustomCSSText();
     case kBorderImageSliceClass:
-      return ToCSSBorderImageSliceValue(this)->CustomCSSText();
+      return To<CSSBorderImageSliceValue>(this)->CustomCSSText();
     case kColorClass:
-      return ToCSSColorValue(this)->CustomCSSText();
+      return To<CSSColorValue>(this)->CustomCSSText();
     case kCounterClass:
-      return ToCSSCounterValue(this)->CustomCSSText();
+      return To<CSSCounterValue>(this)->CustomCSSText();
     case kCursorImageClass:
-      return ToCSSCursorImageValue(this)->CustomCSSText();
+      return To<CSSCursorImageValue>(this)->CustomCSSText();
     case kFontFaceSrcClass:
-      return ToCSSFontFaceSrcValue(this)->CustomCSSText();
+      return To<CSSFontFaceSrcValue>(this)->CustomCSSText();
     case kFontFamilyClass:
-      return ToCSSFontFamilyValue(this)->CustomCSSText();
+      return To<CSSFontFamilyValue>(this)->CustomCSSText();
     case kFontFeatureClass:
-      return ToCSSFontFeatureValue(this)->CustomCSSText();
+      return To<CSSFontFeatureValue>(this)->CustomCSSText();
     case kFontStyleRangeClass:
-      return ToCSSFontStyleRangeValue(this)->CustomCSSText();
+      return To<CSSFontStyleRangeValue>(this)->CustomCSSText();
     case kFontVariationClass:
-      return ToCSSFontVariationValue(this)->CustomCSSText();
+      return To<CSSFontVariationValue>(this)->CustomCSSText();
     case kFunctionClass:
-      return ToCSSFunctionValue(this)->CustomCSSText();
+      return To<CSSFunctionValue>(this)->CustomCSSText();
     case kLayoutFunctionClass:
-      return ToCSSLayoutFunctionValue(this)->CustomCSSText();
+      return To<CSSLayoutFunctionValue>(this)->CustomCSSText();
     case kLinearGradientClass:
-      return ToCSSLinearGradientValue(this)->CustomCSSText();
+      return To<CSSLinearGradientValue>(this)->CustomCSSText();
     case kRadialGradientClass:
-      return ToCSSRadialGradientValue(this)->CustomCSSText();
+      return To<CSSRadialGradientValue>(this)->CustomCSSText();
     case kConicGradientClass:
-      return ToCSSConicGradientValue(this)->CustomCSSText();
+      return To<CSSConicGradientValue>(this)->CustomCSSText();
     case kCrossfadeClass:
-      return ToCSSCrossfadeValue(this)->CustomCSSText();
+      return To<CSSCrossfadeValue>(this)->CustomCSSText();
     case kPaintClass:
-      return ToCSSPaintValue(this)->CustomCSSText();
+      return To<CSSPaintValue>(this)->CustomCSSText();
     case kCustomIdentClass:
-      return ToCSSCustomIdentValue(this)->CustomCSSText();
+      return To<CSSCustomIdentValue>(this)->CustomCSSText();
     case kImageClass:
-      return ToCSSImageValue(this)->CustomCSSText();
+      return To<CSSImageValue>(this)->CustomCSSText();
     case kInheritedClass:
-      return ToCSSInheritedValue(this)->CustomCSSText();
+      return To<CSSInheritedValue>(this)->CustomCSSText();
     case kUnsetClass:
-      return ToCSSUnsetValue(this)->CustomCSSText();
+      return To<CSSUnsetValue>(this)->CustomCSSText();
     case kInitialClass:
-      return ToCSSInitialValue(this)->CustomCSSText();
+      return To<CSSInitialValue>(this)->CustomCSSText();
     case kGridAutoRepeatClass:
-      return ToCSSGridAutoRepeatValue(this)->CustomCSSText();
+      return To<CSSGridAutoRepeatValue>(this)->CustomCSSText();
     case kGridLineNamesClass:
-      return ToCSSGridLineNamesValue(this)->CustomCSSText();
+      return To<CSSGridLineNamesValue>(this)->CustomCSSText();
     case kGridTemplateAreasClass:
-      return ToCSSGridTemplateAreasValue(this)->CustomCSSText();
+      return To<CSSGridTemplateAreasValue>(this)->CustomCSSText();
     case kPathClass:
-      return ToCSSPathValue(this)->CustomCSSText();
+      return To<CSSPathValue>(this)->CustomCSSText();
     case kPrimitiveClass:
-      return ToCSSPrimitiveValue(this)->CustomCSSText();
+      return To<CSSPrimitiveValue>(this)->CustomCSSText();
     case kRayClass:
-      return ToCSSRayValue(this)->CustomCSSText();
+      return To<CSSRayValue>(this)->CustomCSSText();
     case kIdentifierClass:
-      return ToCSSIdentifierValue(this)->CustomCSSText();
+      return To<CSSIdentifierValue>(this)->CustomCSSText();
     case kQuadClass:
-      return ToCSSQuadValue(this)->CustomCSSText();
+      return To<CSSQuadValue>(this)->CustomCSSText();
     case kReflectClass:
-      return ToCSSReflectValue(this)->CustomCSSText();
+      return To<CSSReflectValue>(this)->CustomCSSText();
     case kShadowClass:
-      return ToCSSShadowValue(this)->CustomCSSText();
+      return To<CSSShadowValue>(this)->CustomCSSText();
     case kStringClass:
-      return ToCSSStringValue(this)->CustomCSSText();
+      return To<CSSStringValue>(this)->CustomCSSText();
     case kCubicBezierTimingFunctionClass:
-      return ToCSSCubicBezierTimingFunctionValue(this)->CustomCSSText();
+      return To<CSSCubicBezierTimingFunctionValue>(this)->CustomCSSText();
     case kStepsTimingFunctionClass:
-      return ToCSSStepsTimingFunctionValue(this)->CustomCSSText();
+      return To<CSSStepsTimingFunctionValue>(this)->CustomCSSText();
     case kFramesTimingFunctionClass:
-      return ToCSSFramesTimingFunctionValue(this)->CustomCSSText();
+      return To<CSSFramesTimingFunctionValue>(this)->CustomCSSText();
     case kUnicodeRangeClass:
-      return ToCSSUnicodeRangeValue(this)->CustomCSSText();
+      return To<CSSUnicodeRangeValue>(this)->CustomCSSText();
     case kURIClass:
-      return ToCSSURIValue(this)->CustomCSSText();
+      return To<CSSURIValue>(this)->CustomCSSText();
     case kValuePairClass:
-      return ToCSSValuePair(this)->CustomCSSText();
+      return To<CSSValuePair>(this)->CustomCSSText();
     case kValueListClass:
-      return ToCSSValueList(this)->CustomCSSText();
+      return To<CSSValueList>(this)->CustomCSSText();
     case kImageSetClass:
-      return ToCSSImageSetValue(this)->CustomCSSText();
+      return To<CSSImageSetValue>(this)->CustomCSSText();
     case kCSSContentDistributionClass:
-      return ToCSSContentDistributionValue(this)->CustomCSSText();
+      return To<CSSContentDistributionValue>(this)->CustomCSSText();
     case kVariableReferenceClass:
-      return ToCSSVariableReferenceValue(this)->CustomCSSText();
+      return To<CSSVariableReferenceValue>(this)->CustomCSSText();
     case kCustomPropertyDeclarationClass:
-      return ToCSSCustomPropertyDeclaration(this)->CustomCSSText();
+      return To<CSSCustomPropertyDeclaration>(this)->CustomCSSText();
     case kPendingSubstitutionValueClass:
-      return ToCSSPendingSubstitutionValue(this)->CustomCSSText();
+      return To<CSSPendingSubstitutionValue>(this)->CustomCSSText();
     case kInvalidVariableValueClass:
-      return ToCSSInvalidVariableValue(this)->CustomCSSText();
+      return To<CSSInvalidVariableValue>(this)->CustomCSSText();
   }
   NOTREACHED();
   return String();
@@ -369,155 +369,155 @@ String CSSValue::CssText() const {
 void CSSValue::FinalizeGarbageCollectedObject() {
   switch (GetClassType()) {
     case kAxisClass:
-      ToCSSAxisValue(this)->~CSSAxisValue();
+      To<CSSAxisValue>(this)->~CSSAxisValue();
       return;
     case kBasicShapeCircleClass:
-      ToCSSBasicShapeCircleValue(this)->~CSSBasicShapeCircleValue();
+      To<CSSBasicShapeCircleValue>(this)->~CSSBasicShapeCircleValue();
       return;
     case kBasicShapeEllipseClass:
-      ToCSSBasicShapeEllipseValue(this)->~CSSBasicShapeEllipseValue();
+      To<CSSBasicShapeEllipseValue>(this)->~CSSBasicShapeEllipseValue();
       return;
     case kBasicShapePolygonClass:
-      ToCSSBasicShapePolygonValue(this)->~CSSBasicShapePolygonValue();
+      To<CSSBasicShapePolygonValue>(this)->~CSSBasicShapePolygonValue();
       return;
     case kBasicShapeInsetClass:
-      ToCSSBasicShapeInsetValue(this)->~CSSBasicShapeInsetValue();
+      To<CSSBasicShapeInsetValue>(this)->~CSSBasicShapeInsetValue();
       return;
     case kBorderImageSliceClass:
-      ToCSSBorderImageSliceValue(this)->~CSSBorderImageSliceValue();
+      To<CSSBorderImageSliceValue>(this)->~CSSBorderImageSliceValue();
       return;
     case kColorClass:
-      ToCSSColorValue(this)->~CSSColorValue();
+      To<CSSColorValue>(this)->~CSSColorValue();
       return;
     case kCounterClass:
-      ToCSSCounterValue(this)->~CSSCounterValue();
+      To<CSSCounterValue>(this)->~CSSCounterValue();
       return;
     case kCursorImageClass:
-      ToCSSCursorImageValue(this)->~CSSCursorImageValue();
+      To<CSSCursorImageValue>(this)->~CSSCursorImageValue();
       return;
     case kFontFaceSrcClass:
-      ToCSSFontFaceSrcValue(this)->~CSSFontFaceSrcValue();
+      To<CSSFontFaceSrcValue>(this)->~CSSFontFaceSrcValue();
       return;
     case kFontFamilyClass:
-      ToCSSFontFamilyValue(this)->~CSSFontFamilyValue();
+      To<CSSFontFamilyValue>(this)->~CSSFontFamilyValue();
       return;
     case kFontFeatureClass:
-      ToCSSFontFeatureValue(this)->~CSSFontFeatureValue();
+      To<CSSFontFeatureValue>(this)->~CSSFontFeatureValue();
       return;
     case kFontStyleRangeClass:
-      ToCSSFontStyleRangeValue(this)->~CSSFontStyleRangeValue();
+      To<CSSFontStyleRangeValue>(this)->~CSSFontStyleRangeValue();
       return;
     case kFontVariationClass:
-      ToCSSFontVariationValue(this)->~CSSFontVariationValue();
+      To<CSSFontVariationValue>(this)->~CSSFontVariationValue();
       return;
     case kFunctionClass:
-      ToCSSFunctionValue(this)->~CSSFunctionValue();
+      To<CSSFunctionValue>(this)->~CSSFunctionValue();
       return;
     case kLayoutFunctionClass:
-      ToCSSLayoutFunctionValue(this)->~CSSLayoutFunctionValue();
+      To<CSSLayoutFunctionValue>(this)->~CSSLayoutFunctionValue();
       return;
     case kLinearGradientClass:
-      ToCSSLinearGradientValue(this)->~CSSLinearGradientValue();
+      To<CSSLinearGradientValue>(this)->~CSSLinearGradientValue();
       return;
     case kRadialGradientClass:
-      ToCSSRadialGradientValue(this)->~CSSRadialGradientValue();
+      To<CSSRadialGradientValue>(this)->~CSSRadialGradientValue();
       return;
     case kConicGradientClass:
-      ToCSSConicGradientValue(this)->~CSSConicGradientValue();
+      To<CSSConicGradientValue>(this)->~CSSConicGradientValue();
       return;
     case kCrossfadeClass:
-      ToCSSCrossfadeValue(this)->~CSSCrossfadeValue();
+      To<CSSCrossfadeValue>(this)->~CSSCrossfadeValue();
       return;
     case kPaintClass:
-      ToCSSPaintValue(this)->~CSSPaintValue();
+      To<CSSPaintValue>(this)->~CSSPaintValue();
       return;
     case kCustomIdentClass:
-      ToCSSCustomIdentValue(this)->~CSSCustomIdentValue();
+      To<CSSCustomIdentValue>(this)->~CSSCustomIdentValue();
       return;
     case kImageClass:
-      ToCSSImageValue(this)->~CSSImageValue();
+      To<CSSImageValue>(this)->~CSSImageValue();
       return;
     case kInheritedClass:
-      ToCSSInheritedValue(this)->~CSSInheritedValue();
+      To<CSSInheritedValue>(this)->~CSSInheritedValue();
       return;
     case kInitialClass:
-      ToCSSInitialValue(this)->~CSSInitialValue();
+      To<CSSInitialValue>(this)->~CSSInitialValue();
       return;
     case kUnsetClass:
-      ToCSSUnsetValue(this)->~CSSUnsetValue();
+      To<CSSUnsetValue>(this)->~CSSUnsetValue();
       return;
     case kGridAutoRepeatClass:
-      ToCSSGridAutoRepeatValue(this)->~CSSGridAutoRepeatValue();
+      To<CSSGridAutoRepeatValue>(this)->~CSSGridAutoRepeatValue();
       return;
     case kGridLineNamesClass:
-      ToCSSGridLineNamesValue(this)->~CSSGridLineNamesValue();
+      To<CSSGridLineNamesValue>(this)->~CSSGridLineNamesValue();
       return;
     case kGridTemplateAreasClass:
-      ToCSSGridTemplateAreasValue(this)->~CSSGridTemplateAreasValue();
+      To<CSSGridTemplateAreasValue>(this)->~CSSGridTemplateAreasValue();
       return;
     case kPathClass:
-      ToCSSPathValue(this)->~CSSPathValue();
+      To<CSSPathValue>(this)->~CSSPathValue();
       return;
     case kPrimitiveClass:
-      ToCSSPrimitiveValue(this)->~CSSPrimitiveValue();
+      To<CSSPrimitiveValue>(this)->~CSSPrimitiveValue();
       return;
     case kRayClass:
-      ToCSSRayValue(this)->~CSSRayValue();
+      To<CSSRayValue>(this)->~CSSRayValue();
       return;
     case kIdentifierClass:
-      ToCSSIdentifierValue(this)->~CSSIdentifierValue();
+      To<CSSIdentifierValue>(this)->~CSSIdentifierValue();
       return;
     case kQuadClass:
-      ToCSSQuadValue(this)->~CSSQuadValue();
+      To<CSSQuadValue>(this)->~CSSQuadValue();
       return;
     case kReflectClass:
-      ToCSSReflectValue(this)->~CSSReflectValue();
+      To<CSSReflectValue>(this)->~CSSReflectValue();
       return;
     case kShadowClass:
-      ToCSSShadowValue(this)->~CSSShadowValue();
+      To<CSSShadowValue>(this)->~CSSShadowValue();
       return;
     case kStringClass:
-      ToCSSStringValue(this)->~CSSStringValue();
+      To<CSSStringValue>(this)->~CSSStringValue();
       return;
     case kCubicBezierTimingFunctionClass:
-      ToCSSCubicBezierTimingFunctionValue(this)
+      To<CSSCubicBezierTimingFunctionValue>(this)
           ->~CSSCubicBezierTimingFunctionValue();
       return;
     case kStepsTimingFunctionClass:
-      ToCSSStepsTimingFunctionValue(this)->~CSSStepsTimingFunctionValue();
+      To<CSSStepsTimingFunctionValue>(this)->~CSSStepsTimingFunctionValue();
       return;
     case kFramesTimingFunctionClass:
-      ToCSSFramesTimingFunctionValue(this)->~CSSFramesTimingFunctionValue();
+      To<CSSFramesTimingFunctionValue>(this)->~CSSFramesTimingFunctionValue();
       return;
     case kUnicodeRangeClass:
-      ToCSSUnicodeRangeValue(this)->~CSSUnicodeRangeValue();
+      To<CSSUnicodeRangeValue>(this)->~CSSUnicodeRangeValue();
       return;
     case kURIClass:
-      ToCSSURIValue(this)->~CSSURIValue();
+      To<CSSURIValue>(this)->~CSSURIValue();
       return;
     case kValueListClass:
-      ToCSSValueList(this)->~CSSValueList();
+      To<CSSValueList>(this)->~CSSValueList();
       return;
     case kValuePairClass:
-      ToCSSValuePair(this)->~CSSValuePair();
+      To<CSSValuePair>(this)->~CSSValuePair();
       return;
     case kImageSetClass:
-      ToCSSImageSetValue(this)->~CSSImageSetValue();
+      To<CSSImageSetValue>(this)->~CSSImageSetValue();
       return;
     case kCSSContentDistributionClass:
-      ToCSSContentDistributionValue(this)->~CSSContentDistributionValue();
+      To<CSSContentDistributionValue>(this)->~CSSContentDistributionValue();
       return;
     case kVariableReferenceClass:
-      ToCSSVariableReferenceValue(this)->~CSSVariableReferenceValue();
+      To<CSSVariableReferenceValue>(this)->~CSSVariableReferenceValue();
       return;
     case kCustomPropertyDeclarationClass:
-      ToCSSCustomPropertyDeclaration(this)->~CSSCustomPropertyDeclaration();
+      To<CSSCustomPropertyDeclaration>(this)->~CSSCustomPropertyDeclaration();
       return;
     case kPendingSubstitutionValueClass:
-      ToCSSPendingSubstitutionValue(this)->~CSSPendingSubstitutionValue();
+      To<CSSPendingSubstitutionValue>(this)->~CSSPendingSubstitutionValue();
       return;
     case kInvalidVariableValueClass:
-      ToCSSInvalidVariableValue(this)->~CSSInvalidVariableValue();
+      To<CSSInvalidVariableValue>(this)->~CSSInvalidVariableValue();
       return;
   }
   NOTREACHED();
@@ -526,154 +526,154 @@ void CSSValue::FinalizeGarbageCollectedObject() {
 void CSSValue::Trace(blink::Visitor* visitor) {
   switch (GetClassType()) {
     case kAxisClass:
-      ToCSSAxisValue(this)->TraceAfterDispatch(visitor);
+      To<CSSAxisValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kBasicShapeCircleClass:
-      ToCSSBasicShapeCircleValue(this)->TraceAfterDispatch(visitor);
+      To<CSSBasicShapeCircleValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kBasicShapeEllipseClass:
-      ToCSSBasicShapeEllipseValue(this)->TraceAfterDispatch(visitor);
+      To<CSSBasicShapeEllipseValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kBasicShapePolygonClass:
-      ToCSSBasicShapePolygonValue(this)->TraceAfterDispatch(visitor);
+      To<CSSBasicShapePolygonValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kBasicShapeInsetClass:
-      ToCSSBasicShapeInsetValue(this)->TraceAfterDispatch(visitor);
+      To<CSSBasicShapeInsetValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kBorderImageSliceClass:
-      ToCSSBorderImageSliceValue(this)->TraceAfterDispatch(visitor);
+      To<CSSBorderImageSliceValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kColorClass:
-      ToCSSColorValue(this)->TraceAfterDispatch(visitor);
+      To<CSSColorValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kCounterClass:
-      ToCSSCounterValue(this)->TraceAfterDispatch(visitor);
+      To<CSSCounterValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kCursorImageClass:
-      ToCSSCursorImageValue(this)->TraceAfterDispatch(visitor);
+      To<CSSCursorImageValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kFontFaceSrcClass:
-      ToCSSFontFaceSrcValue(this)->TraceAfterDispatch(visitor);
+      To<CSSFontFaceSrcValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kFontFamilyClass:
-      ToCSSFontFamilyValue(this)->TraceAfterDispatch(visitor);
+      To<CSSFontFamilyValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kFontFeatureClass:
-      ToCSSFontFeatureValue(this)->TraceAfterDispatch(visitor);
+      To<CSSFontFeatureValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kFontStyleRangeClass:
-      ToCSSFontStyleRangeValue(this)->TraceAfterDispatch(visitor);
+      To<CSSFontStyleRangeValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kFontVariationClass:
-      ToCSSFontVariationValue(this)->TraceAfterDispatch(visitor);
+      To<CSSFontVariationValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kFunctionClass:
-      ToCSSFunctionValue(this)->TraceAfterDispatch(visitor);
+      To<CSSFunctionValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kLayoutFunctionClass:
-      ToCSSLayoutFunctionValue(this)->TraceAfterDispatch(visitor);
+      To<CSSLayoutFunctionValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kLinearGradientClass:
-      ToCSSLinearGradientValue(this)->TraceAfterDispatch(visitor);
+      To<CSSLinearGradientValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kRadialGradientClass:
-      ToCSSRadialGradientValue(this)->TraceAfterDispatch(visitor);
+      To<CSSRadialGradientValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kConicGradientClass:
-      ToCSSConicGradientValue(this)->TraceAfterDispatch(visitor);
+      To<CSSConicGradientValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kCrossfadeClass:
-      ToCSSCrossfadeValue(this)->TraceAfterDispatch(visitor);
+      To<CSSCrossfadeValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kPaintClass:
-      ToCSSPaintValue(this)->TraceAfterDispatch(visitor);
+      To<CSSPaintValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kCustomIdentClass:
-      ToCSSCustomIdentValue(this)->TraceAfterDispatch(visitor);
+      To<CSSCustomIdentValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kImageClass:
-      ToCSSImageValue(this)->TraceAfterDispatch(visitor);
+      To<CSSImageValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kInheritedClass:
-      ToCSSInheritedValue(this)->TraceAfterDispatch(visitor);
+      To<CSSInheritedValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kInitialClass:
-      ToCSSInitialValue(this)->TraceAfterDispatch(visitor);
+      To<CSSInitialValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kUnsetClass:
-      ToCSSUnsetValue(this)->TraceAfterDispatch(visitor);
+      To<CSSUnsetValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kGridAutoRepeatClass:
-      ToCSSGridAutoRepeatValue(this)->TraceAfterDispatch(visitor);
+      To<CSSGridAutoRepeatValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kGridLineNamesClass:
-      ToCSSGridLineNamesValue(this)->TraceAfterDispatch(visitor);
+      To<CSSGridLineNamesValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kGridTemplateAreasClass:
-      ToCSSGridTemplateAreasValue(this)->TraceAfterDispatch(visitor);
+      To<CSSGridTemplateAreasValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kPathClass:
-      ToCSSPathValue(this)->TraceAfterDispatch(visitor);
+      To<CSSPathValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kPrimitiveClass:
-      ToCSSPrimitiveValue(this)->TraceAfterDispatch(visitor);
+      To<CSSPrimitiveValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kRayClass:
-      ToCSSRayValue(this)->TraceAfterDispatch(visitor);
+      To<CSSRayValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kIdentifierClass:
-      ToCSSIdentifierValue(this)->TraceAfterDispatch(visitor);
+      To<CSSIdentifierValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kQuadClass:
-      ToCSSQuadValue(this)->TraceAfterDispatch(visitor);
+      To<CSSQuadValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kReflectClass:
-      ToCSSReflectValue(this)->TraceAfterDispatch(visitor);
+      To<CSSReflectValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kShadowClass:
-      ToCSSShadowValue(this)->TraceAfterDispatch(visitor);
+      To<CSSShadowValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kStringClass:
-      ToCSSStringValue(this)->TraceAfterDispatch(visitor);
+      To<CSSStringValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kCubicBezierTimingFunctionClass:
-      ToCSSCubicBezierTimingFunctionValue(this)->TraceAfterDispatch(visitor);
+      To<CSSCubicBezierTimingFunctionValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kStepsTimingFunctionClass:
-      ToCSSStepsTimingFunctionValue(this)->TraceAfterDispatch(visitor);
+      To<CSSStepsTimingFunctionValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kFramesTimingFunctionClass:
-      ToCSSFramesTimingFunctionValue(this)->TraceAfterDispatch(visitor);
+      To<CSSFramesTimingFunctionValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kUnicodeRangeClass:
-      ToCSSUnicodeRangeValue(this)->TraceAfterDispatch(visitor);
+      To<CSSUnicodeRangeValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kURIClass:
-      ToCSSURIValue(this)->TraceAfterDispatch(visitor);
+      To<CSSURIValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kValueListClass:
-      ToCSSValueList(this)->TraceAfterDispatch(visitor);
+      To<CSSValueList>(this)->TraceAfterDispatch(visitor);
       return;
     case kValuePairClass:
-      ToCSSValuePair(this)->TraceAfterDispatch(visitor);
+      To<CSSValuePair>(this)->TraceAfterDispatch(visitor);
       return;
     case kImageSetClass:
-      ToCSSImageSetValue(this)->TraceAfterDispatch(visitor);
+      To<CSSImageSetValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kCSSContentDistributionClass:
-      ToCSSContentDistributionValue(this)->TraceAfterDispatch(visitor);
+      To<CSSContentDistributionValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kVariableReferenceClass:
-      ToCSSVariableReferenceValue(this)->TraceAfterDispatch(visitor);
+      To<CSSVariableReferenceValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kCustomPropertyDeclarationClass:
-      ToCSSCustomPropertyDeclaration(this)->TraceAfterDispatch(visitor);
+      To<CSSCustomPropertyDeclaration>(this)->TraceAfterDispatch(visitor);
       return;
     case kPendingSubstitutionValueClass:
-      ToCSSPendingSubstitutionValue(this)->TraceAfterDispatch(visitor);
+      To<CSSPendingSubstitutionValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kInvalidVariableValueClass:
-      ToCSSInvalidVariableValue(this)->TraceAfterDispatch(visitor);
+      To<CSSInvalidVariableValue>(this)->TraceAfterDispatch(visitor);
       return;
   }
   NOTREACHED();

@@ -8,15 +8,17 @@
 
 namespace device {
 
-HidHapticGamepadLinux::HidHapticGamepadLinux(int fd,
+HidHapticGamepadLinux::HidHapticGamepadLinux(const base::ScopedFD& fd,
                                              const HapticReportData& data)
-    : HidHapticGamepadBase(data), fd_(fd) {}
+    : HidHapticGamepadBase(data), fd_(fd.get()) {}
 
 HidHapticGamepadLinux::~HidHapticGamepadLinux() = default;
 
 // static
-std::unique_ptr<HidHapticGamepadLinux>
-HidHapticGamepadLinux::Create(uint16_t vendor_id, uint16_t product_id, int fd) {
+std::unique_ptr<HidHapticGamepadLinux> HidHapticGamepadLinux::Create(
+    uint16_t vendor_id,
+    uint16_t product_id,
+    const base::ScopedFD& fd) {
   const auto* haptic_data = GetHapticReportData(vendor_id, product_id);
   if (!haptic_data)
     return nullptr;

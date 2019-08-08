@@ -93,16 +93,16 @@ DocumentLoader* DocumentInit::MasterDocumentLoader() const {
   return nullptr;
 }
 
-SandboxFlags DocumentInit::GetSandboxFlags() const {
+WebSandboxFlags DocumentInit::GetSandboxFlags() const {
   DCHECK(MasterDocumentLoader());
   DocumentLoader* loader = MasterDocumentLoader();
-  SandboxFlags flags = loader->GetFrame()->Loader().EffectiveSandboxFlags();
+  WebSandboxFlags flags = loader->GetFrame()->Loader().EffectiveSandboxFlags();
 
   // If the load was blocked by CSP, force the Document's origin to be unique,
   // so that the blocked document appears to be a normal cross-origin document's
   // load per CSP spec: https://www.w3.org/TR/CSP3/#directive-frame-ancestors.
   if (loader->WasBlockedAfterCSP()) {
-    flags |= kSandboxOrigin;
+    flags |= WebSandboxFlags::kOrigin;
   }
 
   return flags;
@@ -214,7 +214,7 @@ V0CustomElementRegistrationContext* DocumentInit::RegistrationContext(
     return nullptr;
 
   if (create_new_registration_context_)
-    return V0CustomElementRegistrationContext::Create();
+    return MakeGarbageCollected<V0CustomElementRegistrationContext>();
 
   return registration_context_.Get();
 }

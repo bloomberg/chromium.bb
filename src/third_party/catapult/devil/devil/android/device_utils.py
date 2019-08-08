@@ -222,6 +222,9 @@ _SPECIAL_ROOT_DEVICE_LIST = [
     'crosshatch', # Pixel 3 XL
     'blueline', # Pixel 3
 ]
+_SPECIAL_ROOT_DEVICE_LIST += ['aosp_%s' % _d for _d in
+                              _SPECIAL_ROOT_DEVICE_LIST]
+
 _IMEI_RE = re.compile(r'  Device ID = (.+)$')
 # The following regex is used to match result parcels like:
 """
@@ -239,6 +242,12 @@ _WEBVIEW_SYSUPDATE_CURRENT_PKG_RE = re.compile(
     r'Current WebView package.*:.*\(([a-z.]*),')
 _WEBVIEW_SYSUPDATE_FALLBACK_LOGIC_RE = re.compile(
     r'Fallback logic enabled: (true|false)')
+_WEBVIEW_SYSUPDATE_PACKAGE_INSTALLED_RE = re.compile(
+    r'(?:Valid|Invalid) package\s+(\S+)\s+\(.*\),?\s+(.*)$')
+_WEBVIEW_SYSUPDATE_PACKAGE_NOT_INSTALLED_RE = re.compile(
+    r'(\S+)\s+(is NOT installed\.)')
+_WEBVIEW_SYSUPDATE_MIN_VERSION_CODE = re.compile(
+    r'Minimum WebView version code: (\d+)')
 
 _GOOGLE_FEATURES_RE = re.compile(r'^\s*com\.google\.')
 
@@ -867,19 +876,25 @@ class DeviceUtils(object):
   @decorators.WithTimeoutAndRetriesFromInstance(
       min_default_timeout=INSTALL_DEFAULT_TIMEOUT)
   def Install(self, apk, allow_downgrade=False, reinstall=False,
-              permissions=None, timeout=None, retries=None):
-    """Install an APK.
+              permissions=None, timeout=None, retries=None, modules=None):
+    """Install an APK or app bundle.
 
-    Noop if an identical APK is already installed.
+    Noop if an identical APK is already installed. If installing a bundle, the
+    bundletools helper script (bin/*_bundle) should be used rather than the .aab
+    file.
 
     Args:
-      apk: An ApkHelper instance or string containing the path to the APK.
+      apk: An ApkHelper instance or string containing the path to the APK or
+        bundle.
       allow_downgrade: A boolean indicating if we should allow downgrades.
       reinstall: A boolean indicating if we should keep any existing app data.
+        Ignored if |apk| is a bundle.
       permissions: Set of permissions to set. If not set, finds permissions with
           apk helper. To set no permissions, pass [].
       timeout: timeout in seconds
       retries: number of retries
+      modules: An iterable containing specific bundle modules to install.
+          Error if set and |apk| points to an APK instead of a bundle.
 
     Raises:
       CommandFailedError if the installation fails.
@@ -887,7 +902,8 @@ class DeviceUtils(object):
       DeviceUnreachableError on missing device.
     """
     self._InstallInternal(apk, None, allow_downgrade=allow_downgrade,
-                          reinstall=reinstall, permissions=permissions)
+                          reinstall=reinstall, permissions=permissions,
+                          modules=modules)
 
   @decorators.WithTimeoutAndRetriesFromInstance(
       min_default_timeout=INSTALL_DEFAULT_TIMEOUT)
@@ -923,11 +939,28 @@ class DeviceUtils(object):
 
   def _InstallInternal(self, base_apk, split_apks, allow_downgrade=False,
                        reinstall=False, allow_cached_props=False,
-                       permissions=None):
+                       permissions=None, modules=None):
+    base_apk = apk_helper.ToHelper(base_apk)
+    if base_apk.is_bundle:
+      if split_apks:
+        raise device_errors.CommandFailedError(
+            'Attempted to install a bundle {} while specifying split apks'
+            .format(base_apk))
+      if allow_downgrade:
+        logging.warning('Installation of a bundle requested with '
+                        'allow_downgrade=False. This is not possible with '
+                        'bundletools, no downgrading is possible. This '
+                        'flag will be ignored and installation will proceed.')
+      # |allow_cached_props| is unused and ignored for bundles.
+      self._InstallBundleInternal(base_apk, permissions, modules)
+      return
+
+    if modules:
+      raise device_errors.CommandFailedError(
+          'Attempted to specify modules to install when providing an APK')
+
     if split_apks:
       self._CheckSdkLevel(version_codes.LOLLIPOP)
-
-    base_apk = apk_helper.ToHelper(base_apk)
 
     all_apks = [base_apk.path]
     if split_apks:
@@ -992,6 +1025,20 @@ class DeviceUtils(object):
     # Upon success, we know the device checksums, but not their paths.
     if host_checksums is not None:
       self._cache['package_apk_checksums'][package_name] = host_checksums
+
+  def _InstallBundleInternal(self, bundle, permissions, modules):
+    cmd = [bundle.path, 'install', '--device', self.serial]
+    if modules:
+      for m in modules:
+        cmd.extend(['-m', m])
+    status = cmd_helper.RunCmd(cmd)
+    if status != 0:
+      raise device_errors.CommandFailedError('Cound not install {}'.format(
+          bundle.path))
+    if (permissions is None
+        and self.build_version_sdk >= version_codes.MARSHMALLOW):
+      permissions = bundle.GetPermissions()
+    self.GrantPermissions(bundle.GetPackageName(), permissions)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def Uninstall(self, package_name, keep_data=False, timeout=None,
@@ -2667,6 +2714,9 @@ class DeviceUtils(object):
       A dictionary with these possible entries:
         FallbackLogicEnabled: True|False
         CurrentWebViewPackage: "package name"
+        MinimumWebViewVersionCode: int
+        WebViewPackages: Dict of installed WebView providers, mapping "package
+            name" to "reason it's valid/invalid."
 
     It may return an empty dictionary if device does not
     support the "dumpsys webviewupdate" command.
@@ -2684,6 +2734,7 @@ class DeviceUtils(object):
 
     output = self.RunShellCommand(
         ['dumpsys', 'webviewupdate'], check_return=True)
+    webview_packages = {}
     for line in output:
       match = re.search(_WEBVIEW_SYSUPDATE_CURRENT_PKG_RE, line)
       if match:
@@ -2692,6 +2743,21 @@ class DeviceUtils(object):
       if match:
         result['FallbackLogicEnabled'] = \
             True if match.group(1) == 'true' else False
+      match = re.search(_WEBVIEW_SYSUPDATE_PACKAGE_INSTALLED_RE, line)
+      if match:
+        package_name = match.group(1)
+        reason = match.group(2)
+        webview_packages[package_name] = reason
+      match = re.search(_WEBVIEW_SYSUPDATE_PACKAGE_NOT_INSTALLED_RE, line)
+      if match:
+        package_name = match.group(1)
+        reason = match.group(2)
+        webview_packages[package_name] = reason
+      match = re.search(_WEBVIEW_SYSUPDATE_MIN_VERSION_CODE, line)
+      if match:
+        result['MinimumWebViewVersionCode'] = int(match.group(1))
+    if webview_packages:
+      result['WebViewPackages'] = webview_packages
 
     missing_fields = set(['CurrentWebViewPackage', 'FallbackLogicEnabled']) - \
                      set(result.keys())
@@ -2715,12 +2781,43 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
+    installed = self.GetApplicationPaths(package_name)
+    if not installed:
+      raise device_errors.CommandFailedError(
+          '%s is not installed' % package_name, str(self))
     output = self.RunShellCommand(
         ['cmd', 'webviewupdate', 'set-webview-implementation', package_name],
-        single_line=True, check_return=True)
+        single_line=True,
+        check_return=False)
     if output == 'Success':
       logging.info('WebView provider set to: %s', package_name)
     else:
+      dumpsys_output = self.GetWebViewUpdateServiceDump()
+      webview_packages = dumpsys_output.get('WebViewPackages')
+      if webview_packages:
+        reason = webview_packages.get(package_name)
+        if not reason:
+          all_provider_package_names = webview_packages.keys()
+          raise device_errors.CommandFailedError(
+              '%s is not in the system WebView provider list. Must choose one '
+              'of %r.' % (package_name, all_provider_package_names), str(self))
+        if re.search(r'is\s+NOT\s+installed/enabled for all users', reason):
+          raise device_errors.CommandFailedError(
+              '%s is disabled, make sure to disable WebView fallback logic' %
+              package_name, str(self))
+        if re.search(r'No WebView-library manifest flag', reason):
+          raise device_errors.CommandFailedError(
+              '%s does not declare a WebView native library, so it cannot '
+              'be a WebView provider' % package_name, str(self))
+        if re.search(r'SDK version too low', reason):
+          raise device_errors.CommandFailedError(
+              '%s needs a higher targetSdkVersion (must be >= %d)' %
+              (package_name, self.build_version_sdk), str(self))
+        if re.search(r'Version code too low', reason):
+          raise device_errors.CommandFailedError(
+              '%s needs a higher versionCode (must be >= %d)' %
+              (package_name, dumpsys_output.get('MinimumWebViewVersionCode')),
+              str(self))
       raise device_errors.CommandFailedError(
           'Error setting WebView provider: %s' % output, str(self))
 

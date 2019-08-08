@@ -6,14 +6,11 @@
 
 namespace views {
 
-StatusIconLinux::Delegate::~Delegate() {
-}
+StatusIconLinux::Delegate::~Delegate() = default;
 
-StatusIconLinux::StatusIconLinux() : delegate_(NULL) {
-}
+StatusIconLinux::StatusIconLinux() = default;
 
-StatusIconLinux::~StatusIconLinux() {
-}
+StatusIconLinux::~StatusIconLinux() = default;
 
 void StatusIconLinux::RefreshPlatformContextMenu() {
 }

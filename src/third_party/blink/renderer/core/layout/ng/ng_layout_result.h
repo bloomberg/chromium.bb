@@ -43,7 +43,9 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // Create a copy of NGLayoutResult with |BfcBlockOffset| replaced by the given
   // parameter. Note, when |bfc_block_offset| is |nullopt|, |BfcBlockOffset| is
   // still replaced with |nullopt|.
-  NGLayoutResult(const NGLayoutResult&,
+  NGLayoutResult(const NGLayoutResult& other,
+                 const NGConstraintSpace& new_space,
+                 LayoutUnit bfc_line_offset,
                  base::Optional<LayoutUnit> bfc_block_offset);
   ~NGLayoutResult();
 
@@ -54,6 +56,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   const Vector<NGOutOfFlowPositionedDescendant>&
   OutOfFlowPositionedDescendants() const {
     return oof_positioned_descendants_;
+  }
+
+  NGLogicalOffset OutOfFlowPositionedOffset() const {
+    return oof_positioned_offset_;
   }
 
   const NGUnpositionedListMarker& UnpositionedListMarker() const {
@@ -115,6 +121,12 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return depends_on_percentage_block_size_;
   }
 
+  // Returns true if we have a descendant within this formatting context, which
+  // is potentially above our block-start edge.
+  bool MayHaveDescendantAboveBlockStart() const {
+    return may_have_descendant_above_block_start_;
+  }
+
   // Returns true if the space stored with this layout result, is valid.
   bool HasValidConstraintSpaceForCaching() const { return has_valid_space_; }
 
@@ -124,9 +136,34 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return space_;
   }
 
+  // This exposes a mutable part of the layout result just for the
+  // |NGOutOfFlowLayoutPart|.
+  class MutableForOutOfFlow final {
+    STACK_ALLOCATED();
+
+   protected:
+    friend class NGOutOfFlowLayoutPart;
+
+    void SetOutOfFlowPositionedOffset(const NGLogicalOffset& offset) {
+      layout_result_->oof_positioned_offset_ = offset;
+    }
+
+   private:
+    friend class NGLayoutResult;
+    MutableForOutOfFlow(const NGLayoutResult* layout_result)
+        : layout_result_(const_cast<NGLayoutResult*>(layout_result)) {}
+
+    NGLayoutResult* layout_result_;
+  };
+
+  MutableForOutOfFlow GetMutableForOutOfFlow() const {
+    return MutableForOutOfFlow(this);
+  }
+
  private:
   friend class NGBoxFragmentBuilder;
   friend class NGLineBoxFragmentBuilder;
+  friend class MutableForOutOfFlow;
 
   // This constructor requires a non-null fragment and sets a success status.
   NGLayoutResult(scoped_refptr<const NGPhysicalFragment> physical_fragment,
@@ -146,6 +183,12 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 
   static bool DependsOnPercentageBlockSize(const NGContainerFragmentBuilder&);
 
+  static NGExclusionSpace MergeExclusionSpaces(
+      const NGLayoutResult& other,
+      const NGExclusionSpace& new_input_exclusion_space,
+      LayoutUnit bfc_line_offset,
+      base::Optional<LayoutUnit> bfc_block_offset);
+
   // The constraint space which generated this layout result, may not be valid
   // as indicated by |has_valid_space_|.
   const NGConstraintSpace space_;
@@ -153,6 +196,11 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   scoped_refptr<const NGPhysicalFragment> physical_fragment_;
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
 
+  // This is the final position of an OOF-positioned object in its parent's
+  // writing-mode. This is set by the |NGOutOfFlowLayoutPart| while generating
+  // this layout result.
+  // This field is unused for other objects.
+  NGLogicalOffset oof_positioned_offset_;
   NGUnpositionedListMarker unpositioned_list_marker_;
 
   const NGExclusionSpace exclusion_space_;
@@ -172,6 +220,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   unsigned adjoining_floats_ : 2;  // NGFloatTypes
 
   unsigned has_orthogonal_flow_roots_ : 1;
+  unsigned may_have_descendant_above_block_start_ : 1;
   unsigned depends_on_percentage_block_size_ : 1;
 
   unsigned status_ : 1;

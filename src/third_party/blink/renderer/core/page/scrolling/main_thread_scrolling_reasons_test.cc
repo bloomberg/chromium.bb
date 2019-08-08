@@ -16,6 +16,8 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -107,52 +109,6 @@ class MainThreadScrollingReasonsTest
 };
 
 INSTANTIATE_TEST_SUITE_P(All, MainThreadScrollingReasonsTest, testing::Bool());
-
-TEST_P(MainThreadScrollingReasonsTest,
-       CustomScrollbarShouldTriggerMainThreadScroll) {
-  GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
-  GetWebView()->SetDeviceScaleFactor(2.f);
-  RegisterMockedHttpURLLoad("custom_scrollbar.html");
-  NavigateTo(base_url_ + "custom_scrollbar.html");
-  ForceFullCompositingUpdate();
-
-  Document* document = GetFrame()->GetDocument();
-  Element* container = document->getElementById("container");
-  Element* content = document->getElementById("content");
-  DCHECK_EQ(container->getAttribute(html_names::kClassAttr),
-            "custom_scrollbar");
-  DCHECK(container);
-  DCHECK(content);
-
-  LayoutObject* layout_object = container->GetLayoutObject();
-  ASSERT_TRUE(layout_object->IsBox());
-  LayoutBox* box = ToLayoutBox(layout_object);
-  ASSERT_TRUE(box->UsesCompositedScrolling());
-  CompositedLayerMapping* composited_layer_mapping =
-      box->Layer()->GetCompositedLayerMapping();
-  // When Blink generates property trees, the main thread reasons are stored in
-  // scroll nodes instead of being set on the custom scrollbar layer, so we use
-  // the scrolling contents layer to access the main thread scrolling reasons.
-  GraphicsLayer* layer =
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()
-          ? composited_layer_mapping->ScrollingContentsLayer()
-          : composited_layer_mapping->LayerForVerticalScrollbar();
-  ASSERT_TRUE(layer);
-  EXPECT_TRUE(layer->CcLayer()->GetMainThreadScrollingReasons());
-  EXPECT_TRUE(layer->CcLayer()->GetMainThreadScrollingReasons() &
-              cc::MainThreadScrollingReason::kCustomScrollbarScrolling);
-
-  // remove custom scrollbar class, the scrollbar is expected to scroll on
-  // impl thread as it is an overlay scrollbar.
-  container->removeAttribute("class");
-  ForceFullCompositingUpdate();
-  layer = RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()
-              ? composited_layer_mapping->ScrollingContentsLayer()
-              : composited_layer_mapping->LayerForVerticalScrollbar();
-  EXPECT_FALSE(layer->CcLayer()->GetMainThreadScrollingReasons());
-  EXPECT_FALSE(layer->CcLayer()->GetMainThreadScrollingReasons() &
-               cc::MainThreadScrollingReason::kCustomScrollbarScrolling);
-}
 
 TEST_P(MainThreadScrollingReasonsTest,
        BackgroundAttachmentFixedShouldTriggerMainThreadScroll) {

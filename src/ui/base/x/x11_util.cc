@@ -1395,7 +1395,7 @@ void LogErrorEventDescription(XDisplay* dpy,
 
   strncpy(request_str, "Unknown", sizeof(request_str));
   if (error_event.request_code < 128) {
-    std::string num = base::UintToString(error_event.request_code);
+    std::string num = base::NumberToString(error_event.request_code);
     XGetErrorDatabaseText(
         dpy, "XRequest", num.c_str(), "Unknown", request_str,
         sizeof(request_str));

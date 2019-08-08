@@ -9,6 +9,7 @@ include_rules = [
   "-call",
   "-common_audio",
   "-common_video",
+  "-crypto",
   "-data",
   "-examples",
   "-ios",
@@ -44,6 +45,7 @@ specific_include_rules = {
     "+rtc_base/checks.h",
     "+rtc_base/system/rtc_export.h",
     "+rtc_base/units/unit_base.h",
+    "+rtc_base/deprecation.h",
   ],
 
   "array_view\.h": [
@@ -66,10 +68,6 @@ specific_include_rules = {
     "+rtc_base/socket_address.h",
   ],
 
-  "create_peerconnection_factory\.h": [
-    "+rtc_base/deprecation.h",
-  ],
-
   "data_channel_interface\.h": [
     "+rtc_base/copy_on_write_buffer.h",
     "+rtc_base/ref_count.h",
@@ -77,6 +75,7 @@ specific_include_rules = {
 
   "dtls_transport_interface\.h": [
     "+rtc_base/ref_count.h",
+    "+rtc_base/ssl_certificate.h",
   ],
 
   "dtmf_sender_interface\.h": [
@@ -150,10 +149,6 @@ specific_include_rules = {
     "+rtc_base/logging.h",
   ],
 
-  "rtp_parameters\.h": [
-    "+rtc_base/deprecation.h",
-  ],
-
   "rtp_receiver_interface\.h": [
     "+rtc_base/ref_count.h",
   ],
@@ -208,7 +203,6 @@ specific_include_rules = {
 
   "audio_encoder\.h": [
     "+rtc_base/buffer.h",
-    "+rtc_base/deprecation.h",
   ],
 
   "audio_encoder_factory\.h": [

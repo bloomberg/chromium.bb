@@ -77,6 +77,12 @@ public abstract class ChromeSwitches {{
      */
     public static final String DISABLE_TAB_MERGING_FOR_TESTING = "disable-tab-merging";
 
+    /**
+     * Aggressively pre-warms renderers when Chrome is backgrounded. Currently only works for
+     * SingleTabActivity-derived Activities.
+     */
+    public static final String AGGRESSIVELY_PREWARM_RENDERERS = "aggressively-prewarm-renderers";
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Native Switches
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -191,6 +197,9 @@ public abstract class ChromeSwitches {{
     /** Prevents use of Google Play Services. */
     public static final String DISABLE_GOOGLE_PLAY_SERVICES_FOR_TESTING =
             "disable-google-play-services-for-testing";
+
+    /** Force enable special user handling. */
+    public static final String FORCE_ENABLE_SPECIAL_USER = "force-enable-special-user";
 
 {NATIVE_STRINGS}
 

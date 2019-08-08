@@ -185,10 +185,8 @@ TEST_F(ToolbarActionsBarBubbleViewsTest,
   EXPECT_EQ(DismissString(),
             bubble()->GetDialogClientView()->cancel_button()->GetText());
   EXPECT_TRUE(bubble()->learn_more_button());
-  base::string16 tooltip;
-  EXPECT_TRUE(bubble()->learn_more_button()->GetTooltipText(gfx::Point(0, 0),
-                                                            &tooltip));
-  EXPECT_EQ(LearnMoreString(), tooltip);
+  EXPECT_EQ(LearnMoreString(),
+            bubble()->learn_more_button()->GetTooltipText(gfx::Point(0, 0)));
   EXPECT_FALSE(bubble()->item_list());
 
   CloseBubble();
@@ -394,10 +392,8 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestCreateExtraViewLinkedTextOnly) {
   std::unique_ptr<views::View> extra_view(TestCreateExtraView());
   ASSERT_TRUE(extra_view);
   ASSERT_EQ("ImageButton", std::string(extra_view->GetClassName()));
-  base::string16 tooltip;
-  EXPECT_TRUE(extra_view->GetTooltipText(gfx::Point(0, 0), &tooltip));
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSTALLED_BY_ADMIN),
-            tooltip);
+            extra_view->GetTooltipText(gfx::Point(0, 0)));
   CloseBubble();
 }
 
@@ -439,7 +435,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestCreateExtraViewImageAndText) {
   std::unique_ptr<views::View> extra_view(TestCreateExtraView());
   ASSERT_TRUE(extra_view);
   EXPECT_EQ("View", std::string(extra_view->GetClassName()));
-  EXPECT_EQ(2, extra_view->child_count());
+  ASSERT_EQ(2u, extra_view->children().size());
 
   for (int i = 0; i < 2; i++) {
     const views::View* v = extra_view->child_at(i);

@@ -121,7 +121,7 @@ class TracingController {
   virtual bool GetTraceBufferUsage(GetTraceBufferUsageCallback callback) = 0;
 
   // Check if the tracing system is tracing
-  virtual bool IsTracing() const = 0;
+  virtual bool IsTracing() = 0;
 
  protected:
   virtual ~TracingController() {}

@@ -772,14 +772,14 @@ cr.define('settings_about_page', function() {
          */
         test('PromoteUpdaterButtonCorrectStates', function() {
           let item = page.$$('#promoteUpdater');
-          let arrow = page.$$('#promoteUpdater button');
+          let arrow = page.$$('#promoteUpdater cr-icon-button');
           assertFalse(!!item);
           assertFalse(!!arrow);
 
           firePromoteUpdaterStatusChanged(PromoStatusScenarios.CANT_PROMOTE);
           Polymer.dom.flush();
           item = page.$$('#promoteUpdater');
-          arrow = page.$$('#promoteUpdater button');
+          arrow = page.$$('#promoteUpdater cr-icon-button');
           assertFalse(!!item);
           assertFalse(!!arrow);
 
@@ -791,9 +791,9 @@ cr.define('settings_about_page', function() {
           assertFalse(item.hasAttribute('disabled'));
           assertTrue(item.hasAttribute('actionable'));
 
-          arrow = page.$$('#promoteUpdater button');
+          arrow = page.$$('#promoteUpdater cr-icon-button');
           assertTrue(!!arrow);
-          assertEquals('PAPER-ICON-BUTTON-LIGHT', arrow.parentElement.tagName);
+          assertEquals('CR-ICON-BUTTON', arrow.parentElement.tagName);
           assertFalse(arrow.parentElement.hidden);
           assertFalse(arrow.hasAttribute('disabled'));
 
@@ -804,9 +804,9 @@ cr.define('settings_about_page', function() {
           assertTrue(item.hasAttribute('disabled'));
           assertTrue(item.hasAttribute('actionable'));
 
-          arrow = page.$$('#promoteUpdater button');
+          arrow = page.$$('#promoteUpdater cr-icon-button');
           assertTrue(!!arrow);
-          assertEquals('PAPER-ICON-BUTTON-LIGHT', arrow.parentElement.tagName);
+          assertEquals('CR-ICON-BUTTON', arrow.parentElement.tagName);
           assertFalse(arrow.parentElement.hidden);
           assertTrue(arrow.hasAttribute('disabled'));
 
@@ -817,9 +817,9 @@ cr.define('settings_about_page', function() {
           assertTrue(item.hasAttribute('disabled'));
           assertFalse(item.hasAttribute('actionable'));
 
-          arrow = page.$$('#promoteUpdater button');
+          arrow = page.$$('#promoteUpdater cr-icon-button');
           assertTrue(!!arrow);
-          assertEquals('PAPER-ICON-BUTTON-LIGHT', arrow.parentElement.tagName);
+          assertEquals('CR-ICON-BUTTON', arrow.parentElement.tagName);
           assertTrue(arrow.parentElement.hidden);
           assertTrue(arrow.hasAttribute('disabled'));
         });

@@ -35,6 +35,8 @@ SchedulerSettings LayerTreeSettings::ToSchedulerSettings() const {
       wait_for_all_pipeline_stages_before_draw;
   scheduler_settings.enable_surface_synchronization =
       enable_surface_synchronization;
+  scheduler_settings.compositor_threaded_scrollbar_scrolling =
+      compositor_threaded_scrollbar_scrolling;
   return scheduler_settings;
 }
 

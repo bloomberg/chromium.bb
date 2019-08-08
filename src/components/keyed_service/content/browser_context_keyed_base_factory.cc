@@ -10,8 +10,7 @@
 BrowserContextKeyedBaseFactory::BrowserContextKeyedBaseFactory(
     const char* name,
     BrowserContextDependencyManager* manager)
-    : KeyedServiceBaseFactory(name, manager) {
-}
+    : KeyedServiceBaseFactory(name, manager, BROWSER_CONTEXT) {}
 
 BrowserContextKeyedBaseFactory::~BrowserContextKeyedBaseFactory() {
 }

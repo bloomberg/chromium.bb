@@ -150,6 +150,25 @@ class IdlSchemaTest(unittest.TestCase):
     self.assertTrue(enum_with_nodoc is not None)
     self.assertTrue(enum_with_nodoc['nodoc'])
 
+  def testNoDocOnEnumValue(self):
+    schema = self.idl_basics
+    expected = {
+        'enum': [{
+            'name': 'name1'
+        }, {
+            'name': 'name2',
+            'nodoc': True,
+            'description': 'comment2'
+        }, {
+            'name': 'name3',
+            'description': 'comment3'
+        }],
+        'type': 'string',
+        'id': 'EnumTypeWithNoDocValue',
+        'description': ''
+    }
+    self.assertEquals(expected, getType(schema, expected['id']))
+
   def testInternalNamespace(self):
     idl_basics  = self.idl_basics
     self.assertEquals('idl_basics', idl_basics['namespace'])

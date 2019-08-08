@@ -21,7 +21,6 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/crx_file/id_util.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/update_client/component.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/network.h"

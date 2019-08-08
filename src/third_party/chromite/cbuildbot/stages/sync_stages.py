@@ -417,7 +417,7 @@ class SyncStage(generic_stages.BuilderStage):
     """Returns the manifest to use."""
     return self._run.config.manifest
 
-  def ManifestCheckout(self, next_manifest, fetch_all=False):
+  def ManifestCheckout(self, next_manifest, fetch_all=True):
     """Checks out the repository to the given manifest."""
     self._Print('\n'.join([
         'BUILDROOT: %s' % self.repo.directory,
@@ -664,6 +664,7 @@ class ManifestVersionedSyncStage(SyncStage):
     build_id = self._run.attrs.metadata.GetDict().get('build_id')
 
     to_return = self.manifest_manager.GetNextBuildSpec(build_id=build_id)
+    logging.info('Found next version to build: %s', to_return)
     previous_version = self.manifest_manager.GetLatestPassingSpec()
     target_version = self.manifest_manager.current_version
 
@@ -707,7 +708,7 @@ class ManifestVersionedSyncStage(SyncStage):
     """Get the platform version associated with the master_build_id.
 
     Args:
-      master_id: Our master build id.
+      master_id: Our master buildbucket id.
       timeout: How long to wait for the platform version to show up
         in the database. This is needed because the slave builders are
         triggered slightly before the platform version is written. Default
@@ -720,7 +721,7 @@ class ManifestVersionedSyncStage(SyncStage):
       logging.info('%s until timeout...', remaining)
 
     def _GetPlatformVersion():
-      status = self.buildstore.GetBuildStatuses(build_ids=[master_id])[0]
+      status = self.buildstore.GetBuildStatuses(buildbucket_ids=[master_id])[0]
       return status['platform_version']
 
     # Retry until non-None version is returned.
@@ -738,17 +739,17 @@ class ManifestVersionedSyncStage(SyncStage):
     """Verify that our master id is current and valid.
 
     Args:
-      master_id: Our master build id.
+      master_id: Our master buildbucket id.
     """
     if self.buildstore.AreClientsReady() and master_id:
       assert not self._run.options.force_version
       master_build_status = self.buildstore.GetBuildStatuses(
-          build_ids=[master_id])[0]
+          buildbucket_ids=[master_id])[0]
       latest = self.buildstore.GetBuildHistory(
           master_build_status['build_config'],
           1,
-          branch=self._run.options.branch_name)
-      if latest and latest[0]['id'] != master_id:
+          branch=self._run.options.branch)
+      if latest and latest[0]['buildbucket_id'] != master_id:
         raise failures_lib.MasterSlaveVersionMismatchFailure(
             'This slave\'s master (id=%s) has been supplanted by a newer '
             'master (id=%s). Aborting.' % (master_id, latest[0]['id']))
@@ -757,10 +758,10 @@ class ManifestVersionedSyncStage(SyncStage):
   def PerformStage(self):
     self.Initialize()
 
-    self._VerifyMasterId(self._run.options.master_build_id)
+    self._VerifyMasterId(self._run.options.master_buildbucket_id)
     version = self._run.options.force_version
-    if self._run.options.master_build_id:
-      version = self._GetMasterVersion(self._run.options.master_build_id)
+    if self._run.options.master_buildbucket_id:
+      version = self._GetMasterVersion(self._run.options.master_buildbucket_id)
 
     next_manifest = None
     if version:
@@ -1086,13 +1087,8 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
       logging.warning(str(e))
       return None
 
-    # We must extend the builder deadline before publishing a new manifest to
-    # ensure that slaves have enough time to complete the builds about to
-    # start.
     build_identifier, _ = self._run.GetCIDBHandle()
     build_id = build_identifier.cidb_id
-    if self.buildstore.AreClientsReady():
-      self.buildstore.ExtendDeadline(build_id, self._run.config.build_timeout)
 
     logging.info('Creating new candidate manifest.')
     manifest = self.manifest_manager.CreateNewCandidate(
@@ -1103,7 +1099,7 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
 
     return manifest
 
-  def ManifestCheckout(self, next_manifest, fetch_all=False):
+  def ManifestCheckout(self, next_manifest, fetch_all=True):
     """Checks out the repository to the given manifest."""
     # Sync to the provided manifest on slaves. On the master, we're
     # already synced to this manifest, so self.skip_sync is set and

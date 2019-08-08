@@ -20,6 +20,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_ENCODED_FORM_DATA_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_ENCODED_FORM_DATA_H_
 
+#include <utility>
+
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -29,6 +31,7 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
+#include "services/network/public/mojom/url_loader.mojom-blink.h"
 
 namespace blink {
 
@@ -61,8 +64,8 @@ class PLATFORM_EXPORT FormDataElement final {
   explicit FormDataElement(const Vector<char>& array)
       : type_(kData), data_(array) {}
   FormDataElement(const String& filename,
-                  long long file_start,
-                  long long file_length,
+                  int64_t file_start,
+                  int64_t file_length,
                   double expected_file_modification_time)
       : type_(kEncodedFile),
         filename_(filename),
@@ -85,8 +88,8 @@ class PLATFORM_EXPORT FormDataElement final {
   String filename_;
   String blob_uuid_;
   scoped_refptr<BlobDataHandle> optional_blob_data_handle_;
-  long long file_start_;
-  long long file_length_;
+  int64_t file_start_;
+  int64_t file_length_;
   double expected_file_modification_time_;
   scoped_refptr<WrappedDataPipeGetter> data_pipe_getter_;
 };
@@ -137,8 +140,8 @@ class PLATFORM_EXPORT EncodedFormData : public RefCounted<EncodedFormData> {
   void AppendData(const void* data, wtf_size_t);
   void AppendFile(const String& file_path);
   void AppendFileRange(const String& filename,
-                       long long start,
-                       long long length,
+                       int64_t start,
+                       int64_t length,
                        double expected_modification_time);
   void AppendBlob(const String& blob_uuid,
                   scoped_refptr<BlobDataHandle> optional_handle);
@@ -178,6 +181,8 @@ class PLATFORM_EXPORT EncodedFormData : public RefCounted<EncodedFormData> {
   bool IsSafeToSendToAnotherThread() const;
 
  private:
+  friend struct mojo::StructTraits<network::mojom::URLRequestBodyDataView,
+                                   scoped_refptr<blink::EncodedFormData>>;
   EncodedFormData();
   EncodedFormData(const EncodedFormData&);
 
@@ -198,4 +203,4 @@ inline bool operator!=(const EncodedFormData& a, const EncodedFormData& b) {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_ENCODED_FORM_DATA_H_

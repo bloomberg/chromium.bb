@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
@@ -35,34 +36,25 @@ namespace {
 
 class ClientCertIdentityWin : public ClientCertIdentity {
  public:
-  // Takes ownership of |cert_context|.
   ClientCertIdentityWin(
       scoped_refptr<net::X509Certificate> cert,
-      PCCERT_CONTEXT cert_context,
+      ScopedPCCERT_CONTEXT cert_context,
       scoped_refptr<base::SingleThreadTaskRunner> key_task_runner)
       : ClientCertIdentity(std::move(cert)),
-        cert_context_(cert_context),
-        key_task_runner_(key_task_runner) {}
-  ~ClientCertIdentityWin() override {
-    CertFreeCertificateContext(cert_context_);
-  }
+        cert_context_(std::move(cert_context)),
+        key_task_runner_(std::move(key_task_runner)) {}
 
-  void AcquirePrivateKey(
-      const base::Callback<void(scoped_refptr<SSLPrivateKey>)>&
-          private_key_callback) override {
-    if (base::PostTaskAndReplyWithResult(
-            key_task_runner_.get(), FROM_HERE,
-            base::Bind(&FetchClientCertPrivateKey,
-                       base::Unretained(certificate()), cert_context_),
-            private_key_callback)) {
-      return;
-    }
-    // If the task could not be posted, behave as if there was no key.
-    private_key_callback.Run(nullptr);
+  void AcquirePrivateKey(base::OnceCallback<void(scoped_refptr<SSLPrivateKey>)>
+                             private_key_callback) override {
+    base::PostTaskAndReplyWithResult(
+        key_task_runner_.get(), FROM_HERE,
+        base::BindOnce(&FetchClientCertPrivateKey,
+                       base::Unretained(certificate()), cert_context_.get()),
+        std::move(private_key_callback));
   }
 
  private:
-  PCCERT_CONTEXT cert_context_;
+  ScopedPCCERT_CONTEXT cert_context_;
   scoped_refptr<base::SingleThreadTaskRunner> key_task_runner_;
 };
 
@@ -93,7 +85,7 @@ static BOOL WINAPI ClientCertFindCallback(PCCERT_CONTEXT cert_context,
   }
 
   // Verify the current time is within the certificate's validity period.
-  if (CertVerifyTimeValidity(NULL, cert_context->pCertInfo) != 0)
+  if (CertVerifyTimeValidity(nullptr, cert_context->pCertInfo) != 0)
     return FALSE;
 
   // Verify private key metadata is associated with this certificate.
@@ -102,7 +94,7 @@ static BOOL WINAPI ClientCertFindCallback(PCCERT_CONTEXT cert_context,
   // CertFindChainInStore()?
   DWORD size = 0;
   if (!CertGetCertificateContextProperty(
-          cert_context, CERT_KEY_PROV_INFO_PROP_ID, NULL, &size)) {
+          cert_context, CERT_KEY_PROV_INFO_PROP_ID, nullptr, &size)) {
     return FALSE;
   }
 
@@ -134,7 +126,7 @@ ClientCertIdentityList GetClientCertsImpl(HCERTSTORE cert_store,
       reinterpret_cast<CERT_NAME_BLOB*>(issuers.data());
   find_by_issuer_para.pfnFindCallback = ClientCertFindCallback;
 
-  PCCERT_CHAIN_CONTEXT chain_context = NULL;
+  PCCERT_CHAIN_CONTEXT chain_context = nullptr;
   DWORD find_flags = CERT_CHAIN_FIND_BY_ISSUER_CACHE_ONLY_FLAG |
                      CERT_CHAIN_FIND_BY_ISSUER_CACHE_ONLY_URL_FLAG;
   for (;;) {
@@ -155,26 +147,30 @@ ClientCertIdentityList GetClientCertsImpl(HCERTSTORE cert_store,
     PCCERT_CONTEXT cert_context =
         chain_context->rgpChain[0]->rgpElement[0]->pCertContext;
     // Copy the certificate, so that it is valid after |cert_store| is closed.
-    PCCERT_CONTEXT cert_context2 = NULL;
-    BOOL ok = CertAddCertificateContextToStore(NULL, cert_context,
-                                               CERT_STORE_ADD_USE_EXISTING,
-                                               &cert_context2);
+    ScopedPCCERT_CONTEXT cert_context2;
+    PCCERT_CONTEXT raw = nullptr;
+    BOOL ok = CertAddCertificateContextToStore(
+        nullptr, cert_context, CERT_STORE_ADD_USE_EXISTING, &raw);
     if (!ok) {
       NOTREACHED();
       continue;
     }
+    cert_context2.reset(raw);
 
     // Grab the intermediates, if any.
+    std::vector<ScopedPCCERT_CONTEXT> intermediates_storage;
     std::vector<PCCERT_CONTEXT> intermediates;
     for (DWORD i = 1; i < chain_context->rgpChain[0]->cElement; ++i) {
       PCCERT_CONTEXT chain_intermediate =
           chain_context->rgpChain[0]->rgpElement[i]->pCertContext;
-      PCCERT_CONTEXT copied_intermediate = NULL;
-      ok = CertAddCertificateContextToStore(NULL, chain_intermediate,
+      PCCERT_CONTEXT copied_intermediate = nullptr;
+      ok = CertAddCertificateContextToStore(nullptr, chain_intermediate,
                                             CERT_STORE_ADD_USE_EXISTING,
                                             &copied_intermediate);
-      if (ok)
+      if (ok) {
         intermediates.push_back(copied_intermediate);
+        intermediates_storage.emplace_back(copied_intermediate);
+      }
     }
 
     // Drop the self-signed root, if any. Match Internet Explorer in not sending
@@ -186,8 +182,8 @@ ClientCertIdentityList GetClientCertsImpl(HCERTSTORE cert_store,
     // in that case, assume it is a configuration error.
     if (!intermediates.empty() &&
         x509_util::IsSelfSigned(intermediates.back())) {
-      CertFreeCertificateContext(intermediates.back());
       intermediates.pop_back();
+      intermediates_storage.pop_back();
     }
 
     // Allow UTF-8 inside PrintableStrings in client certificates. See
@@ -196,16 +192,14 @@ ClientCertIdentityList GetClientCertsImpl(HCERTSTORE cert_store,
     options.printable_string_is_utf8 = true;
     scoped_refptr<X509Certificate> cert =
         x509_util::CreateX509CertificateFromCertContexts(
-            cert_context2, intermediates, options);
+            cert_context2.get(), intermediates, options);
     if (cert) {
       selected_identities.push_back(std::make_unique<ClientCertIdentityWin>(
           std::move(cert),
-          cert_context2,     // Takes ownership of |cert_context2|.
+          std::move(cert_context2),  // Takes ownership of |cert_context2|.
           current_thread));  // The key must be acquired on the same thread, as
                              // the PCCERT_CONTEXT may not be thread safe.
     }
-    for (size_t i = 0; i < intermediates.size(); ++i)
-      CertFreeCertificateContext(intermediates[i]);
   }
 
   std::sort(selected_identities.begin(), selected_identities.end(),
@@ -224,31 +218,25 @@ ClientCertStoreWin::ClientCertStoreWin(HCERTSTORE cert_store) {
 
 ClientCertStoreWin::~ClientCertStoreWin() {}
 
-void ClientCertStoreWin::GetClientCerts(
-    const SSLCertRequestInfo& request,
-    const ClientCertListCallback& callback) {
+void ClientCertStoreWin::GetClientCerts(const SSLCertRequestInfo& request,
+                                        ClientCertListCallback callback) {
   if (cert_store_) {
     // Use the existing client cert store. Note: Under some situations,
     // it's possible for this to return certificates that aren't usable
     // (see below).
     // When using caller provided HCERTSTORE, assume that it should be accessed
     // on the current thread.
-    callback.Run(GetClientCertsImpl(cert_store_, request));
+    std::move(callback).Run(GetClientCertsImpl(cert_store_, request));
     return;
   }
 
-  if (base::PostTaskAndReplyWithResult(
-          GetSSLPlatformKeyTaskRunner().get(), FROM_HERE,
-          // Caller is responsible for keeping the |request| alive
-          // until the callback is run, so std::cref is safe.
-          base::Bind(&ClientCertStoreWin::GetClientCertsWithMyCertStore,
+  base::PostTaskAndReplyWithResult(
+      GetSSLPlatformKeyTaskRunner().get(), FROM_HERE,
+      // Caller is responsible for keeping the |request| alive
+      // until the callback is run, so std::cref is safe.
+      base::BindOnce(&ClientCertStoreWin::GetClientCertsWithMyCertStore,
                      std::cref(request)),
-          callback)) {
-    return;
-  }
-
-  // If the task could not be posted, behave as if there were no certificates.
-  callback.Run(ClientCertIdentityList());
+      std::move(callback));
 }
 
 // static
@@ -270,15 +258,15 @@ bool ClientCertStoreWin::SelectClientCertsForTesting(
     const CertificateList& input_certs,
     const SSLCertRequestInfo& request,
     ClientCertIdentityList* selected_identities) {
-  ScopedHCERTSTORE test_store(CertOpenStore(CERT_STORE_PROV_MEMORY, 0, NULL, 0,
-                                            NULL));
+  ScopedHCERTSTORE test_store(
+      CertOpenStore(CERT_STORE_PROV_MEMORY, 0, NULL, 0, nullptr));
   if (!test_store)
     return false;
 
   // Add available certificates to the test store.
   for (const auto& input_cert : input_certs) {
     // Add the certificate to the test store.
-    PCCERT_CONTEXT cert = NULL;
+    PCCERT_CONTEXT cert = nullptr;
     if (!CertAddEncodedCertificateToStore(
             test_store, X509_ASN_ENCODING,
             reinterpret_cast<const BYTE*>(

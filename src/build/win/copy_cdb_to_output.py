@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import glob
 import hashlib
 import os
@@ -38,7 +40,7 @@ def _CopyImpl(file_name, target_dir, source_dir, verbose=False):
       ((not os.path.isfile(target)) or
        _HexDigest(source) != _HexDigest(target))):
     if verbose:
-      print 'Copying %s to %s...' % (source, target)
+      print('Copying %s to %s...' % (source, target))
     if os.path.exists(target):
       os.unlink(target)
     shutil.copy(source, target)
@@ -69,7 +71,7 @@ def _CopyCDBToOutput(output_dir, target_arch):
   elif target_arch in ['x64', 'arm64']:
     src_arch = target_arch
   else:
-    print 'copy_cdb_to_output.py: unknown target_arch %s' % target_arch
+    print('copy_cdb_to_output.py: unknown target_arch %s' % target_arch)
     sys.exit(1)
   # We need to copy multiple files, so cache the computed source directory.
   src_dir = os.path.join(win_sdk_dir, 'Debuggers', src_arch)
@@ -109,8 +111,8 @@ def _CopyCDBToOutput(output_dir, target_arch):
 
 def main():
   if len(sys.argv) < 2:
-    print >>sys.stderr, 'Usage: copy_cdb_to_output.py <output_dir> ' + \
-        '<target_arch>'
+    print('Usage: copy_cdb_to_output.py <output_dir> ' + \
+        '<target_arch>', file=sys.stderr)
     return 1
   return _CopyCDBToOutput(sys.argv[1], sys.argv[2])
 

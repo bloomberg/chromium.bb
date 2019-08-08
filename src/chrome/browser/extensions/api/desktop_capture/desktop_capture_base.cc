@@ -57,11 +57,8 @@ DesktopCaptureChooseDesktopMediaFunctionBase::
 
 DesktopCaptureChooseDesktopMediaFunctionBase::
     ~DesktopCaptureChooseDesktopMediaFunctionBase() {
-  // RenderFrameHost may be already destroyed.
-  if (render_frame_host()) {
-    DesktopCaptureRequestsRegistry::GetInstance()->RemoveRequest(
-        render_frame_host()->GetProcess()->GetID(), request_id_);
-  }
+  DesktopCaptureRequestsRegistry::GetInstance()->RemoveRequest(
+      source_process_id(), request_id_);
 }
 
 void DesktopCaptureChooseDesktopMediaFunctionBase::Cancel() {
@@ -112,10 +109,6 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
         break;
       }
       case api::desktop_capture::DESKTOP_CAPTURE_SOURCE_TYPE_TAB: {
-        if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-                extensions::switches::kDisableTabForDesktopShare)) {
-          continue;
-        }
         media_types.push_back(content::DesktopMediaID::TYPE_WEB_CONTENTS);
         break;
       }
@@ -155,7 +148,6 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
   picker_params.app_name = base::UTF8ToUTF16(GetCallerDisplayName());
   picker_params.target_name = target_name;
   picker_params.request_audio = request_audio;
-  picker_params.created_by_extension = true;
   picker_->Show(picker_params, std::move(source_lists), callback);
   origin_ = origin;
   return true;
@@ -218,7 +210,7 @@ DesktopCaptureCancelChooseDesktopMediaFunctionBase::Run() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &request_id));
 
   DesktopCaptureRequestsRegistry::GetInstance()->CancelRequest(
-      render_frame_host()->GetProcess()->GetID(), request_id);
+      source_process_id(), request_id);
   return RespondNow(NoArguments());
 }
 

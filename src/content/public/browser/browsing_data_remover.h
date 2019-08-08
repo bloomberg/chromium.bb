@@ -12,10 +12,12 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 
-class GURL;
-
 namespace storage {
 class SpecialStoragePolicy;
+}
+
+namespace url {
+class Origin;
 }
 
 namespace content {
@@ -151,7 +153,7 @@ class BrowsingDataRemover {
   // the |special_storage_policy|.
   virtual bool DoesOriginMatchMask(
       int origin_type_mask,
-      const GURL& origin,
+      const url::Origin& origin,
       storage::SpecialStoragePolicy* special_storage_policy) const = 0;
 
   // Removes browsing data within the given |time_range|, with datatypes being

@@ -28,6 +28,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashscreen.SplashScreenController;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
@@ -52,6 +53,7 @@ import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.ui.widget.Toast;
+import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -196,6 +198,19 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             return Action.FINISH_ACTIVITY;
         }
 
+        // Check if we should launch a WebApk to handle the intent.
+        // For NoTouchMode, prefer to launch PWAs instead of the browser on view intents.
+        if (FeatureUtilities.isNoTouchModeEnabled() && url != null
+                && Intent.ACTION_VIEW.equals(mIntent.getAction())) {
+            String packageName = WebApkValidator.queryFirstWebApkPackage(
+                    ContextUtils.getApplicationContext(), url);
+            if (packageName != null) {
+                mActivity.startActivity(WebApkValidator.createWebApkIntentForUrlAndOptionalPackage(
+                        url, packageName));
+                return Action.FINISH_ACTIVITY;
+            }
+        }
+
         // Check if we should push the user through First Run.
         if (FirstRunFlowSequencer.launch(mActivity, mIntent, false /* requiresBroadcast */,
                     false /* preferLightweightFre */)) {
@@ -271,6 +286,11 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
      */
     public static boolean isCustomTabIntent(Intent intent) {
         if (intent == null) return false;
+        // CCT is disabled in noTouch mode except for some Chrome-internal exceptions.
+        if (FeatureUtilities.isNoTouchModeEnabled()
+                && !IntentHandler.wasIntentSenderChrome(intent)) {
+            return false;
+        }
         if (CustomTabsIntent.shouldAlwaysUseBrowserUI(intent)
                 || !intent.hasExtra(CustomTabsIntent.EXTRA_SESSION)) {
             return false;
@@ -290,8 +310,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         newIntent.setData(uri);
         newIntent.setClassName(context, CustomTabActivity.class.getName());
 
-        if (clearTopIntentsForCustomTabsEnabled(intent)
-                && BrowserSessionContentUtils.canHandleIntentInCurrentTask(intent, context)) {
+        if (clearTopIntentsForCustomTabsEnabled(intent)) {
             // Ensure the new intent is routed into the instance of CustomTabActivity in this task.
             // If the existing CustomTabActivity can't handle the intent, it will re-launch
             // the intent without these flags.
@@ -299,7 +318,13 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             // - "Don't keep activities",
             // - Multiple clients hosting CCTs,
             // - Multiwindow mode.
-            newIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            Class<? extends Activity> handlerClass =
+                    BrowserSessionContentUtils.getActiveHandlerClassInCurrentTask(intent, context);
+            if (handlerClass != null) {
+                newIntent.setClassName(context, handlerClass.getName());
+                newIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP |
+                        Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            }
         }
 
         // Use a custom tab with a unique theme for payment handlers.
@@ -409,6 +434,10 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         // Allow disk writes during startActivity() to avoid strict mode violations on some
         // Samsung devices, see https://crbug.com/796548.
         try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
+            if (SplashScreenController.handleIntent(mActivity, launchIntent)) {
+                return;
+            }
+
             mActivity.startActivity(launchIntent, null);
         }
     }

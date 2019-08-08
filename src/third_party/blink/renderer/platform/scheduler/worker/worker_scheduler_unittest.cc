@@ -16,8 +16,8 @@
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
-using testing::ElementsAreArray;
 using testing::ElementsAre;
+using testing::ElementsAreArray;
 
 namespace blink {
 namespace scheduler {
@@ -52,11 +52,12 @@ void RunChainedTask(scoped_refptr<base::sequence_manager::TaskQueue> task_queue,
 
 class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
  public:
-  WorkerThreadSchedulerForTest(
-      WebThreadType thread_type,
-      std::unique_ptr<base::sequence_manager::SequenceManager> manager,
-      WorkerSchedulerProxy* proxy)
-      : WorkerThreadScheduler(thread_type, std::move(manager), proxy) {}
+  // |manager| and |proxy| must remain valid for the entire lifetime of this
+  // object.
+  WorkerThreadSchedulerForTest(WebThreadType thread_type,
+                               base::sequence_manager::SequenceManager* manager,
+                               WorkerSchedulerProxy* proxy)
+      : WorkerThreadScheduler(thread_type, manager, proxy) {}
 
   const std::unordered_set<WorkerScheduler*>& worker_schedulers() {
     return GetWorkerSchedulersForTesting();
@@ -80,13 +81,14 @@ class WorkerSchedulerTest : public testing::Test {
  public:
   WorkerSchedulerTest()
       : mock_task_runner_(new base::TestMockTimeTaskRunner()),
-        scheduler_(new WorkerThreadSchedulerForTest(
-            WebThreadType::kTestThread,
+        sequence_manager_(
             base::sequence_manager::SequenceManagerForTest::Create(
                 nullptr,
                 mock_task_runner_,
-                mock_task_runner_->GetMockTickClock()),
-            nullptr /* proxy */)) {
+                mock_task_runner_->GetMockTickClock())),
+        scheduler_(new WorkerThreadSchedulerForTest(WebThreadType::kTestThread,
+                                                    sequence_manager_.get(),
+                                                    nullptr /* proxy */)) {
     mock_task_runner_->AdvanceMockTickClock(
         base::TimeDelta::FromMicroseconds(5000));
   }
@@ -123,7 +125,8 @@ class WorkerSchedulerTest : public testing::Test {
 
  protected:
   scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
-
+  std::unique_ptr<base::sequence_manager::SequenceManagerForTest>
+      sequence_manager_;
   std::unique_ptr<WorkerThreadSchedulerForTest> scheduler_;
   std::unique_ptr<WorkerSchedulerForTest> worker_scheduler_;
 

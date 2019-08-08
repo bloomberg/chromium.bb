@@ -12,8 +12,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -28,11 +28,9 @@ class GeolocationHandlerTest : public testing::Test {
   ~GeolocationHandlerTest() override = default;
 
   void SetUp() override {
-    // Initialize DBusThreadManager with a stub implementation.
-    DBusThreadManager::Initialize();
+    shill_clients::InitializeFakes();
     // Get the test interface for manager / device.
-    manager_test_ =
-        DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface();
+    manager_test_ = ShillManagerClient::Get()->GetTestInterface();
     ASSERT_TRUE(manager_test_);
     geolocation_handler_.reset(new GeolocationHandler());
     geolocation_handler_->Init();
@@ -41,7 +39,7 @@ class GeolocationHandlerTest : public testing::Test {
 
   void TearDown() override {
     geolocation_handler_.reset();
-    DBusThreadManager::Shutdown();
+    shill_clients::Shutdown();
   }
 
   bool GetWifiAccessPoints() {

@@ -122,12 +122,6 @@ class PasswordStore : protected PasswordStoreSync,
     return affiliated_match_helper_.get();
   }
 
-  // Toggles whether or not to propagate password changes in Android credentials
-  // to the affiliated Web credentials.
-  void enable_propagating_password_changes_to_web_credentials(bool enabled) {
-    is_propagating_password_changes_to_web_credentials_enabled_ = enabled;
-  }
-
   // Adds the given PasswordForm to the secure password store asynchronously.
   virtual void AddLogin(const autofill::PasswordForm& form);
 
@@ -190,40 +184,15 @@ class PasswordStore : protected PasswordStoreSync,
   virtual void GetLogins(const FormDigest& form,
                          PasswordStoreConsumer* consumer);
 
-  // Returns all stored credentials with SCHEME_HTTP that have a realm whose
-  // organization-identifying name -- that is, the first domain name label below
-  // the effective TLD -- matches that of |signon_realm|. Notifies |consumer| on
-  // completion. The request will be cancelled if the consumer is destroyed.
-  //
-  // WARNING: This is *NOT* PSL (Public Suffix List) matching. The logins
-  // returned by this method are not safe to be filled into the observed form.
-  //
-  // For example, the organization-identifying name of "https://foo.example.org"
-  // is `example`, and logins will be returned for "http://bar.example.co.uk",
-  // but not for "http://notexample.com" or "https://example.foo.com".
-  virtual void GetLoginsForSameOrganizationName(
-      const std::string& signon_realm,
-      PasswordStoreConsumer* consumer);
-
   // Gets the complete list of PasswordForms that are not blacklist entries--and
   // are thus auto-fillable. |consumer| will be notified on completion.
   // The request will be cancelled if the consumer is destroyed.
   virtual void GetAutofillableLogins(PasswordStoreConsumer* consumer);
 
-  // Same as above, but also fills in affiliation and branding information for
-  // Android credentials.
-  virtual void GetAutofillableLoginsWithAffiliationAndBrandingInformation(
-      PasswordStoreConsumer* consumer);
-
-  // Gets the complete list of PasswordForms that are blacklist entries,
-  // and notify |consumer| on completion. The request will be cancelled if the
-  // consumer is destroyed.
-  virtual void GetBlacklistLogins(PasswordStoreConsumer* consumer);
-
-  // Same as above, but also fills in affiliation and branding information for
-  // Android credentials.
-  virtual void GetBlacklistLoginsWithAffiliationAndBrandingInformation(
-      PasswordStoreConsumer* consumer);
+  // Gets the complete list of PasswordForms (regardless of their blacklist
+  // status) and notify |consumer| on completion. The request will be cancelled
+  // if the consumer is destroyed.
+  virtual void GetAllLogins(PasswordStoreConsumer* consumer);
 
   // Gets the complete list of PasswordForms, regardless of their blacklist
   // status. Also fills in affiliation and branding information for Android
@@ -332,36 +301,6 @@ class PasswordStore : protected PasswordStoreSync,
 
   typedef base::Callback<PasswordStoreChangeList(void)> ModificationTask;
 
-  // Represents a single GetLogins() request. Implements functionality to filter
-  // results and send them to the consumer on the consumer's message loop.
-  class GetLoginsRequest {
-   public:
-    explicit GetLoginsRequest(PasswordStoreConsumer* consumer);
-    ~GetLoginsRequest();
-
-    // Removes any credentials in |results| that were saved before the cutoff,
-    // then notifies the consumer with the remaining results.
-    // Note that if this method is not called before destruction, the consumer
-    // will not be notified.
-    void NotifyConsumerWithResults(
-        std::vector<std::unique_ptr<autofill::PasswordForm>> results);
-
-    void NotifyWithSiteStatistics(std::vector<InteractionsStats> stats);
-
-    void set_ignore_logins_cutoff(base::Time cutoff) {
-      ignore_logins_cutoff_ = cutoff;
-    }
-
-   private:
-    // See GetLogins(). Logins older than this will be removed from the reply.
-    base::Time ignore_logins_cutoff_;
-
-    scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
-    base::WeakPtr<PasswordStoreConsumer> consumer_weak_;
-
-    DISALLOW_COPY_AND_ASSIGN(GetLoginsRequest);
-  };
-
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Represents a single CheckReuse() request. Implements functionality to
@@ -444,15 +383,6 @@ class PasswordStore : protected PasswordStoreSync,
   virtual PasswordStoreChangeList DisableAutoSignInForOriginsImpl(
       const base::Callback<bool(const GURL&)>& origin_filter) = 0;
 
-  // Finds all PasswordForms with a signon_realm that is equal to, or is a
-  // PSL-match to that of |form|, and takes care of notifying the consumer with
-  // the results when done.
-  // Note: subclasses should implement FillMatchingLogins() instead. This needs
-  // to be virtual only because asynchronous behavior in PasswordStoreWin.
-  // TODO(engedy): Make this non-virtual once https://crbug.com/78830 is fixed.
-  virtual void GetLoginsImpl(const FormDigest& form,
-                             std::unique_ptr<GetLoginsRequest> request);
-
   // Synchronous implementation provided by subclasses to add the given login.
   virtual PasswordStoreChangeList AddLoginImpl(
       const autofill::PasswordForm& form) = 0;
@@ -471,11 +401,6 @@ class PasswordStore : protected PasswordStoreSync,
   // or with a signon_realm that is a PSL-match to that of |form|.
   virtual std::vector<std::unique_ptr<autofill::PasswordForm>>
   FillMatchingLogins(const FormDigest& form) = 0;
-
-  // Finds and returns all organization-name-matching logins, or returns an
-  // empty list on error.
-  virtual std::vector<std::unique_ptr<autofill::PasswordForm>>
-  FillLoginsForSameOrganizationName(const std::string& signon_realm) = 0;
 
   // Synchronous implementation for manipulating with statistics.
   virtual void AddSiteStatsImpl(const InteractionsStats& stats) = 0;
@@ -554,15 +479,41 @@ class PasswordStore : protected PasswordStoreSync,
   FRIEND_TEST_ALL_PREFIXES(PasswordStoreTest,
                            UpdatePasswordsStoredForAffiliatedWebsites);
 
+  using LoginsResult = std::vector<std::unique_ptr<autofill::PasswordForm>>;
+  using LoginsTask = base::OnceCallback<LoginsResult()>;
+  using LoginsReply = base::OnceCallback<void(LoginsResult)>;
+  using LoginsResultProcessor =
+      base::OnceCallback<void(LoginsReply, LoginsResult)>;
+
+  using StatsResult = std::vector<InteractionsStats>;
+  using StatsTask = base::OnceCallback<StatsResult()>;
+
   // Called on the main thread after initialization is completed.
   // |success| is true if initialization was successful. Sets the
   // |init_status_|.
   void OnInitCompleted(bool success);
 
-  // Schedule the given |func| to be run in the PasswordStore's own sequence
-  // with responses delivered to |consumer| on the current sequence.
-  void Schedule(void (PasswordStore::*func)(std::unique_ptr<GetLoginsRequest>),
-                PasswordStoreConsumer* consumer);
+  // Schedules the given |task| to be run on the PasswordStore's TaskRunner.
+  // Invokes |consumer|->OnGetPasswordStoreResults() on the caller's thread with
+  // the result.
+  void PostLoginsTaskAndReplyToConsumerWithResult(
+      PasswordStoreConsumer* consumer,
+      LoginsTask task);
+
+  // Schedules the given |task| to be run on the PasswordStore's TaskRunner.
+  // Invokes |consumer|->OnGetPasswordStoreResults() on the caller's thread with
+  // the result, after it was post-processed by |processor|.
+  void PostLoginsTaskAndReplyToConsumerWithProcessedResult(
+      PasswordStoreConsumer* consumer,
+      LoginsTask task,
+      LoginsResultProcessor processor);
+
+  // Schedules the given |task| to be run on the PasswordStore's TaskRunner.
+  // Invokes |consumer|->OnGetSiteStatistics() on the caller's thread with the
+  // result.
+  void PostStatsTaskAndReplyToConsumerWithResult(
+      PasswordStoreConsumer* consumer,
+      StatsTask task);
 
   // The following methods notify observers that the password store may have
   // been modified via NotifyLoginsChanged(). Note that there is no guarantee
@@ -592,39 +543,19 @@ class PasswordStore : protected PasswordStoreSync,
       const base::Callback<bool(const GURL&)>& origin_filter,
       const base::Closure& completion);
 
-  // Finds all logins organization-name-matching |signon_realm| and notifies the
-  // consumer.
-  void GetLoginsForSameOrganizationNameImpl(
-      const std::string& signon_realm,
-      std::unique_ptr<GetLoginsRequest> request);
+  // Finds all PasswordForms with a signon_realm that is equal to, or is a
+  // PSL-match to that of |form|, and takes care of notifying the consumer with
+  // the results when done.
+  // Note: subclasses should implement FillMatchingLogins() instead.
+  std::vector<std::unique_ptr<autofill::PasswordForm>> GetLoginsImpl(
+      const FormDigest& form);
 
-  // Finds all non-blacklist PasswordForms, and notifies the consumer.
-  void GetAutofillableLoginsImpl(std::unique_ptr<GetLoginsRequest> request);
+  // Finds all non-blacklist PasswordForms and returns the result.
+  std::vector<std::unique_ptr<autofill::PasswordForm>>
+  GetAutofillableLoginsImpl();
 
-  // Same as above, but also fills in affiliation and branding information for
-  // Android credentials.
-  void GetAutofillableLoginsWithAffiliationAndBrandingInformationImpl(
-      std::unique_ptr<GetLoginsRequest> request);
-
-  // Finds all blacklist PasswordForms, and notifies the consumer.
-  void GetBlacklistLoginsImpl(std::unique_ptr<GetLoginsRequest> request);
-
-  // Same as above, but also fills in affiliation and branding information for
-  // Android credentials.
-  void GetBlacklistLoginsWithAffiliationAndBrandingInformationImpl(
-      std::unique_ptr<GetLoginsRequest> request);
-
-  // Find all PasswordForms, fills in affiliation and branding information for
-  // Android credentials, and notifies the consumer.
-  void GetAllLoginsWithAffiliationAndBrandingInformationImpl(
-      std::unique_ptr<GetLoginsRequest> request);
-
-  // Notifies |request| about the stats for all sites.
-  void NotifyAllSiteStats(std::unique_ptr<GetLoginsRequest> request);
-
-  // Notifies |request| about the stats for |origin_domain|.
-  void NotifySiteStats(const GURL& origin_domain,
-                       std::unique_ptr<GetLoginsRequest> request);
+  // Finds all PasswordForms and returns the result.
+  std::vector<std::unique_ptr<autofill::PasswordForm>> GetAllLoginsImpl();
 
   // Extended version of GetLoginsImpl that also returns credentials stored for
   // the specified affiliated Android applications. That is, it finds all
@@ -632,23 +563,25 @@ class PasswordStore : protected PasswordStoreSync,
   //  * equal to that of |form|,
   //  * is a PSL-match to the realm of |form|,
   //  * is one of those in |additional_android_realms|,
-  // and takes care of notifying the consumer with the results when done.
-  void GetLoginsWithAffiliationsImpl(
+  // and returns the result.
+  std::vector<std::unique_ptr<autofill::PasswordForm>>
+  GetLoginsWithAffiliationsImpl(
       const FormDigest& form,
-      std::unique_ptr<GetLoginsRequest> request,
       const std::vector<std::string>& additional_android_realms);
 
   // Retrieves and fills in affiliation and branding information for Android
-  // credentials in |forms|. Called on the main sequence.
-  void InjectAffiliationAndBrandingInformation(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> forms,
-      std::unique_ptr<GetLoginsRequest> request);
+  // credentials in |forms| and invokes |callback| with the result. Called on
+  // the main sequence.
+  void InjectAffiliationAndBrandingInformation(LoginsReply callback,
+                                               LoginsResult forms);
 
   // Schedules GetLoginsWithAffiliationsImpl() to be run on the background
-  // sequence.
-  void ScheduleGetLoginsWithAffiliations(
-      const FormDigest& form,
-      std::unique_ptr<GetLoginsRequest> request,
+  // sequence. Logins older than |cutoff| will be deleted before |consumer| is
+  // notified with the result.
+  void ScheduleGetFilteredLoginsWithAffiliations(
+      base::WeakPtr<PasswordStoreConsumer> consumer,
+      const PasswordStore::FormDigest& form,
+      base::Time cutoff,
       const std::vector<std::string>& additional_android_realms);
 
   // Retrieves the currently stored form, if any, with the same primary key as
@@ -717,8 +650,6 @@ class PasswordStore : protected PasswordStoreSync,
   std::unique_ptr<PasswordStoreSigninNotifier> notifier_;
   HashPasswordManager hash_password_manager_;
 #endif
-
-  bool is_propagating_password_changes_to_web_credentials_enabled_;
 
   bool shutdown_called_;
 

@@ -138,6 +138,7 @@ TEST_F(TextFragmentAnchorTest, NonMatchingString) {
   Compositor().BeginFrame();
 
   EXPECT_FALSE(GetDocument().View()->GetFragmentAnchor());
+  EXPECT_TRUE(GetDocument().Markers().Markers().IsEmpty());
 }
 
 // If the targetText=... string matches an id, we should scroll using id
@@ -242,6 +243,150 @@ TEST_F(TextFragmentAnchorTest, NestedBlocks) {
   EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(match)))
       << "<p> wasn't scrolled into view, viewport's scroll offset: "
       << LayoutViewport()->GetScrollOffset().ToString();
+}
+
+// Ensure multiple targetTexts are highlighted and the first is scrolled into
+// view.
+TEST_F(TextFragmentAnchorTest, MultipleTextFragments) {
+  SimRequest request(
+      "https://example.com/test.html#targetText=test&targetText=more",
+      "text/html");
+  LoadURL("https://example.com/test.html#targetText=test&targetText=more");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      #first {
+        position: absolute;
+        top: 1000px;
+      }
+      #second {
+        position: absolute;
+        top: 2000px;
+      }
+    </style>
+    <p id="first">This is a test page</p>
+    <p id="second">This is some more text</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  Element& first = *GetDocument().getElementById("first");
+
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(first)))
+      << "First <p> wasn't scrolled into view, viewport's scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
+
+  EXPECT_EQ(2u, GetDocument().Markers().Markers().size());
+}
+
+// Ensure we scroll the second targetText into view if the first isn't found.
+TEST_F(TextFragmentAnchorTest, FirstTextFragmentNotFound) {
+  SimRequest request(
+      "https://example.com/test.html#targetText=test&targetText=more",
+      "text/html");
+  LoadURL("https://example.com/test.html#targetText=test&targetText=more");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      #first {
+        position: absolute;
+        top: 1000px;
+      }
+      #second {
+        position: absolute;
+        top: 2000px;
+      }
+    </style>
+    <p id="first">This is a page</p>
+    <p id="second">This is some more text</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  Element& second = *GetDocument().getElementById("second");
+
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(second)))
+      << "Second <p> wasn't scrolled into view, viewport's scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+}
+
+// Ensure we still scroll the first targetText into view if the second isn't
+// found.
+TEST_F(TextFragmentAnchorTest, OnlyFirstTextFragmentFound) {
+  SimRequest request(
+      "https://example.com/test.html#targetText=test&targetText=more",
+      "text/html");
+  LoadURL("https://example.com/test.html#targetText=test&targetText=more");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text">This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  Element& p = *GetDocument().getElementById("text");
+
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)))
+      << "<p> Element wasn't scrolled into view, viewport's scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+}
+
+// Make sure multiple non-matching strings doesn't cause scroll and the fragment
+// is removed when completed.
+TEST_F(TextFragmentAnchorTest, MultipleNonMatchingStrings) {
+  SimRequest request(
+      "https://example.com/"
+      "test.html#targetText=unicorn&targetText=cookie&targetText=cat",
+      "text/html");
+  LoadURL(
+      "https://example.com/"
+      "test.html#targetText=unicorn&targetText=cookie&targetText=cat");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text">This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(ScrollOffset(), LayoutViewport()->GetScrollOffset());
+
+  // Force a layout
+  GetDocument().body()->setAttribute(html_names::kStyleAttr, "height: 1300px");
+  Compositor().BeginFrame();
+
+  EXPECT_FALSE(GetDocument().View()->GetFragmentAnchor());
+  EXPECT_TRUE(GetDocument().Markers().Markers().IsEmpty());
 }
 
 }  // namespace

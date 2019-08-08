@@ -40,7 +40,7 @@ namespace dawn_native {
         void DrawIndexed(uint32_t vertexCount,
                          uint32_t instanceCount,
                          uint32_t firstIndex,
-                         uint32_t baseVertex,
+                         int32_t baseVertex,
                          uint32_t firstInstance);
 
         void SetPipeline(RenderPipelineBase* pipeline);
@@ -53,7 +53,7 @@ namespace dawn_native {
         void SetVertexBuffers(uint32_t startSlot,
                               uint32_t count,
                               T* const* buffers,
-                              uint32_t const* offsets) {
+                              uint64_t const* offsets) {
             static_assert(std::is_base_of<BufferBase, T>::value, "");
             SetVertexBuffers(startSlot, count, reinterpret_cast<BufferBase* const*>(buffers),
                              offsets);
@@ -61,8 +61,8 @@ namespace dawn_native {
         void SetVertexBuffers(uint32_t startSlot,
                               uint32_t count,
                               BufferBase* const* buffers,
-                              uint32_t const* offsets);
-        void SetIndexBuffer(BufferBase* buffer, uint32_t offset);
+                              uint64_t const* offsets);
+        void SetIndexBuffer(BufferBase* buffer, uint64_t offset);
 
       protected:
         RenderPassEncoderBase(DeviceBase* device,

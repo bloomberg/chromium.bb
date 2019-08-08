@@ -290,7 +290,7 @@ FUNC 1000 54 0 main
 102f f 62 1
 103e 12 64 1
 1050 4 65 1
-FUNC 1060 a 0 google_breakpad::i
+FUNC 1060 a 0 static int google_breakpad::i()
 1060 3 51 1
 1063 5 52 1
 1068 2 53 1
@@ -320,14 +320,14 @@ FUNC 1197 b 0 operator delete(void *)
 1197 5 20 2875
 119c 1 24 2875
 119d 5 23 2875
-FUNC 11a2 29 0 fast_error_exit
+FUNC 11a2 29 0 static void fast_error_exit(int)
 11a2 5 326 4250
 11a7 9 335 4250
 11b0 5 337 4250
 11b5 8 339 4250
 11bd c 340 4250
 11c9 2 341 4250
-FUNC 11cb 161 0 __tmainCRTStartup
+FUNC 11cb 161 0 static int __tmainCRTStartup()
 11cb c 196 4250
 11d7 a 214 4250
 11e1 b 216 4250
@@ -511,7 +511,7 @@ FUNC 15a0 a1 0 _cinit
 1631 c 303 4186
 163d 2 307 4186
 163f 2 308 4186
-FUNC 1641 140 0 doexit
+FUNC 1641 140 0 static void doexit(int, int, int)
 1641 c 489 4186
 164d 8 507 4186
 1655 4 508 4186
@@ -684,9 +684,9 @@ FUNC 1c5e dc 0 _setenvp
 1d21 7 130 3838
 1d28 5 131 3838
 1d2d d 133 3838
-FUNC 1d3a 2ee 0 parse_cmdline
-FUNC 2032 3 0 parse_cmdline
-FUNC 203f 4 0 parse_cmdline
+FUNC 1d3a 2ee 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 2032 3 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 203f 4 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
 1d3a 6 221 3891
 1d40 7 229 3891
 1d51 2 229 3891
@@ -1237,7 +1237,7 @@ FUNC 330c b6 0 malloc
 33bd 3 113 504
 33c0 2 122 504
 FUNC 33c2 90 0 _local_unwind4
-FUNC 3452 46 0 _unwind_handler4
+FUNC 3452 46 0 static void _unwind_handler4()
 FUNC 3498 1c 4 _seh_longjmp_unwind4
 FUNC 34b4 17 0 _EH4_CallFilterFunc
 FUNC 34cb 19 0 _EH4_TransferToHandler
@@ -1285,8 +1285,8 @@ FUNC 35b3 1e 0 _initp_misc_winsig
 35c5 5 60 2311
 35ca 5 61 2311
 35cf 2 62 2311
-FUNC 35d1 38 0 siglookup
-FUNC 3613 9 0 siglookup
+FUNC 35d1 38 0 static struct _XCPT_ACTION * siglookup(int, struct _XCPT_ACTION *)
+FUNC 3613 9 0 static struct _XCPT_ACTION * siglookup(int, struct _XCPT_ACTION *)
 35d1 5 629 2311
 35d6 a 630 2311
 35ea 14 639 2311
@@ -1373,7 +1373,7 @@ FUNC 37f9 28 0 _callnewh
 381b 2 139 2820
 381d 2 136 2820
 381f 2 139 2820
-FUNC 3821 c0 0 _onexit_nolock
+FUNC 3821 c0 0 static  * _onexit_nolock( *)
 3821 8 100 1969
 3829 f 103 1969
 3838 f 104 1969
@@ -1599,7 +1599,7 @@ FUNC 4038 4e 0 _realloc_crt
 407b 5 79 333
 4080 4 82 333
 4084 2 83 333
-FUNC 4086 2f 0 CPtoLCID
+FUNC 4086 2f 0 static int CPtoLCID(int)
 4086 0 329 3326
 4086 14 330 3326
 409a 2 345 3326
@@ -1612,8 +1612,8 @@ FUNC 4086 2f 0 CPtoLCID
 40ae 1 346 3326
 40af 5 333 3326
 40b4 1 346 3326
-FUNC 40b5 ab 0 setSBCS
-FUNC 416a 9 0 setSBCS
+FUNC 40b5 ab 0 static void setSBCS(struct threadmbcinfostruct *)
+FUNC 416a 9 0 static void setSBCS(struct threadmbcinfostruct *)
 40b5 6 363 3326
 40bb 11 368 3326
 40cc 36 379 3326
@@ -1627,7 +1627,7 @@ FUNC 416a 9 0 setSBCS
 415d 3 385 3326
 416a 6 385 3326
 4170 3 386 3326
-FUNC 4173 246 0 setSBUpLow
+FUNC 4173 246 0 static void setSBUpLow(struct threadmbcinfostruct *)
 4173 17 402 3326
 418a 7 412 3326
 419b 9 412 3326
@@ -1706,8 +1706,8 @@ FUNC 445d 15d 0 _LocaleUpdate::_LocaleUpdate(localeinfo_struct *)
 45a3 3 257 111
 45b0 3 257 111
 45b3 7 259 111
-FUNC 45ba 87 0 getSystemCP
-FUNC 464b 9 0 getSystemCP
+FUNC 45ba 87 0 static int getSystemCP(int)
+FUNC 464b 9 0 static int getSystemCP(int)
 45ba 9 282 3326
 45c3 b 284 3326
 45ce 6 285 3326
@@ -1828,8 +1828,8 @@ FUNC 4ac0 1e 0 __initmbctable
 4ad1 a 853 3326
 4adb 2 858 3326
 4add 1 859 3326
-FUNC 4ade 70 0 x_ismbbtype_l
-FUNC 4b58 6 0 x_ismbbtype_l
+FUNC 4ade 70 0 static int x_ismbbtype_l(struct localeinfo_struct *, unsigned int, int, int)
+FUNC 4b58 6 0 static int x_ismbbtype_l(struct localeinfo_struct *, unsigned int, int, int)
 4ade 8 213 3271
 4ae6 b 214 3271
 4af1 4 219 3271
@@ -2062,7 +2062,7 @@ FUNC 5169 95 0 _aulldvrm
 51fa 1 180 2806
 51fb 3 182 2806
 FUNC 51fe 20 0 _global_unwind2
-FUNC 521e 45 0 __unwind_handler
+FUNC 521e 45 0 static void __unwind_handler()
 FUNC 5263 84 0 _local_unwind2
 FUNC 52e7 23 0 _abnormal_termination
 FUNC 530a 9 0 _NLG_Notify1
@@ -2416,7 +2416,7 @@ FUNC 59a4 6 0 realloc
 5986 14 103 618
 59a4 2 103 618
 59a6 4 105 618
-FUNC 59aa 22d 0 __crtLCMapStringA_stat
+FUNC 59aa 22d 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
 59aa 12 96 3447
 59bc c 101 3447
 59c8 21 102 3447
@@ -2457,7 +2457,7 @@ FUNC 5c21 6 0 __crtLCMapStringA
 5bea 2d 271 3447
 5c21 4 271 3447
 5c25 2 272 3447
-FUNC 5c27 112 0 __crtGetStringTypeA_stat
+FUNC 5c27 112 0 static int __crtGetStringTypeA_stat(struct localeinfo_struct *, unsigned long, const char *, int, unsigned short *, int, int, int)
 5c27 12 63 3507
 5c39 7 67 3507
 5c40 5 83 3507

@@ -210,13 +210,17 @@ class Goma(object):
     """
     osutils.SafeUnlink(os.path.join(self.goma_dir, 'MANIFEST'))
 
-  def UploadLogs(self):
+  def UploadLogs(self, cbb_config_name):
     """Uploads INFO files related to goma.
+
+    Args:
+      cbb_config_name: name of cbb_config.
 
     Returns:
       URL to the compiler_proxy log visualizer. None if unavailable.
     """
-    uploader = GomaLogUploader(self.goma_log_dir)
+    uploader = GomaLogUploader(self.goma_log_dir,
+                               cbb_config_name=cbb_config_name)
     return uploader.Upload()
 
 
@@ -228,7 +232,8 @@ class GomaLogUploader(object):
   # The Google Cloud Storage bucket to store logs related to goma.
   _BUCKET = 'chrome-goma-log'
 
-  def __init__(self, goma_log_dir, today=None, dry_run=False):
+  def __init__(self, goma_log_dir, today=None, dry_run=False,
+               cbb_config_name=''):
     """Initializes the uploader.
 
     Args:
@@ -249,17 +254,29 @@ class GomaLogUploader(object):
     self._remote_dir = 'gs://%s/%s' % (GomaLogUploader._BUCKET, self.dest_path)
     logging.info('Goma log upload destination: %s', self._remote_dir)
 
+    # HACK(yyanagisawa): I suppose LUCI do not set BUILDBOT_BUILDERNAME.
+    is_luci = not bool(os.environ.get('BUILDBOT_BUILDERNAME'))
     # Build metadata to be annotated to log files.
     # Use OrderedDict for json output stabilization.
-    builder_info = json.dumps(collections.OrderedDict([
+    builder_info = collections.OrderedDict([
         ('builder', os.environ.get('BUILDBOT_BUILDERNAME', '')),
         ('master', os.environ.get('BUILDBOT_MASTERNAME', '')),
         ('slave', os.environ.get('BUILDBOT_SLAVENAME', '')),
         ('clobber', bool(os.environ.get('BUILDBOT_CLOBBER'))),
         ('os', 'chromeos'),
-    ]))
-    logging.info('BuilderInfo: %s', builder_info)
-    self._headers = ['x-goog-meta-builderinfo:' + builder_info]
+        ('is_luci', is_luci),
+        ('cbb_config_name', cbb_config_name),
+    ])
+    if is_luci:
+      # TODO(yyanagisawa): will adjust to valid value if needed.
+      builder_info['builder_id'] =collections.OrderedDict([
+          ("project", "chromeos"),
+          ("builder", "Prod"),
+          ("bucket", "general"),
+      ])
+    builder_info_json = json.dumps(builder_info)
+    logging.info('BuilderInfo: %s', builder_info_json)
+    self._headers = ['x-goog-meta-builderinfo:' + builder_info_json]
 
     self._gs_context = gs.GSContext(dry_run=dry_run)
 
@@ -355,13 +372,18 @@ class GomaLogUploader(object):
 
     # Taking the alphabetically first name as uploaded_filename.
     tgz_name = os.path.basename(min(gomacc_paths)) + '.tar.gz'
-    tgz_path = os.path.join(self._goma_log_dir, tgz_name)
-    cros_build_lib.CreateTarball(target=tgz_path,
-                                 cwd=self._goma_log_dir,
-                                 compression=cros_build_lib.COMP_GZIP)
-    self._gs_context.CopyInto(tgz_path, self._remote_dir,
-                              filename=tgz_name,
-                              headers=self._headers)
+    # When using the pigz compressor (what we use for gzip) to create an
+    # archive in a folder that is also a source for contents, there is a race
+    # condition involving the created archive itself that can cause it to fail
+    # creating the archive. To avoid this, make the archive in a tempdir.
+    with osutils.TempDir() as tempdir:
+      tgz_path = os.path.join(tempdir, tgz_name)
+      cros_build_lib.CreateTarball(target=tgz_path,
+                                   cwd=self._goma_log_dir,
+                                   compression=cros_build_lib.COMP_GZIP)
+      self._gs_context.CopyInto(tgz_path, self._remote_dir,
+                                filename=tgz_name,
+                                headers=self._headers)
     return tgz_name
 
   def _UploadNinjaLog(self, compiler_proxy_path):

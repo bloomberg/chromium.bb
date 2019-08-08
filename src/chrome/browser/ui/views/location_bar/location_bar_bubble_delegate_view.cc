@@ -79,8 +79,11 @@ void LocationBarBubbleDelegateView::ShowForReason(DisplayReason reason,
           l10n_util::GetStringUTF8(IDS_SHOW_BUBBLE_INACTIVE_DESCRIPTION));
     }
   }
-  GetWidget()->GetRootView()->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
-                                                       true);
+  if (GetAccessibleWindowRole() == ax::mojom::Role::kAlert ||
+      GetAccessibleWindowRole() == ax::mojom::Role::kAlertDialog) {
+    GetWidget()->GetRootView()->NotifyAccessibilityEvent(
+        ax::mojom::Event::kAlert, true);
+  }
 }
 
 void LocationBarBubbleDelegateView::Observe(

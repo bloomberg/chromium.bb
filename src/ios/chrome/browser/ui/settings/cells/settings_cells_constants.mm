@@ -9,5 +9,6 @@
 #endif
 
 const int kSettingsCellsDetailTextColor = 0x767676;
+const int kSettingsCellsURLTextColor = 0x5F6368;
 
 const CGFloat kSettingsCellDefaultHeight = 70;

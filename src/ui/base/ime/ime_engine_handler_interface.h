@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "build/build_config.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_mode.h"
@@ -26,7 +27,7 @@ namespace ui {
 class KeyEvent;
 
 // A interface to handle the engine handler method call.
-class UI_BASE_IME_EXPORT IMEEngineHandlerInterface {
+class COMPONENT_EXPORT(UI_BASE_IME) IMEEngineHandlerInterface {
  public:
   typedef base::OnceCallback<void(bool consumed)> KeyEventDoneCallback;
 

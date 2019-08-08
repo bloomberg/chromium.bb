@@ -35,6 +35,9 @@ class DocumentPortals : public GarbageCollected<DocumentPortals>,
     return portals_;
   }
 
+  // Returns true if any portal in the document is currently activating.
+  bool IsPortalInDocumentActivating() const;
+
   explicit DocumentPortals(Document&);
 
   void Trace(Visitor*) override;

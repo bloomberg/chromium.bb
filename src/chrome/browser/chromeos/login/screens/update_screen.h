@@ -17,6 +17,10 @@
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace chromeos {
 
 class BaseScreenDelegate;
@@ -66,6 +70,7 @@ class UpdateScreen : public BaseScreen,
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   UpdateScreen(BaseScreenDelegate* base_screen_delegate,
                UpdateView* view,
+               ErrorScreen* error_screen,
                const ScreenExitCallback& exit_callback);
   ~UpdateScreen() override;
 
@@ -89,10 +94,20 @@ class UpdateScreen : public BaseScreen,
   // Skip update UI, usually used only in debug builds/tests.
   void CancelUpdate();
 
-  base::OneShotTimer& GetErrorMessageTimerForTesting();
+  // BaseScreen:
+  void Show() override;
+  void Hide() override;
+  void OnUserAction(const std::string& action_id) override;
 
-  void set_exit_callback_for_testing(const ScreenExitCallback& callback) {
-    exit_callback_ = callback;
+  base::OneShotTimer* GetErrorMessageTimerForTesting();
+  base::OneShotTimer* GetRebootTimerForTesting();
+
+  void set_ignore_update_deadlines_for_testing(bool ignore_update_deadlines) {
+    ignore_update_deadlines_ = ignore_update_deadlines;
+  }
+
+  void set_tick_clock_for_testing(const base::TickClock* tick_clock) {
+    tick_clock_ = tick_clock;
   }
 
  protected:
@@ -112,11 +127,6 @@ class UpdateScreen : public BaseScreen,
     STATE_UPDATE,
     STATE_ERROR
   };
-
-  // BaseScreen:
-  void Show() override;
-  void Hide() override;
-  void OnUserAction(const std::string& action_id) override;
 
   // Callback to UpdateEngineClient::SetUpdateOverCellularOneTimePermission
   // called in response to user confirming that the OS update can proceed
@@ -157,12 +167,18 @@ class UpdateScreen : public BaseScreen,
   // The user requested an attempt to connect to the network should be made.
   void OnConnectRequested();
 
+  // Callback passed to |error_screen_| when it's shown. Called when the error
+  // screen gets hidden.
+  void OnErrorScreenHidden();
+
   // Timer for the interval to wait for the reboot.
   // If reboot didn't happen - ask user to reboot manually.
   base::OneShotTimer reboot_timer_;
 
   // Current state of the update screen.
   State state_ = State::STATE_IDLE;
+
+  const base::TickClock* tick_clock_;
 
   // Time in seconds after which we decide that the device has not rebooted
   // automatically. If reboot didn't happen during this interval, ask user to
@@ -175,21 +191,23 @@ class UpdateScreen : public BaseScreen,
   bool is_downloading_update_ = false;
   // If true, update deadlines are ignored.
   // Note, this is false by default.
-  bool is_ignore_update_deadlines_ = false;
+  bool ignore_update_deadlines_ = false;
   // Whether the update screen is shown.
   bool is_shown_ = false;
   // Ignore fist IDLE status that is sent before update screen initiated check.
   bool ignore_idle_status_ = true;
 
-  UpdateView* view_ = nullptr;
+  BaseScreenDelegate* base_screen_delegate_;
+  UpdateView* view_;
+  ErrorScreen* error_screen_;
   ScreenExitCallback exit_callback_;
 
   // Time of the first notification from the downloading stage.
-  base::Time download_start_time_;
+  base::TimeTicks download_start_time_;
   double download_start_progress_ = 0;
 
   // Time of the last notification from the downloading stage.
-  base::Time download_last_time_;
+  base::TimeTicks download_last_time_;
   double download_last_progress_ = 0;
 
   bool is_download_average_speed_computed_ = false;

@@ -12,7 +12,6 @@
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
-#include "third_party/blink/renderer/platform/scheduler/public/frame_status.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -28,9 +27,6 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
    public:
     virtual void OnQueueingTimeForWindowEstimated(base::TimeDelta queueing_time,
                                                   bool is_disjoint_window) = 0;
-    virtual void OnReportFineGrainedExpectedQueueingTime(
-        const char* split_description,
-        base::TimeDelta queueing_time) = 0;
     Client() = default;
     virtual ~Client() = default;
 
@@ -60,7 +56,6 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
    public:
     explicit Calculator(int steps_per_window);
 
-    void UpdateStatusFromTaskQueue(MainThreadTaskQueue* queue);
     void AddQueueingTime(base::TimeDelta queuing_time);
     void EndStep(Client* client);
     void ResetStep();
@@ -98,11 +93,6 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
     // |steps_per_window_| = 3, because each window is the length of 3 steps.
     base::TimeDelta step_expected_queueing_time_;
     RunningAverage sliding_window_;
-
-    // Variables to split Expected Queueing Time by frame type.
-    std::array<base::TimeDelta, static_cast<int>(FrameStatus::kCount)>
-        eqt_by_frame_status_;
-    FrameStatus current_frame_status_ = FrameStatus::kNone;
   };
 
   QueueingTimeEstimator(Client* client,
@@ -110,7 +100,7 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
                         int steps_per_window,
                         bool start_disabled);
 
-  void OnExecutionStarted(base::TimeTicks now, MainThreadTaskQueue* queue);
+  void OnExecutionStarted(base::TimeTicks now);
   void OnExecutionStopped(base::TimeTicks now);
   void OnRecordingStateChanged(bool disabled, base::TimeTicks transition_time);
 

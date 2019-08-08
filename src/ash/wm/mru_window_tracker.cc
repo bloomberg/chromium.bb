@@ -10,7 +10,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/wm/focus_rules.h"
+#include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/switchable_windows.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -19,10 +19,30 @@
 #include "ui/aura/window.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
+#include "ui/wm/public/activation_delegate.h"
 
 namespace ash {
 
 namespace {
+
+bool IsWindowConsideredActivatable(const aura::Window* window) {
+  DCHECK(window);
+  AshFocusRules* focus_rules = Shell::Get()->focus_rules();
+
+  // Only toplevel windows can be activated.
+  if (!focus_rules->IsToplevelWindow(window))
+    return false;
+
+  if (!focus_rules->IsWindowConsideredVisibleForActivation(window))
+    return false;
+
+  if (::wm::GetActivationDelegate(window) &&
+      !::wm::GetActivationDelegate(window)->ShouldActivate()) {
+    return false;
+  }
+
+  return window->CanFocus();
+}
 
 // A predicate that determines whether |window| can be included in the MRU
 // window list.

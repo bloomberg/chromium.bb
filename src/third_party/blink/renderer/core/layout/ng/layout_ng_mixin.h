@@ -17,9 +17,6 @@
 namespace blink {
 
 enum class NGBaselineAlgorithmType;
-class NGBreakToken;
-class NGConstraintSpace;
-class NGLayoutResult;
 class NGPaintFragment;
 class NGPhysicalFragment;
 struct NGInlineNodeData;
@@ -55,15 +52,6 @@ class LayoutNGMixin : public Base {
 
   PositionWithAffinity PositionForPoint(const LayoutPoint&) const final;
 
-  // Returns the last layout result for this block flow with the given
-  // constraint space and break token, or null if it is not up-to-date or
-  // otherwise unavailable.
-  scoped_refptr<const NGLayoutResult> CachedLayoutResult(
-      const NGConstraintSpace&,
-      const NGBreakToken*) final;
-
-  bool AreCachedLinesValidFor(const NGConstraintSpace&) const final;
-
   NGPaintFragment* PaintFragment() const final { return paint_fragment_.get(); }
   void SetPaintFragment(const NGBlockBreakToken*,
                         scoped_refptr<const NGPhysicalFragment>) final;
@@ -71,13 +59,12 @@ class LayoutNGMixin : public Base {
  protected:
   bool IsOfType(LayoutObject::LayoutObjectType) const override;
 
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
+
   void ComputeIntrinsicLogicalWidths(
       LayoutUnit& min_logical_width,
       LayoutUnit& max_logical_width) const override;
 
-  void ComputeVisualOverflow(bool recompute_floats) final;
-
-  void AddVisualOverflowFromChildren();
   void AddLayoutOverflowFromChildren() final;
 
   void AddOutlineRects(Vector<LayoutRect>&,
@@ -98,7 +85,6 @@ class LayoutNGMixin : public Base {
 
  private:
   void AddScrollingOverflowFromChildren();
-  bool NeedsRelativePositionedLayoutOnly() const;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT

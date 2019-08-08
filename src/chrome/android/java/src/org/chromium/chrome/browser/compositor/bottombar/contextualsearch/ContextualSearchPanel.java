@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.scene_layer.ContextualSearchSceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
+import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.ScrimView;
@@ -62,13 +63,6 @@ public class ContextualSearchPanel extends OverlayPanel {
     private ContextualSearchSceneLayer mSceneLayer;
 
     /**
-     * Whether to use the Generic Sheet UX.
-     * This activates the closebox in the peeking Bar, and may someday do more,
-     * e.g. swipe-closed behavior.  See crbug.com/831783 for details.
-     */
-    private boolean mUseGenericSheetUx;
-
-    /**
      * A ScrimView for adjusting the Status Bar's brightness when a scrim is present (when the panel
      * is open).
      */
@@ -102,12 +96,6 @@ public class ContextualSearchPanel extends OverlayPanel {
         mEndButtonWidthDp = mPxToDp
                 * mContext.getResources().getDimensionPixelSize(
                           R.dimen.contextual_search_end_button_width);
-    }
-
-    @Override
-    protected void initializeUiState() {
-        mUseGenericSheetUx = false;
-        // TODO(crbug.com/831783): Clean up this code.
     }
 
     @Override
@@ -277,9 +265,7 @@ public class ContextualSearchPanel extends OverlayPanel {
         getSearchBarControl().onSearchBarClick(x);
 
         if (isPeeking()) {
-            if (useGenericSheetUx() && isCoordinateInsideCloseButton(x)) {
-                closePanel(StateChangeReason.CLOSE_BUTTON, true);
-            } else if (getSearchBarControl().getQuickActionControl().hasQuickAction()
+            if (getSearchBarControl().getQuickActionControl().hasQuickAction()
                     && isCoordinateInsideActionTarget(x)) {
                 mPanelMetrics.setWasQuickActionClicked();
                 getSearchBarControl().getQuickActionControl().sendIntent(
@@ -588,10 +574,18 @@ public class ContextualSearchPanel extends OverlayPanel {
      * @param thumbnailUrl The URL of the thumbnail to display.
      * @param quickActionUri The URI for the intent associated with the quick action.
      * @param quickActionCategory The {@code QuickActionCategory} for the quick action.
+     * @param cardTagEnum The {@link CardTag} that the server returned if there was a card,
+     *        or {@code 0}.
      */
     public void onSearchTermResolved(String searchTerm, String thumbnailUrl, String quickActionUri,
-            int quickActionCategory) {
+            int quickActionCategory, @CardTag int cardTagEnum) {
         mPanelMetrics.onSearchTermResolved();
+        if (cardTagEnum == CardTag.CT_DEFINITION
+                || cardTagEnum == CardTag.CT_CONTEXTUAL_DEFINITION) {
+            getSearchBarControl().updateForDictionaryDefinition(searchTerm);
+            return;
+        }
+
         getSearchBarControl().setSearchTerm(searchTerm);
         getSearchBarControl().animateSearchTermResolution();
         if (mActivity == null || mActivity.getToolbarManager() == null) return;
@@ -721,33 +715,6 @@ public class ContextualSearchPanel extends OverlayPanel {
             }
             mScrimView.setViewAlpha(statusBarAlpha);
         }
-    }
-
-    @Override
-    public float getArrowIconOpacity() {
-        if (useGenericSheetUx()) {
-            return ARROW_ICON_OPACITY_GENERIC_UX;
-        } else {
-            return super.getArrowIconOpacity();
-        }
-    }
-
-    @Override
-    public float getCloseIconOpacity() {
-        if (useGenericSheetUx()) {
-            return CLOSE_ICON_OPACITY_GENERIC_UX;
-        } else {
-            return super.getCloseIconOpacity();
-        }
-    }
-
-    /**
-     * Whether the UX should match the generic sheet UX used by the generic assistive surface.
-     * TODO(crbug.com/831783) remove when the generic sheet UX is the default.
-     * @return Whether to apply the generic UX, rather than the legacy Contextual Search UX.
-     */
-    boolean useGenericSheetUx() {
-        return mUseGenericSheetUx;
     }
 
     // ============================================================================================

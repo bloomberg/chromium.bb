@@ -4,14 +4,47 @@
 
 #include "components/autofill/core/browser/metrics/address_form_event_logger.h"
 
+#include <algorithm>
+#include <iterator>
+#include <memory>
+#include <vector>
+
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "components/autofill/core/browser/autofill_data_model.h"
-#include "components/autofill/core/browser/autofill_metrics.h"
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/metrics/form_events.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
+#include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/field_types.h"
 
 namespace autofill {
+namespace {
+
+using data_util::bit_field_type_groups::kAddress;
+using data_util::bit_field_type_groups::kEmail;
+using data_util::bit_field_type_groups::kName;
+using data_util::bit_field_type_groups::kPhone;
+
+// Returns the histogram suffix corresponding to the given |bitmask|.
+std::string GetSuffixForFormType(uint32_t bitmask) {
+  switch (bitmask) {
+    case kName | kAddress | kEmail | kPhone:
+      return ".AddressPlusEmailPlusPhone";
+    case kName | kAddress | kPhone:
+      return ".AddressPlusPhone";
+    case kName | kAddress | kEmail:
+      return ".AddressPlusEmail";
+    case kName | kAddress:
+      return ".AddressOnly";
+    case kName | kEmail | kPhone:
+    case kName | kEmail:
+    case kName | kPhone:
+      return ".ContactOnly";
+    default:
+      return ".Other";
+  }
+}
+
+}  // namespace
 
 AddressFormEventLogger::AddressFormEventLogger(
     bool is_in_main_frame,
@@ -72,6 +105,26 @@ void AddressFormEventLogger::OnSubsequentRefillAttempt(
     const FormStructure& form) {
   sync_state_ = sync_state;
   Log(FORM_EVENT_DYNAMIC_CHANGE_AFTER_REFILL, form);
+}
+
+void AddressFormEventLogger::OnLog(const std::string& name,
+                                   FormEvent event,
+                                   const FormStructure& form) const {
+  std::vector<ServerFieldType> types;
+  std::transform(
+      form.begin(), form.end(), std::back_inserter(types),
+      [&](const std::unique_ptr<AutofillField>& field) -> ServerFieldType {
+        return field->Type().GetStorableType();
+      });
+
+  uint32_t groups = data_util::DetermineGroups(types);
+  base::UmaHistogramEnumeration(name + GetSuffixForFormType(groups), event,
+                                NUM_FORM_EVENTS);
+  if (data_util::ContainsName(groups) && data_util::ContainsAddress(groups) &&
+      (data_util::ContainsPhone(groups) || data_util::ContainsEmail(groups))) {
+    base::UmaHistogramEnumeration(name + ".AddressPlusContact", event,
+                                  NUM_FORM_EVENTS);
+  }
 }
 
 void AddressFormEventLogger::RecordPollSuggestions() {

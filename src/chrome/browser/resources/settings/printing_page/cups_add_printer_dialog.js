@@ -111,7 +111,6 @@ Polymer({
   onPrinterDiscoveryDone_: function() {
     this.discovering_ = false;
     this.$$('add-printer-list').style.maxHeight = kPrinterListFullHeight + 'px';
-    this.$.noPrinterMessage.hidden = !!this.discoveredPrinters.length;
 
     if (!this.discoveredPrinters.length) {
       this.selectedPrinter = getEmptyPrinter_();
@@ -209,12 +208,107 @@ Polymer({
 Polymer({
   is: 'add-printer-manufacturer-model-dialog',
 
-  behaviors: [
-    SetManufacturerModelBehavior,
+  properties: {
+    /** @type {!CupsPrinterInfo} */
+    activePrinter: {
+      type: Object,
+      notify: true,
+    },
+
+    /** @type {?Array<string>} */
+    manufacturerList: Array,
+
+    /** @type {?Array<string>} */
+    modelList: Array,
+
+    /**
+     * Whether the user selected PPD file is valid.
+     * @private
+     */
+    invalidPPD_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * The base name of a newly selected PPD file.
+     * @private
+     */
+    newUserPPD_: String,
+  },
+
+  observers: [
+    'selectedManufacturerChanged_(activePrinter.ppdManufacturer)',
   ],
+
+  /** @override */
+  attached: function() {
+    settings.CupsPrintersBrowserProxyImpl.getInstance()
+        .getCupsPrinterManufacturersList()
+        .then(this.manufacturerListChanged_.bind(this));
+  },
 
   close: function() {
     this.$$('add-printer-dialog').close();
+  },
+
+  /**
+   * @param {string} manufacturer The manufacturer for which we are retrieving
+   *     models.
+   * @private
+   */
+  selectedManufacturerChanged_: function(manufacturer) {
+    // Reset model if manufacturer is changed.
+    this.set('activePrinter.ppdModel', '');
+    this.modelList = [];
+    if (manufacturer && manufacturer.length != 0) {
+      settings.CupsPrintersBrowserProxyImpl.getInstance()
+          .getCupsPrinterModelsList(manufacturer)
+          .then(this.modelListChanged_.bind(this));
+    }
+  },
+
+  /**
+   * @param {!ManufacturersInfo} manufacturersInfo
+   * @private
+   */
+  manufacturerListChanged_: function(manufacturersInfo) {
+    if (!manufacturersInfo.success) {
+      return;
+    }
+    this.manufacturerList = manufacturersInfo.manufacturers;
+    if (this.activePrinter.ppdManufacturer.length != 0) {
+      settings.CupsPrintersBrowserProxyImpl.getInstance()
+          .getCupsPrinterModelsList(this.activePrinter.ppdManufacturer)
+          .then(this.modelListChanged_.bind(this));
+    }
+  },
+
+  /**
+   * @param {!ModelsInfo} modelsInfo
+   * @private
+   */
+  modelListChanged_: function(modelsInfo) {
+    if (modelsInfo.success) {
+      this.modelList = modelsInfo.models;
+    }
+  },
+
+  /** @private */
+  onBrowseFile_: function() {
+    settings.CupsPrintersBrowserProxyImpl.getInstance()
+        .getCupsPrinterPPDPath()
+        .then(this.printerPPDPathChanged_.bind(this));
+  },
+
+  /**
+   * @param {string} path The full path to the selected PPD file
+   * @private
+   */
+  printerPPDPathChanged_: function(path) {
+    this.set('activePrinter.printerPPDPath', path);
+    this.invalidPPD_ = !path;
+    this.newUserPPD_ = settings.printing.getBaseName(path);
   },
 
   /** @private */
@@ -321,7 +415,8 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.addWebUIListener('on-add-cups-printer', this.onAddPrinter_.bind(this));
+    this.addWebUIListener(
+        'on-add-or-edit-cups-printer', this.onAddPrinter_.bind(this));
     this.addWebUIListener(
         'on-manually-add-discovered-printer',
         this.onManuallyAddDiscoveredPrinter_.bind(this));

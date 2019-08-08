@@ -100,7 +100,7 @@ void RecordPublicKeyHistogram(const char* chain_position,
                          CertTypeToString(cert_type));
   // Do not use UMA_HISTOGRAM_... macros here, as it caches the Histogram
   // instance and thus only works if |histogram_name| is constant.
-  base::HistogramBase* counter = NULL;
+  base::HistogramBase* counter = nullptr;
 
   // Histogram buckets are contingent upon the underlying algorithm being used.
   if (cert_type == X509Certificate::kPublicKeyTypeECDH ||
@@ -489,11 +489,6 @@ int CertVerifyProc::Verify(X509Certificate* cert,
   verify_result->Reset();
   verify_result->verified_cert = cert;
 
-  if (IsBlacklisted(cert)) {
-    verify_result->cert_status |= CERT_STATUS_REVOKED;
-    return ERR_CERT_REVOKED;
-  }
-
   DCHECK(crl_set);
   int rv = VerifyInternal(cert, hostname, ocsp_response, flags, crl_set,
                           additional_trust_anchors, verify_result);
@@ -610,28 +605,6 @@ int CertVerifyProc::Verify(X509Certificate* cert,
   }
 
   return rv;
-}
-
-// static
-bool CertVerifyProc::IsBlacklisted(X509Certificate* cert) {
-  // CloudFlare revoked all certificates issued prior to April 2nd, 2014. Thus
-  // all certificates where the CN ends with ".cloudflare.com" with a prior
-  // issuance date are rejected.
-  //
-  // The old certs had a lifetime of five years, so this can be removed April
-  // 2nd, 2019.
-  const base::StringPiece cn(cert->subject().common_name);
-  static constexpr base::StringPiece kCloudflareCNSuffix(".cloudflare.com");
-  // April 2nd, 2014 UTC, expressed as seconds since the Unix Epoch.
-  static constexpr base::TimeDelta kCloudflareEpoch =
-      base::TimeDelta::FromSeconds(1396396800);
-
-  if (cn.ends_with(kCloudflareCNSuffix) &&
-      cert->valid_start() < (base::Time::UnixEpoch() + kCloudflareEpoch)) {
-    return true;
-  }
-
-  return false;
 }
 
 // CheckNameConstraints verifies that every name in |dns_names| is in one of

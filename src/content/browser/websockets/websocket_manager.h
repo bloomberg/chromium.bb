@@ -38,6 +38,7 @@ class CONTENT_EXPORT WebSocketManager
       int process_id,
       int frame_id,
       url::Origin origin,
+      uint32_t options,
       network::mojom::AuthenticationHandlerPtr auth_handler,
       network::mojom::TrustedHeaderClientPtr header_client,
       network::mojom::WebSocketRequest request);
@@ -58,6 +59,7 @@ class CONTENT_EXPORT WebSocketManager
   ~WebSocketManager() override;
   void DoCreateWebSocket(int frame_id,
                          url::Origin origin,
+                         uint32_t options,
                          network::mojom::WebSocketRequest request);
   void ThrottlingPeriodTimerCallback();
 
@@ -69,6 +71,7 @@ class CONTENT_EXPORT WebSocketManager
       int child_id,
       int frame_id,
       url::Origin origin,
+      uint32_t options,
       base::TimeDelta delay);
 
   net::URLRequestContext* GetURLRequestContext();

@@ -16,9 +16,8 @@ class CORE_EXPORT DeprecationReportBody : public MessageReportBody {
  public:
   DeprecationReportBody(const String& id,
                         double anticipatedRemoval,
-                        const String& message,
-                        std::unique_ptr<SourceLocation> location)
-      : MessageReportBody(message, std::move(location)),
+                        const String& message)
+      : MessageReportBody(message),
         id_(id),
         anticipatedRemoval_(anticipatedRemoval) {}
 

@@ -176,8 +176,7 @@ class BlinkTestRunner : public RenderViewObserver,
   void CaptureDumpComplete();
   void CaptureLocalAudioDump();
   void CaptureLocalLayoutDump();
-  // Returns true if the browser should capture pixels instead.
-  bool CaptureLocalPixelsDump();
+  void CaptureLocalPixelsDump();
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
 

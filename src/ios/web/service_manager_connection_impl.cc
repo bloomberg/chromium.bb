@@ -21,7 +21,6 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/mojom/service_factory.mojom.h"
 
 namespace web {
 namespace {
@@ -35,12 +34,10 @@ std::unique_ptr<ServiceManagerConnection>& GetConnectionForProcess() {
 }  // namespace
 
 // A ref-counted object which owns the IO thread state of a
-// ServiceManagerConnectionImpl. This includes Service and ServiceFactory
-// bindings.
+// ServiceManagerConnectionImpl. This includes Service bindings.
 class ServiceManagerConnectionImpl::IOThreadContext
     : public base::RefCountedThreadSafe<IOThreadContext>,
-      public service_manager::Service,
-      public service_manager::mojom::ServiceFactory {
+      public service_manager::Service {
  public:
   IOThreadContext(
       service_manager::mojom::ServiceRequest service_request,
@@ -153,40 +150,24 @@ class ServiceManagerConnectionImpl::IOThreadContext
     // unwinds.
     scoped_refptr<IOThreadContext> keepalive(this);
 
-    factory_bindings_.CloseAllBindings();
     service_binding_.reset();
   }
 
-  /////////////////////////////////////////////////////////////////////////////
-  // service_manager::Service implementation
-
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override {
+  // service_manager::Service:
+  void CreatePackagedServiceInstance(
+      const std::string& service_name,
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver,
+      CreatePackagedServiceInstanceCallback callback) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
-    if (source_info.identity.name() == service_manager::mojom::kServiceName &&
-        interface_name == service_manager::mojom::ServiceFactory::Name_) {
-      factory_bindings_.AddBinding(
-          this, service_manager::mojom::ServiceFactoryRequest(
-                    std::move(interface_pipe)));
-    }
+    callback_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(default_request_handler_, service_name,
+                                  service_manager::mojom::ServiceRequest(
+                                      std::move(receiver))));
+    std::move(callback).Run(base::ProcessId());
   }
 
   void OnDisconnected() override {
     callback_task_runner_->PostTask(FROM_HERE, std::move(stop_callback_));
-  }
-
-  /////////////////////////////////////////////////////////////////////////////
-  // service_manager::mojom::ServiceFactory:
-
-  void CreateService(
-      service_manager::mojom::ServiceRequest request,
-      const std::string& name,
-      service_manager::mojom::PIDReceiverPtr pid_receiver) override {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
-    callback_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(default_request_handler_, name, std::move(request)));
   }
 
   base::ThreadChecker io_thread_checker_;
@@ -208,7 +189,6 @@ class ServiceManagerConnectionImpl::IOThreadContext
   ServiceManagerConnection::ServiceRequestHandler default_request_handler_;
 
   std::unique_ptr<service_manager::ServiceBinding> service_binding_;
-  mojo::BindingSet<service_manager::mojom::ServiceFactory> factory_bindings_;
 
   // Not owned.
   MessageLoopObserver* message_loop_observer_ = nullptr;

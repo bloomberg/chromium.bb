@@ -15,6 +15,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -25,6 +26,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.task.test.ShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher;
@@ -51,10 +53,10 @@ public class AsyncInitTaskRunnerTest {
     public AsyncInitTaskRunnerTest() throws ProcessInitException {
         mLoader = spy(LibraryLoader.getInstance());
         doNothing().when(mLoader).ensureInitialized(anyInt());
-        doNothing().when(mLoader).asyncPrefetchLibrariesToMemory();
         LibraryLoader.setLibraryLoaderForTesting(mLoader);
         mVariationsSeedFetcher = mock(VariationsSeedFetcher.class);
         VariationsSeedFetcher.setVariationsSeedFetcherForTesting(mVariationsSeedFetcher);
+        PostTask.setPrenativeThreadPoolExecutorForTesting(new RoboExecutorService());
 
         mLatch = new CountDownLatch(1);
         mRunner = spy(new AsyncInitTaskRunner() {
@@ -67,16 +69,18 @@ public class AsyncInitTaskRunnerTest {
                 mLatch.countDown();
             }
             @Override
-            protected Executor getFetchSeedExecutor() {
-                return new RoboExecutorService();
-            }
-            @Override
             protected Executor getTaskPerThreadExecutor() {
                 return new RoboExecutorService();
             }
         });
         // Allow test to run on all builds
         when(mRunner.shouldFetchVariationsSeedDuringFirstRun()).thenReturn(true);
+        doNothing().when(mRunner).prefetchLibrary();
+    }
+
+    @After
+    public void tearDown() throws InterruptedException {
+        PostTask.resetPrenativeThreadPoolExecutorForTesting();
     }
 
     @Test
@@ -88,7 +92,6 @@ public class AsyncInitTaskRunnerTest {
         Robolectric.flushForegroundThreadScheduler();
         assertTrue(mLatch.await(0, TimeUnit.SECONDS));
         verify(mLoader).ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
-        verify(mLoader).asyncPrefetchLibrariesToMemory();
         verify(mRunner).onSuccess();
         verify(mVariationsSeedFetcher, never()).fetchSeed(anyString(), anyString(), anyString());
     }
@@ -115,7 +118,6 @@ public class AsyncInitTaskRunnerTest {
         Robolectric.flushForegroundThreadScheduler();
         assertTrue(mLatch.await(0, TimeUnit.SECONDS));
         verify(mLoader).ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
-        verify(mLoader).asyncPrefetchLibrariesToMemory();
         verify(mRunner).onSuccess();
         verify(mVariationsSeedFetcher).fetchSeed(anyString(), anyString(), anyString());
     }

@@ -18,7 +18,6 @@
 #include "storage/browser/quota/quota_manager_proxy.h"
 
 namespace content {
-
 namespace background_fetch {
 
 namespace {
@@ -212,5 +211,4 @@ void DatabaseTask::ReleaseCacheStorage(const std::string& unique_id) {
 }
 
 }  // namespace background_fetch
-
 }  // namespace content

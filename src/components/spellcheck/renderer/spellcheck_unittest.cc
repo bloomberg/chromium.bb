@@ -510,6 +510,11 @@ TEST_F(SpellCheckTest, SpellCheckText) {
       L"tak, aby byly v\x0161\x0065obecn\x011B p\x0159\x00EDstupn\x00E9 "
       L"a u\x017Eite\x010Dn\x00E9."
     }, {
+      // Welsh
+      "cy-GB",
+      L"Y genhadaeth yw trefnu gwybodaeth y byd a'i gwneud yn hygyrch ac yn "
+      L"ddefnyddiol i bawb."
+    }, {
       // Danish
       "da-DK",
       L"Googles "
@@ -624,6 +629,18 @@ TEST_F(SpellCheckTest, SpellCheckText) {
       L"je misija organizirati svjetske informacije i u\x010Diniti ih "
       // L"univerzalno " - to be added.
       L"pristupa\x010Dnima i korisnima."
+    }, {
+      // Armenian
+      "hy",
+      L"Google- \x056B \x0561\x057C\x0561\x0584\x0565\x056C\x0578\x0582\x0569"
+      L"\x0575\x0578\x0582\x0576\x0576 \x0567 \x0570\x0561\x0574\x0561\x0577"
+      L"\x056D\x0561\x0580\x0570\x0561\x0575\x056B\x0576 \x057F\x0565\x0572"
+      L"\x0565\x056F\x0561\x057F\x057E\x0578\x0582\x0569\x0575\x0578\x0582"
+      L"\x0576\x0568 \x056F\x0561\x0566\x0574\x0561\x056F\x0565\x0580\x057A"
+      L"\x0565\x056C \x0565\x0582 \x0564\x0561\x0580\x0571\x0576\x0565\x056C "
+      L"\x0561\x0575\x0576 \x0570\x0561\x0574\x0568\x0576\x0564\x0570\x0561"
+      L"\x0576\x0578\x0582\x0580 \x0570\x0561\x057D\x0561\x0576\x0565\x056C"
+      L"\x056B \x0565\x0582 \x0585\x0563\x057F\x0561\x056F\x0561\x0580:"
     }, {
       // Indonesian
       "id-ID",

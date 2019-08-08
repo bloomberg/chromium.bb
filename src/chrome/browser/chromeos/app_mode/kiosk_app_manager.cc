@@ -138,7 +138,7 @@ void PerformDelayedCryptohomeRemovals(bool service_is_available) {
     cryptohome::AccountIdentifier account_id_proto;
     account_id_proto.set_account_id(cryptohome_id.id());
 
-    DBusThreadManager::Get()->GetCryptohomeClient()->RemoveEx(
+    CryptohomeClient::Get()->RemoveEx(
         account_id_proto,
         base::BindOnce(&OnRemoveAppCryptohomeComplete, cryptohome_id, app_id,
                        base::OnceClosure()));
@@ -244,8 +244,7 @@ void KioskAppManager::RegisterPrefs(PrefRegistrySimple* registry) {
 
 // static
 void KioskAppManager::RemoveObsoleteCryptohomes() {
-  chromeos::CryptohomeClient* client =
-      chromeos::DBusThreadManager::Get()->GetCryptohomeClient();
+  chromeos::CryptohomeClient* client = chromeos::CryptohomeClient::Get();
   client->WaitForServiceToBeAvailable(
       base::Bind(&PerformDelayedCryptohomeRemovals));
 }
@@ -923,7 +922,7 @@ void KioskAppManager::ClearRemovedApps(
     cryptohome::AccountIdentifier account_id_proto;
     account_id_proto.set_account_id(cryptohome_id.id());
 
-    DBusThreadManager::Get()->GetCryptohomeClient()->RemoveEx(
+    CryptohomeClient::Get()->RemoveEx(
         account_id_proto,
         base::BindOnce(&OnRemoveAppCryptohomeComplete, cryptohome_id,
                        entry.first, cryptohomes_barrier_closure));

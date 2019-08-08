@@ -15,7 +15,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -28,6 +27,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.TimeoutException;
@@ -74,40 +74,28 @@ public class ContextMenuLoadUrlParamsTest {
         // Plant RecordingTabModelSelector as the TabModelSelector used in Main. The factory has to
         // be set before super.setUp(), as super.setUp() creates Main and consequently the
         // TabModelSelector.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                TabWindowManager.getInstance().setTabModelSelectorFactory(
-                        new TabModelSelectorFactory() {
-                            @Override
-                            public TabModelSelector buildSelector(
-                                    Activity activity, TabCreatorManager tabCreatorManager,
-                                    int selectorIndex) {
-                                return new RecordingTabModelSelector(
-                                        activity, tabCreatorManager, selectorIndex);
-                            }
-                        });
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            TabWindowManager.getInstance().setTabModelSelectorFactory(
+                    new TabModelSelectorFactory() {
+                        @Override
+                        public TabModelSelector buildSelector(Activity activity,
+                                TabCreatorManager tabCreatorManager, int selectorIndex) {
+                            return new RecordingTabModelSelector(
+                                    activity, tabCreatorManager, selectorIndex);
+                        }
+                    });
         });
         mActivityTestRule.startMainActivityOnBlankPage();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                FirstRunStatus.setFirstRunFlowComplete(true);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { FirstRunStatus.setFirstRunFlowComplete(true); });
 
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
     }
 
     @After
     public void tearDown() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                FirstRunStatus.setFirstRunFlowComplete(false);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { FirstRunStatus.setFirstRunFlowComplete(false); });
         mTestServer.stopAndDestroyServer();
     }
 

@@ -740,6 +740,7 @@ class Module(object):
     self.kinds = {}
     self.attributes = attributes
     self.imports = []
+    self.imported_kinds = {}
 
   def __repr__(self):
     # Gives us a decent __repr__ for modules.

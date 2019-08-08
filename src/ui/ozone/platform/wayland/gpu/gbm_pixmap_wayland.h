@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_GPU_GBM_PIXMAP_WAYLAND_H_
 #define UI_OZONE_PLATFORM_WAYLAND_GPU_GBM_PIXMAP_WAYLAND_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/files/scoped_file.h"
@@ -22,7 +23,8 @@ class WaylandConnectionProxy;
 class GbmPixmapWayland : public gfx::NativePixmap {
  public:
   GbmPixmapWayland(WaylandSurfaceFactory* surface_manager,
-                   WaylandConnectionProxy* connection);
+                   WaylandConnectionProxy* connection,
+                   gfx::AcceleratedWidget widget);
 
   // Creates a buffer object and initializes the pixmap buffer.
   bool InitializeBuffer(gfx::Size size,
@@ -56,10 +58,13 @@ class GbmPixmapWayland : public gfx::NativePixmap {
   // gbm_bo wrapper for struct gbm_bo.
   std::unique_ptr<GbmBuffer> gbm_bo_;
 
-  WaylandSurfaceFactory* surface_manager_ = nullptr;
+  WaylandSurfaceFactory* const surface_manager_;
 
   // Represents a connection to Wayland.
-  WaylandConnectionProxy* connection_ = nullptr;
+  WaylandConnectionProxy* const connection_;
+
+  // Represents widget this pixmap backs.
+  const gfx::AcceleratedWidget widget_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmPixmapWayland);
 };

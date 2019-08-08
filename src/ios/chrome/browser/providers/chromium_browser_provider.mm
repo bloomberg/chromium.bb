@@ -13,9 +13,11 @@
 #include "ios/chrome/browser/providers/signin/chromium_signin_resources_provider.h"
 #include "ios/chrome/browser/providers/ui/chromium_styled_text_field.h"
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
+#include "ios/public/provider/chrome/browser/overrides_provider.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/signin_error_provider.h"
 #import "ios/public/provider/chrome/browser/ui/fullscreen_provider.h"
+#include "ios/public/provider/chrome/browser/user/special_user_provider.h"
 #include "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -30,8 +32,10 @@ ChromiumBrowserProvider::ChromiumBrowserProvider()
           std::make_unique<ChromiumSigninResourcesProvider>()),
       user_feedback_provider_(std::make_unique<UserFeedbackProvider>()),
       voice_search_provider_(std::make_unique<ChromiumVoiceSearchProvider>()),
+      special_user_provider_(std::make_unique<SpecialUserProvider>()),
       spotlight_provider_(std::make_unique<ChromiumSpotlightProvider>()),
-      fullscreen_provider_(std::make_unique<FullscreenProvider>()) {}
+      fullscreen_provider_(std::make_unique<FullscreenProvider>()),
+      overrides_provider_(std::make_unique<OverridesProvider>()) {}
 
 ChromiumBrowserProvider::~ChromiumBrowserProvider() {}
 
@@ -67,8 +71,7 @@ VoiceSearchProvider* ChromiumBrowserProvider::GetVoiceSearchProvider() const {
 }
 
 id<LogoVendor> ChromiumBrowserProvider::CreateLogoVendor(
-    ios::ChromeBrowserState* browser_state,
-    id<UrlLoader> loader) const {
+    ios::ChromeBrowserState* browser_state) const {
   return [[ChromiumLogoController alloc] init];
 }
 
@@ -85,10 +88,18 @@ BrandedImageProvider* ChromiumBrowserProvider::GetBrandedImageProvider() const {
   return branded_image_provider_.get();
 }
 
+SpecialUserProvider* ChromiumBrowserProvider::GetSpecialUserProvider() const {
+  return special_user_provider_.get();
+}
+
 SpotlightProvider* ChromiumBrowserProvider::GetSpotlightProvider() const {
   return spotlight_provider_.get();
 }
 
 FullscreenProvider* ChromiumBrowserProvider::GetFullscreenProvider() const {
   return fullscreen_provider_.get();
+}
+
+OverridesProvider* ChromiumBrowserProvider::GetOverridesProvider() const {
+  return overrides_provider_.get();
 }

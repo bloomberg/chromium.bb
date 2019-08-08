@@ -15,6 +15,10 @@
         justify-content: space-between;
       }
 
+      :host(:not([available_])) {
+        display: none;
+      }
+
       #permission-icon {
         color: var(--permission-icon-color);
         padding-inline-end: var(--permission-icon-padding);
@@ -22,15 +26,17 @@
     </style>
     <!-- `permission-item` does not include any icon-set, so containing
      elements should import the icon-set needed for the specified |icon|. -->
-    <div class="permission-row-controls">
-      <template is="dom-if" if="[[icon]]">
-        <iron-icon id="permission-icon" icon="[[icon]]"></iron-icon>
-      </template>
-      <div id="permission-label">[[permissionLabel]]</div>
-    </div>
-    <app-management-permission-toggle id="permission-toggle"
-        app="[[app_]]" permission-type="[[permissionType]]">
-    </app-management-permission-toggle>
+    <template is="dom-if" if="[[available_]]">
+      <div class="permission-row-controls">
+        <template is="dom-if" if="[[icon]]">
+          <iron-icon id="permission-icon" icon="[[icon]]"></iron-icon>
+        </template>
+        <div id="permission-label">[[permissionLabel]]</div>
+      </div>
+      <app-management-permission-toggle id="permission-toggle"
+          app="[[app_]]" permission-type="[[permissionType]]">
+      </app-management-permission-toggle>
+    </template>
   </template>
   <script src="permission_item.js"></script>
 </dom-module>

@@ -10,6 +10,7 @@
 #include <map>
 #include <utility>
 
+#include "device/usb/public/cpp/usb_utils.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
 
@@ -21,10 +22,15 @@ device::mojom::UsbEndpointInfoPtr TypeConverter<
     device::UsbEndpointDescriptor>::Convert(const device::UsbEndpointDescriptor&
                                                 endpoint) {
   auto info = device::mojom::UsbEndpointInfo::New();
-  info->endpoint_number = endpoint.address & 0xf;
+  info->endpoint_number = device::ConvertEndpointAddressToNumber(endpoint);
   info->direction = endpoint.direction;
   info->type = endpoint.transfer_type;
   info->packet_size = static_cast<uint32_t>(endpoint.maximum_packet_size);
+  info->synchronization_type = endpoint.synchronization_type;
+  info->usage_type = endpoint.usage_type;
+  info->polling_interval = endpoint.polling_interval;
+  info->extra_data.assign(endpoint.extra_data.begin(),
+                          endpoint.extra_data.end());
   return info;
 }
 
@@ -38,6 +44,8 @@ TypeConverter<device::mojom::UsbAlternateInterfaceInfoPtr,
   info->class_code = interface.interface_class;
   info->subclass_code = interface.interface_subclass;
   info->protocol_code = interface.interface_protocol;
+  info->extra_data.assign(interface.extra_data.begin(),
+                          interface.extra_data.end());
 
   // Filter out control endpoints for the public interface.
   info->endpoints.reserve(interface.endpoints.size());
@@ -87,9 +95,13 @@ device::mojom::UsbConfigurationInfoPtr TypeConverter<
                                               config) {
   auto info = device::mojom::UsbConfigurationInfo::New();
   info->configuration_value = config.configuration_value;
+  info->self_powered = config.self_powered;
+  info->remote_wakeup = config.remote_wakeup;
+  info->maximum_power = config.maximum_power;
   info->interfaces =
       mojo::ConvertTo<std::vector<device::mojom::UsbInterfaceInfoPtr>>(
           config.interfaces);
+  info->extra_data.assign(config.extra_data.begin(), config.extra_data.end());
   return info;
 }
 

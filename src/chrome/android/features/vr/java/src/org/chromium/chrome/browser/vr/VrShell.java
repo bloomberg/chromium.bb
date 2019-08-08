@@ -40,6 +40,8 @@ import org.chromium.chrome.browser.compositor.CompositorView;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabAssociatedApp;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
@@ -474,7 +476,7 @@ public class VrShell extends GvrLayout
         if (mTab != null) {
             initializeTabForVR();
             mTab.addObserver(mTabObserver);
-            mTab.updateBrowserControlsState(BrowserControlsState.HIDDEN, false);
+            TabBrowserControlsState.update(mTab, BrowserControlsState.HIDDEN, false);
         }
         mTabObserver.onContentChanged(mTab);
     }
@@ -495,8 +497,9 @@ public class VrShell extends GvrLayout
         ImeAdapter imeAdapter = ImeAdapter.fromWebContents(webContents);
         if (imeAdapter == null) return;
 
-        imeAdapter.setInputMethodManagerWrapper(
-                ImeAdapter.createDefaultInputMethodManagerWrapper(mActivity));
+        // Use application context here to avoid leaking the activity context.
+        imeAdapter.setInputMethodManagerWrapper(ImeAdapter.createDefaultInputMethodManagerWrapper(
+                mActivity.getApplicationContext()));
         mInputMethodManagerWrapper = null;
     }
 
@@ -792,7 +795,7 @@ public class VrShell extends GvrLayout
                 View parent = mTab.getContentView();
                 mTab.getWebContents().setSize(parent.getWidth(), parent.getHeight());
             }
-            mTab.updateBrowserControlsState(BrowserControlsState.SHOWN, false);
+            TabBrowserControlsState.update(mTab, BrowserControlsState.SHOWN, false);
         }
 
         mContentVirtualDisplay.destroy();
@@ -930,7 +933,7 @@ public class VrShell extends GvrLayout
 
     public boolean isDisplayingUrlForTesting() {
         assert mNativeVrShell != 0;
-        return ThreadUtils.runOnUiThreadBlockingNoException(
+        return PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT,
                 () -> { return nativeIsDisplayingUrlForTesting(mNativeVrShell); });
     }
 
@@ -1117,7 +1120,7 @@ public class VrShell extends GvrLayout
             // If hitting back would minimize Chrome, disable the back button.
             // See ChromeTabbedActivity#handleBackPressed().
             willCloseTab = ChromeTabbedActivity.backShouldCloseTab(mTab)
-                    && !mTab.isCreatedForExternalApp();
+                    && !TabAssociatedApp.isOpenedFromExternalApp(mTab);
         }
         boolean canGoBack = mTab.canGoBack() || willCloseTab;
         boolean canGoForward = mTab.canGoForward();
@@ -1247,7 +1250,7 @@ public class VrShell extends GvrLayout
     }
 
     public void performKeyboardInputForTesting(int inputType, String inputString) {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
             nativePerformKeyboardInputForTesting(mNativeVrShell, inputType, inputString);
         });
     }

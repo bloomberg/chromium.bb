@@ -17,6 +17,7 @@
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web/web_state/error_translation_util.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/data_url.h"
 #include "net/base/filename_util.h"
 #include "net/base/io_buffer.h"
@@ -375,20 +376,21 @@ NSURLSession* DownloadTaskImpl::CreateSession(NSString* identifier,
         }
 
         // Download has finished, so finalize the writer and signal completion.
-        auto callback = base::Bind(&DownloadTaskImpl::OnDownloadFinished,
-                                   weak_factory_.GetWeakPtr());
-        if (writer_->Finish(error_code_, callback) != net::ERR_IO_PENDING) {
+        auto callback = base::BindOnce(&DownloadTaskImpl::OnDownloadFinished,
+                                       weak_factory_.GetWeakPtr());
+        if (writer_->Finish(error_code_, std::move(callback)) !=
+            net::ERR_IO_PENDING) {
           OnDownloadFinished(error_code_);
         }
       }
       dataBlock:^(scoped_refptr<net::IOBufferWithSize> buffer,
                   void (^completion_handler)()) {
         if (weak_this.get()) {
-          net::CompletionCallback callback = base::BindRepeating(^(int) {
+          net::CompletionOnceCallback callback = base::BindOnce(^(int) {
             completion_handler();
           });
-          if (writer_->Write(buffer.get(), buffer->size(), callback) ==
-              net::ERR_IO_PENDING) {
+          if (writer_->Write(buffer.get(), buffer->size(),
+                             std::move(callback)) == net::ERR_IO_PENDING) {
             return;
           }
         }
@@ -401,18 +403,6 @@ NSURLSession* DownloadTaskImpl::CreateSession(NSString* identifier,
 void DownloadTaskImpl::GetCookies(
     base::Callback<void(NSArray<NSHTTPCookie*>*)> callback) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  if (@available(iOS 11, *)) {
-    GetWKCookies(callback);
-  } else {
-    base::PostTaskWithTraits(FROM_HERE, {WebThread::UI}, base::BindOnce(^{
-                               callback.Run([NSArray array]);
-                             }));
-  }
-}
-
-void DownloadTaskImpl::GetWKCookies(
-    base::Callback<void(NSArray<NSHTTPCookie*>*)> callback) {
-  DCHECK_CURRENTLY_ON(WebThread::UI);
   auto store = WKCookieStoreForBrowserState(web_state_->GetBrowserState());
   DCHECK(store);
   [store getAllCookies:^(NSArray<NSHTTPCookie*>* cookies) {

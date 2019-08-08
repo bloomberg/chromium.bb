@@ -12,9 +12,9 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
-#include "chromeos/dbus/media_analytics_client.h"
+#include "chromeos/dbus/media_analytics/media_analytics_client.h"
 #include "chromeos/dbus/media_perception/media_perception.pb.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 
 namespace chromeos {
 

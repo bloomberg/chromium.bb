@@ -16,61 +16,21 @@ cr.define('print_header_interactive_test', function() {
 
     /** @override */
     setup(function() {
-      // The header cares about color, duplex, and header/footer to determine
-      // whether to show the enterprise managed icon, and pages, copies, and
-      // duplex to compute the number of sheets of paper.
-      const settings = {
-        color: {
-          value: true, /* color */
-          unavailableValue: false,
-          valid: true,
-          available: true,
-          setByPolicy: false,
-          key: 'isColorEnabled',
-        },
-        copies: {
-          value: '1',
-          unavailableValue: '1',
-          valid: true,
-          available: true,
-          setByPolicy: false,
-          key: '',
-        },
-        duplex: {
-          value: false,
-          unavailableValue: false,
-          valid: true,
-          available: true,
-          setByPolicy: false,
-          key: 'isDuplexEnabled',
-        },
-        headerFooter: {
-          value: true,
-          unavailableValue: false,
-          valid: true,
-          available: true,
-          setByPolicy: false,
-          key: 'isHeaderFooterEnabled',
-        },
-        pages: {
-          value: [1],
-          unavailableValue: [],
-          valid: true,
-          available: true,
-          setByPolicy: false,
-          key: '',
-        },
-      };
-
+      loadTimeData.overrideValues({
+        newPrintPreviewLayoutEnabled: false,
+      });
       PolymerTest.clearBody();
+      const model = document.createElement('print-preview-model');
+      document.body.appendChild(model);
+
       header = document.createElement('print-preview-header');
-      header.settings = settings;
+      header.settings = model.settings;
       header.destination = new print_preview.Destination(
           'FooDevice', print_preview.DestinationType.GOOGLE,
           print_preview.DestinationOrigin.COOKIES, 'FooName',
           print_preview.DestinationConnectionStatus.ONLINE);
-      header.errorMessage = '';
       header.state = print_preview_new.State.NOT_READY;
+      test_util.fakeDataBind(model, header, 'settings');
       document.body.appendChild(header);
     });
 

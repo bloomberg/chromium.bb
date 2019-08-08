@@ -17,15 +17,10 @@ COMMON_C_INCLUDES += \
 
 else
 
-ifeq ($(REACTOR_LLVM_VERSION),3)
-COMMON_C_INCLUDES += \
-	$(LOCAL_PATH)/../third_party/LLVM/include
-else
 COMMON_C_INCLUDES += \
 	$(LOCAL_PATH)/../third_party/llvm-7.0/llvm/include \
 	$(LOCAL_PATH)/../third_party/llvm-7.0/configs/android/include \
 	$(LOCAL_PATH)/../third_party/llvm-7.0/configs/common/include
-endif
 
 endif
 
@@ -61,6 +56,7 @@ COMMON_SRC_FILES += \
 	Main/SwiftConfig.cpp
 
 COMMON_SRC_FILES += \
+	Reactor/Reactor.cpp \
 	Reactor/Routine.cpp \
 	Reactor/Debug.cpp \
 	Reactor/DebugAndroid.cpp \

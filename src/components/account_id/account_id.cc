@@ -240,71 +240,66 @@ std::string AccountId::Serialize() const {
 // static
 bool AccountId::Deserialize(const std::string& serialized,
                             AccountId* account_id) {
-  base::JSONReader reader;
-  std::unique_ptr<const base::Value> value(reader.ReadDeprecated(serialized));
-  const base::DictionaryValue* dictionary_value = nullptr;
-
-  if (!value || !value->GetAsDictionary(&dictionary_value))
+  base::Optional<base::Value> value(base::JSONReader::Read(serialized));
+  if (!value || !value->is_dict())
     return false;
 
-  std::string gaia_id;
-  std::string user_email;
-  std::string obj_guid;
-  std::string account_type_string;
   AccountType account_type = AccountType::GOOGLE;
-
-  const bool found_gaia_id = dictionary_value->GetString(kGaiaIdKey, &gaia_id);
-  const bool found_user_email =
-      dictionary_value->GetString(kEmailKey, &user_email);
-  const bool found_obj_guid = dictionary_value->GetString(kObjGuid, &obj_guid);
-  const bool found_account_type =
-      dictionary_value->GetString(kAccountTypeKey, &account_type_string);
-  if (found_account_type)
-    account_type = StringToAccountType(account_type_string);
+  const std::string* gaia_id = value->FindStringKey(kGaiaIdKey);
+  const std::string* user_email = value->FindStringKey(kEmailKey);
+  const std::string* obj_guid = value->FindStringKey(kObjGuid);
+  const std::string* account_type_string =
+      value->FindStringKey(kAccountTypeKey);
+  if (account_type_string)
+    account_type = StringToAccountType(*account_type_string);
 
   switch (account_type) {
     case AccountType::GOOGLE:
-      if (found_obj_guid)
+      if (obj_guid) {
         DLOG(ERROR) << "AccountType is 'google' but obj_guid is found in '"
                     << serialized << "'";
+      }
 
-      if (!found_gaia_id)
+      if (!gaia_id)
         DLOG(ERROR) << "gaia_id is not found in '" << serialized << "'";
 
-      if (!found_user_email)
+      if (!user_email)
         DLOG(ERROR) << "user_email is not found in '" << serialized << "'";
 
-      if (!found_gaia_id && !found_user_email)
+      if (!gaia_id && !user_email)
         return false;
 
-      *account_id = FromUserEmailGaiaId(user_email, gaia_id);
+      *account_id =
+          FromUserEmailGaiaId(user_email ? *user_email : std::string(),
+                              gaia_id ? *gaia_id : std::string());
       return true;
 
     case AccountType::ACTIVE_DIRECTORY:
-      if (found_gaia_id)
+      if (gaia_id) {
         DLOG(ERROR)
             << "AccountType is 'active directory' but gaia_id is found in '"
             << serialized << "'";
+      }
 
-      if (!found_obj_guid) {
+      if (!obj_guid) {
         DLOG(ERROR) << "obj_guid is not found in '" << serialized << "'";
         return false;
       }
 
-      if (!found_user_email) {
+      if (!user_email) {
         DLOG(ERROR) << "user_email is not found in '" << serialized << "'";
       }
 
-      if (!found_obj_guid || !found_user_email)
+      if (!obj_guid || !user_email)
         return false;
 
-      *account_id = AdFromUserEmailObjGuid(user_email, obj_guid);
+      *account_id = AdFromUserEmailObjGuid(*user_email, *obj_guid);
       return true;
 
     case AccountType::UNKNOWN:
-      if (!found_user_email)
+      if (!user_email)
         return false;
-      *account_id = FromUserEmail(user_email);
+      *account_id = FromUserEmail(*user_email);
       return true;
   }
   return false;

@@ -20,6 +20,10 @@ class Clock;
 class SequencedTaskRunner;
 }  // namespace base
 
+namespace leveldb_proto {
+class ProtoDatabaseProvider;
+}  // namespace leveldb_proto
+
 namespace image_fetcher {
 
 class CachedImageMetadataProto;
@@ -27,16 +31,16 @@ class CachedImageMetadataProto;
 // Stores image metadata in leveldb.
 class ImageMetadataStoreLevelDB : public ImageMetadataStore {
  public:
-  // Initializes the database with |database_dir|.
+  // Initializes the database with |proto_database_provider|.
   ImageMetadataStoreLevelDB(
+      leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
       const base::FilePath& database_dir,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       base::Clock* clock);
 
-  // Initializes the database with |database_dir|. Creates storage using the
-  // given |image_database| for local storage. Useful for testing.
+  // Creates storage using the given |database| for local storage. Useful for
+  // testing.
   ImageMetadataStoreLevelDB(
-      const base::FilePath& database_dir,
       std::unique_ptr<leveldb_proto::ProtoDatabase<CachedImageMetadataProto>>
           database,
       base::Clock* clock);
@@ -62,7 +66,8 @@ class ImageMetadataStoreLevelDB : public ImageMetadataStore {
                           KeysCallback callback) override;
 
  private:
-  void OnDatabaseInitialized(base::OnceClosure callback, bool success);
+  void OnDatabaseInitialized(base::OnceClosure callback,
+                             leveldb_proto::Enums::InitStatus status);
   void OnImageUpdated(bool success);
   void UpdateImageMetadataImpl(
       bool success,
@@ -82,7 +87,6 @@ class ImageMetadataStoreLevelDB : public ImageMetadataStore {
 
   int estimated_size_;
   InitializationStatus initialization_status_;
-  base::FilePath database_dir_;
   std::unique_ptr<leveldb_proto::ProtoDatabase<CachedImageMetadataProto>>
       database_;
   // Clock is owned by the service that creates this object.

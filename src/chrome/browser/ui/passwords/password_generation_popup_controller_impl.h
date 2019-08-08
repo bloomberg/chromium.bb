@@ -17,9 +17,14 @@
 #include "chrome/browser/ui/passwords/password_generation_popup_controller.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/signatures_util.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/native_widget_types.h"
+
+#if !defined(OS_ANDROID)
+#include "components/zoom/zoom_observer.h"
+#endif  // !defined(OS_ANDROID)
 
 namespace content {
 struct NativeWebKeyboardEvent;
@@ -43,8 +48,19 @@ class PasswordGenerationPopupView;
 // determining the location of the popup, handling keypress events while the
 // popup is active, and notifying both the renderer and the password manager
 // if the password is accepted.
+//
+// NOTE: This is used on Android only to display the editing popup.
+//
+// TODO(crbug.com/944502): Clean up the popup code on Android to make its use
+// clear and remove unused code.
 class PasswordGenerationPopupControllerImpl
-    : public PasswordGenerationPopupController {
+    : public PasswordGenerationPopupController,
+      public content::WebContentsObserver
+#if !defined(OS_ANDROID)
+    ,
+      public zoom::ZoomObserver
+#endif  // !defined(OS_ANDROID)
+{
  public:
   // Create a controller or return |previous| if it is suitable. Will hide
   // |previous| if it is not returned. |bounds| is the bounds of the element
@@ -69,13 +85,34 @@ class PasswordGenerationPopupControllerImpl
   ~PasswordGenerationPopupControllerImpl() override;
 
   // Create a PasswordGenerationPopupView if one doesn't already exist.
-  void Show(GenerationState state);
+  void Show(GenerationUIState state);
 
   // Update the password to be displayed in the UI.
   void UpdatePassword(base::string16 new_password);
 
-  // Hides the popup and destroys |this|.
-  void HideAndDestroy();
+  // Hides the popup, since its position is no longer valid.
+  void FrameWasScrolled();
+
+  // Hides the popup, since the generation element for which it was shown
+  // is no longer focused.
+  void GenerationElementLostFocus();
+
+  // The generated password counts as rejected either if the user ignores the
+  // popup and types a password, or if the generated password is deleted.
+  // In both cases the popups should be hidden. In the latter case, a new popup
+  // might be shown offering another password if generation is offered
+  // automatically on that field.
+  void GeneratedPasswordRejected();
+
+  // content::WebContentsObserver overrides
+  void DidAttachInterstitialPage() override;
+  void WebContentsDestroyed() override;
+
+#if !defined(OS_ANDROID)
+  // ZoomObserver implementation.
+  void OnZoomChanged(
+      const zoom::ZoomController::ZoomChangedEventData& data) override;
+#endif  // !defined(OS_ANDROID)
 
  protected:
   PasswordGenerationPopupControllerImpl(
@@ -111,7 +148,7 @@ class PasswordGenerationPopupControllerImpl
   int GetElidedLabelWidthForRow(int row) override;
 #endif
 
-  GenerationState state() const override;
+  GenerationUIState state() const override;
   bool password_selected() const override;
   const base::string16& password() const override;
   base::string16 SuggestedText() override;
@@ -156,11 +193,9 @@ class PasswordGenerationPopupControllerImpl
   bool password_selected_;
 
   // The state of the generation popup.
-  GenerationState state_;
+  GenerationUIState state_;
 
   autofill::PopupViewCommon view_common_;
-
-  content::WebContents* const web_contents_;
 
   base::WeakPtrFactory<PasswordGenerationPopupControllerImpl> weak_ptr_factory_;
 

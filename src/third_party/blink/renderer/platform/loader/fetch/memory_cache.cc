@@ -22,9 +22,12 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -48,8 +51,9 @@ static const float kCTargetPrunePercentage = .95f;
 MemoryCache* GetMemoryCache() {
   DCHECK(WTF::IsMainThread());
   if (!g_memory_cache) {
-    g_memory_cache = new Persistent<MemoryCache>(
-        MemoryCache::Create(Thread::MainThread()->GetTaskRunner()));
+    g_memory_cache =
+        new Persistent<MemoryCache>(MakeGarbageCollected<MemoryCache>(
+            Thread::MainThread()->GetTaskRunner()));
   }
   return g_memory_cache->Get();
 }
@@ -75,7 +79,7 @@ void MemoryCacheEntry::ClearResourceWeak(Visitor* visitor) {
   resource_.Clear();
 }
 
-inline MemoryCache::MemoryCache(
+MemoryCache::MemoryCache(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : in_prune_resources_(false),
       prune_pending_(false),
@@ -90,11 +94,6 @@ inline MemoryCache::MemoryCache(
   MemoryCacheDumpProvider::Instance()->SetMemoryCache(this);
   if (MemoryPressureListenerRegistry::IsLowEndDevice())
     MemoryPressureListenerRegistry::Instance().RegisterClient(this);
-}
-
-MemoryCache* MemoryCache::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return MakeGarbageCollected<MemoryCache>(std::move(task_runner));
 }
 
 MemoryCache::~MemoryCache() = default;
@@ -135,7 +134,7 @@ MemoryCache::ResourceMap* MemoryCache::EnsureResourceMap(
 void MemoryCache::Add(Resource* resource) {
   DCHECK(resource);
   ResourceMap* resources = EnsureResourceMap(resource->CacheIdentifier());
-  AddInternal(resources, MemoryCacheEntry::Create(resource));
+  AddInternal(resources, MakeGarbageCollected<MemoryCacheEntry>(resource));
   RESOURCE_LOADING_DVLOG(1)
       << "MemoryCache::add Added " << resource->Url().GetString()
       << ", resource " << resource;

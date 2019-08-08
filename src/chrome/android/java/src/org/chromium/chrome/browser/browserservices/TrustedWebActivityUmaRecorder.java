@@ -9,6 +9,9 @@ import android.support.annotation.Nullable;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.tab.Tab;
 
 import java.lang.annotation.Retention;
@@ -16,9 +19,12 @@ import java.lang.annotation.RetentionPolicy;
 
 import javax.inject.Inject;
 
+import dagger.Reusable;
+
 /**
  * Encapsulates Uma recording actions related to Trusted Web Activities.
  */
+@Reusable
 public class TrustedWebActivityUmaRecorder {
     @IntDef({DelegatedNotificationSmallIconFallback.NO_FALLBACK,
             DelegatedNotificationSmallIconFallback.FALLBACK_ICON_NOT_PROVIDED,
@@ -33,8 +39,12 @@ public class TrustedWebActivityUmaRecorder {
         int NUM_ENTRIES = 4;
     }
 
+    private final ChromeBrowserInitializer mBrowserInitializer;
+
     @Inject
-    public TrustedWebActivityUmaRecorder() {}
+    public TrustedWebActivityUmaRecorder(ChromeBrowserInitializer browserInitializer) {
+        mBrowserInitializer = browserInitializer;
+    }
 
     /**
      * Records that a Trusted Web Activity has been opened.
@@ -116,5 +126,29 @@ public class TrustedWebActivityUmaRecorder {
         RecordHistogram.recordEnumeratedHistogram(
                 "TrustedWebActivity.DelegatedNotificationSmallIconFallback", fallback,
                 DelegatedNotificationSmallIconFallback.NUM_ENTRIES);
+    }
+
+    /**
+     * Records whether or not a splash screen has been shown when launching a TWA.
+     * Uses {@link TaskTraits#BEST_EFFORT} in order to not get in the way of loading the page.
+     */
+    public void recordSplashScreenUsage(boolean wasShown) {
+        doWhenNativeLoaded(() ->
+                PostTask.postTask(TaskTraits.BEST_EFFORT, () ->
+                        RecordHistogram.recordBooleanHistogram(
+                                "TrustedWebActivity.SplashScreenShown", wasShown)
+                ));
+    }
+
+    /**
+     * Records the fact that a reflective call to Activity#convertFromTranslucent failed.
+     */
+    public void recordTranslucencyRemovalFailed() {
+        doWhenNativeLoaded(() -> RecordHistogram.recordBooleanHistogram(
+                "TrustedWebActivity.TranslucencyRemovalFailed", true));
+    }
+
+    private void doWhenNativeLoaded(Runnable runnable) {
+        mBrowserInitializer.runNowOrAfterNativeInitialization(runnable);
     }
 }

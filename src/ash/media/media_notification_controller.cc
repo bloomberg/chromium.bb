@@ -7,9 +7,11 @@
 #include "ash/media/media_notification_constants.h"
 #include "ash/media/media_notification_view.h"
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_view_factory.h"
 
 namespace ash {
@@ -23,7 +25,16 @@ std::unique_ptr<message_center::MessageView> CreateCustomMediaNotificationView(
   return std::make_unique<MediaNotificationView>(notification);
 }
 
+// The maximum number of media notifications to count when recording the
+// Media.Notification.Count histogram. 20 was chosen because it would be very
+// unlikely to see a user with 20+ things playing at once.
+const int kMediaNotificationCountHistogramMax = 20;
+
 }  // namespace
+
+// static
+const char MediaNotificationController::kCountHistogramName[] =
+    "Media.Notification.Count";
 
 MediaNotificationController::MediaNotificationController(
     service_manager::Connector* connector) {
@@ -69,7 +80,8 @@ void MediaNotificationController::OnFocusGained(
 
   notifications_.emplace(
       std::piecewise_construct, std::forward_as_tuple(id),
-      std::forward_as_tuple(id, std::move(controller),
+      std::forward_as_tuple(id, session->source_name.value_or(std::string()),
+                            std::move(controller),
                             std::move(session->session_info)));
 }
 
@@ -84,6 +96,15 @@ void MediaNotificationController::SetView(const std::string& id,
   if (it == notifications_.end())
     return;
   it->second.SetView(view);
+}
+
+void MediaNotificationController::RecordConcurrentNotificationCount() {
+  UMA_HISTOGRAM_EXACT_LINEAR(
+      kCountHistogramName,
+      message_center::MessageCenter::Get()
+          ->FindNotificationsByAppId(kMediaSessionNotifierId)
+          .size(),
+      kMediaNotificationCountHistogramMax);
 }
 
 }  // namespace ash

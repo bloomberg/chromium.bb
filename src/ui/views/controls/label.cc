@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/cursor/cursor.h"
@@ -69,8 +70,7 @@ Label::Label(const base::string16& text, const CustomFont& font)
   Init(text, font.font_list, gfx::DirectionalityMode::DIRECTIONALITY_FROM_TEXT);
 }
 
-Label::~Label() {
-}
+Label::~Label() = default;
 
 // static
 const gfx::FontList& Label::GetDefaultFontList() {
@@ -232,6 +232,10 @@ base::string16 Label::GetDisplayTextForTesting() {
   ClearDisplayText();
   MaybeBuildDisplayText();
   return display_text_ ? display_text_->GetDisplayText() : base::string16();
+}
+
+base::i18n::TextDirection Label::GetTextDirectionForTesting() {
+  return full_text_->GetDisplayTextDirection();
 }
 
 bool Label::IsSelectionSupported() const {
@@ -400,21 +404,16 @@ void Label::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(full_text_->GetDisplayText());
 }
 
-bool Label::GetTooltipText(const gfx::Point& p, base::string16* tooltip) const {
-  if (!handles_tooltips_)
-    return false;
+base::string16 Label::GetTooltipText(const gfx::Point& p) const {
+  if (handles_tooltips_) {
+    if (!tooltip_text_.empty())
+      return tooltip_text_;
 
-  if (!tooltip_text_.empty()) {
-    tooltip->assign(tooltip_text_);
-    return true;
+    if (ShouldShowDefaultTooltip())
+      return full_text_->GetDisplayText();
   }
 
-  if (ShouldShowDefaultTooltip()) {
-    tooltip->assign(full_text_->GetDisplayText());
-    return true;
-  }
-
-  return false;
+  return base::string16();
 }
 
 std::unique_ptr<gfx::RenderText> Label::CreateRenderText() const {
@@ -652,12 +651,12 @@ void Label::ShowContextMenuForViewImpl(View* source,
   if (!GetRenderTextForSelectionController())
     return;
 
-  context_menu_runner_.reset(
-      new MenuRunner(&context_menu_contents_,
-                     MenuRunner::HAS_MNEMONICS | MenuRunner::CONTEXT_MENU));
+  context_menu_runner_ = std::make_unique<MenuRunner>(
+      &context_menu_contents_,
+      MenuRunner::HAS_MNEMONICS | MenuRunner::CONTEXT_MENU);
   context_menu_runner_->RunMenuAt(GetWidget(), nullptr,
                                   gfx::Rect(point, gfx::Size()),
-                                  MENU_ANCHOR_TOPLEFT, source_type);
+                                  MenuAnchorPosition::kTopLeft, source_type);
 }
 
 bool Label::GetWordLookupDataAtPoint(const gfx::Point& point,
@@ -832,7 +831,6 @@ void Label::Init(const base::string16& text,
 }
 
 void Label::ResetLayout() {
-  InvalidateLayout();
   PreferredSizeChanged();
   SchedulePaint();
   ClearDisplayText();

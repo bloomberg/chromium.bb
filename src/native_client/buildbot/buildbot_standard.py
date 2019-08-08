@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Enable 'with' statements in Python 2.5
+from __future__ import print_function
 from __future__ import with_statement
 
 import os.path
@@ -75,7 +75,7 @@ def ArchiveCoverage(context):
       'cp', '-R', '-a', 'public-read',
       'html', gs_path,
   ], cwd=cov_dir)
-  print '@@@STEP_LINK@view@%s@@@' % link_url
+  print('@@@STEP_LINK@view@%s@@@' % link_url)
 
 
 def DoGNBuild(status, context, force_clang=False, force_arch=None):
@@ -252,9 +252,9 @@ def BuildScript(status, context):
       context.SetEnv('TMP', tmp_dir)
     else:
       tmp_dir = '/tmp'
-    print 'Making sure %s exists...' % tmp_dir
+    print('Making sure %s exists...' % tmp_dir)
     EnsureDirectoryExists(tmp_dir)
-    print 'Cleaning up the contents of %s...' % tmp_dir
+    print('Cleaning up the contents of %s...' % tmp_dir)
     # Only delete files and directories like:
     #   */nacl_tmp/*
     # TODO(bradnelson): Drop this after a bit.
@@ -294,17 +294,17 @@ def BuildScript(status, context):
     if os.path.exists(nacl_tmp):
       for bot in os.listdir(nacl_tmp):
         bot_path = os.path.join(nacl_tmp, bot)
-        print 'Cleaning prior build temp dir: %s' % bot_path
+        print('Cleaning prior build temp dir: %s' % bot_path)
         sys.stdout.flush()
         if os.path.isdir(bot_path):
           for d in os.listdir(bot_path):
             path = os.path.join(bot_path, d)
-            print 'Removing leftover: %s' % path
+            print('Removing leftover: %s' % path)
             sys.stdout.flush()
             RemovePath(path)
           os.rmdir(bot_path)
         else:
-          print 'Removing rogue file: %s' % bot_path
+          print('Removing rogue file: %s' % bot_path)
           RemovePath(bot_path)
       os.rmdir(nacl_tmp)
     # Clean /tmp so we get a list of what's accumulating.
@@ -407,11 +407,13 @@ def BuildScript(status, context):
         configure_args += ['CXXFLAGS=-I../..',  # For third_party/lss
                            'LDFLAGS=-fuse-ld=lld']
       try:
-       Command(context, cwd='breakpad-out',
-              cmd=['bash', '../../breakpad/configure'] + configure_args)
+        Command(
+            context,
+            cwd='breakpad-out',
+            cmd=['bash', '../../breakpad/configure'] + configure_args)
       except:
         f = open(os.path.join('breakpad-out', 'config.log')).read()
-        print f
+        print(f)
         raise
 
     with Step('breakpad make', status):
@@ -500,7 +502,7 @@ def TimedMain():
     Main()
   finally:
     time_taken = time.time() - start_time
-    print 'RESULT BuildbotTime: total= %.3f minutes' % (time_taken / 60)
+    print('RESULT BuildbotTime: total= %.3f minutes' % (time_taken / 60))
 
 
 if __name__ == '__main__':

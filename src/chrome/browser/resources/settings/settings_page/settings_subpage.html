@@ -1,11 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field.html">
 <link rel="import" href="chrome://resources/html/find_shortcut_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-resizable-behavior/iron-resizable-behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../icons.html">
@@ -44,7 +44,7 @@
         width: var(--cr-icon-ripple-size);
       }
 
-      paper-icon-button-light {
+      cr-icon-button {
         /* Centers the ripple on the icon with appropriate margin on right. */
         margin-inline-end: 10px;
         margin-inline-start: -10px;
@@ -65,10 +65,8 @@
       }
     </style>
     <div class="settings-box first" id="headerLine">
-      <paper-icon-button-light class="icon-arrow-back">
-        <button id="closeButton" on-click="onTapBack_"
-            aria-label="$i18n{back}"></button>
-      </paper-icon-button-light>
+      <cr-icon-button class="icon-arrow-back" id="closeButton"
+          on-click="onTapBack_" aria-label="$i18n{back}"></cr-icon-button>
       <h1>[[pageTitle]]</h1>
       <slot name="subpage-title-extra"></slot>
       <template is="dom-if" if="[[learnMoreUrl]]">

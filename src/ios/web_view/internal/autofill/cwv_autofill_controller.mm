@@ -17,7 +17,6 @@
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "components/autofill/ios/browser/autofill_driver_ios_bridge.h"
-#include "components/autofill/ios/browser/autofill_switches.h"
 #import "components/autofill/ios/browser/autofill_util.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
@@ -386,10 +385,7 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
 #pragma mark - Utility Methods
 
 - (autofill::AutofillManager*)autofillManagerForFrame:(web::WebFrame*)frame {
-  if (!_webState) {
-    return nil;
-  }
-  if (autofill::switches::IsAutofillIFrameMessagingEnabled() && !frame) {
+  if (!_webState || !frame) {
     return nil;
   }
   return autofill::AutofillDriverIOS::FromWebStateAndWebFrame(_webState, frame)

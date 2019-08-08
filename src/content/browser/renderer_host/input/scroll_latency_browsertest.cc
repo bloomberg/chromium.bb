@@ -117,8 +117,7 @@ class ScrollLatencyBrowserTest : public ContentBrowserTest {
   void DoSmoothWheelScroll(const gfx::Vector2d& distance) {
     blink::WebGestureEvent event =
         SyntheticWebGestureEventBuilder::BuildScrollBegin(
-            distance.x(), -distance.y(),
-            blink::WebGestureDevice::kWebGestureDeviceTouchpad, 1);
+            distance.x(), -distance.y(), blink::WebGestureDevice::kTouchpad, 1);
     event.data.scroll_begin.delta_hint_units =
         blink::WebGestureEvent::ScrollUnits::kPixels;
     GetWidgetHost()->ForwardGestureEvent(event);
@@ -138,7 +137,7 @@ class ScrollLatencyBrowserTest : public ContentBrowserTest {
       blink::WebGestureEvent event2 =
           SyntheticWebGestureEventBuilder::BuildScrollUpdate(
               distance.x(), -distance.y(), 0,
-              blink::WebGestureDevice::kWebGestureDeviceTouchpad);
+              blink::WebGestureDevice::kTouchpad);
       event2.data.scroll_update.delta_units =
           blink::WebGestureEvent::ScrollUnits::kPixels;
       GetWidgetHost()->ForwardGestureEvent(event2);

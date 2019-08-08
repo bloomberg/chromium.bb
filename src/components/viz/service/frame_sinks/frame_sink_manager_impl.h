@@ -121,8 +121,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
                           base::Optional<base::TimeDelta> duration) override;
   bool OnSurfaceDamaged(const SurfaceId& surface_id,
                         const BeginFrameAck& ack) override;
-  void OnSurfaceDiscarded(const SurfaceId& surface_id) override;
   void OnSurfaceDestroyed(const SurfaceId& surface_id) override;
+  void OnSurfaceMarkedForDestruction(const SurfaceId& surface_id) override;
   void OnSurfaceDamageExpected(const SurfaceId& surface_id,
                                const BeginFrameArgs& args) override;
 
@@ -197,6 +197,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   const CompositorFrameSinkSupport* GetFrameSinkForId(
       const FrameSinkId& frame_sink_id) const;
 
+  base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
+      const FrameSinkId& id) const;
+
  private:
   friend class FrameSinkManagerTest;
 
@@ -217,6 +220,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
     // notification.
     bool report_activation;
 
+    base::TimeDelta preferred_frame_interval = BeginFrameArgs::MinInterval();
+
    private:
     DISALLOW_COPY_AND_ASSIGN(FrameSinkData);
   };
@@ -228,7 +233,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
     ~FrameSinkSourceMapping();
     FrameSinkSourceMapping& operator=(FrameSinkSourceMapping&& other);
 
-    bool has_children() const { return !children.empty(); }
     // The currently assigned begin frame source for this client.
     BeginFrameSource* source = nullptr;
     // This represents a dag of parent -> children mapping.

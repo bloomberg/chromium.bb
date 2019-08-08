@@ -8,6 +8,8 @@
 The output should be from the CommandTest in SConstruct.
 """
 
+from __future__ import print_function
+
 import getopt
 import re
 import sys
@@ -38,7 +40,7 @@ def TrimTestName(name):
 
 
 def Usage():
-  print >>sys.stderr, 'Usage: test_timing [-n top-n-to-print]'
+  print('Usage: test_timing [-n top-n-to-print]', file=sys.stderr)
 
 
 def main(argv):
@@ -47,7 +49,7 @@ def main(argv):
   try:
     optlist, argv = getopt.getopt(argv[1:], 'n:')
   except getopt.error, e:
-    print >>sys.stderr, str(e)
+    print(str(e), file=sys.stderr)
     Usage()
     return 1
 
@@ -56,7 +58,7 @@ def main(argv):
       try:
         top_n = int(val)
       except ValueError:
-        print >>sys.stderr, 'test_timing: -n arg should be an integer'
+        print('test_timing: -n arg should be an integer', file=sys.stderr)
         Usage()
         return 1
 
@@ -75,10 +77,10 @@ def main(argv):
       analyzer.AddData(float(mobj.group(2)), mobj.group(1), mode)
   analyzer.Sort()
 
-  print '%-12s %-9s %s' % ('Time', 'Mode', 'Test Name')
-  print '%-12s %-9s %s' % (12*'-', 9*'-', '---------')
+  print('%-12s %-9s %s' % ('Time', 'Mode', 'Test Name'))
+  print('%-12s %-9s %s' % (12 * '-', 9 * '-', '---------'))
   for time, name, mode in analyzer.Top(top_n):
-    print '%12.8f %-9s %s' % (time, mode, TrimTestName(name))
+    print('%12.8f %-9s %s' % (time, mode, TrimTestName(name)))
   return 0
 
 

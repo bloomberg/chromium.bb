@@ -33,6 +33,7 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   TestGLES2Interface();
   ~TestGLES2Interface() override;
 
+  // Overridden from gpu::gles2::GLES2Interface
   void GenTextures(GLsizei n, GLuint* textures) override;
   void GenBuffers(GLsizei n, GLuint* buffers) override;
   void GenFramebuffers(GLsizei n, GLuint* framebuffers) override;
@@ -152,11 +153,6 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
                   const void* data,
                   GLenum usage) override;
 
-  void GenSyncTokenCHROMIUM(GLbyte* sync_token) override;
-  void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override;
-  void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens, GLsizei count) override;
-  void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;
-
   void BeginQueryEXT(GLenum target, GLuint id) override;
   void EndQueryEXT(GLenum target) override;
   void GetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params) override;
@@ -176,6 +172,12 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
                       GLboolean has_alpha) override;
   void LoseContextCHROMIUM(GLenum current, GLenum other) override;
   GLenum GetGraphicsResetStatusKHR() override;
+
+  // Overridden from gpu::InterfaceBase
+  void GenSyncTokenCHROMIUM(GLbyte* sync_token) override;
+  void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override;
+  void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens, GLsizei count) override;
+  void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;
 
   size_t NumTextures() const;
   GLuint TextureAt(int i) const;

@@ -463,6 +463,18 @@ class CppStyleTest(CppStyleTestBase):
         self.assert_lint('uint16_t unsignedshort = 1', '')
         self.assert_lint('signed  short a = 1', errmsg % 'signed  short  [runtime/int] [1]')
         self.assert_lint('short a = 1', errmsg % 'short  [runtime/int] [1]')
+        self.assert_lint('unsigned   long long a = 1', errmsg % 'unsigned   long long  [runtime/int] [1]')
+        self.assert_lint('signed long   long a = 1', errmsg % 'signed long   long  [runtime/int] [1]')
+        self.assert_lint('long long a = 1', errmsg % 'long long  [runtime/int] [1]')
+        self.assert_lint('uint64_t longlong = 1', '')
+        self.assert_lint('unsigned long a = 1', errmsg % 'unsigned long  [runtime/int] [1]')
+        self.assert_lint('signed   long a = 1', errmsg % 'signed   long  [runtime/int] [1]')
+        self.assert_lint('long a = 1', errmsg % 'long  [runtime/int] [1]')
+        self.assert_lint('signed int   long a = 1', errmsg % 'long  [runtime/int] [1]')
+        self.assert_lint('unsigned   long   int a = 1', errmsg % 'unsigned   long  [runtime/int] [1]')
+        self.assert_lint('unsigned longlong = 1', '')
+        self.assert_lint('signed   int a = 1', '')
+        self.assert_lint('int a = 1', '')
 
     # Test C-style cast cases.
     def test_cstyle_cast(self):
@@ -1511,7 +1523,6 @@ class CppStyleTest(CppStyleTestBase):
         self.assert_lint('int a : 30;', errmsg)
         self.assert_lint('mutable int a : 14;', errmsg)
         self.assert_lint('const char a : 6;', errmsg)
-        self.assert_lint('long int a : 30;', errmsg)
         self.assert_lint('int a = 1 ? 0 : 30;', '')
 
     # Bitfields which are not declared unsigned or bool will generate a warning.

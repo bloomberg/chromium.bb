@@ -7,28 +7,25 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/process/process_handle.h"
+#include "base/sequence_checker.h"
+#include "chrome/browser/performance_manager/graph/node_attached_data.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 
-namespace service_manager {
-template <typename... BinderArgs>
-class BinderRegistryWithArgs;
-struct BindSourceInfo;
-}  // namespace service_manager
-
 namespace performance_manager {
 
 class NodeBase;
 class GraphObserver;
-class GraphNodeProviderImpl;
 class FrameNodeImpl;
 class PageNodeImpl;
 class ProcessNodeImpl;
@@ -40,6 +37,9 @@ class SystemNodeImpl;
 // notifications for all coordination units.
 class Graph {
  public:
+  using CUIDMap =
+      std::unordered_map<resource_coordinator::CoordinationUnitID, NodeBase*>;
+
   Graph();
   ~Graph();
 
@@ -48,41 +48,41 @@ class Graph {
   }
   ukm::UkmRecorder* ukm_recorder() const { return ukm_recorder_; }
 
-  void OnStart(service_manager::BinderRegistryWithArgs<
-               const service_manager::BindSourceInfo&>* registry);
-  void RegisterObserver(std::unique_ptr<GraphObserver> observer);
-  void OnNodeCreated(NodeBase* coordination_unit);
-  void OnBeforeNodeDestroyed(NodeBase* coordination_unit);
+  // Register |observer| on the graph.
+  void RegisterObserver(GraphObserver* observer);
 
-  FrameNodeImpl* CreateFrameNode(
-      const resource_coordinator::CoordinationUnitID& id);
-  PageNodeImpl* CreatePageNode(
-      const resource_coordinator::CoordinationUnitID& id);
-  ProcessNodeImpl* CreateProcessNode(
-      const resource_coordinator::CoordinationUnitID& id);
+  // Unregister |observer| from observing graph changes. Note that this does not
+  // unregister |observer| from any nodes it's subscribed to.
+  void UnregisterObserver(GraphObserver* observer);
+
   SystemNodeImpl* FindOrCreateSystemNode();
-
   std::vector<ProcessNodeImpl*> GetAllProcessNodes();
   std::vector<FrameNodeImpl*> GetAllFrameNodes();
   std::vector<PageNodeImpl*> GetAllPageNodes();
+  const CUIDMap& nodes() { return nodes_; }
 
   // Retrieves the process CU with PID |pid|, if any.
   ProcessNodeImpl* GetProcessNodeByPid(base::ProcessId pid);
   NodeBase* GetNodeByID(const resource_coordinator::CoordinationUnitID cu_id);
 
-  std::vector<std::unique_ptr<GraphObserver>>& observers_for_testing() {
-    return observers_;
-  }
+  std::vector<GraphObserver*>& observers_for_testing() { return observers_; }
+
+  // Management functions for node owners, any node added to the graph must be
+  // removed from the graph before it's deleted.
+  void AddNewNode(NodeBase* new_node);
+  void RemoveNode(NodeBase* node);
+
+  // A |key| of nullptr counts all instances associated with the |node|. A
+  // |node| of null counts all instances associated with the |key|. If both are
+  // null then the entire map size is provided.
+  size_t GetNodeAttachedDataCountForTesting(NodeBase* node,
+                                            const void* key) const;
 
  private:
-  using CUIDMap = std::unordered_map<resource_coordinator::CoordinationUnitID,
-                                     std::unique_ptr<NodeBase>>;
   using ProcessByPidMap = std::unordered_map<base::ProcessId, ProcessNodeImpl*>;
 
-  // Lifetime management functions for NodeBase.
-  friend class NodeBase;
-  NodeBase* AddNewNode(std::unique_ptr<NodeBase> new_cu);
-  void DestroyNode(NodeBase* cu);
+  void OnNodeAdded(NodeBase* node);
+  void OnBeforeNodeRemoved(NodeBase* node);
 
   // Process PID map for use by ProcessNodeImpl.
   friend class ProcessNodeImpl;
@@ -92,15 +92,20 @@ class Graph {
   template <typename CUType>
   std::vector<CUType*> GetAllNodesOfType();
 
-  resource_coordinator::CoordinationUnitID system_coordination_unit_id_;
-  CUIDMap coordination_units_;
+  std::unique_ptr<SystemNodeImpl> system_node_;
+  CUIDMap nodes_;
   ProcessByPidMap processes_by_pid_;
-  std::vector<std::unique_ptr<GraphObserver>> observers_;
+  std::vector<GraphObserver*> observers_;
   ukm::UkmRecorder* ukm_recorder_ = nullptr;
-  std::unique_ptr<GraphNodeProviderImpl> provider_;
 
-  static void Create();
+  // User data storage for the graph.
+  friend class NodeAttachedData;
+  using NodeAttachedDataKey = std::pair<const NodeBase*, const void*>;
+  using NodeAttachedDataMap =
+      std::map<NodeAttachedDataKey, std::unique_ptr<NodeAttachedData>>;
+  NodeAttachedDataMap node_attached_data_map_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(Graph);
 };
 

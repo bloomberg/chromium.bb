@@ -48,6 +48,9 @@ class XrBrowserTestBase : public InProcessBrowserTest {
   static constexpr char kVrLogPathVal[] = "./";
   static constexpr char kTestFileDir[] =
       "chrome/test/data/xr/e2e_test_files/html/";
+  static const std::vector<std::string> kRequiredTestSwitches;
+  static const std::vector<std::pair<std::string, std::string>>
+      kRequiredTestSwitchesWithValues;
   enum class TestStatus {
     STATUS_RUNNING = 0,
     STATUS_PASSED = 1,
@@ -81,7 +84,7 @@ class XrBrowserTestBase : public InProcessBrowserTest {
   void LoadUrlAndAwaitInitialization(const GURL& url);
 
   // Convenience function for ensuring the given JavaScript runs successfully
-  // without having to always surround in EXPECT_TRUE.
+  // without having to always surround in ASSERT_TRUE.
   void RunJavaScriptOrFail(const std::string& js_expression,
                            content::WebContents* web_contents);
 
@@ -188,6 +191,7 @@ class XrBrowserTestBase : public InProcessBrowserTest {
  protected:
   std::unique_ptr<base::Environment> env_;
   std::vector<base::Feature> enable_features_;
+  std::vector<base::Feature> disable_features_;
   std::vector<std::string> append_switches_;
 
  private:

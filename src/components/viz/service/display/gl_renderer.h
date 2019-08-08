@@ -195,6 +195,14 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   void ApplyBlendModeUsingBlendFunc(SkBlendMode blend_mode);
   void RestoreBlendFuncToDefault(SkBlendMode blend_mode);
 
+  // Returns the rect that should be sampled from the backdrop texture to be
+  // backdrop filtered. This rect lives in window pixel space. The |clip_region|
+  // input lives in the local quad rect pixel space. The
+  // |backdrop_filter_bounds_input| input lives in the local quad rect pixel
+  // space. The |backdrop_filter_bounds| output lives in the space of the output
+  // rect returned by this function. It will be used to clip the sampled
+  // backdrop texture. The |unclipped_rect| output is the unclipped (full) rect
+  // that the backdrop_filter should be applied to, in window pixel space.
   gfx::Rect GetBackdropBoundingBoxForRenderPassQuad(
       const RenderPassDrawQuad* quad,
       const gfx::Transform& contents_device_transform,
@@ -209,8 +217,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   // of the current RenderPass being drawn.
   uint32_t GetBackdropTexture(const gfx::Rect& window_rect);
 
-  static bool ShouldApplyBackgroundFilters(
-      const RenderPassDrawQuad* quad,
+  static bool ShouldApplyBackdropFilters(
       const cc::FilterOperations* backdrop_filters);
   // Applies the backdrop filters to the backdrop that has been painted to this
   // point, and returns it as an SkImage. Any opacity and/or "regular"
@@ -220,12 +227,12 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   // stacking context, which would then be painted into its parent with opacity
   // and filters applied. This is an approximation, but it should be close
   // enough.
-  sk_sp<SkImage> ApplyBackgroundFilters(
+  sk_sp<SkImage> ApplyBackdropFilters(
       const RenderPassDrawQuad* quad,
       const cc::FilterOperations* backdrop_filters,
       const cc::FilterOperations* regular_filters,
       uint32_t background_texture,
-      const gfx::Rect& rect,
+      const gfx::Rect& background_rect,
       const gfx::Rect& unclipped_rect,
       const float backdrop_filter_quality,
       const gfx::RRectF& backdrop_filter_bounds);
@@ -261,6 +268,8 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   void SetShaderQuadF(const gfx::QuadF& quad);
   void SetShaderMatrix(const gfx::Transform& transform);
   void SetShaderColor(SkColor color, float opacity);
+  void SetShaderRoundedCorner(const gfx::RRectF& rounded_corner_bounds,
+                              const gfx::Transform& screen_transform);
   void DrawQuadGeometryClippedByQuadF(const gfx::Transform& draw_transform,
                                       const gfx::RectF& quad_rect,
                                       const gfx::QuadF& clipping_region_quad,

@@ -166,6 +166,12 @@ FindBarView::FindBarView(FindBarHost* host)
   find_text_->SetTextInputFlags(ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
   AddChildView(find_text_);
 
+  match_count_text_->SetEventTargeter(
+      std::make_unique<views::ViewTargeter>(this));
+  AddChildView(match_count_text_);
+
+  AddChildView(separator_);
+
   find_previous_button_->set_id(VIEW_ID_FIND_IN_PAGE_PREVIOUS_BUTTON);
   find_previous_button_->SetFocusForPlatform();
   find_previous_button_->SetTooltipText(
@@ -186,22 +192,12 @@ FindBarView::FindBarView(FindBarHost* host)
   close_button_->SetFocusForPlatform();
   close_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_CLOSE_TOOLTIP));
-  close_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   close_button_->SetAnimationDuration(0);
   AddChildView(close_button_);
 
   AddChildView(focus_forwarder_view_);
 
   EnableCanvasFlippingForRTLUI(true);
-
-  match_count_text_->SetEventTargeter(
-      std::make_unique<views::ViewTargeter>(this));
-  AddChildViewAt(match_count_text_, 1);
-
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-
-  AddChildViewAt(separator_, 2);
 
   // Normally we could space objects horizontally by simply passing a constant
   // value to BoxLayout for between-child spacing.  But for the vector image
@@ -211,6 +207,7 @@ FindBarView::FindBarView(FindBarHost* host)
   // we place views directly adjacent, with horizontal margins on each view
   // that will add up to the right spacing amounts.
 
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const gfx::Insets horizontal_margin(
       0,
       provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL) / 2);

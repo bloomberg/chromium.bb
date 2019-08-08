@@ -22,7 +22,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/window/hit_test_utils.h"
 
@@ -39,7 +39,7 @@ HostedAppMenuButton::HostedAppMenuButton(BrowserView* browser_view)
   // Get the app name only, aka "Google Docs" instead of "My Doc - Google Docs",
   // because the menu applies to the entire app.
   base::string16 app_name = base::UTF8ToUTF16(
-      browser_view->browser()->hosted_app_controller()->GetAppShortName());
+      browser_view->browser()->web_app_controller()->GetAppShortName());
   SetAccessibleName(app_name);
   SetTooltipText(
       l10n_util::GetStringFUTF16(IDS_HOSTED_APPMENU_TOOLTIP, app_name));
@@ -71,12 +71,15 @@ void HostedAppMenuButton::StartHighlightAnimation() {
                              this, &HostedAppMenuButton::FadeHighlightOff);
 }
 
-void HostedAppMenuButton::OnMenuButtonClicked(views::MenuButton* source,
+void HostedAppMenuButton::OnMenuButtonClicked(views::Button* source,
                                               const gfx::Point& point,
                                               const ui::Event* event) {
   Browser* browser = browser_view_->browser();
   RunMenu(std::make_unique<HostedAppMenuModel>(browser_view_, browser), browser,
-          AppMenu::NO_FLAGS, false);
+          event && event->IsKeyEvent()
+              ? views::MenuRunner::SHOULD_SHOW_MNEMONICS
+              : views::MenuRunner::NO_FLAGS,
+          false);
 
   // Add UMA for how many times the hosted app menu button are clicked.
   base::RecordAction(

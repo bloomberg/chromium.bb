@@ -16,9 +16,25 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/rtc_base/async_packet_socket.h"
 #include "third_party/webrtc/rtc_base/socket_address.h"
+#include "third_party/webrtc/rtc_base/time_utils.h"
 
 namespace remoting {
 namespace protocol {
+
+namespace {
+
+class ConstantScopedFakeClock : public rtc::ClockInterface {
+ public:
+  ConstantScopedFakeClock() { prev_clock_ = rtc::SetClockForTesting(this); }
+  ~ConstantScopedFakeClock() override { rtc::SetClockForTesting(prev_clock_); }
+
+  int64_t TimeNanos() const override { return 1337L * 1000L * 1000L; }
+
+ private:
+  ClockInterface* prev_clock_;
+};
+
+}  // namespace
 
 class ChromiumSocketFactoryTest : public testing::Test,
                                   public sigslot::has_slots<> {
@@ -42,7 +58,16 @@ class ChromiumSocketFactoryTest : public testing::Test,
     EXPECT_EQ(socket, socket_.get());
     last_packet_.assign(data, data + size);
     last_address_ = address;
+    last_packet_time_ = packet_time;
     run_loop_.Quit();
+  }
+
+  void OnSentPacket(rtc::AsyncPacketSocket* socket,
+                    const rtc::SentPacket& sent_packet) {
+    // It is expected that send_packet was set using rtc::TimeMillis(),
+    // which will use the fake clock set above, so the times will be equal
+    int64_t fake_clock_ms = rtc::TimeMillis();
+    EXPECT_EQ(fake_clock_ms, sent_packet.send_time_ms);
   }
 
   void VerifyCanSendAndReceive(rtc::AsyncPacketSocket* sender) {
@@ -72,6 +97,9 @@ class ChromiumSocketFactoryTest : public testing::Test,
 
   std::string last_packet_;
   rtc::SocketAddress last_address_;
+  int64_t last_packet_time_;
+
+  ConstantScopedFakeClock fake_clock_;
 };
 
 TEST_F(ChromiumSocketFactoryTest, SendAndReceive) {
@@ -116,6 +144,19 @@ TEST_F(ChromiumSocketFactoryTest, TransientError) {
 
   // Verify that socket is still usable.
   VerifyCanSendAndReceive(sending_socket.get());
+}
+
+TEST_F(ChromiumSocketFactoryTest, CheckSendTime) {
+  std::unique_ptr<rtc::AsyncPacketSocket> sending_socket(
+      socket_factory_->CreateUdpSocket(rtc::SocketAddress("127.0.0.1", 0), 0,
+                                       0));
+  sending_socket->SignalSentPacket.connect(
+      static_cast<ChromiumSocketFactoryTest*>(this),
+      &ChromiumSocketFactoryTest::OnSentPacket);
+  VerifyCanSendAndReceive(sending_socket.get());
+
+  // Check receive time is from rtc clock as well
+  ASSERT_EQ(last_packet_time_, rtc::TimeMicros());
 }
 
 }  // namespace protocol

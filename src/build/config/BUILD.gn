@@ -21,7 +21,6 @@ import("//build/config/pch.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/toolchain/goma.gni")
-
 declare_args() {
   # When set (the default) enables C++ iterator debugging in debug builds.
   # Iterator debugging is always off in release builds (technically, this flag
@@ -126,6 +125,8 @@ config("feature_flags") {
     defines += [ "SAFE_BROWSING_DB_LOCAL" ]
   } else if (safe_browsing_mode == 2) {
     defines += [ "SAFE_BROWSING_DB_REMOTE" ]
+  } else if (safe_browsing_mode == 3) {
+    defines += [ "SAFE_BROWSING_DB_LOCAL" ]
   }
   if (is_official_build) {
     defines += [ "OFFICIAL_BUILD" ]
@@ -270,8 +271,15 @@ config("default_libs") {
   }
 }
 
-# Only //build/config/BUILDCONFIG.gn should reference this.
 group("common_deps") {
+  visibility = [
+    ":executable_deps",
+    ":loadable_module_deps",
+    ":shared_library_deps",
+  ]
+
+  # WARNING: This group is a dependency of **every executable and shared
+  # library**.  Please be careful adding new dependencies here.
   public_deps = []
 
   if (using_sanitizer) {
@@ -299,6 +307,7 @@ group("common_deps") {
   }
 }
 
+# Only the executable template in BUILDCONFIG.gn should reference this.
 group("executable_deps") {
   public_deps = [
     ":common_deps",
@@ -308,12 +317,14 @@ group("executable_deps") {
   }
 }
 
+# Only the loadable_module template in BUILDCONFIG.gn should reference this.
 group("loadable_module_deps") {
   public_deps = [
     ":common_deps",
   ]
 }
 
+# Only the shared_library template in BUILDCONFIG.gn should reference this.
 group("shared_library_deps") {
   public_deps = [
     ":common_deps",
@@ -336,9 +347,6 @@ config("executable_config") {
 
   if (is_win) {
     configs += _windows_linker_configs
-
-    # Currently only turn on linker CFI for executables.
-    configs += [ "//build/config/win:cfi_linker" ]
   } else if (is_mac) {
     configs += [ "//build/config/mac:mac_dynamic_flags" ]
   } else if (is_ios) {

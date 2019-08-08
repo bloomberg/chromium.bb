@@ -4,6 +4,8 @@
 
 #include "components/viz/test/fake_skia_output_surface.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -127,7 +129,7 @@ SkCanvas* FakeSkiaOutputSurface::BeginPaintCurrentFrame() {
 }
 
 sk_sp<SkImage> FakeSkiaOutputSurface::MakePromiseSkImage(
-    ResourceMetadata metadata) {
+    const ResourceMetadata& metadata) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   GrBackendTexture backend_texture;
@@ -144,23 +146,17 @@ sk_sp<SkImage> FakeSkiaOutputSurface::MakePromiseSkImage(
 }
 
 sk_sp<SkImage> FakeSkiaOutputSurface::MakePromiseSkImageFromYUV(
-    std::vector<ResourceMetadata> metadatas,
+    const std::vector<ResourceMetadata>& metadatas,
     SkYUVColorSpace yuv_color_space,
+    sk_sp<SkColorSpace> dst_color_space,
     bool has_alpha) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NOTIMPLEMENTED();
   return nullptr;
 }
 
-gpu::SyncToken FakeSkiaOutputSurface::ReleasePromiseSkImages(
-    std::vector<sk_sp<SkImage>> images) {
-  gpu::SyncToken sync_token;
-  if (images.empty())
-    return sync_token;
-  images.clear();
-  context_provider()->ContextGL()->GenSyncTokenCHROMIUM(sync_token.GetData());
-  return sync_token;
-}
+void FakeSkiaOutputSurface::ReleaseCachedPromiseSkImages(
+    std::vector<ResourceId> ids) {}
 
 void FakeSkiaOutputSurface::SkiaSwapBuffers(OutputSurfaceFrame frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

@@ -28,7 +28,8 @@ class PlatformNotificationService;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerRegistration;
 
-class CONTENT_EXPORT PlatformNotificationServiceProxy {
+class CONTENT_EXPORT PlatformNotificationServiceProxy
+    : public base::SupportsWeakPtr<PlatformNotificationServiceProxy> {
  public:
   using DisplayResultCallback =
       base::OnceCallback<void(bool /* success */,
@@ -48,12 +49,30 @@ class CONTENT_EXPORT PlatformNotificationServiceProxy {
   // Closes the notification with |notification_id|.
   void CloseNotification(const std::string& notification_id);
 
+  // Schedules a notification trigger for |timestamp|.
+  void ScheduleTrigger(base::Time timestamp);
+
+  // Gets the next notification trigger or base::Time::Max if none set. Must be
+  // called on the UI thread.
+  base::Time GetNextTrigger();
+
+  // Records a given notification to UKM. Must be called on the UI thread.
+  void RecordNotificationUkmEvent(const NotificationDatabaseData& data);
+
  private:
   // Actually calls |notification_service_| to display the notification after
-  // verifying the |service_worker_scope|.
+  // verifying the |service_worker_scope|. Must be called on the UI thread.
   void DoDisplayNotification(const NotificationDatabaseData& data,
                              const GURL& service_worker_scope,
                              DisplayResultCallback callback);
+
+  // Actually closes the notification with |notification_id|. Must be called on
+  // the UI thread.
+  void DoCloseNotification(const std::string& notification_id);
+
+  // Actually calls |notification_service_| to schedule a trigger. Must be
+  // called on the UI thread.
+  void DoScheduleTrigger(base::Time timestamp);
 
   // Verifies that the service worker exists and is valid for the given
   // notification origin.
@@ -64,10 +83,8 @@ class CONTENT_EXPORT PlatformNotificationServiceProxy {
       scoped_refptr<ServiceWorkerRegistration> registration);
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
-  BrowserContext* browser_context_;
   PlatformNotificationService* notification_service_;
-
-  base::WeakPtrFactory<PlatformNotificationServiceProxy> weak_ptr_factory_;
+  base::WeakPtrFactory<PlatformNotificationServiceProxy> weak_ptr_factory_io_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformNotificationServiceProxy);
 };

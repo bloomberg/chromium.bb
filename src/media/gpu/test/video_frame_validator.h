@@ -24,10 +24,9 @@
 namespace media {
 
 class VideoFrame;
+class VideoFrameMapper;
 
 namespace test {
-
-class VideoFrameMapper;
 
 // VideoFrameValidator validates the pixel content of each video frame.
 // It maps a video frame by using VideoFrameMapper, and converts the mapped
@@ -53,9 +52,6 @@ class VideoFrameValidator : public VideoFrameProcessor {
       const VideoPixelFormat validation_format = PIXEL_FORMAT_I420);
 
   ~VideoFrameValidator() override;
-
-  // Get the ordered list of calculated frame checksums.
-  const std::vector<std::string>& GetFrameChecksums() const;
 
   // Returns information of frames that don't match golden md5 values.
   // If there is no mismatched frame, returns an empty vector. This function is
@@ -94,9 +90,6 @@ class VideoFrameValidator : public VideoFrameProcessor {
   // The results of invalid frame data.
   std::vector<MismatchedFrameInfo> mismatched_frames_
       GUARDED_BY(frame_validator_lock_);
-
-  // The list of calculated MD5 frame checksums.
-  std::vector<std::string> frame_checksums_ GUARDED_BY(frame_validator_lock_);
 
   // The list of expected MD5 frame checksums.
   const std::vector<std::string> expected_frame_checksums_;

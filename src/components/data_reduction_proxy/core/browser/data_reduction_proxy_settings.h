@@ -19,6 +19,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service_observer.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -63,11 +64,14 @@ class DataReductionProxySettingsObserver {
  public:
   // Notifies when the proxy server request header change.
   virtual void OnProxyRequestHeadersChanged(
-      const net::HttpRequestHeaders& headers) = 0;
+      const net::HttpRequestHeaders& headers) {}
 
   // Notifies when |DataReductionProxySettings::InitDataReductionProxySettings|
   // is finished.
-  virtual void OnSettingsInitialized() = 0;
+  virtual void OnSettingsInitialized() {}
+
+  // Notifies when Data Saver is enabled or disabled.
+  virtual void OnDataSaverEnabledChanged(bool enabled) {}
 };
 
 // Central point for configuring the data reduction proxy.
@@ -81,12 +85,10 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   DataReductionProxySettings();
   virtual ~DataReductionProxySettings();
 
-  // Initializes the Data Reduction Proxy with the name of the preference that
-  // controls enabling it, profile prefs and a |DataReductionProxyIOData|. The
-  // caller must ensure that all parameters remain alive for the lifetime of
-  // the |DataReductionProxySettings| instance.
+  // Initializes the Data Reduction Proxy with the profile prefs and a
+  // |DataReductionProxyIOData|. The caller must ensure that all parameters
+  // remain alive for the lifetime of the |DataReductionProxySettings| instance.
   void InitDataReductionProxySettings(
-      const std::string& data_reduction_proxy_enabled_pref_name,
       PrefService* prefs,
       DataReductionProxyIOData* io_data,
       std::unique_ptr<DataReductionProxyService> data_reduction_proxy_service);
@@ -98,7 +100,17 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
       const SyntheticFieldTrialRegistrationCallback&
           on_data_reduction_proxy_enabled);
 
-  // Returns true if the proxy is enabled.
+  // Returns true if the Data Saver feature is enabled by the user on Android.
+  // This checks only the Data Saver prefs on Android or forcing flag on any
+  // platform. Does not check any holdback experiments. Note that this may be
+  // different from the value of |IsDataReductionProxyEnabled|.
+  static bool IsDataSaverEnabledByUser(PrefService* prefs);
+
+  // Enables or disables Data Saver, regardless of platform.
+  static void SetDataSaverEnabledForTesting(PrefService* prefs, bool enabled);
+
+  // Returns true if the Data Reduction HTTP Proxy is enabled. Note that this
+  // may be different from the value of |IsDataSaverEnabledByUser|.
   bool IsDataReductionProxyEnabled() const;
 
   // Returns true if the proxy can be used for the given url. This method does
@@ -196,7 +208,7 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   void InitPrefMembers();
 
   // Virtualized for unit test support.
-  virtual PrefService* GetOriginalProfilePrefs();
+  virtual PrefService* GetOriginalProfilePrefs() const;
 
   // Metrics method. Subclasses should override if they wish to provide
   // alternatives.
@@ -272,13 +284,6 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // Update IO thread objects in response to UI thread changes.
   void UpdateIOData(bool at_startup);
 
-  // For tests.
-  void set_data_reduction_proxy_enabled_pref_name_for_test(
-      const std::string& data_reduction_proxy_enabled_pref_name) {
-    data_reduction_proxy_enabled_pref_name_ =
-        data_reduction_proxy_enabled_pref_name;
-  }
-
   bool unreachable_;
 
   // A call to MaybeActivateDataReductionProxy may take place before the
@@ -298,15 +303,11 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // a later session, or never.
   int lo_fi_consecutive_session_disables_;
 
-  BooleanPrefMember spdy_proxy_auth_enabled_;
-
   std::unique_ptr<DataReductionProxyService> data_reduction_proxy_service_;
 
-  // The name of the preference that controls enabling and disabling the Data
-  // Reduction Proxy.
-  std::string data_reduction_proxy_enabled_pref_name_;
-
   PrefService* prefs_;
+
+  PrefChangeRegistrar registrar_;
 
   // The caller must ensure that the |config_| outlives this instance.
   DataReductionProxyConfig* config_;

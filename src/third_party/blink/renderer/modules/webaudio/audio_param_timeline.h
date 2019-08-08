@@ -68,13 +68,17 @@ class AudioParamTimeline {
   void CancelScheduledValues(double start_time, ExceptionState&);
   void CancelAndHoldAtTime(double cancel_time, ExceptionState&);
 
-  // hasValue is set to true if a valid timeline value is returned.
-  // otherwise defaultValue is returned.
-  float ValueForContextTime(AudioDestinationHandler&,
-                            float default_value,
-                            bool& has_value,
-                            float min_value,
-                            float max_value);
+  // Compute the value from this AudioParamHandler at the current context frame.
+  // Returns two values:
+  //
+  //   bool has_value - to indicate if the value could be computed from the
+  //                    timeline
+  //   float value    - the timeline value if |has_value| is true; otherwise
+  //                    |default_value| is returned.
+  std::tuple<bool, float> ValueForContextTime(AudioDestinationHandler&,
+                                              float default_value,
+                                              float min_value,
+                                              float max_value);
 
   // Given the time range in frames, calculates parameter values into the values
   // buffer and returns the last parameter value calculated for "values" or the

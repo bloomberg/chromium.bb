@@ -27,23 +27,27 @@ class InputMethodMusDelegate;
 class InputMethodMusTestApi;
 class TextInputClientImpl;
 
-class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
+class AURA_EXPORT InputMethodMus : public ui::InputMethodBase,
+                                   public ui::AsyncKeyDispatcher {
  public:
   using EventResultCallback = base::OnceCallback<void(ws::mojom::EventResult)>;
+  using KeyAckCallback = base::OnceCallback<void(bool)>;
 
   InputMethodMus(ui::internal::InputMethodDelegate* delegate,
                  InputMethodMusDelegate* input_method_mus_delegate);
   ~InputMethodMus() override;
 
   void Init(service_manager::Connector* connector);
-  ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event,
-                                            EventResultCallback ack_callback)
-      WARN_UNUSED_RESULT;
+
+  // Overridden from ui::AsyncKeyDispatcher:
+  void DispatchKeyEventAsync(ui::KeyEvent* event,
+                             KeyAckCallback ack_callback) override;
 
   // Overridden from ui::InputMethod:
   void OnFocus() override;
   void OnBlur() override;
   ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event) override;
+  ui::AsyncKeyDispatcher* GetAsyncKeyDispatcher() override;
   void OnTextInputTypeChanged(const ui::TextInputClient* client) override;
   void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
   void CancelComposition(const ui::TextInputClient* client) override;
@@ -54,6 +58,10 @@ class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
  private:
   friend class InputMethodMusTestApi;
   friend TextInputClientImpl;
+
+  ui::EventDispatchDetails DispatchKeyEventInternal(
+      ui::KeyEvent* event,
+      EventResultCallback ack_callback) WARN_UNUSED_RESULT;
 
   // Called from DispatchKeyEvent() to call to the InputMethod.
   ui::EventDispatchDetails SendKeyEventToInputMethod(

@@ -226,6 +226,12 @@ void TestWindowTree::SetWindowVisibility(uint32_t change_id,
   OnChangeReceived(change_id, WindowTreeChangeType::VISIBLE);
 }
 
+void TestWindowTree::SetWindowTransparent(uint32_t change_id,
+                                          ws::Id window_id,
+                                          bool transparent) {
+  OnChangeReceived(change_id);
+}
+
 void TestWindowTree::SetWindowProperty(
     uint32_t change_id,
     ws::Id window_id,
@@ -464,5 +470,9 @@ void TestWindowTree::UnpauseWindowOcclusionTracking() {
   if (delegate_)
     delegate_->UnpauseWindowOcclusionTracking();
 }
+
+void TestWindowTree::ConnectToImeEngine(
+    ime::mojom::ImeEngineRequest engine_request,
+    ime::mojom::ImeEngineClientPtr client) {}
 
 }  // namespace aura

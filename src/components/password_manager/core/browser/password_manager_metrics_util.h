@@ -78,7 +78,21 @@ enum PasswordSyncState {
   NOT_SYNCING_SERVER_ERROR,
   NOT_SYNCING_FAILED_CLEANUP,
   NOT_SYNCING_FAILED_DECRYPTION,
+  NOT_SYNCING_FAILED_ADD,
+  NOT_SYNCING_FAILED_UPDATE,
+  NOT_SYNCING_FAILED_METADATA_PERSISTENCE,
   NUM_SYNC_STATES
+};
+
+// Metrics: "PasswordManager.ApplySyncChangesState"
+enum class ApplySyncChangesState {
+  kApplyOK = 0,
+  kApplyAddFailed = 1,
+  kApplyUpdateFailed = 2,
+  kApplyDeleteFailed = 3,
+  kApplyMetadataChangesFailed = 4,
+
+  kMaxValue = kApplyMetadataChangesFailed,
 };
 
 // Metrics: "PasswordGeneration.SubmissionEvent"
@@ -352,6 +366,9 @@ void LogFilledCredentialIsFromAndroidApp(bool from_android);
 
 // Log what's preventing passwords from syncing.
 void LogPasswordSyncState(PasswordSyncState state);
+
+// Log what's preventing passwords from applying sync changes.
+void LogApplySyncChangesState(ApplySyncChangesState state);
 
 // Log submission events related to generation.
 void LogPasswordGenerationSubmissionEvent(PasswordSubmissionEvent event);

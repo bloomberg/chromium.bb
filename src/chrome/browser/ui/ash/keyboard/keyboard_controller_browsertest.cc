@@ -21,8 +21,8 @@
 #include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/dummy_text_input_client.h"
+#include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -426,7 +426,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
   EXPECT_EQ(controller->GetStateForTest(),
             keyboard::KeyboardControllerState::LOADING_EXTENSION);
 
-  controller->DisableKeyboard();
+  controller->Shutdown();
   EXPECT_EQ(controller->GetStateForTest(),
             keyboard::KeyboardControllerState::INITIAL);
 }

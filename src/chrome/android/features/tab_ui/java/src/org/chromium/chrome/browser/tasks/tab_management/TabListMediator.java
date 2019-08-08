@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -18,6 +19,7 @@ import android.view.View;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
@@ -36,8 +38,12 @@ import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.ui.modelutil.PropertyModel;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Mediator for business logic for the tab grid. This class should be initialized with a list of
@@ -113,6 +119,20 @@ class TabListMediator {
         @Nullable
         TabActionListener getCreateGroupButtonOnClickListener(Tab tab);
     }
+
+    @IntDef({TabClosedFrom.TAB_STRIP, TabClosedFrom.TAB_GRID_SHEET, TabClosedFrom.GRID_TAB_SWITCHER,
+            TabClosedFrom.GRID_TAB_SWITCHER_GROUP})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface TabClosedFrom {
+        int TAB_STRIP = 0;
+        int TAB_GRID_SHEET = 1;
+        int GRID_TAB_SWITCHER = 2;
+        int GRID_TAB_SWITCHER_GROUP = 3;
+        int NUM_ENTRIES = 4;
+    }
+
+    private static final String TAG = "TabListMediator";
+    private static Map<Integer, Integer> sTabClosedFromMapTabClosedFromMap = new HashMap<>();
 
     private final TabListFaviconProvider mTabListFaviconProvider;
     private final TabListModel mModel;
@@ -246,6 +266,28 @@ class TabListMediator {
             @Override
             public void tabClosureUndone(Tab tab) {
                 onTabAdded(tab, !mCloseAllRelatedTabs);
+                if (sTabClosedFromMapTabClosedFromMap.containsKey(tab.getId())) {
+                    @TabClosedFrom
+                    int from = sTabClosedFromMapTabClosedFromMap.get(tab.getId());
+                    switch (from) {
+                        case TabClosedFrom.TAB_STRIP:
+                            RecordUserAction.record("TabStrip.UndoCloseTab");
+                            break;
+                        case TabClosedFrom.TAB_GRID_SHEET:
+                            RecordUserAction.record("TabGridSheet.UndoCloseTab");
+                            break;
+                        case TabClosedFrom.GRID_TAB_SWITCHER:
+                            RecordUserAction.record("GridTabSwitch.UndoCloseTab");
+                            break;
+                        case TabClosedFrom.GRID_TAB_SWITCHER_GROUP:
+                            RecordUserAction.record("GridTabSwitcher.UndoCloseTabGroup");
+                            break;
+                        default:
+                            assert false
+                                : "tabClosureUndone for tab that closed from an unknown UI";
+                    }
+                    sTabClosedFromMapTabClosedFromMap.remove(tab.getId());
+                }
             }
 
             @Override
@@ -262,22 +304,70 @@ class TabListMediator {
 
         mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
 
+        // TODO(meiliang): follow up with unit tests to test the close signal is sent correctly with
+        // the recommendedNextTab.
         mTabClosedListener = new TabActionListener() {
             @Override
             public void run(int tabId) {
                 RecordUserAction.record("MobileTabClosed." + mComponentName);
+
                 if (mCloseAllRelatedTabs) {
                     List<Tab> related = getRelatedTabsForId(tabId);
                     if (related.size() > 1) {
+                        onGroupClosedFrom(tabId);
                         mTabModelSelector.getCurrentModel().closeMultipleTabs(related, true);
                         return;
                     }
                 }
+                onTabClosedFrom(tabId, mComponentName);
+
+                Tab currentTab = mTabModelSelector.getCurrentTab();
+                Tab closingTab =
+                        TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId);
+                Tab nextTab = currentTab == closingTab ? getNextTab(tabId) : null;
+
                 mTabModelSelector.getCurrentModel().closeTab(
-                        TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId), false,
-                        false, true);
+                        closingTab, nextTab, false, false, true);
+            }
+
+            private Tab getNextTab(int closingTabId) {
+                int closingTabIndex = mModel.indexFromId(closingTabId);
+
+                if (closingTabIndex == TabModel.INVALID_TAB_INDEX) {
+                    assert false;
+                    return null;
+                }
+
+                int nextTabId = Tab.INVALID_TAB_ID;
+                if (mModel.size() > 1) {
+                    nextTabId = closingTabIndex == 0
+                            ? mModel.get(closingTabIndex + 1).get(TabProperties.TAB_ID)
+                            : mModel.get(closingTabIndex - 1).get(TabProperties.TAB_ID);
+                }
+
+                return TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), nextTabId);
             }
         };
+    }
+
+    private void onTabClosedFrom(int tabId, String fromComponent) {
+        @TabClosedFrom
+        int from;
+        if (fromComponent.equals(TabGroupUiCoordinator.COMPONENT_NAME)) {
+            from = TabClosedFrom.TAB_STRIP;
+        } else if (fromComponent.equals(TabGridSheetCoordinator.COMPONENT_NAME)) {
+            from = TabClosedFrom.TAB_GRID_SHEET;
+        } else if (fromComponent.equals(GridTabSwitcherCoordinator.COMPONENT_NAME)) {
+            from = TabClosedFrom.GRID_TAB_SWITCHER;
+        } else {
+            Log.w(TAG, "Attempting to close tab from Unknown UI");
+            return;
+        }
+        sTabClosedFromMapTabClosedFromMap.put(tabId, from);
+    }
+
+    private void onGroupClosedFrom(int tabId) {
+        sTabClosedFromMapTabClosedFromMap.put(tabId, TabClosedFrom.GRID_TAB_SWITCHER_GROUP);
     }
 
     public void setCloseAllRelatedTabsForTest(boolean closeAllRelatedTabs) {

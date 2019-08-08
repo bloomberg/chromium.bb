@@ -38,6 +38,7 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -466,6 +467,22 @@ class InlineSettingsRadioButton : public views::RadioButton {
   }
 };
 
+// NotificationInkDropImpl /////////////////////////////////////////////////////
+
+class NotificationInkDropImpl : public views::InkDropImpl {
+ public:
+  NotificationInkDropImpl(views::InkDropHostView* ink_drop_host,
+                          const gfx::Size& host_size)
+      : views::InkDropImpl(ink_drop_host, host_size) {
+    SetAutoHighlightMode(views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
+  }
+
+  void HostSizeChanged(const gfx::Size& new_size) override {
+    // Prevent a call to InkDropImpl::HostSizeChanged which recreates the ripple
+    // and stops the currently active animation: http://crbug.com/915222.
+  }
+};
+
 // ////////////////////////////////////////////////////////////
 // NotificationViewMD
 // ////////////////////////////////////////////////////////////
@@ -507,7 +524,8 @@ NotificationViewMD::NotificationViewMD(const Notification& notification)
   control_buttons_view_->set_owned_by_client();
 
   // |header_row_| contains app_icon, app_name, control buttons, etc...
-  header_row_ = new NotificationHeaderView(control_buttons_view_.get(), this);
+  header_row_ = new NotificationHeaderView(this);
+  header_row_->AddChildView(control_buttons_view_.get());
   AddChildView(header_row_);
 
   // |content_row_| contains title, message, image, progressbar, etc...
@@ -596,22 +614,11 @@ void NotificationViewMD::Layout() {
     inline_reply_->set_clip_path(path);
   }
 
-  // The animation is needed to run inside of the border, which is shown only
-  // when the notification is nested.
-  if (is_nested()) {
-    gfx::Rect ink_drop_bounds = GetLocalBounds();
-    ink_drop_bounds.Inset(gfx::Insets(kNotificationBorderThickness));
-    ink_drop_container_->SetBoundsRect(ink_drop_bounds);
-  } else {
-    ink_drop_container_->SetBoundsRect(GetLocalBounds());
-  }
-}
-
-void NotificationViewMD::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  // The animation is needed to run inside of the border.
   if (ink_drop_layer_)
-    ink_drop_layer_->SetBounds(gfx::Rect(size()));
+    ink_drop_layer_->SetBounds(GetContentsBounds());
   if (ink_drop_mask_)
-    ink_drop_mask_->layer()->SetBounds(gfx::Rect(size()));
+    ink_drop_mask_->layer()->SetBounds(GetContentsBounds());
 }
 
 void NotificationViewMD::OnFocus() {
@@ -1147,7 +1154,7 @@ bool NotificationViewMD::IsExpandable() {
     return true;
   }
   // Expandable if there is at least one inline action.
-  if (action_buttons_row_->has_children())
+  if (!action_buttons_row_->children().empty())
     return true;
 
   // Expandable if the notification has image.
@@ -1176,7 +1183,8 @@ void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
   if (image_container_view_)
     image_container_view_->SetVisible(expanded);
 
-  actions_row_->SetVisible(expanded && (action_buttons_row_->has_children()));
+  actions_row_->SetVisible(expanded &&
+                           !action_buttons_row_->children().empty());
   if (!expanded) {
     action_buttons_row_->SetVisible(true);
     inline_reply_->SetVisible(false);
@@ -1209,12 +1217,12 @@ void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
     if (message_view_)
       message_view_->SizeToFit(kMessageViewWidth);
   }
+  content_row_->InvalidateLayout();
 }
 
 void NotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
   if (!settings_row_)
     return;
-
   bool inline_settings_visible = !settings_row_->visible();
   bool disable_notification =
       settings_row_->visible() && block_all_button_->checked();
@@ -1228,7 +1236,15 @@ void NotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
   dont_block_button_->SetChecked(true);
 
   SetSettingMode(inline_settings_visible);
-  SetExpanded(!inline_settings_visible);
+
+  // Grab a weak pointer before calling SetExpanded() as it might cause |this|
+  // to be deleted.
+  {
+    auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
+    SetExpanded(!inline_settings_visible);
+    if (!weak_ptr)
+      return;
+  }
 
   PreferredSizeChanged();
 
@@ -1270,7 +1286,6 @@ void NotificationViewMD::SetExpanded(bool expanded) {
   expanded_ = expanded;
 
   UpdateViewForExpandedState(expanded_);
-  content_row_->InvalidateLayout();
   PreferredSizeChanged();
 }
 
@@ -1348,6 +1363,10 @@ void NotificationViewMD::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   ink_drop_container_->RemoveInkDropLayer(ink_drop_layer);
   GetInkDrop()->RemoveObserver(this);
   ink_drop_layer_ = nullptr;
+}
+
+std::unique_ptr<views::InkDrop> NotificationViewMD::CreateInkDrop() {
+  return std::make_unique<NotificationInkDropImpl>(this, size());
 }
 
 std::unique_ptr<views::InkDropRipple> NotificationViewMD::CreateInkDropRipple()

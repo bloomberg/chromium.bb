@@ -69,7 +69,7 @@ class RenderPassLoadOpTests : public DawnTest {
             descriptor.usage = dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::TransferSrc;
             renderTarget = device.CreateTexture(&descriptor);
 
-            renderTargetView = renderTarget.CreateDefaultTextureView();
+            renderTargetView = renderTarget.CreateDefaultView();
 
             RGBA8 zero(0, 0, 0, 0);
             std::fill(expectZero.begin(), expectZero.end(), zero);
@@ -112,6 +112,12 @@ class RenderPassLoadOpTests : public DawnTest {
 
 // Tests clearing, loading, and drawing into color attachments
 TEST_P(RenderPassLoadOpTests, ColorClearThenLoadAndDraw) {
+    // TODO(jiawei.shao@intel.com): investigate why the test is flaky on Linux Intel OpenGL drivers.
+    // Currently we cannot collect PCI IDs from OpenGL drivers, we have to skip it on all OpenGL
+    // backends.
+    // Tracking bug: https://bugs.chromium.org/p/dawn/issues/detail?id=126
+    DAWN_SKIP_TEST_IF(IsOpenGL() && IsLinux());
+
     // Part 1: clear once, check to make sure it's cleared
     utils::ComboRenderPassDescriptor renderPassClearZero({renderTargetView});
     auto commandsClearZeroEncoder = device.CreateCommandEncoder();

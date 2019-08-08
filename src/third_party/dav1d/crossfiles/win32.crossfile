@@ -1,10 +1,8 @@
 [binaries]
 c = 'clang-cl'
 ar = 'llvm-ar'
-exe_wrapper = 'wine'
 
 [properties]
-needs_exe_wrapper = true
 c_args = ['-m32', '-fuse-ld=lld',]
 
 

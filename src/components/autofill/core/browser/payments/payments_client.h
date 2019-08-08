@@ -13,9 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/credit_card.h"
-#include "components/prefs/pref_service.h"
+#include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
 #include "services/identity/public/cpp/access_token_info.h"
@@ -134,13 +133,11 @@ class PaymentsClient {
   };
 
   // |url_loader_factory| is reference counted so it has no lifetime or
-  // ownership requirements. |pref_service| is used to get the registered
-  // preference value, |identity_manager| and |account_info_getter|
-  // must all outlive |this|. Either delegate might be nullptr.
-  // |is_off_the_record| denotes incognito mode.
+  // ownership requirements. |identity_manager| and |account_info_getter| must
+  // all outlive |this|. Either delegate might be nullptr. |is_off_the_record|
+  // denotes incognito mode.
   PaymentsClient(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      PrefService* const pref_service,
       identity::IdentityManager* const identity_manager,
       AccountInfoGetter* const account_info_getter,
       bool is_off_the_record = false);
@@ -153,8 +150,6 @@ class PaymentsClient {
   // identifying information should not be sent until the user has explicitly
   // accepted an upload prompt.
   void Prepare();
-
-  PrefService* GetPrefService() const;
 
   // The user has attempted to unmask a card with the given cvc.
   void UnmaskCard(const UnmaskRequestDetails& request_details,
@@ -246,9 +241,6 @@ class PaymentsClient {
 
   // The URL loader factory for the request.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-
-  // The pref service for this client.
-  PrefService* const pref_service_;
 
   // Provided in constructor; not owned by PaymentsClient.
   identity::IdentityManager* const identity_manager_;

@@ -20,8 +20,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "components/arc/arc_util.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/policy_switches.h"
@@ -242,14 +241,6 @@ class ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest
     SetArcAvailableCommandLineForTesting(command_line);
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    // Set fake cryptohome, because we want to fail DMToken retrieval
-    auto cryptohome_client = std::make_unique<chromeos::FakeCryptohomeClient>();
-    fake_cryptohome_client_ = cryptohome_client.get();
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        std::move(cryptohome_client));
-  }
-
   void SetUpOnMainThread() override {
     support_host_ = std::make_unique<ArcSupportHost>(browser()->profile());
     support_host_->SetErrorDelegate(this);
@@ -272,9 +263,9 @@ class ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest
   // ArcActiveDirectoryEnrollmentTokenFetcher will succeed to fetch the DM
   // token.
   void StoreCorrectDmToken() {
-    fake_cryptohome_client_->set_system_salt(
+    chromeos::FakeCryptohomeClient::Get()->set_system_salt(
         chromeos::FakeCryptohomeClient::GetStubSystemSalt());
-    fake_cryptohome_client_->SetServiceIsAvailable(true);
+    chromeos::FakeCryptohomeClient::Get()->SetServiceIsAvailable(true);
     // Store a fake DM token.
     base::RunLoop run_loop;
     auto dm_token_storage = std::make_unique<policy::DMTokenStorage>(
@@ -295,8 +286,9 @@ class ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest
   // Does not store a correct DM token.
   // ArcActiveDirectoryEnrollmentTokenFetcher will fail to fetch the DM token.
   void FailDmToken() {
-    fake_cryptohome_client_->set_system_salt(std::vector<uint8_t>());
-    fake_cryptohome_client_->SetServiceIsAvailable(true);
+    chromeos::FakeCryptohomeClient::Get()->set_system_salt(
+        std::vector<uint8_t>());
+    chromeos::FakeCryptohomeClient::Get()->SetServiceIsAvailable(true);
   }
 
   void FetchEnrollmentToken(base::RunLoop* run_loop,
@@ -374,8 +366,6 @@ class ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest
   void OnSendFeedbackClicked() override {}
 
   std::unique_ptr<ArcSupportHost> support_host_;
-  // DBusThreadManager owns this.
-  chromeos::FakeCryptohomeClient* fake_cryptohome_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest);
 };

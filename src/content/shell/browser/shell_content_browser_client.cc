@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/public/browser/client_certificate_delegate.h"
+#include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/page_navigator.h"
@@ -41,7 +42,6 @@
 #include "content/shell/browser/shell_url_request_context_getter.h"
 #include "content/shell/browser/shell_web_contents_view_delegate_creator.h"
 #include "content/shell/common/power_monitor_test.mojom.h"
-#include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/web_test.mojom.h"
 #include "content/shell/common/web_test/fake_bluetooth_chooser.mojom.h"
@@ -428,7 +428,7 @@ WebContentsViewDelegate* ShellContentBrowserClient::GetWebContentsViewDelegate(
   return CreateShellWebContentsViewDelegate(web_contents);
 }
 
-QuotaPermissionContext*
+scoped_refptr<content::QuotaPermissionContext>
 ShellContentBrowserClient::CreateQuotaPermissionContext() {
   return new ShellQuotaPermissionContext();
 }
@@ -482,7 +482,7 @@ void ShellContentBrowserClient::OpenURL(
 }
 
 std::unique_ptr<LoginDelegate> ShellContentBrowserClient::CreateLoginDelegate(
-    net::AuthChallengeInfo* auth_info,
+    const net::AuthChallengeInfo& auth_info,
     content::WebContents* web_contents,
     const content::GlobalRequestID& request_id,
     bool is_main_frame,
@@ -559,9 +559,9 @@ ShellContentBrowserClient::CreateNetworkContext(
   network::mojom::NetworkContextPtr network_context;
   network::mojom::NetworkContextParamsPtr context_params =
       network::mojom::NetworkContextParams::New();
+  UpdateCorsExemptHeader(context_params.get());
   context_params->user_agent = GetUserAgent();
   context_params->accept_language = "en-us,en";
-  context_params->enable_data_url_support = true;
 
 #if BUILDFLAG(ENABLE_REPORTING)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

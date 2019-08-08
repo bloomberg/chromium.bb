@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
@@ -28,7 +29,7 @@ namespace {
 const char kBookmarkBarId[] = "bookmark_bar_id";
 const char kBookmarkBarTag[] = "bookmark_bar";
 
-syncer::UpdateResponseData CreateUpdateResponseData(
+std::unique_ptr<syncer::UpdateResponseData> CreateUpdateResponseData(
     const std::string& server_id,
     const std::string& parent_id,
     const std::string& title,
@@ -37,37 +38,37 @@ syncer::UpdateResponseData CreateUpdateResponseData(
     const syncer::UniquePosition& unique_position,
     const std::string& icon_url = std::string(),
     const std::string& icon_data = std::string()) {
-  syncer::EntityData data;
-  data.id = server_id;
-  data.parent_id = parent_id;
-  data.unique_position = unique_position.ToProto();
+  auto data = std::make_unique<syncer::EntityData>();
+  data->id = server_id;
+  data->parent_id = parent_id;
+  data->unique_position = unique_position.ToProto();
 
   sync_pb::BookmarkSpecifics* bookmark_specifics =
-      data.specifics.mutable_bookmark();
+      data->specifics.mutable_bookmark();
   bookmark_specifics->set_title(title);
   bookmark_specifics->set_url(url);
   bookmark_specifics->set_icon_url(icon_url);
   bookmark_specifics->set_favicon(icon_data);
 
-  data.is_folder = is_folder;
-  syncer::UpdateResponseData response_data;
-  response_data.entity = data.PassToPtr();
+  data->is_folder = is_folder;
+  auto response_data = std::make_unique<syncer::UpdateResponseData>();
+  response_data->entity = std::move(data);
   // Similar to what's done in the loopback_server.
-  response_data.response_version = 0;
+  response_data->response_version = 0;
   return response_data;
 }
 
-syncer::UpdateResponseData CreateBookmarkBarNodeUpdateData() {
-  syncer::EntityData data;
-  data.id = kBookmarkBarId;
-  data.server_defined_unique_tag = kBookmarkBarTag;
+std::unique_ptr<syncer::UpdateResponseData> CreateBookmarkBarNodeUpdateData() {
+  auto data = std::make_unique<syncer::EntityData>();
+  data->id = kBookmarkBarId;
+  data->server_defined_unique_tag = kBookmarkBarTag;
 
-  data.specifics.mutable_bookmark();
+  data->specifics.mutable_bookmark();
 
-  syncer::UpdateResponseData response_data;
-  response_data.entity = data.PassToPtr();
+  auto response_data = std::make_unique<syncer::UpdateResponseData>();
+  response_data->entity = std::move(data);
   // Similar to what's done in the loopback_server.
-  response_data.response_version = 0;
+  response_data->response_version = 0;
   return response_data;
 }
 

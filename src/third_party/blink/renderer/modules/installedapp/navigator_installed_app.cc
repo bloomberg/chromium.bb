@@ -62,7 +62,7 @@ class RelatedAppArray {
       const WebVector<WebRelatedApplication>& web_info) {
     HeapVector<Member<RelatedApplication>> applications;
     for (const auto& web_application : web_info)
-      applications.push_back(RelatedApplication::Create(
+      applications.push_back(MakeGarbageCollected<RelatedApplication>(
           web_application.platform, web_application.url, web_application.id));
     return applications;
   }
@@ -70,7 +70,7 @@ class RelatedAppArray {
 
 ScriptPromise NavigatorInstalledApp::getInstalledRelatedApps(
     ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   InstalledAppController* app_controller = Controller();

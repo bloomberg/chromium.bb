@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -471,6 +472,12 @@ void Navigate(NavigateParams* params) {
     params->url = GURL(chrome::kExtensionInvalidRequestURL);
 #endif
 
+  if (source_browser &&
+      platform_util::IsBrowserLockedFullscreen(source_browser)) {
+    // Block any navigation requests in locked fullscreen mode.
+    return;
+  }
+
   // Trying to open a background tab when in an app browser results in
   // focusing a regular browser window an opening a tab in the background
   // of that window. Change the disposition to NEW_FOREGROUND_TAB so that
@@ -662,7 +669,7 @@ void Navigate(NavigateParams* params) {
     // The navigation should insert a new tab into the target Browser.
     params->browser->tab_strip_model()->AddWebContents(
         std::move(contents_to_insert), params->tabstrip_index,
-        params->transition, params->tabstrip_add_types);
+        params->transition, params->tabstrip_add_types, params->group);
   }
 
   if (singleton_index >= 0) {
@@ -744,6 +751,7 @@ bool IsHostAllowedInIncognito(const GURL& url) {
   // chrome://extensions is on the list because it redirects to
   // chrome://settings.
   return host != chrome::kChromeUIAppLauncherPageHost &&
+         host != chrome::kChromeUIAppManagementHost &&
          host != chrome::kChromeUISettingsHost &&
          host != chrome::kChromeUIHelpHost &&
          host != chrome::kChromeUIHistoryHost &&

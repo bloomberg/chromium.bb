@@ -241,9 +241,10 @@ TEST_F(ConsentSyncBridgeImplTest,
   bridge()->RecordConsent(SpecificsUniquePtr(/*client_consent_time_usec=*/2u));
   ASSERT_THAT(GetAllData(), SizeIs(2));
 
+  syncer::EntityChangeList entity_change_list;
+  entity_change_list.push_back(EntityChange::CreateDelete(first_storage_key));
   auto error_on_delete = bridge()->ApplySyncChanges(
-      bridge()->CreateMetadataChangeList(),
-      {EntityChange::CreateDelete(first_storage_key)});
+      bridge()->CreateMetadataChangeList(), std::move(entity_change_list));
   EXPECT_FALSE(error_on_delete);
   EXPECT_THAT(GetAllData(), SizeIs(1));
   EXPECT_THAT(GetData(first_storage_key), IsNull());

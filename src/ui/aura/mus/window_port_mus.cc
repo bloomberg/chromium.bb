@@ -303,6 +303,10 @@ WindowPortMus::ServerChanges::iterator WindowPortMus::FindChangeByTypeAndData(
         if (iter->data.visible == data.visible)
           return iter;
         break;
+      case ServerChangeType::SET_TRANSPARENT:
+        if (iter->data.transparent == data.transparent)
+          return iter;
+        break;
     }
   }
   return iter;
@@ -413,10 +417,6 @@ void WindowPortMus::SetVisibleFromServer(bool visible) {
     window_->Show();
   else
     window_->Hide();
-}
-
-void WindowPortMus::SetOpacityFromServer(float opacity) {
-  window_->layer()->SetOpacity(opacity);
 }
 
 void WindowPortMus::SetCursorFromServer(const ui::Cursor& cursor) {
@@ -584,17 +584,6 @@ WindowPortMus::GetLocalSurfaceIdAllocation() {
 }
 
 std::unique_ptr<WindowMusChangeData>
-WindowPortMus::PrepareForServerBoundsChange(const gfx::Rect& bounds) {
-  std::unique_ptr<WindowMusChangeDataImpl> data(
-      std::make_unique<WindowMusChangeDataImpl>());
-  ServerChangeData change_data;
-  change_data.bounds_in_dip = bounds;
-  data->change = std::make_unique<ScopedServerChange>(
-      this, ServerChangeType::BOUNDS, change_data);
-  return std::move(data);
-}
-
-std::unique_ptr<WindowMusChangeData>
 WindowPortMus::PrepareForServerVisibilityChange(bool value) {
   std::unique_ptr<WindowMusChangeDataImpl> data(
       std::make_unique<WindowMusChangeDataImpl>());
@@ -676,6 +665,15 @@ void WindowPortMus::OnVisibilityChanged(bool visible) {
     window_tree_client_->OnWindowMusSetVisible(this, visible);
 }
 
+void WindowPortMus::OnTransparentChanged(bool transparent) {
+  ServerChangeData change_data;
+  change_data.transparent = transparent;
+  if (!RemoveChangeByTypeAndData(ServerChangeType::SET_TRANSPARENT,
+                                 change_data)) {
+    window_tree_client_->OnWindowMusSetTransparent(this, transparent);
+  }
+}
+
 void WindowPortMus::OnDidChangeBounds(const gfx::Rect& old_bounds,
                                       const gfx::Rect& new_bounds) {
   ServerChangeData change_data;
@@ -720,6 +718,14 @@ void WindowPortMus::OnPropertyChanged(const void* key,
   if (key == client::kDragDropDelegateKey) {
     SetCanAcceptDrops(window_->GetProperty(client::kDragDropDelegateKey) !=
                       nullptr);
+  } else if (key == client::kShowStateKey &&
+             WindowTreeHostMus::ForWindow(window_) &&
+             WindowTreeHostMus::ForWindow(window_)
+                 ->is_server_setting_bounds()) {
+    // When the server is setting the bounds, it also provides a show state.
+    // When that's being applied, don't report the show state back to the
+    // server.
+    return;
   }
 
   ServerChangeData change_data;

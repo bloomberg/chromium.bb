@@ -236,7 +236,7 @@ Response InspectorDOMSnapshotAgent::disable() {
 }
 
 Response InspectorDOMSnapshotAgent::getSnapshot(
-    std::unique_ptr<protocol::Array<String>> style_whitelist,
+    std::unique_ptr<protocol::Array<String>> style_filter,
     protocol::Maybe<bool> include_event_listeners,
     protocol::Maybe<bool> include_paint_order,
     protocol::Maybe<bool> include_user_agent_shadow_tree,
@@ -256,15 +256,15 @@ Response InspectorDOMSnapshotAgent::getSnapshot(
   computed_styles_ =
       protocol::Array<protocol::DOMSnapshot::ComputedStyle>::create();
   computed_styles_map_ = std::make_unique<ComputedStylesMap>();
-  css_property_whitelist_ = std::make_unique<CSSPropertyWhitelist>();
+  css_property_filter_ = std::make_unique<CSSPropertyFilter>();
 
-  // Look up the CSSPropertyIDs for each entry in |style_whitelist|.
-  for (wtf_size_t i = 0; i < style_whitelist->length(); i++) {
-    CSSPropertyID property_id = cssPropertyID(style_whitelist->get(i));
-    if (property_id == CSSPropertyInvalid)
+  // Look up the CSSPropertyIDs for each entry in |style_filter|.
+  for (wtf_size_t i = 0; i < style_filter->length(); i++) {
+    CSSPropertyID property_id = cssPropertyID(style_filter->get(i));
+    if (property_id == CSSPropertyID::kInvalid)
       continue;
-    css_property_whitelist_->push_back(
-        std::make_pair(style_whitelist->get(i), property_id));
+    css_property_filter_->push_back(
+        std::make_pair(style_filter->get(i), property_id));
   }
 
   if (include_paint_order.fromMaybe(false)) {
@@ -282,7 +282,7 @@ Response InspectorDOMSnapshotAgent::getSnapshot(
   *layout_tree_nodes = std::move(layout_tree_nodes_);
   *computed_styles = std::move(computed_styles_);
   computed_styles_map_.reset();
-  css_property_whitelist_.reset();
+  css_property_filter_.reset();
   paint_order_map_.reset();
   return Response::OK();
 }
@@ -296,13 +296,13 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
   documents_ =
       protocol::Array<protocol::DOMSnapshot::DocumentSnapshot>::create();
 
-  css_property_whitelist_ = std::make_unique<CSSPropertyWhitelist>();
+  css_property_filter_ = std::make_unique<CSSPropertyFilter>();
   // Look up the CSSPropertyIDs for each entry in |computed_styles|.
   for (size_t i = 0; i < computed_styles->length(); i++) {
     CSSPropertyID property_id = cssPropertyID(computed_styles->get(i));
-    if (property_id == CSSPropertyInvalid)
+    if (property_id == CSSPropertyID::kInvalid)
       continue;
-    css_property_whitelist_->push_back(
+    css_property_filter_->push_back(
         std::make_pair(computed_styles->get(i), property_id));
   }
 
@@ -318,7 +318,7 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
   // Extract results from state and reset.
   *documents = std::move(documents_);
   *strings = std::move(strings_);
-  css_property_whitelist_.reset();
+  css_property_filter_.reset();
   string_table_.clear();
   document_order_map_.clear();
   documents_.reset();
@@ -923,12 +923,12 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
 }
 
 int InspectorDOMSnapshotAgent::GetStyleIndexForNode(Node* node) {
-  CSSComputedStyleDeclaration* computed_style_info =
-      CSSComputedStyleDeclaration::Create(node, true);
+  auto* computed_style_info =
+      MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
 
   Vector<String> style;
   bool all_properties_empty = true;
-  for (const auto& pair : *css_property_whitelist_) {
+  for (const auto& pair : *css_property_filter_) {
     String value = computed_style_info->GetPropertyValue(pair.second);
     if (!value.IsEmpty())
       all_properties_empty = false;
@@ -951,7 +951,7 @@ int InspectorDOMSnapshotAgent::GetStyleIndexForNode(Node* node) {
     if (style[i].IsEmpty())
       continue;
     style_properties->addItem(protocol::DOMSnapshot::NameValue::create()
-                                  .setName((*css_property_whitelist_)[i].first)
+                                  .setName((*css_property_filter_)[i].first)
                                   .setValue(style[i])
                                   .build());
   }
@@ -966,10 +966,10 @@ int InspectorDOMSnapshotAgent::GetStyleIndexForNode(Node* node) {
 
 std::unique_ptr<protocol::Array<int>>
 InspectorDOMSnapshotAgent::BuildStylesForNode(Node* node) {
-  CSSComputedStyleDeclaration* computed_style_info =
-      CSSComputedStyleDeclaration::Create(node, true);
+  auto* computed_style_info =
+      MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
   std::unique_ptr<protocol::Array<int>> result = protocol::Array<int>::create();
-  for (const auto& pair : *css_property_whitelist_) {
+  for (const auto& pair : *css_property_filter_) {
     String value = computed_style_info->GetPropertyValue(pair.second);
     result->addItem(AddString(value));
   }

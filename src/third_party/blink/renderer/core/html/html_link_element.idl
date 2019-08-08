@@ -35,9 +35,9 @@ interface HTMLLinkElement : HTMLElement {
     [Reflect, ReflectOnly=("script","style","image", "track", "font", "fetch")] attribute DOMString as;
     [CEReactions, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerPolicy;
     [PutForwards=value] readonly attribute DOMTokenList sizes;
-    [CEReactions, MeasureAs=PriorityHints, OriginTrialEnabled=PriorityHints, Reflect, ReflectOnly=("low", "auto", "high"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString importance;
-    [RuntimeEnabled=PreloadImageSrcSet, CEReactions, Reflect] attribute DOMString imageSrcset;
-    [RuntimeEnabled=PreloadImageSrcSet, CEReactions, Reflect] attribute DOMString imageSizes;
+    [CEReactions, MeasureAs=PriorityHints, RuntimeEnabled=PriorityHints, Reflect, ReflectOnly=("low", "auto", "high"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString importance;
+    [CEReactions, Reflect] attribute DOMString imageSrcset;
+    [CEReactions, Reflect] attribute DOMString imageSizes;
 
     // obsolete members
     // https://html.spec.whatwg.org/C/#HTMLLinkElement-partial
@@ -45,13 +45,13 @@ interface HTMLLinkElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString rev;
     [CEReactions, Reflect] attribute DOMString target;
 
-    // HTMLLinkElement implements LinkStyle
+    // HTMLLinkElement includes LinkStyle
     // https://drafts.csswg.org/cssom/#the-linkstyle-interface
     readonly attribute StyleSheet? sheet;
 
     // HTML Imports
     // https://w3c.github.io/webcomponents/spec/imports/#interface-import
-    [OriginTrialEnabled=HTMLImports] readonly attribute Document? import;
+    [RuntimeEnabled=HTMLImports] readonly attribute Document? import;
 
     // Subresource Integrity
     // https://w3c.github.io/webappsec-subresource-integrity/#HTMLLinkElement

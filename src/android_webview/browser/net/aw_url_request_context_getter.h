@@ -18,7 +18,6 @@
 #include "net/url_request/url_request_job_factory.h"
 
 class PrefService;
-class PrefRegistrySimple;
 
 namespace net {
 class FileNetLogObserver;
@@ -43,7 +42,6 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
       net::NetLog* net_log);
 
   static void set_check_cleartext_permitted(bool permitted);
-  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // net::URLRequestContextGetter implementation.
   net::URLRequestContext* GetURLRequestContext() override;

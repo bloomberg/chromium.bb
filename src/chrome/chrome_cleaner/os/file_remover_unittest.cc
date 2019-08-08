@@ -66,7 +66,6 @@ class FileRemoverTest : public ::testing::Test {
             /*digest_verifier=*/nullptr,
             /*archiver=*/nullptr,
             LayeredServiceProviderWrapper(),
-            /*deletion_allowed_paths=*/{},
             base::BindRepeating(&FileRemoverTest::RebootRequired,
                                 base::Unretained(this))) {
     FileRemovalStatusUpdater::GetInstance()->Clear();
@@ -150,7 +149,7 @@ TEST_F(FileRemoverTest, NoKnownFileRemoval) {
   FileRemover remover(
       DigestVerifier::CreateFromResource(IDS_TEST_SAMPLE_DLL_DIGEST),
       /*archiver=*/nullptr, LayeredServiceProviderWrapper(),
-      /*deletion_allowed_paths=*/{}, base::DoNothing::Repeatedly());
+      base::DoNothing::Repeatedly());
 
   // Copy the sample DLL to the temp folder.
   base::FilePath dll_path = GetSampleDLLPath();
@@ -190,7 +189,6 @@ TEST_F(FileRemoverTest, NoLSPRemoval) {
   lsp.AddProvider(kGUID1, provider_path);
 
   FileRemover remover(/*digest_verifier=*/nullptr, /*archiver=*/nullptr, lsp,
-                      /*deletion_allowed_paths=*/{},
                       base::DoNothing::Repeatedly());
 
   TestBlacklistedRemoval(&remover, provider_path);
@@ -371,60 +369,6 @@ TEST_F(FileRemoverTest, RegisterPostRebootRemoval_Directories) {
             REMOVAL_STATUS_BLACKLISTED_FOR_REMOVAL);
 }
 
-TEST_F(FileRemoverTest, NotActiveFileType) {
-  base::ScopedTempDir temp;
-  ASSERT_TRUE(temp.CreateUniqueTempDir());
-  base::FilePath path = temp.GetPath().Append(L"temp_file.txt");
-  ASSERT_TRUE(
-      CreateFileInFolder(path.DirName(), path.BaseName().value().c_str()));
-
-  EXPECT_EQ(ValidationStatus::INACTIVE,
-            FileRemover::IsFileRemovalAllowed(path, {}, {}));
-  VerifyRemoveNowSuccess(path, &default_file_remover_);
-  EXPECT_EQ(REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION,
-            FileRemovalStatusUpdater::GetInstance()->GetRemovalStatus(path));
-  EXPECT_TRUE(base::PathExists(path));
-}
-
-TEST_F(FileRemoverTest, NotActiveFileAllowed) {
-  base::ScopedTempDir temp;
-  ASSERT_TRUE(temp.CreateUniqueTempDir());
-  base::FilePath path = temp.GetPath().Append(L"temp_file.txt");
-  ASSERT_TRUE(
-      CreateFileInFolder(path.DirName(), path.BaseName().value().c_str()));
-
-  FileRemover remover(/*digest_verifier=*/nullptr, /*archiver=*/nullptr,
-                      LayeredServiceProviderWrapper(), {path.value().c_str()},
-                      base::DoNothing::Repeatedly());
-
-  EXPECT_EQ(ValidationStatus::ALLOWED, FileRemover::IsFileRemovalAllowed(
-                                           path, {path.value().c_str()}, {}));
-  VerifyRemoveNowSuccess(path, &remover);
-  EXPECT_EQ(REMOVAL_STATUS_REMOVED,
-            FileRemovalStatusUpdater::GetInstance()->GetRemovalStatus(path));
-  EXPECT_FALSE(base::PathExists(path));
-}
-
-TEST_F(FileRemoverTest, DosMzExecutable) {
-  base::ScopedTempDir temp;
-  ASSERT_TRUE(temp.CreateUniqueTempDir());
-  base::FilePath path = temp.GetPath().Append(L"temp_file.txt");
-  constexpr char kMzExecutable[] = "MZ executable";
-  CreateFileWithContent(path, kMzExecutable, sizeof(kMzExecutable));
-  ASSERT_TRUE(base::PathExists(path));
-
-  FileRemover remover(/*digest_verifier=*/nullptr, /*archiver=*/nullptr,
-                      LayeredServiceProviderWrapper(), {path.value().c_str()},
-                      base::DoNothing::Repeatedly());
-
-  EXPECT_EQ(ValidationStatus::ALLOWED,
-            FileRemover::IsFileRemovalAllowed(path, {}, {}));
-  VerifyRemoveNowSuccess(path, &remover);
-  EXPECT_EQ(REMOVAL_STATUS_REMOVED,
-            FileRemovalStatusUpdater::GetInstance()->GetRemovalStatus(path));
-  EXPECT_FALSE(base::PathExists(path));
-}
-
 namespace {
 
 constexpr char kTestPassword[] = "1234";
@@ -456,8 +400,7 @@ class FileRemoverQuarantineTest : public base::MultiProcessTest,
         kTestPassword);
     file_remover_ = std::make_unique<FileRemover>(
         /*digest_verifier=*/nullptr, std::move(zip_archiver),
-        LayeredServiceProviderWrapper(), FilePathSet(),
-        base::DoNothing::Repeatedly());
+        LayeredServiceProviderWrapper(), base::DoNothing::Repeatedly());
   }
 
  protected:
@@ -512,6 +455,17 @@ TEST_P(FileRemoverQuarantineTest, QuarantineFile) {
   const base::FilePath expected_archive_path =
       temp_dir_.GetPath().Append(kTestExpectArchiveName);
   EXPECT_TRUE(base::PathExists(expected_archive_path));
+}
+
+TEST_P(FileRemoverQuarantineTest, QuarantinesNotActiveFiles) {
+  base::FilePath path = temp_dir_.GetPath().Append(L"temp_file.txt");
+  CreateFileWithContent(path, kTestContent, strlen(kTestContent));
+
+  EXPECT_EQ(ValidationStatus::ALLOWED, file_remover_->CanRemove(path));
+
+  DoAndExpectCorrespondingRemoval(path);
+  EXPECT_EQ(QUARANTINE_STATUS_QUARANTINED,
+            FileRemovalStatusUpdater::GetInstance()->GetQuarantineStatus(path));
 }
 
 TEST_P(FileRemoverQuarantineTest, FailToQuarantine) {

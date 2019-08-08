@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
+#include "chromeos/services/device_sync/proto/cryptauth_devicesync.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_enrollment.pb.h"
 #include "chromeos/services/device_sync/switches.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -44,12 +45,21 @@ const char kFinishEnrollmentPath[] = "enrollment/finish";
 const char kDefaultCryptAuthV2EnrollmentHTTPHost[] =
     "https://cryptauthenrollment.googleapis.com";
 
-// URL subpaths for each CryptAuth v2 API.
+// Default URL of Google APIs endpoint hosting CryptAuth v2 DeviceSync.
+const char kDefaultCryptAuthV2DeviceSyncHTTPHost[] =
+    "https://cryptauthdevicesync.googleapis.com";
+
+// URL subpaths for each CryptAuth v2 API endpoint.
 // Note: Although "v1" is part of the path names, these are in fact v2 API
 //       endpoints. Also, the "/" is necessary for GURL::Resolve() to parse the
 //       paths correctly; otherwise, ":" is interpreted as a scheme delimiter.
 const char kSyncKeysPath[] = "/v1:syncKeys";
 const char kEnrollKeysPath[] = "/v1:enrollKeys";
+const char kSyncMetadataPath[] = "/v1:syncMetadata";
+const char kShareGroupPrivateKeyPath[] = "/v1:shareGroupPrivateKey";
+const char kBatchNotifyGroupDevicesPath[] = "/v1:batchNotifyGroupDevices";
+const char kBatchGetFeatureStatusesPath[] = "/v1:batchGetFeatureStatuses";
+const char kBatchSetFeatureStatusesPath[] = "/v1:batchSetFeatureStatuses";
 
 // Query string of the API URL indicating that the response should be in a
 // serialized protobuf format.
@@ -62,10 +72,10 @@ const char kCryptAuthOAuth2Scope[] =
 // |request_path|.
 GURL CreateV1RequestUrl(const std::string& request_path) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  GURL google_apis_url =
-      GURL(command_line->HasSwitch(switches::kCryptAuthHTTPHost)
-               ? command_line->GetSwitchValueASCII(switches::kCryptAuthHTTPHost)
-               : kDefaultCryptAuthV1HTTPHost);
+  GURL google_apis_url = command_line->HasSwitch(switches::kCryptAuthHTTPHost)
+                             ? GURL(command_line->GetSwitchValueASCII(
+                                   switches::kCryptAuthHTTPHost))
+                             : GURL(kDefaultCryptAuthV1HTTPHost);
   return google_apis_url.Resolve(kCryptAuthV1Path + request_path +
                                  kQueryProtobuf);
 }
@@ -75,10 +85,22 @@ GURL CreateV1RequestUrl(const std::string& request_path) {
 GURL CreateV2EnrollmentRequestUrl(const std::string& request_path) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   GURL google_apis_url =
-      GURL(command_line->HasSwitch(switches::kCryptAuthV2EnrollmentHTTPHost)
-               ? command_line->GetSwitchValueASCII(
-                     switches::kCryptAuthV2EnrollmentHTTPHost)
-               : kDefaultCryptAuthV2EnrollmentHTTPHost);
+      command_line->HasSwitch(switches::kCryptAuthV2EnrollmentHTTPHost)
+          ? GURL(command_line->GetSwitchValueASCII(
+                switches::kCryptAuthV2EnrollmentHTTPHost))
+          : GURL(kDefaultCryptAuthV2EnrollmentHTTPHost);
+  return google_apis_url.Resolve(request_path + kQueryProtobuf);
+}
+
+// Creates the full URL for endpoint to the CryptAuth v2 DeviceSync API with
+// |request_path|.
+GURL CreateV2DeviceSyncRequestUrl(const std::string& request_path) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  GURL google_apis_url =
+      command_line->HasSwitch(switches::kCryptAuthV2DeviceSyncHTTPHost)
+          ? GURL(command_line->GetSwitchValueASCII(
+                switches::kCryptAuthV2DeviceSyncHTTPHost))
+          : GURL(kDefaultCryptAuthV2DeviceSyncHTTPHost);
   return google_apis_url.Resolve(request_path + kQueryProtobuf);
 }
 
@@ -348,6 +370,188 @@ void CryptAuthClientImpl::EnrollKeys(
       })");
   MakeApiCall(CreateV2EnrollmentRequestUrl(kEnrollKeysPath), request, callback,
               error_callback, partial_traffic_annotation);
+}
+
+void CryptAuthClientImpl::SyncMetadata(
+    const cryptauthv2::SyncMetadataRequest& request,
+    const SyncMetadataCallback& callback,
+    const ErrorCallback& error_callback) {
+  net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+      net::DefinePartialNetworkTrafficAnnotation(
+          "cryptauth_v2_devicesync_sync_metadata", "oauth2_api_call_flow",
+          R"(
+      semantics {
+        sender: "CryptAuth V2 Device Manager"
+        description:
+          "Sends device metadata to CryptAuth and recieves metadata data for "
+          "the user's other devices."
+        trigger:
+          "CryptAuth will potentially instruct the client to invoke "
+          "SyncMetadata at the end of enrollment flows, which occur "
+          "periodically, or via GCM messages. There is no dedicated periodic "
+          "scheduling. The client can also force a SyncMetadataRequest."
+        data:
+          "Sends the device's encrypted metadata. Receives encrypted metadata "
+          "from other user devices. Can potentially receive the group public "
+          "key and/or the encrypted group private key, used for the encryption "
+          "and decryption of all device metadata."
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        setting:
+          "This feature cannot be disabled by settings. However, this request "
+          "is made only for signed-in users."
+        chrome_policy {
+          SigninAllowed {
+            SigninAllowed: false
+          }
+        }
+      })");
+  MakeApiCall(CreateV2DeviceSyncRequestUrl(kSyncMetadataPath), request,
+              callback, error_callback, partial_traffic_annotation);
+}
+
+void CryptAuthClientImpl::ShareGroupPrivateKey(
+    const cryptauthv2::ShareGroupPrivateKeyRequest& request,
+    const ShareGroupPrivateKeyCallback& callback,
+    const ErrorCallback& error_callback) {
+  net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+      net::DefinePartialNetworkTrafficAnnotation(
+          "cryptauth_v2_devicesync_share_group_private_key",
+          "oauth2_api_call_flow",
+          R"(
+      semantics {
+        sender: "CryptAuth V2 Device Manager"
+        description:
+          "The device shares the group private key by encrypting it with the "
+          "public key of the user's other devices."
+        trigger:
+          "If the SyncMetadataResponse indicates that other user devices need "
+          "the group private key, then the client immediately invokes "
+          "ShareGroupPrivateKey."
+        data:
+          "The group private key encrypted with the public key of other user "
+          "devices."
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        setting:
+          "This feature cannot be disabled by settings. However, this request "
+          "is made only for signed-in users."
+        chrome_policy {
+          SigninAllowed {
+            SigninAllowed: false
+          }
+        }
+      })");
+  MakeApiCall(CreateV2DeviceSyncRequestUrl(kShareGroupPrivateKeyPath), request,
+              callback, error_callback, partial_traffic_annotation);
+}
+
+// TODO(https://crbug.com/953087): Populate the "sender" and "trigger" fields
+// when method is used in codebase.
+void CryptAuthClientImpl::BatchNotifyGroupDevices(
+    const cryptauthv2::BatchNotifyGroupDevicesRequest& request,
+    const BatchNotifyGroupDevicesCallback& callback,
+    const ErrorCallback& error_callback) {
+  net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+      net::DefinePartialNetworkTrafficAnnotation(
+          "cryptauth_v2_devicesync_batch_notify_group_devices",
+          "oauth2_api_call_flow",
+          R"(
+      semantics {
+        sender: "TBD"
+        description:
+          "The client sends a list of the user's devices that it wants to "
+          "tickle via a GCM message."
+        trigger: "TBD"
+        data:
+          "The list of device IDs to notify as well as a specification of the "
+          "the CryptAuth service (Enrollment or DeviceSync) and feature "
+          "relevant to the tickle."
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        setting:
+          "This feature cannot be disabled by settings. However, this request "
+          "is made only for signed-in users."
+        chrome_policy {
+          SigninAllowed {
+            SigninAllowed: false
+          }
+        }
+      })");
+  MakeApiCall(CreateV2DeviceSyncRequestUrl(kBatchNotifyGroupDevicesPath),
+              request, callback, error_callback, partial_traffic_annotation);
+}
+
+// TODO(https://crbug.com/953087): Populate the "sender" and "trigger" fields
+// when method is used in codebase.
+void CryptAuthClientImpl::BatchGetFeatureStatuses(
+    const cryptauthv2::BatchGetFeatureStatusesRequest& request,
+    const BatchGetFeatureStatusesCallback& callback,
+    const ErrorCallback& error_callback) {
+  net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+      net::DefinePartialNetworkTrafficAnnotation(
+          "cryptauth_v2_devicesync_batch_get_feature_statuses",
+          "oauth2_api_call_flow",
+          R"(
+      semantics {
+        sender: "TBD"
+        description:
+          "The client queries CryptAuth for the state of features on the "
+          "user's devices, for example, whether or not Magic Tether is enabled "
+          "on any of the user's phones."
+        trigger: "TBD"
+        data: "The user device IDs and feature types to query."
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        setting:
+          "This feature cannot be disabled by settings. However, this request "
+          "is made only for signed-in users."
+        chrome_policy {
+          SigninAllowed {
+            SigninAllowed: false
+          }
+        }
+      })");
+  MakeApiCall(CreateV2DeviceSyncRequestUrl(kBatchGetFeatureStatusesPath),
+              request, callback, error_callback, partial_traffic_annotation);
+}
+
+// TODO(https://crbug.com/953087): Populate the "sender" and "trigger" fields
+// when method is used in codebase.
+void CryptAuthClientImpl::BatchSetFeatureStatuses(
+    const cryptauthv2::BatchSetFeatureStatusesRequest& request,
+    const BatchSetFeatureStatusesCallback& callback,
+    const ErrorCallback& error_callback) {
+  net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+      net::DefinePartialNetworkTrafficAnnotation(
+          "cryptauth_v2_devicesync_batch_set_feature_statuses",
+          "oauth2_api_call_flow",
+          R"(
+      semantics {
+        sender: "TBD"
+        description:
+          "The client requests CryptAuth to set the state of various features "
+          "for the user's devices."
+        trigger: "TBD"
+        data: "User device IDs and feature state specifications."
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        setting:
+          "This feature cannot be disabled by settings. However, this request "
+          "is made only for signed-in users."
+        chrome_policy {
+          SigninAllowed {
+            SigninAllowed: false
+          }
+        }
+      })");
+  MakeApiCall(CreateV2DeviceSyncRequestUrl(kBatchSetFeatureStatusesPath),
+              request, callback, error_callback, partial_traffic_annotation);
 }
 
 std::string CryptAuthClientImpl::GetAccessTokenUsed() {

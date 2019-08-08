@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
 #include "third_party/blink/renderer/platform/fonts/font_baseline.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -40,9 +41,6 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   }
   bool IsEmptyLineBox() const { return LineBoxType() == kEmptyLineBox; }
 
-  ChildLinkList Children() const final {
-    return ChildLinkList(num_children_, &children_[0]);
-  }
 
   const ComputedStyle& Style() const { return *style_; }
   const NGLineHeightMetrics& Metrics() const { return metrics_; }
@@ -56,12 +54,6 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
 
   // Compute baseline for the specified baseline type.
   NGLineHeightMetrics BaselineMetrics(FontBaseline) const;
-
-  // Ink overflow of itself including contents, in the local coordinate.
-  NGPhysicalOffsetRect InkOverflow() const;
-
-  // Ink overflow of children in local coordinates.
-  NGPhysicalOffsetRect ContentsInkOverflow() const;
 
   // Scrollable overflow. including contents, in the local coordinate.
   // ScrollableOverflow is not precomputed/cached because it cannot be computed
@@ -77,6 +69,11 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   const NGPhysicalFragment* FirstLogicalLeaf() const;
   const NGPhysicalFragment* LastLogicalLeaf() const;
 
+  // Returns a point at the visual start/end of the line.
+  // Encapsulates the handling of text direction and writing mode.
+  NGPhysicalOffset LineStartPoint() const;
+  NGPhysicalOffset LineEndPoint() const;
+
   // Whether the content soft-wraps to the next line.
   bool HasSoftWrapToNextLine() const;
 
@@ -88,11 +85,12 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   NGLinkStorage children_[];
 };
 
-DEFINE_TYPE_CASTS(NGPhysicalLineBoxFragment,
-                  NGPhysicalFragment,
-                  fragment,
-                  fragment->Type() == NGPhysicalFragment::kFragmentLineBox,
-                  fragment.Type() == NGPhysicalFragment::kFragmentLineBox);
+template <>
+struct DowncastTraits<NGPhysicalLineBoxFragment> {
+  static bool AllowFrom(const NGPhysicalFragment& fragment) {
+    return fragment.Type() == NGPhysicalFragment::kFragmentLineBox;
+  }
+};
 
 }  // namespace blink
 

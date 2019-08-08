@@ -28,7 +28,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/automation.h"
 #include "extensions/common/manifest_handlers/background_info.h"
-#include "extensions/renderer/extension_bindings_system.h"
+#include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/script_context.h"
 #include "gin/converter.h"
 #include "gin/data_object_builder.h"
@@ -488,7 +488,7 @@ class AutomationMessageFilter : public IPC::MessageFilter {
 
 AutomationInternalCustomBindings::AutomationInternalCustomBindings(
     ScriptContext* context,
-    ExtensionBindingsSystem* bindings_system)
+    NativeExtensionBindingsSystem* bindings_system)
     : ObjectBackedNativeHandler(context),
       is_active_profile_(true),
       tree_change_observer_overall_filter_(0),

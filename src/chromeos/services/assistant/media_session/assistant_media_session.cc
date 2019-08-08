@@ -24,7 +24,7 @@ const char kAudioFocusSourceName[] = "assistant";
 
 AssistantMediaSession::AssistantMediaSession(
     service_manager::Connector* connector)
-    : connector_(connector), binding_(this) {}
+    : connector_(connector), binding_(this), weak_factory_(this) {}
 
 AssistantMediaSession::~AssistantMediaSession() {
   AbandonAudioFocusIfNeeded();
@@ -65,7 +65,7 @@ void AssistantMediaSession::RequestAudioFocus(AudioFocusType audio_focus_type) {
   audio_focus_ptr_->RequestAudioFocus(
       mojo::MakeRequest(&request_client_ptr_), std::move(media_session),
       GetMediaSessionInfoInternal(), audio_focus_type,
-      base::BindOnce(&AssistantMediaSession::FinishAudioFocusRequest,
+      base::BindOnce(&AssistantMediaSession::FinishInitialAudioFocusRequest,
                      base::Unretained(this), audio_focus_type));
 }
 
@@ -108,6 +108,12 @@ void AssistantMediaSession::FinishAudioFocusRequest(
   SetAudioFocusState(State::ACTIVE);
 }
 
+void AssistantMediaSession::FinishInitialAudioFocusRequest(
+    AudioFocusType audio_focus_type,
+    const base::UnguessableToken& request_id) {
+  FinishAudioFocusRequest(audio_focus_type);
+}
+
 void AssistantMediaSession::SetAudioFocusState(State audio_focus_state) {
   if (audio_focus_state == audio_focus_state_)
     return;
@@ -134,6 +140,10 @@ void AssistantMediaSession::NotifyMediaSessionInfoChanged() {
 
 bool AssistantMediaSession::IsActive() const {
   return audio_focus_state_ == State::ACTIVE;
+}
+
+base::WeakPtr<AssistantMediaSession> AssistantMediaSession::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace assistant

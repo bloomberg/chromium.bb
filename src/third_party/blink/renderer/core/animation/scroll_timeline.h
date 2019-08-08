@@ -50,6 +50,10 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
   // AnimationTimeline implementation.
   double currentTime(bool& is_null) final;
   bool IsScrollTimeline() const override { return true; }
+  // ScrollTimeline is not active if scrollSource is null, does not currently
+  // have a CSS layout box, or if its layout box is not a scroll container.
+  // https://github.com/WICG/scroll-animations/issues/31
+  bool IsActive() const override;
 
   // IDL API implementation.
   Element* scrollSource();

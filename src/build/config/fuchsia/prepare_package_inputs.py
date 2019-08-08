@@ -84,7 +84,7 @@ def _WriteBuildIdsTxt(binary_paths, ids_txt_path):
     if len(binary_paths) == 1:
       # Readelf won't report a binary's path if only one was provided to the
       # tool.
-      binary_shortname = binary_paths[0]
+      binary_shortname = os.path.basename(binary_paths[0])
     else:
       binary_shortname = None
 

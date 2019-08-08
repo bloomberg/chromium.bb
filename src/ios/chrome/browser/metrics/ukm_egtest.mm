@@ -40,7 +40,7 @@
 using chrome_test_util::AccountsSyncButton;
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
-using chrome_test_util::ClearBrowsingDataCollectionView;
+using chrome_test_util::ClearBrowsingDataView;
 using chrome_test_util::GetIncognitoTabCount;
 using chrome_test_util::IsIncognitoMode;
 using chrome_test_util::IsSyncInitialized;
@@ -136,7 +136,7 @@ void ClearBrowsingData() {
 
   // Before returning, make sure that the top of the Clear Browsing Data
   // settings screen is visible to match the state at the start of the method.
-  [[EarlGrey selectElementWithMatcher:ClearBrowsingDataCollectionView()]
+  [[EarlGrey selectElementWithMatcher:ClearBrowsingDataView()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -199,7 +199,8 @@ void SignOut() {
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 
-  [SigninEarlGreyUtils assertSignedOut];
+  NSError* signedOutError = [SigninEarlGreyUtils checkSignedOut];
+  GREYAssertNil(signedOutError, signedOutError.localizedDescription);
 }
 
 }  // namespace

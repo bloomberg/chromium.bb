@@ -89,7 +89,7 @@ ScriptPromise HTMLVideoElementPictureInPicture::requestPictureInPicture(
                                            kUserGestureRequired));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   controller.EnterPictureInPicture(&element, resolver);

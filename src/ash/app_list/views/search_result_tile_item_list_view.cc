@@ -45,6 +45,14 @@ constexpr int kSeparatorTopPadding = 10;
 
 constexpr SkColor kSeparatorColor = SkColorSetA(gfx::kGoogleGrey900, 0x24);
 
+// Returns true if the search result is an installable app.
+bool IsResultAnInstallableApp(app_list::SearchResult* result) {
+  app_list::SearchResult::ResultType result_type = result->result_type();
+  return result_type == ash::SearchResultType::kPlayStoreApp ||
+         result_type == ash::SearchResultType::kPlayStoreReinstallApp ||
+         result_type == ash::SearchResultType::kInstantApp;
+}
+
 }  // namespace
 
 namespace app_list {
@@ -110,11 +118,9 @@ SearchResultBaseView* SearchResultTileItemListView::GetFirstResultView() {
 int SearchResultTileItemListView::DoUpdate() {
   std::vector<SearchResult*> display_results = GetDisplayResults();
 
-  SearchResult::ResultType previous_type = ash::SearchResultType::kUnknown;
-  ash::SearchResultDisplayType previous_display_type =
-      ash::SearchResultDisplayType::kNone;
-
   std::set<std::string> result_id_removed, result_id_added;
+  bool is_result_an_installable_app = false;
+  bool is_previous_result_installable_app = false;
   for (size_t i = 0; i < kMaxNumSearchResultTiles; ++i) {
     // If the current result at i exists, wants to be notified and is a
     // different id, notify it that it is being hidden.
@@ -137,24 +143,22 @@ int SearchResultTileItemListView::DoUpdate() {
 
     tile_views_[i]->SetResult(item);
     result_id_added.insert(item->id());
+    is_result_an_installable_app = IsResultAnInstallableApp(item);
 
     if (is_play_store_app_search_enabled_ ||
         is_app_reinstall_recommendation_enabled_) {
-      if (i > 0 && (item->result_type() != previous_type ||
-                    item->display_type() != previous_display_type)) {
-        // Add a separator to separate search results of different types.
-        // The strategy here is to only add a separator only if current search
-        // result type is different from the previous one. The strategy is
-        // based on the assumption that the search results are already
-        // separated in groups based on their result types.
+      if (i > 0 && (is_result_an_installable_app !=
+                    is_previous_result_installable_app)) {
+        // Add a separator between installed apps and installable apps.
+        // This assumes the search results are already separated in groups for
+        // installed and installable apps.
         separator_views_[i]->SetVisible(true);
       } else {
         separator_views_[i]->SetVisible(false);
       }
     }
 
-    previous_type = item->result_type();
-    previous_display_type = item->display_type();
+    is_previous_result_installable_app = is_result_an_installable_app;
   }
 
   // notify visibility changes, if needed.

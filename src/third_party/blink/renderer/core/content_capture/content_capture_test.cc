@@ -613,7 +613,7 @@ class ContentCaptureSimTest
     auto* child_frame =
         ToHTMLIFrameElement(GetDocument().getElementById("frame"));
     child_document_ = child_frame->contentDocument();
-    child_document_->UpdateStyleAndLayoutIgnorePendingStylesheets();
+    child_document_->UpdateStyleAndLayout();
     Compositor().BeginFrame();
     InitMainFrameNodeHolders();
     InitChildFrameNodeHolders(*child_document_);

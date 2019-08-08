@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -27,6 +28,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "components/metrics/system_memory_stats_recorder.h"
+#endif
+
+#if defined(OS_ANDROID)
+#include "base/android/application_status_listener.h"
 #endif
 
 namespace metrics {
@@ -322,8 +327,18 @@ void StabilityMetricsHelper::IncrementLongPrefsValue(const char* path) {
   local_state_->SetInt64(path, value + 1);
 }
 
-void StabilityMetricsHelper::LogRendererHang(RendererHangCause hang_cause) {
-  UMA_HISTOGRAM_ENUMERATION("ChildProcess.HungRendererCause", hang_cause);
+void StabilityMetricsHelper::LogRendererHang() {
+#if defined(OS_ANDROID)
+  base::android::ApplicationState app_state =
+      base::android::ApplicationStatusListener::GetState();
+  bool is_foreground =
+      app_state == base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES ||
+      app_state == base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES;
+  UMA_HISTOGRAM_BOOLEAN("ChildProcess.HungRendererInForeground", is_foreground);
+#endif
+  UMA_HISTOGRAM_MEMORY_MB(
+      "ChildProcess.HungRendererAvailableMemoryMB",
+      base::SysInfo::AmountOfAvailablePhysicalMemory() / 1024 / 1024);
   IncrementPrefValue(prefs::kStabilityRendererHangCount);
 }
 

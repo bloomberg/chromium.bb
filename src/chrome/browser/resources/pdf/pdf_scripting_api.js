@@ -199,6 +199,13 @@ PDFScriptingAPI.prototype = {
   },
 
   /**
+   * Hide the toolbars after a delay.
+   */
+  hideToolbars: function() {
+    this.sendMessage_({type: 'hideToolbars'});
+  },
+
+  /**
    * Load a page into the document while in print preview mode.
    *
    * @param {string} url the url of the pdf page to load.
@@ -206,6 +213,11 @@ PDFScriptingAPI.prototype = {
    */
   loadPreviewPage: function(url, index) {
     this.sendMessage_({type: 'loadPreviewPage', url: url, index: index});
+  },
+
+  /** @param {boolean} darkMode Whether the page is in dark mode. */
+  darkModeChanged: function(darkMode) {
+    this.sendMessage_({type: 'darkModeChanged', darkMode: darkMode});
   },
 
   /**
@@ -274,8 +286,6 @@ function PDFCreateOutOfProcessPlugin(src, baseUrl) {
   const iframe = assertInstanceof(
       window.document.createElement('iframe'), HTMLIFrameElement);
   iframe.setAttribute('src', baseUrl + '/index.html?' + src);
-  // Prevent the frame from being tab-focusable.
-  iframe.setAttribute('tabindex', '-1');
 
   iframe.onload = function() {
     client.setPlugin(iframe.contentWindow);
@@ -290,5 +300,7 @@ function PDFCreateOutOfProcessPlugin(src, baseUrl) {
   iframe.loadPreviewPage = client.loadPreviewPage.bind(client);
   iframe.sendKeyEvent = client.sendKeyEvent.bind(client);
   iframe.scrollPosition = client.scrollPosition.bind(client);
+  iframe.hideToolbars = client.hideToolbars.bind(client);
+  iframe.darkModeChanged = client.darkModeChanged.bind(client);
   return iframe;
 }

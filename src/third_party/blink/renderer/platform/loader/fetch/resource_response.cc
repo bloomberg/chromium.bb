@@ -182,7 +182,7 @@ const AtomicString& ResourceResponse::HttpStatusText() const {
   return http_status_text_;
 }
 
-void ResourceResponse::SetHTTPStatusText(const AtomicString& status_text) {
+void ResourceResponse::SetHttpStatusText(const AtomicString& status_text) {
   http_status_text_ = status_text;
 }
 
@@ -237,14 +237,14 @@ void ResourceResponse::SetSecurityDetails(
   security_details_.sct_list = sct_list;
 }
 
-void ResourceResponse::SetHTTPHeaderField(const AtomicString& name,
+void ResourceResponse::SetHttpHeaderField(const AtomicString& name,
                                           const AtomicString& value) {
   UpdateHeaderParsedState(name);
 
   http_header_fields_.Set(name, value);
 }
 
-void ResourceResponse::AddHTTPHeaderField(const AtomicString& name,
+void ResourceResponse::AddHttpHeaderField(const AtomicString& name,
                                           const AtomicString& value) {
   UpdateHeaderParsedState(name);
 
@@ -253,7 +253,7 @@ void ResourceResponse::AddHTTPHeaderField(const AtomicString& name,
     result.stored_value->value = result.stored_value->value + ", " + value;
 }
 
-void ResourceResponse::ClearHTTPHeaderField(const AtomicString& name) {
+void ResourceResponse::ClearHttpHeaderField(const AtomicString& name) {
   http_header_fields_.Remove(name);
 }
 

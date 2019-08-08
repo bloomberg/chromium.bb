@@ -20,7 +20,7 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
-#include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -108,7 +108,7 @@ int main(int argc, char** argv) {
       base::WrapUnique(new base::PowerMonitorDeviceSource));
 
 #if defined(OS_WIN)
-  gfx::win::MaybeInitializeDirectWrite();
+  gfx::win::InitializeDirectWrite();
 #endif
 
 #if defined(USE_AURA)
@@ -129,6 +129,9 @@ int main(int argc, char** argv) {
         views::CreateDesktopScreen());
     display::Screen::SetScreenInstance(desktop_screen.get());
 #endif
+
+    // This app isn't a test and shouldn't timeout.
+    base::RunLoop::ScopedDisableRunTimeoutForTest disable_timeout;
 
     base::RunLoop run_loop;
     views::examples::ShowExamplesWindow(run_loop.QuitClosure());

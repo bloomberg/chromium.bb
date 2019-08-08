@@ -23,13 +23,13 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/file_system.mojom.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/intent_helper/intent_constants.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/entry_info.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -115,19 +115,9 @@ arc::mojom::OpenUrlsRequestPtr ConstructOpenUrlsRequest(
   request->action_type = FileTaskActionIdToArcActionType(task.action_id);
   request->activity_name = AppIdToActivityName(task.app_id);
   for (size_t i = 0; i < content_urls.size(); ++i) {
-    // Replace intent_helper.fileprovider with file_system.fileprovider in URL.
-    // TODO(niwa): Remove this and update path_util to use
-    // file_system.fileprovider by default once we complete migration.
-    std::string url_string = content_urls[i].spec();
-    if (base::StartsWith(url_string, arc::kIntentHelperFileproviderUrl,
-                         base::CompareCase::INSENSITIVE_ASCII)) {
-      url_string.replace(0, strlen(arc::kIntentHelperFileproviderUrl),
-                         arc::kFileSystemFileproviderUrl);
-    }
-
     arc::mojom::ContentUrlWithMimeTypePtr url_with_type =
         arc::mojom::ContentUrlWithMimeType::New();
-    url_with_type->content_url = GURL(url_string);
+    url_with_type->content_url = content_urls[i];
     url_with_type->mime_type = mime_types[i];
     request->urls.push_back(std::move(url_with_type));
   }

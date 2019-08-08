@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "components/data_use_measurement/core/data_use_measurement.h"
-#include "net/base/completion_callback.h"
 #include "net/base/layered_network_delegate.h"
 
 namespace net {

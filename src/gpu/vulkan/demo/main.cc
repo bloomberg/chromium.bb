@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/debug/stack_trace.h"
 #include "base/message_loop/message_loop.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
   // Build UI thread message loop. This is used by platform
   // implementations for event polling & running background tasks.
   base::MessageLoopForUI message_loop;
-  base::TaskScheduler::CreateAndStartWithDefaultParams("VulkanDemo");
+  base::ThreadPool::CreateAndStartWithDefaultParams("VulkanDemo");
 
   gpu::VulkanDemo vulkan_demo;
   vulkan_demo.Initialize();

@@ -2,7 +2,6 @@
 <script src="../resources/gc.js"></script>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <!--
 
@@ -20,7 +19,7 @@ if (window.internals)
 <div role=heading id=heading>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var node = document.getElementById("heading");
     var axNode = accessibilityController.accessibleElementById("heading");
     node.accessibleNode.level = 3;
@@ -35,7 +34,7 @@ test_after_layout_and_paint(function(t) {
 </div>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var node = document.getElementById("listitem");
     var axNode = accessibilityController.accessibleElementById("listitem");
     node.accessibleNode.posInSet = 9;

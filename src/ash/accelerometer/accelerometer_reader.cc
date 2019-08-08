@@ -10,6 +10,9 @@
 #include <string>
 #include <vector>
 
+#include "ash/shell.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -38,6 +41,10 @@ const base::FilePath::CharType kAccelerometerDevicePath[] =
     FILE_PATH_LITERAL("/dev/cros-ec-accel");
 const base::FilePath::CharType kAccelerometerIioBasePath[] =
     FILE_PATH_LITERAL("/sys/bus/iio/devices/");
+
+// Paths of ChromeOS EC lid angle driver.
+const base::FilePath::CharType kEcLidAngleDriverPath[] =
+    FILE_PATH_LITERAL("/sys/bus/platform/drivers/cros-ec-lid-angle/");
 
 // Trigger created by accelerometer-init.sh to query the sensors.
 const char kTriggerPrefix[] = "trigger";
@@ -130,11 +137,14 @@ bool ReadFileToDouble(const base::FilePath& path, double* value) {
 
 const int AccelerometerReader::kDelayBetweenReadsMs = 100;
 
+const int AccelerometerReader::kDelayBetweenInitChecksMs = 500;
+
 // Work that runs on a base::TaskRunner. It determines the accelerometer
 // configuartion, and reads the data. Upon a successful read it will notify
 // all observers.
 class AccelerometerFileReader
-    : public base::RefCountedThreadSafe<AccelerometerFileReader> {
+    : public ash::TabletModeObserver,
+      public base::RefCountedThreadSafe<AccelerometerFileReader> {
  public:
   AccelerometerFileReader();
 
@@ -148,9 +158,30 @@ class AccelerometerFileReader
   // read at the current sampling rate.
   void Read();
 
+  // Controls accelerometer reading via read_switch flag.
+  void EnableAccelerometerReading(bool read_switch);
+
+  // Tracks if accelerometer initialization is completed.
+  void CheckInitStatus();
+
+  // With ChromeOS EC lid angle driver present, accelerometer read is cancelled
+  // in clamshell mode, and triggered when entering tablet mode.
+  void TriggerRead();
+  void CancelRead();
+
   // Add/Remove observers.
   void AddObserver(AccelerometerReader::Observer* observer);
   void RemoveObserver(AccelerometerReader::Observer* observer);
+
+  // Start/Stop listening to tablet mode controller.
+  void StartListenToTabletModeController();
+  void StopListenToTabletModeController();
+
+  // TabletModeObserver:
+  // OnTabletModeStarted() triggers accelerometer read, while
+  // OnTabletModeEnding() disables accelerometer read.
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnding() override;
 
  private:
   friend class base::RefCountedThreadSafe<AccelerometerFileReader>;
@@ -189,7 +220,7 @@ class AccelerometerFileReader
     std::vector<ReadingData> reading_data;
   };
 
-  ~AccelerometerFileReader() = default;
+  ~AccelerometerFileReader() override;
 
   // When accelerometers are presented as separate iio_devices this will perform
   // the initialize for one of the devices, at the given |iio_path| and the
@@ -209,9 +240,19 @@ class AccelerometerFileReader
   // reading to an AccelerometerUpdate and notifies observers.
   void ReadFileAndNotify();
 
+  // True if has ChromeOS EC lid angle driver, which means EC can handle lid
+  // angle calculation.
+  bool ec_lid_angle_driver_present_ = false;
+
   // True if Initialize completed successfully, and there is an accelerometer
   // file to read.
-  bool initialization_successful_;
+  bool initialization_successful_ = false;
+
+  // True if Initialize fails and exits early.
+  bool initialization_failed_ = false;
+
+  // True if periodical accelerometer read is on.
+  bool accelerometer_read_on_ = false;
 
   // The accelerometer configuration.
   ConfigurationData configuration_;
@@ -230,14 +271,18 @@ class AccelerometerFileReader
 };
 
 AccelerometerFileReader::AccelerometerFileReader()
-    : initialization_successful_(false),
-      observers_(
+    : observers_(
           new base::ObserverListThreadSafe<AccelerometerReader::Observer>()) {}
 
 void AccelerometerFileReader::Initialize(
     scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner) {
   DCHECK(base::SequencedTaskRunnerHandle::IsSet());
   task_runner_ = sequenced_task_runner;
+  initialization_failed_ = true;
+
+  ec_lid_angle_driver_present_ = base::SysInfo::IsRunningOnChromeOS() &&
+                                 !base::IsDirectoryEmpty(base::FilePath(
+                                     kEcLidAngleDriverPath));
 
   // Check for accelerometer symlink which will be created by the udev rules
   // file on detecting the device.
@@ -331,16 +376,68 @@ void AccelerometerFileReader::Initialize(
   }
 
   initialization_successful_ = true;
-  Read();
+  initialization_failed_ = false;
+
+  // If ChromeOS lid angle driver is not present, start accelerometer read and
+  // read is always on.
+  if (!ec_lid_angle_driver_present_)
+    EnableAccelerometerReading(/*read_switch=*/true);
 }
 
 void AccelerometerFileReader::Read() {
   DCHECK(base::SequencedTaskRunnerHandle::IsSet());
+  if (!accelerometer_read_on_)
+    return;
+
   ReadFileAndNotify();
   task_runner_->PostNonNestableDelayedTask(
       FROM_HERE, base::BindOnce(&AccelerometerFileReader::Read, this),
       base::TimeDelta::FromMilliseconds(
           AccelerometerReader::kDelayBetweenReadsMs));
+}
+
+void AccelerometerFileReader::EnableAccelerometerReading(bool read_switch) {
+  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
+  if (accelerometer_read_on_ == read_switch)
+    return;
+
+  accelerometer_read_on_ = read_switch;
+  if (accelerometer_read_on_)
+    Read();
+}
+
+void AccelerometerFileReader::CheckInitStatus() {
+  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
+  if (initialization_successful_) {
+    EnableAccelerometerReading(/*read_switch=*/true);
+  } else if (initialization_failed_) {
+    LOG(ERROR) << "Failed to initialize for accelerometer read.\n";
+  } else {
+    task_runner_->PostNonNestableDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&AccelerometerFileReader::CheckInitStatus, this),
+        base::TimeDelta::FromMilliseconds(
+            AccelerometerReader::kDelayBetweenInitChecksMs));
+  }
+}
+
+void AccelerometerFileReader::TriggerRead() {
+  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
+  if (initialization_successful_) {
+    EnableAccelerometerReading(/*read_switch=*/true);
+  } else if (initialization_failed_) {
+    LOG(ERROR) << "Failed to initialize for accelerometer read.\n";
+  } else {
+    task_runner_->PostNonNestableTask(
+        FROM_HERE,
+        base::BindOnce(&AccelerometerFileReader::CheckInitStatus, this));
+  }
+}
+
+void AccelerometerFileReader::CancelRead() {
+  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
+  if (initialization_successful_)
+    EnableAccelerometerReading(/*read_switch=*/false);
 }
 
 void AccelerometerFileReader::AddObserver(
@@ -357,6 +454,41 @@ void AccelerometerFileReader::RemoveObserver(
     AccelerometerReader::Observer* observer) {
   observers_->RemoveObserver(observer);
 }
+
+void AccelerometerFileReader::StartListenToTabletModeController() {
+  Shell::Get()->tablet_mode_controller()->AddObserver(this);
+}
+
+void AccelerometerFileReader::StopListenToTabletModeController() {
+  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+}
+
+void AccelerometerFileReader::OnTabletModeStarted() {
+  // When CrOS EC lid angle driver is not present, accelerometer read is always
+  // ON and can't be tuned. Thus AccelerometerFileReader no longer listens to
+  // tablet mode event.
+  if (!ec_lid_angle_driver_present_) {
+    Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+    return;
+  }
+
+  task_runner_->PostNonNestableTask(
+      FROM_HERE,
+      base::BindOnce(&AccelerometerFileReader::TriggerRead, this));
+}
+
+void AccelerometerFileReader::OnTabletModeEnding() {
+  if (!ec_lid_angle_driver_present_) {
+    Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+    return;
+  }
+
+  task_runner_->PostNonNestableTask(
+      FROM_HERE,
+      base::BindOnce(&AccelerometerFileReader::CancelRead, this));
+}
+
+AccelerometerFileReader::~AccelerometerFileReader() {}
 
 bool AccelerometerFileReader::InitializeAccelerometer(
     const base::FilePath& iio_path,
@@ -484,7 +616,7 @@ void AccelerometerFileReader::ReadFileAndNotify() {
     for (AccelerometerSource source : reading_data.sources) {
       DCHECK(configuration_.has[source]);
       int16_t* values = reinterpret_cast<int16_t*>(reading);
-      update_->Set(source,
+      update_->Set(source, ec_lid_angle_driver_present_,
                    values[configuration_.index[source][0]] *
                        configuration_.scale[source][0],
                    values[configuration_.index[source][1]] *
@@ -533,6 +665,14 @@ void AccelerometerReader::AddObserver(Observer* observer) {
 
 void AccelerometerReader::RemoveObserver(Observer* observer) {
   accelerometer_file_reader_->RemoveObserver(observer);
+}
+
+void AccelerometerReader::StartListenToTabletModeController() {
+  accelerometer_file_reader_->StartListenToTabletModeController();
+}
+
+void AccelerometerReader::StopListenToTabletModeController() {
+  accelerometer_file_reader_->StopListenToTabletModeController();
 }
 
 AccelerometerReader::AccelerometerReader()

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
+#include "media/mojo/interfaces/renderer_extensions.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -67,19 +68,44 @@ void MediaInterfaceFactory::CreateDefaultRenderer(
                                                     std::move(request));
 }
 
-#if defined(OS_ANDROID)
-void MediaInterfaceFactory::CreateMediaPlayerRenderer(
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+void MediaInterfaceFactory::CreateCastRenderer(
+    const base::UnguessableToken& overlay_plane_id,
     media::mojom::RendererRequest request) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&MediaInterfaceFactory::CreateMediaPlayerRenderer,
-                       weak_this_, std::move(request)));
+        base::BindOnce(&MediaInterfaceFactory::CreateCastRenderer, weak_this_,
+                       overlay_plane_id, std::move(request)));
     return;
   }
 
   DVLOG(1) << __func__;
-  GetMediaInterfaceFactory()->CreateMediaPlayerRenderer(std::move(request));
+  GetMediaInterfaceFactory()->CreateCastRenderer(overlay_plane_id,
+                                                 std::move(request));
+}
+#endif
+
+#if defined(OS_ANDROID)
+void MediaInterfaceFactory::CreateMediaPlayerRenderer(
+    media::mojom::MediaPlayerRendererClientExtensionPtr client_extension_ptr,
+    media::mojom::RendererRequest request,
+    media::mojom::MediaPlayerRendererExtensionRequest
+        renderer_extension_request) {
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&MediaInterfaceFactory::CreateMediaPlayerRenderer,
+                       weak_this_, std::move(client_extension_ptr),
+                       std::move(request),
+                       std::move(renderer_extension_request)));
+    return;
+  }
+
+  DVLOG(1) << __func__;
+  GetMediaInterfaceFactory()->CreateMediaPlayerRenderer(
+      std::move(client_extension_ptr), std::move(request),
+      std::move(renderer_extension_request));
 }
 
 void MediaInterfaceFactory::CreateFlingingRenderer(

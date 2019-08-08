@@ -16,13 +16,12 @@
 #include "api/test/simulated_network.h"
 #include "call/call.h"
 #include "call/simulated_packet_receiver.h"
-#include "rtc_base/sequenced_task_checker.h"
+#include "rtc_base/synchronization/sequence_checker.h"
 #include "rtc_base/thread_annotations.h"
 #include "test/single_threaded_task_queue.h"
 
 namespace webrtc {
 
-class Clock;
 class PacketReceiver;
 
 namespace test {
@@ -65,7 +64,6 @@ class DirectTransport : public Transport {
   void Start();
 
   Call* const send_call_;
-  Clock* const clock_;
 
   SingleThreadedTaskQueueForTesting* const task_queue_;
 

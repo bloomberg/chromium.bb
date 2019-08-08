@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 112 tests; 96 PASS, 16 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 112 tests; 108 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup audio MediaStreamTrack getCapabilities() test for volume
 PASS Setup audio MediaStreamTrack getCapabilities() test for sampleRate
 PASS Setup audio MediaStreamTrack getCapabilities() test for sampleSize
@@ -38,8 +38,8 @@ PASS Setup video InputDeviceInfo getCapabilities() test for deviceId
 PASS Setup video InputDeviceInfo getCapabilities() test for groupId
 FAIL Audio track getCapabilities() volume property present. assert_true: expected true got false
 FAIL Audio track getCapabilities() volume properly supported. assert_equals: expected "object" but got "undefined"
-FAIL Audio track getCapabilities() sampleRate property present. assert_true: expected true got false
-FAIL Audio track getCapabilities() sampleRate properly supported. assert_equals: expected "object" but got "undefined"
+PASS Audio track getCapabilities() sampleRate property present.
+PASS Audio track getCapabilities() sampleRate properly supported.
 PASS Audio track getCapabilities() sampleSize property present.
 PASS Audio track getCapabilities() sampleSize properly supported.
 PASS Audio track getCapabilities() echoCancellation property present.
@@ -48,10 +48,10 @@ PASS Audio track getCapabilities() autoGainControl property present.
 PASS Audio track getCapabilities() autoGainControl properly supported.
 PASS Audio track getCapabilities() noiseSuppression property present.
 PASS Audio track getCapabilities() noiseSuppression properly supported.
-FAIL Audio track getCapabilities() latency property present. assert_true: expected true got false
-FAIL Audio track getCapabilities() latency properly supported. assert_equals: expected "object" but got "undefined"
-FAIL Audio track getCapabilities() channelCount property present. assert_true: expected true got false
-FAIL Audio track getCapabilities() channelCount properly supported. assert_equals: expected "object" but got "undefined"
+PASS Audio track getCapabilities() latency property present.
+PASS Audio track getCapabilities() latency properly supported.
+PASS Audio track getCapabilities() channelCount property present.
+PASS Audio track getCapabilities() channelCount properly supported.
 PASS Audio track getCapabilities() deviceId property present.
 PASS Audio track getCapabilities() deviceId properly supported.
 PASS Audio track getCapabilities() groupId property present.
@@ -76,8 +76,8 @@ PASS Video track getCapabilities() groupId property present.
 PASS Video track getCapabilities() groupId properly supported.
 FAIL Audio device getCapabilities() volume property present. assert_true: expected true got false
 FAIL Audio device getCapabilities() volume properly supported. assert_equals: expected "object" but got "undefined"
-FAIL Audio device getCapabilities() sampleRate property present. assert_true: expected true got false
-FAIL Audio device getCapabilities() sampleRate properly supported. assert_equals: expected "object" but got "undefined"
+PASS Audio device getCapabilities() sampleRate property present.
+PASS Audio device getCapabilities() sampleRate properly supported.
 PASS Audio device getCapabilities() sampleSize property present.
 PASS Audio device getCapabilities() sampleSize properly supported.
 PASS Audio device getCapabilities() echoCancellation property present.
@@ -86,10 +86,10 @@ PASS Audio device getCapabilities() autoGainControl property present.
 PASS Audio device getCapabilities() autoGainControl properly supported.
 PASS Audio device getCapabilities() noiseSuppression property present.
 PASS Audio device getCapabilities() noiseSuppression properly supported.
-FAIL Audio device getCapabilities() latency property present. assert_true: expected true got false
-FAIL Audio device getCapabilities() latency properly supported. assert_equals: expected "object" but got "undefined"
-FAIL Audio device getCapabilities() channelCount property present. assert_true: expected true got false
-FAIL Audio device getCapabilities() channelCount properly supported. assert_equals: expected "object" but got "undefined"
+PASS Audio device getCapabilities() latency property present.
+PASS Audio device getCapabilities() latency properly supported.
+PASS Audio device getCapabilities() channelCount property present.
+PASS Audio device getCapabilities() channelCount properly supported.
 PASS Audio device getCapabilities() deviceId property present.
 PASS Audio device getCapabilities() deviceId properly supported.
 PASS Audio device getCapabilities() groupId property present.

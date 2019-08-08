@@ -1362,7 +1362,7 @@ def PushBranch(branch, git_repo, dryrun=False,
   if auto_merge:
     remote_ref = RemoteRef(remote=remote_ref.remote,
                            ref=remote_ref.ref.replace(
-                               'heads', 'for', 1) + '%submit',
+                               'heads', 'for', 1) + '%notify=NONE,submit',
                            project_name=remote_ref.project_name)
   #reference = staging_branch if staging_branch is not None else remote_ref.ref
   if staging_branch is not None:

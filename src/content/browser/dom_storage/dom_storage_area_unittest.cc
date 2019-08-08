@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -24,12 +25,43 @@
 #include "content/browser/dom_storage/session_storage_database.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 
 using base::ASCIIToUTF16;
+using ::testing::Invoke;
 
 namespace content {
+
+class DOMStorageAreaMock : public DOMStorageArea {
+ public:
+  DOMStorageAreaMock(const std::string& namespace_id,
+                     std::vector<std::string> original_namespace_ids,
+                     const url::Origin& origin,
+                     SessionStorageDatabase* session_storage_backing,
+                     DOMStorageTaskRunner* task_runner)
+      : DOMStorageArea(namespace_id,
+                       std::move(original_namespace_ids),
+                       origin,
+                       session_storage_backing,
+                       task_runner) {}
+
+  MOCK_METHOD0(AfterOnCommitTimerCalled, void());
+
+  void ReadAllValuesFromBackingStore(DOMStorageValuesMap* result) {
+    backing_->ReadAllValues(result);
+  }
+
+ private:
+  ~DOMStorageAreaMock() override {}
+
+  void OnCommitTimer() override {
+    DOMStorageArea::OnCommitTimer();
+    AfterOnCommitTimerCalled();
+  }
+};
 
 class DOMStorageAreaTest : public testing::Test {
  public:
@@ -46,36 +78,8 @@ class DOMStorageAreaTest : public testing::Test {
   const base::string16 kKey2;
   const base::string16 kValue2;
 
-  // Method used in the CommitTasks test case.
-  void InjectedCommitSequencingTask1(
-      const scoped_refptr<DOMStorageArea>& area) {
-    // At this point the StartCommitTimer task has run and
-    // the OnCommitTimer task is queued. We want to inject after
-    // that.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&DOMStorageAreaTest::InjectedCommitSequencingTask2,
-                       base::Unretained(this), area));
-  }
-
-  void InjectedCommitSequencingTask2(
-      const scoped_refptr<DOMStorageArea>& area) {
-    // At this point the OnCommitTimer has run.
-    // Verify that it put a commit in flight.
-    EXPECT_TRUE(area->HasCommitBatchInFlight());
-    EXPECT_FALSE(area->GetCurrentCommitBatch());
-    EXPECT_TRUE(area->HasUncommittedChanges());
-    // Make additional change and verify that a new commit batch
-    // is created for that change.
-    base::NullableString16 old_value;
-    EXPECT_TRUE(area->SetItem(kKey2, kValue2, old_value, &old_value));
-    EXPECT_TRUE(area->GetCurrentCommitBatch());
-    EXPECT_TRUE(area->HasCommitBatchInFlight());
-    EXPECT_TRUE(area->HasUncommittedChanges());
-  }
-
- private:
-  base::test::ScopedTaskEnvironment task_environment_;
+ protected:
+  TestBrowserThreadBundle test_browser_thread_bundle_;
 };
 
 class DOMStorageAreaParamTest : public DOMStorageAreaTest,
@@ -400,26 +404,55 @@ TEST_P(DOMStorageAreaParamTest, CommitTasks) {
   values.clear();
   area->backing_->ReadAllValues(&values);
   EXPECT_TRUE(values.empty());
+}
+
+TEST_P(DOMStorageAreaParamTest, ChangesDuringInflightCommitGetCommitted) {
+  const std::string kNamespaceId = "id1";
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  scoped_refptr<SessionStorageDatabase> db = new SessionStorageDatabase(
+      temp_dir.GetPath(), base::ThreadTaskRunnerHandle::Get());
+  scoped_refptr<DOMStorageAreaMock> area(new DOMStorageAreaMock(
+      kNamespaceId, std::vector<std::string>(), kOrigin, db.get(),
+      new MockDOMStorageTaskRunner(base::ThreadTaskRunnerHandle::Get().get())));
+  area->SetCacheOnlyKeys(GetParam());
+
+  DOMStorageValuesMap values;
+  base::NullableString16 old_value;
+
+  EXPECT_CALL(*area, AfterOnCommitTimerCalled)
+      .WillOnce(Invoke([&]() {
+        // At this point the OnCommitTimer has run.
+        // Verify that it put a commit in flight.
+        EXPECT_TRUE(area->HasCommitBatchInFlight());
+        EXPECT_FALSE(area->GetCurrentCommitBatch());
+        EXPECT_TRUE(area->HasUncommittedChanges());
+        // Make additional change and verify that a new commit batch
+        // is created for that change.
+        base::NullableString16 old_value;
+        EXPECT_TRUE(area->SetItem(kKey2, kValue2, old_value, &old_value));
+        EXPECT_TRUE(area->GetCurrentCommitBatch());
+        EXPECT_TRUE(area->HasCommitBatchInFlight());
+        EXPECT_TRUE(area->HasUncommittedChanges());
+      }))
+      .WillOnce(Invoke([&]() {
+        // At this point the OnCommitTimer has run.
+        // Verify that it put a commit in flight.
+        EXPECT_TRUE(area->HasCommitBatchInFlight());
+        EXPECT_FALSE(area->GetCurrentCommitBatch());
+        EXPECT_TRUE(area->HasUncommittedChanges());
+      }));
 
   // See that if changes accrue while a commit is "in flight"
   // those will also get committed.
   EXPECT_TRUE(area->SetItem(kKey, kValue, old_value, &old_value));
   EXPECT_TRUE(area->HasUncommittedChanges());
-  // At this point the StartCommitTimer task has been posted to the after
-  // startup task queue. We inject another task in the queue that will
-  // execute when the CommitChanges task is inflight. From within our
-  // injected task, we'll make an additional SetItem() call and verify
-  // that a new commit batch is created for that additional change.
-  BrowserThread::PostAfterStartupTask(
-      FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
-      base::BindOnce(&DOMStorageAreaTest::InjectedCommitSequencingTask1,
-                     base::Unretained(this), area));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(area->HasOneRef());
   EXPECT_FALSE(area->HasUncommittedChanges());
   // Verify the changes made it to the database.
   values.clear();
-  area->backing_->ReadAllValues(&values);
+  area->ReadAllValuesFromBackingStore(&values);
   EXPECT_EQ(2u, values.size());
   EXPECT_EQ(kValue, values[kKey].string());
   EXPECT_EQ(kValue2, values[kKey2].string());

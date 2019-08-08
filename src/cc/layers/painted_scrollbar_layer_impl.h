@@ -5,7 +5,6 @@
 #ifndef CC_LAYERS_PAINTED_SCROLLBAR_LAYER_IMPL_H_
 #define CC_LAYERS_PAINTED_SCROLLBAR_LAYER_IMPL_H_
 
-#include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/input/scrollbar.h"
 #include "cc/layers/scrollbar_layer_impl_base.h"
@@ -23,7 +22,11 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
       ScrollbarOrientation orientation,
       bool is_left_side_vertical_scrollbar,
       bool is_overlay);
+  PaintedScrollbarLayerImpl(const PaintedScrollbarLayerImpl&) = delete;
   ~PaintedScrollbarLayerImpl() override;
+
+  PaintedScrollbarLayerImpl& operator=(const PaintedScrollbarLayerImpl&) =
+      delete;
 
   // LayerImpl implementation.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
@@ -35,6 +38,8 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
                    AppendQuadsData* append_quads_data) override;
   gfx::Rect GetEnclosingRectInTargetSpace() const override;
 
+  void SetBackButtonRect(gfx::Rect back_button_rect);
+  void SetForwardButtonRect(gfx::Rect forward_button_rect);
   void SetThumbThickness(int thumb_thickness);
   void SetThumbLength(int thumb_length);
   void SetTrackStart(int track_start);
@@ -55,6 +60,8 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
     internal_content_bounds_ = content_bounds;
   }
 
+  gfx::Rect BackButtonRect() const override;
+  gfx::Rect ForwardButtonRect() const override;
   int ThumbThickness() const override;
 
   LayerTreeSettings::ScrollbarAnimator GetScrollbarAnimator() const override;
@@ -87,8 +94,8 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
   int thumb_length_;
   int track_start_;
   int track_length_;
-
-  DISALLOW_COPY_AND_ASSIGN(PaintedScrollbarLayerImpl);
+  gfx::Rect back_button_rect_;
+  gfx::Rect forward_button_rect_;
 };
 
 }  // namespace cc

@@ -8,8 +8,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/screenshot_testing/login_screen_areas.h"
-#include "chrome/browser/chromeos/login/screenshot_testing/screenshot_testing_mixin.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
@@ -42,17 +40,11 @@ class LoginUITest : public chromeos::LoginManagerTest {
       test_users_.emplace_back(AccountId::FromUserEmailGaiaId(
           kTestUsers[i].email, kTestUsers[i].gaia_id));
     }
-
-    screenshot_testing_.IgnoreArea(areas::kClockArea);
-    screenshot_testing_.IgnoreArea(areas::kFirstUserpod);
-    screenshot_testing_.IgnoreArea(areas::kSecondUserpod);
   }
   ~LoginUITest() override {}
 
  protected:
   std::vector<AccountId> test_users_;
-
-  ScreenshotTestingMixin screenshot_testing_{&mixin_host_};
 
   DISALLOW_COPY_AND_ASSIGN(LoginUITest);
 };
@@ -78,7 +70,6 @@ IN_PROC_BROWSER_TEST_F(LoginUITest, LoginUIVisible) {
       "document.querySelectorAll('.pod:not(#user-pod-template)')[1]"
       ".user.emailAddress == '" +
       test_users_[1].GetUserEmail() + "'");
-  screenshot_testing_.RunScreenshotTesting("LoginUITest-LoginUIVisible");
 }
 
 IN_PROC_BROWSER_TEST_F(LoginUITest, PRE_InterruptedAutoStartEnrollment) {

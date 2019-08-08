@@ -30,6 +30,8 @@ class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
   void ReturnResources(
       uint32_t layer_tree_frame_sink_id,
       const std::vector<viz::ReturnedResource>& resources) override;
+  void DidPresentCompositorFrames(
+      viz::PresentationFeedbackMap feedbacks) override {}
   bool DemandDrawSw(SkCanvas* canvas) override;
   void SetMemoryPolicy(size_t bytes_limit) override {}
   void DidBecomeActive() override {}

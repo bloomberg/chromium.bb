@@ -2486,7 +2486,7 @@ def SetUpAndroidEnv(env):
                                                'third_party', 'android_tools',
                                                'ndk_experimental')
   android_sdk_root = os.path.join('${SOURCE_ROOT}', 'third_party',
-                                  'android_tools', 'sdk')
+                                  'android_sdk', 'public')
   android_sdk_version = 21
   android_stlport_root = os.path.join(android_ndk_root, 'sources', 'cxx-stl',
                                       'stlport')

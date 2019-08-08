@@ -1,11 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../global_scroll_target_behavior.html">
 <link rel="import" href="../prefs/prefs.html">
 <link rel="import" href="../prefs/prefs_behavior.html">
@@ -56,10 +56,8 @@
           <template>
             <div class="list-item">
               <div class="word text-elide">[[item]]</div>
-              <paper-icon-button-light class="icon-clear">
-                <button on-click="onRemoveWordTap_" tabindex$="[[tabIndex]]">
-                </button>
-              </paper-icon-button-light>
+              <cr-icon-button class="icon-clear" on-click="onRemoveWordTap_"
+                  tabindex$="[[tabIndex]]"></cr-icon-button>
             </div>
           </template>
         </iron-list>

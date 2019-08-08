@@ -36,7 +36,7 @@ class SRTDownloadURLTest : public ::testing::Test {
 TEST_F(SRTDownloadURLTest, Stable) {
   CreatePromptTrial("On");
   std::string expected_path;
-  if (base::win::OSInfo::GetInstance()->architecture() ==
+  if (base::win::OSInfo::GetArchitecture() ==
       base::win::OSInfo::X86_ARCHITECTURE) {
     expected_path =
         "/dl/softwareremovaltool/win/x86/stable/chrome_cleanup_tool.exe";
@@ -50,7 +50,7 @@ TEST_F(SRTDownloadURLTest, Stable) {
 TEST_F(SRTDownloadURLTest, Experiment) {
   CreateDownloadFeature("experiment");
   std::string expected_path;
-  if (base::win::OSInfo::GetInstance()->architecture() ==
+  if (base::win::OSInfo::GetArchitecture() ==
       base::win::OSInfo::X86_ARCHITECTURE) {
     expected_path =
         "/dl/softwareremovaltool/win/x86/experiment/chrome_cleanup_tool.exe";
@@ -63,7 +63,7 @@ TEST_F(SRTDownloadURLTest, Experiment) {
 
 TEST_F(SRTDownloadURLTest, DefaultsToStable) {
   std::string expected_path;
-  if (base::win::OSInfo::GetInstance()->architecture() ==
+  if (base::win::OSInfo::GetArchitecture() ==
       base::win::OSInfo::X86_ARCHITECTURE) {
     expected_path =
         "/dl/softwareremovaltool/win/x86/stable/chrome_cleanup_tool.exe";

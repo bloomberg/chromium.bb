@@ -4,16 +4,16 @@
 
 #include "components/arc/usb/usb_host_bridge.h"
 
+#include <unordered_set>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/permission_broker_client.h"
-#include "components/arc/arc_bridge_service.h"
+#include "chromeos/dbus/permission_broker/permission_broker_client.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_features.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/usb/usb_host_ui_delegate.h"
 #include "device/base/device_client.h"
 #include "device/usb/mojo/type_converters.h"
@@ -156,14 +156,12 @@ void ArcUsbHostBridge::OpenDevice(const std::string& guid,
     return;
   }
 
-  chromeos::PermissionBrokerClient* client =
-      chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
-  DCHECK(client) << "Could not get permission broker client.";
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
-  client->OpenPath(device->device_path(),
-                   base::Bind(&OnDeviceOpened, repeating_callback),
-                   base::Bind(&OnDeviceOpenError, repeating_callback));
+  chromeos::PermissionBrokerClient::Get()->OpenPath(
+      device->device_path(),
+      base::BindOnce(&OnDeviceOpened, repeating_callback),
+      base::BindOnce(&OnDeviceOpenError, repeating_callback));
 }
 
 void ArcUsbHostBridge::OpenDeviceDeprecated(

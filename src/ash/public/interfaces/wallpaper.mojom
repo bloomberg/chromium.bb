@@ -289,10 +289,10 @@ interface WallpaperControllerClient {
   // able to decide whatever the first wallpaper it wants to display.
   OnReadyToSetWallpaper();
 
-  // TODO(wzang|784495): Consider removing this after views-based login is
-  // enabled.
-  // Notifies the client that the animation of the first wallpaper since
-  // the controller initialization has completed.
+  // Notifies the client that the animation of the first wallpaper since the
+  // controller initialization has completed.
+  // TODO(crbug.com/875128): Remove this after web-ui login code is completely
+  // removed.
   OnFirstWallpaperAnimationFinished();
 };
 
@@ -309,7 +309,8 @@ interface WallpaperObserver {
   // are ordered and are referenced in wallpaper::ColorProfileType.
   OnWallpaperColorsChanged(array<uint32> prominent_colors);
 
-  // TODO(wzang|784495): Remove this after views-based login is enabled.
   // Invoked when the blur state of the wallpaper changes.
+  // TODO(crbug.com/875128): Remove this after web-ui login code is completely
+  // removed.
   OnWallpaperBlurChanged(bool blurred);
 };

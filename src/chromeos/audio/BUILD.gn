@@ -11,7 +11,7 @@ component("audio") {
   deps = [
     "//base",
     "//chromeos/constants",
-    "//chromeos/dbus",
+    "//chromeos/dbus/audio",
     "//components/prefs",
     "//media/base:video_facing",
   ]
@@ -36,7 +36,7 @@ source_set("unit_tests") {
     ":audio",
     "//base/test:test_support",
     "//chromeos/constants",
-    "//chromeos/dbus:test_support",
+    "//chromeos/dbus/audio",
     "//components/prefs:test_support",
     "//media/base:video_facing",
     "//testing/gtest",

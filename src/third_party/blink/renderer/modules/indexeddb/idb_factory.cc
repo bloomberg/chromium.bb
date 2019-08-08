@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_factory.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_factory_impl.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_transaction_impl.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -67,13 +68,6 @@ namespace {
 
 class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
  public:
-  // static
-  static std::unique_ptr<WebIDBGetDBNamesCallbacksImpl> Create(
-      ScriptPromiseResolver* promise_resolver) {
-    return base::WrapUnique(
-        new WebIDBGetDBNamesCallbacksImpl(promise_resolver));
-  }
-
   WebIDBGetDBNamesCallbacksImpl(ScriptPromiseResolver* promise_resolver)
       : promise_resolver_(promise_resolver) {
     probe::AsyncTaskScheduled(
@@ -226,7 +220,7 @@ WebIDBFactory* IDBFactory::GetFactory(ExecutionContext* execution_context) {
 
 ScriptPromise IDBFactory::GetDatabaseInfo(ScriptState* script_state,
                                           ExceptionState& exception_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
   if (!ExecutionContext::From(script_state)
            ->GetSecurityOrigin()
@@ -244,7 +238,8 @@ ScriptPromise IDBFactory::GetDatabaseInfo(ScriptState* script_state,
     resolver->Reject();
     return resolver->Promise();
   }
-  factory->GetDatabaseInfo(WebIDBGetDBNamesCallbacksImpl::Create(resolver));
+  factory->GetDatabaseInfo(
+      std::make_unique<WebIDBGetDBNamesCallbacksImpl>(resolver));
   ScriptPromise promise = resolver->Promise();
   return promise;
 }
@@ -321,11 +316,18 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
                       WebFeature::kFileAccessedDatabase);
   }
 
-  IDBDatabaseCallbacks* database_callbacks = IDBDatabaseCallbacks::Create();
+  auto* database_callbacks = MakeGarbageCollected<IDBDatabaseCallbacks>();
   int64_t transaction_id = IDBDatabase::NextTransactionId();
-  IDBOpenDBRequest* request =
-      IDBOpenDBRequest::Create(script_state, database_callbacks, transaction_id,
-                               version, std::move(metrics));
+
+  auto transaction_backend = std::make_unique<WebIDBTransactionImpl>(
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(TaskType::kDatabaseAccess),
+      transaction_id);
+  mojom::blink::IDBTransactionAssociatedRequest transaction_request =
+      transaction_backend->CreateRequest();
+  auto* request = MakeGarbageCollected<IDBOpenDBRequest>(
+      script_state, database_callbacks, std::move(transaction_backend),
+      transaction_id, version, std::move(metrics));
 
   if (!IndexedDBClient::From(ExecutionContext::From(script_state))
            ->AllowIndexedDB(ExecutionContext::From(script_state))) {
@@ -340,7 +342,8 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
     exception_state.ThrowSecurityError("An internal error occurred.");
     return nullptr;
   }
-  factory->Open(name, version, transaction_id, request->CreateWebCallbacks(),
+  factory->Open(name, version, std::move(transaction_request), transaction_id,
+                request->CreateWebCallbacks(),
                 database_callbacks->CreateWebCallbacks());
   return request;
 }
@@ -390,9 +393,9 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
                       WebFeature::kFileAccessedDatabase);
   }
 
-  IDBOpenDBRequest* request = IDBOpenDBRequest::Create(
-      script_state, nullptr, 0, IDBDatabaseMetadata::kDefaultVersion,
-      std::move(metrics));
+  auto* request = MakeGarbageCollected<IDBOpenDBRequest>(
+      script_state, nullptr, /*IDBTransactionAssociatedPtr=*/nullptr, 0,
+      IDBDatabaseMetadata::kDefaultVersion, std::move(metrics));
 
   if (!IndexedDBClient::From(ExecutionContext::From(script_state))
            ->AllowIndexedDB(ExecutionContext::From(script_state))) {

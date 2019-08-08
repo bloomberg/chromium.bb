@@ -4,7 +4,7 @@
 
 #include "chrome/browser/resource_coordinator/utils.h"
 
-#include "base/md5.h"
+#include "base/hash/md5.h"
 #include "base/numerics/safe_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"

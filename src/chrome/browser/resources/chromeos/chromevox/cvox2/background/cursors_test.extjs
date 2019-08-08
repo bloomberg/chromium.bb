@@ -344,18 +344,18 @@ TEST_F('ChromeVoxCursorsTest', 'SingleDocSelection', function() {
         new cursors.Cursor(p2.firstChild, 4));
 
     function verifySel() {
-      if (root.anchorObject == link.firstChild) {
-        assertEquals(link.firstChild, root.anchorObject);
-        assertEquals(0, root.anchorOffset);
-        assertEquals(link.firstChild, root.focusObject);
-        assertEquals(1, root.focusOffset);
+      if (root.selectionStartObject == link.firstChild) {
+        assertEquals(link.firstChild, root.selectionStartObject);
+        assertEquals(0, root.selectionStartOffset);
+        assertEquals(link.firstChild, root.selectionEndObject);
+        assertEquals(1, root.selectionEndOffset);
         this.listenOnce(root, 'textSelectionChanged', verifySel);
         multiSel.select();
-      } else if (root.anchorObject == p1.firstChild) {
-        assertEquals(p1.firstChild, root.anchorObject);
-        assertEquals(2, root.anchorOffset);
-        assertEquals(p2.firstChild, root.focusObject);
-        assertEquals(4, root.focusOffset);
+      } else if (root.selectionStartObject == p1.firstChild) {
+        assertEquals(p1.firstChild, root.selectionStartObject);
+        assertEquals(2, root.selectionStartOffset);
+        assertEquals(p2.firstChild, root.selectionEndObject);
+        assertEquals(4, root.selectionEndOffset);
       }
     }
 
@@ -400,14 +400,14 @@ TEST_F('ChromeVoxCursorsTest', 'InlineElementOffset', function() {
   */}, function(root) {
     root.addEventListener('textSelectionChanged', this.newCallback(function(evt) {
       // Test setup moves initial focus; ensure we don't test that here.
-      if (testNode != root.anchorObject)
+      if (testNode != root.selectionStartObject)
         return;
 
       // This is a little unexpected though not really incorrect; Ctrl+C works.
-      assertEquals(testNode, root.anchorObject);
-      assertEquals(ofSelectionNode, root.focusObject);
-      assertEquals(4, root.anchorOffset);
-      assertEquals(1, root.focusOffset);
+      assertEquals(testNode, root.selectionStartObject);
+      assertEquals(ofSelectionNode, root.selectionEndObject);
+      assertEquals(4, root.selectionStartOffset);
+      assertEquals(1, root.selectionEndOffset);
     }));
 
     // This is the link's static text.

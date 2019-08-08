@@ -56,14 +56,12 @@
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab_dialog_delegate.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
-#import "ios/chrome/browser/ui/open_in_controller.h"
-#import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
+#import "ios/chrome/browser/ui/open_in/open_in_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
@@ -78,7 +76,6 @@
 #import "ios/web/public/serializable_user_data_manager.h"
 #include "ios/web/public/ssl_status.h"
 #include "ios/web/public/url_scheme_util.h"
-#include "ios/web/public/url_util.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/navigation_context.h"
@@ -104,10 +101,6 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kTabUrlStartedLoadingNotificationForCrashReporting =
-    @"kTabUrlStartedLoadingNotificationForCrashReporting";
-NSString* const kTabUrlMayStartLoadingNotificationForCrashReporting =
-    @"kTabUrlMayStartLoadingNotificationForCrashReporting";
 NSString* const kTabIsShowingExportableNotificationForCrashReporting =
     @"kTabIsShowingExportableNotificationForCrashReporting";
 NSString* const kTabClosingCurrentDocumentNotificationForCrashReporting =
@@ -120,10 +113,6 @@ NSString* const kTabUrlKey = @"url";
   ios::ChromeBrowserState* _browserState;
 
   OpenInController* _openInController;
-
-  // The Overscroll controller responsible for displaying the
-  // overscrollActionsView above the toolbar.
-  OverscrollActionsController* _overscrollActionsController;
 
   // WebStateImpl for this tab.
   web::WebStateImpl* _webStateImpl;
@@ -142,11 +131,6 @@ NSString* const kTabUrlKey = @"url";
 @end
 
 @implementation Tab
-
-@synthesize overscrollActionsController = _overscrollActionsController;
-@synthesize overscrollActionsControllerDelegate =
-    overscrollActionsControllerDelegate_;
-@synthesize dialogDelegate = dialogDelegate_;
 
 #pragma mark - Initializers
 
@@ -186,31 +170,6 @@ NSString* const kTabUrlKey = @"url";
   return _webStateImpl;
 }
 
-- (void)setOverscrollActionsControllerDelegate:
-    (id<OverscrollActionsControllerDelegate>)
-        overscrollActionsControllerDelegate {
-  if (overscrollActionsControllerDelegate_ ==
-      overscrollActionsControllerDelegate) {
-    return;
-  }
-
-  // Lazily create a OverscrollActionsController.
-  // The check for overscrollActionsControllerDelegate is necessary to avoid
-  // recreating a OverscrollActionsController during teardown.
-  if (!_overscrollActionsController) {
-    _overscrollActionsController = [[OverscrollActionsController alloc]
-        initWithWebViewProxy:self.webState->GetWebViewProxy()];
-  }
-  OverscrollStyle style = OverscrollStyle::REGULAR_PAGE_NON_INCOGNITO;
-  if (_browserState->IsOffTheRecord())
-    style = OverscrollStyle::REGULAR_PAGE_INCOGNITO;
-  [_overscrollActionsController setStyle:style];
-  [_overscrollActionsController
-      setDelegate:overscrollActionsControllerDelegate];
-  [_overscrollActionsController setBrowserState:_browserState];
-  overscrollActionsControllerDelegate_ = overscrollActionsControllerDelegate;
-}
-
 #pragma mark - Public API
 
 - (UIView*)viewForPrinting {
@@ -227,37 +186,11 @@ NSString* const kTabUrlKey = @"url";
   [self.webController dismissModals];
 }
 
-- (void)willUpdateSnapshot {
-  [_overscrollActionsController clear];
-}
-
-- (void)notifyTabOfUrlMayStartLoading:(const GURL&)url {
-  NSString* urlString = base::SysUTF8ToNSString(url.spec());
-  if ([urlString length]) {
-    [[NSNotificationCenter defaultCenter]
-        postNotificationName:kTabUrlMayStartLoadingNotificationForCrashReporting
-                      object:self
-                    userInfo:@{kTabUrlKey : urlString}];
-  }
-}
-
 #pragma mark - CRWWebStateObserver protocol
 
 - (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation {
-  // Notify tab of Url may start loading, this notification is not sent in cases
-  // of app launching, history api navigations, and hash change navigations.
-  [self notifyTabOfUrlMayStartLoading:navigation->GetUrl()];
-
-  [self.dialogDelegate cancelDialogForTab:self];
   [_openInController disable];
-}
-
-- (void)webState:(web::WebState*)webState
-    didFinishNavigation:(web::NavigationContext*)navigation {
-  if (navigation->HasCommitted() && !navigation->IsSameDocument()) {
-    [self.dialogDelegate cancelDialogForTab:self];
-  }
 }
 
 - (void)webState:(web::WebState*)webState
@@ -269,22 +202,11 @@ NSString* const kTabUrlKey = @"url";
   }
 }
 
-- (void)renderProcessGoneForWebState:(web::WebState*)webState {
-  DCHECK(webState == _webStateImpl);
-  [self.dialogDelegate cancelDialogForTab:self];
-}
-
 - (void)webStateDestroyed:(web::WebState*)webState {
   DCHECK_EQ(_webStateImpl, webState);
-  self.overscrollActionsControllerDelegate = nil;
 
-  [_openInController detachFromWebController];
+  [_openInController detachFromWebState];
   _openInController = nil;
-  [_overscrollActionsController invalidate];
-  _overscrollActionsController = nil;
-
-  // Cancel any queued dialogs.
-  [self.dialogDelegate cancelDialogForTab:self];
 
   _webStateImpl->RemoveObserver(_webStateObserver.get());
   _webStateObserver.reset();
@@ -297,7 +219,7 @@ NSString* const kTabUrlKey = @"url";
   if (!_openInController) {
     _openInController = [[OpenInController alloc]
         initWithURLLoaderFactory:_browserState->GetSharedURLLoaderFactory()
-                   webController:self.webController];
+                        webState:self.webState];
     // Previously evicted tabs should be reloaded before this method is called.
     DCHECK(!self.webState->IsEvicted());
     self.webState->GetNavigationManager()->LoadIfNecessary();

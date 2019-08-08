@@ -32,11 +32,21 @@ _platforms = [
   'windows',
 ]
 
+_form_factors = [
+  'desktop',
+  'phone',
+  'tablet',
+]
+
 # Convert a platform argument to the matching Platform enum value in
 # components/variations/proto/study.proto.
 def _PlatformEnumValue(platform):
   assert platform in _platforms
   return 'Study::PLATFORM_' + platform.upper()
+
+def _FormFactorEnumValue(form_factor):
+  assert form_factor in _form_factors
+  return 'Study::' + form_factor.upper()
 
 def _Load(filename):
   """Loads a JSON file into a Python object and return this object.
@@ -51,10 +61,15 @@ def _LoadFieldTrialConfig(filename, platforms):
   """
   return _FieldTrialConfigToDescription(_Load(filename), platforms)
 
-def _CreateExperiment(experiment_data, platforms):
+def _CreateExperiment(experiment_data,
+                      platforms,
+                      is_low_end_device,
+                      form_factors):
   experiment = {
     'name': experiment_data['name'],
     'platforms': [_PlatformEnumValue(p) for p in platforms],
+    'is_low_end_device': is_low_end_device,
+    'form_factors': [_FormFactorEnumValue(f) for f in form_factors],
   }
   forcing_flags_data = experiment_data.get('forcing_flag')
   if forcing_flags_data:
@@ -74,13 +89,24 @@ def _CreateExperiment(experiment_data, platforms):
 def _CreateTrial(study_name, experiment_configs, platforms):
   """Returns the applicable experiments for |study_name| and |platforms|. This
   iterates through all of the experiment_configs for |study_name| and picks out
-  the applicable experiments based off of the valid platforms.
+  the applicable experiments based off of the valid platforms and device
+  type settings if specified.
   """
   experiments = []
   for config in experiment_configs:
     platform_intersection = [p for p in platforms if p in config['platforms']]
+    is_low_end_device = 'Study::OPTIONAL_BOOL_MISSING'
+    if 'is_low_end_device' in config:
+      is_low_end_device = ('Study::OPTIONAL_BOOL_TRUE'
+                           if config['is_low_end_device']
+                           else 'Study::OPTIONAL_BOOL_FALSE')
+
     if platform_intersection:
-      experiments += [_CreateExperiment(e, platform_intersection)
+      experiments += [_CreateExperiment(
+                          e,
+                          platform_intersection,
+                          is_low_end_device,
+                          config.get('form_factors', []))
                       for e in config['experiments']]
   return {
     'name': study_name,

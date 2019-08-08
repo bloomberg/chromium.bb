@@ -16,6 +16,7 @@
 #include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace ukm {
@@ -34,8 +35,18 @@ class FrameScheduler : public FrameOrWorkerScheduler {
 
     virtual ukm::UkmRecorder* GetUkmRecorder() = 0;
     virtual ukm::SourceId GetUkmSourceId() = 0;
+
     // Called when a frame has exceeded a total task time threshold (100ms).
     virtual void UpdateTaskTime(base::TimeDelta time) = 0;
+
+    // Notify that the list of active features for this frame has changed.
+    // See SchedulingPolicy::Feature for the list of features and the meaning
+    // of individual features.
+    // Note that this method is not called when the frame navigates — it is
+    // the responsibility of the observer to detect this and act reset features
+    // accordingly.
+    virtual void UpdateActiveSchedulerTrackedFeatures(
+        uint64_t features_mask) = 0;
   };
 
   ~FrameScheduler() override = default;
@@ -44,6 +55,12 @@ class FrameScheduler : public FrameOrWorkerScheduler {
   enum class FrameType {
     kMainFrame,
     kSubframe,
+  };
+
+  enum class NavigationType {
+    kReload,
+    kSameDocument,
+    kOther,
   };
 
   // The scheduler may throttle tasks associated with offscreen frames.
@@ -108,8 +125,7 @@ class FrameScheduler : public FrameOrWorkerScheduler {
   // may reset the task cost estimators and the UserModel. Must be called from
   // the main thread.
   virtual void DidCommitProvisionalLoad(bool is_web_history_inert_commit,
-                                        bool is_reload,
-                                        bool is_main_frame) = 0;
+                                        NavigationType navigation_type) = 0;
 
   // Tells the scheduler that the first meaningful paint has occured for this
   // frame.
@@ -131,6 +147,14 @@ class FrameScheduler : public FrameOrWorkerScheduler {
   // exists.
   virtual std::unique_ptr<blink::mojom::blink::PauseSubresourceLoadingHandle>
   GetPauseSubresourceLoadingHandle() = 0;
+
+  // Returns the list of active features which currently tracked by the
+  // scheduler for back-forward cache metrics.
+  virtual WTF::HashSet<SchedulingPolicy::Feature>
+  GetActiveFeaturesTrackedForBackForwardCacheMetrics() = 0;
+
+  // TODO(altimin): Move FrameScheduler object to oilpan.
+  virtual base::WeakPtr<FrameScheduler> GetWeakPtr() = 0;
 };
 
 }  // namespace blink

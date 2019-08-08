@@ -102,16 +102,6 @@ std::unique_ptr<base::DictionaryValue> GetExtensionInfo(
 const gfx::ImageSkia& GetDefaultExtensionIcon();
 const gfx::ImageSkia& GetDefaultAppIcon();
 
-// Returns true if the bookmark apps feature is enabled.
-//
-// TODO(benwells): http://crbug.com/441128: Remove this entirely once the
-// feature is stable.
-bool IsNewBookmarkAppsEnabled();
-
-// TODO(dominickn): http://crbug.com/517682: Remove this entirely once
-// open in window is stable on Mac.
-bool CanHostedAppsOpenInWindows();
-
 // Returns true for custodian-installed extensions in a supervised profile.
 bool IsExtensionSupervised(const Extension* extension, Profile* profile);
 

@@ -35,6 +35,8 @@ namespace WTF {
 // This class allows nodes to share code without dictating data member layout.
 template <typename T>
 class DoublyLinkedListNode {
+  USING_FAST_MALLOC(DoublyLinkedListNode);
+
  public:
   DoublyLinkedListNode();
 

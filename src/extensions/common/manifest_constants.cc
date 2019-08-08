@@ -11,7 +11,10 @@ namespace manifest_keys {
 
 const char kAboutPage[] = "about_page";
 const char kAction[] = "action";
+const char kActionDefaultIcon[] = "default_icon";
+const char kActionDefaultPopup[] = "default_popup";
 const char kActionDefaultState[] = "default_state";
+const char kActionDefaultTitle[] = "default_title";
 const char kAllFrames[] = "all_frames";
 const char kAltKey[] = "altKey";
 const char kApp[] = "app";
@@ -22,8 +25,7 @@ const char kBackgroundAllowJsAccess[] = "background.allow_js_access";
 const char kBackgroundPage[] = "background.page";
 const char kBackgroundPersistent[] = "background.persistent";
 const char kBackgroundScripts[] = "background.scripts";
-const char kBackgroundServiceWorkerScript[] =
-    "background.service_worker_script";
+const char kBackgroundServiceWorkerScript[] = "background.service_worker";
 const char kBluetooth[] = "bluetooth";
 const char kBookmarkUI[] = "bookmarks_ui";
 const char kBrowserAction[] = "browser_action";
@@ -57,6 +59,7 @@ const char kExternallyConnectable[] = "externally_connectable";
 const char kEventRules[] = "event_rules";
 const char kFileAccessList[] = "file_access";
 const char kFileFilters[] = "file_filters";
+const char kFileBrowserHandlerId[] = "id";
 const char kFileBrowserHandlers[] = "file_browser_handlers";
 const char kFileHandlers[] = "file_handlers";
 const char kFileHandlerExtensions[] = "extensions";
@@ -66,6 +69,7 @@ const char kFileHandlerVerb[] = "verb";
 const char kGlobal[] = "global";
 const char kHideBookmarkButton[] = "hide_bookmark_button";
 const char kHomepageURL[] = "homepage_url";
+const char kHostPermissions[] = "host_permissions";
 const char kIcons[] = "icons";
 const char kId[] = "id";
 const char kImeOptionsPage[] = "options_page";
@@ -123,10 +127,6 @@ const char kOverrideSearchProvider[] =
     "chrome_settings_overrides.search_provider";
 const char kOverrideStartupPage[] = "chrome_settings_overrides.startup_pages";
 const char kPageAction[] = "page_action";
-const char kPageActionDefaultIcon[] = "default_icon";
-const char kPageActionDefaultPopup[] = "default_popup";
-const char kPageActionDefaultTitle[] = "default_title";
-const char kPageActionId[] = "id";
 const char kPermissions[] = "permissions";
 const char kPlatformAppBackground[] = "app.background";
 const char kPlatformAppBackgroundPage[] = "app.background.page";
@@ -134,6 +134,7 @@ const char kPlatformAppBackgroundScripts[] = "app.background.scripts";
 const char kPlatformAppContentSecurityPolicy[] = "app.content_security_policy";
 const char kPublicKey[] = "key";
 const char kRemoveButton[] = "remove_button";
+const char kReplacementWebApp[] = "replacement_web_app";
 const char kRequirements[] = "requirements";
 const char kRunAt[] = "run_at";
 const char kSandboxedPages[] = "sandbox.pages";
@@ -241,8 +242,6 @@ const char kRunAtDocumentStart[] = "document_start";
 const char kRunAtDocumentEnd[] = "document_end";
 const char kRunAtDocumentIdle[] = "document_idle";
 const char kPageActionCommandEvent[] = "_execute_page_action";
-const char kPageActionTypeTab[] = "tab";
-const char kPageActionTypePermanent[] = "permanent";
 const char kLaunchContainerPanelDeprecated[] = "panel";
 const char kLaunchContainerTab[] = "tab";
 const char kLaunchContainerWindow[] = "window";
@@ -301,8 +300,6 @@ const char kChromeVersionTooLow[] =
     "This extension requires * version * or greater.";
 const char kDeclarativeNetRequestPermissionNeeded[] =
     "The extension requires '*' permission for the '*' manifest key.";
-const char kDeclarativeNetRequestJSONRulesFileReadError[] =
-    "Declarative Net Request: Error in reading JSON rules file.";
 const char kDefaultStateShouldNotBeSet[] =
     "The default_state key cannot be set for browser_action or page_action "
     "keys.";
@@ -312,7 +309,10 @@ const char kInvalidAboutPage[] = "Invalid value for 'about_page'.";
 const char kInvalidAboutPageExpectRelativePath[] =
     "Invalid value for 'about_page'. Value must be a relative path.";
 const char kInvalidAction[] = "Invalid value for 'action'.";
+const char kInvalidActionDefaultIcon[] = "Invalid value for 'default_icon'.";
+const char kInvalidActionDefaultPopup[] = "Invalid type for 'default_popup'.";
 const char kInvalidActionDefaultState[] = "Invalid value for 'default_state'.";
+const char kInvalidActionDefaultTitle[] = "Invalid value for 'default_title'.";
 const char kInvalidAllFrames[] =
     "Invalid value for 'content_scripts[*].all_frames'.";
 const char kInvalidAppIconColor[] = "Invalid value for app.icon_color.";
@@ -329,7 +329,7 @@ const char kInvalidBackgroundScript[] =
 const char kInvalidBackgroundScripts[] =
     "Invalid value for 'background.scripts'.";
 const char kInvalidBackgroundServiceWorkerScript[] =
-    "Invalid value for 'background.service_worker_script'.";
+    "Invalid value for 'background.service_worker'.";
 const char kInvalidBackgroundInHostedApp[] =
     "Invalid value for 'background_page'. Hosted apps must specify an "
     "absolute HTTPS URL for the background page.";
@@ -402,6 +402,8 @@ const char kInvalidFileAccessValue[] =
     "Invalid value for 'file_access[*]'.";
 const char kInvalidFileBrowserHandler[] =
     "Invalid value for 'file_browser_handlers'.";
+const char kInvalidFileBrowserHandlerId[] =
+    "Required value 'id' is missing or invalid.";
 const char kInvalidFileBrowserHandlerMissingPermission[] =
     "Declaring file browser handlers requires the fileBrowserHandler manifest "
     "permission.";
@@ -411,6 +413,8 @@ const char kInvalidFileFilterValue[] =
     "Invalid value for 'file_filters[*]'.";
 const char kInvalidFileHandlers[] =
     "Invalid value for 'file_handlers'.";
+const char kInvalidFileHandlersHostedAppsNotSupported[] =
+    "Hosted apps do not support file handlers";
 const char kInvalidFileHandlersTooManyTypesAndExtensions[] =
     "Too many MIME and extension file_handlers have been declared.";
 const char kInvalidFileHandlerExtension[] =
@@ -436,6 +440,9 @@ const char kInvalidHomepageOverrideURL[] =
     "Invalid value for overriding homepage url: '[*]'.";
 const char kInvalidHomepageURL[] =
     "Invalid value for homepage url: '[*]'.";
+const char kInvalidHostPermission[] =
+    "Invalid value for 'host_permissions[*]'.";
+const char kInvalidHostPermissions[] = "Invalid value for 'host_permissions'.";
 const char kInvalidIconKey[] = "Invalid key in icons: \"*\".";
 const char kInvalidIconPath[] =
     "Invalid value for 'icons[\"*\"]'.";
@@ -578,16 +585,6 @@ const char kInvalidOptionsUIOpenInTab[] =
     "Invalid value for 'options_ui.open_in_tab'.";
 const char kInvalidPageAction[] =
     "Invalid value for 'page_action'.";
-const char kInvalidPageActionDefaultTitle[] =
-    "Invalid value for 'default_title'.";
-const char kInvalidPageActionIconPath[] =
-    "Invalid value for 'page_action.default_icon'.";
-const char kInvalidPageActionId[] =
-    "Required value 'id' is missing or invalid.";
-const char kInvalidPageActionPopup[] =
-    "Invalid type for page action popup.";
-const char kInvalidPageActionPopupPath[] =
-    "Invalid value for page action popup path [*].";
 const char kInvalidPermissionWithDetail[] =
     "Invalid value for 'permissions[*]': *.";
 const char kInvalidPermission[] =
@@ -596,6 +593,8 @@ const char kInvalidPermissions[] =
     "Invalid value for 'permissions'.";
 const char kInvalidPermissionScheme[] =
     "Invalid scheme for 'permissions[*]'.";
+const char kInvalidReplacementWebApp[] =
+    "Invalid value for 'replacement_web_app'.";
 const char kInvalidRequirement[] =
     "Invalid value for requirement \"*\"";
 const char kInvalidRequirements[] =
@@ -715,6 +714,9 @@ const char kLocalesTreeMissing[] =
 const char kManifestParseError[] =
     "Manifest is not valid JSON.";
 const char kManifestUnreadable[] = "Manifest file is missing or unreadable";
+const char kManifestVersionTooHighWarning[] =
+    "The maximum currently-supported manifest version is *, but this is *.  "
+    "Certain features may not work as expected.";
 const char kMissingFile[] =
     "At least one js or css file is required for 'content_scripts[*]'.";
 const char kMultipleOverrides[] =

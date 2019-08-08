@@ -6,6 +6,7 @@
 #define ANDROID_WEBVIEW_BROWSER_GFX_CHILD_FRAME_H_
 
 #include <memory>
+#include <vector>
 
 #include "android_webview/browser/gfx/compositor_id.h"
 #include "base/containers/circular_deque.h"
@@ -16,9 +17,13 @@
 
 namespace viz {
 class CompositorFrame;
+class CopyOutputRequest;
 }
 
 namespace android_webview {
+
+using CopyOutputRequestQueue =
+    std::vector<std::unique_ptr<viz::CopyOutputRequest>>;
 
 class ChildFrame {
  public:
@@ -27,7 +32,8 @@ class ChildFrame {
       const CompositorID& compositor_id,
       const gfx::Size& viewport_size_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority,
-      bool offscreen_pre_raster);
+      bool offscreen_pre_raster,
+      CopyOutputRequestQueue copy_requests);
   ~ChildFrame();
 
   // Helper to move frame from |frame_future| to |frame|.
@@ -43,6 +49,7 @@ class ChildFrame {
   const gfx::Size viewport_size_for_tile_priority;
   const gfx::Transform transform_for_tile_priority;
   const bool offscreen_pre_raster;
+  CopyOutputRequestQueue copy_requests;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChildFrame);

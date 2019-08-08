@@ -42,6 +42,7 @@
 <translation id="152234381334907219">Aldrig sparat</translation>
 <translation id="1540800554400757039">Adressrad 1</translation>
 <translation id="1545749641540134597">Skanna QR-kod</translation>
+<translation id="1552525382687785070">Synkronisering har inaktiverats av administratören</translation>
 <translation id="1558704936695638228">Tryck länge för fler flikalternativ</translation>
 <translation id="1580783302095112590">E-post skickades.</translation>
 <translation id="1582732959743469162">Den pågående nedladdningen avbryts.</translation>
@@ -84,6 +85,7 @@
 <translation id="213900355088104901">Öppna en inkognitoflik om du vill surfa privat</translation>
 <translation id="2139867232736819575">Sök efter kopierad text</translation>
 <translation id="2149973817440762519">Redigera bokmärke</translation>
+<translation id="2179182049312275900">Du kan när som helst inaktivera synkroniseringen i inställningarna.</translation>
 <translation id="2198757192731523470">Google kan anpassa Sök, annonser och andra Google-tjänster utifrån historiken.</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> olästa artiklar i läslistan.</translation>
 <translation id="2230173723195178503">Webbsidan har lästs in</translation>
@@ -96,12 +98,14 @@
 <translation id="2320166752086256636">Dölj tangentbordet</translation>
 <translation id="2339560363438331454">Synk och Googles tjänster</translation>
 <translation id="2351097562818989364">Översättningsinställningarna har återställts.</translation>
+<translation id="2359043044084662842">Översätt</translation>
 <translation id="2359808026110333948">Fortsätt</translation>
 <translation id="2360196772093551345">Använd mobilversion</translation>
 <translation id="2381405137052800939">Grunderna</translation>
 <translation id="2386793615875593361">1 markerat foto</translation>
 <translation id="2435457462613246316">Visa lösenord</translation>
 <translation id="2481538920734869610">LÄGG TILL KONTO</translation>
+<translation id="2497852260688568942">Synkronisering har inaktiverats av administratören</translation>
 <translation id="2523184218357549926">Skickar webbadresserna till sidor du besöker till Google</translation>
 <translation id="2523363575747517183">Webbplatsen försöker öppna ett annat program upprepade gånger.</translation>
 <translation id="2529021024822217800">Öppna alla</translation>
@@ -124,6 +128,7 @@
 <translation id="2800683595868705743">Stäng funktionen för flikbyte</translation>
 <translation id="2830972654601096923">Hantera adresser …</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
+<translation id="2840687315230832938">Konfigurationen av synkronisering har inte slutförts</translation>
 <translation id="2843803966603263712">Återställ översättningsinställningar</translation>
 <translation id="2858204748079866344">Av sekretesskäl fylls ditt lösenord inte i automatiskt i det här fältet.</translation>
 <translation id="285960592395650245">Försök ladda ned</translation>
@@ -200,9 +205,9 @@
 <translation id="4038354071007134711">Det går inte att öppna filen med någon av apparna på enheten.</translation>
 <translation id="4042870976416480368">Sök på sidan</translation>
 <translation id="4049507953662678203">Kontrollera att du är ansluten till nätverket och försök igen.</translation>
+<translation id="4071530748369333746">Vill du avbryta synkronisering?</translation>
 <translation id="4082688844002261427">Styr hur din webbhistorik används för att anpassa sökning, annonser med mera</translation>
 <translation id="408404951701638773">Nu är det enklare att komma åt sökfältet</translation>
-<translation id="4084682180776658562">Infoga bokmärke</translation>
 <translation id="411254640334432676">Nedladdningen misslyckades.</translation>
 <translation id="4112644173421521737">Sök</translation>
 <translation id="4121993058175073134">Ange ett e-postkonto i appen Inställningar om du vill skicka nätverksexportdata.</translation>
@@ -214,7 +219,6 @@
 <translation id="4272631900155121838">Om du vill skanna en QR-kod aktiverar du kameran i inställningarna</translation>
 <translation id="4281844954008187215">Användarvillkor</translation>
 <translation id="430793432425771671">Synkronisera allt</translation>
-<translation id="4342284590510997375">Ny</translation>
 <translation id="4359125752503270327">Sidan öppnas i en annan app.</translation>
 <translation id="4370827530403103842">Det går inte att synkronisera. Tryck här för att åtgärda detta.</translation>
 <translation id="4375040482473363939">Sök med QR-koder</translation>
@@ -270,6 +274,7 @@ Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vil
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Aktivera synkronisering</translation>
 <translation id="5244474230056479698">Synkroniseras med <ph name="EMAIL" /></translation>
+<translation id="5245322853195994030">Avbryt synkronisering</translation>
 <translation id="5300589172476337783">Visa</translation>
 <translation id="5317780077021120954">Spara</translation>
 <translation id="5327248766486351172">Namn</translation>
@@ -288,6 +293,7 @@ Du måste även aktivera Handoff i avsnittet Allmänt i inställningarna och sam
 <translation id="5659593005791499971">E-post</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Version <ph name="PRODUCT_VERSION" /></translation>
+<translation id="5711039611392265845">Fler inställningar som rör sekretess, säkerhet och datainsamling finns under <ph name="BEGIN_LINK" />Synk och Googles tjänster<ph name="END_LINK" />.</translation>
 <translation id="5728700505257787410">Det gick inte att logga in på ditt konto.</translation>
 <translation id="5737974891429562743">Inloggningsuppgifterna för kontot är inte aktuella. Starta synkroniseringen genom att uppdatera.</translation>
 <translation id="5738887413654608789">Detta gör det möjligt att upptäcka relevanta webbsidor utifrån din omgivning.</translation>
@@ -363,9 +369,9 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="6643016212128521049">Rensa</translation>
 <translation id="6656103420185847513">Redigera mapp</translation>
 <translation id="6657585470893396449">Lösenord</translation>
+<translation id="6668619169535738264">Redigera bokmärke</translation>
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6691331417640343772">Hantera synkroniserad data via Google Översikt</translation>
-<translation id="6709334795756764830">Redigera bokmärke</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Det gick inte att exportera lösenord</translation>
 <translation id="6780034285637185932">Postnummer</translation>
@@ -385,6 +391,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">Senaste flikarna</translation>
 <translation id="7006788746334555276">Innehållsinställningar</translation>
+<translation id="7015203776128479407">Den initiala synkroniseringskonfigureringen avslutades inte. Synkroniseringen är inaktiverad.</translation>
 <translation id="7029809446516969842">Lösenord</translation>
 <translation id="7031882061095297553">Synkronisera med</translation>
 <translation id="7053983685419859001">Blockera</translation>
@@ -396,6 +403,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="7136892417564438900">Kameran är inte tillgänglig</translation>
 <translation id="7159472599653637159">Använd mobilversion</translation>
 <translation id="7167621057293532233">Datatyper</translation>
+<translation id="7173114856073700355">Inställningar</translation>
 <translation id="7189598951263744875">Dela ...</translation>
 <translation id="7192050974311852563">Starta loggning</translation>
 <translation id="7203585745079012652">Läs upp svaren</translation>
@@ -404,8 +412,10 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="7280856130494094142">Ange lösenfrasen för att starta synkroniseringen</translation>
 <translation id="7285236536143823449">JA</translation>
 <translation id="7291368939935408496">Lösenorden förbereds …</translation>
+<translation id="7293171162284876153">Starta synkroniseringen genom att aktivera Synkronisera data i Chrome.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> procent har laddats ned</translation>
 <translation id="7346909386216857016">Ok, jag förstår</translation>
+<translation id="7348502496356775519">Bokmärke</translation>
 <translation id="7383797227493018512">Läslista</translation>
 <translation id="7400418766976504921">Webbadress</translation>
 <translation id="7425346204213733349">Ändringar i bokmärken, historik, lösenord och andra inställningar synkroniseras inte längre med ditt Google-konto. Befintlig data fortsätter dock att lagras i Google-kontot.</translation>
@@ -453,6 +463,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="8073670137947914548">Nedladdningen är klar</translation>
 <translation id="8076014560081431679">Sparade webbplatsinställningar raderas inte och kan visa dina surfvanor. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">En filnedladdning är tillgänglig. Alternativ visas nära skärmens nederkant.</translation>
+<translation id="8131740175452115882">Bekräfta</translation>
 <translation id="8205564605687841303">Avbryt</translation>
 <translation id="8225985093977202398">Cachelagrade bilder och filer</translation>
 <translation id="8261506727792406068">Radera</translation>
@@ -470,6 +481,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="850600235656508448">Öppna i inkognitoläge</translation>
 <translation id="8517375800490286174">Licenser för öppen källkod</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" />-flikarna <ph name="FIRST_VISIBLE_TAB" /> till <ph name="LAST_VISIBLE_TAB" /> av <ph name="NUMBER_OF_OPEN_TABS" /></translation>
+<translation id="8529767659511976195">Nytt</translation>
 <translation id="8532105204136943229">Sista giltighetsår</translation>
 <translation id="8534481786647257214">Inlägg på Google+ klart.</translation>
 <translation id="8548878600947630424">Hitta på sidan ...</translation>

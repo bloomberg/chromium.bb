@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
-<translation id="1018939186200882850">मेनू आइटम</translation>
+<translation id="1018939186200882850">मेन्यू आइटम</translation>
 <translation id="10623998915015855">टॉगल बटन</translation>
 <translation id="1088086359088493902">सेकंड</translation>
 <translation id="1171774979989969504">कृपया ई-मेल पता दर्ज करें.</translation>
@@ -56,7 +56,7 @@
 <translation id="2723001399770238859">ऑडियो</translation>
 <translation id="2746543609216772311">मान <ph name="MINIMUM_DATE_OR_TIME" /> या बाद का होना चाहिए.</translation>
 <translation id="2759744352195237655">पॉप अप बटन</translation>
-<translation id="2761667185364618470">अगर आप आगे बढ़ना चाहते हैं तो इस बॉक्‍स को चेक करें.</translation>
+<translation id="2761667185364618470">अगर आप आगे बढ़ना चाहते हैं तो इस बॉक्‍स को सही का निशान लगाकर चुनें.</translation>
 <translation id="2896972712917208084">रेडियो समूह</translation>
 <translation id="2908441821576996758">कृपया ईमेल पतों की अल्पविराम द्वारा विभाजित सूची दर्ज करें.</translation>
 <translation id="2940813599313844715">ऑब्जेक्ट</translation>
@@ -64,7 +64,7 @@
 <translation id="3040011195152428237">संपर्क</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> एमबी</translation>
 <translation id="3075154866155599887">कृपया सही मान डालें. फ़ील्ड अधूरी है या उसमें डाली गई तारीख गलत है.</translation>
-<translation id="3078740164268491126">तालिका</translation>
+<translation id="3078740164268491126">टेबल</translation>
 <translation id="3086746722712840547">नोट</translation>
 <translation id="310520048233152454">कृपया यूआरएल डालें.</translation>
 <translation id="3175736971608411871">टाइमर</translation>
@@ -89,11 +89,11 @@
 <translation id="4193965531860883258">भूमिका</translation>
 <translation id="4201051445878709314">पिछला महीना दिखाएं</translation>
 <translation id="421884353938374759">रंग पिकर</translation>
-<translation id="4248100235867064564">मेनू बार</translation>
+<translation id="4248100235867064564">मेन्यू बार</translation>
 <translation id="4254339807215791271">सामग्री की जानकारी</translation>
 <translation id="4360991593054037559">कृपया कोई मान्य मान डालें. दो निकटतम मान्य मान <ph name="VALID_VALUE_LOW" /> और <ph name="VALID_VALUE_HIGHER" /> हैं.</translation>
 <translation id="4384583879834880242">सवाल और जवाब</translation>
-<translation id="4413860115965805769">मेनू बटन</translation>
+<translation id="4413860115965805769">मेन्यू बटन</translation>
 <translation id="4444765639179266822">यह जानकारी इस बारे में लगती है: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">संदर्भ के लिए शब्दावली</translation>
 <translation id="4522570452068850558">विवरण</translation>
@@ -104,7 +104,7 @@
 <translation id="4668956016107839909">परिशिष्ट</translation>
 <translation id="4742539557769756338">कवर</translation>
 <translation id="4748357248530471599">डिसप्ले कटआउट फ़ुलस्क्रीन टॉगल करें</translation>
-<translation id="4757246831282535685">टैब फलक</translation>
+<translation id="4757246831282535685">टैब पैनल</translation>
 <translation id="4763480195061959176">वीडियो</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">कृपया कोई संख्या डालें.</translation>
@@ -115,7 +115,7 @@
 <translation id="5034860022980953847">प्रगति संकेतक</translation>
 <translation id="5090250355906949916">वीडियो टाइम स्क्रबर</translation>
 <translation id="5093189678851173835">इपिग्राफ़</translation>
-<translation id="5117590920725113268">अगला माह दिखाएं</translation>
+<translation id="5117590920725113268">अगला महीना दिखाएं</translation>
 <translation id="512758898067543763">पंक्ति शीर्षलेख</translation>
 <translation id="5143125788380636750">उपसंहार</translation>
 <translation id="5164977714490026579">मान <ph name="MINIMUM" /> से कम या इसके बराबर होना चाहिए.</translation>
@@ -125,12 +125,12 @@
 <translation id="5406322316791861025">आकृति</translation>
 <translation id="5453733299334684579">ट्री आइटम</translation>
 <translation id="5466621249238537318">कृपया एक या ज़्यादा फ़ाइल को चुनें.</translation>
-<translation id="5468998798572797635">पूर्ण स्क्रीन से बाहर निकलें</translation>
+<translation id="5468998798572797635">फ़ुल स्क्रीन से बाहर निकलें</translation>
 <translation id="5516424706154626233">तारीख पिकर</translation>
 <translation id="5537725057119320332">कास्‍ट करें</translation>
 <translation id="5546461542133609677">अनम्यूट करें</translation>
 <translation id="561939826962581046">समय</translation>
-<translation id="5630795885300617244">10 सेकंड आगे या पीछे जाने के लिए बाएं या दाएं पर दो बार टैप करें</translation>
+<translation id="5630795885300617244">10 सेकंड के लिए 'स्किप' करने के लिए बाएं या दाएं पर दो बार टैप करें</translation>
 <translation id="5631759159893697722">संक्षेप</translation>
 <translation id="5643186887447432888">बटन</translation>
 <translation id="5677946354068040947">ज़्यादा विकल्प</translation>
@@ -151,14 +151,14 @@
 <translation id="6209276755895393898">यह इमेज इस बारे में लगती है: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">शब्दावली</translation>
 <translation id="628938136236500310">'पिक्चर में पिक्चर' मोड में चल रहा है</translation>
-<translation id="6398862346408813489">माह चयन फलक दिखाएं</translation>
+<translation id="6398862346408813489">महीना चुनने का पैनल दिखाएं</translation>
 <translation id="6404546809543547843">ऑडियो समय स्क्रबर</translation>
 <translation id="6443871981718447451">बंद कैप्‍शन मेन्यू दिखाएं</translation>
 <translation id="6453774872122745852">धन्यवाद</translation>
 <translation id="648732519525291180">समय पिकर</translation>
 <translation id="6550675742724504774">विकल्प</translation>
 <translation id="6572309429103589720">गलत व्याकरण</translation>
-<translation id="658823671542763450">पूर्ण स्क्रीन में प्रवेश करें</translation>
+<translation id="658823671542763450">फ़ुल स्क्रीन में प्रवेश करें</translation>
 <translation id="663493177488814956">फ़ीड</translation>
 <translation id="6637586476836377253">लॉग</translation>
 <translation id="6643016212128521049">साफ़ करें</translation>
@@ -176,7 +176,9 @@
 <translation id="6941933287844615239">मीडिया डाउनलोड करें</translation>
 <translation id="6981594929165378967">डालना</translation>
 <translation id="6989848892321993519">कृपया इस लेख को <ph name="MIN_CHARACTERS" /> या उससे ज़्यादा वर्णों तक बढ़ाएं (आप इस समय 1 वर्ण का उपयोग कर रहे हैं).</translation>
+<translation id="7033340931668032222">आवाज़ कम-ज़्यादा करने के लिए ऊपर और नीचे वाले बटन का इस्तेमाल करें</translation>
 <translation id="709897737746224366">कृपया अनुरोधित प्रारूप का मिलान करें.</translation>
+<translation id="7118469954320184356">कोई जानकारी मौजूद नहीं है.</translation>
 <translation id="7139483182332611405">आमुख</translation>
 <translation id="7263440858009898357">कृपया सूची में किसी आइटम को चुनें.</translation>
 <translation id="727747134524199931">स्तंभ शीर्षलेख</translation>
@@ -226,6 +228,7 @@
 <translation id="8550857728288566671">ग्राफ़िक्स चिह्न</translation>
 <translation id="8583702881314752957">परिभाषा सूची</translation>
 <translation id="8597182159515967513">हेडिंग</translation>
+<translation id="8603553056539299761">कार्रवाई के लिए बाएं और दाएं बटन का इस्तेमाल करें</translation>
 <translation id="860475260694818407">विषय सूची</translation>
 <translation id="8613126697340063924">दूरस्थ प्लेबैक नियंत्रित करें</translation>
 <translation id="862370744433916922">सबटाइटल</translation>
@@ -247,5 +250,5 @@
 <translation id="916607977885256133">पिक्चर में पिक्चर</translation>
 <translation id="9168329111483466115">फ़ुटनोट</translation>
 <translation id="954003015749068518">पिक्चर में पिक्चर चालू करें</translation>
-<translation id="966787709310836684">मेनू</translation>
+<translation id="966787709310836684">मेन्यू</translation>
 </translationbundle>

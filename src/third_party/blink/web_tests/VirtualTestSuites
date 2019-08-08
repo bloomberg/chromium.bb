@@ -1,10 +1,5 @@
 [
   {
-    "prefix": "custom-user-timing",
-    "base": "http/tests/performance-timing/custom-user-timing",
-    "args": ["--enable-blink-features=CustomUserTiming"]
-  },
-  {
     "prefix": "gpu",
     "base": "fast/canvas",
     "args": ["--enable-accelerated-2d-canvas"]
@@ -29,9 +24,14 @@
     "base": "animations/animationworklet",
     "args": ["--enable-threaded-compositing"]
   },
-   {
+  {
     "prefix": "threaded",
     "base": "external/wpt/animation-worklet",
+    "args": ["--enable-threaded-compositing"]
+  },
+  {
+    "prefix": "threaded",
+    "base": "external/wpt/css/css-animations",
     "args": ["--enable-threaded-compositing"]
   },
   {
@@ -120,6 +120,19 @@
   },
   {
     "prefix": "disable-blink-gen-property-trees",
+    "base": "animations",
+    "args": ["--disable-blink-features=BlinkGenPropertyTrees",
+             "--enable-threaded-compositing",
+             "--disable-composited-antialiasing"]
+  },
+  {
+    "prefix": "disable-blink-gen-property-trees",
+    "base": "transitions",
+    "args": ["--disable-blink-features=BlinkGenPropertyTrees",
+             "--enable-threaded-compositing"]
+  },
+  {
+    "prefix": "disable-blink-gen-property-trees",
     "base": "compositing",
     "args": ["--disable-blink-features=BlinkGenPropertyTrees"]
   },
@@ -172,7 +185,8 @@
   {
     "prefix": "origin-trials-runtimeflags-disabled",
     "base": "http/tests/origin_trials/webexposed",
-    "args": ["--disable-origin-trial-controlled-blink-features"]
+    "args": ["--disable-origin-trial-controlled-blink-features",
+             "--stable-release-mode"]
   },
   {
     "prefix": "stable",
@@ -183,8 +197,7 @@
     "prefix": "android",
     "base": "fullscreen",
     "args": ["--enable-features=OverlayScrollbar", "--enable-threaded-compositing",
-             "--enable-fixed-position-compositing", "--enable-prefer-compositing-to-lcd-text",
-             "--enable-composited-scrolling-for-frames", "--enable-gesture-tap-highlight", "--enable-pinch",
+             "--enable-prefer-compositing-to-lcd-text",
              "--force-overlay-fullscreen-video", "--enable-overscroll-notifications",
              "--enable-viewport", "--disable-canvas-aa", "--disable-composited-antialiasing"]
   },
@@ -192,8 +205,7 @@
     "prefix": "android",
     "base": "rootscroller",
     "args": ["--enable-features=OverlayScrollbar", "--enable-threaded-compositing",
-             "--enable-fixed-position-compositing", "--enable-prefer-compositing-to-lcd-text",
-             "--enable-composited-scrolling-for-frames", "--enable-gesture-tap-highlight", "--enable-pinch",
+             "--enable-prefer-compositing-to-lcd-text",
              "--force-overlay-fullscreen-video", "--enable-overscroll-notifications",
              "--enable-viewport", "--disable-canvas-aa", "--disable-composited-antialiasing"]
   },
@@ -201,8 +213,7 @@
     "prefix": "android",
     "base": "url-bar",
     "args": ["--enable-features=OverlayScrollbar", "--enable-threaded-compositing",
-             "--enable-fixed-position-compositing", "--enable-prefer-compositing-to-lcd-text",
-             "--enable-composited-scrolling-for-frames", "--enable-gesture-tap-highlight", "--enable-pinch",
+             "--enable-prefer-compositing-to-lcd-text",
              "--force-overlay-fullscreen-video", "--enable-overscroll-notifications",
              "--enable-viewport", "--disable-canvas-aa", "--disable-composited-antialiasing"]
   },
@@ -210,8 +221,7 @@
     "prefix": "android",
     "base": "frame-size",
     "args": ["--enable-features=OverlayScrollbar", "--enable-threaded-compositing",
-             "--enable-fixed-position-compositing", "--enable-prefer-compositing-to-lcd-text",
-             "--enable-composited-scrolling-for-frames", "--enable-gesture-tap-highlight", "--enable-pinch",
+             "--enable-prefer-compositing-to-lcd-text",
              "--force-overlay-fullscreen-video", "--enable-overscroll-notifications",
              "--enable-viewport", "--disable-canvas-aa", "--disable-composited-antialiasing"]
   },
@@ -280,6 +290,21 @@
     "prefix": "threaded",
     "base": "http/tests/devtools/tracing",
     "args": ["--enable-threaded-compositing"]
+  },
+  {
+    "prefix": "nobinary-for-devtools",
+    "base": "http/tests/devtools",
+    "args": ["--disable-internal-devtools-binary-protocol"]
+  },
+  {
+    "prefix": "nobinary-for-http-inspector-protocol",
+    "base": "http/tests/inspector-protocol",
+    "args": ["--disable-internal-devtools-binary-protocol"]
+  },
+  {
+    "prefix": "nobinary-for-inspector-protocol",
+    "base": "inspector-protocol",
+    "args": ["--disable-internal-devtools-binary-protocol"]
   },
   {
     "prefix": "composite-after-paint",
@@ -434,17 +459,42 @@
   {
     "prefix": "dark-mode",
     "base": "paint/dark-mode/image-filter-all",
-    "args": ["--blink-settings=highContrastMode=3,highContrastImagePolicy=0"]
+    "args": ["--blink-settings=darkMode=3,darkModeImagePolicy=0"]
   },
   {
     "prefix": "dark-mode",
     "base": "paint/dark-mode/image-filter-none",
-    "args": ["--blink-settings=highContrastMode=3,highContrastImagePolicy=1"]
+    "args": ["--blink-settings=darkMode=3,darkModeImagePolicy=1"]
   },
   {
     "prefix": "dark-mode",
     "base": "paint/dark-mode/image-filter-smart",
-    "args": ["--blink-settings=highContrastMode=3,highContrastImagePolicy=2"]
+    "args": ["--blink-settings=darkMode=3,darkModeImagePolicy=2"]
+  },
+  {
+    "prefix": "dark-mode",
+    "base": "paint/dark-mode/native-theme-off",
+    "args": ["--blink-settings=darkMode=3"]
+  },
+  {
+    "prefix": "dark-mode",
+    "base": "paint/dark-mode/native-theme-on",
+    "args": ["--blink-settings=darkMode=3"]
+  },
+  {
+    "prefix": "dark-mode",
+    "base": "paint/dark-mode/page-policy-all",
+    "args": ["--blink-settings=darkMode=3,darkModePagePolicy=0"]
+  },
+  {
+    "prefix": "dark-mode",
+    "base": "paint/dark-mode/page-policy-background",
+    "args": ["--blink-settings=darkMode=3,darkModePagePolicy=1"]
+  },
+  {
+    "prefix": "dark-mode",
+    "base": "paint/dark-mode/svg-invert-all",
+    "args": ["--blink-settings=darkMode=3,darkModeImagePolicy=0"]
   },
   {
     "prefix": "outofblink-cors",
@@ -538,6 +588,14 @@
     "args": ["--enable-blink-features=FractionalMouseEvent"]
   },
   {
+    "prefix": "compositor_threaded_scrollbar_scrolling",
+    "base": "fast/scrolling/scrollbars",
+    "args": ["--enable-features=CompositorThreadedScrollbarScrolling",
+             "--enable-threaded-compositing",
+             "--enable-prefer-compositing-to-lcd-text",
+             "--disable-smooth-scrolling"]
+  },
+  {
     "prefix": "fractional_scrolling_threaded",
     "base": "fast/scrolling",
     "args": ["--enable-blink-features=FractionalScrollOffsets", "--enable-threaded-compositing"]
@@ -584,6 +642,21 @@
   },
   {
     "prefix": "omt-worker-fetch",
+    "base": "external/wpt/content-security-policy/inside-worker",
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker,OffMainThreadServiceWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
+  },
+  {
+    "prefix": "omt-worker-fetch",
+    "base": "external/wpt/content-security-policy/worker-src",
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker,OffMainThreadServiceWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
+  },
+  {
+    "prefix": "omt-worker-fetch",
+    "base": "external/wpt/html/browsers/offline/appcache/workers/",
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker,OffMainThreadServiceWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
+  },
+  {
+    "prefix": "omt-worker-fetch",
     "base": "external/wpt/mixed-content/classic-data-worker-fetch",
     "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadServiceWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
   },
@@ -615,7 +688,7 @@
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/service-workers",
-    "args": ["--enable-features=OffMainThreadServiceWorkerScriptFetch"]
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker,OffMainThreadServiceWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
   },
   {
     "prefix": "omt-worker-fetch",
@@ -754,11 +827,6 @@
   },
   {
     "prefix": "not-site-per-process",
-    "base": "external/wpt/dom/events/EventListener-addEventListener.sub.window.js",
-    "args": ["--disable-site-isolation-trials"]
-  },
-  {
-    "prefix": "not-site-per-process",
     "base": "external/wpt/dom/events/EventListener-incumbent-global-1.sub.html",
     "args": ["--disable-site-isolation-trials"]
   },
@@ -830,11 +898,6 @@
   {
     "prefix": "not-site-per-process",
     "base": "http/tests/media/autoplay/webaudio-autoplay-iframe-with-gesture.html",
-    "args": ["--disable-site-isolation-trials"]
-  },
-  {
-    "prefix": "not-site-per-process",
-    "base": "external/wpt/payment-request/allowpaymentrequest/setting-allowpaymentrequest-timing.https.sub.html",
     "args": ["--disable-site-isolation-trials"]
   },
   {
@@ -973,6 +1036,22 @@
     "args": ["--enable-blink-features=StreamsNative", "--enable-features=BlinkHeapUnifiedGarbageCollection"]
   },
   {
+    "prefix": "streams-native",
+    "base": "http/tests/fetch",
+    "args": ["--enable-blink-features=StreamsNative", "--enable-features=BlinkHeapUnifiedGarbageCollection"]
+  },
+  {
+    "prefix": "streams-native",
+    "base": "external/wpt/fetch",
+    "args": ["--enable-blink-features=StreamsNative", "--enable-features=BlinkHeapUnifiedGarbageCollection"]
+  },
+  {
+    "prefix": "focusless-spat-nav",
+    "base": "fast/spatial-navigation/focusless",
+    "args": ["--enable-blink-features=FocuslessSpatialNavigation",
+             "--enable-spatial-navigation"]
+  },
+  {
     "prefix": "bidi-caret-affinity",
     "base": "editing/selection/modify_move",
     "args": ["--enable-blink-features=BidiCaretAffinity,EditingNG"]
@@ -983,28 +1062,13 @@
     "args": ["--enable-features=FreezeFramesOnVisibility"]
   },
   {
-    "prefix": "feature-policy-for-sandbox",
-    "base": "http/tests/navigation",
-    "args": ["--enable-blink-features=FeaturePolicyForSandbox"]
-  },
-  {
-    "prefix": "feature-policy-for-sandbox",
-    "base": "http/tests/security",
-    "args": ["--enable-blink-features=FeaturePolicyForSandbox"]
-  },
-  {
-    "prefix": "feature-policy-for-sandbox",
-    "base": "mhtml",
-    "args": ["--enable-blink-features=FeaturePolicyForSandbox"]
-  },
-  {
-    "prefix": "feature-policy-for-sandbox",
-    "base": "external/wpt/feature-policy/feature-policy-for-sandbox",
-    "args": ["--enable-blink-features=FeaturePolicyForSandbox"]
-  },
-  {
     "prefix": "insecure-device-sensor-events",
     "base": "http/tests/security/powerfulFeatureRestrictions/",
     "args": ["--disable-features=RestrictDeviceSensorEventsToSecureContexts"]
+  },
+  {
+    "prefix": "native-file-system",
+    "base": "external/wpt/native-file-system",
+    "args": ["--enable-features=NativeFilesystemAPI"]
   }
 ]

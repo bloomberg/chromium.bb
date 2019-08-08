@@ -14,6 +14,7 @@
 
 @class FindInPageController;
 @class FindInPageModel;
+@protocol FindInPageResponseDelegate;
 
 typedef void (^FindInPageCompletionBlock)(FindInPageModel*);
 
@@ -32,6 +33,10 @@ class FindTabHelper : public web::WebStateObserver,
     FORWARD,
     REVERSE,
   };
+
+  // Sets the FindInPageResponseDelegate delegate to send responses to
+  // StartFinding(), ContinueFinding(), and StopFinding().
+  void SetResponseDelegate(id<FindInPageResponseDelegate> response_delegate);
 
   // Starts an asynchronous Find operation that will call the given completion
   // handler with results.  Highlights matches on the current page.  Always

@@ -189,6 +189,29 @@ TEST_F('CrElementsScrollableBehaviorTest', 'All', function() {
  * @constructor
  * @extends {CrElementsBrowserTest}
  */
+function CrElementsContainerShadowBehaviorTest() {}
+
+CrElementsContainerShadowBehaviorTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_elements/cr_container_shadow_behavior.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'cr_container_shadow_behavior_test.js',
+  ]),
+};
+
+TEST_F('CrElementsContainerShadowBehaviorTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
 function CrElementsPolicyIndicatorTest() {}
 
 CrElementsPolicyIndicatorTest.prototype = {
@@ -374,6 +397,30 @@ CrElementsToastTest.prototype = {
 };
 
 TEST_F('CrElementsToastTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
+function CrElementsToastManagerTest() {}
+
+CrElementsToastManagerTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_elements/cr_toast/cr_toast_manager.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    '../settings/test_util.js',
+    'cr_toast_manager_test.js',
+  ]),
+};
+
+TEST_F('CrElementsToastManagerTest', 'All', function() {
   mocha.run();
 });
 

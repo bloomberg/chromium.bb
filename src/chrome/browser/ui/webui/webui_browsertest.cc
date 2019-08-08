@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
@@ -94,7 +95,8 @@ class WebUIRequiringGestureBrowserTest : public InProcessBrowserTest {
   void SendMessageAndWaitForFinish() {
     main_rfh()->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16("chrome.send('messageRequiringGesture');"
-                           "chrome.send('notifyFinish');"));
+                           "chrome.send('notifyFinish');"),
+        base::NullCallback());
     base::RunLoop run_loop;
     test_handler()->set_finish_closure(run_loop.QuitClosure());
     run_loop.Run();

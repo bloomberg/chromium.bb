@@ -68,11 +68,12 @@ def Login(service_account_json=None):
                service_account_json)
 
   cmd = [GetLuciAuth(), 'login']
-  if service_account_json:
+  if service_account_json and os.path.isfile(service_account_json):
     cmd += ['-service-account-json=%s' % service_account_json]
 
   result = cros_build_lib.RunCommand(
       cmd,
+      print_cmd=True,
       mute_output=False,
       error_code_ok=True)
 
@@ -96,11 +97,13 @@ def Token(service_account_json=None):
     AccessTokenError if token command failed.
   """
   cmd = [GetLuciAuth(), 'token']
-  if service_account_json:
+  if service_account_json and os.path.isfile(service_account_json):
     cmd += ['-service-account-json=%s' % service_account_json]
 
   result = cros_build_lib.RunCommand(
       cmd,
+      print_cmd=False,
+      mute_output=True,
       capture_output=True,
       error_code_ok=True)
 

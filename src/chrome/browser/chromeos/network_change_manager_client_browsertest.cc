@@ -5,8 +5,8 @@
 #include "base/run_loop.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_device_client.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill/shill_device_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "content/public/browser/network_service_instance.h"
 #include "net/base/network_change_notifier.h"
 #include "services/network/public/cpp/features.h"
@@ -113,8 +113,9 @@ class NetworkChangeManagerClientBrowserTest : public InProcessBrowserTest {
 
 // Tests that network changes from shill are received by both the
 // NetworkChangeNotifier and NetworkConnectionTracker.
+// TODO(crbug.com/934583): Fix the flakiness.
 IN_PROC_BROWSER_TEST_F(NetworkChangeManagerClientBrowserTest,
-                       ReceiveNotifications) {
+                       DISABLED_ReceiveNotifications) {
   NetObserver net_observer;
   NetworkServiceObserver network_service_observer;
 

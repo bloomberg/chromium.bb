@@ -443,19 +443,16 @@ TEST_F(ReceiveStatisticsProxyTest,
 TEST_F(ReceiveStatisticsProxyTest, GetStatsReportsFrameCounts) {
   const int kKeyFrames = 3;
   const int kDeltaFrames = 22;
-  FrameCounts frame_counts;
-  frame_counts.key_frames = kKeyFrames;
-  frame_counts.delta_frames = kDeltaFrames;
-  statistics_proxy_->OnFrameCountsUpdated(frame_counts);
+  for (int i = 0; i < kKeyFrames; i++) {
+    statistics_proxy_->OnCompleteFrame(true, 0, VideoContentType::UNSPECIFIED);
+  }
+  for (int i = 0; i < kDeltaFrames; i++) {
+    statistics_proxy_->OnCompleteFrame(false, 0, VideoContentType::UNSPECIFIED);
+  }
+
   VideoReceiveStream::Stats stats = statistics_proxy_->GetStats();
   EXPECT_EQ(kKeyFrames, stats.frame_counts.key_frames);
   EXPECT_EQ(kDeltaFrames, stats.frame_counts.delta_frames);
-}
-
-TEST_F(ReceiveStatisticsProxyTest, GetStatsReportsDiscardedPackets) {
-  const int kDiscardedPackets = 12;
-  statistics_proxy_->OnDiscardedPacketsUpdated(kDiscardedPackets);
-  EXPECT_EQ(kDiscardedPackets, statistics_proxy_->GetStats().discarded_packets);
 }
 
 TEST_F(ReceiveStatisticsProxyTest, GetStatsReportsRtcpStats) {
@@ -565,16 +562,18 @@ TEST_F(ReceiveStatisticsProxyTest, BadCallHistogramsAreUpdated) {
   // then 10 certainly bad states. There has to be 10 certain states before
   // any histograms are recorded.
   const int kNumBadSamples = 17;
+  // We only count one sample per second.
+  const int kBadFameIntervalMs = 1100;
 
   StreamDataCounters counters;
   counters.first_packet_time_ms = fake_clock_.TimeInMilliseconds();
   statistics_proxy_->DataCountersUpdated(counters, config_.rtp.remote_ssrc);
 
+  webrtc::VideoFrame frame = CreateFrame(kWidth, kHeight);
+
   for (int i = 0; i < kNumBadSamples; ++i) {
-    // Since OnRenderedFrame is never called the fps in each sample will be 0,
-    // i.e. bad
-    fake_clock_.AdvanceTimeMilliseconds(1000);
-    statistics_proxy_->OnIncomingRate(0, 0);
+    fake_clock_.AdvanceTimeMilliseconds(kBadFameIntervalMs);
+    statistics_proxy_->OnRenderedFrame(frame);
   }
   // Histograms are updated when the statistics_proxy_ is deleted.
   statistics_proxy_.reset();
@@ -1032,7 +1031,7 @@ TEST_F(ReceiveStatisticsProxyTest, RtcpHistogramsAreUpdated) {
 
 class ReceiveStatisticsProxyTestWithFreezeDuration
     : public ReceiveStatisticsProxyTest,
-      public testing::WithParamInterface<
+      public ::testing::WithParamInterface<
           std::tuple<uint32_t, uint32_t, uint32_t>> {
  protected:
   const uint32_t frame_duration_ms_ = {std::get<0>(GetParam())};
@@ -1264,30 +1263,41 @@ TEST_P(ReceiveStatisticsProxyTestWithContent, FreezesAreReported) {
 }
 
 TEST_P(ReceiveStatisticsProxyTestWithContent, HarmonicFrameRateIsReported) {
-  const int kInterFrameDelayMs = 33;
-  const int kFreezeDelayMs = 200;
-  const int kCallDurationMs =
-      kMinRequiredSamples * kInterFrameDelayMs + kFreezeDelayMs;
+  const int kFrameDurationMs = 33;
+  const int kFreezeDurationMs = 200;
+  const int kPauseDurationMs = 10000;
+  const int kCallDurationMs = kMinRequiredSamples * kFrameDurationMs +
+                              kFreezeDurationMs + kPauseDurationMs;
   webrtc::VideoFrame frame = CreateFrame(kWidth, kHeight);
 
   for (int i = 0; i < kMinRequiredSamples; ++i) {
-    fake_clock_.AdvanceTimeMilliseconds(kInterFrameDelayMs);
+    fake_clock_.AdvanceTimeMilliseconds(kFrameDurationMs);
     statistics_proxy_->OnDecodedFrame(frame, absl::nullopt, content_type_);
     statistics_proxy_->OnRenderedFrame(frame);
   }
-  // Add extra freeze.
-  fake_clock_.AdvanceTimeMilliseconds(kFreezeDelayMs);
+
+  // Freezes and pauses should be included into harmonic frame rate.
+  // Add freeze.
+  fake_clock_.AdvanceTimeMilliseconds(kFreezeDurationMs);
+  statistics_proxy_->OnDecodedFrame(frame, absl::nullopt, content_type_);
+  statistics_proxy_->OnRenderedFrame(frame);
+
+  // Add pause.
+  fake_clock_.AdvanceTimeMilliseconds(kPauseDurationMs);
+  statistics_proxy_->OnStreamInactive();
   statistics_proxy_->OnDecodedFrame(frame, absl::nullopt, content_type_);
   statistics_proxy_->OnRenderedFrame(frame);
 
   statistics_proxy_.reset();
-  double kSumSquaredInterframeDelaysSecs =
+  double kSumSquaredFrameDurationSecs =
       (kMinRequiredSamples - 1) *
-      (kInterFrameDelayMs / 1000.0 * kInterFrameDelayMs / 1000.0);
-  kSumSquaredInterframeDelaysSecs +=
-      kFreezeDelayMs / 1000.0 * kFreezeDelayMs / 1000.0;
+      (kFrameDurationMs / 1000.0 * kFrameDurationMs / 1000.0);
+  kSumSquaredFrameDurationSecs +=
+      kFreezeDurationMs / 1000.0 * kFreezeDurationMs / 1000.0;
+  kSumSquaredFrameDurationSecs +=
+      kPauseDurationMs / 1000.0 * kPauseDurationMs / 1000.0;
   const int kExpectedHarmonicFrameRateFps =
-      std::round(kCallDurationMs / (1000 * kSumSquaredInterframeDelaysSecs));
+      std::round(kCallDurationMs / (1000 * kSumSquaredFrameDurationSecs));
   if (videocontenttypehelpers::IsScreenshare(content_type_)) {
     EXPECT_EQ(kExpectedHarmonicFrameRateFps,
               metrics::MinSample("WebRTC.Video.Screenshare.HarmonicFrameRate"));

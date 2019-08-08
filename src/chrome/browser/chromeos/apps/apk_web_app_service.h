@@ -14,9 +14,9 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/apps/apk_web_app_installer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_registry_observer.h"
-#include "extensions/common/extension_id.h"
 
 class ArcAppListPrefs;
 class Profile;
@@ -24,6 +24,10 @@ class Profile;
 namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
+
+namespace web_app {
+enum class InstallResultCode;
+}  // namespace web_app
 
 namespace chromeos {
 
@@ -46,7 +50,7 @@ class ApkWebAppService : public KeyedService,
 
   // Uninstalls a web app with id |web_app_id| iff it was installed via calling
   // ApkWebAppInstaller::Install().
-  void UninstallWebApp(const extensions::ExtensionId& web_app_id);
+  void UninstallWebApp(const web_app::AppId& web_app_id);
 
   // KeyedService:
   void Shutdown() override;
@@ -67,7 +71,8 @@ class ApkWebAppService : public KeyedService,
                           arc::mojom::WebAppInfoPtr web_app_info,
                           const std::vector<uint8_t>& icon_png_data);
   void OnDidFinishInstall(const std::string& package_name,
-                          const extensions::ExtensionId& web_app_id);
+                          const web_app::AppId& web_app_id,
+                          web_app::InstallResultCode code);
 
   Profile* profile_;
   ArcAppListPrefs* arc_app_list_prefs_;

@@ -32,7 +32,6 @@ class SharedContextState;
 
 namespace viz {
 class Display;
-class ExternalBeginFrameSource;
 class GpuServiceImpl;
 class ServerSharedBitmapManager;
 class SoftwareOutputDevice;
@@ -43,7 +42,7 @@ class VIZ_SERVICE_EXPORT GpuDisplayProvider : public DisplayProvider {
   GpuDisplayProvider(
       uint32_t restart_id,
       GpuServiceImpl* gpu_service_impl,
-      scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
+      gpu::CommandBufferTaskExecutor* task_executor,
       gpu::GpuChannelManagerDelegate* gpu_channel_manager_delegate,
       std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory,
@@ -63,8 +62,8 @@ class VIZ_SERVICE_EXPORT GpuDisplayProvider : public DisplayProvider {
       gpu::SurfaceHandle surface_handle,
       bool gpu_compositing,
       mojom::DisplayClient* display_client,
-      ExternalBeginFrameSource* external_begin_frame_source,
-      SyntheticBeginFrameSource* synthetic_begin_frame_source,
+      BeginFrameSource* begin_frame_source,
+      UpdateVSyncParametersCallback update_vsync_callback,
       const RendererSettings& renderer_settings,
       bool send_swap_size_notifications) override;
   uint32_t GetRestartId() const override;
@@ -76,7 +75,7 @@ class VIZ_SERVICE_EXPORT GpuDisplayProvider : public DisplayProvider {
 
   const uint32_t restart_id_;
   GpuServiceImpl* const gpu_service_impl_;
-  scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor_;
+  gpu::CommandBufferTaskExecutor* const task_executor_;
   gpu::GpuChannelManagerDelegate* const gpu_channel_manager_delegate_;
   std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
   gpu::ImageFactory* const image_factory_;

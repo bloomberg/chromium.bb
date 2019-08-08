@@ -4,19 +4,23 @@
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_impl.h"
 
 #include "net/quic/quic_chromium_connection_helper.h"
-#include "net/third_party/quic/core/crypto/quic_random.h"
-#include "net/third_party/quic/core/quic_config.h"
-#include "net/third_party/quic/core/quic_utils.h"
-#include "net/third_party/quic/core/tls_client_handshaker.h"
-#include "net/third_party/quic/core/tls_server_handshaker.h"
-#include "net/third_party/quic/tools/quic_simple_crypto_server_stream_helper.h"
+#include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
+#include "net/third_party/quiche/src/quic/core/quic_config.h"
+#include "net/third_party/quiche/src/quic/core/quic_types.h"
+#include "net/third_party/quiche/src/quic/core/quic_utils.h"
+#include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
+#include "net/third_party/quiche/src/quic/core/tls_server_handshaker.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_mem_slice_storage.h"
+#include "net/third_party/quiche/src/quic/tools/quic_simple_crypto_server_stream_helper.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_crypto_stream_factory.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_stats.h"
 
 namespace blink {
 
 namespace {
 
 static const char kClosingDetails[] = "Application closed connection.";
-static const size_t kHostnameLength = 32;
 
 // QUIC's default is 100. Setting this value to 10000 allows room for QUIC to
 // not refuse new incoming streams in the case that an application wants to send
@@ -181,7 +185,7 @@ class DummyCryptoServerStreamHelper
                             const quic::QuicSocketAddress& client_address,
                             const quic::QuicSocketAddress& peer_address,
                             const quic::QuicSocketAddress& self_address,
-                            quic::QuicString* error_details) const override {
+                            std::string* error_details) const override {
     return true;
   }
 
@@ -198,10 +202,12 @@ std::unique_ptr<P2PQuicTransportImpl> P2PQuicTransportImpl::Create(
     P2PQuicTransport::Delegate* delegate,
     P2PQuicPacketTransport* packet_transport,
     const P2PQuicTransportConfig& config,
-    std::unique_ptr<P2PQuicCryptoConfigFactory> crypto_config_factory) {
+    std::unique_ptr<P2PQuicCryptoConfigFactory> crypto_config_factory,
+    std::unique_ptr<P2PQuicCryptoStreamFactory> crypto_stream_factory) {
   DCHECK(delegate);
   DCHECK(packet_transport);
   DCHECK(crypto_config_factory);
+  DCHECK(crypto_stream_factory);
 
   // The P2PQuicSession owns these chromium specific objects required
   // by the QuicConnection. These outlive the QuicConnection itself.
@@ -238,17 +244,18 @@ std::unique_ptr<P2PQuicTransportImpl> P2PQuicTransportImpl::Create(
   return std::make_unique<P2PQuicTransportImpl>(
       delegate, packet_transport, std::move(config), std::move(helper),
       std::move(quic_connection), quic_config, std::move(crypto_config_factory),
-      clock);
+      std::move(crypto_stream_factory), clock);
 }
 
 P2PQuicTransportImpl::P2PQuicTransportImpl(
     Delegate* delegate,
     P2PQuicPacketTransport* packet_transport,
     const P2PQuicTransportConfig& p2p_transport_config,
-    std::unique_ptr<net::QuicChromiumConnectionHelper> helper,
+    std::unique_ptr<quic::QuicConnectionHelperInterface> helper,
     std::unique_ptr<quic::QuicConnection> connection,
     const quic::QuicConfig& quic_config,
     std::unique_ptr<P2PQuicCryptoConfigFactory> crypto_config_factory,
+    std::unique_ptr<P2PQuicCryptoStreamFactory> crypto_stream_factory,
     quic::QuicClock* clock)
     : quic::QuicSession(connection.get(),
                         nullptr /* visitor */,
@@ -257,6 +264,7 @@ P2PQuicTransportImpl::P2PQuicTransportImpl(
       helper_(std::move(helper)),
       connection_(std::move(connection)),
       crypto_config_factory_(std::move(crypto_config_factory)),
+      crypto_stream_factory_(std::move(crypto_stream_factory)),
       perspective_(p2p_transport_config.perspective),
       packet_transport_(packet_transport),
       delegate_(delegate),
@@ -267,6 +275,7 @@ P2PQuicTransportImpl::P2PQuicTransportImpl(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(delegate_);
   DCHECK(crypto_config_factory_);
+  DCHECK(crypto_stream_factory_);
   DCHECK(clock_);
   DCHECK(packet_transport_);
   DCHECK_GT(stream_delegate_read_buffer_size_, 0u);
@@ -374,9 +383,34 @@ P2PQuicStreamImpl* P2PQuicTransportImpl::CreateStream() {
 }
 
 P2PQuicTransportStats P2PQuicTransportImpl::GetStats() const {
-  return P2PQuicTransportStats(connection_->GetStats(),
-                               num_outgoing_streams_created_,
-                               num_incoming_streams_created_);
+  P2PQuicTransportStats stats(connection_->GetStats());
+  stats.num_incoming_streams_created = num_incoming_streams_created_;
+  stats.num_outgoing_streams_created = num_outgoing_streams_created_;
+  stats.num_datagrams_lost = num_datagrams_lost_;
+  return stats;
+}
+
+void P2PQuicTransportImpl::SendDatagram(Vector<uint8_t> datagram) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(CanSendDatagram());
+  DCHECK_LT(datagram.size(),
+            quic::QuicSession::GetCurrentLargestMessagePayload());
+
+  if (!datagram_buffer_.empty()) {
+    // We are currently write blocked, just add to the buffer.
+    datagram_buffer_.push(std::move(datagram));
+    return;
+  }
+  if (!TrySendDatagram(datagram)) {
+    datagram_buffer_.push(std::move(datagram));
+  }
+}
+
+bool P2PQuicTransportImpl::CanSendDatagram() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return IsEncryptionEstablished() &&
+         (connection()->transport_version() > quic::QUIC_VERSION_44) &&
+         !IsClosed();
 }
 
 P2PQuicStreamImpl* P2PQuicTransportImpl::CreateOutgoingBidirectionalStream() {
@@ -429,6 +463,36 @@ P2PQuicStreamImpl* P2PQuicTransportImpl::CreateStreamInternal(
                                stream_write_buffer_size_);
 }
 
+bool P2PQuicTransportImpl::TrySendDatagram(Vector<uint8_t>& datagram) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(CanSendDatagram());
+  DCHECK_LT(datagram.size(),
+            quic::QuicSession::GetCurrentLargestMessagePayload());
+
+  struct iovec iov = {datagram.data(), datagram.size()};
+  quic::QuicMemSliceStorage storage(
+      &iov, 1, connection()->helper()->GetStreamSendBufferAllocator(),
+      datagram.size());
+  quic::MessageResult result = QuicSession::SendMessage(storage.ToSpan());
+  switch (result.status) {
+    case quic::MESSAGE_STATUS_BLOCKED:
+      return false;
+    case quic::MESSAGE_STATUS_SUCCESS:
+      delegate_->OnDatagramSent();
+      return true;
+    case quic::MESSAGE_STATUS_ENCRYPTION_NOT_ESTABLISHED:
+    case quic::MESSAGE_STATUS_INTERNAL_ERROR:
+    case quic::MESSAGE_STATUS_TOO_LARGE:
+    case quic::MESSAGE_STATUS_UNSUPPORTED:
+      break;
+  }
+  // Anything besides blocked/success should never happen.
+  LOG(ERROR) << "Unexpected result with QuicSession::SendMessage: "
+             << result.status;
+  NOTREACHED();
+  return false;
+}
+
 void P2PQuicTransportImpl::InitializeCryptoStream() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!crypto_stream_);
@@ -438,19 +502,9 @@ void P2PQuicTransportImpl::InitializeCryptoStream() {
   switch (perspective_) {
     case quic::Perspective::IS_CLIENT: {
       DCHECK(crypto_client_config_);
-      // The host must be unique for every endpoint the client communicates
-      // with.
-      char random_hostname[kHostnameLength];
-      helper_->GetRandomGenerator()->RandBytes(random_hostname,
-                                               kHostnameLength);
-      quic::QuicServerId server_id(
-          /*host=*/quic::QuicString(random_hostname, kHostnameLength),
-          /*port=*/0,
-          /*privacy_mode_enabled=*/false);
-      crypto_stream_ = std::make_unique<quic::QuicCryptoClientStream>(
-          server_id, /*QuicSession=*/this,
-          crypto_client_config_->proof_verifier()->CreateDefaultContext(),
-          crypto_client_config_.get(), /*ProofHandler=*/this);
+      crypto_stream_ = crypto_stream_factory_->CreateClientCryptoStream(
+          /*QuicSession=*/this, crypto_client_config_.get(),
+          /*ProofHandler=*/this);
       QuicSession::Initialize();
       break;
     }
@@ -465,13 +519,11 @@ void P2PQuicTransportImpl::InitializeCryptoStream() {
               helper_->GetRandomGenerator(), helper_->GetClock(), options));
       compressed_certs_cache_.reset(new quic::QuicCompressedCertsCache(
           quic::QuicCompressedCertsCache::kQuicCompressedCertsCacheSize));
-      bool use_stateless_rejects_if_peer_supported = false;
       server_stream_helper_ = std::make_unique<DummyCryptoServerStreamHelper>(
           helper_->GetRandomGenerator());
 
-      crypto_stream_ = std::make_unique<quic::QuicCryptoServerStream>(
-          crypto_server_config_.get(), compressed_certs_cache_.get(),
-          use_stateless_rejects_if_peer_supported, this,
+      crypto_stream_ = crypto_stream_factory_->CreateServerCryptoStream(
+          crypto_server_config_.get(), compressed_certs_cache_.get(), this,
           server_stream_helper_.get());
       QuicSession::Initialize();
       break;
@@ -488,8 +540,45 @@ void P2PQuicTransportImpl::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
   if (event == HANDSHAKE_CONFIRMED) {
     DCHECK(IsEncryptionEstablished());
     DCHECK(IsCryptoHandshakeConfirmed());
-    delegate_->OnConnected();
+    P2PQuicNegotiatedParams negotiated_params;
+    // The guaranteed largest message payload will not change throughout the
+    // connection.
+    uint16_t max_datagram_length =
+        quic::QuicSession::GetGuaranteedLargestMessagePayload();
+    if (max_datagram_length > 0) {
+      // Datagrams are supported in this case.
+      negotiated_params.set_max_datagram_length(max_datagram_length);
+    }
+    delegate_->OnConnected(negotiated_params);
   }
+}
+
+void P2PQuicTransportImpl::OnCanWrite() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  while (!datagram_buffer_.empty()) {
+    if (TrySendDatagram(datagram_buffer_.front())) {
+      datagram_buffer_.pop();
+    } else {
+      // Keep the message in the buffer to be written when we can write again.
+      return;
+    }
+  }
+
+  // We have successfully sent all buffered datagrams.
+  QuicSession::OnCanWrite();
+}
+
+void P2PQuicTransportImpl::OnMessageReceived(quic::QuicStringPiece message) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  // This will never overflow because of the datagram size limit.
+  Vector<uint8_t> datagram(static_cast<wtf_size_t>(message.size()));
+  memcpy(datagram.data(), message.data(), message.size());
+  delegate_->OnDatagramReceived(std::move(datagram));
+}
+
+void P2PQuicTransportImpl::OnMessageLost(quic::QuicMessageId message_id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  num_datagrams_lost_++;
 }
 
 void P2PQuicTransportImpl::OnConnectionClosed(
@@ -508,20 +597,12 @@ void P2PQuicTransportImpl::OnConnectionClosed(
 }
 
 bool P2PQuicTransportImpl::ShouldKeepConnectionAlive() const {
-  // TODO: this is default behavior; please change the timeout logic as
-  // appropriate.
   return GetNumOpenDynamicStreams() > 0;
 }
 
 bool P2PQuicTransportImpl::IsClosed() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return !connection_->connected();
-}
-
-void P2PQuicTransportImpl::set_crypto_client_config(
-    std::unique_ptr<quic::QuicCryptoClientConfig> crypto_client_config) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  crypto_client_config_ = std::move(crypto_client_config);
 }
 
 }  // namespace blink

@@ -5,7 +5,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/lap_timer.h"
@@ -67,6 +66,8 @@ class PerfGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
     if (pname == GL_QUERY_RESULT_AVAILABLE_EXT)
       *params = 1;
   }
+
+  // Overridden from gpu::InterfaceBase
   void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override {
     // Copy the data over after setting the data to ensure alignment.
     gpu::SyncToken sync_token_data(gpu::CommandBufferNamespace::GPU_IO,
@@ -182,6 +183,9 @@ class PerfTileTask : public TileTask {
 class PerfImageDecodeTaskImpl : public PerfTileTask {
  public:
   PerfImageDecodeTaskImpl() = default;
+  PerfImageDecodeTaskImpl(const PerfImageDecodeTaskImpl&) = delete;
+
+  PerfImageDecodeTaskImpl& operator=(const PerfImageDecodeTaskImpl&) = delete;
 
   // Overridden from Task:
   void RunOnWorkerThread() override {}
@@ -191,9 +195,6 @@ class PerfImageDecodeTaskImpl : public PerfTileTask {
 
  protected:
   ~PerfImageDecodeTaskImpl() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PerfImageDecodeTaskImpl);
 };
 
 class PerfRasterBufferProviderHelper {
@@ -214,6 +215,8 @@ class PerfRasterTaskImpl : public PerfTileTask {
         pool_(pool),
         resource_(std::move(in_use_resource)),
         raster_buffer_(std::move(raster_buffer)) {}
+  PerfRasterTaskImpl(const PerfRasterTaskImpl&) = delete;
+  PerfRasterTaskImpl& operator=(const PerfRasterTaskImpl&) = delete;
 
   // Overridden from Task:
   void RunOnWorkerThread() override {}
@@ -236,8 +239,6 @@ class PerfRasterTaskImpl : public PerfTileTask {
   ResourcePool* const pool_;
   ResourcePool::InUsePoolResource resource_;
   std::unique_ptr<RasterBuffer> raster_buffer_;
-
-  DISALLOW_COPY_AND_ASSIGN(PerfRasterTaskImpl);
 };
 
 class RasterBufferProviderPerfTestBase {

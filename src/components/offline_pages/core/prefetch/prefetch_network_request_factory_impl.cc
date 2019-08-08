@@ -4,6 +4,8 @@
 
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/offline_pages/core/offline_page_feature.h"
@@ -64,6 +66,7 @@ void PrefetchNetworkRequestFactoryImpl::MakeGeneratePageBundleRequest(
     const std::vector<std::string>& url_strings,
     const std::string& gcm_registration_id,
     PrefetchRequestFinishedCallback callback) {
+  DCHECK(callback);
   if (!AddConcurrentRequest())
     return;
   int max_bundle_size = prefetch_prefs::IsLimitlessPrefetchingEnabled(prefs_)
@@ -94,6 +97,7 @@ PrefetchNetworkRequestFactoryImpl::GetAllUrlsRequested() const {
 void PrefetchNetworkRequestFactoryImpl::MakeGetOperationRequest(
     const std::string& operation_name,
     PrefetchRequestFinishedCallback callback) {
+  DCHECK(callback);
   if (!AddConcurrentRequest())
     return;
   get_operation_requests_[operation_name] =
@@ -110,6 +114,10 @@ void PrefetchNetworkRequestFactoryImpl::GeneratePageBundleRequestDone(
     PrefetchRequestStatus status,
     const std::string& operation_name,
     const std::vector<RenderPageInfo>& pages) {
+  if (status == PrefetchRequestStatus::kShouldSuspendForbiddenByOPS ||
+      status == PrefetchRequestStatus::kShouldSuspendNewlyForbiddenByOPS) {
+    prefetch_prefs::SetEnabledByServer(prefs_, false);
+  }
   std::move(callback).Run(status, operation_name, pages);
   generate_page_bundle_requests_.erase(request_id);
   ReleaseConcurrentRequest();
@@ -153,7 +161,7 @@ PrefetchNetworkRequestFactoryImpl::GetAllOperationNamesRequested() const {
 }
 
 void PrefetchNetworkRequestFactoryImpl::ReleaseConcurrentRequest() {
-  DCHECK(concurrent_request_count_ > 0);
+  DCHECK_GT(concurrent_request_count_, 0U);
   --concurrent_request_count_;
 }
 

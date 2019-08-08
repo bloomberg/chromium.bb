@@ -26,7 +26,6 @@ cr.define('settings_people_page_sync_page', function() {
         bookmarksSynced: true,
         encryptAllData: false,
         encryptAllDataAllowed: true,
-        enterGooglePassphraseBody: 'Enter Google passphrase.',
         enterPassphraseBody: 'Enter custom passphrase.',
         extensionsEnforced: false,
         extensionsRegistered: true,
@@ -34,7 +33,6 @@ cr.define('settings_people_page_sync_page', function() {
         fullEncryptionBody: '',
         passphrase: '',
         passphraseRequired: false,
-        passphraseTypeIsCustom: false,
         passwordsEnforced: false,
         passwordsRegistered: true,
         passwordsSynced: true,
@@ -704,6 +702,26 @@ cr.define('settings_people_page_sync_page', function() {
                   .click();
               return browserProxy.whenCalled('didNavigateAwayFromSyncPage');
             })
+            .then(abort => {
+              assertTrue(abort);
+            });
+      });
+
+      test('SyncSetupSearchSettings UnifiedConsentEnabled', function() {
+        syncPage.unifiedConsentEnabled = true;
+        syncPage.syncStatus = {
+          signinAllowed: true,
+          syncSystemEnabled: true,
+          setupInProgress: true,
+          signedIn: true
+        };
+        Polymer.dom.flush();
+
+        // Searching settings while setup is in progress cancels sync.
+        settings.navigateTo(
+            settings.routes.BASIC, new URLSearchParams('search=foo'));
+
+        return browserProxy.whenCalled('didNavigateAwayFromSyncPage')
             .then(abort => {
               assertTrue(abort);
             });

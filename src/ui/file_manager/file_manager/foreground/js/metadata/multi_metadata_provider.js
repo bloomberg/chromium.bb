@@ -12,15 +12,13 @@
  * @struct
  */
 function MultiMetadataProvider(
-    fileSystemMetadataProvider,
-    externalMetadataProvider,
-    contentMetadataProvider,
-    volumeManager) {
+    fileSystemMetadataProvider, externalMetadataProvider,
+    contentMetadataProvider, volumeManager) {
   MetadataProvider.call(
       this,
-      FileSystemMetadataProvider.PROPERTY_NAMES.concat(
-          ExternalMetadataProvider.PROPERTY_NAMES).concat(
-              ContentMetadataProvider.PROPERTY_NAMES));
+      FileSystemMetadataProvider.PROPERTY_NAMES
+          .concat(ExternalMetadataProvider.PROPERTY_NAMES)
+          .concat(ContentMetadataProvider.PROPERTY_NAMES));
 
   /**
    * @private {!FileSystemMetadataProvider}
@@ -120,58 +118,67 @@ MultiMetadataProvider.prototype.get = function(requests) {
           contentRequests,
           contentPropertyNames.concat(fallbackContentPropertyNames));
     }
+    // We need to discard content requests when using a documents provider
+    // since the content sniffing code can't resolve the file path in the
+    // MediaGallery API. See crbug.com/942417
+    if (volumeInfo &&
+        volumeInfo.volumeType ===
+            VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER) {
+      contentRequests.length = 0;
+    }
   });
 
   const get = (provider, inRequests) => {
     return provider.get(inRequests).then(results => {
       return {
         requests: inRequests,
-        results: results
+        results: results,
       };
     });
   };
-  const fileSystemPromise = get(
-      this.fileSystemMetadataProvider_, fileSystemRequests);
+  const fileSystemPromise =
+      get(this.fileSystemMetadataProvider_, fileSystemRequests);
   const externalPromise = get(this.externalMetadataProvider_, externalRequests);
   const contentPromise = get(this.contentMetadataProvider_, contentRequests);
-  const fallbackContentPromise = externalPromise.then(
-      requestsAndResults => {
-        const requests = requestsAndResults.requests;
-        const results = requestsAndResults.results;
-        const dirtyMap = [];
-        for (let i = 0; i < results.length; i++) {
-          dirtyMap[requests[i].entry.toURL()] = results[i].present;
-        }
-        return get(
-            this.contentMetadataProvider_,
-            fallbackContentRequests.filter(
-                request => {
-                  return dirtyMap[request.entry.toURL()];
-                }));
-      });
+  const fallbackContentPromise = externalPromise.then(requestsAndResults => {
+    const requests = requestsAndResults.requests;
+    const results = requestsAndResults.results;
+    const dirtyMap = [];
+    for (let i = 0; i < results.length; i++) {
+      dirtyMap[requests[i].entry.toURL()] = results[i].present;
+    }
+    return get(
+        this.contentMetadataProvider_,
+        fallbackContentRequests.filter(request => {
+          return dirtyMap[request.entry.toURL()];
+        }));
+  });
 
   // Merge results.
-  return Promise.all([
-    fileSystemPromise,
-    externalPromise,
-    contentPromise,
-    fallbackContentPromise
-  ]).then(resultsList => {
-    const integratedResults = {};
-    for (let i = 0; i < resultsList.length; i++) {
-      const inRequests = resultsList[i].requests;
-      const results = resultsList[i].results;
-      assert(inRequests.length === results.length);
-      for (let j = 0; j < results.length; j++) {
-        const url = inRequests[j].entry.toURL();
-        integratedResults[url] = integratedResults[url] || new MetadataItem();
-        for (const name in results[j]) {
-          integratedResults[url][name] = results[j][name];
+  return Promise
+      .all([
+        fileSystemPromise,
+        externalPromise,
+        contentPromise,
+        fallbackContentPromise,
+      ])
+      .then(resultsList => {
+        const integratedResults = {};
+        for (let i = 0; i < resultsList.length; i++) {
+          const inRequests = resultsList[i].requests;
+          const results = resultsList[i].results;
+          assert(inRequests.length === results.length);
+          for (let j = 0; j < results.length; j++) {
+            const url = inRequests[j].entry.toURL();
+            integratedResults[url] =
+                integratedResults[url] || new MetadataItem();
+            for (const name in results[j]) {
+              integratedResults[url][name] = results[j][name];
+            }
+          }
         }
-      }
-    }
-    return requests.map(request => {
-      return integratedResults[request.entry.toURL()] || new MetadataItem();
-    });
-  });
+        return requests.map(request => {
+          return integratedResults[request.entry.toURL()] || new MetadataItem();
+        });
+      });
 };

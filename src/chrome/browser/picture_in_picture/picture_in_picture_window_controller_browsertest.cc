@@ -527,6 +527,46 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                 .WaitAndGetTitle());
 }
 
+// Tests that when closing a Picture-in-Picture window, the video element
+// no longer in Picture-in-Picture can't enter Picture-in-Picture right away.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       CloseWindowCantEnterPictureInPictureAgain) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents);
+
+  SetUpWindowController(active_web_contents);
+
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
+
+  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
+      active_web_contents, "tryToEnterPictureInPictureAfterLeaving();"));
+
+  bool in_picture_in_picture = false;
+  EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractBool(
+      active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
+  EXPECT_TRUE(in_picture_in_picture);
+
+  ASSERT_TRUE(window_controller());
+  window_controller()->Close(true /* should_pause_video */,
+                             true /* should_reset_pip_player */);
+
+  base::string16 expected_title =
+      base::ASCIIToUTF16("failed to enter Picture-in-Picture after leaving");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+}
+
 // Tests that when closing a Picture-in-Picture window from the Web API, the
 // video element is not paused.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
@@ -2071,11 +2111,21 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
                 .WaitAndGetTitle());
 }
 
-// Show/hide page and check that Auto Picture-in-Picture is not triggered. This
-// test is most likely going to be flaky the day the tested thing fails.
+class AutoPictureInPictureWindowControllerBrowserTest
+    : public PictureInPictureWindowControllerBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PictureInPictureWindowControllerBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "AutoPictureInPicture");
+  }
+};
+
+// Hide page and check that entering Auto Picture-in-Picture is not triggered.
+// This test is most likely going to be flaky the day the tested thing fails.
 // Do NOT disable test. Ping /chrome/browser/picture_in_picture/OWNERS instead.
-IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       AutoPictureInPictureIsNotTriggeredInRegularWebApp) {
+IN_PROC_BROWSER_TEST_F(AutoPictureInPictureWindowControllerBrowserTest,
+                       AutoEnterPictureInPictureIsNotTriggeredInRegularWebApp) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(
@@ -2104,6 +2154,35 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
       active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
   EXPECT_FALSE(in_picture_in_picture);
+}
+
+// Show page and check that exiting Auto Picture-in-Picture is triggered.
+// This test is most likely going to be flaky the day the tested thing fails.
+// Do NOT disable test. Ping /chrome/browser/picture_in_picture/OWNERS instead.
+IN_PROC_BROWSER_TEST_F(AutoPictureInPictureWindowControllerBrowserTest,
+                       AutoExitPictureInPictureIsTriggeredInRegularWebApp) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NE(nullptr, active_web_contents);
+
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents,
+                                     "video.autoPictureInPicture = true;"));
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents,
+                                     "addVisibilityChangeEventListener();"));
+
+  // Hide page.
+  active_web_contents->WasHidden();
+  base::string16 expected_title = base::ASCIIToUTF16("hidden");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
 
   // Enter Picture-in-Picture manually.
   bool result = false;
@@ -2111,18 +2190,62 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       active_web_contents, "enterPictureInPicture();", &result));
   EXPECT_TRUE(result);
 
-  // Show page and check that video did not leave Picture-in-Picture
-  // automatically even though it has the Auto Picture-in-Picture attribute.
+  // Show page and check that video left Picture-in-Picture automatically.
   active_web_contents->WasShown();
   expected_title = base::ASCIIToUTF16("visible");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
-
-  // Check that the video is still in Picture-in-Picture.
+  bool in_picture_in_picture = false;
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
       active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
-  EXPECT_TRUE(in_picture_in_picture);
+  EXPECT_FALSE(in_picture_in_picture);
+}
+
+// Show/hide fullscreen page and check that Auto Picture-in-Picture is
+// triggered.
+IN_PROC_BROWSER_TEST_F(AutoPictureInPictureWindowControllerBrowserTest,
+                       AutoPictureInPictureTriggeredWhenFullscreen) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NE(nullptr, active_web_contents);
+
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "enterFullscreen()"));
+  base::string16 expected_title = base::ASCIIToUTF16("fullscreen");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+
+  EXPECT_TRUE(content::ExecuteScript(active_web_contents,
+                                     "addPictureInPictureEventListeners();"));
+  EXPECT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents,
+                                     "video.autoPictureInPicture = true;"));
+
+  SetUpWindowController(active_web_contents);
+  EXPECT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
+
+  // Hide page and check that video entered Picture-in-Picture automatically.
+  active_web_contents->WasHidden();
+  expected_title = base::ASCIIToUTF16("enterpictureinpicture");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+  EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+
+  // Show page and check that video left Picture-in-Picture automatically.
+  active_web_contents->WasShown();
+  expected_title = base::ASCIIToUTF16("leavepictureinpicture");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+  EXPECT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
 }
 
 namespace {

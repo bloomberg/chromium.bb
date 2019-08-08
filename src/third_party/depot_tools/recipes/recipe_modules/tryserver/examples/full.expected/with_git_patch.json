@@ -28,7 +28,6 @@
     ],
     "name": "fail",
     "~followup_annotations": [
-      "step returned non-zero exit code: 1",
       "@@@STEP_TEXT@foo@@@",
       "@@@STEP_FAILURE@@@",
       "@@@SET_BUILD_PROPERTY@failure_hash@\"c2311ad770732eade3d2f48247abd147e40a70e7\"@@@"

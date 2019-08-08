@@ -13,6 +13,7 @@
 #include <stddef.h>
 
 #include "api/scoped_refptr.h"
+#include "api/task_queue/global_task_queue_factory.h"
 #include "modules/audio_device/audio_device_config.h"  // IWYU pragma: keep
 #include "modules/audio_device/audio_device_generic.h"
 #include "rtc_base/checks.h"
@@ -26,7 +27,7 @@
 #endif
 #elif defined(WEBRTC_ANDROID)
 #include <stdlib.h>
-#if defined(AUDIO_DEVICE_INCLUDE_ANDROID_AAUDIO)
+#if defined(WEBRTC_AUDIO_DEVICE_INCLUDE_ANDROID_AAUDIO)
 #include "modules/audio_device/android/aaudio_player.h"
 #include "modules/audio_device/android/aaudio_recorder.h"
 #endif
@@ -44,7 +45,7 @@
 #include "modules/audio_device/linux/audio_device_pulse_linux.h"
 #endif
 #elif defined(WEBRTC_IOS)
-#include "modules/audio_device/ios/audio_device_ios.h"
+#include "sdk/objc/native/src/audio/audio_device_ios.h"
 #elif defined(WEBRTC_MAC)
 #include "modules/audio_device/mac/audio_device_mac.h"
 #endif
@@ -71,14 +72,23 @@
 namespace webrtc {
 
 rtc::scoped_refptr<AudioDeviceModule> AudioDeviceModule::Create(
-    const AudioLayer audio_layer) {
+    AudioLayer audio_layer) {
   RTC_LOG(INFO) << __FUNCTION__;
-  return AudioDeviceModule::CreateForTest(audio_layer);
+  return AudioDeviceModule::CreateForTest(audio_layer,
+                                          &GlobalTaskQueueFactory());
+}
+
+rtc::scoped_refptr<AudioDeviceModule> AudioDeviceModule::Create(
+    AudioLayer audio_layer,
+    TaskQueueFactory* task_queue_factory) {
+  RTC_LOG(INFO) << __FUNCTION__;
+  return AudioDeviceModule::CreateForTest(audio_layer, task_queue_factory);
 }
 
 // static
 rtc::scoped_refptr<AudioDeviceModuleForTest> AudioDeviceModule::CreateForTest(
-    const AudioLayer audio_layer) {
+    AudioLayer audio_layer,
+    TaskQueueFactory* task_queue_factory) {
   RTC_LOG(INFO) << __FUNCTION__;
 
   // The "AudioDeviceModule::kWindowsCoreAudio2" audio layer has its own
@@ -91,7 +101,8 @@ rtc::scoped_refptr<AudioDeviceModuleForTest> AudioDeviceModule::CreateForTest(
 
   // Create the generic reference counted (platform independent) implementation.
   rtc::scoped_refptr<AudioDeviceModuleImpl> audioDevice(
-      new rtc::RefCountedObject<AudioDeviceModuleImpl>(audio_layer));
+      new rtc::RefCountedObject<AudioDeviceModuleImpl>(audio_layer,
+                                                       task_queue_factory));
 
   // Ensure that the current platform is supported.
   if (audioDevice->CheckPlatform() == -1) {
@@ -112,8 +123,10 @@ rtc::scoped_refptr<AudioDeviceModuleForTest> AudioDeviceModule::CreateForTest(
   return audioDevice;
 }
 
-AudioDeviceModuleImpl::AudioDeviceModuleImpl(const AudioLayer audioLayer)
-    : audio_layer_(audioLayer) {
+AudioDeviceModuleImpl::AudioDeviceModuleImpl(
+    AudioLayer audio_layer,
+    TaskQueueFactory* task_queue_factory)
+    : audio_layer_(audio_layer), audio_device_buffer_(task_queue_factory) {
   RTC_LOG(INFO) << __FUNCTION__;
 }
 
@@ -218,13 +231,13 @@ int32_t AudioDeviceModuleImpl::CreatePlatformSpecificObjects() {
     audio_device_.reset(new AudioDeviceTemplate<AudioRecordJni, OpenSLESPlayer>(
         audio_layer, audio_manager));
   } else if (audio_layer == kAndroidAAudioAudio) {
-#if defined(AUDIO_DEVICE_INCLUDE_ANDROID_AAUDIO)
+#if defined(WEBRTC_AUDIO_DEVICE_INCLUDE_ANDROID_AAUDIO)
     // AAudio based audio for both input and output.
     audio_device_.reset(new AudioDeviceTemplate<AAudioRecorder, AAudioPlayer>(
         audio_layer, audio_manager));
 #endif
   } else if (audio_layer == kAndroidJavaInputAndAAudioOutputAudio) {
-#if defined(AUDIO_DEVICE_INCLUDE_ANDROID_AAUDIO)
+#if defined(WEBRTC_AUDIO_DEVICE_INCLUDE_ANDROID_AAUDIO)
     // Java audio for input and AAudio for output audio (i.e. mixed APIs).
     audio_device_.reset(new AudioDeviceTemplate<AudioRecordJni, AAudioPlayer>(
         audio_layer, audio_manager));
@@ -274,7 +287,7 @@ int32_t AudioDeviceModuleImpl::CreatePlatformSpecificObjects() {
 // iOS ADM implementation.
 #if defined(WEBRTC_IOS)
   if (audio_layer == kPlatformDefaultAudio) {
-    audio_device_.reset(new AudioDeviceIOS());
+    audio_device_.reset(new ios_adm::AudioDeviceIOS());
     RTC_LOG(INFO) << "iPhone Audio APIs will be utilized.";
   }
 // END #if defined(WEBRTC_IOS)

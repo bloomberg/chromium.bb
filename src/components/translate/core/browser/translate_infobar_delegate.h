@@ -29,6 +29,17 @@ class InfoBarManager;
 
 namespace translate {
 
+// The number of times user should consecutively translate for "Always
+// Translate" to automatically trigger.
+extern const int kAutoAlwaysThreshold;
+// The number of times user should consecutively dismiss the translate infobar
+// for "Never Translate" to automatically trigger.
+extern const int kAutoNeverThreshold;
+// The maximum number of times "Always Translate" is automatically triggered.
+extern const int kMaxNumberOfAutoAlways;
+// The maximum number of times "Never Translate" is automatically triggered.
+extern const int kMaxNumberOfAutoNever;
+
 // Feature flag for "Translate Compact Infobar UI" project.
 extern const base::Feature kTranslateCompactUI;
 

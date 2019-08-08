@@ -5,7 +5,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,7 +32,7 @@
 
 #ifdef ABSL_HAVE_STD_STRING_VIEW
 
-#include <string_view>
+#include <string_view>  // IWYU pragma: export
 
 namespace absl {
 using std::string_view;
@@ -100,7 +100,6 @@ namespace absl {
 // A `string_view` may represent a whole string or just part of a string. For
 // example, when splitting a string, `std::vector<absl::string_view>` is a
 // natural data type for the output.
-//
 //
 // When constructed from a source which is nul-terminated, the `string_view`
 // itself will not include the nul-terminator unless a specific size (including
@@ -277,7 +276,7 @@ class string_view {
   // Checks if the `string_view` is empty (refers to no characters).
   constexpr bool empty() const noexcept { return length_ == 0; }
 
-  // std::string:view::operator[]
+  // string_view::operator[]
   //
   // Returns the ith element of an `string_view` using the array operator.
   // Note that this operator does not perform any bounds checking.
@@ -508,6 +507,7 @@ inline bool operator==(string_view x, string_view y) noexcept {
   if (len != y.size()) {
     return false;
   }
+
   return x.data() == y.data() || len <= 0 ||
          memcmp(x.data(), y.data(), len) == 0;
 }

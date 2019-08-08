@@ -14,7 +14,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -32,6 +31,7 @@ import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.TestSelectionPopupController;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -99,7 +99,7 @@ public class ContextualSearchTapEventTest {
         public void startSearchTermResolutionRequest(String selection) {
             // Skip native calls and immediately "resolve" the search term.
             onSearchTermResolutionResponse(true, 200, selection, selection, "", "", false, 0, 10,
-                    "", "", "", "", QuickActionCategory.NONE, 0, "", "");
+                    "", "", "", "", QuickActionCategory.NONE, 0, "", "", 0);
         }
 
         @Override
@@ -188,13 +188,9 @@ public class ContextualSearchTapEventTest {
      */
     private void mockLongpressText(String text) {
         mContextualSearchManager.getBaseSelectionPopupController().setSelectedText(text);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mContextualSearchClient.onSelectionEvent(SelectionEventType.SELECTION_HANDLES_SHOWN,
-                        0, 0);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mContextualSearchClient.onSelectionEvent(
+                                SelectionEventType.SELECTION_HANDLES_SHOWN, 0, 0));
     }
 
     /**
@@ -202,12 +198,9 @@ public class ContextualSearchTapEventTest {
      */
     private void mockTapText(String text) {
         mContextualSearchManager.getBaseSelectionPopupController().setSelectedText(text);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mContextualSearchManager.getGestureStateListener().onTouchDown();
-                mContextualSearchManager.onShowUnhandledTapUIIfNeeded(0, 0, 12, 100);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mContextualSearchManager.getGestureStateListener().onTouchDown();
+            mContextualSearchManager.onShowUnhandledTapUIIfNeeded(0, 0, 12, 100);
         });
     }
 
@@ -215,13 +208,10 @@ public class ContextualSearchTapEventTest {
      * Trigger empty space tap.
      */
     private void mockTapEmptySpace() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mContextualSearchManager.onShowUnhandledTapUIIfNeeded(0, 0, 0, 0);
-                mContextualSearchClient.onSelectionEvent(
-                        SelectionEventType.SELECTION_HANDLES_CLEARED, 0, 0);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mContextualSearchManager.onShowUnhandledTapUIIfNeeded(0, 0, 0, 0);
+            mContextualSearchClient.onSelectionEvent(
+                    SelectionEventType.SELECTION_HANDLES_CLEARED, 0, 0);
         });
     }
 
@@ -229,14 +219,10 @@ public class ContextualSearchTapEventTest {
      * Generates a call indicating that surrounding text and selection range are available.
      */
     private void generateTextSurroundingSelectionAvailable() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // It only makes sense to send dummy data here because we can't easily control
-                // what's in the native context.
-                mContextualSearchManager.onTextSurroundingSelectionAvailable(
-                        "UTF-8", "unused", 0, 0);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // It only makes sense to send dummy data here because we can't easily control
+            // what's in the native context.
+            mContextualSearchManager.onTextSurroundingSelectionAvailable("UTF-8", "unused", 0, 0);
         });
     }
 
@@ -245,13 +231,10 @@ public class ContextualSearchTapEventTest {
      * action has completed with the given result.
      */
     private void generateSelectWordAroundCaretAck() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // It only makes sense to send dummy data here because we can't easily control
-                // what's in the native context.
-                mContextualSearchClient.selectWordAroundCaretAck(true, 0, 0);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // It only makes sense to send dummy data here because we can't easily control
+            // what's in the native context.
+            mContextualSearchClient.selectWordAroundCaretAck(true, 0, 0);
         });
     }
 
@@ -262,22 +245,18 @@ public class ContextualSearchTapEventTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         final ChromeActivity activity = mActivityTestRule.getActivity();
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mPanelManager = new OverlayPanelManagerWrapper();
-                mPanelManager.setContainerView(new LinearLayout(activity));
-                mPanelManager.setDynamicResourceLoader(new DynamicResourceLoader(0, null));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mPanelManager = new OverlayPanelManagerWrapper();
+            mPanelManager.setContainerView(new LinearLayout(activity));
+            mPanelManager.setDynamicResourceLoader(new DynamicResourceLoader(0, null));
 
-                mContextualSearchManager = new ContextualSearchManagerWrapper(activity);
-                mPanel = new ContextualSearchPanelWrapper(activity,
-                        activity.getCompositorViewHolder().getLayoutManager(), mPanelManager);
-                mPanel.setManagementDelegate(mContextualSearchManager);
-                mContextualSearchManager.setContextualSearchPanel(mPanel);
+            mContextualSearchManager = new ContextualSearchManagerWrapper(activity);
+            mPanel = new ContextualSearchPanelWrapper(
+                    activity, activity.getCompositorViewHolder().getLayoutManager(), mPanelManager);
+            mPanel.setManagementDelegate(mContextualSearchManager);
+            mContextualSearchManager.setContextualSearchPanel(mPanel);
 
-                mContextualSearchClient =
-                        mContextualSearchManager.getContextualSearchSelectionClient();
-            }
+            mContextualSearchClient = mContextualSearchManager.getContextualSearchSelectionClient();
         });
     }
 

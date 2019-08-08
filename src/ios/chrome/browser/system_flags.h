@@ -15,10 +15,6 @@
 
 namespace experimental_flags {
 
-// Feature to load external files with WebState instead of using
-// ExternalFileController.
-extern const base::Feature kExternalFilesLoadedInWebState;
-
 enum GaiaEnvironment {
   GAIA_ENVIRONMENT_PROD,
   GAIA_ENVIRONMENT_STAGING,

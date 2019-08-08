@@ -35,6 +35,7 @@ extern const char kBackoffThresholdKey[];
 
 enum class OverrideLanguageModel {
   DEFAULT,
+  FLUENT,
   HEURISTIC,
   GEO,
 };

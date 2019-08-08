@@ -20,6 +20,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/trace_event/trace_event.h"
@@ -97,6 +98,28 @@ base::Time GetReferenceDateForExpiryChecks(PrefService* local_state) {
   if (seed_date.is_null() || seed_date < build_time)
     reference_date = build_time;
   return reference_date;
+}
+
+// TODO(b/957197): Improve how we handle OS versions.
+// Add os_version.h and os_version_<platform>.cc that handle retrieving and
+// parsing OS versions. Then get rid of all the platform-dependent code here.
+base::Version GetOSVersion() {
+  base::Version ret;
+
+#if defined(OS_WIN)
+  std::string win_version = base::SysInfo::OperatingSystemVersion();
+  base::ReplaceSubstringsAfterOffset(&win_version, 0, " SP", ".");
+  ret = base::Version(win_version);
+  DCHECK(ret.IsValid()) << win_version;
+#else
+  // Every other OS is supported by OperatingSystemVersionNumbers
+  int major, minor, build;
+  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &build);
+  ret = base::Version(base::StringPrintf("%d.%d.%d", major, minor, build));
+  DCHECK(ret.IsValid());
+#endif
+
+  return ret;
 }
 
 // Wrapper around channel checking, used to enable channel mocking for
@@ -250,6 +273,7 @@ VariationsFieldTrialCreator::GetClientFilterableStateForVersion(
   state->locale = application_locale_;
   state->reference_date = GetReferenceDateForExpiryChecks(local_state());
   state->version = version;
+  state->os_version = GetOSVersion();
   state->channel = GetChannelForVariations(client_->GetChannel());
   state->form_factor = GetCurrentFormFactor();
   state->platform = GetPlatform();
@@ -261,8 +285,6 @@ VariationsFieldTrialCreator::GetClientFilterableStateForVersion(
   // evaluated, that field trial would not be able to apply for this case.
   state->is_low_end_device = base::SysInfo::IsLowEndDevice();
 #endif
-  state->supports_permanent_consistency =
-      client_->GetSupportsPermanentConsistency();
   state->session_consistency_country = GetLatestCountry();
   state->permanent_consistency_country = LoadPermanentConsistencyCountry(
       version, state->session_consistency_country);

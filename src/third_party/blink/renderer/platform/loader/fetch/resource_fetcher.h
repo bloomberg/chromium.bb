@@ -33,8 +33,7 @@
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/cpp/cors/preflight_timing_info.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
-#include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-shared.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink.h"
+#include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-blink.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/preload_key.h"
@@ -50,7 +49,6 @@
 namespace blink {
 
 enum class ResourceType : uint8_t;
-class ArchiveResource;
 class CodeCacheLoader;
 class ConsoleLogger;
 class FetchContext;
@@ -61,6 +59,7 @@ class PreflightTimingInfo;
 class Resource;
 class ResourceError;
 class ResourceFetcherProperties;
+class ResourceLoadObserver;
 class ResourceTimingInfo;
 class WebURLLoader;
 struct ResourceFetcherInit;
@@ -115,6 +114,21 @@ class PLATFORM_EXPORT ResourceFetcher
   //   to the ResourceFetcher constructor.
   const ResourceFetcherProperties& GetProperties() const;
 
+  // Returns whether this fetcher is detached from the associated context.
+  bool IsDetached() const;
+
+  // Returns the observer object associated with this fetcher.
+  ResourceLoadObserver* GetResourceLoadObserver() {
+    // When detached, we must have a null observer.
+    DCHECK(!IsDetached() || !resource_load_observer_);
+    return resource_load_observer_;
+  }
+  // This must be called right after construction.
+  void SetResourceLoadObserver(ResourceLoadObserver* observer) {
+    DCHECK(!IsDetached());
+    resource_load_observer_ = observer;
+  }
+
   // Triggers a fetch based on the given FetchParameters (if there isn't a
   // suitable Resource already cached) and registers the given ResourceClient
   // with the Resource. Guaranteed to return a non-null Resource of the subtype
@@ -156,11 +170,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   FetchContext& Context() const;
   void ClearContext();
-  ConsoleLogger* GetConsoleLogger() { return console_logger_; }
-  void SetConsoleLogger(ConsoleLogger* console_logger) {
-    DCHECK(console_logger);
-    console_logger_ = console_logger;
-  }
+  ConsoleLogger& GetConsoleLogger();
 
   int BlockingRequestCount() const;
   int NonblockingRequestCount() const;
@@ -179,11 +189,6 @@ class PLATFORM_EXPORT ResourceFetcher
   Vector<KURL> GetUrlsOfUnusedPreloads();
 
   MHTMLArchive* Archive() const { return archive_.Get(); }
-  mojom::MHTMLLoadResult ArchiveLoadResult() const {
-    return archive_load_result_;
-  }
-  ArchiveResource* CreateArchive(const KURL&,
-                                 scoped_refptr<const SharedBuffer>);
 
   void SetDefersLoading(bool);
   void StopFetching();
@@ -246,8 +251,11 @@ class PLATFORM_EXPORT ResourceFetcher
 
   mojom::blink::BlobRegistry* GetBlobRegistry();
 
+  FrameScheduler* GetFrameScheduler();
+
  private:
   friend class ResourceCacheValidationSuppressor;
+  class DetachableConsoleLogger;
   class DetachableProperties;
   enum class StopFetchingTarget {
     kExcludingKeepaliveLoaders,
@@ -270,7 +278,8 @@ class PLATFORM_EXPORT ResourceFetcher
       FetchParameters::DeferOption = FetchParameters::kNoDefer,
       FetchParameters::SpeculativePreloadType =
           FetchParameters::SpeculativePreloadType::kNotSpeculative,
-      bool is_link_preload = false);
+      bool is_link_preload = false,
+      bool is_stale_revalidation = false);
 
   // |virtual_time_pauser| is an output parameter. PrepareRequest may
   // create a new WebScopedVirtualTimePauser and set it to
@@ -278,7 +287,7 @@ class PLATFORM_EXPORT ResourceFetcher
   base::Optional<ResourceRequestBlockedReason> PrepareRequest(
       FetchParameters&,
       const ResourceFactory&,
-      unsigned long identifier,
+      uint64_t identifier,
       WebScopedVirtualTimePauser& virtual_time_pauser);
 
   Resource* ResourceForStaticData(const FetchParameters&,
@@ -326,13 +335,13 @@ class PLATFORM_EXPORT ResourceFetcher
   void MoveResourceLoaderToNonBlocking(ResourceLoader*);
   void RemoveResourceLoader(ResourceLoader*);
 
-  void RequestLoadStarted(unsigned long identifier,
+  void RequestLoadStarted(uint64_t identifier,
                           Resource*,
                           const FetchParameters&,
                           RevalidationPolicy,
                           bool is_static_data = false);
 
-  void DidLoadResourceFromMemoryCache(unsigned long identifier,
+  void DidLoadResourceFromMemoryCache(uint64_t identifier,
                                       Resource*,
                                       const ResourceRequest&);
 
@@ -352,9 +361,10 @@ class PLATFORM_EXPORT ResourceFetcher
   void RevalidateStaleResource(Resource* stale_resource);
 
   Member<DetachableProperties> properties_;
+  Member<ResourceLoadObserver> resource_load_observer_;
   Member<FetchContext> context_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  Member<ConsoleLogger> console_logger_;
+  const Member<DetachableConsoleLogger> console_logger_;
   Member<LoaderFactory> loader_factory_;
   const Member<ResourceLoadScheduler> scheduler_;
 
@@ -364,7 +374,6 @@ class PLATFORM_EXPORT ResourceFetcher
   HeapHashMap<PreloadKey, Member<Resource>> preloads_;
   HeapVector<Member<Resource>> matched_preloads_;
   Member<MHTMLArchive> archive_;
-  mojom::MHTMLLoadResult archive_load_result_;
 
   TaskRunnerTimer<ResourceFetcher> resource_timing_report_timer_;
 
@@ -378,6 +387,9 @@ class PLATFORM_EXPORT ResourceFetcher
   HeapHashSet<Member<ResourceLoader>> non_blocking_loaders_;
 
   std::unique_ptr<HashSet<String>> preloaded_urls_for_test_;
+
+  // TODO(altimin): Move FrameScheduler to oilpan.
+  base::WeakPtr<FrameScheduler> frame_scheduler_;
 
   // Timeout timer for keepalive requests.
   TaskHandle keepalive_loaders_task_handle_;
@@ -433,33 +445,14 @@ struct PLATFORM_EXPORT ResourceFetcherInit final {
   // The given ResourceFetcherProperties is kept until ClearContext() is called.
   ResourceFetcherInit(const ResourceFetcherProperties& properties,
                       FetchContext* context,
-                      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : ResourceFetcherInit(properties,
-                            context,
-                            std::move(task_runner),
-                            nullptr) {}
-  ResourceFetcherInit(const ResourceFetcherProperties& properties,
-                      FetchContext* context,
                       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                       ResourceFetcher::LoaderFactory* loader_factory);
-  ResourceFetcherInit(const ResourceFetcherProperties& properties,
-                      FetchContext* context,
-                      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                      ResourceFetcher::LoaderFactory* loader_factory,
-                      ConsoleLogger& console_logger)
-      : properties(properties),
-        context(context),
-        task_runner(std::move(task_runner)),
-        loader_factory(loader_factory),
-        console_logger(console_logger) {
-    DCHECK(context);
-    DCHECK(this->task_runner);
-  }
+
   const Member<const ResourceFetcherProperties> properties;
   const Member<FetchContext> context;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   const Member<ResourceFetcher::LoaderFactory> loader_factory;
-  const Member<ConsoleLogger> console_logger;
+  Member<ConsoleLogger> console_logger;
   ResourceLoadScheduler::ThrottlingPolicy initial_throttling_policy =
       ResourceLoadScheduler::ThrottlingPolicy::kNormal;
   Member<MHTMLArchive> archive;

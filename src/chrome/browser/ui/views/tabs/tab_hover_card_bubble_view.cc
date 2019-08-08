@@ -7,14 +7,28 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/browser_features.h"
+#include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/tabs/tab_style.h"
+#include "chrome/browser/ui/thumbnails/thumbnail_image.h"
+#include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
-#include "chrome/browser/ui/views/tabs/tab_style.h"
 #include "components/url_formatter/url_formatter.h"
+#include "ui/base/theme_provider.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/linear_animation.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
+#include "ui/resources/grit/ui_resources.h"
+#include "ui/views/background.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -23,12 +37,11 @@
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
-namespace {
+#if defined(OS_WIN)
+#include "ui/base/win/shell.h"
+#endif
 
-constexpr base::TimeDelta kMinimumTriggerDelay =
-    base::TimeDelta::FromMilliseconds(50);
-constexpr base::TimeDelta kMaximumTriggerDelay =
-    base::TimeDelta::FromMilliseconds(1000);
+namespace {
 
 // Hover card and preview image dimensions.
 int GetPreferredTabHoverCardWidth() {
@@ -45,7 +58,142 @@ bool AreHoverCardImagesEnabled() {
   return base::FeatureList::IsEnabled(features::kTabHoverCardImages);
 }
 
+// Get delay threshold based on flag settings option selected. This is for
+// user testing.
+// TODO(corising): remove this after user study is completed.
+base::TimeDelta GetMinimumTriggerDelay() {
+  int delay_group = base::GetFieldTrialParamByFeatureAsInt(
+      features::kTabHoverCards, features::kTabHoverCardsFeatureParameterName,
+      0);
+  switch (delay_group) {
+    case 2:
+      return base::TimeDelta::FromMilliseconds(500);
+    case 1:
+      return base::TimeDelta::FromMilliseconds(200);
+    case 0:
+    default:
+      return base::TimeDelta::FromMilliseconds(0);
+  }
+}
+
+base::TimeDelta GetMaximumTriggerDelay() {
+  int delay_group = base::GetFieldTrialParamByFeatureAsInt(
+      features::kTabHoverCards, features::kTabHoverCardsFeatureParameterName,
+      0);
+  switch (delay_group) {
+    case 2:
+      return base::TimeDelta::FromMilliseconds(1000);
+    case 1:
+      return base::TimeDelta::FromMilliseconds(700);
+    case 0:
+    default:
+      return base::TimeDelta::FromMilliseconds(0);
+  }
+}
+
+bool CustomShadowsSupported() {
+#if defined(OS_WIN)
+  return ui::win::IsAeroGlassEnabled();
+#else
+  return true;
+#endif
+}
+
 }  // namespace
+
+// static
+bool TabHoverCardBubbleView::disable_animations_for_testing_ = false;
+
+// TODO(corising): Move this to a place where it could be used for all widgets.
+class TabHoverCardBubbleView::WidgetFadeAnimationDelegate
+    : public gfx::AnimationDelegate {
+ public:
+  explicit WidgetFadeAnimationDelegate(views::Widget* hover_card)
+      : widget_(hover_card),
+        fade_animation_(std::make_unique<gfx::LinearAnimation>(this)) {}
+  ~WidgetFadeAnimationDelegate() override {}
+
+  enum class FadeAnimationState {
+    // No animation is running.
+    IDLE,
+    FADE_IN,
+    FADE_OUT,
+  };
+
+  void set_animation_state(FadeAnimationState state) {
+    animation_state_ = state;
+  }
+
+  bool IsFadingIn() const {
+    return animation_state_ == FadeAnimationState::FADE_IN;
+  }
+
+  bool IsFadingOut() const {
+    return animation_state_ == FadeAnimationState::FADE_OUT;
+  }
+
+  void FadeIn() {
+    if (IsFadingIn())
+      return;
+    constexpr base::TimeDelta kFadeInDuration =
+        base::TimeDelta::FromMilliseconds(200);
+    set_animation_state(FadeAnimationState::FADE_IN);
+    widget_->SetOpacity(0);
+    fade_animation_ = std::make_unique<gfx::LinearAnimation>(this);
+    fade_animation_->SetDuration(kFadeInDuration);
+    fade_animation_->Start();
+  }
+
+  void FadeOut() {
+    if (IsFadingOut())
+      return;
+    constexpr base::TimeDelta kFadeOutDuration =
+        base::TimeDelta::FromMilliseconds(150);
+    fade_animation_ = std::make_unique<gfx::LinearAnimation>(this);
+    set_animation_state(FadeAnimationState::FADE_OUT);
+    fade_animation_->SetDuration(kFadeOutDuration);
+    fade_animation_->Start();
+  }
+
+  void CancelFadeOut() {
+    if (!IsFadingOut())
+      return;
+
+    fade_animation_->Stop();
+    set_animation_state(FadeAnimationState::IDLE);
+    widget_->SetOpacity(1);
+  }
+
+ private:
+  void AnimationProgressed(const gfx::Animation* animation) override {
+    // Get the value of the animation with a material ease applied.
+    double value = gfx::Tween::CalculateValue(gfx::Tween::FAST_OUT_SLOW_IN,
+                                              animation->GetCurrentValue());
+    float opaqueness = 0;
+    if (IsFadingOut()) {
+      opaqueness = gfx::Tween::FloatValueBetween(value, 1.0f, 0.0f);
+    } else if (animation_state_ == FadeAnimationState::FADE_IN) {
+      opaqueness = gfx::Tween::FloatValueBetween(value, 0.0f, 1.0f);
+    }
+
+    if (IsFadingOut() && opaqueness == 0) {
+      widget_->Hide();
+    } else {
+      widget_->SetOpacity(opaqueness);
+    }
+  }
+
+  void AnimationEnded(const gfx::Animation* animation) override {
+    AnimationProgressed(animation);
+    set_animation_state(FadeAnimationState::IDLE);
+  }
+
+  views::Widget* const widget_;
+  std::unique_ptr<gfx::LinearAnimation> fade_animation_;
+  FadeAnimationState animation_state_ = FadeAnimationState::IDLE;
+
+  DISALLOW_COPY_AND_ASSIGN(WidgetFadeAnimationDelegate);
+};
 
 TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
     : BubbleDialogDelegateView(tab, views::BubbleBorder::TOP_LEFT) {
@@ -74,7 +222,10 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   if (AreHoverCardImagesEnabled()) {
     preview_image_ = new views::ImageView();
     preview_image_->SetVisible(AreHoverCardImagesEnabled());
-    preview_image_->SetHorizontalAlignment(views::ImageViewBase::LEADING);
+    preview_image_->SetHorizontalAlignment(views::ImageViewBase::CENTER);
+    preview_image_->SetVerticalAlignment(views::ImageViewBase::CENTER);
+    preview_image_->SetImageSize(GetTabHoverCardPreviewImageSize());
+    preview_image_->SetPreferredSize(GetTabHoverCardPreviewImageSize());
     AddChildView(preview_image_);
   }
 
@@ -95,14 +246,30 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
       new gfx::Insets(kLineSpacing, kOuterMargin, kOuterMargin, kOuterMargin));
 
   widget_ = views::BubbleDialogDelegateView::CreateBubble(this);
+  set_adjust_if_offscreen(true);
+  fade_animation_delegate_ =
+      std::make_unique<WidgetFadeAnimationDelegate>(widget_);
+
+  GetBubbleFrameView()->set_preferred_arrow_adjustment(
+      views::BubbleFrameView::PreferredArrowAdjustment::kOffset);
+
+  if (CustomShadowsSupported())
+    GetBubbleFrameView()->bubble_border()->SetCornerRadius(
+        ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+            views::EMPHASIS_HIGH));
 }
 
 TabHoverCardBubbleView::~TabHoverCardBubbleView() = default;
 
 void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
+  if (preview_image_)
+    preview_image_->SetVisible(!tab->IsActive());
+
   UpdateCardContent(tab->data());
 
   views::BubbleDialogDelegateView::SetAnchorView(tab);
+
+  fade_animation_delegate_->CancelFadeOut();
 
   // Start trigger timer if necessary.
   if (!widget_->IsVisible()) {
@@ -110,13 +277,21 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
     // hover cards are not yet visible, moving the cursor within the tabstrip
     // will not trigger the hover cards.
     delayed_show_timer_.Start(FROM_HERE, GetDelay(tab->width()), this,
-                              &TabHoverCardBubbleView::ShowImmediately);
+                              &TabHoverCardBubbleView::FadeInToShow);
   }
 }
 
-void TabHoverCardBubbleView::Hide() {
+void TabHoverCardBubbleView::FadeOutToHide() {
   delayed_show_timer_.Stop();
-  widget_->Hide();
+  if (disable_animations_for_testing_) {
+    widget_->Hide();
+  } else {
+    fade_animation_delegate_->FadeOut();
+  }
+}
+
+bool TabHoverCardBubbleView::IsFadingOut() const {
+  return fade_animation_delegate_->IsFadingOut();
 }
 
 int TabHoverCardBubbleView::GetDialogButtons() const {
@@ -142,19 +317,24 @@ base::TimeDelta TabHoverCardBubbleView::GetDelay(int tab_width) const {
   //           |___________________________________________ tab width
   //               |                                |
   //       pinned tab width               standard tab width
+  base::TimeDelta minimum_trigger_delay = GetMinimumTriggerDelay();
   if (tab_width < TabStyle::GetPinnedWidth())
-    return kMinimumTriggerDelay;
+    return minimum_trigger_delay;
+  base::TimeDelta maximum_trigger_delay = GetMaximumTriggerDelay();
   double logarithmic_fraction =
       std::log(tab_width - TabStyle::GetPinnedWidth() + 1) /
       std::log(TabStyle::GetStandardWidth() - TabStyle::GetPinnedWidth() + 1);
-  base::TimeDelta scaling_factor = kMaximumTriggerDelay - kMinimumTriggerDelay;
+  base::TimeDelta scaling_factor =
+      maximum_trigger_delay - minimum_trigger_delay;
   base::TimeDelta delay =
-      logarithmic_fraction * scaling_factor + kMinimumTriggerDelay;
+      logarithmic_fraction * scaling_factor + minimum_trigger_delay;
   return delay;
 }
 
-void TabHoverCardBubbleView::ShowImmediately() {
+void TabHoverCardBubbleView::FadeInToShow() {
   widget_->Show();
+  if (!disable_animations_for_testing_)
+    fade_animation_delegate_->FadeIn();
 }
 
 void TabHoverCardBubbleView::UpdateCardContent(TabRendererData data) {
@@ -171,28 +351,46 @@ void TabHoverCardBubbleView::UpdateCardContent(TabRendererData data) {
       net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr);
   domain_label_->SetText(domain);
 
-  if (preview_image_) {
-    // Get the largest version of the favicon available.
-    gfx::ImageSkia max_favicon = gfx::ImageSkia::CreateFrom1xBitmap(
-        data.favicon.GetRepresentation(data.favicon.GetMaxSupportedScale())
-            .GetBitmap());
-    preview_image_->SetImage(max_favicon);
-    const gfx::Size favicon_size = max_favicon.size();
+  // If the preview image feature is not enabled, |preview_image_| will be null.
+  if (preview_image_ && preview_image_->visible()) {
+    // If there is no valid thumbnail data, blank out the preview, else wait for
+    // the image data to be decoded and update momentarily.
+    if (!data.thumbnail.AsImageSkiaAsync(
+            base::BindOnce(&TabHoverCardBubbleView::UpdatePreviewImage,
+                           weak_factory_.GetWeakPtr()))) {
+      // Check the no-preview color and size to see if it needs to be
+      // regenerated. DPI or theme change can cause a regeneration.
+      const SkColor foreground_color = GetThemeProvider()->GetColor(
+          ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_FOREGROUND);
 
-    const gfx::Size preferred_size = GetTabHoverCardPreviewImageSize();
+      // Set the no-preview placeholder image. All sizes are in DIPs.
+      // gfx::CreateVectorIcon() caches its result so there's no need to store
+      // images here; if a particular size/color combination has already been
+      // requested it will be low-cost to request it again.
+      constexpr gfx::Size kNoPreviewImageSize{64, 64};
+      const gfx::ImageSkia no_preview_image = gfx::CreateVectorIcon(
+          kGlobeIcon, kNoPreviewImageSize.width(), foreground_color);
+      preview_image_->SetImage(no_preview_image);
+      preview_image_->SetImageSize(kNoPreviewImageSize);
+      preview_image_->SetPreferredSize(GetTabHoverCardPreviewImageSize());
 
-    // Scale the favicon to an appropriate size for the tab hover card.
-    //
-    // This is reasonably aesthetic for favicons, though it does not necessarily
-    // fill up the entire width of the hover card. When we move to using
-    // og:images or screenshots, we'll have to do something more sophisticated.
-    if (!favicon_size.IsEmpty()) {
-      float scale =
-          float{preferred_size.height()} / float{favicon_size.height()};
-      preview_image_->SetImageSize(gfx::Size(
-          std::roundf(scale * favicon_size.width()), preferred_size.height()));
+      // Also possibly regenerate the background if it has changed.
+      const SkColor background_color = GetThemeProvider()->GetColor(
+          ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_BACKGROUND);
+      if (!preview_image_->background() ||
+          preview_image_->background()->get_color() != background_color) {
+        preview_image_->SetBackground(
+            views::CreateSolidBackground(background_color));
+      }
     }
   }
+}
+
+void TabHoverCardBubbleView::UpdatePreviewImage(gfx::ImageSkia preview_image) {
+  preview_image_->SetImage(preview_image);
+  preview_image_->SetImageSize(GetTabHoverCardPreviewImageSize());
+  preview_image_->SetPreferredSize(GetTabHoverCardPreviewImageSize());
+  preview_image_->SetBackground(nullptr);
 }
 
 gfx::Size TabHoverCardBubbleView::CalculatePreferredSize() const {

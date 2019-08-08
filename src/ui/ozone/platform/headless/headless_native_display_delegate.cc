@@ -4,6 +4,9 @@
 
 #include "ui/ozone/platform/headless/headless_native_display_delegate.h"
 
+#include <memory>
+#include <utility>
+
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_observer.h"
 

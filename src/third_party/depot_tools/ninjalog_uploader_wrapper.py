@@ -21,7 +21,7 @@ def LoadConfig():
         with open(CONFIG, 'rb') as f:
             config = json.load(f)
             if config['version'] == VERSION:
-                config['countdown'] -= 1
+                config['countdown'] = max(0, config['countdown'] - 1)
                 return config
 
     return {
@@ -86,8 +86,6 @@ def main():
         print('ninjalog upload is opted out.')
         return 0
 
-    SaveConfig(config)
-
     if 'opt-in' in config and not config['opt-in']:
         # Upload is opted out.
         return 0
@@ -99,6 +97,8 @@ def main():
     if config.get("countdown", 0) > 0:
         # Need to show message.
         ShowMessage(config["countdown"])
+        # Only save config if something has meaningfully changed.
+        SaveConfig(config)
         return 0
 
     if len(sys.argv) == 1:

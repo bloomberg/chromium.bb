@@ -34,8 +34,8 @@ gfx::Range ClampRange(gfx::Range range, uint32_t max) {
 // A Label with a clamped preferred width to demonstrate wrapping.
 class PreferredSizeLabel : public Label {
  public:
-  PreferredSizeLabel() : Label() {}
-  ~PreferredSizeLabel() override {}
+  PreferredSizeLabel() = default;
+  ~PreferredSizeLabel() override = default;
 
   // Label:
   gfx::Size CalculatePreferredSize() const override {
@@ -121,16 +121,9 @@ class MultilineExample::RenderTextView : public View {
   DISALLOW_COPY_AND_ASSIGN(RenderTextView);
 };
 
-MultilineExample::MultilineExample()
-    : ExampleBase("Multiline RenderText"),
-      render_text_view_(NULL),
-      label_(NULL),
-      textfield_(NULL),
-      label_checkbox_(NULL),
-      elision_checkbox_(NULL) {}
+MultilineExample::MultilineExample() : ExampleBase("Multiline RenderText") {}
 
-MultilineExample::~MultilineExample() {
-}
+MultilineExample::~MultilineExample() = default;
 
 void MultilineExample::CreateExampleView(View* container) {
   const base::string16 kTestString = base::WideToUTF16(L"qwerty"
@@ -187,7 +180,7 @@ void MultilineExample::ContentsChanged(Textfield* sender,
   render_text_view_->SetText(new_contents);
   if (label_checkbox_->checked())
     label_->SetText(new_contents);
-  container()->Layout();
+  container()->InvalidateLayout();
   container()->SchedulePaint();
 }
 
@@ -198,7 +191,7 @@ void MultilineExample::ButtonPressed(Button* sender, const ui::Event& event) {
   } else if (sender == elision_checkbox_) {
     render_text_view_->SetMaxLines(elision_checkbox_->checked() ? 3 : 0);
   }
-  container()->Layout();
+  container()->InvalidateLayout();
   container()->SchedulePaint();
 }
 

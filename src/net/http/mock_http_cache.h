@@ -151,7 +151,6 @@ class MockDiskCache : public disk_cache::Backend {
   MockDiskCache();
   ~MockDiskCache() override;
 
-  CacheType GetCacheType() const override;
   int32_t GetEntryCount() const override;
   net::Error OpenOrCreateEntry(const std::string& key,
                                net::RequestPriority request_priority,

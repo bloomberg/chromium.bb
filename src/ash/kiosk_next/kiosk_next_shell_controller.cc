@@ -4,8 +4,12 @@
 
 #include "ash/kiosk_next/kiosk_next_shell_controller.h"
 
+#include <memory>
 #include <utility>
 
+#include "ash/home_screen/home_screen_controller.h"
+#include "ash/kiosk_next/kiosk_next_home_controller.h"
+#include "ash/kiosk_next/kiosk_next_shell_observer.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller.h"
@@ -22,9 +26,16 @@ KioskNextShellController::~KioskNextShellController() = default;
 
 // static
 void KioskNextShellController::RegisterProfilePrefs(
-    PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kKioskNextShellEnabled, false,
-                                PrefRegistry::PUBLIC);
+    PrefRegistrySimple* registry,
+    bool for_test) {
+  if (for_test) {
+    registry->RegisterBooleanPref(prefs::kKioskNextShellEnabled, false,
+                                  PrefRegistry::PUBLIC);
+    return;
+  }
+  // The registration has been moved to
+  // chromeos::Preferences::RegisterProfilePrefs to avoid race conditions.
+  registry->RegisterForeignPref(prefs::kKioskNextShellEnabled);
 }
 
 void KioskNextShellController::BindRequest(
@@ -33,25 +44,16 @@ void KioskNextShellController::BindRequest(
 }
 
 bool KioskNextShellController::IsEnabled() {
-  if (!base::FeatureList::IsEnabled(features::kKioskNextShell))
-    return false;
-
-  PrefService* prefs =
-      Shell::Get()->session_controller()->GetPrimaryUserPrefService();
-
-  DCHECK(prefs) << "PrefService should not be null when reading Kiosk Next "
-                   "Shell pref. This usually happens when calling "
-                   "KioskNextShellController::IsEnabled() before sign in.";
-  return prefs->GetBoolean(prefs::kKioskNextShellEnabled);
+  return kiosk_next_enabled_;
 }
 
-void KioskNextShellController::LaunchKioskNextShellIfEnabled() {
-  if (!IsEnabled())
-    return;
-  kiosk_next_shell_client_->LaunchKioskNextShell(Shell::Get()
-                                                     ->session_controller()
-                                                     ->GetPrimaryUserSession()
-                                                     ->user_info->account_id);
+void KioskNextShellController::AddObserver(KioskNextShellObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void KioskNextShellController::RemoveObserver(
+    KioskNextShellObserver* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 void KioskNextShellController::SetClient(
@@ -59,4 +61,30 @@ void KioskNextShellController::SetClient(
   kiosk_next_shell_client_ = std::move(client);
 }
 
+void KioskNextShellController::OnActiveUserPrefServiceChanged(
+    PrefService* pref_service) {
+  bool prev_kiosk_next_enabled = kiosk_next_enabled_;
+
+  kiosk_next_enabled_ =
+      base::FeatureList::IsEnabled(features::kKioskNextShell) &&
+      pref_service->GetBoolean(prefs::kKioskNextShellEnabled);
+
+  if (!prev_kiosk_next_enabled && kiosk_next_enabled_) {
+    // Replace the AppListController with a KioskNextHomeController.
+    kiosk_next_home_controller_ = std::make_unique<KioskNextHomeController>();
+    Shell::Get()->home_screen_controller()->SetDelegate(
+        kiosk_next_home_controller_.get());
+    Shell::Get()->RemoveAppListController();
+
+    kiosk_next_shell_client_->LaunchKioskNextShell(Shell::Get()
+                                                       ->session_controller()
+                                                       ->GetPrimaryUserSession()
+                                                       ->user_info->account_id);
+
+    // Notify observers that KioskNextShell has been enabled.
+    for (KioskNextShellObserver& observer : observer_list_) {
+      observer.OnKioskNextEnabled();
+    }
+  }
+}
 }  // namespace ash

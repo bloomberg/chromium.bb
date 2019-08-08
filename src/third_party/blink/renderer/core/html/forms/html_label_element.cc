@@ -195,7 +195,7 @@ void HTMLLabelElement::DefaultEventHandler(Event& evt) {
 
     processing_click_ = true;
 
-    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetDocument().UpdateStyleAndLayout();
     if (element->IsMouseFocusable()) {
       // If the label is *not* selected, or if the click happened on
       // selection of label, only then focus the control element.
@@ -235,6 +235,10 @@ void HTMLLabelElement::focus(const FocusParams& params) {
     HTMLElement::focus(params);
     return;
   }
+
+  if (params.type == blink::kWebFocusTypeAccessKey)
+    return;
+
   // To match other browsers, always restore previous selection.
   if (HTMLElement* element = control()) {
     element->focus(FocusParams(SelectionBehaviorOnFocus::kRestore, params.type,

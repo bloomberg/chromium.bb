@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "media/base/cdm_config.h"
 #include "media/base/key_system_names.h"
 #include "media/base/mime_util.h"
 #include "media/base/supported_types.h"
@@ -77,6 +78,7 @@ void VideoPerfInfoCallback(
   DCHECK(info->supported);
   info->smooth = is_smooth;
   info->power_efficient = is_power_efficient;
+
   scoped_callbacks.PassCallbacks()->OnSuccess(std::move(info));
 }
 
@@ -89,6 +91,7 @@ void OnGetPerfInfoError(
 
 void WebMediaCapabilitiesClientImpl::DecodingInfo(
     const blink::WebMediaDecodingConfiguration& configuration,
+    std::unique_ptr<blink::WebContentDecryptionModuleAccess> cdm_access,
     std::unique_ptr<blink::WebMediaCapabilitiesDecodingInfoCallbacks>
         callbacks) {
   std::unique_ptr<blink::WebMediaCapabilitiesDecodingInfo> info(
@@ -98,32 +101,16 @@ void WebMediaCapabilitiesClientImpl::DecodingInfo(
   const blink::WebVideoConfiguration& video_config =
       configuration.video_configuration.value();
   VideoCodecProfile video_profile = VIDEO_CODEC_PROFILE_UNKNOWN;
+
+  // TODO(chcunningham): Skip the call to IsSupportedVideoType() when we already
+  // have a |cdm_access|. In this case, we know the codec is supported, but we
+  // still need to get the profile and validate the mime type is allowed (not
+  // ambiguous) by MediaCapapbilities.
   bool video_supported = CheckVideoSupport(video_config, &video_profile);
 
   // Return early for unsupported configurations.
   if (!video_supported) {
     info->supported = info->smooth = info->power_efficient = video_supported;
-    callbacks->OnSuccess(std::move(info));
-    return;
-  }
-
-  // TODO(907909): this is a mock implementation of Encrypted Media support to
-  // have a form of end-to-end implementation.
-  if (configuration.key_system_configuration.has_value()) {
-    auto key_system_configuration = configuration.key_system_configuration;
-
-    if (!media::IsClearKey(key_system_configuration->key_system.Utf8())) {
-      info->supported = info->smooth = info->power_efficient = false;
-      callbacks->OnSuccess(std::move(info));
-      return;
-    }
-
-    info->supported = info->smooth = info->power_efficient = true;
-    info->content_decryption_module_access =
-        base::WrapUnique(WebContentDecryptionModuleAccessImpl::Create(
-            key_system_configuration->key_system, blink::WebSecurityOrigin(),
-            blink::WebMediaKeySystemConfiguration(), {}, nullptr));
-
     callbacks->OnSuccess(std::move(info));
     return;
   }
@@ -135,9 +122,22 @@ void WebMediaCapabilitiesClientImpl::DecodingInfo(
     BindToHistoryService(&decode_history_ptr_);
   DCHECK(decode_history_ptr_.is_bound());
 
+  std::string key_system = "";
+  bool use_hw_secure_codecs = false;
+  if (cdm_access) {
+    WebContentDecryptionModuleAccessImpl* cdm_access_impl =
+        WebContentDecryptionModuleAccessImpl::From(cdm_access.get());
+
+    key_system = cdm_access_impl->GetKeySystem().Ascii();
+    use_hw_secure_codecs = cdm_access_impl->GetCdmConfig().use_hw_secure_codecs;
+
+    // EME is supported! Provide the MediaKeySystemAccess.
+    info->content_decryption_module_access = std::move(cdm_access);
+  }
+
   mojom::PredictionFeaturesPtr features = mojom::PredictionFeatures::New(
       video_profile, gfx::Size(video_config.width, video_config.height),
-      video_config.framerate);
+      video_config.framerate, key_system, use_hw_secure_codecs);
 
   decode_history_ptr_->GetPerfInfo(
       std::move(features),

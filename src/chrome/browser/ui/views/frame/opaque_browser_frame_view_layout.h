@@ -52,8 +52,8 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
       const std::vector<views::FrameButton>& leading_buttons,
       const std::vector<views::FrameButton>& trailing_buttons);
 
-  gfx::Rect GetBoundsForTabStrip(const gfx::Size& tabstrip_preferred_size,
-                                 int total_width) const;
+  gfx::Rect GetBoundsForTabStripRegion(const gfx::Size& tabstrip_preferred_size,
+                                       int total_width) const;
 
   // Returns the bounds of the window required to display the content area at
   // the specified bounds.

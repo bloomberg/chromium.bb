@@ -185,104 +185,13 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Abort) {
 
   ASSERT_EQ(S_OK, run_helper()->StartLogonProcessAndWait(cred));
 
-  // Now finish the logon.
-  CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
-  CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION cpcs;
-  wchar_t* status_text;
-  CREDENTIAL_PROVIDER_STATUS_ICON status_icon;
-  ASSERT_EQ(S_OK,
-            cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
-  EXPECT_EQ(nullptr, status_text);
-  EXPECT_EQ(CPSI_NONE, status_icon);
-  EXPECT_EQ(CPGSR_NO_CREDENTIAL_NOT_FINISHED, cpgsr);
+  // Nothing should have been propagated to the provider, but also no
+  // error should be reported.
+  EXPECT_EQ(0u, provider.username().Length());
+  EXPECT_EQ(0u, provider.password().Length());
+  EXPECT_EQ(0u, provider.sid().Length());
+  EXPECT_EQ(FALSE, provider.credentials_changed_fired());
   EXPECT_EQ(nullptr, test->GetErrorText());
-
-  EXPECT_EQ(S_OK, gaia_cred->Terminate());
-}
-
-TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_MdmEnrollment) {
-  // Force a successful MDM enrollment.
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
-  GoogleMdmEnrollmentStatusForTesting force_success(true);
-
-  FakeGaiaCredentialProvider provider;
-
-  // Start logon.
-  CComPtr<IGaiaCredential> gaia_cred;
-  CComPtr<ICredentialProviderCredential> cred;
-  ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
-
-  ASSERT_EQ(S_OK, run_helper()->StartLogonProcess(cred, true));
-
-  // When MDM enrollment is enabled, the logon is synchronous so the user
-  // account should already be created.
-  PSID sid;
-  EXPECT_EQ(S_OK, fake_os_user_manager()->GetUserSID(
-                      OSUserManager::GetLocalDomain().c_str(), kDefaultUsername,
-                      &sid));
-  ::LocalFree(sid);
-  EXPECT_EQ(2ul, fake_os_user_manager()->GetUserCount());
-
-  // Now finish the logon.
-  CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
-  CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION cpcs;
-  wchar_t* status_text;
-  CREDENTIAL_PROVIDER_STATUS_ICON status_icon;
-  ASSERT_EQ(S_OK,
-            cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
-  EXPECT_EQ(nullptr, status_text);
-  EXPECT_EQ(CPSI_SUCCESS, status_icon);
-  EXPECT_EQ(CPGSR_RETURN_CREDENTIAL_FINISHED, cpgsr);
-  EXPECT_LT(0u, cpcs.cbSerialization);
-  EXPECT_NE(nullptr, cpcs.rgbSerialization);
-
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
-
-  // State was not reset.
-  EXPECT_TRUE(test->AreCredentialsValid());
-
-  EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
-
-  wchar_t* report_status_text = nullptr;
-  CREDENTIAL_PROVIDER_STATUS_ICON report_icon;
-  EXPECT_EQ(S_OK, cred->ReportResult(0, 0, &report_status_text, &report_icon));
-  // State was reset.
-  EXPECT_FALSE(test->AreCredentialsValid());
-
-  EXPECT_EQ(S_OK, gaia_cred->Terminate());
-}
-
-TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_MdmEnrollmentFails) {
-  USES_CONVERSION;
-
-  // Force a failed MDM enrollment.
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
-  GoogleMdmEnrollmentStatusForTesting force_success(false);
-
-  FakeGaiaCredentialProvider provider;
-
-  EXPECT_EQ(1ul, fake_os_user_manager()->GetUserCount());
-
-  // Start logon.
-  CComPtr<IGaiaCredential> gaia_cred;
-  CComPtr<ICredentialProviderCredential> cred;
-  ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
-  ASSERT_EQ(S_OK, run_helper()->StartLogonProcess(cred, true));
-
-  // No user should have been created.
-  EXPECT_EQ(1ul, fake_os_user_manager()->GetUserCount());
-
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
-
-  EXPECT_EQ(test->GetFinalEmail(), "");
-  EXPECT_EQ(GetStringResource(IDS_MDM_ENROLLMENT_FAILED_BASE),
-            OLE2CW(test->GetErrorText()));
-  EXPECT_FALSE(test->CanAttemptWindowsLogon());
-  EXPECT_FALSE(test->AreCredentialsValid());
-  EXPECT_FALSE(test->IsWindowsPasswordValidForStoredUser());
-  EXPECT_FALSE(test->IsGlsRunning());
 
   EXPECT_EQ(S_OK, gaia_cred->Terminate());
 }
@@ -462,6 +371,160 @@ TEST_F(GcpGaiaCredentialBaseTest,
   EXPECT_EQ(S_OK, gaia_cred->Terminate());
 }
 
+TEST_F(GcpGaiaCredentialBaseTest,
+       GetSerialization_ForgotPasswordForAssociatedUser) {
+  USES_CONVERSION;
+  FakeGaiaCredentialProvider provider;
+
+  // Create a fake user for which the windows password does not match the gaia
+  // password supplied by the test gls process.
+  CComBSTR sid;
+  CComBSTR windows_password = L"password2";
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->CreateTestOSUser(
+                L"foo", (BSTR)windows_password, L"Full Name", L"comment",
+                base::UTF8ToUTF16(kDefaultGaiaId), base::string16(), &sid));
+
+  // Start logon.
+  CComPtr<IGaiaCredential> gaia_cred;
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+  ASSERT_EQ(S_OK, run_helper()->StartLogonProcessAndWait(cred));
+
+  EXPECT_TRUE(test->CanAttemptWindowsLogon());
+  EXPECT_EQ(S_OK, test->IsWindowsPasswordValidForStoredUser());
+
+  // Check that the process has not finished yet.
+  CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
+  CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION cpcs;
+  wchar_t* status_text;
+  CREDENTIAL_PROVIDER_STATUS_ICON status_icon;
+  ASSERT_EQ(S_OK,
+            cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
+  EXPECT_EQ(nullptr, status_text);
+  EXPECT_EQ(CPGSR_NO_CREDENTIAL_NOT_FINISHED, cpgsr);
+
+  // Credentials should still be available.
+  EXPECT_TRUE(test->CanAttemptWindowsLogon());
+  EXPECT_EQ(S_OK, test->IsWindowsPasswordValidForStoredUser());
+
+  // Simulate a click on the "Forgot Password" link.
+  cred->CommandLinkClicked(FID_FORGOT_PASSWORD_LINK);
+
+  // Serialization should complete without any errors.
+  ASSERT_EQ(S_OK,
+            cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
+  EXPECT_EQ(nullptr, status_text);
+  EXPECT_EQ(CPSI_SUCCESS, status_icon);
+  EXPECT_EQ(CPGSR_RETURN_CREDENTIAL_FINISHED, cpgsr);
+  EXPECT_LT(0u, cpcs.cbSerialization);
+  EXPECT_NE(nullptr, cpcs.rgbSerialization);
+
+  // State was not reset.
+  EXPECT_TRUE(test->AreCredentialsValid());
+  wchar_t* report_status_text = nullptr;
+  CREDENTIAL_PROVIDER_STATUS_ICON report_icon;
+  EXPECT_EQ(S_OK, cred->ReportResult(0, 0, &report_status_text, &report_icon));
+  // State was reset.
+  EXPECT_FALSE(test->AreCredentialsValid());
+
+  // User password should be force changed to the one from gaia.
+  EXPECT_EQ(S_OK,
+            fake_os_user_manager()->IsWindowsPasswordValid(
+                OSUserManager::GetLocalDomain().c_str(), L"foo", L"password"));
+
+  EXPECT_EQ(S_OK, gaia_cred->Terminate());
+}
+
+TEST_F(GcpGaiaCredentialBaseTest,
+       GetSerialization_AlternateForgotPasswordAssociatedUser) {
+  USES_CONVERSION;
+  FakeGaiaCredentialProvider provider;
+
+  // Create a fake user for which the windows password does not match the gaia
+  // password supplied by the test gls process.
+  CComBSTR sid;
+  CComBSTR windows_password = L"password2";
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->CreateTestOSUser(
+                L"foo", (BSTR)windows_password, L"Full Name", L"comment",
+                base::UTF8ToUTF16(kDefaultGaiaId), base::string16(), &sid));
+
+  // Start logon.
+  CComPtr<IGaiaCredential> gaia_cred;
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+  ASSERT_EQ(S_OK, run_helper()->StartLogonProcessAndWait(cred));
+
+  EXPECT_TRUE(test->CanAttemptWindowsLogon());
+  EXPECT_EQ(S_OK, test->IsWindowsPasswordValidForStoredUser());
+
+  // Check that the process has not finished yet.
+  CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
+  CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION cpcs;
+  wchar_t* status_text;
+  CREDENTIAL_PROVIDER_STATUS_ICON status_icon;
+  ASSERT_EQ(S_OK,
+            cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
+  EXPECT_EQ(nullptr, status_text);
+  EXPECT_EQ(CPGSR_NO_CREDENTIAL_NOT_FINISHED, cpgsr);
+
+  // Credentials should still be available.
+  EXPECT_TRUE(test->CanAttemptWindowsLogon());
+  EXPECT_EQ(S_OK, test->IsWindowsPasswordValidForStoredUser());
+
+  // Simulate a click on the "Forgot Password" link.
+  cred->CommandLinkClicked(FID_FORGOT_PASSWORD_LINK);
+
+  // Go back to windows password entry.
+  cred->CommandLinkClicked(FID_FORGOT_PASSWORD_LINK);
+
+  // Set an invalid password and try to get serialization again. Credentials
+  // should still be valid but serialization is not complete.
+  CComBSTR invalid_windows_password = L"a";
+  test->SetWindowsPassword(invalid_windows_password);
+  EXPECT_EQ(nullptr, status_text);
+  ASSERT_EQ(S_OK,
+            cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
+  EXPECT_EQ(CPGSR_NO_CREDENTIAL_NOT_FINISHED, cpgsr);
+
+  // Update the Windows password to be the real password created for the user.
+  test->SetWindowsPassword(windows_password);
+  // Sign in information should still be available.
+  EXPECT_TRUE(test->GetFinalEmail().length());
+
+  // Both Windows and Gaia credentials should be valid now
+  EXPECT_TRUE(test->CanAttemptWindowsLogon());
+  EXPECT_EQ(S_FALSE, test->IsWindowsPasswordValidForStoredUser());
+
+  // Serialization should complete without any errors.
+  ASSERT_EQ(S_OK,
+            cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
+  EXPECT_EQ(nullptr, status_text);
+  EXPECT_EQ(CPSI_SUCCESS, status_icon);
+  EXPECT_EQ(CPGSR_RETURN_CREDENTIAL_FINISHED, cpgsr);
+  EXPECT_LT(0u, cpcs.cbSerialization);
+  EXPECT_NE(nullptr, cpcs.rgbSerialization);
+
+  // State was not reset.
+  EXPECT_TRUE(test->AreCredentialsValid());
+  wchar_t* report_status_text = nullptr;
+  CREDENTIAL_PROVIDER_STATUS_ICON report_icon;
+  EXPECT_EQ(S_OK, cred->ReportResult(0, 0, &report_status_text, &report_icon));
+  // State was reset.
+  EXPECT_FALSE(test->AreCredentialsValid());
+
+  EXPECT_EQ(S_OK, gaia_cred->Terminate());
+}
+
 TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Cancel) {
   FakeGaiaCredentialProvider provider;
 
@@ -550,6 +613,7 @@ TEST_F(GcpGaiaCredentialBaseTest, NewUserDisabledThroughMdm) {
 
   // Enforce single user mode for MDM.
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 0));
   GoogleMdmEnrolledStatusForTesting force_success(true);
 
@@ -595,6 +659,7 @@ TEST_F(GcpGaiaCredentialBaseTest, InvalidUserUnlockedAfterSignin) {
   FakeAssociatedUserValidator validator;
   FakeInternetAvailabilityChecker internet_checker;
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
   GoogleMdmEnrollmentStatusForTesting force_success(true);
 
   USES_CONVERSION;
@@ -617,12 +682,8 @@ TEST_F(GcpGaiaCredentialBaseTest, InvalidUserUnlockedAfterSignin) {
   validator.DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON);
 
   // User should have invalid token handle and be locked.
-  DWORD reg_value = 0;
   EXPECT_FALSE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
   EXPECT_EQ(true, validator.IsUserAccessBlocked(OLE2W(sid)));
-  EXPECT_EQ(S_OK,
-            GetMachineRegDWORD(kWinlogonUserListRegKey, username, &reg_value));
-  EXPECT_EQ(0u, reg_value);
 
   FakeGaiaCredentialProvider provider;
 
@@ -655,8 +716,90 @@ TEST_F(GcpGaiaCredentialBaseTest, InvalidUserUnlockedAfterSignin) {
   EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
 
   EXPECT_EQ(false, validator.IsUserAccessBlocked(OLE2W(sid)));
-  EXPECT_NE(S_OK,
-            GetMachineRegDWORD(kWinlogonUserListRegKey, username, &reg_value));
+
+  ASSERT_EQ(S_OK, gaia_cred->Terminate());
+
+  // No new user should be created.
+  EXPECT_EQ(2ul, fake_os_user_manager()->GetUserCount());
+}
+
+TEST_F(GcpGaiaCredentialBaseTest, DenySigninBlockedDuringSignin) {
+  USES_CONVERSION;
+
+  FakeAssociatedUserValidator validator;
+  FakeInternetAvailabilityChecker internet_checker;
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
+  GoogleMdmEnrollmentStatusForTesting force_success(true);
+
+  // Create a fake user that has the same gaia id as the test gaia id.
+  CComBSTR first_sid;
+  base::string16 username(L"foo");
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      username, L"password", L"name", L"comment",
+                      base::UTF8ToUTF16(kDefaultGaiaId), base::string16(),
+                      &first_sid));
+  ASSERT_EQ(2ul, fake_os_user_manager()->GetUserCount());
+  FakeGaiaCredentialProvider provider;
+
+  // Invalid token fetch result.
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(AssociatedUserValidator::kTokenInfoUrl),
+      FakeWinHttpUrlFetcher::Headers(), "{}");
+
+  validator.StartRefreshingTokenHandleValidity();
+
+  // Start logon.
+  CComPtr<IGaiaCredential> gaia_cred;
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+  ASSERT_EQ(S_OK, run_helper()->StartLogonProcessAndWait(cred));
+
+  // Signin process has already started. User should not be locked even if their
+  // token handle is invalid.
+  EXPECT_FALSE(validator.DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
+  EXPECT_FALSE(validator.IsUserAccessBlocked(OLE2W(first_sid)));
+
+  // Now finish the logon.
+  CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
+  CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION cpcs;
+  wchar_t* status_text;
+  CREDENTIAL_PROVIDER_STATUS_ICON status_icon;
+  ASSERT_EQ(S_OK,
+            cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
+  EXPECT_EQ(nullptr, status_text);
+  EXPECT_EQ(CPSI_SUCCESS, status_icon);
+  EXPECT_EQ(CPGSR_RETURN_CREDENTIAL_FINISHED, cpgsr);
+  EXPECT_LT(0u, cpcs.cbSerialization);
+  EXPECT_NE(nullptr, cpcs.rgbSerialization);
+
+  // State was not reset.
+  EXPECT_TRUE(test->AreCredentialsValid());
+
+  // User should have been associated.
+  EXPECT_EQ(test->GetFinalUsername(), username);
+  // Email should be the same as the default one.
+  EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
+
+  // Result has not been reported yet, user signin should still not be denied.
+  EXPECT_FALSE(validator.DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
+  EXPECT_FALSE(validator.IsUserAccessBlocked(OLE2W(first_sid)));
+
+  wchar_t* report_status_text = nullptr;
+  CREDENTIAL_PROVIDER_STATUS_ICON report_icon;
+  EXPECT_EQ(S_OK, cred->ReportResult(0, 0, &report_status_text, &report_icon));
+  // State was reset.
+  EXPECT_FALSE(test->AreCredentialsValid());
+
+  EXPECT_EQ(S_OK, gaia_cred->Terminate());
+
+  // Now signin can be denied for the user if their token handle is invalid.
+  EXPECT_TRUE(validator.DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
+  EXPECT_TRUE(validator.IsUserAccessBlocked(OLE2W(first_sid)));
 
   // No new user should be created.
   EXPECT_EQ(2ul, fake_os_user_manager()->GetUserCount());
@@ -837,6 +980,126 @@ TEST_F(GcpGaiaCredentialBaseTest, EmailIsAtDotCom) {
 
   ASSERT_EQ(S_OK, gaia_cred->Terminate());
 }
+
+// Tests various sign in scenarios with consumer and non-consumer domains.
+// Parameters are:
+// 1. Is mdm enrollment enabled.
+// 2. The mdm_aca reg key setting:
+//    - 0: Set reg key to 0.
+//    - 1: Set reg key to 1.
+//    - 2: Don't set reg key.
+// 3. Whether the mdm_aca reg key is set to 1 or 0.
+// 4. Whether an existing associated user is already present.
+// 5. Whether the user being created (or existing) uses a consumer account.
+class GcpGaiaCredentialBaseConsumerEmailTest
+    : public GcpGaiaCredentialBaseTest,
+      public ::testing::WithParamInterface<std::tuple<bool, int, bool, bool>> {
+};
+
+TEST_P(GcpGaiaCredentialBaseConsumerEmailTest, ConsumerEmailSignin) {
+  USES_CONVERSION;
+  const bool mdm_enabled = std::get<0>(GetParam());
+  const int mdm_consumer_accounts_reg_key_setting = std::get<1>(GetParam());
+  const bool user_created = std::get<2>(GetParam());
+  const bool user_is_consumer = std::get<3>(GetParam());
+
+  FakeAssociatedUserValidator validator;
+  FakeInternetAvailabilityChecker internet_checker;
+  GoogleMdmEnrollmentStatusForTesting force_success(true);
+
+  if (mdm_enabled)
+    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+
+  const bool mdm_consumer_accounts_reg_key_set =
+      mdm_consumer_accounts_reg_key_setting >= 0 &&
+      mdm_consumer_accounts_reg_key_setting < 2;
+  if (mdm_consumer_accounts_reg_key_set) {
+    ASSERT_EQ(S_OK,
+              SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts,
+                                      mdm_consumer_accounts_reg_key_setting));
+  }
+
+  std::string user_email = user_is_consumer ? kDefaultEmail : "foo@imfl.info";
+
+  CComBSTR sid;
+  base::string16 username(user_is_consumer ? L"foo" : L"foo_imfl");
+
+  // Create a fake user that has the same gaia id as the test gaia id.
+  if (user_created) {
+    ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                        username, L"password", L"name", L"comment",
+                        base::UTF8ToUTF16(kDefaultGaiaId),
+                        base::UTF8ToUTF16(user_email), &sid));
+    ASSERT_EQ(2ul, fake_os_user_manager()->GetUserCount());
+  }
+
+  FakeGaiaCredentialProvider provider;
+
+  // Start logon.
+  CComPtr<IGaiaCredential> gaia_cred;
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+  test->SetGlsEmailAddress(user_email);
+
+  ASSERT_EQ(S_OK, run_helper()->StartLogonProcessAndWait(cred));
+
+  bool should_signin_succeed = !mdm_enabled ||
+                               (mdm_consumer_accounts_reg_key_set &&
+                                mdm_consumer_accounts_reg_key_setting) ||
+                               !user_is_consumer;
+
+  // Sign in success.
+  if (should_signin_succeed) {
+    CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
+    CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION cpcs;
+    wchar_t* status_text;
+    CREDENTIAL_PROVIDER_STATUS_ICON status_icon;
+    ASSERT_EQ(S_OK, cred->GetSerialization(&cpgsr, &cpcs, &status_text,
+                                           &status_icon));
+    EXPECT_EQ(nullptr, status_text);
+    EXPECT_EQ(CPSI_SUCCESS, status_icon);
+    EXPECT_EQ(CPGSR_RETURN_CREDENTIAL_FINISHED, cpgsr);
+    EXPECT_LT(0u, cpcs.cbSerialization);
+    EXPECT_NE(nullptr, cpcs.rgbSerialization);
+
+    // User should have been associated.
+    EXPECT_EQ(test->GetFinalUsername(), username);
+    // Email should be the same as the default one.
+    EXPECT_EQ(test->GetFinalEmail(), user_email);
+  } else {
+    // Nothing was propagated to the provider.
+    EXPECT_EQ(0u, provider.username().Length());
+    EXPECT_EQ(0u, provider.password().Length());
+    EXPECT_EQ(0u, provider.sid().Length());
+    EXPECT_EQ(FALSE, provider.credentials_changed_fired());
+
+    // Error message concerning invalid domain is sent.
+    EXPECT_STREQ(test->GetErrorText(),
+                 GetStringResource(IDS_INVALID_EMAIL_DOMAIN_BASE).c_str());
+  }
+
+  gaia_cred->Terminate();
+
+  if (user_created) {
+    // No new user should be created.
+    EXPECT_EQ(2ul, fake_os_user_manager()->GetUserCount());
+  } else {
+    // New user created only if their domain is valid for the sign in.
+    EXPECT_EQ(1ul + (should_signin_succeed ? 1ul : 0ul),
+              fake_os_user_manager()->GetUserCount());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         GcpGaiaCredentialBaseConsumerEmailTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Values(0, 1, 2),
+                                            ::testing::Bool(),
+                                            ::testing::Bool()));
 
 }  // namespace testing
 }  // namespace credential_provider

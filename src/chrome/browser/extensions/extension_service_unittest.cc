@@ -65,6 +65,7 @@
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/permissions_test_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
+#include "chrome/browser/extensions/plugin_manager.h"
 #include "chrome/browser/extensions/test_blacklist.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -114,10 +115,13 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/browser/uninstall_reason.h"
+#include "extensions/browser/updater/extension_downloader_test_helper.h"
+#include "extensions/browser/updater/null_extension_cache.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/extension_resource.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -4932,14 +4936,16 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
 
 void SetCookieSaveData(bool* result_out,
                        base::OnceClosure callback,
-                       bool result) {
-  *result_out = result;
+                       net::CanonicalCookie::CookieInclusionStatus result) {
+  *result_out =
+      (result == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
   std::move(callback).Run();
 }
 
 void GetCookiesSaveData(std::vector<net::CanonicalCookie>* result_out,
                         base::OnceClosure callback,
-                        const std::vector<net::CanonicalCookie>& result) {
+                        const std::vector<net::CanonicalCookie>& result,
+                        const net::CookieStatusList& excluded_cookies) {
   *result_out = result;
   std::move(callback).Run();
 }
@@ -4992,7 +4998,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
     bool set_result = false;
     base::RunLoop run_loop;
     cookie_manager_ptr->SetCanonicalCookie(
-        *cc.get(), origin1.scheme(), true /* modify_http_only */,
+        *cc.get(), origin1.scheme(), net::CookieOptions(),
         base::BindOnce(&SetCookieSaveData, &set_result,
                        run_loop.QuitClosure()));
     run_loop.Run();
@@ -7397,6 +7403,67 @@ TEST_F(ExtensionServiceTest, UserInstalledExtensionThenRequiredByPolicy) {
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   EXPECT_EQ(disable_reason::DISABLE_NONE, prefs->GetDisableReasons(good_crx));
   EXPECT_FALSE(prefs->IsExtensionDisabled(good_crx));
+}
+
+// Regression test for crbug.com/460699. Ensure PluginManager doesn't crash even
+// if OnExtensionUnloaded is invoked twice in succession.
+TEST_F(ExtensionServiceTest, PluginManagerCrash) {
+  InitializeEmptyExtensionService();
+  PluginManager manager(profile());
+
+  // Load an extension using a NaCl module.
+  const Extension* extension =
+      PackAndInstallCRX(data_dir().AppendASCII("native_client"), INSTALL_NEW);
+  service()->DisableExtension(extension->id(),
+                              disable_reason::DISABLE_USER_ACTION);
+
+  // crbug.com/708230: This will cause OnExtensionUnloaded to be called
+  // redundantly for a disabled extension.
+  service()->BlockAllExtensions();
+}
+
+// Policy-forced extensions should be fetched with FOREGROUND priority,
+// otherwise they may be throttled (web store sends “noupdate” response to
+// reduce load), which is OK for updates, but not for a new install. This is
+// a regression test for problems described in https://crbug.com/904600 and
+// https://crbug.com/917700.
+TEST_F(ExtensionServiceTest, PolicyForegroundFetch) {
+  ExtensionUpdater::ScopedSkipScheduledCheckForTest skip_scheduled_checks;
+  ExtensionServiceInitParams params = CreateDefaultInitParams();
+  params.autoupdate_enabled = true;
+  InitializeExtensionService(params);
+
+  ExtensionDownloaderTestHelper helper;
+  NullExtensionCache extension_cache;
+  service()->updater()->SetExtensionDownloaderForTesting(
+      helper.CreateDownloader());
+  service()->updater()->SetExtensionCacheForTesting(&extension_cache);
+  service()->updater()->Start();
+
+  GURL update_url(extension_urls::kChromeWebstoreUpdateURL);
+  service()->OnExternalExtensionUpdateUrlFound(
+      ExternalInstallInfoUpdateUrl(
+          all_zero /* extension_id */, "" /* install_parameter */, update_url,
+          Manifest::EXTERNAL_POLICY_DOWNLOAD /* download_location */,
+          Extension::NO_FLAGS /* creation_flag */,
+          true /* mark_acknowledged */),
+      true /* is_initial_load */);
+
+  MockExternalProvider provider(nullptr, Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  service()->OnExternalProviderReady(&provider);
+
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_EQ(helper.test_url_loader_factory().NumPending(), 1);
+  network::TestURLLoaderFactory::PendingRequest* pending_request =
+      helper.test_url_loader_factory().GetPendingRequest(0);
+  std::string header;
+  EXPECT_TRUE(pending_request->request.headers.GetHeader(
+      "X-Goog-Update-Interactivity", &header));
+  EXPECT_EQ(header, "fg");
+
+  // Destroy updater's downloader as it uses |helper|.
+  service()->updater()->SetExtensionDownloaderForTesting(nullptr);
 }
 
 }  // namespace extensions

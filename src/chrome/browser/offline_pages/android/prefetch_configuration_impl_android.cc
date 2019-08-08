@@ -27,6 +27,31 @@ JNI_EXPORT jboolean JNI_PrefetchConfiguration_IsPrefetchingEnabled(
          static_cast<jboolean>(prefetch_prefs::IsEnabled(profile->GetPrefs()));
 }
 
+JNI_EXPORT jboolean JNI_PrefetchConfiguration_IsEnabledByServer(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jprofile) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  return profile && static_cast<jboolean>(
+                        prefetch_prefs::IsEnabledByServer(profile->GetPrefs()));
+}
+
+JNI_EXPORT jboolean JNI_PrefetchConfiguration_IsForbiddenCheckDue(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jprofile) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  return profile && static_cast<jboolean>(prefetch_prefs::IsForbiddenCheckDue(
+                        profile->GetPrefs()));
+}
+
+JNI_EXPORT jboolean JNI_PrefetchConfiguration_IsEnabledByServerUnknown(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jprofile) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  return profile &&
+         static_cast<jboolean>(
+             prefetch_prefs::IsEnabledByServerUnknown(profile->GetPrefs()));
+}
+
 JNI_EXPORT void JNI_PrefetchConfiguration_SetPrefetchingEnabledInSettings(
     JNIEnv* env,
     const JavaParamRef<jobject>& jprofile,
@@ -36,6 +61,15 @@ JNI_EXPORT void JNI_PrefetchConfiguration_SetPrefetchingEnabledInSettings(
     return;
 
   prefetch_prefs::SetPrefetchingEnabledInSettings(profile->GetPrefs(), enabled);
+}
+
+JNI_EXPORT jboolean JNI_PrefetchConfiguration_IsPrefetchingEnabledInSettings(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jprofile) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  return profile &&
+         static_cast<jboolean>(prefetch_prefs::IsPrefetchingEnabledInSettings(
+             profile->GetPrefs()));
 }
 
 }  // namespace android

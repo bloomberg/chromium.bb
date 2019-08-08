@@ -49,6 +49,9 @@ enum RequestOutcome {
   // Stale data returned; network got ERR_NAME_NOT_RESOLVED.
   STALE_INSTEAD_OF_NETWORK_NAME_NOT_RESOLVED = 6,
 
+  // Stale data is explicitly requested and returned immediately.
+  STALE_SYNCHRONOUS = 7,
+
   MAX_REQUEST_OUTCOME
 };
 
@@ -214,6 +217,13 @@ int StaleHostResolver::RequestImpl::Start(
       (!cache_request_->GetStaleInfo() ||
        !cache_request_->GetStaleInfo().value().is_stale())) {
     RecordSynchronousRequest();
+    return cache_error_;
+  }
+
+  if (cache_error_ != net::ERR_DNS_CACHE_MISS &&
+      input_parameters_.cache_usage ==
+          net::HostResolver::ResolveHostParameters::CacheUsage::STALE_ALLOWED) {
+    RecordRequestOutcome(STALE_SYNCHRONOUS);
     return cache_error_;
   }
 
@@ -463,6 +473,11 @@ net::HostCache* StaleHostResolver::GetHostCache() {
 
 std::unique_ptr<base::Value> StaleHostResolver::GetDnsConfigAsValue() const {
   return inner_resolver_->GetDnsConfigAsValue();
+}
+
+void StaleHostResolver::SetRequestContext(
+    net::URLRequestContext* request_context) {
+  inner_resolver_->SetRequestContext(request_context);
 }
 
 void StaleHostResolver::OnNetworkRequestComplete(

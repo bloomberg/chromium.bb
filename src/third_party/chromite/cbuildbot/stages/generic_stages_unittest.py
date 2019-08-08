@@ -554,6 +554,8 @@ class BuilderStageGetBuildFailureMessage(AbstractStageTestCase):
     stage = self.ConstructStage()
     # Sending cidb_id as buildbucket_id so as to not refactor the
     # fake_cidb function.
+    self._run.options.master_build_id = 2
+    self._run.options.master_buildbucket_id = 2341
     message = stage.GetBuildFailureMessageFromBuildStore(
         buildstore, BuildIdentifier(buildbucket_id=build_id, cidb_id=build_id))
 

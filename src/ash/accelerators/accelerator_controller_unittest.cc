@@ -38,6 +38,8 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
+#include "base/files/scoped_temp_dir.h"
+#include "base/json/json_writer.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -265,6 +267,22 @@ class AcceleratorControllerTest : public AshTestBase {
   void SetKeyboardBrightnessControlDelegate(
       std::unique_ptr<KeyboardBrightnessControlDelegate> delegate) {
     Shell::Get()->keyboard_brightness_control_delegate_ = std::move(delegate);
+  }
+
+  bool WriteJsonFile(const base::FilePath& file_path,
+                     const std::string& json_string) const {
+    if (!base::DirectoryExists(file_path.DirName()))
+      base::CreateDirectory(file_path.DirName());
+
+    int data_size = static_cast<int>(json_string.size());
+    int bytes_written =
+        base::WriteFile(file_path, json_string.data(), data_size);
+    if (bytes_written != data_size) {
+      LOG(ERROR) << " Wrote " << bytes_written << " byte(s) instead of "
+                 << data_size << " to " << file_path.value();
+      return false;
+    }
+    return true;
   }
 
  private:
@@ -894,7 +912,7 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppListFullscreen) {
   base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
   GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
+      ash::mojom::AppListViewState::kFullscreenAllApps);
   histogram_tester.ExpectTotalCount(app_list::kAppListToggleMethodHistogram,
                                     ++toggle_count_total);
   histogram_tester.ExpectBucketCount(app_list::kAppListToggleMethodHistogram,
@@ -912,7 +930,7 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppListFullscreen) {
       ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE)));
   base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(app_list::AppListViewState::PEEKING);
+  GetAppListTestHelper()->CheckState(ash::mojom::AppListViewState::kPeeking);
   histogram_tester.ExpectTotalCount(app_list::kAppListToggleMethodHistogram,
                                     ++toggle_count_total);
   histogram_tester.ExpectBucketCount(app_list::kAppListToggleMethodHistogram,
@@ -924,7 +942,7 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppListFullscreen) {
   base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
   GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
+      ash::mojom::AppListViewState::kFullscreenAllApps);
   histogram_tester.ExpectTotalCount(app_list::kAppListToggleMethodHistogram,
                                     ++toggle_count_total);
   histogram_tester.ExpectBucketCount(app_list::kAppListToggleMethodHistogram,
@@ -942,7 +960,7 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppListFullscreen) {
       ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE)));
   base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(app_list::AppListViewState::PEEKING);
+  GetAppListTestHelper()->CheckState(ash::mojom::AppListViewState::kPeeking);
   histogram_tester.ExpectTotalCount(app_list::kAppListToggleMethodHistogram,
                                     ++toggle_count_total);
   histogram_tester.ExpectBucketCount(app_list::kAppListToggleMethodHistogram,
@@ -953,14 +971,14 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppListFullscreen) {
   generator->ReleaseKey(ui::VKEY_0, ui::EF_NONE);
   base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(app_list::AppListViewState::HALF);
+  GetAppListTestHelper()->CheckState(ash::mojom::AppListViewState::kHalf);
   // Shift+VKEY_BROWSER_SEARCH transitions to FULLSCREEN_SEARCH.
   EXPECT_TRUE(ProcessInController(
       ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_SHIFT_DOWN)));
   base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
   GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_SEARCH);
+      ash::mojom::AppListViewState::kFullscreenSearch);
   histogram_tester.ExpectTotalCount(app_list::kAppListToggleMethodHistogram,
                                     ++toggle_count_total);
   histogram_tester.ExpectBucketCount(app_list::kAppListToggleMethodHistogram,
@@ -1036,6 +1054,38 @@ TEST_F(AcceleratorControllerTest, PreferredReservedAccelerators) {
       GetController()->IsReserved(ui::Accelerator(ui::VKEY_A, ui::EF_NONE)));
   EXPECT_FALSE(
       GetController()->IsPreferred(ui::Accelerator(ui::VKEY_A, ui::EF_NONE)));
+}
+
+TEST_F(AcceleratorControllerTest, SideVolumeButtonLocation) {
+  // |side_volume_button_location_| should be empty when location info file
+  // doesn't exist.
+  EXPECT_TRUE(GetController()
+                  ->side_volume_button_location_for_testing()
+                  .region.empty());
+  EXPECT_TRUE(
+      GetController()->side_volume_button_location_for_testing().side.empty());
+
+  // Tests that |side_volume_button_location_| is read correctly if the location
+  // file exists.
+  base::DictionaryValue location;
+  location.SetString(AcceleratorController::kVolumeButtonRegion,
+                     AcceleratorController::kVolumeButtonRegionScreen);
+  location.SetString(AcceleratorController::kVolumeButtonSide,
+                     AcceleratorController::kVolumeButtonSideLeft);
+  std::string json_location;
+  base::JSONWriter::Write(location, &json_location);
+  base::ScopedTempDir file_tmp_dir;
+  ASSERT_TRUE(file_tmp_dir.CreateUniqueTempDir());
+  base::FilePath file_path = file_tmp_dir.GetPath().Append("location.json");
+  ASSERT_TRUE(WriteJsonFile(file_path, json_location));
+  EXPECT_TRUE(base::PathExists(file_path));
+  GetController()->set_side_volume_button_file_path_for_testing(file_path);
+  GetController()->ParseSideVolumeButtonLocationInfo();
+  EXPECT_EQ(AcceleratorController::kVolumeButtonRegionScreen,
+            GetController()->side_volume_button_location_for_testing().region);
+  EXPECT_EQ(AcceleratorController::kVolumeButtonSideLeft,
+            GetController()->side_volume_button_location_for_testing().side);
+  base::DeleteFile(file_path, false);
 }
 
 namespace {
@@ -1670,6 +1720,9 @@ struct MediaSessionAcceleratorTestConfig {
 
   // If true then we should expect the action will handle the media keys.
   bool eligible_action = false;
+
+  // If true then we should force forwarding the action to the client.
+  bool force_key_handling = false;
 };
 
 }  // namespace
@@ -1703,6 +1756,8 @@ class MediaSessionAcceleratorTest
     media_controller->SetClient(client_->CreateAssociatedPtrInfo());
     media_controller->SetMediaSessionControllerForTest(
         controller_->CreateMediaControllerPtr());
+    media_controller->SetForceMediaClientKeyHandling(
+        GetParam().force_key_handling);
     media_controller->FlushForTesting();
   }
 
@@ -1734,6 +1789,8 @@ class MediaSessionAcceleratorTest
   bool service_enabled() const { return GetParam().service_enabled; }
 
   bool eligible_action() const { return GetParam().eligible_action; }
+
+  bool force_key_handling() const { return GetParam().force_key_handling; }
 
   void ExpectActionRecorded(ui::MediaHardwareKeyAction action) {
     histogram_tester_.ExpectBucketCount(
@@ -1791,7 +1848,15 @@ INSTANTIATE_TEST_SUITE_P(
                                           MediaSessionAction::kSeekBackward},
         MediaSessionAcceleratorTestConfig{false,
                                           MediaSessionAction::kSeekForward},
-        MediaSessionAcceleratorTestConfig{false, MediaSessionAction::kStop}));
+        MediaSessionAcceleratorTestConfig{false, MediaSessionAction::kStop},
+        MediaSessionAcceleratorTestConfig{true, MediaSessionAction::kPlay,
+                                          false, true},
+        MediaSessionAcceleratorTestConfig{true, MediaSessionAction::kPause,
+                                          false, true},
+        MediaSessionAcceleratorTestConfig{true, MediaSessionAction::kNextTrack,
+                                          false, true},
+        MediaSessionAcceleratorTestConfig{
+            true, MediaSessionAction::kPreviousTrack, false, true}));
 
 TEST_P(MediaSessionAcceleratorTest, MediaPlaybackAcceleratorsBehavior) {
   const ui::KeyboardCode media_keys[] = {ui::VKEY_MEDIA_NEXT_TRACK,
@@ -1838,7 +1903,7 @@ TEST_P(MediaSessionAcceleratorTest, MediaGlobalAccelerators_NextTrack) {
   ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE));
   Shell::Get()->media_controller()->FlushForTesting();
 
-  if (service_enabled() && eligible_action()) {
+  if (service_enabled() && eligible_action() && !force_key_handling()) {
     EXPECT_EQ(0, client()->handle_media_next_track_count());
     EXPECT_EQ(1, controller()->next_track_count());
   } else {
@@ -1884,7 +1949,7 @@ TEST_P(MediaSessionAcceleratorTest, MediaGlobalAccelerators_Pause) {
   ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE));
   Shell::Get()->media_controller()->FlushForTesting();
 
-  if (service_enabled() && eligible_action()) {
+  if (service_enabled() && eligible_action() && !force_key_handling()) {
     EXPECT_EQ(0, client()->handle_media_play_pause_count());
     EXPECT_EQ(1, controller()->suspend_count());
 
@@ -1910,7 +1975,7 @@ TEST_P(MediaSessionAcceleratorTest, MediaGlobalAccelerators_PrevTrack) {
   ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_PREV_TRACK, ui::EF_NONE));
   Shell::Get()->media_controller()->FlushForTesting();
 
-  if (service_enabled() && eligible_action()) {
+  if (service_enabled() && eligible_action() && !force_key_handling()) {
     EXPECT_EQ(0, client()->handle_media_prev_track_count());
     EXPECT_EQ(1, controller()->previous_track_count());
   } else {
@@ -1931,7 +1996,7 @@ TEST_P(MediaSessionAcceleratorTest,
   ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE));
   Shell::Get()->media_controller()->FlushForTesting();
 
-  if (service_enabled() && eligible_action()) {
+  if (service_enabled() && eligible_action() && !force_key_handling()) {
     EXPECT_EQ(0, client()->handle_media_next_track_count());
     EXPECT_EQ(1, controller()->next_track_count());
   } else {
@@ -1944,7 +2009,7 @@ TEST_P(MediaSessionAcceleratorTest,
   ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE));
   Shell::Get()->media_controller()->FlushForTesting();
 
-  if (service_enabled() && eligible_action()) {
+  if (service_enabled() && eligible_action() && !force_key_handling()) {
     EXPECT_EQ(1, client()->handle_media_next_track_count());
     EXPECT_EQ(1, controller()->next_track_count());
   } else {
@@ -1969,10 +2034,56 @@ TEST_P(MediaSessionAcceleratorTest,
   ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE));
   Shell::Get()->media_controller()->FlushForTesting();
 
-  if (service_enabled() && eligible_action()) {
+  if (service_enabled() && eligible_action() && !force_key_handling()) {
     EXPECT_EQ(1, client()->handle_media_next_track_count());
     EXPECT_EQ(1, controller()->next_track_count());
   } else {
+    EXPECT_EQ(2, client()->handle_media_next_track_count());
+    EXPECT_EQ(0, controller()->next_track_count());
+  }
+}
+
+TEST_P(MediaSessionAcceleratorTest,
+       MediaGlobalAccelerators_UpdateForceKeyHandling) {
+  MaybeEnableMediaSession(media_session::mojom::MediaPlaybackState::kPaused);
+
+  EXPECT_EQ(0, client()->handle_media_next_track_count());
+  EXPECT_EQ(0, controller()->next_track_count());
+
+  ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE));
+  Shell::Get()->media_controller()->FlushForTesting();
+
+  if (service_enabled() && eligible_action() && !force_key_handling()) {
+    EXPECT_EQ(0, client()->handle_media_next_track_count());
+    EXPECT_EQ(1, controller()->next_track_count());
+  } else {
+    EXPECT_EQ(1, client()->handle_media_next_track_count());
+    EXPECT_EQ(0, controller()->next_track_count());
+  }
+
+  // Update the force media client key handling setting. It may have been
+  // previously set if |force_key_handling| is true.
+  Shell::Get()->media_controller()->SetForceMediaClientKeyHandling(false);
+
+  ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE));
+  Shell::Get()->media_controller()->FlushForTesting();
+
+  if (service_enabled() && force_key_handling()) {
+    // If we had |force_key_handling| true the first time we pressed the play
+    // pause key then we should see the previous action that was forward to the
+    // client. Since the service is enabled, the second action will be handled
+    // by the controller.
+    EXPECT_EQ(1, client()->handle_media_next_track_count());
+    EXPECT_EQ(1, controller()->next_track_count());
+  } else if (service_enabled() && eligible_action()) {
+    // If we had |force_key_handling| disabled the whole time and the service
+    // enabled then both actions should be handled in the controller.
+    EXPECT_EQ(0, client()->handle_media_next_track_count());
+    EXPECT_EQ(2, controller()->next_track_count());
+  } else {
+    // If we had |force_key_handling| disabled the whole time and the service
+    // disabled then both actions should fallback to the client because there is
+    // nothing in Ash to handle them.
     EXPECT_EQ(2, client()->handle_media_next_track_count());
     EXPECT_EQ(0, controller()->next_track_count());
   }

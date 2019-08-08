@@ -38,9 +38,17 @@ if (checkout_ios_webkit) {
       "$target_out_dir/Debug-iphonesimulator/WebKitLegacy.framework/WebKitLegacy",
     ]
 
+    # TODO(crbug.com/934252): "-j 4" restricts xcodebuild to four simultaneous
+    # jobs. This is intended to prevent overloading the machine, because ninja
+    # will already be spawning a large number of jobs in parallel with
+    # xcodebuild, but it causes the webkit build to run very slowly. Find a way
+    # to increase the parallelism here.
     args = [
       "--output_dir",
       rebase_path("$target_out_dir"),
+      "-j",
+      "4",
+      "-quiet",
     ]
   }
 }

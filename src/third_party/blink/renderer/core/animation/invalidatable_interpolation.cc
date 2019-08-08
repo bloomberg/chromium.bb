@@ -45,7 +45,7 @@ InvalidatableInterpolation::MaybeConvertPairwise(
             underlying_value_owner.Value(), conversion_checkers);
     AddConversionCheckers(*interpolation_type, conversion_checkers);
     if (result) {
-      return PairwisePrimitiveInterpolation::Create(
+      return std::make_unique<PairwisePrimitiveInterpolation>(
           *interpolation_type, std::move(result.start_interpolable_value),
           std::move(result.end_interpolable_value),
           std::move(result.non_interpolable_value));
@@ -71,7 +71,7 @@ InvalidatableInterpolation::ConvertSingleKeyframe(
         conversion_checkers);
     AddConversionCheckers(*interpolation_type, conversion_checkers);
     if (result) {
-      return TypedInterpolationValue::Create(
+      return std::make_unique<TypedInterpolationValue>(
           *interpolation_type, std::move(result.interpolable_value),
           std::move(result.non_interpolable_value));
     }
@@ -96,7 +96,7 @@ InvalidatableInterpolation::MaybeConvertUnderlyingValue(
     InterpolationValue result =
         interpolation_type->MaybeConvertUnderlyingValue(environment);
     if (result) {
-      return TypedInterpolationValue::Create(
+      return std::make_unique<TypedInterpolationValue>(
           *interpolation_type, std::move(result.interpolable_value),
           std::move(result.non_interpolable_value));
     }
@@ -167,7 +167,7 @@ InvalidatableInterpolation::EnsureValidConversion(
       cached_value_ = pairwise_conversion->InitialValue();
       cached_pair_conversion_ = std::move(pairwise_conversion);
     } else {
-      cached_pair_conversion_ = FlipPrimitiveInterpolation::Create(
+      cached_pair_conversion_ = std::make_unique<FlipPrimitiveInterpolation>(
           ConvertSingleKeyframe(*start_keyframe_, environment,
                                 underlying_value_owner),
           ConvertSingleKeyframe(*end_keyframe_, environment,

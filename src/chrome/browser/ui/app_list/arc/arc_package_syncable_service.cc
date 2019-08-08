@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/arc/arc_util.h"
-#include "components/arc/connection_holder.h"
+#include "components/arc/session/connection_holder.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/sync_data.h"
@@ -121,6 +121,8 @@ bool ArcPackageSyncableService::IsPackageSyncing(
 }
 
 void ArcPackageSyncableService::WaitUntilReadyToSync(base::OnceClosure done) {
+  DCHECK(!wait_until_ready_to_sync_cb_);
+
   if (prefs_->package_list_initial_refreshed()) {
     std::move(done).Run();
     return;

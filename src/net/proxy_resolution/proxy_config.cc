@@ -150,7 +150,7 @@ const ProxyList* ProxyConfig::ProxyRules::MapUrlSchemeToProxyList(
     return GetProxyListForWebSocketScheme();
   if (!fallback_proxies.IsEmpty())
     return &fallback_proxies;
-  return NULL;  // No mapping for this scheme. Use direct.
+  return nullptr;  // No mapping for this scheme. Use direct.
 }
 
 bool ProxyConfig::ProxyRules::Equals(const ProxyRules& other) const {
@@ -172,7 +172,7 @@ ProxyList* ProxyConfig::ProxyRules::MapUrlSchemeToProxyListNoFallback(
     return &proxies_for_https;
   if (scheme == "ftp")
     return &proxies_for_ftp;
-  return NULL;  // No mapping for this scheme.
+  return nullptr;  // No mapping for this scheme.
 }
 
 const ProxyList* ProxyConfig::ProxyRules::GetProxyListForWebSocketScheme()
@@ -183,7 +183,7 @@ const ProxyList* ProxyConfig::ProxyRules::GetProxyListForWebSocketScheme()
     return &proxies_for_https;
   if (!proxies_for_http.IsEmpty())
     return &proxies_for_http;
-  return NULL;
+  return nullptr;
 }
 
 ProxyConfig::ProxyConfig() : auto_detect_(false), pac_mandatory_(false) {}

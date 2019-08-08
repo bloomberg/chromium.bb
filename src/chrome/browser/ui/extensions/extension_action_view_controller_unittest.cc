@@ -11,7 +11,6 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
@@ -26,7 +25,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/common/user_script.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -78,11 +76,6 @@ TEST_P(ToolbarActionsBarUnitTest, ExtensionActionWantsToRunAppearance) {
 }
 
 TEST_P(ToolbarActionsBarUnitTest, ExtensionActionBlockedActions) {
-  // Blocked actions are only present with the runtime host permissions feature.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   scoped_refptr<const extensions::Extension> browser_action_ext =
       extensions::ExtensionBuilder("browser action")
           .SetAction(extensions::ExtensionBuilder::ActionType::BROWSER_ACTION)
@@ -251,10 +244,6 @@ class ExtensionActionViewControllerGrayscaleTest
 
 void ExtensionActionViewControllerGrayscaleTest::RunGrayscaleTest(
     PermissionType permission_type) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   scoped_refptr<const extensions::Extension> extension =
       CreateExtension(permission_type);
   extensions::ExtensionService* service =
@@ -396,9 +385,9 @@ ExtensionActionViewControllerGrayscaleTest::CreateExtension(
   return builder.Build();
 }
 
-// Tests the behavior for icon grayscaling with the runtime host permissions
-// feature enabled. Ideally, these would be a single parameterized test, but
-// toolbar tests are already parameterized with the UI mode.
+// Tests the behavior for icon grayscaling. Ideally, these would be a single
+// parameterized test, but toolbar tests are already parameterized with the UI
+// mode.
 TEST_P(ExtensionActionViewControllerGrayscaleTest,
        GrayscaleIcon_ExplicitHosts) {
   RunGrayscaleTest(PermissionType::kExplicitHost);
@@ -413,10 +402,6 @@ INSTANTIATE_TEST_SUITE_P(,
                          testing::Values(false, true));
 
 TEST_P(ToolbarActionsBarUnitTest, RuntimeHostsTooltip) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder("extension name")
           .SetAction(extensions::ExtensionBuilder::ActionType::BROWSER_ACTION)
@@ -469,10 +454,6 @@ TEST_P(ToolbarActionsBarUnitTest, RuntimeHostsTooltip) {
 // (though it's a bit unclear when this is the case).
 // See https://crbug.com/888121
 TEST_P(ToolbarActionsBarUnitTest, TestGetIconWithNullWebContents) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder("extension name")
           .SetAction(extensions::ExtensionBuilder::ActionType::BROWSER_ACTION)

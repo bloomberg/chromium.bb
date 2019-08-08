@@ -29,10 +29,6 @@
 
 namespace blink {
 
-SourceAlpha* SourceAlpha::Create(FilterEffect* source_effect) {
-  return MakeGarbageCollected<SourceAlpha>(source_effect);
-}
-
 SourceAlpha::SourceAlpha(FilterEffect* source_effect)
     : FilterEffect(source_effect->GetFilter()) {
   SetOperatingInterpolationSpace(source_effect->OperatingInterpolationSpace());
@@ -44,8 +40,7 @@ sk_sp<PaintFilter> SourceAlpha::CreateImageFilter() {
       InputEffect(0), OperatingInterpolationSpace()));
   SkScalar matrix[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0,          0,
                          0, 0, 0, 0, 0, 0, 0, 0, SK_Scalar1, 0};
-  sk_sp<SkColorFilter> color_filter =
-      SkColorFilter::MakeMatrixFilterRowMajor255(matrix);
+  sk_sp<SkColorFilter> color_filter = SkColorFilters::MatrixRowMajor255(matrix);
   return sk_make_sp<ColorFilterPaintFilter>(std::move(color_filter),
                                             std::move(source_graphic));
 }

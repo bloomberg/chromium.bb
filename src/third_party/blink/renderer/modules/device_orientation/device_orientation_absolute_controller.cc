@@ -46,7 +46,7 @@ void DeviceOrientationAbsoluteController::DidAddEventListener(
                         WebFeature::kDeviceOrientationAbsoluteSecureOrigin);
     } else {
       Deprecation::CountDeprecation(
-          frame, WebFeature::kDeviceOrientationAbsoluteInsecureOrigin);
+          GetDocument(), WebFeature::kDeviceOrientationAbsoluteInsecureOrigin);
       // TODO: add rappor logging of insecure origins as in
       // DeviceOrientationController.
       if (frame->GetSettings()->GetStrictPowerfulFeatureRestrictions())

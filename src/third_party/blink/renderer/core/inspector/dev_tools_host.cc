@@ -62,12 +62,6 @@ namespace blink {
 
 class FrontendMenuProvider final : public ContextMenuProvider {
  public:
-  static FrontendMenuProvider* Create(DevToolsHost* devtools_host,
-                                      WebVector<WebMenuItemInfo> items) {
-    return MakeGarbageCollected<FrontendMenuProvider>(devtools_host,
-                                                      std::move(items));
-  }
-
   FrontendMenuProvider(DevToolsHost* devtools_host,
                        WebVector<WebMenuItemInfo> items)
       : devtools_host_(devtools_host), items_(std::move(items)) {}
@@ -165,6 +159,7 @@ float DevToolsHost::zoomFactor() {
 
 void DevToolsHost::copyText(const String& text) {
   SystemClipboard::GetInstance().WritePlainText(text);
+  SystemClipboard::GetInstance().CommitWrite();
 }
 
 static String EscapeUnicodeNonCharacters(const String& str) {
@@ -201,8 +196,8 @@ void DevToolsHost::ShowContextMenu(LocalFrame* target_frame,
                                    float y,
                                    WebVector<WebMenuItemInfo> items) {
   DCHECK(frontend_frame_);
-  FrontendMenuProvider* menu_provider =
-      FrontendMenuProvider::Create(this, std::move(items));
+  auto* menu_provider =
+      MakeGarbageCollected<FrontendMenuProvider>(this, std::move(items));
   menu_provider_ = menu_provider;
   float zoom = target_frame->PageZoomFactor();
   {

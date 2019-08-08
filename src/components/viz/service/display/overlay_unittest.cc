@@ -75,6 +75,7 @@ class FullscreenOverlayValidator : public OverlayCandidateValidator {
   }
   bool AllowCALayerOverlays() override { return false; }
   bool AllowDCLayerOverlays() override { return false; }
+  bool NeedsSurfaceOccludingDamageRect() override { return true; }
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
     surfaces->back().overlay_handled = true;
   }
@@ -91,6 +92,7 @@ class SingleOverlayValidator : public OverlayCandidateValidator {
 
   bool AllowCALayerOverlays() override { return false; }
   bool AllowDCLayerOverlays() override { return false; }
+  bool NeedsSurfaceOccludingDamageRect() override { return true; }
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
     // We may have 1 or 2 surfaces depending on whether this ran through the
     // full renderer and picked up the output surface, or not.
@@ -134,6 +136,7 @@ class CALayerValidator : public OverlayCandidateValidator {
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {}
   bool AllowCALayerOverlays() override { return true; }
   bool AllowDCLayerOverlays() override { return false; }
+  bool NeedsSurfaceOccludingDamageRect() override { return false; }
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override {}
 };
 
@@ -142,6 +145,7 @@ class DCLayerValidator : public OverlayCandidateValidator {
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {}
   bool AllowCALayerOverlays() override { return false; }
   bool AllowDCLayerOverlays() override { return true; }
+  bool NeedsSurfaceOccludingDamageRect() override { return true; }
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override {}
 };
 
@@ -251,7 +255,6 @@ std::unique_ptr<RenderPass> CreateRenderPass() {
 
   SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
   shared_state->opacity = 1.f;
-  shared_state->has_surface_damage = true;
   return pass;
 }
 
@@ -1943,19 +1946,26 @@ TEST_F(UnderlayTest, UpdateDamageRectWhenNoPromotion) {
   }
 }
 
-// Tests that no damage occurs due to unchanged elements on top of HW underlays
-TEST_F(UnderlayTest, DamageSubtractedWhenElementsOnHwUnderlayNotChanged) {
-  for (int i = 0; i < 2; ++i) {
+// Tests that no damage occurs when the quad shared state has no occluding
+// damage.
+TEST_F(UnderlayTest, CandidateNoDamageWhenQuadSharedStateNoOccludingDamage) {
+  for (int i = 0; i < 4; ++i) {
     std::unique_ptr<RenderPass> pass = CreateRenderPass();
 
     gfx::Rect rect(2, 3);
-    SharedQuadState* non_damaged_quad_state =
+    SharedQuadState* default_damaged_shared_quad_state =
         pass->shared_quad_state_list.AllocateAndCopyFrom(
             pass->shared_quad_state_list.back());
-    // Element on top has not changed (no damage caused by this quad)
-    non_damaged_quad_state->has_surface_damage = false;
-    CreateSolidColorQuadAt(non_damaged_quad_state, SK_ColorBLACK, pass.get(),
-                           rect);
+    if (i == 2) {
+      auto* sqs = pass->shared_quad_state_list.front();
+      sqs->occluding_damage_rect = gfx::Rect();
+    } else if (i == 3) {
+      auto* sqs = pass->shared_quad_state_list.front();
+      sqs->occluding_damage_rect = gfx::Rect(1, 1, 10, 10);
+    }
+
+    CreateSolidColorQuadAt(default_damaged_shared_quad_state, SK_ColorBLACK,
+                           pass.get(), rect);
 
     CreateFullscreenCandidateQuad(
         resource_provider_.get(), child_resource_provider_.get(),
@@ -1974,13 +1984,11 @@ TEST_F(UnderlayTest, DamageSubtractedWhenElementsOnHwUnderlayNotChanged) {
         render_pass_filters, render_pass_backdrop_filters, &candidate_list,
         nullptr, nullptr, &damage_rect_, &content_bounds_);
 
-    // The damage rect should not be subtracted on the first frame
-    if (i == 0)
+    if (i == 0 || i == 1 || i == 3)
       EXPECT_FALSE(damage_rect_.IsEmpty());
+    else if (i == 2)
+      EXPECT_TRUE(damage_rect_.IsEmpty());
   }
-  // As the  UI on top of the underlay persists and does not change, damage
-  // should be subtracted.
-  EXPECT_TRUE(damage_rect_.IsEmpty());
 }
 
 TEST_F(UnderlayCastTest, NoOverlayContentBounds) {
@@ -2421,6 +2429,8 @@ TEST_F(DCLayerOverlayTest, Occluded) {
   feature_list.InitAndEnableFeature(features::kDirectCompositionUnderlays);
   {
     std::unique_ptr<RenderPass> pass = CreateRenderPass();
+    SharedQuadState* first_shared_state = pass->shared_quad_state_list.back();
+    first_shared_state->occluding_damage_rect = gfx::Rect(1, 1, 10, 10);
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
                        gfx::Rect(0, 3, 100, 100), SK_ColorWHITE);
@@ -2428,6 +2438,9 @@ TEST_F(DCLayerOverlayTest, Occluded) {
         resource_provider_.get(), child_resource_provider_.get(),
         child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
 
+    SharedQuadState* second_shared_state =
+        pass->CreateAndAppendSharedQuadState();
+    second_shared_state->occluding_damage_rect = gfx::Rect(1, 1, 10, 10);
     auto* second_video_quad = CreateFullscreenCandidateYUVVideoQuad(
         resource_provider_.get(), child_resource_provider_.get(),
         child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
@@ -2458,6 +2471,8 @@ TEST_F(DCLayerOverlayTest, Occluded) {
   }
   {
     std::unique_ptr<RenderPass> pass = CreateRenderPass();
+    SharedQuadState* first_shared_state = pass->shared_quad_state_list.back();
+    first_shared_state->occluding_damage_rect = gfx::Rect(1, 1, 10, 10);
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
                        gfx::Rect(3, 3, 100, 100), SK_ColorWHITE);
@@ -2465,6 +2480,9 @@ TEST_F(DCLayerOverlayTest, Occluded) {
         resource_provider_.get(), child_resource_provider_.get(),
         child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
 
+    SharedQuadState* second_shared_state =
+        pass->CreateAndAppendSharedQuadState();
+    second_shared_state->occluding_damage_rect = gfx::Rect(1, 1, 10, 10);
     auto* second_video_quad = CreateFullscreenCandidateYUVVideoQuad(
         resource_provider_.get(), child_resource_provider_.get(),
         child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
@@ -2506,6 +2524,8 @@ TEST_F(DCLayerOverlayTest, DamageRectWithoutVideoDamage) {
   feature_list.InitAndEnableFeature(features::kDirectCompositionUnderlays);
   {
     std::unique_ptr<RenderPass> pass = CreateRenderPass();
+    SharedQuadState* shared_quad_state = pass->shared_quad_state_list.back();
+    shared_quad_state->occluding_damage_rect = gfx::Rect(210, 210, 20, 20);
     // Occluding quad fully contained in video rect.
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
@@ -2542,6 +2562,8 @@ TEST_F(DCLayerOverlayTest, DamageRectWithoutVideoDamage) {
   }
   {
     std::unique_ptr<RenderPass> pass = CreateRenderPass();
+    SharedQuadState* shared_quad_state = pass->shared_quad_state_list.back();
+    shared_quad_state->occluding_damage_rect = gfx::Rect(210, 210, 20, 20);
     // Occluding quad fully contained in video rect.
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
@@ -2941,9 +2963,9 @@ TEST_F(DCLayerOverlayTest, UnderlayDamageRectWithQuadOnTopUnchanged) {
 
     // The quad on top does not give damage on the third frame
     if (i == 2)
-      shared_state_on_top->has_surface_damage = false;
+      shared_state->occluding_damage_rect = gfx::Rect();
     else
-      shared_state_on_top->has_surface_damage = true;
+      shared_state->occluding_damage_rect = kOverlayBottomRightRect;
 
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),

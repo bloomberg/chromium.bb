@@ -1128,6 +1128,11 @@ void DispatchTableGL::initProcsDesktopGL(const gl::Version &version,
         ASSIGN("glIsQueryARB", isQuery);
     }
 
+    if (extensions.count("GL_ARB_parallel_shader_compile") != 0)
+    {
+        ASSIGN("glMaxShaderCompilerThreadsARB", maxShaderCompilerThreadsARB);
+    }
+
     if (extensions.count("GL_ARB_point_parameters") != 0)
     {
         ASSIGN("glPointParameterfARB", pointParameterf);
@@ -2699,6 +2704,11 @@ void DispatchTableGL::initProcsSharedExtensions(const std::set<std::string> &ext
         ASSIGN("glValidateProgramPipelineEXT", validateProgramPipeline);
     }
 
+    if (extensions.count("GL_KHR_parallel_shader_compile") != 0)
+    {
+        ASSIGN("glMaxShaderCompilerThreadsKHR", maxShaderCompilerThreadsKHR);
+    }
+
     if (extensions.count("GL_NV_fence") != 0)
     {
         ASSIGN("glDeleteFencesNV", deleteFencesNV);
@@ -2745,6 +2755,11 @@ void DispatchTableGL::initProcsSharedExtensions(const std::set<std::string> &ext
         ASSIGN("glStencilThenCoverFillPathNV", stencilThenCoverFillPathNV);
         ASSIGN("glStencilThenCoverStrokePathInstancedNV", stencilThenCoverStrokePathInstancedNV);
         ASSIGN("glStencilThenCoverStrokePathNV", stencilThenCoverStrokePathNV);
+    }
+
+    if (extensions.count("GL_OVR_multiview") != 0)
+    {
+        ASSIGN("glFramebufferTextureMultiviewOVR", framebufferTextureMultiviewOVR);
     }
 }
 
@@ -3847,6 +3862,11 @@ void DispatchTableGL::initProcsDesktopGLNULL(const gl::Version &version,
         getQueryObjectuiv = &glGetQueryObjectuivNULL;
         getQueryiv        = &glGetQueryivNULL;
         isQuery           = &glIsQueryNULL;
+    }
+
+    if (extensions.count("GL_ARB_parallel_shader_compile") != 0)
+    {
+        maxShaderCompilerThreadsARB = &glMaxShaderCompilerThreadsARBNULL;
     }
 
     if (extensions.count("GL_ARB_point_parameters") != 0)
@@ -5419,6 +5439,11 @@ void DispatchTableGL::initProcsSharedExtensionsNULL(const std::set<std::string> 
         validateProgramPipeline   = &glValidateProgramPipelineNULL;
     }
 
+    if (extensions.count("GL_KHR_parallel_shader_compile") != 0)
+    {
+        maxShaderCompilerThreadsKHR = &glMaxShaderCompilerThreadsKHRNULL;
+    }
+
     if (extensions.count("GL_NV_fence") != 0)
     {
         deleteFencesNV = &glDeleteFencesNVNULL;
@@ -5465,6 +5490,11 @@ void DispatchTableGL::initProcsSharedExtensionsNULL(const std::set<std::string> 
         stencilThenCoverFillPathNV            = &glStencilThenCoverFillPathNVNULL;
         stencilThenCoverStrokePathInstancedNV = &glStencilThenCoverStrokePathInstancedNVNULL;
         stencilThenCoverStrokePathNV          = &glStencilThenCoverStrokePathNVNULL;
+    }
+
+    if (extensions.count("GL_OVR_multiview") != 0)
+    {
+        framebufferTextureMultiviewOVR = &glFramebufferTextureMultiviewOVRNULL;
     }
 }
 #endif  // defined(ANGLE_ENABLE_OPENGL_NULL)

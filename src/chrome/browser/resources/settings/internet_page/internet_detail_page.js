@@ -90,6 +90,7 @@ Polymer({
     globalPolicy: {
       type: Object,
       value: null,
+      observer: 'globalPolicyChanged_',
     },
 
     /**
@@ -108,22 +109,28 @@ Polymer({
     networkingPrivate: Object,
 
     /**
-     * The network AutoConnect state.
-     * @private
+     * The network AutoConnect state as a fake preference object.
+     * @private {!chrome.settingsPrivate.PrefObject|undefined}
      */
     autoConnect_: {
-      type: Boolean,
-      value: false,
+      type: Object,
       observer: 'autoConnectChanged_',
     },
 
     /**
-     * State of the Always-on VPN toggle.
-     * @private
+     * The always-on VPN state as a fake preference object.
+     * @private {!chrome.settingsPrivate.PrefObject|undefined}
      */
     alwaysOnVpn_: {
-      type: Boolean,
-      value: false,
+      type: Object,
+      observer: 'alwaysOnVpnChanged_',
+      value: function() {
+        return {
+          key: 'fakeAlwaysOnPref',
+          type: chrome.settingsPrivate.PrefType.BOOLEAN,
+          value: false,
+        };
+      }
     },
 
     /**
@@ -168,7 +175,9 @@ Polymer({
   },
 
   observers: [
-    'onAlwaysOnPrefChanged_(prefs.arc.vpn.always_on.*)',
+    'updateAlwaysOnVpnPrefValue_(prefs.arc.vpn.always_on.*)',
+    'updateAlwaysOnVpnPrefEnforcement_(prefs.vpn_config_allowed.*)',
+    'autoConnectChanged_(autoConnect_.*)', 'alwaysOnVpnChanged_(alwaysOnVpn_.*)'
   ],
 
   listeners: {
@@ -217,7 +226,7 @@ Polymer({
     const guid = queryParams.get('guid') || '';
     if (!guid) {
       console.error('No guid specified for page:' + route);
-      this.close_();
+      this.close();
     }
 
     this.shouldShowConfigureWhenNetworkLoaded_ =
@@ -242,18 +251,37 @@ Polymer({
     this.networkProperties_ = {
       GUID: this.guid,
       Type: type,
-      ConnectionState: CrOnc.ConnectionState.NOT_CONNECTED,
       Name: {Active: name},
     };
     this.didSetFocus_ = false;
     this.getNetworkDetails_();
   },
 
-  /** @private */
-  close_: function() {
+  close: function() {
+    // If the page is already closed, return early to avoid navigating backward
+    // erroneously.
+    if (!this.guid) {
+      return;
+    }
+
     this.guid = '';
+
     // Delay navigating to allow other subpages to load first.
-    requestAnimationFrame(() => settings.navigateToPreviousRoute());
+    requestAnimationFrame(() => {
+      // Clear network properties before navigating away to ensure that a future
+      // navigation back to the details page does not show a flicker of
+      // incorrect text. See https://crbug.com/905986.
+      this.networkProperties_ = undefined;
+      this.networkPropertiesReceived_ = false;
+
+      settings.navigateToPreviousRoute();
+    });
+  },
+
+  /** @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy */
+  globalPolicyChanged_: function(globalPolicy) {
+    this.updateAutoConnectPref_(
+        !!(this.autoConnect_ && this.autoConnect_.value), globalPolicy);
   },
 
   /** @private */
@@ -263,10 +291,8 @@ Polymer({
     }
 
     // Update autoConnect if it has changed. Default value is false.
-    const autoConnect = CrOnc.getAutoConnect(this.networkProperties_);
-    if (autoConnect != this.autoConnect_) {
-      this.autoConnect_ = autoConnect;
-    }
+    this.updateAutoConnectPref_(
+        CrOnc.getAutoConnect(this.networkProperties_), this.globalPolicy);
 
     // Update preferNetwork if it has changed. Default value is false.
     const priority = /** @type {number} */ (
@@ -311,8 +337,43 @@ Polymer({
       return;
     }
     const onc = this.getEmptyNetworkProperties_();
-    CrOnc.setTypeProperty(onc, 'AutoConnect', this.autoConnect_);
+    CrOnc.setTypeProperty(onc, 'AutoConnect', !!this.autoConnect_.value);
     this.setNetworkProperties_(onc);
+  },
+
+  /**
+   * Updates auto-connect pref value.
+   * @param {boolean} value
+   * @param {!chrome.networkingPrivate.GlobalPolicy|undefined} globalPolicy
+   * @private
+   */
+  updateAutoConnectPref_: function(value, globalPolicy) {
+    let enforcement;
+    let controlledBy;
+
+    if (this.isAutoConnectEnforcedByPolicy(
+            this.networkProperties_, globalPolicy)) {
+      enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
+      controlledBy = chrome.settingsPrivate.ControlledBy.DEVICE_POLICY;
+    }
+
+    if (this.autoConnect_ && this.autoConnect_.value == value &&
+        enforcement == this.autoConnect_.enforcement &&
+        controlledBy == this.autoConnect_.controlledBy) {
+      return;
+    }
+
+    const newPrefValue = {
+      key: 'fakeAutoConnectPref',
+      value: value,
+      type: chrome.settingsPrivate.PrefType.BOOLEAN,
+    };
+    if (enforcement) {
+      newPrefValue.enforcement = enforcement;
+      newPrefValue.controlledBy = controlledBy;
+    }
+
+    this.autoConnect_ = newPrefValue;
   },
 
   /** @private */
@@ -375,7 +436,7 @@ Polymer({
             'Unexpected networkingPrivate.getManagedProperties error: ' +
             message + ' For: ' + this.guid);
       }
-      this.close_();
+      this.close();
       return;
     }
 
@@ -386,14 +447,14 @@ Polymer({
 
     if (!properties) {
       console.error('No properties for: ' + this.guid);
-      this.close_();
+      this.close();
       return;
     }
 
     // Detail page should not be shown when Arc VPN is not connected.
     if (this.isArcVpn_(properties) && !this.isConnectedState_(properties)) {
       this.guid = '';
-      this.close_();
+      this.close();
     }
 
     this.networkProperties_ = properties;
@@ -411,7 +472,7 @@ Polymer({
       // If |state| is null, the network is no longer visible, close this.
       console.error('Network no longer exists: ' + this.guid);
       this.networkProperties_ = undefined;
-      this.close_();
+      this.close();
       return;
     }
     this.networkProperties_ = {
@@ -474,6 +535,17 @@ Polymer({
     }
 
     return this.i18n('Onc' + networkProperties.ConnectionState);
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {string} The text to display for auto-connect toggle label.
+   * @private
+   */
+  getAutoConnectToggleLabel_: function(networkProperties) {
+    return this.isCellular_(networkProperties) ?
+        this.i18n('networkAutoConnectCellular') :
+        this.i18n('networkAutoConnect');
   },
 
   /**
@@ -575,8 +647,7 @@ Polymer({
   showDisconnect_: function(networkProperties) {
     return !!networkProperties &&
         networkProperties.Type != CrOnc.Type.ETHERNET &&
-        networkProperties.ConnectionState !=
-        CrOnc.ConnectionState.NOT_CONNECTED;
+        CrOnc.isConnectingOrConnected(networkProperties);
   },
 
   /**
@@ -644,8 +715,7 @@ Polymer({
       }
     }
     if ((type == CrOnc.Type.WI_FI || type == CrOnc.Type.WI_MAX) &&
-        networkProperties.ConnectionState !=
-            CrOnc.ConnectionState.NOT_CONNECTED) {
+        CrOnc.isConnectingOrConnected(networkProperties)) {
       return false;
     }
     if (this.isArcVpn_(networkProperties) &&
@@ -775,7 +845,7 @@ Polymer({
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!CrOnc.NetworkProperties=} networkProperties
    * @return {boolean} Whether or not we are looking at VPN configuration.
    * @private
    */
@@ -783,25 +853,44 @@ Polymer({
     return !!networkProperties && networkProperties.Type == CrOnc.Type.VPN;
   },
 
+  /** @private */
+  updateAlwaysOnVpnPrefValue_: function() {
+    this.alwaysOnVpn_.value = this.prefs.arc && this.prefs.arc.vpn &&
+        this.prefs.arc.vpn.always_on &&
+        this.prefs.arc.vpn.always_on.lockdown &&
+        this.prefs.arc.vpn.always_on.lockdown.value;
+  },
+
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
-   * @param {!chrome.settingsPrivate.PrefObject} prefButtonAllowed
-   * @return {Object} Fake pref that is enforced
-   * whenever the original pref is true
    * @private
+   * @return {!chrome.settingsPrivate.PrefObject}
    */
-  getVpnConfigPrefFromValue_: function(networkProperties, prefButtonAllowed) {
-    if (!this.isVpn_(networkProperties) || !prefButtonAllowed) {
-      return null;
+  getFakeVpnConfigPrefForEnforcement_: function() {
+    const fakeAlwaysOnVpnEnforcementPref = {
+      key: 'fakeAlwaysOnPref',
+      type: chrome.settingsPrivate.PrefType.BOOLEAN,
+      value: false,
+    };
+    // Only mark VPN networks as enforced. This fake pref also controls the
+    // policy indicator on the connect/disconnect buttons, so it shouldn't be
+    // shown on non-VPN networks.
+    if (this.isVpn_(this.networkProperties_) &&
+        this.prefs.vpn_config_allowed &&
+        !this.prefs.vpn_config_allowed.value) {
+      fakeAlwaysOnVpnEnforcementPref.enforcement =
+          chrome.settingsPrivate.Enforcement.ENFORCED;
+      fakeAlwaysOnVpnEnforcementPref.controlledBy =
+          this.prefs.vpn_config_allowed.controlledBy;
     }
-    const fakePref = Object.assign({}, prefButtonAllowed);
-    if (prefButtonAllowed.value) {
-      delete fakePref.enforcement;
-      delete fakePref.controlledBy;
-    } else {
-      fakePref.enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
-    }
-    return fakePref;
+
+    return fakeAlwaysOnVpnEnforcementPref;
+  },
+
+  /** @private */
+  updateAlwaysOnVpnPrefEnforcement_: function() {
+    const prefForEnforcement = this.getFakeVpnConfigPrefForEnforcement_();
+    this.alwaysOnVpn_.enforcement = prefForEnforcement.enforcement;
+    this.alwaysOnVpn_.controlledBy = prefForEnforcement.controlledBy;
   },
 
   /**
@@ -839,7 +928,7 @@ Polymer({
   onForgetTap_: function() {
     this.networkingPrivate.forgetNetwork(this.guid);
     // A forgotten network no longer has a valid GUID, close the subpage.
-    this.close_();
+    this.close();
   },
 
   /** @private */
@@ -1053,8 +1142,8 @@ Polymer({
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
-   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {!CrOnc.NetworkProperties=} networkProperties
+   * @param {!chrome.networkingPrivate.GlobalPolicy=} globalPolicy
    * @return {boolean}
    * @private
    */
@@ -1065,7 +1154,8 @@ Polymer({
     if (this.isPolicySource(networkProperties.Source)) {
       return !this.isEditable(CrOnc.getManagedAutoConnect(networkProperties));
     }
-    return globalPolicy && !!globalPolicy.AllowOnlyPolicyNetworksToAutoconnect;
+    return !!globalPolicy &&
+        !!globalPolicy.AllowOnlyPolicyNetworksToAutoconnect;
   },
 
   /**
@@ -1082,31 +1172,13 @@ Polymer({
         this.prefs.arc.vpn.always_on.vpn_package.value;
   },
 
-  /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
-   * @param {!chrome.settingsPrivate.PrefObject} vpnConfigAllowed
-   * @return {boolean} Whether the toggle for the Always-on VPN feature is
-   * enabled.
-   * @private
-   */
-  enableAlwaysOnVpn_: function(networkProperties, vpnConfigAllowed) {
-    return this.isArcVpn_(networkProperties) && vpnConfigAllowed &&
-        !!vpnConfigAllowed.value;
-  },
-
   /** @private */
-  onAlwaysOnPrefChanged_: function() {
-    if (this.prefs.arc && this.prefs.arc.vpn && this.prefs.arc.vpn.always_on &&
-        this.prefs.arc.vpn.always_on.lockdown) {
-      this.alwaysOnVpn_ = this.prefs.arc.vpn.always_on.lockdown.value;
-    }
-  },
-
-  /** @private */
-  onAlwaysOnVpnChange_: function() {
-    if (this.prefs.arc && this.prefs.arc.vpn && this.prefs.arc.vpn.always_on &&
-        this.prefs.arc.vpn.always_on.lockdown) {
-      this.set('prefs.arc.vpn.always_on.lockdown.value', this.alwaysOnVpn_);
+  alwaysOnVpnChanged_: function() {
+    if (this.prefs && this.prefs.arc && this.prefs.arc.vpn &&
+        this.prefs.arc.vpn.always_on && this.prefs.arc.vpn.always_on.lockdown) {
+      this.set(
+          'prefs.arc.vpn.always_on.lockdown.value',
+          !!this.alwaysOnVpn_ && this.alwaysOnVpn_.value);
     }
   },
 
@@ -1132,6 +1204,23 @@ Polymer({
     return this.isRemembered_(networkProperties) &&
         !this.isBlockedByPolicy_(
             networkProperties, globalPolicy, managedNetworkAvailable);
+  },
+
+  /**
+   * @param {Event} event
+   * @private
+   */
+  onPreferNetworkRowClicked_: function(event) {
+    // Stop propagation because the toggle and policy indicator handle clicks
+    // themselves.
+    event.stopPropagation();
+    const preferNetworkToggle =
+        this.shadowRoot.querySelector('#preferNetworkToggle');
+    if (!preferNetworkToggle || preferNetworkToggle.disabled) {
+      return;
+    }
+
+    this.preferNetwork_ = !this.preferNetwork_;
   },
 
   /**
@@ -1261,7 +1350,7 @@ Polymer({
    * @private
    */
   getDeviceFields_: function() {
-    if (!this.networkProperties ||
+    if (!this.networkProperties_ ||
         this.networkProperties_.Type !== CrOnc.Type.CELLULAR) {
       return [];
     }

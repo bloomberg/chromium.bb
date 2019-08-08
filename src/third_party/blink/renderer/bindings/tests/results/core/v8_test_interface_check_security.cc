@@ -10,6 +10,8 @@
 // clang-format off
 #include "third_party/blink/renderer/bindings/tests/results/core/v8_test_interface_check_security.h"
 
+#include <algorithm>
+
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
@@ -23,6 +25,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_cross_origin_setter_info.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/wtf/get_ptr.h"
 
 namespace blink {
@@ -400,18 +403,20 @@ static void DoNotCheckSecurityVoidOverloadMethod2Method(const v8::FunctionCallba
 }
 
 static int DoNotCheckSecurityVoidOverloadMethodMethodLength() {
-  if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+  if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
     return 1;
   }
   return 2;
 }
 
 static void DoNotCheckSecurityVoidOverloadMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
+
   bool is_arity_error = false;
 
   switch (std::min(2, info.Length())) {
     case 1:
-      if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+      if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
         if (true) {
           DoNotCheckSecurityVoidOverloadMethod2Method(info);
           return;
@@ -419,13 +424,13 @@ static void DoNotCheckSecurityVoidOverloadMethodMethod(const v8::FunctionCallbac
       }
       break;
     case 2:
-      if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+      if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
         if (info[1]->IsUndefined()) {
           DoNotCheckSecurityVoidOverloadMethod2Method(info);
           return;
         }
       }
-      if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+      if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
         if (info[1]->IsNumber()) {
           DoNotCheckSecurityVoidOverloadMethod2Method(info);
           return;
@@ -435,7 +440,7 @@ static void DoNotCheckSecurityVoidOverloadMethodMethod(const v8::FunctionCallbac
         DoNotCheckSecurityVoidOverloadMethod1Method(info);
         return;
       }
-      if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+      if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
         if (true) {
           DoNotCheckSecurityVoidOverloadMethod2Method(info);
           return;
@@ -945,7 +950,7 @@ void V8TestInterfaceCheckSecurity::InstallConditionalFeatures(
 
   if (!instance_object.IsEmpty()) {
     if (is_secure_context) {
-      if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+      if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
         {
           // Install secureContextRuntimeEnabledMethod configuration
           const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {

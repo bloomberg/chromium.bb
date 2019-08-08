@@ -343,9 +343,9 @@ LargeIconWorker::LargeIconWorker(
 LargeIconWorker::~LargeIconWorker() {}
 
 void LargeIconWorker::OnIconLookupComplete(
-    const GURL& page_url,
+    const GURL& page_url_for_uma,
     const favicon_base::FaviconRawBitmapResult& db_result) {
-  LogSuspiciousURLMismatches(page_url, db_result);
+  LogSuspiciousURLMismatches(page_url_for_uma, db_result);
   tracker_->PostTaskAndReply(
       background_task_runner_.get(), FROM_HERE,
       base::BindOnce(&ProcessIconOnBackgroundThread, db_result,
@@ -380,11 +380,11 @@ void LargeIconWorker::OnIconProcessingComplete() {
 }
 
 void LargeIconWorker::LogSuspiciousURLMismatches(
-    const GURL& page_url,
+    const GURL& page_url_for_uma,
     const favicon_base::FaviconRawBitmapResult& db_result) {
   const int page_organization_id =
       DomainToOrganizationIdMap::GetInstance()->GetCanonicalOrganizationId(
-          page_url);
+          page_url_for_uma);
 
   // Ignore trivial cases.
   if (!db_result.is_valid() || page_organization_id == kInvalidOrganizationId)
@@ -490,6 +490,29 @@ LargeIconServiceImpl::GetLargeIconImageOrFallbackStyleForPageUrl(
   return GetLargeIconOrFallbackStyleImpl(
       page_url, min_source_size_in_pixel, desired_size_in_pixel,
       favicon_base::LargeIconCallback(), image_callback, tracker);
+}
+
+base::CancelableTaskTracker::TaskId
+LargeIconServiceImpl::GetLargeIconRawBitmapOrFallbackStyleForIconUrl(
+    const GURL& icon_url,
+    int min_source_size_in_pixel,
+    int desired_size_in_pixel,
+    const favicon_base::LargeIconCallback& raw_bitmap_callback,
+    base::CancelableTaskTracker* tracker) {
+  DCHECK_LE(1, min_source_size_in_pixel);
+  DCHECK_LE(0, desired_size_in_pixel);
+
+  scoped_refptr<LargeIconWorker> worker = base::MakeRefCounted<LargeIconWorker>(
+      min_source_size_in_pixel, desired_size_in_pixel, raw_bitmap_callback,
+      favicon_base::LargeIconImageCallback(), tracker);
+
+  int max_size_in_pixel =
+      std::max(desired_size_in_pixel, min_source_size_in_pixel);
+  return favicon_service_->GetRawFavicon(
+      icon_url, favicon_base::IconType::kFavicon, max_size_in_pixel,
+      base::BindRepeating(&LargeIconWorker::OnIconLookupComplete, worker,
+                          /*page_url_for_uma=*/GURL()),
+      tracker);
 }
 
 void LargeIconServiceImpl::

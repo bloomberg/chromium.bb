@@ -217,15 +217,18 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
 
   void TestBasicShaders() {
     TestShader(ProgramKey::DebugBorder());
-    TestShader(ProgramKey::SolidColor(NO_AA, false));
-    TestShader(ProgramKey::SolidColor(USE_AA, false));
+    TestShader(ProgramKey::SolidColor(NO_AA, false, false));
+    TestShader(ProgramKey::SolidColor(USE_AA, false, false));
 
     TestShadersWithOutputColorMatrix(ProgramKey::DebugBorder());
-    TestShadersWithOutputColorMatrix(ProgramKey::SolidColor(NO_AA, false));
-    TestShadersWithOutputColorMatrix(ProgramKey::SolidColor(USE_AA, false));
+    TestShadersWithOutputColorMatrix(
+        ProgramKey::SolidColor(NO_AA, false, false));
+    TestShadersWithOutputColorMatrix(
+        ProgramKey::SolidColor(USE_AA, false, false));
 
-    TestShader(ProgramKey::SolidColor(NO_AA, true));
-    TestShadersWithOutputColorMatrix(ProgramKey::SolidColor(NO_AA, true));
+    TestShader(ProgramKey::SolidColor(NO_AA, true, false));
+    TestShadersWithOutputColorMatrix(
+        ProgramKey::SolidColor(NO_AA, true, false));
   }
 
   void TestColorShaders() {
@@ -254,8 +257,8 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
           gfx::ColorSpace::CreateCustom(primaries, transfer_fns[i]);
 
       renderer()->SetCurrentFrameForTesting(GLRenderer::DrawingFrame());
-      renderer()->SetUseProgram(ProgramKey::SolidColor(NO_AA, false), src,
-                                gfx::ColorSpace::CreateXYZD50());
+      renderer()->SetUseProgram(ProgramKey::SolidColor(NO_AA, false, false),
+                                src, gfx::ColorSpace::CreateXYZD50());
       EXPECT_TRUE(renderer()->current_program_->initialized());
     }
   }
@@ -264,77 +267,97 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
     // This program uses external textures and sampler, so it won't compile
     // everywhere.
     if (context_provider()->ContextCapabilities().egl_image_external) {
-      TestShader(ProgramKey::VideoStream(precision));
+      TestShader(ProgramKey::VideoStream(precision, false));
     }
   }
 
   void TestShadersWithPrecisionAndBlend(TexCoordPrecision precision,
                                         BlendMode blend_mode) {
     TestShader(ProgramKey::RenderPass(precision, SAMPLER_TYPE_2D, blend_mode,
-                                      NO_AA, NO_MASK, false, false, false));
+                                      NO_AA, NO_MASK, false, false, false,
+                                      false));
     TestShader(ProgramKey::RenderPass(precision, SAMPLER_TYPE_2D, blend_mode,
-                                      USE_AA, NO_MASK, false, false, false));
+                                      USE_AA, NO_MASK, false, false, false,
+                                      false));
   }
 
   void TestShadersWithPrecisionAndSampler(TexCoordPrecision precision,
                                           SamplerType sampler) {
     TestShader(ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA,
-                                   false, true, false));
+                                   false, true, false, false));
     TestShader(ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA,
-                                   false, false, false));
+                                   false, false, false, false));
     TestShader(ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA,
-                                   true, true, false));
+                                   true, true, false, false));
     TestShader(ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA,
-                                   true, false, false));
+                                   true, false, false, false));
     TestShader(ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA,
-                                   false, true, false));
+                                   false, true, false, false));
     TestShader(ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA,
-                                   false, false, false));
+                                   false, false, false, false));
     TestShader(ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA,
-                                   true, true, false));
+                                   true, true, false, false));
     TestShader(ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA,
-                                   true, false, false));
+                                   true, false, false, false));
 
     TestShader(ProgramKey::Tile(precision, sampler, USE_AA, NO_SWIZZLE,
-                                PREMULTIPLIED_ALPHA, false, false, false));
+                                PREMULTIPLIED_ALPHA, false, false, false,
+                                false));
     TestShader(ProgramKey::Tile(precision, sampler, USE_AA, DO_SWIZZLE,
-                                PREMULTIPLIED_ALPHA, false, false, false));
+                                PREMULTIPLIED_ALPHA, false, false, false,
+                                false));
     TestShader(ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE,
-                                PREMULTIPLIED_ALPHA, false, false, false));
+                                PREMULTIPLIED_ALPHA, false, false, false,
+                                false));
     TestShader(ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE,
-                                PREMULTIPLIED_ALPHA, false, false, false));
+                                PREMULTIPLIED_ALPHA, false, false, false,
+                                false));
     TestShader(ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE,
-                                PREMULTIPLIED_ALPHA, true, false, false));
+                                PREMULTIPLIED_ALPHA, true, false, false,
+                                false));
     TestShader(ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE,
-                                PREMULTIPLIED_ALPHA, true, false, false));
+                                PREMULTIPLIED_ALPHA, true, false, false,
+                                false));
     TestShader(ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE,
-                                PREMULTIPLIED_ALPHA, false, true, false));
+                                PREMULTIPLIED_ALPHA, false, true, false,
+                                false));
     TestShader(ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE,
-                                PREMULTIPLIED_ALPHA, false, true, false));
+                                PREMULTIPLIED_ALPHA, false, true, false,
+                                false));
     TestShader(ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE,
-                                PREMULTIPLIED_ALPHA, true, true, false));
+                                PREMULTIPLIED_ALPHA, true, true, false, false));
     TestShader(ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE,
-                                PREMULTIPLIED_ALPHA, true, true, false));
+                                PREMULTIPLIED_ALPHA, true, true, false, false));
     TestShader(ProgramKey::Tile(precision, sampler, USE_AA, NO_SWIZZLE,
-                                NON_PREMULTIPLIED_ALPHA, false, false, false));
+                                NON_PREMULTIPLIED_ALPHA, false, false, false,
+                                false));
     TestShader(ProgramKey::Tile(precision, sampler, USE_AA, DO_SWIZZLE,
-                                NON_PREMULTIPLIED_ALPHA, false, false, false));
+                                NON_PREMULTIPLIED_ALPHA, false, false, false,
+                                false));
     TestShader(ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE,
-                                NON_PREMULTIPLIED_ALPHA, false, false, false));
+                                NON_PREMULTIPLIED_ALPHA, false, false, false,
+                                false));
     TestShader(ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE,
-                                NON_PREMULTIPLIED_ALPHA, false, false, false));
+                                NON_PREMULTIPLIED_ALPHA, false, false, false,
+                                false));
     TestShader(ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE,
-                                NON_PREMULTIPLIED_ALPHA, true, false, false));
+                                NON_PREMULTIPLIED_ALPHA, true, false, false,
+                                false));
     TestShader(ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE,
-                                NON_PREMULTIPLIED_ALPHA, true, false, false));
+                                NON_PREMULTIPLIED_ALPHA, true, false, false,
+                                false));
     TestShader(ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE,
-                                NON_PREMULTIPLIED_ALPHA, false, true, false));
+                                NON_PREMULTIPLIED_ALPHA, false, true, false,
+                                false));
     TestShader(ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE,
-                                NON_PREMULTIPLIED_ALPHA, false, true, false));
+                                NON_PREMULTIPLIED_ALPHA, false, true, false,
+                                false));
     TestShader(ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE,
-                                NON_PREMULTIPLIED_ALPHA, true, true, false));
+                                NON_PREMULTIPLIED_ALPHA, true, true, false,
+                                false));
     TestShader(ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE,
-                                NON_PREMULTIPLIED_ALPHA, true, true, false));
+                                NON_PREMULTIPLIED_ALPHA, true, true, false,
+                                false));
 
     // Iterate over alpha plane, nv12, and color_lut parameters.
     UVTextureMode uv_modes[2] = {UV_TEXTURE_MODE_UV, UV_TEXTURE_MODE_U_V};
@@ -343,7 +366,7 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
     for (int j = 0; j < 2; j++) {
       for (int k = 0; k < 2; k++) {
         TestShader(ProgramKey::YUVVideo(precision, sampler, a_modes[j],
-                                        uv_modes[k], false));
+                                        uv_modes[k], false, false));
       }
     }
   }
@@ -354,16 +377,16 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
                             bool mask_for_background) {
     TestShader(ProgramKey::RenderPass(precision, sampler, blend_mode, NO_AA,
                                       HAS_MASK, mask_for_background, false,
-                                      false));
+                                      false, false));
     TestShader(ProgramKey::RenderPass(precision, sampler, blend_mode, NO_AA,
                                       HAS_MASK, mask_for_background, true,
-                                      false));
+                                      false, false));
     TestShader(ProgramKey::RenderPass(precision, sampler, blend_mode, USE_AA,
                                       HAS_MASK, mask_for_background, false,
-                                      false));
+                                      false, false));
     TestShader(ProgramKey::RenderPass(precision, sampler, blend_mode, USE_AA,
                                       HAS_MASK, mask_for_background, true,
-                                      false));
+                                      false, false));
   }
 };
 
@@ -542,7 +565,7 @@ class GLRendererShaderTest : public GLRendererTest {
                              BlendMode blend_mode) {
     const Program* program = renderer_->GetProgramIfInitialized(
         ProgramKey::RenderPass(precision, SAMPLER_TYPE_2D, blend_mode, NO_AA,
-                               NO_MASK, false, false, false));
+                               NO_MASK, false, false, false, false));
     EXPECT_PROGRAM_VALID(program);
     EXPECT_EQ(program, renderer_->current_program_);
   }
@@ -551,7 +574,7 @@ class GLRendererShaderTest : public GLRendererTest {
                                         BlendMode blend_mode) {
     const Program* program = renderer_->GetProgramIfInitialized(
         ProgramKey::RenderPass(precision, SAMPLER_TYPE_2D, blend_mode, NO_AA,
-                               NO_MASK, false, true, false));
+                               NO_MASK, false, true, false, false));
     EXPECT_PROGRAM_VALID(program);
     EXPECT_EQ(program, renderer_->current_program_);
   }
@@ -561,7 +584,7 @@ class GLRendererShaderTest : public GLRendererTest {
                                  BlendMode blend_mode) {
     const Program* program = renderer_->GetProgramIfInitialized(
         ProgramKey::RenderPass(precision, sampler, blend_mode, NO_AA, HAS_MASK,
-                               false, false, false));
+                               false, false, false, false));
     EXPECT_PROGRAM_VALID(program);
     EXPECT_EQ(program, renderer_->current_program_);
   }
@@ -571,7 +594,7 @@ class GLRendererShaderTest : public GLRendererTest {
                                             BlendMode blend_mode) {
     const Program* program = renderer_->GetProgramIfInitialized(
         ProgramKey::RenderPass(precision, sampler, blend_mode, NO_AA, HAS_MASK,
-                               false, true, false));
+                               false, true, false, false));
     EXPECT_PROGRAM_VALID(program);
     EXPECT_EQ(program, renderer_->current_program_);
   }
@@ -580,7 +603,7 @@ class GLRendererShaderTest : public GLRendererTest {
                                BlendMode blend_mode) {
     const Program* program = renderer_->GetProgramIfInitialized(
         ProgramKey::RenderPass(precision, SAMPLER_TYPE_2D, blend_mode, USE_AA,
-                               NO_MASK, false, false, false));
+                               NO_MASK, false, false, false, false));
     EXPECT_PROGRAM_VALID(program);
     EXPECT_EQ(program, renderer_->current_program_);
   }
@@ -589,7 +612,7 @@ class GLRendererShaderTest : public GLRendererTest {
                                           BlendMode blend_mode) {
     const Program* program = renderer_->GetProgramIfInitialized(
         ProgramKey::RenderPass(precision, SAMPLER_TYPE_2D, blend_mode, USE_AA,
-                               NO_MASK, false, true, false));
+                               NO_MASK, false, true, false, false));
     EXPECT_PROGRAM_VALID(program);
     EXPECT_EQ(program, renderer_->current_program_);
   }
@@ -599,7 +622,7 @@ class GLRendererShaderTest : public GLRendererTest {
                                    BlendMode blend_mode) {
     const Program* program = renderer_->GetProgramIfInitialized(
         ProgramKey::RenderPass(precision, sampler, blend_mode, USE_AA, HAS_MASK,
-                               false, false, false));
+                               false, false, false, false));
     EXPECT_PROGRAM_VALID(program);
     EXPECT_EQ(program, renderer_->current_program_);
   }
@@ -609,14 +632,14 @@ class GLRendererShaderTest : public GLRendererTest {
                                               BlendMode blend_mode) {
     const Program* program = renderer_->GetProgramIfInitialized(
         ProgramKey::RenderPass(precision, sampler, blend_mode, USE_AA, HAS_MASK,
-                               false, true, false));
+                               false, true, false, false));
     EXPECT_PROGRAM_VALID(program);
     EXPECT_EQ(program, renderer_->current_program_);
   }
 
   void TestSolidColorProgramAA() {
     const Program* program = renderer_->GetProgramIfInitialized(
-        ProgramKey::SolidColor(USE_AA, false));
+        ProgramKey::SolidColor(USE_AA, false, false));
     EXPECT_PROGRAM_VALID(program);
     EXPECT_EQ(program, renderer_->current_program_);
   }
@@ -693,8 +716,9 @@ TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionHigh) {
       root_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
   SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), gfx::Rect(viewport_size),
-                       gfx::Rect(1023, 1023), gfx::Rect(1023, 1023), false,
-                       false, 1, SkBlendMode::kSrcOver, 0);
+                       gfx::Rect(1023, 1023), gfx::RRectF(),
+                       gfx::Rect(1023, 1023), false, false, 1,
+                       SkBlendMode::kSrcOver, 0);
   overlay_quad->SetNew(shared_state, gfx::Rect(1023, 1023),
                        gfx::Rect(1023, 1023), needs_blending, resource_id,
                        premultiplied_alpha, uv_top_left, uv_bottom_right,
@@ -755,8 +779,9 @@ TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionMedium) {
       root_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
   SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), gfx::Rect(viewport_size),
-                       gfx::Rect(1025, 1025), gfx::Rect(1025, 1025), false,
-                       false, 1, SkBlendMode::kSrcOver, 0);
+                       gfx::Rect(1025, 1025), gfx::RRectF(),
+                       gfx::Rect(1025, 1025), false, false, 1,
+                       SkBlendMode::kSrcOver, 0);
   overlay_quad->SetNew(shared_state, gfx::Rect(1025, 1025),
                        gfx::Rect(1025, 1025), needs_blending, resource_id,
                        premultiplied_alpha, uv_top_left, uv_bottom_right,
@@ -1781,7 +1806,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   cc::FilterOperations filters;
   filters.Append(cc::FilterOperation::CreateReferenceFilter(
       sk_make_sp<cc::ColorFilterPaintFilter>(
-          SkColorFilter::MakeMatrixFilterRowMajor255(matrix), nullptr)));
+          SkColorFilters::MatrixRowMajor255(matrix), nullptr)));
 
   gfx::Transform transform_causing_aa;
   transform_causing_aa.Rotate(20.0);
@@ -2160,6 +2185,7 @@ class TestOverlayProcessor : public OverlayProcessor {
     // Returns true if draw quads can be represented as CALayers (Mac only).
     MOCK_METHOD0(AllowCALayerOverlays, bool());
     MOCK_METHOD0(AllowDCLayerOverlays, bool());
+    MOCK_METHOD0(NeedsSurfaceOccludingDamageRect, bool());
 
     // A list of possible overlay candidates is presented to this function.
     // The expected result is that those candidates that can be in a separate
@@ -2341,6 +2367,7 @@ class SingleOverlayOnTopProcessor : public OverlayProcessor {
 
     bool AllowCALayerOverlays() override { return false; }
     bool AllowDCLayerOverlays() override { return false; }
+    bool NeedsSurfaceOccludingDamageRect() override { return true; }
 
     void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
       if (!multiple_candidates_)
@@ -2473,8 +2500,9 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
       root_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
   SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), gfx::Rect(viewport_size),
-                       gfx::Rect(viewport_size), gfx::Rect(viewport_size),
-                       false, false, 1, SkBlendMode::kSrcOver, 0);
+                       gfx::Rect(viewport_size), gfx::RRectF(),
+                       gfx::Rect(viewport_size), false, false, 1,
+                       SkBlendMode::kSrcOver, 0);
   overlay_quad->SetNew(shared_state, gfx::Rect(viewport_size),
                        gfx::Rect(viewport_size), needs_blending,
                        parent_resource_id, premultiplied_alpha, uv_top_left,
@@ -2775,6 +2803,7 @@ class DCLayerValidator : public OverlayCandidateValidator {
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {}
   bool AllowCALayerOverlays() override { return false; }
   bool AllowDCLayerOverlays() override { return true; }
+  bool NeedsSurfaceOccludingDamageRect() override { return true; }
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override {}
 };
 
@@ -2856,8 +2885,8 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
       gfx::RectF tex_coord_rect(0, 0, 1, 1);
       SharedQuadState* shared_state =
           root_pass->CreateAndAppendSharedQuadState();
-      shared_state->SetAll(gfx::Transform(), rect, rect, rect, false, false, 1,
-                           SkBlendMode::kSrcOver, 0);
+      shared_state->SetAll(gfx::Transform(), rect, rect, gfx::RRectF(), rect,
+                           false, false, 1, SkBlendMode::kSrcOver, 0);
       YUVVideoDrawQuad* quad =
           root_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
       quad->SetNew(shared_state, rect, rect, needs_blending, tex_coord_rect,
@@ -3055,6 +3084,7 @@ class CALayerValidator : public OverlayCandidateValidator {
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {}
   bool AllowCALayerOverlays() override { return true; }
   bool AllowDCLayerOverlays() override { return false; }
+  bool NeedsSurfaceOccludingDamageRect() override { return false; }
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override {}
 };
 
@@ -4140,8 +4170,9 @@ TEST_F(GLRendererWithGpuFenceTest,
       root_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
   SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), gfx::Rect(viewport_size),
-                       gfx::Rect(50, 50), gfx::Rect(viewport_size), false,
-                       false, 1, SkBlendMode::kSrcOver, 0);
+                       gfx::Rect(50, 50), gfx::RRectF(),
+                       gfx::Rect(viewport_size), false, false, 1,
+                       SkBlendMode::kSrcOver, 0);
   overlay_quad->SetNew(
       shared_state, gfx::Rect(viewport_size), gfx::Rect(viewport_size),
       needs_blending, create_overlay_resource(), premultiplied_alpha,

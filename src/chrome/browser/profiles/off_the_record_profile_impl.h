@@ -57,6 +57,7 @@ class OffTheRecordProfileImpl : public Profile {
   PrefService* GetPrefs() override;
   const PrefService* GetPrefs() const override;
   PrefService* GetOffTheRecordPrefs() override;
+  policy::UserCloudPolicyManager* GetUserCloudPolicyManager() override;
   net::URLRequestContextGetter* GetRequestContext() override;
   base::OnceCallback<net::CookieStore*()> GetExtensionsCookieStoreGetter()
       override;
@@ -78,7 +79,7 @@ class OffTheRecordProfileImpl : public Profile {
       service_manager::mojom::ServiceRequest request) override;
   bool IsSameProfile(Profile* profile) override;
   base::Time GetStartTime() const override;
-  SimpleFactoryKey* GetSimpleFactoryKey() const override;
+  ProfileKey* GetProfileKey() const override;
   base::FilePath last_selected_directory() override;
   void set_last_selected_directory(const base::FilePath& path) override;
   bool WasCreatedByVersionOrLater(const std::string& version) override;
@@ -156,7 +157,7 @@ class OffTheRecordProfileImpl : public Profile {
 
   // The key to index KeyedService instances created by
   // SimpleKeyedServiceFactory.
-  std::unique_ptr<SimpleFactoryKey> key_;
+  std::unique_ptr<ProfileKey> key_;
 
   base::FilePath last_selected_directory_;
 

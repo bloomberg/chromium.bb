@@ -132,6 +132,10 @@ class CC_EXPORT LayerTreeSettings {
   // deadlines.
   bool wait_for_all_pipeline_stages_before_draw = false;
 
+  // Determines whether mouse interactions on composited scrollbars are handled
+  // on the compositor thread.
+  bool compositor_threaded_scrollbar_scrolling = false;
+
   // Whether layer tree commits should be made directly to the active
   // tree on the impl thread. If |false| LayerTreeHostImpl creates a
   // pending layer tree and produces that as the 'sync tree' with

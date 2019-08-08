@@ -39,7 +39,7 @@ class ExternalPopupMenuDisplayNoneItemsTest : public PageTestBase {
         "style='display:none;'><option><option>");
     GetDocument().body()->AppendChild(element, ASSERT_NO_EXCEPTION);
     owner_element_ = element;
-    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetDocument().UpdateStyleAndLayout();
   }
 
   Persistent<HTMLSelectElement> owner_element_;

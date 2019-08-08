@@ -286,6 +286,7 @@ class EnterXRButton {
    * @param {string} [options.corners] set to 'round', 'square' or pixel value representing the corner radius
    * @param {string} [options.disabledOpacity] set opacity of button dom when disabled
    * @param {string} [options.cssprefix] set to change the css prefix from default 'webvr-ui'
+   * @param {array} [options.supportedSessionTypes] if set the button will keep it's own state updated with device changes
    */
   constructor(options) {
     options = options || {};
@@ -306,6 +307,7 @@ class EnterXRButton {
     options.onEndSession = options.onEndSession || (function() {});
 
     options.injectCSS = options.injectCSS !== false;
+    options.supportedSessionTypes = options.supportedSessionTypes || [];
 
     this.options = options;
 
@@ -322,6 +324,13 @@ class EnterXRButton {
     this.__forceDisabled = false;
     this.__setDisabledAttribute(true);
     this.setTitle(this.options.textXRNotFoundTitle);
+
+    if (options.supportedSessionTypes.length > 0 && navigator.xr) {
+      navigator.xr.addEventListener('devicechange', () => this.__onDeviceChange());
+
+      // Force a call now in case the initial event from the page load was missed.
+      this.__onDeviceChange();
+    }
   }
 
   /**
@@ -474,6 +483,31 @@ class EnterXRButton {
       this.__setDisabledAttribute(true);
     }
   }
+
+  /**
+   * Handles a device change event
+   * @private
+   */
+  __onDeviceChange(attempt) {
+    if (attempt === undefined) {
+      attempt = 0;
+    }
+
+    if (attempt < this.options.supportedSessionTypes.length) {
+      let sessionMode = this.options.supportedSessionTypes[attempt];
+      navigator.xr.supportsSessionMode(sessionMode).then(() => {
+        this.enabled = true;
+      }, (err) => {
+        attempt++;
+        if (attempt < this.options.supportedSessionTypes.length) {
+          this.__onDeviceChange(attempt);
+        } else {
+          this.enabled = false;
+        }
+      });
+    }
+  }
+
 }
 
 /**

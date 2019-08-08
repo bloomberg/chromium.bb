@@ -26,6 +26,7 @@ namespace {
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Test;
+using ::testing::WithoutArgs;
 using TestDeviceCallbackReceiver =
     test::ValueCallbackReceiver<base::Optional<std::vector<uint8_t>>>;
 
@@ -34,6 +35,8 @@ using NiceMockBluetoothDevice = ::testing::NiceMock<MockBluetoothDevice>;
 
 constexpr uint16_t kControlPointLength = 20;
 constexpr uint8_t kTestData[] = {'T', 'E', 'S', 'T'};
+// BLE cancel command, followed bytes 2 bytes of zero length payload.
+constexpr uint8_t kBleCancelCommand[] = {0xBE, 0x00, 0x00};
 
 std::vector<std::vector<uint8_t>> ToSerializedFragments(
     FidoBleDeviceCommand command,
@@ -193,28 +196,69 @@ TEST_F(FidoBleDeviceTest, SendPingTest) {
   EXPECT_EQ(payload, *value);
 }
 
-TEST_F(FidoBleDeviceTest, SendCancelTest) {
-  // BLE cancel command, follow bytes 2 bytes of zero length payload.
-  constexpr uint8_t kBleCancelCommand[] = {0xBE, 0x00, 0x00};
-
+TEST_F(FidoBleDeviceTest, CancelDuringTransmission) {
+  // Simulate a cancelation request that occurs while a multi-fragment message
+  // is still being transmitted.
+  device()->set_supported_protocol(ProtocolVersion::kCtap);
   ConnectWithLength(kControlPointLength);
+
+  ::testing::Sequence sequence;
+  FidoDevice::CancelToken token = FidoDevice::kInvalidCancelToken;
+
+  EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
+      .InSequence(sequence)
+      .WillOnce(testing::WithArg<1>(Invoke([this](auto* cb) {
+        scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+            FROM_HERE, base::BindOnce(std::move(*cb), true));
+      })));
+  EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
+      .InSequence(sequence)
+      .WillOnce(testing::WithArg<1>(Invoke([this, &token](auto* cb) {
+        device()->Cancel(token);
+        std::move(*cb).Run(true);
+      })));
   EXPECT_CALL(*connection(),
               WriteControlPointPtr(
-                  fido_parsing_utils::Materialize(kBleCancelCommand), _));
+                  fido_parsing_utils::Materialize(kBleCancelCommand), _))
+      .InSequence(sequence);
 
-  device()->Cancel();
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  TestDeviceCallbackReceiver callback_receiver;
+  // The length of payload just needs to be enough to require two fragments.
+  std::vector<uint8_t> payload(kControlPointLength + kControlPointLength / 2);
+  token = static_cast<FidoDevice*>(device())->DeviceTransact(
+      std::move(payload), callback_receiver.callback());
+
+  callback_receiver.WaitForCallback();
+}
+
+TEST_F(FidoBleDeviceTest, CancelAfterTransmission) {
+  // Simulate a cancelation request that occurs after the request has been sent.
+  device()->set_supported_protocol(ProtocolVersion::kCtap);
+  ConnectWithLength(kControlPointLength);
+
+  ::testing::Sequence sequence;
+  EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
+      .InSequence(sequence)
+      .WillOnce(testing::WithArg<1>(
+          Invoke([](auto* cb) { std::move(*cb).Run(true); })));
+  EXPECT_CALL(*connection(),
+              WriteControlPointPtr(
+                  fido_parsing_utils::Materialize(kBleCancelCommand), _))
+      .InSequence(sequence);
+
+  TestDeviceCallbackReceiver callback_receiver;
+  // The length of payload should be small enough to require just one fragment.
+  std::vector<uint8_t> payload(kControlPointLength / 2);
+  const auto token = static_cast<FidoDevice*>(device())->DeviceTransact(
+      std::move(payload), callback_receiver.callback());
+  device()->Cancel(token);
+
+  callback_receiver.WaitForCallback();
 }
 
 TEST_F(FidoBleDeviceTest, StaticGetIdTest) {
   std::string address = BluetoothTestBase::kTestDeviceAddress1;
   EXPECT_EQ("ble:" + address, FidoBleDevice::GetId(address));
-}
-
-TEST_F(FidoBleDeviceTest, TryWinkTest) {
-  test::TestCallbackReceiver<> closure_receiver;
-  device()->TryWink(closure_receiver.callback());
-  closure_receiver.WaitForCallback();
 }
 
 TEST_F(FidoBleDeviceTest, GetIdTest) {
@@ -306,7 +350,7 @@ TEST_F(FidoBleDeviceTest, DeviceMsgErrorTest) {
   device()->SendPing(payload, callback_receiver.callback());
 
   callback_receiver.WaitForCallback();
-  EXPECT_EQ(FidoDevice::State::kMsgError, device()->state());
+  EXPECT_EQ(FidoDevice::State::kMsgError, device()->state_for_testing());
 }
 
 }  // namespace device

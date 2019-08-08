@@ -330,6 +330,10 @@ BlobBuilderFromStream::BlobBuilderFromStream(
 }
 
 BlobBuilderFromStream::~BlobBuilderFromStream() {
+  DCHECK(!callback_) << "BlobBuilderFromStream was destroyed before finishing";
+}
+
+void BlobBuilderFromStream::Abort() {
   OnError(Result::kAborted);
 }
 

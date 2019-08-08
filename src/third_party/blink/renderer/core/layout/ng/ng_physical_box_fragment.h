@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
 #include "third_party/blink/renderer/platform/graphics/scroll_types.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -28,10 +29,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final
       child.fragment->Release();
   }
 
-  ChildLinkList Children() const final {
-    return ChildLinkList(num_children_, &children_[0]);
-  }
-
   base::Optional<LayoutUnit> Baseline(const NGBaselineRequest& request) const {
     return baselines_.Offset(request);
   }
@@ -47,10 +44,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   bool HasSelfPaintingLayer() const;
   bool ChildrenInline() const { return children_inline_; }
 
-  // True if overflow != 'visible', except for certain boxes that do not allow
-  // overflow clip; i.e., AllowOverflowClip() returns false.
-  bool HasOverflowClip() const;
-  bool ShouldClipOverflow() const;
   bool HasControlClip() const;
 
   NGPhysicalOffsetRect ScrollableOverflow() const;
@@ -64,17 +57,8 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   IntSize ScrolledContentOffset() const;
   LayoutSize ScrollSize() const;
 
-  // Visual rect of this box in the local coordinate. Does not include children
-  // even if they overflow this box.
-  NGPhysicalOffsetRect SelfInkOverflow() const;
-
-  // Ink overflow including contents, in the local coordinates.
-  NGPhysicalOffsetRect InkOverflow(bool apply_clip) const;
-
-  // Ink overflow of children in local coordinates.
-  NGPhysicalOffsetRect ContentsInkOverflow() const;
-
-  NGPhysicalOffsetRect ComputeContentsInkOverflow() const;
+  // Compute visual overflow of this box in the local coordinate.
+  NGPhysicalOffsetRect ComputeSelfInkOverflow() const;
 
   // Fragment offset is this fragment's offset from parent.
   // Needed to compensate for LayoutInline Legacy code offsets.
@@ -86,6 +70,11 @@ class CORE_EXPORT NGPhysicalBoxFragment final
 
   scoped_refptr<const NGPhysicalFragment> CloneWithoutOffset() const;
 
+  LayoutBoxModelObject& GetLayoutBoxModelObject() const {
+    SECURITY_DCHECK(GetLayoutObject() && GetLayoutObject()->IsBoxModelObject());
+    return *static_cast<LayoutBoxModelObject*>(GetLayoutObject());
+  }
+
  private:
   NGPhysicalBoxFragment(NGBoxFragmentBuilder* builder,
                         WritingMode block_or_line_writing_mode);
@@ -96,14 +85,13 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   NGLinkStorage children_[];
 };
 
-DEFINE_TYPE_CASTS(
-    NGPhysicalBoxFragment,
-    NGPhysicalFragment,
-    fragment,
-    (fragment->Type() == NGPhysicalFragment::kFragmentBox ||
-     fragment->Type() == NGPhysicalFragment::kFragmentRenderedLegend),
-    (fragment.Type() == NGPhysicalFragment::kFragmentBox ||
-     fragment.Type() == NGPhysicalFragment::kFragmentRenderedLegend));
+template <>
+struct DowncastTraits<NGPhysicalBoxFragment> {
+  static bool AllowFrom(const NGPhysicalFragment& fragment) {
+    return fragment.Type() == NGPhysicalFragment::kFragmentBox ||
+           fragment.Type() == NGPhysicalFragment::kFragmentRenderedLegend;
+  }
+};
 
 }  // namespace blink
 

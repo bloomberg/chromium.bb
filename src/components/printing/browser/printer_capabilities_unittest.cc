@@ -52,8 +52,9 @@ TEST_F(PrinterCapabilitiesTest, NonNullForMissingPrinter) {
   PrinterBasicInfo basic_info;
   PrinterSemanticCapsAndDefaults::Papers no_additional_papers;
 
-  base::Value settings_dictionary = GetSettingsOnBlockingPool(
-      printer_name, basic_info, no_additional_papers, nullptr);
+  base::Value settings_dictionary =
+      GetSettingsOnBlockingPool(printer_name, basic_info, no_additional_papers,
+                                /* has_secure_protocol */ false, nullptr);
 
   ASSERT_FALSE(settings_dictionary.DictEmpty());
 }
@@ -69,7 +70,8 @@ TEST_F(PrinterCapabilitiesTest, ProvidedCapabilitiesUsed) {
   print_backend()->AddValidPrinter(printer_name, std::move(caps));
 
   base::Value settings_dictionary = GetSettingsOnBlockingPool(
-      printer_name, basic_info, no_additional_papers, print_backend());
+      printer_name, basic_info, no_additional_papers,
+      /* has_secure_protocol */ false, print_backend());
 
   // Verify settings were created.
   ASSERT_FALSE(settings_dictionary.DictEmpty());
@@ -98,7 +100,8 @@ TEST_F(PrinterCapabilitiesTest, NullCapabilitiesExcluded) {
   print_backend()->AddValidPrinter(printer_name, nullptr);
 
   base::Value settings_dictionary = GetSettingsOnBlockingPool(
-      printer_name, basic_info, no_additional_papers, print_backend());
+      printer_name, basic_info, no_additional_papers,
+      /* has_secure_protocol */ false, print_backend());
 
   // Verify settings were created.
   ASSERT_FALSE(settings_dictionary.DictEmpty());
@@ -125,7 +128,8 @@ TEST_F(PrinterCapabilitiesTest, AdditionalPapers) {
   additional_papers.push_back({"bar", "vendor", {600, 600}});
 
   base::Value settings_dictionary = GetSettingsOnBlockingPool(
-      printer_name, basic_info, additional_papers, print_backend());
+      printer_name, basic_info, additional_papers,
+      /* has_secure_protocol */ false, print_backend());
 
   // Verify settings were created.
   ASSERT_FALSE(settings_dictionary.DictEmpty());
@@ -181,5 +185,40 @@ TEST_F(PrinterCapabilitiesTest, AdditionalPapers) {
   ASSERT_TRUE(height);
   EXPECT_EQ(600, height->GetInt());
 }
+
+#if defined(CHROMEOS)
+TEST_F(PrinterCapabilitiesTest, HasNotSecureProtocol) {
+  std::string printer_name = "test_printer";
+  PrinterBasicInfo basic_info;
+  PrinterSemanticCapsAndDefaults::Papers no_additional_papers;
+  bool has_secure_protocol = false;
+
+  // Set a capability and add a valid printer.
+  auto caps = std::make_unique<PrinterSemanticCapsAndDefaults>();
+  caps->pin_supported = true;
+  print_backend()->AddValidPrinter(printer_name, std::move(caps));
+
+  base::Value settings_dictionary =
+      GetSettingsOnBlockingPool(printer_name, basic_info, no_additional_papers,
+                                has_secure_protocol, print_backend());
+
+  // Verify settings were created.
+  ASSERT_FALSE(settings_dictionary.DictEmpty());
+
+  // Verify there is a CDD with a printer entry.
+  const Value* cdd = settings_dictionary.FindKeyOfType(kSettingCapabilities,
+                                                       Value::Type::DICTIONARY);
+  ASSERT_TRUE(cdd);
+  const Value* printer = cdd->FindKeyOfType(kPrinter, Value::Type::DICTIONARY);
+  ASSERT_TRUE(printer);
+
+  // Verify that pin is not supported.
+  const Value* pin = printer->FindKeyOfType("pin", Value::Type::DICTIONARY);
+  ASSERT_TRUE(pin);
+  base::Optional<bool> pin_supported = pin->FindBoolKey("supported");
+  ASSERT_TRUE(pin_supported.has_value());
+  ASSERT_FALSE(pin_supported.value());
+}
+#endif  // defined(CHROMEOS)
 
 }  // namespace printing

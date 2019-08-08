@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "absl/types/optional.h"
+#include "api/network_state_predictor.h"
 #include "api/transport/field_trial_based_config.h"
 #include "api/transport/network_control.h"
 #include "api/transport/network_types.h"
@@ -36,13 +37,16 @@
 #include "rtc_base/experiments/rate_control_settings.h"
 
 namespace webrtc {
-
+struct GoogCcConfig {
+  std::unique_ptr<NetworkStateEstimator> network_state_estimator = nullptr;
+  std::unique_ptr<NetworkStatePredictor> network_state_predictor = nullptr;
+  bool feedback_only = false;
+};
 
 class GoogCcNetworkController : public NetworkControllerInterface {
  public:
-  GoogCcNetworkController(RtcEventLog* event_log,
-                          NetworkControllerConfig config,
-                          bool feedback_only);
+  GoogCcNetworkController(NetworkControllerConfig config,
+                          GoogCcConfig goog_cc_config);
   ~GoogCcNetworkController() override;
 
   // NetworkControllerInterface
@@ -63,9 +67,9 @@ class GoogCcNetworkController : public NetworkControllerInterface {
 
  private:
   friend class GoogCcStatePrinter;
-  std::vector<ProbeClusterConfig> UpdateBitrateConstraints(
-      TargetRateConstraints constraints,
-      absl::optional<DataRate> starting_rate);
+  std::vector<ProbeClusterConfig> ResetConstraints(
+      TargetRateConstraints new_constraints);
+  void ClampConstraints();
   void MaybeTriggerOnNetworkChanged(NetworkControlUpdate* update,
                                     Timestamp at_time);
   PacerConfig GetPacingRates(Timestamp at_time) const;
@@ -78,6 +82,7 @@ class GoogCcNetworkController : public NetworkControllerInterface {
   FieldTrialFlag safe_reset_acknowledged_rate_;
   const bool use_stable_bandwidth_estimate_;
   const bool fall_back_to_probe_rate_;
+  const bool use_min_allocatable_as_lower_bound_;
   const RateControlSettings rate_control_settings_;
 
   const std::unique_ptr<ProbeController> probe_controller_;
@@ -87,10 +92,16 @@ class GoogCcNetworkController : public NetworkControllerInterface {
   std::unique_ptr<SendSideBandwidthEstimation> bandwidth_estimation_;
   std::unique_ptr<AlrDetector> alr_detector_;
   std::unique_ptr<ProbeBitrateEstimator> probe_bitrate_estimator_;
+  std::unique_ptr<NetworkStateEstimator> network_estimator_;
+  std::unique_ptr<NetworkStatePredictor> network_state_predictor_;
   std::unique_ptr<DelayBasedBwe> delay_based_bwe_;
   std::unique_ptr<AcknowledgedBitrateEstimator> acknowledged_bitrate_estimator_;
 
   absl::optional<NetworkControllerConfig> initial_config_;
+
+  DataRate min_data_rate_ = DataRate::Zero();
+  DataRate max_data_rate_ = DataRate::PlusInfinity();
+  absl::optional<DataRate> starting_rate_;
 
   bool first_packet_sent_ = false;
 
@@ -108,13 +119,14 @@ class GoogCcNetworkController : public NetworkControllerInterface {
   int64_t last_estimated_rtt_ms_ = 0;
 
   double pacing_factor_;
-  DataRate min_pacing_rate_;
+  DataRate min_total_allocated_bitrate_;
   DataRate max_padding_rate_;
   DataRate max_total_allocated_bitrate_;
 
   bool previously_in_alr = false;
 
   absl::optional<DataSize> current_data_window_;
+
 
   RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(GoogCcNetworkController);
 };

@@ -180,8 +180,7 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
 
   ProcessHeap::Init();
   ThreadState::AttachMainThread();
-  ThreadState::Current()->RegisterTraceDOMWrappers(nullptr, nullptr, nullptr,
-                                                   nullptr);
+  ThreadState::Current()->RegisterTraceDOMWrappers(nullptr, nullptr);
   http_names::Init();
   fetch_initiator_type_names::Init();
 

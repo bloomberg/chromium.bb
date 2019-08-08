@@ -48,6 +48,8 @@ struct Rectangle
     // Returns a rectangle with the same area but with height and width guaranteed to be positive.
     Rectangle removeReversal() const;
 
+    bool encloses(const gl::Rectangle &inside) const;
+
     int x;
     int y;
     int width;
@@ -145,6 +147,8 @@ struct BlendState final
     // This will zero-initialize the struct, including padding.
     BlendState();
     BlendState(const BlendState &other);
+
+    bool allChannelsMasked() const;
 
     bool blend;
     GLenum sourceBlendRGB;

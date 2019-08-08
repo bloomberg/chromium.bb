@@ -28,6 +28,7 @@
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
+#include "content/public/browser/media_player_id.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -193,13 +194,29 @@ class AutomationWebContentsObserver
   void RenderFrameDeleted(
       content::RenderFrameHost* render_frame_host) override {
     ui::AXTreeID tree_id = render_frame_host->GetAXTreeID();
+    if (tree_id == ui::AXTreeIDUnknown())
+      return;
+
     AutomationEventRouter::GetInstance()->DispatchTreeDestroyedEvent(
         tree_id,
         browser_context_);
   }
 
+  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                              content::RenderFrameHost* new_host) override {
+    if (!old_host)
+      return;
+
+    ui::AXTreeID tree_id = old_host->GetAXTreeID();
+    if (tree_id == ui::AXTreeIDUnknown())
+      return;
+
+    AutomationEventRouter::GetInstance()->DispatchTreeDestroyedEvent(
+        tree_id, browser_context_);
+  }
+
   void MediaStartedPlaying(const MediaPlayerInfo& video_type,
-                           const MediaPlayerId& id) override {
+                           const content::MediaPlayerId& id) override {
     content::AXEventNotificationDetails content_event_bundle;
     content_event_bundle.ax_tree_id = id.render_frame_host->GetAXTreeID();
     content_event_bundle.events.resize(1);
@@ -210,7 +227,7 @@ class AutomationWebContentsObserver
 
   void MediaStoppedPlaying(
       const MediaPlayerInfo& video_type,
-      const MediaPlayerId& id,
+      const content::MediaPlayerId& id,
       WebContentsObserver::MediaStoppedReason reason) override {
     content::AXEventNotificationDetails content_event_bundle;
     content_event_bundle.ax_tree_id = id.render_frame_host->GetAXTreeID();
@@ -258,8 +275,9 @@ AutomationInternalEnableTabFunction::Run() {
   std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   content::WebContents* contents = NULL;
+  int tab_id = -1;
   if (params->args.tab_id.get()) {
-    int tab_id = *params->args.tab_id;
+    tab_id = *params->args.tab_id;
     if (!ExtensionTabUtil::GetTabById(
             tab_id, browser_context(), include_incognito_information(),
             NULL, /* browser out param*/
@@ -275,6 +293,8 @@ AutomationInternalEnableTabFunction::Run() {
                    ->GetActiveWebContents();
     if (!contents)
       return RespondNow(Error("No active tab"));
+
+    tab_id = ExtensionTabUtil::GetTabId(contents);
   }
 
   content::RenderFrameHost* rfh = contents->GetMainFrame();
@@ -298,7 +318,7 @@ AutomationInternalEnableTabFunction::Run() {
 
   return RespondNow(
       ArgumentList(api::automation_internal::EnableTab::Results::Create(
-          ax_tree_id.ToString())));
+          ax_tree_id.ToString(), tab_id)));
 }
 
 ExtensionFunction::ResponseAction AutomationInternalEnableFrameFunction::Run() {
@@ -308,8 +328,22 @@ ExtensionFunction::ResponseAction AutomationInternalEnableFrameFunction::Run() {
   std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  content::RenderFrameHost* rfh = content::RenderFrameHost::FromAXTreeID(
-      ui::AXTreeID::FromString(params->tree_id));
+  ui::AXTreeID ax_tree_id = ui::AXTreeID::FromString(params->tree_id);
+  ui::AXTreeIDRegistry* registry = ui::AXTreeIDRegistry::GetInstance();
+  ui::AXActionHandler* action_handler = registry->GetActionHandler(ax_tree_id);
+  if (action_handler) {
+    // Explicitly invalidate the pre-existing source tree first. This ensures
+    // the source tree sends a complete tree when the next event occurs. This
+    // is required whenever the client extension is reloaded.
+    ui::AXActionData action;
+    action.target_tree_id = ax_tree_id;
+    action.source_extension_id = extension_id();
+    action.action = ax::mojom::Action::kInternalInvalidateTree;
+    action_handler->PerformAction(action);
+  }
+
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromAXTreeID(ax_tree_id);
   if (!rfh)
     return RespondNow(Error("unable to load tab"));
 
@@ -478,7 +512,15 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
       action->end_index = get_text_location_params.end_index;
       break;
     }
+    case api::automation::ACTION_TYPE_SHOWTOOLTIP:
+      action->action = ax::mojom::Action::kShowTooltip;
+      break;
+    case api::automation::ACTION_TYPE_HIDETOOLTIP:
+      action->action = ax::mojom::Action::kHideTooltip;
+      break;
     case api::automation::ACTION_TYPE_ANNOTATEPAGEIMAGES:
+    case api::automation::ACTION_TYPE_SIGNALENDOFTEST:
+    case api::automation::ACTION_TYPE_INTERNALINVALIDATETREE:
     case api::automation::ACTION_TYPE_NONE:
       break;
   }

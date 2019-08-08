@@ -10,24 +10,37 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
+#include "base/hash/md5.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_byteorder.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
+#include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/metrics/cached_metrics_profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/system/statistics_provider.h"
+#include "components/arc/arc_features_parser.h"
 #include "components/arc/metrics/stability_metrics_manager.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_type.h"
+#include "components/variations/hashing.h"
 #include "components/variations/service/variations_field_trial_creator.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -95,6 +108,14 @@ std::string GetFullHardwareClassOnBackgroundThread() {
   return full_hardware_class;
 }
 
+bool IsFeatureEnabled(
+    const chromeos::multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
+        feature_states_map,
+    chromeos::multidevice_setup::mojom::Feature feature) {
+  return feature_states_map.find(feature)->second ==
+         chromeos::multidevice_setup::mojom::FeatureState::kEnabledByUser;
+}
+
 }  // namespace
 
 namespace features {
@@ -109,7 +130,8 @@ const base::Feature kUmaShortHWClass{"UmaShortHWClass",
 
 ChromeOSMetricsProvider::ChromeOSMetricsProvider(
     metrics::MetricsLogUploader::MetricServiceType service_type)
-    : registered_user_count_at_log_initialization_(false),
+    : cached_profile_(std::make_unique<metrics::CachedMetricsProfile>()),
+      registered_user_count_at_log_initialization_(false),
       user_count_at_log_initialization_(0),
       weak_ptr_factory_(this) {
   if (service_type == metrics::MetricsLogUploader::UMA)
@@ -162,9 +184,10 @@ void ChromeOSMetricsProvider::Init() {
 }
 
 void ChromeOSMetricsProvider::AsyncInit(const base::Closure& done_callback) {
-  base::RepeatingClosure barrier = base::BarrierClosure(2, done_callback);
+  base::RepeatingClosure barrier = base::BarrierClosure(3, done_callback);
   InitTaskGetFullHardwareClass(barrier);
   InitTaskGetBluetoothAdapter(barrier);
+  InitTaskGetArcFeatures(barrier);
 }
 
 void ChromeOSMetricsProvider::OnDidCreateMetricsLog() {
@@ -197,9 +220,17 @@ void ChromeOSMetricsProvider::InitTaskGetBluetoothAdapter(
                      weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
+void ChromeOSMetricsProvider::InitTaskGetArcFeatures(
+    const base::RepeatingClosure& callback) {
+  arc::ArcFeaturesParser::GetArcFeatures(
+      base::BindOnce(&ChromeOSMetricsProvider::OnArcFeaturesParsed,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
 void ChromeOSMetricsProvider::ProvideSystemProfileMetrics(
     metrics::SystemProfileProto* system_profile_proto) {
   WriteBluetoothProto(system_profile_proto);
+  WriteLinkedAndroidPhoneProto(system_profile_proto);
   UpdateMultiProfileUserCount(system_profile_proto);
 
   metrics::SystemProfileProto::Hardware* hardware =
@@ -212,6 +243,12 @@ void ChromeOSMetricsProvider::ProvideSystemProfileMetrics(
     hardware->set_internal_display_supports_touch(true);
   else if (has_touch == display::Display::TouchSupport::UNAVAILABLE)
     hardware->set_internal_display_supports_touch(false);
+
+  if (arc_release_) {
+    metrics::SystemProfileProto::OS::Arc* arc =
+        system_profile_proto->mutable_os()->mutable_arc();
+    arc->set_release(*arc_release_);
+  }
 }
 
 void ChromeOSMetricsProvider::ProvideStabilityMetrics(
@@ -257,6 +294,7 @@ void ChromeOSMetricsProvider::ProvideCurrentSessionData(
     }
   }
   arc::UpdateEnabledStateByUserTypeUMA();
+  UpdateUserTypeUMA();
 }
 
 void ChromeOSMetricsProvider::WriteBluetoothProto(
@@ -315,6 +353,41 @@ void ChromeOSMetricsProvider::WriteBluetoothProto(
   }
 }
 
+void ChromeOSMetricsProvider::WriteLinkedAndroidPhoneProto(
+    metrics::SystemProfileProto* system_profile_proto) {
+  chromeos::multidevice_setup::MultiDeviceSetupClient* client =
+      chromeos::multidevice_setup::MultiDeviceSetupClientFactory::GetForProfile(
+          cached_profile_->GetMetricsProfile());
+
+  if (!client)
+    return;
+
+  const chromeos::multidevice_setup::MultiDeviceSetupClient::
+      HostStatusWithDevice& host_status_with_device = client->GetHostStatus();
+  if (host_status_with_device.first !=
+      chromeos::multidevice_setup::mojom::HostStatus::kHostVerified) {
+    return;
+  }
+
+  SystemProfileProto::LinkedAndroidPhoneData* linked_android_phone_data =
+      system_profile_proto->mutable_linked_android_phone_data();
+  const uint32_t hashed_name =
+      variations::HashName(host_status_with_device.second->pii_free_name());
+  linked_android_phone_data->set_phone_model_name_hash(hashed_name);
+
+  const chromeos::multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
+      feature_states_map = client->GetFeatureStates();
+  linked_android_phone_data->set_is_smartlock_enabled(IsFeatureEnabled(
+      feature_states_map,
+      chromeos::multidevice_setup::mojom::Feature::kSmartLock));
+  linked_android_phone_data->set_is_instant_tethering_enabled(IsFeatureEnabled(
+      feature_states_map,
+      chromeos::multidevice_setup::mojom::Feature::kInstantTethering));
+  linked_android_phone_data->set_is_messages_enabled(
+      IsFeatureEnabled(feature_states_map,
+                       chromeos::multidevice_setup::mojom::Feature::kMessages));
+}
+
 void ChromeOSMetricsProvider::UpdateMultiProfileUserCount(
     metrics::SystemProfileProto* system_profile_proto) {
   if (user_manager::UserManager::IsInitialized()) {
@@ -347,4 +420,28 @@ void ChromeOSMetricsProvider::SetFullHardwareClass(
   }
   full_hardware_class_ = full_hardware_class;
   callback.Run();
+}
+
+void ChromeOSMetricsProvider::OnArcFeaturesParsed(
+    base::RepeatingClosure callback,
+    base::Optional<arc::ArcFeatures> features) {
+  base::ScopedClosureRunner runner(callback);
+  if (!features) {
+    LOG(WARNING) << "ArcFeatures not available on this build";
+    return;
+  }
+  arc_release_ = features->build_props.at("ro.build.version.release");
+}
+
+void ChromeOSMetricsProvider::UpdateUserTypeUMA() {
+  if (user_manager::UserManager::IsInitialized()) {
+    const user_manager::User* primary_user =
+        user_manager::UserManager::Get()->GetPrimaryUser();
+    if (primary_user) {
+      user_manager::UserType user_type = primary_user->GetType();
+      return base::UmaHistogramEnumeration(
+          "UMA.PrimaryUserType", user_type,
+          user_manager::UserType::NUM_USER_TYPES);
+    }
+  }
 }

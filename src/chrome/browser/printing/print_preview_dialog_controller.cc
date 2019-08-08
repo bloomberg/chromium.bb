@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -142,12 +143,17 @@ void PrintPreviewDialogDelegate::GetDialogSize(gfx::Size* size) const {
     size->SetToMax(outermost_web_contents->GetContainerBounds().size());
   size->Enlarge(-2 * kBorder, -kBorder);
 
+  static const gfx::Size kMaxDialogSize(1000, 660);
+  bool should_limit_dialog_size =
+      base::FeatureList::IsEnabled(::features::kNewPrintPreviewLayout);
 #if defined(OS_MACOSX)
   // Limit the maximum size on MacOS X.
   // http://crbug.com/105815
-  const gfx::Size kMaxDialogSize(1000, 660);
-  size->SetToMin(kMaxDialogSize);
+  should_limit_dialog_size = true;
 #endif
+  if (should_limit_dialog_size) {
+    size->SetToMin(kMaxDialogSize);
+  }
 }
 
 std::string PrintPreviewDialogDelegate::GetDialogArgs() const {

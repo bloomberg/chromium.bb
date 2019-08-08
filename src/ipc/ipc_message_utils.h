@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <bitset>
 #include <map>
 #include <memory>
 #include <set>
@@ -404,6 +405,42 @@ struct ParamTraits<std::vector<P>> {
   }
 };
 
+template <std::size_t N>
+struct ParamTraits<std::bitset<N>> {
+  typedef std::bitset<N> param_type;
+  static void Write(base::Pickle* m, const param_type& p) {
+    WriteParam(m, base::checked_cast<int>(p.size()));
+    for (size_t i = 0; i < p.size(); i++)
+      WriteParam(m, p.test(i));
+  }
+
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r) {
+    int size;
+    // ReadLength() checks for < 0 itself.
+    if (!iter->ReadLength(&size))
+      return false;
+    if (static_cast<size_t>(size) != r->size())
+      return false;
+    for (size_t i = 0; i < r->size(); i++) {
+      bool value;
+      if (!ReadParam(m, iter, &value))
+        return false;
+      (*r)[i] = value;
+    }
+    return true;
+  }
+
+  static void Log(const param_type& p, std::string* l) {
+    for (size_t i = 0; i < p.size(); ++i) {
+      if (i != 0)
+        l->push_back(' ');
+      LogParam(p.test(i), l);
+    }
+  }
+};
+
 template <class P>
 struct ParamTraits<std::set<P> > {
   typedef std::set<P> param_type;
@@ -552,7 +589,30 @@ struct COMPONENT_EXPORT(IPC) ParamTraits<base::FileDescriptor> {
                    param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
+
+template <>
+struct COMPONENT_EXPORT(IPC) ParamTraits<base::ScopedFD> {
+  typedef base::ScopedFD param_type;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
 #endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
+
+#if defined(OS_FUCHSIA)
+template <>
+struct COMPONENT_EXPORT(IPC) ParamTraits<zx::vmo> {
+  typedef zx::vmo param_type;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+#endif  // defined(OS_FUCHSIA)
 
 template <>
 struct COMPONENT_EXPORT(IPC) ParamTraits<base::SharedMemoryHandle> {

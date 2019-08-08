@@ -11,9 +11,6 @@ import fnmatch
 
 
 _NEGATIVE_FILTER = [
-    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=528
-    'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
-
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'SlowLoadingPageTest.testRefreshShouldBlockUntilPageLoads',
     'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToRefresh',
@@ -23,14 +20,43 @@ _NEGATIVE_FILTER = [
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2661
     'WindowTest.testSetsTheSizeOfTheCurrentWindowFromIframe',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2854
+    'ChromeOptionsFunctionalTest.canSetAcceptInsecureCerts',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2835
+    'CookieImplementationTest.deleteAllCookies',
+    'CookieImplementationTest.canHandleHttpOnlyCookie',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2858
+    'ElementFindingTest.testFindingMultipleElementsByInvalidClassNameShouldThrow',
+    'ElementFindingTest.testFindingMultipleElementsByCompoundClassNameShouldThrow',
+    'ElementFindingTest.testFindingMultipleElementsByEmptyIdShouldReturnEmptyList',
+    'FormHandlingTest.testShouldNotBeAbleToSubmitAFormThatDoesNotExist',
+    'PositionAndSizeTest.testShouldGetCoordinatesInViewPortOfAnElementInAFrame',
+    'PositionAndSizeTest.testShouldGetCoordinatesInViewPortOfAnElementInANestedFrame',
+    'DragAndDropTest.testDragAndDropElementWithOffsetInScrolledDiv',
+    'DragAndDropTest.canDragAnElementNotVisibleInTheCurrentViewportDueToAParentOverflow',
+    'LocationContextTest.testShouldSetAndGetLatitude',
+    'LocationContextTest.testShouldSetAndGetLongitude',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1960
+    'CombinedInputActionsTest.testChordControlCutAndPaste',
 ]
 
 _READY_TO_RUN_FILTER = [
     # marked as not yet implemented with chrome but already works
+    'ProxySettingTest.canUsePACThatOnlyProxiesCertainHosts',
 ]
 
 _OS_NEGATIVE_FILTER = {}
 _OS_NEGATIVE_FILTER['win'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2855
+    'WindowTest.canFullscreenTheWindow',
+    'WindowTest.canFullscreenTheWindowFromIframe',
+    'WindowTest.testCanMaximizeTheWindowFromIframe',
+    'WindowTest.testCanMaximizeTheWindow',
+    'BasicMouseInterfaceTest.testMovingMouseByRelativeOffset',
 ]
 _OS_NEGATIVE_FILTER['linux'] = [
 ]
@@ -42,7 +68,14 @@ _OS_NEGATIVE_FILTER['mac'] = [
     'WindowTest.canFullscreenTheWindowFromFrame',
     'WindowTest.canFullscreenTheWindowFromIframe',
     'WindowTest.testSetsTheSizeOfTheCurrentWindow',
+    'WindowTest.testCanMaximizeTheWindowFromFrame',
+    'WindowTest.testCanMaximizeTheWindowFromIframe',
+    'WindowTest.testCanMaximizeTheWindow',
     'BasicMouseInterfaceTest.testMovingMouseByRelativeOffset',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2856
+    'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrameThatIsOutOfView',
+    'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrame',
 ]
 
 _OS_NEGATIVE_FILTER['android:chrome'] = [
@@ -116,8 +149,8 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     # Test is written using local files; doesn't work on Android.
     'UploadTest.testFileUploading',
 
-    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=528
-    'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2861
+    'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToLoadAfterClick',
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=604
     'I18nTest.testShouldBeAbleToActivateIMEEngine',
@@ -158,7 +191,6 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     'CorrectEventFiringTest.testShouldFireTwoClickEventsWhenClickingOnALabel',
     'CorrectEventFiringTest.testShouldIssueClickEvents',
     'CorrectEventFiringTest.testShouldFireMouseMoveEventWhenClicking',
-    'CombinedInputActionsTest.testChordControlCutAndPaste',
     'BasicKeyboardInterfaceTest.testSendingKeysWithShiftPressed',
     'BasicKeyboardInterfaceTest.testBasicKeyboardInputOnActiveElement',
     'BasicKeyboardInterfaceTest.testSendingKeyUp',
@@ -184,6 +216,9 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2697
     'CorrectEventFiringTest.testShouldEmitClickEventWhenClickingOnATextInputElement',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2860
+    'UploadTest.testUploadingWithInvisibleFileInput',
 ]
 
 _OS_NEGATIVE_FILTER['android:chrome_stable'] = (

@@ -6,11 +6,14 @@
 #define GPU_COMMAND_BUFFER_SERVICE_EXTERNAL_VK_IMAGE_BACKING_H_
 
 #include <memory>
+#include <vector>
 
+#include "base/memory/scoped_refptr.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/vulkan/semaphore_handle.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 
 namespace gpu {
@@ -39,35 +42,17 @@ class ExternalVkImageBacking : public SharedImageBacking {
         ->GetDeviceQueue()
         ->GetVulkanDevice();
   }
-  using SharedImageBacking::have_context;
 
-  VkSemaphore CreateExternalVkSemaphore();
+  // Notifies the backing that an access will start. Return false if there is
+  // currently any other conflict access in progress. Otherwise, returns true
+  // and semaphore handles which will be waited on before accessing.
+  bool BeginAccess(bool readonly,
+                   std::vector<SemaphoreHandle>* semaphore_handles);
 
-  // Notifies the backing that a Vulkan read will start. Return false if there
-  // is currently a write in progress. Otherwise, returns true and provides the
-  // latest semaphore (if any) that GL has signalled after ending its write
-  // access if it has not been waited on yet.
-  bool BeginVulkanReadAccess(VkSemaphore* gl_write_finished_semaphore);
-
-  // Notifies the backing that a Vulkan read has ended. The representation must
-  // provide a semaphore that has been signalled at the end of the read access.
-  void EndVulkanReadAccess(VkSemaphore vulkan_read_finished_semaphore);
-
-  // Notifies the backing that a GL read will start. Return false if there is
-  // currently any other read or write in progress. Otherwise, returns true and
-  // provides the latest semaphore (if any) that Vulkan has signalled after
-  // ending its read access if it has not been waited on yet.
-  bool BeginGlWriteAccess(VkSemaphore* vulkan_read_finished_semaphore);
-
-  // Notifies the backing that a GL write has ended. The representation must
-  // provide a semaphore that has been signalled at the end of the write access.
-  void EndGlWriteAccess(VkSemaphore gl_write_finished_semaphore);
-
-  // TODO(crbug.com/932214): Once Vulkan writes are possible, these methods
-  // should also take/provide semaphores. There should also be a
-  // BeginVulkanWriteAccess and EndVulkanWriteAccess.
-  bool BeginGlReadAccess();
-  void EndGlReadAccess();
+  // Notifies the backing that an access has ended. The representation must
+  // provide a semaphore handle that has been signaled at the end of the write
+  // access.
+  void EndAccess(bool readonly, SemaphoreHandle semaphore_handle);
 
   // SharedImageBacking implementation.
   bool IsCleared() const override;
@@ -86,19 +71,21 @@ class ExternalVkImageBacking : public SharedImageBacking {
                               MemoryTypeTracker* tracker) override;
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
       SharedImageManager* manager,
-      MemoryTypeTracker* tracker) override;
+      MemoryTypeTracker* tracker,
+      scoped_refptr<SharedContextState> context_state) override;
 
  private:
   SharedContextState* const context_state_;
   VkImage image_;
   VkDeviceMemory memory_;
-  VkSemaphore vulkan_read_finished_semaphore_ = VK_NULL_HANDLE;
-  VkSemaphore gl_write_finished_semaphore_ = VK_NULL_HANDLE;
+  SemaphoreHandle write_semaphore_handle_;
+  std::vector<SemaphoreHandle> read_semaphore_handles_;
   size_t memory_size_;
   bool is_cleared_ = false;
   VkFormat vk_format_;
   bool is_write_in_progress_ = false;
   uint32_t reads_in_progress_ = 0;
+  gles2::Texture* texture_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalVkImageBacking);
 };

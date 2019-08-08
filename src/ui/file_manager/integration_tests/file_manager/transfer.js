@@ -108,36 +108,36 @@ async function transferBetweenVolumes(transferInfo) {
   if (transferInfo.source.isTeamDrive) {
     srcContents =
         TestEntryInfo.getExpectedRows(transferInfo.source.initialEntries.filter(
-            entry => entry.type !== EntryType.TEAM_DRIVE &&
+            entry => entry.type !== EntryType.SHARED_DRIVE &&
                 entry.teamDriveName === transferInfo.source.volumeName));
   } else {
     srcContents =
         TestEntryInfo.getExpectedRows(transferInfo.source.initialEntries.filter(
-            entry => entry.type !== EntryType.TEAM_DRIVE &&
+            entry => entry.type !== EntryType.SHARED_DRIVE &&
                 entry.teamDriveName === ''));
   }
   const myDriveContent =
       TestEntryInfo.getExpectedRows(transferInfo.source.initialEntries.filter(
-          entry => entry.type !== EntryType.TEAM_DRIVE &&
+          entry => entry.type !== EntryType.SHARED_DRIVE &&
               entry.teamDriveName === ''));
 
   let dstContents;
   if (transferInfo.destination.isTeamDrive) {
     dstContents = TestEntryInfo.getExpectedRows(
         transferInfo.destination.initialEntries.filter(
-            entry => entry.type !== EntryType.TEAM_DRIVE &&
+            entry => entry.type !== EntryType.SHARED_DRIVE &&
                 entry.teamDriveName === transferInfo.destination.volumeName));
   } else {
     dstContents = TestEntryInfo.getExpectedRows(
         transferInfo.destination.initialEntries.filter(
-            entry => entry.type !== EntryType.TEAM_DRIVE &&
+            entry => entry.type !== EntryType.SHARED_DRIVE &&
                 entry.teamDriveName === ''));
   }
 
   const localFiles = BASIC_LOCAL_ENTRY_SET;
   const driveFiles = (transferInfo.source.isTeamDrive ||
                       transferInfo.destination.isTeamDrive) ?
-      TEAM_DRIVE_ENTRY_SET :
+      SHARED_DRIVE_ENTRY_SET :
       BASIC_DRIVE_ENTRY_SET;
 
   // Open files app.
@@ -242,7 +242,7 @@ const TRANSFER_LOCATIONS = Object.freeze({
       {volumeName: 'drive', initialEntries: BASIC_DRIVE_ENTRY_SET}),
 
   driveWithTeamDriveEntries: new TransferLocationInfo(
-      {volumeName: 'drive', initialEntries: TEAM_DRIVE_ENTRY_SET}),
+      {volumeName: 'drive', initialEntries: SHARED_DRIVE_ENTRY_SET}),
 
   downloads: new TransferLocationInfo(
       {volumeName: 'downloads', initialEntries: BASIC_LOCAL_ENTRY_SET}),
@@ -258,13 +258,13 @@ const TRANSFER_LOCATIONS = Object.freeze({
   driveTeamDriveA: new TransferLocationInfo({
     volumeName: 'Team Drive A',
     isTeamDrive: true,
-    initialEntries: TEAM_DRIVE_ENTRY_SET
+    initialEntries: SHARED_DRIVE_ENTRY_SET
   }),
 
   driveTeamDriveB: new TransferLocationInfo({
     volumeName: 'Team Drive B',
     isTeamDrive: true,
-    initialEntries: TEAM_DRIVE_ENTRY_SET
+    initialEntries: SHARED_DRIVE_ENTRY_SET
   }),
 
   my_files: new TransferLocationInfo({
@@ -479,4 +479,80 @@ testcase.transferFromDownloadsToDownloads = async () => {
   chrome.test.assertEq(
       '',
       (await remoteCall.waitForElement(appId, '.progress-frame label')).text);
+};
+
+/**
+ * Tests that we can drag a file from #file-list to #directory-tree.
+ * It copies the file from Downloads to Downloads/photos.
+ */
+testcase.transferDragAndDrop = async () => {
+  const entries = [ENTRIES.hello, ENTRIES.photos];
+
+  // Open files app.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, entries, []);
+
+  // Expand Downloads to display "photos" folder in the directory tree.
+  await expandTreeItem(appId, '#directory-tree [entry-label="Downloads"]');
+
+  // Drag has to start in the file list column "name" text content, otherwise it
+  // starts a selection instead of a drag.
+  const src =
+      `#file-list li[file-name="${ENTRIES.hello.nameText}"] .entry-name`;
+  const dst = '#directory-tree [entry-label="photos"]';
+
+  // Select the file to be dragged.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [src]),
+      'fakeMouseClick failed');
+
+  // Drag and drop it.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('fakeDragAndDrop', appId, [src, dst]),
+      'fakeDragAndDrop failed');
+
+  // Navigate to the dst folder.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [dst]),
+      'fakeMouseClick failed');
+
+  // Wait for navigation to finish.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(
+      appId, '/My files/Downloads/photos');
+
+  // Wait for the expected files to appear in the file list.
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows([ENTRIES.hello]),
+      {ignoreLastModifiedTime: true});
+};
+
+/**
+ * Tests that we can drag a file from #file-list and hover above USB root as
+ * EntryList without raising an error.
+ */
+testcase.transferDragAndHover = async () => {
+  const entries = [ENTRIES.hello, ENTRIES.photos];
+
+  await sendTestMessage({name: 'mountUsbWithPartitions'});
+  await sendTestMessage({name: 'mountFakeUsb'});
+
+  // Open files app.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, entries, []);
+
+  // Drag has to start in the file list column "name" text content, otherwise it
+  // starts a selection instead of a drag.
+  const src =
+      `#file-list li[file-name="${ENTRIES.hello.nameText}"] .entry-name`;
+  const dst1 = '#directory-tree [entry-label="Drive Label"]';
+  const dst2 = '#directory-tree [entry-label="fake-usb"]';
+
+  // Wait for USB roots to be ready.
+  await remoteCall.waitForElement(appId, dst1);
+  await remoteCall.waitForElement(appId, dst2);
+
+  // Drag and hover it.
+  const skipDrop = true;
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil(
+          'fakeDragAndDrop', appId, [src, dst1, skipDrop]),
+      'fakeDragAndDrop failed');
 };

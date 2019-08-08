@@ -17,7 +17,7 @@
 #include "api/video/video_source_interface.h"
 #include "media/base/fake_frame_source.h"
 #include "media/base/video_broadcaster.h"
-#include "rtc_base/task_queue.h"
+#include "rtc_base/task_queue_for_test.h"
 #include "rtc_base/task_utils/repeating_task.h"
 
 namespace webrtc {
@@ -44,13 +44,13 @@ class FakePeriodicVideoSource final
             config.height,
             config.frame_interval_ms * rtc::kNumMicrosecsPerMillisec,
             config.timestamp_offset_ms * rtc::kNumMicrosecsPerMillisec),
-        task_queue_(
-            absl::make_unique<rtc::TaskQueue>("FakePeriodicVideoTrackSource")) {
-    thread_checker_.DetachFromThread();
+        task_queue_(absl::make_unique<TaskQueueForTest>(
+            "FakePeriodicVideoTrackSource")) {
+    thread_checker_.Detach();
     frame_source_.SetRotation(config.rotation);
 
     TimeDelta frame_interval = TimeDelta::ms(config.frame_interval_ms);
-    RepeatingTaskHandle::Start(task_queue_.get(), [this, frame_interval] {
+    RepeatingTaskHandle::Start(task_queue_->Get(), [this, frame_interval] {
       if (broadcaster_.wants().rotation_applied) {
         broadcaster_.OnFrame(frame_source_.GetFrameRotationApplied());
       } else {
@@ -61,13 +61,13 @@ class FakePeriodicVideoSource final
   }
 
   void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) override {
-    RTC_DCHECK(thread_checker_.CalledOnValidThread());
+    RTC_DCHECK(thread_checker_.IsCurrent());
     broadcaster_.RemoveSink(sink);
   }
 
   void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink,
                        const rtc::VideoSinkWants& wants) override {
-    RTC_DCHECK(thread_checker_.CalledOnValidThread());
+    RTC_DCHECK(thread_checker_.IsCurrent());
     broadcaster_.AddOrUpdateSink(sink, wants);
   }
 
@@ -82,7 +82,7 @@ class FakePeriodicVideoSource final
   rtc::VideoBroadcaster broadcaster_;
   cricket::FakeFrameSource frame_source_;
 
-  std::unique_ptr<rtc::TaskQueue> task_queue_;
+  std::unique_ptr<TaskQueueForTest> task_queue_;
 };
 
 }  // namespace webrtc

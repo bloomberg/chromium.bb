@@ -23,7 +23,6 @@ VP9Decoder::VP9Decoder(std::unique_ptr<VP9Accelerator> accelerator,
       container_color_space_(container_color_space),
       accelerator_(std::move(accelerator)),
       parser_(accelerator_->IsFrameContextRequired()) {
-  ref_frames_.resize(kVp9NumRefFrames);
 }
 
 VP9Decoder::~VP9Decoder() = default;
@@ -52,8 +51,8 @@ bool VP9Decoder::Flush() {
 
 void VP9Decoder::Reset() {
   curr_frame_hdr_ = nullptr;
-  for (auto& ref_frame : ref_frames_)
-    ref_frame = nullptr;
+
+  ref_frames_.Clear();
 
   parser_.Reset();
 
@@ -108,7 +107,8 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
       // previously-decoded frames, but has no frame data otherwise. Display
       // and continue decoding subsequent frames.
       size_t frame_to_show = curr_frame_hdr_->frame_to_show_map_idx;
-      if (frame_to_show >= ref_frames_.size() || !ref_frames_[frame_to_show]) {
+      if (frame_to_show >= kVp9NumRefFrames ||
+          !ref_frames_.GetFrame(frame_to_show)) {
         DVLOG(1) << "Request to show an invalid frame";
         SetError();
         return kDecodeError;
@@ -116,7 +116,8 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
 
       // Duplicate the VP9Picture and set the current bitstream id to keep the
       // correct timestamp.
-      scoped_refptr<VP9Picture> pic = ref_frames_[frame_to_show]->Duplicate();
+      scoped_refptr<VP9Picture> pic =
+          ref_frames_.GetFrame(frame_to_show)->Duplicate();
       if (pic == nullptr) {
         DVLOG(1) << "Failed to duplicate the VP9Picture.";
         SetError();
@@ -160,8 +161,7 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
       // required, because VDA clients expect all surfaces to be returned before
       // they can cycle surface sets after receiving kAllocateNewSurfaces.
       // This is only an implementation detail of VDAs and can be improved.
-      for (auto& ref_frame : ref_frames_)
-        ref_frame = nullptr;
+      ref_frames_.Clear();
 
       pic_size_ = new_pic_size;
       size_change_failure_counter_ = 0;
@@ -203,14 +203,6 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
   }
 }
 
-void VP9Decoder::RefreshReferenceFrames(const scoped_refptr<VP9Picture>& pic) {
-  for (size_t i = 0; i < kVp9NumRefFrames; ++i) {
-    DCHECK(!pic->frame_hdr->IsKeyframe() || pic->frame_hdr->RefreshFlag(i));
-    if (pic->frame_hdr->RefreshFlag(i))
-      ref_frames_[i] = pic;
-  }
-}
-
 void VP9Decoder::UpdateFrameContext(
     const scoped_refptr<VP9Picture>& pic,
     const base::Callback<void(const Vp9FrameContext&)>& context_refresh_cb) {
@@ -247,7 +239,7 @@ bool VP9Decoder::DecodeAndOutputPicture(scoped_refptr<VP9Picture> pic) {
       return false;
   }
 
-  RefreshReferenceFrames(pic);
+  ref_frames_.Refresh(pic);
   return true;
 }
 

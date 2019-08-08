@@ -29,7 +29,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   DataAccessor accessor(data, size);
   FormParsingMode mode = accessor.ConsumeBit() ? FormParsingMode::FILLING
                                                : FormParsingMode::SAVING;
-  autofill::FormData form_data = GenerateWithDataAccessor(&accessor);
+  autofill::FormData form_data = GenerateWithDataAccessor(&accessor, nullptr);
   std::unique_ptr<autofill::PasswordForm> result =
       ParseFormData(form_data, mode);
   if (result) {

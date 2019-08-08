@@ -87,6 +87,9 @@ interface AccessibilityController {
   // Retrieves a string description of the current battery status.
   GetBatteryDescription()
     => (mojo_base.mojom.String16 battery_description);
+
+  // Shows or hides the virtual keyboard.
+  SetVirtualKeyboardVisible(bool is_visible);
 };
 
 // Interface for ash to request accessibility service from its client (e.g.

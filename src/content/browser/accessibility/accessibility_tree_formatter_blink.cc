@@ -29,10 +29,18 @@ namespace {
 base::Optional<std::string> GetStringAttribute(
     const BrowserAccessibility& node,
     ax::mojom::StringAttribute attr) {
-  // Language and Font Family are different from other string attributes
-  // in that they inherit.
-  if (attr == ax::mojom::StringAttribute::kFontFamily ||
-      attr == ax::mojom::StringAttribute::kLanguage) {
+  // Language is different from other string attributes as it inherits and has
+  // a method to compute it.
+  if (attr == ax::mojom::StringAttribute::kLanguage) {
+    std::string value = node.node()->GetLanguage();
+    if (value.empty()) {
+      return base::nullopt;
+    }
+    return value;
+  }
+
+  // Font Family is different from other string attributes as it inherits.
+  if (attr == ax::mojom::StringAttribute::kFontFamily) {
     std::string value = node.GetInheritedStringAttribute(attr);
     if (value.empty()) {
       return base::nullopt;
@@ -71,12 +79,18 @@ std::string IntAttrToString(const BrowserAccessibility& node,
       return ui::ToString(static_cast<ax::mojom::HasPopup>(value));
     case ax::mojom::IntAttribute::kInvalidState:
       return ui::ToString(static_cast<ax::mojom::InvalidState>(value));
+    case ax::mojom::IntAttribute::kListStyle:
+      return ui::ToString(static_cast<ax::mojom::ListStyle>(value));
     case ax::mojom::IntAttribute::kNameFrom:
       return ui::ToString(static_cast<ax::mojom::NameFrom>(value));
     case ax::mojom::IntAttribute::kRestriction:
       return ui::ToString(static_cast<ax::mojom::Restriction>(value));
     case ax::mojom::IntAttribute::kSortDirection:
       return ui::ToString(static_cast<ax::mojom::SortDirection>(value));
+    case ax::mojom::IntAttribute::kTextOverlineStyle:
+    case ax::mojom::IntAttribute::kTextStrikethroughStyle:
+    case ax::mojom::IntAttribute::kTextUnderlineStyle:
+      return ui::ToString(static_cast<ax::mojom::TextDecorationStyle>(value));
     case ax::mojom::IntAttribute::kTextDirection:
       return ui::ToString(static_cast<ax::mojom::TextDirection>(value));
     case ax::mojom::IntAttribute::kTextPosition:
@@ -215,8 +229,8 @@ void AccessibilityTreeFormatterBlink::AddProperties(
   dict->SetInteger("boundsWidth", bounds.width());
   dict->SetInteger("boundsHeight", bounds.height());
 
-  bool offscreen = false;
-  gfx::Rect page_bounds = node.GetPageBoundsRect(&offscreen);
+  ui::AXOffscreenResult offscreen_result = ui::AXOffscreenResult::kOnscreen;
+  gfx::Rect page_bounds = node.GetClippedRootFrameBoundsRect(&offscreen_result);
   dict->SetInteger("pageBoundsX", page_bounds.x());
   dict->SetInteger("pageBoundsY", page_bounds.y());
   dict->SetInteger("pageBoundsWidth", page_bounds.width());
@@ -226,7 +240,8 @@ void AccessibilityTreeFormatterBlink::AddProperties(
                    node.GetData().relative_bounds.transform &&
                        !node.GetData().relative_bounds.transform->IsIdentity());
 
-  gfx::Rect unclipped_bounds = node.GetPageBoundsRect(&offscreen, false);
+  gfx::Rect unclipped_bounds =
+      node.GetUnclippedRootFrameBoundsRect(&offscreen_result);
   dict->SetInteger("unclippedBoundsX", unclipped_bounds.x());
   dict->SetInteger("unclippedBoundsY", unclipped_bounds.y());
   dict->SetInteger("unclippedBoundsWidth", unclipped_bounds.width());
@@ -240,7 +255,7 @@ void AccessibilityTreeFormatterBlink::AddProperties(
       dict->SetBoolean(ui::ToString(state), true);
   }
 
-  if (offscreen)
+  if (offscreen_result == ui::AXOffscreenResult::kOffscreen)
     dict->SetBoolean(STATE_OFFSCREEN, true);
 
   for (int32_t attr_index =

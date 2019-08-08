@@ -33,11 +33,14 @@
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/device_policy_cloud_external_data_manager.h"
 #include "chrome/browser/chromeos/policy/device_wallpaper_image_handler.h"
+#include "chrome/browser/chromeos/policy/device_wifi_allowed_handler.h"
+#include "chrome/browser/chromeos/policy/device_wilco_dtc_configuration_handler.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/hostname_handler.h"
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 #include "chrome/browser/chromeos/policy/remote_commands/affiliated_remote_commands_invalidator.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
+#include "chrome/browser/chromeos/policy/tpm_auto_update_mode_policy_handler.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
@@ -48,9 +51,10 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/upstart_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/dbus/upstart/upstart_client.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
@@ -116,9 +120,7 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS()
             chromeos::InstallAttributes::Get(), GetBackgroundTaskRunner());
 
     if (chromeos::InstallAttributes::Get()->IsActiveDirectoryManaged()) {
-      chromeos::DBusThreadManager::Get()
-          ->GetUpstartClient()
-          ->StartAuthPolicyService();
+      chromeos::UpstartClient::Get()->StartAuthPolicyService();
 
       device_active_directory_policy_manager_ =
           new DeviceActiveDirectoryPolicyManager(
@@ -128,7 +130,7 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS()
               device_active_directory_policy_manager_));
     } else {
       state_keys_broker_ = std::make_unique<ServerBackedStateKeysBroker>(
-          chromeos::DBusThreadManager::Get()->GetSessionManagerClient());
+          chromeos::SessionManagerClient::Get());
 
       base::FilePath device_policy_external_data_path;
       CHECK(base::PathService::Get(chromeos::DIR_DEVICE_POLICY_EXTERNAL_DATA,
@@ -180,7 +182,7 @@ void BrowserPolicyConnectorChromeOS::Init(
   if (!chromeos::InstallAttributes::Get()->IsActiveDirectoryManaged()) {
     device_local_account_policy_service_ =
         std::make_unique<DeviceLocalAccountPolicyService>(
-            chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
+            chromeos::SessionManagerClient::Get(),
             chromeos::DeviceSettingsService::Get(),
             chromeos::CrosSettings::Get(),
             affiliated_invalidation_service_provider_.get(),
@@ -233,6 +235,15 @@ void BrowserPolicyConnectorChromeOS::Init(
   device_wallpaper_image_handler_ =
       std::make_unique<DeviceWallpaperImageHandler>(local_state,
                                                     GetPolicyService());
+
+  device_wilco_dtc_configuration_handler_ =
+      std::make_unique<DeviceWilcoDtcConfigurationHandler>(GetPolicyService());
+  device_wifi_allowed_handler_ =
+      std::make_unique<DeviceWiFiAllowedHandler>(chromeos::CrosSettings::Get());
+
+  tpm_auto_update_mode_policy_handler_ =
+      std::make_unique<TPMAutoUpdateModePolicyHandler>(
+          chromeos::CrosSettings::Get(), local_state);
 }
 
 void BrowserPolicyConnectorChromeOS::PreShutdown() {
@@ -269,6 +280,9 @@ void BrowserPolicyConnectorChromeOS::Shutdown() {
 
   if (device_wallpaper_image_handler_)
     device_wallpaper_image_handler_->Shutdown();
+
+  if (device_wilco_dtc_configuration_handler_)
+    device_wilco_dtc_configuration_handler_->Shutdown();
 
   ChromeBrowserPolicyConnector::Shutdown();
 }
@@ -436,7 +450,7 @@ std::unique_ptr<chromeos::attestation::AttestationFlow>
 BrowserPolicyConnectorChromeOS::CreateAttestationFlow() {
   return std::make_unique<chromeos::attestation::AttestationFlow>(
       cryptohome::AsyncMethodCaller::GetInstance(),
-      chromeos::DBusThreadManager::Get()->GetCryptohomeClient(),
+      chromeos::CryptohomeClient::Get(),
       std::make_unique<chromeos::attestation::AttestationCAClient>());
 }
 

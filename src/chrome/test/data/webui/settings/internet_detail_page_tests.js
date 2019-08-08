@@ -256,5 +256,37 @@ suite('InternetDetailPage', function() {
         assertTrue(connectButton.hasAttribute('disabled'));
       });
     });
+
+    test.only(
+        'Auto Connect toggle updates properly after GUID change', function() {
+          api_.enableNetworkType('WiFi');
+          setNetworksForTest([
+            {
+              GUID: 'wifi1_guid',
+              Name: 'wifi1',
+              Type: 'WiFi',
+              Source: CrOnc.Source.USER,
+              WiFi: {AutoConnect: true}
+            },
+            {
+              GUID: 'wifi2_guid',
+              Name: 'wifi1',
+              Type: 'WiFi',
+              Source: CrOnc.Source.USER,
+              WiFi: {AutoConnect: false}
+            }
+          ]);
+          internetDetailPage.init('wifi1_guid', 'WiFi', 'wifi_user');
+          return flushAsync()
+              .then(() => {
+                assertTrue(internetDetailPage.$$('#autoConnectToggle').checked);
+                internetDetailPage.init('wifi2_guid', 'WiFi', 'wifi_user');
+                return flushAsync();
+              })
+              .then(() => {
+                assertFalse(
+                    internetDetailPage.$$('#autoConnectToggle').checked);
+              });
+        });
   });
 });

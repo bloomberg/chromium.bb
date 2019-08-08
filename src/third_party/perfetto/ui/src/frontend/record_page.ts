@@ -60,7 +60,7 @@ ATRACE_CATEGORIES.set('ss', 'System Server');
 ATRACE_CATEGORIES.set('database', 'Database');
 ATRACE_CATEGORIES.set('network', 'Network');
 ATRACE_CATEGORIES.set('adb', 'ADB');
-ATRACE_CATEGORIES.set('vibrartor', 'Vibrator');
+ATRACE_CATEGORIES.set('vibrator', 'Vibrator');
 ATRACE_CATEGORIES.set('aidl', 'AIDL calls');
 ATRACE_CATEGORIES.set('nnapi', 'Neural Network API');
 ATRACE_CATEGORIES.set('rro', 'Resource Overlay');
@@ -187,13 +187,6 @@ function PowerSettings(cssClass: string) {
           get: (cfg) => cfg.batteryDrainPollMs
         } as SliderAttrs)),
       m(Probe, {
-        title: 'CPU frequency and idle states',
-        img: 'rec_cpu_freq.png',
-        descr: 'Records cpu frequency and idle state changes via ftrace',
-        setEnabled: (cfg, val) => cfg.cpuFreq = val,
-        isEnabled: (cfg) => cfg.cpuFreq
-      } as ProbeAttrs),
-      m(Probe, {
         title: 'Board voltages & frequencies',
         img: 'rec_board_voltage.png',
         descr: 'Tracks voltage and frequency changes from board sensors',
@@ -229,17 +222,22 @@ function CpuSettings(cssClass: string) {
         setEnabled: (cfg, val) => cfg.cpuSched = val,
         isEnabled: (cfg) => cfg.cpuSched
       } as ProbeAttrs),
-      // TODO(primiano): commented out until we really have this feature.
-      // m(Probe, {
-      //   title: 'Scheduling chains / latency analysis',
-      //   img: 'rec_cpu_wakeup.png',
-      //   descr: `Tracks causality of scheduling transitions. When a task
-      //           X transitions from blocked -> runnable, keeps track of the
-      //           task Y that X's transition (e.g. posting a semaphore).`,
-      //   setEnabled: (cfg, val) => cfg.cpuLatency = val,
-      //   isEnabled: (cfg) => cfg.cpuLatency
-      // } as ProbeAttrs)
-      );
+      m(Probe, {
+        title: 'CPU frequency and idle states',
+        img: 'rec_cpu_freq.png',
+        descr: 'Records cpu frequency and idle state changes via ftrace',
+        setEnabled: (cfg, val) => cfg.cpuFreq = val,
+        isEnabled: (cfg) => cfg.cpuFreq
+      } as ProbeAttrs),
+      m(Probe, {
+        title: 'Scheduling chains / latency analysis',
+        img: 'rec_cpu_wakeup.png',
+        descr: `Tracks causality of scheduling transitions. When a task
+                X transitions from blocked -> runnable, keeps track of the
+                task Y that X's transition (e.g. posting a semaphore).`,
+        setEnabled: (cfg, val) => cfg.cpuLatency = val,
+        isEnabled: (cfg) => cfg.cpuLatency
+      } as ProbeAttrs));
 }
 
 function MemorySettings(cssClass: string) {

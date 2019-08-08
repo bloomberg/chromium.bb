@@ -71,7 +71,9 @@ class InProcessBrowserTestMixin {
   // SetUp
   //   SetUpCommandLine
   //   SetUpDefaultCommandLine
+  //   SetUpUserDataDirectory
   //   SetUpInProcessBrowserTestFixture
+  //   CreatedBrowserMainParts
   //   SetUpOnMainThread
   //   TearDownOnMainThread
   //   TearDownInProcessBrowserTestFixture
@@ -82,7 +84,10 @@ class InProcessBrowserTestMixin {
   virtual void SetUp();
   virtual void SetUpCommandLine(base::CommandLine* command_line);
   virtual void SetUpDefaultCommandLine(base::CommandLine* command_line);
+  virtual bool SetUpUserDataDirectory();
   virtual void SetUpInProcessBrowserTestFixture();
+  virtual void CreatedBrowserMainParts(
+      content::BrowserMainParts* browser_main_parts);
   virtual void SetUpOnMainThread();
   virtual void TearDownOnMainThread();
   virtual void TearDownInProcessBrowserTestFixture();
@@ -101,7 +106,9 @@ class InProcessBrowserTestMixinHost final {
   void SetUp();
   void SetUpCommandLine(base::CommandLine* command_line);
   void SetUpDefaultCommandLine(base::CommandLine* command_line);
+  bool SetUpUserDataDirectory();
   void SetUpInProcessBrowserTestFixture();
+  void CreatedBrowserMainParts(content::BrowserMainParts* browser_main_parts);
   void SetUpOnMainThread();
   void TearDownOnMainThread();
   void TearDownInProcessBrowserTestFixture();
@@ -128,7 +135,10 @@ class MixinBasedInProcessBrowserTest : public InProcessBrowserTest {
   void SetUp() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override;
+  bool SetUpUserDataDirectory() override;
   void SetUpInProcessBrowserTestFixture() override;
+  void CreatedBrowserMainParts(
+      content::BrowserMainParts* browser_main_parts) override;
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
   void TearDownInProcessBrowserTestFixture() override;

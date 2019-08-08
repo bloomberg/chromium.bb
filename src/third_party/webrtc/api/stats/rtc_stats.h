@@ -179,6 +179,21 @@ class RTC_EXPORT RTCStats {
     return local_var_members_vec;                                              \
   }
 
+// Non-standard stats members can be exposed to the JavaScript API in Chrome
+// e.g. through origin trials. The group ID can be used by the blink layer to
+// determine if a stats member should be exposed or not. Multiple non-standard
+// stats members can share the same group ID so that they are exposed together.
+enum class NonStandardGroupId {
+  // Group ID used for testing purposes only.
+  kGroupIdForTesting,
+  // I2E:
+  // https://groups.google.com/a/chromium.org/forum/#!topic/blink-dev/hE2B1iItPDk
+  kRtcAudioJitterBufferMaxPackets,
+  // I2E:
+  // https://groups.google.com/a/chromium.org/forum/#!topic/blink-dev/YbhMyqLXXXo
+  kRtcStatsRelativePacketArrivalDelay,
+};
+
 // Interface for |RTCStats| members, which have a name and a value of a type
 // defined in a subclass. Only the types listed in |Type| are supported, these
 // are implemented by |RTCStatsMember<T>|. The value of a member may be
@@ -214,6 +229,9 @@ class RTCStatsMemberInterface {
   // Is this part of the stats spec? Used so that chromium can easily filter
   // out anything unstandardized.
   virtual bool is_standardized() const = 0;
+  // Non-standard stats members can have group IDs in order to be exposed in
+  // JavaScript through experiments. Standardized stats have no group IDs.
+  virtual std::vector<NonStandardGroupId> group_ids() const { return {}; }
   // Type and value comparator. The names are not compared. These operators are
   // exposed for testing.
   virtual bool operator==(const RTCStatsMemberInterface& other) const = 0;
@@ -319,8 +337,6 @@ class RTC_EXPORT RTCStatsMember : public RTCStatsMemberInterface {
   T value_;
 };
 
-// Same as above, but "is_standardized" returns false.
-//
 // Using inheritance just so that it's obvious from the member's declaration
 // whether it's standardized or not.
 template <typename T>
@@ -328,21 +344,32 @@ class RTCNonStandardStatsMember : public RTCStatsMember<T> {
  public:
   explicit RTCNonStandardStatsMember(const char* name)
       : RTCStatsMember<T>(name) {}
+  RTCNonStandardStatsMember(const char* name,
+                            std::initializer_list<NonStandardGroupId> group_ids)
+      : RTCStatsMember<T>(name), group_ids_(group_ids) {}
   RTCNonStandardStatsMember(const char* name, const T& value)
       : RTCStatsMember<T>(name, value) {}
   RTCNonStandardStatsMember(const char* name, T&& value)
       : RTCStatsMember<T>(name, std::move(value)) {}
   explicit RTCNonStandardStatsMember(const RTCNonStandardStatsMember<T>& other)
-      : RTCStatsMember<T>(other) {}
+      : RTCStatsMember<T>(other), group_ids_(other.group_ids_) {}
   explicit RTCNonStandardStatsMember(RTCNonStandardStatsMember<T>&& other)
-      : RTCStatsMember<T>(std::move(other)) {}
+      : group_ids_(std::move(other.group_ids_)),
+        RTCStatsMember<T>(std::move(other)) {}
 
   bool is_standardized() const override { return false; }
+
+  std::vector<NonStandardGroupId> group_ids() const override {
+    return group_ids_;
+  }
 
   T& operator=(const T& value) { return RTCStatsMember<T>::operator=(value); }
   T& operator=(const T&& value) {
     return RTCStatsMember<T>::operator=(std::move(value));
   }
+
+ private:
+  std::vector<NonStandardGroupId> group_ids_;
 };
 }  // namespace webrtc
 

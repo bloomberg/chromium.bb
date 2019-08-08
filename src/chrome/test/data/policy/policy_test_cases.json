@@ -329,7 +329,7 @@
 
   "PrintingAllowedPinModes": {
     "os": ["chromeos"],
-    "test_policy": { "PrintingAllowedPinModes": "secure" },
+    "test_policy": { "PrintingAllowedPinModes": "pin" },
     "pref_mappings": [
       { "pref": "printing.allowed_pin_modes" }
     ]
@@ -361,7 +361,7 @@
 
   "PrintingPinDefault": {
     "os": ["chromeos"],
-    "test_policy": { "PrintingPinDefault": "secure" },
+    "test_policy": { "PrintingPinDefault": "pin" },
     "pref_mappings": [
       { "pref": "printing.pin_default" }
     ]
@@ -874,13 +874,7 @@
   },
 
   "EnableSymantecLegacyInfrastructure": {
-    "os": ["win", "linux", "mac", "chromeos", "android"],
-    "test_policy": { "EnableSymantecLegacyInfrastructure": true },
-    "pref_mappings": [
-      { "pref": "ssl.enable_symantec_legacy_infrastructure",
-        "local_state": true
-      }
-    ]
+    "note": "This policy is deprecated and removed since Chrome 75."
   },
 
   "AuthSchemes": {
@@ -1055,6 +1049,20 @@
     ]
   },
 
+  "SpellcheckLanguageBlacklist": {
+    "os": ["win", "linux", "chromeos"],
+    "test_policy": { "SpellcheckLanguageBlacklist": [ "fr" ] },
+    "pref_mappings": [
+      { "pref": "spellcheck.blacklisted_dictionaries",
+        "indicator_tests": [
+          { "policy": { "SpellcheckLanguage": [ "en-US" ] } },
+          { "policy": { "SpellcheckLanguage": [ "en-US", "ru", "sk" ] } },
+          { "policy": { "SpellcheckLanguage": [] } }
+        ]
+      }
+    ]
+  },
+
   "ThirdPartyBlockingEnabled": {
     "os": ["win"],
     "official_only": true,
@@ -1147,6 +1155,10 @@
     "pref_mappings": [
       { "pref": "extensions.management" }
     ]
+  },
+
+  "ExtensionInstallListsMergeEnabled": {
+    "note": "This policy has no pref as it is only directly read by the policy system."
   },
 
   "ShowHomeButton": {
@@ -2156,6 +2168,10 @@
     ]
   },
 
+  "PolicyListMultipleSourceMergeList": {
+    "note": "This policy has no pref as it is only directly read by the policy system."
+  },
+
   "EnterpriseWebStoreURL": {
     "note": "This policy is retired, see http://crbug.com/178938."
   },
@@ -2278,13 +2294,7 @@
   },
 
   "PacHttpsUrlStrippingEnabled": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "PacHttpsUrlStrippingEnabled": true },
-    "pref_mappings": [
-      { "pref": "proxy.pac_https_url_stripping_enabled",
-        "local_state": true
-      }
-    ]
+    "note": "This policy has been removed, see https://crbug.com/939760."
   },
 
   "RegisteredProtocolHandlers": {
@@ -2452,13 +2462,7 @@
   },
 
   "SSLVersionMax": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "SSLVersionMax": "tls1.2" },
-    "pref_mappings": [
-      { "pref": "ssl.version_max",
-        "local_state": true
-      }
-    ]
+     "note": "This policy has been removed, see https://crbug.com/939760."
   },
 
   "CertificateTransparencyEnforcementDisabledForUrls": {
@@ -3360,9 +3364,9 @@
     ]
   },
 
-  "CloudPolicyOverridesMachinePolicy": {
+  "CloudPolicyOverridesPlatformPolicy": {
     "os": ["win", "linux", "mac"],
-    "test_policy": { "CloudPolicyOverridesMachinePolicy": false },
+    "test_policy": { "CloudPolicyOverridesPlatformPolicy": false },
     "pref_mappings": [
       { "pref": "policy.cloud_override",
         "local_state": true
@@ -3507,6 +3511,28 @@
     "os": ["chromeos"],
     "test_policy": { "VoiceInteractionHotwordEnabled": true },
     "pref_mappings": [{ "pref": "settings.voice_interaction.hotword.enabled" }]
+  },
+
+  "SignedHTTPExchangeEnabled": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "SignedHTTPExchangeEnabled": false },
+    "pref_mappings": [{ "pref": "web_package.signed_exchange.enabled" }]
+  },
+
+  "SamlInSessionPasswordChangeEnabled": {
+    "os": [],
+    "test_policy": { "SamlInSessionPasswordChangeEnabled": true },
+    "pref_mappings": [
+      { "pref": "saml.in_session_password_change_enabled"}
+    ]
+  },
+
+  "SamlPasswordExpirationAdvanceWarningDays": {
+    "os": [],
+    "test_policy": { "SamlPasswordExpirationAdvanceWarningDays": 7 },
+    "pref_mappings": [
+      { "pref": "saml.password_expiration_advance_warning_days"}
+    ]
   },
 
   "----- Chrome OS device policies ---------------------------------------": {},
@@ -3787,6 +3813,14 @@
   "DeviceAllowBluetooth": {
   },
 
+  "DeviceWiFiAllowed": {
+    "os": ["chromeos"],
+    "test_policy": { "DeviceWiFiAllowed": false},
+    "pref_mappings": [
+      { "pref": "cros.device.device_wifi_allowed" }
+    ]
+  },
+
   "DeviceQuirksDownloadEnabled": {
     "os": ["chromeos"],
     "can_be_recommended": false,
@@ -3846,11 +3880,11 @@
     ]
   },
 
-  "DeviceLoginScreenAppInstallList": {
+  "DeviceLoginScreenExtensions": {
     "os": ["chromeos"],
-    "test_policy": { "DeviceLoginScreenAppInstallList": [ "abcdefghijklmnopabcdefghijklmnop" ] },
+    "test_policy": { "DeviceLoginScreenExtensions": [ "abcdefghijklmnopabcdefghijklmnop" ] },
     "pref_mappings": [
-      { "pref": "cros.device.login_screen_app_install_list" }
+      { "pref": "cros.device.login_screen_extensions" }
     ]
   },
 
@@ -3952,7 +3986,8 @@
   "TPMFirmwareUpdateSettings": {
     "os": ["chromeos"],
     "test_policy": {
-      "allow-user-initiated-powerwash": true
+      "allow-user-initiated-powerwash": true,
+      "auto-update-mode": 2
     },
     "pref_mappings": [
       { "pref": "cros.tpm_firmware_update_settings" }
@@ -3991,6 +4026,13 @@
     "pref_mappings": [
       { "pref": "cros.network.hostname_template" }
     ]
+  },
+
+  "DeviceQuickFixBuildToken": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "DeviceQuickFixBuildToken": "sometoken"
+    }
   },
 
   "AbusiveExperienceInterventionEnforce": {
@@ -4115,6 +4157,11 @@
   "DeviceSamlLoginAuthenticationType": {
   },
 
+  "DeviceScheduledUpdateCheck": {
+     "os": ["chromeos"],
+     "test_policy": { "DeviceScheduledUpdateCheck": {"update_check_time" : {"hour": 23, "minute": 35}, "frequency": "WEEKLY", "day_of_week": "MONDAY" }}
+   },
+
   "ChromeCleanupEnabled": {
     "os": ["win"],
     "test_policy": { "ChromeCleanupEnabled": true },
@@ -4204,6 +4251,24 @@
   },
 
   "WebAppInstallForceList": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": {
+      "WebAppInstallForceList": [{
+        "url": "https://foo.example",
+        "default_launch_container": "tab"
+      }, {
+        "url": "https://bar.example",
+        "default_launch_container": "window"
+      }, {
+        "url": "https://foobar.example"
+      }, {
+        "url": "https://xyz.example",
+        "create_desktop_shortcut": true
+      }]
+    },
+    "pref_mappings": [
+      { "pref": "profile.web_app.install.forcelist" }
+    ]
   },
 
   "PluginVmAllowed": {
@@ -4276,6 +4341,196 @@
     "os": ["chromeos"],
     "test_policy": { "DeviceWilcoDtcAllowed": true },
     "pref_mappings": [{ "pref": "cros.device.wilco_dtc_allowed" }]
+  },
+
+  "DeviceWilcoDtcConfiguration": {
+    "os": ["chromeos"],
+    "test_policy": {
+       "DeviceWilcoDtcCOnfiguration": {
+         "url": "https://example.com/wilcodtcconfiguration",
+         "hash": "deadbeefdeadbeefdeadbeef"
+       }
+    }
+  },
+
+  "DevicePowerPeakShiftEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "DevicePowerPeakShiftEnabled": true },
+    "pref_mappings": [
+      {
+        "pref": "ash.power.peak_shift_enabled",
+        "local_state": true
+      }
+    ]
+  },
+
+  "DevicePowerPeakShiftBatteryThreshold": {
+    "os": ["chromeos"],
+    "test_policy": { "DevicePowerPeakShiftBatteryThreshold": 20 },
+    "pref_mappings": [
+      {
+        "pref": "ash.power.peak_shift_battery_threshold",
+        "local_state": true
+      }
+    ]
+  },
+
+  "DevicePowerPeakShiftDayConfig": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "DevicePowerPeakShiftDayConfig": {
+        "entries": [
+           {
+              "charge_start_time": {
+                 "hour": 20,
+                 "minute": 0
+              },
+              "day": "MONDAY",
+              "end_time": {
+                 "hour": 10,
+                 "minute": 15
+              },
+              "start_time": {
+                 "hour": 7,
+                 "minute": 30
+              }
+           },
+           {
+              "charge_start_time": {
+                 "hour": 22,
+                 "minute": 30
+              },
+              "day": "FRIDAY",
+              "end_time": {
+                 "hour": 9,
+                 "minute": 45
+              },
+              "start_time": {
+                 "hour": 4,
+                 "minute": 0
+              }
+           }
+        ]
+      }
+    },
+    "pref_mappings": [
+      {
+        "pref": "ash.power.peak_shift_day_config",
+        "local_state": true
+      }
+    ]
+  },
+
+  "DeviceBootOnAcEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "DeviceBootOnAcEnabled": true },
+    "pref_mappings": [
+      {
+        "pref": "ash.power.boot_on_ac_enabled",
+        "local_state": true
+      }
+    ]
+  },
+
+  "DeviceDockMacAddressSource": {
+    "os": ["chromeos"],
+    "test_policy": { "DeviceDockMacAddressSource": 2},
+    "pref_mappings": [
+      { "pref": "cros.device.device_dock_mac_address_source" }
+    ]
+  },
+
+  "DeviceAdvancedBatteryChargeModeEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "DeviceAdvancedBatteryChargeModeEnabled": true },
+    "pref_mappings": [
+      {
+        "pref": "ash.power.advanced_battery_charge_mode_enabled",
+        "local_state": true
+      }
+    ]
+  },
+
+  "DeviceAdvancedBatteryChargeModeDayConfig": {
+    "os": ["chromeos"],
+    "test_policy": { "DeviceAdvancedBatteryChargeModeDayConfig":
+      {
+        "entries": [
+           {
+              "charge_start_time": {
+                 "hour": 10,
+                 "minute": 0
+              },
+              "day": "MONDAY",
+              "charge_end_time": {
+                 "hour": 20,
+                 "minute": 15
+              }
+           },
+           {
+              "charge_start_time": {
+                 "hour": 8,
+                 "minute": 30
+              },
+              "day": "FRIDAY",
+              "charge_end_time": {
+                 "hour": 15,
+                 "minute": 45
+              }
+           }
+        ]
+      }
+    },
+    "pref_mappings": [
+      {
+        "pref": "ash.power.advanced_battery_charge_mode_day_config",
+        "local_state": true
+      }
+    ]
+  },
+
+  "DeviceBatteryChargeMode": {
+    "os": ["chromeos"],
+    "test_policy": { "DeviceBatteryChargeMode": 5 },
+    "pref_mappings": [
+      {
+        "pref": "ash.power.battery_charge_mode",
+        "local_state": true
+      }
+    ]
+  },
+
+  "DeviceBatteryChargeCustomStartCharging": {
+    "os": ["chromeos"],
+    "test_policy": { "DeviceBatteryChargeCustomStartCharging": 60 },
+    "pref_mappings": [
+      {
+        "pref": "ash.power.battery_charge_custom_start_charging",
+        "local_state": true
+      }
+    ]
+  },
+
+  "DeviceBatteryChargeCustomStopCharging": {
+    "os": ["chromeos"],
+    "test_policy": { "DeviceBatteryChargeCustomStopCharging": 91 },
+    "pref_mappings": [
+      {
+        "pref": "ash.power.battery_charge_custom_stop_charging",
+        "local_state": true
+      }
+    ]
+  },
+
+  "DeviceUsbPowerShareEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "DeviceUsbPowerShareEnabled": true },
+    "pref_mappings": [
+      {
+        "pref": "ash.power.usb_power_share_enabled",
+        "local_state": true
+      }
+    ]
   },
 
   "----- Chrome Frame policies -------------------------------------------": {},

@@ -54,11 +54,6 @@ VideoCodecH264 VideoEncoder::GetDefaultH264Settings() {
   h264_settings.frameDroppingOn = true;
   h264_settings.keyFrameInterval = 3000;
   h264_settings.numberOfTemporalLayers = 1;
-  h264_settings.spsData = nullptr;
-  h264_settings.spsLen = 0;
-  h264_settings.ppsData = nullptr;
-  h264_settings.ppsLen = 0;
-  h264_settings.profile = H264::kProfileConstrainedBaseline;
 
   return h264_settings;
 }
@@ -101,6 +96,28 @@ VideoEncoder::EncoderInfo::EncoderInfo(const EncoderInfo&) = default;
 
 VideoEncoder::EncoderInfo::~EncoderInfo() = default;
 
+VideoEncoder::RateControlParameters::RateControlParameters()
+    : bitrate(VideoBitrateAllocation()),
+      framerate_fps(0.0),
+      bandwidth_allocation(DataRate::Zero()) {}
+
+VideoEncoder::RateControlParameters::RateControlParameters(
+    const VideoBitrateAllocation& bitrate,
+    double framerate_fps)
+    : bitrate(bitrate),
+      framerate_fps(framerate_fps),
+      bandwidth_allocation(DataRate::bps(bitrate.get_sum_bps())) {}
+
+VideoEncoder::RateControlParameters::RateControlParameters(
+    const VideoBitrateAllocation& bitrate,
+    double framerate_fps,
+    DataRate bandwidth_allocation)
+    : bitrate(bitrate),
+      framerate_fps(framerate_fps),
+      bandwidth_allocation(bandwidth_allocation) {}
+
+VideoEncoder::RateControlParameters::~RateControlParameters() = default;
+
 int32_t VideoEncoder::SetRates(uint32_t bitrate, uint32_t framerate) {
   RTC_NOTREACHED() << "SetRate(uint32_t, uint32_t) is deprecated.";
   return -1;
@@ -111,6 +128,18 @@ int32_t VideoEncoder::SetRateAllocation(
     uint32_t framerate) {
   return SetRates(allocation.get_sum_kbps(), framerate);
 }
+
+void VideoEncoder::SetRates(const RateControlParameters& parameters) {
+  SetRateAllocation(parameters.bitrate,
+                    static_cast<uint32_t>(parameters.framerate_fps + 0.5));
+}
+
+void VideoEncoder::OnPacketLossRateUpdate(float packet_loss_rate) {}
+
+void VideoEncoder::OnRttUpdate(int64_t rtt_ms) {}
+
+void VideoEncoder::OnLossNotification(
+    const LossNotification& loss_notification) {}
 
 // TODO(webrtc:9722): Remove and make pure virtual.
 VideoEncoder::EncoderInfo VideoEncoder::GetEncoderInfo() const {

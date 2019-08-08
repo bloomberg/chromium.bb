@@ -32,8 +32,8 @@ void PrintViewHierarchyImp(const View* view,
   *out << view;
   *out << '\n';
 
-  for (int i = 0, count = view->child_count(); i < count; ++i)
-    PrintViewHierarchyImp(view->child_at(i), indent + 2, out);
+  for (const View* child : view->children())
+    PrintViewHierarchyImp(child, indent + 2, out);
 }
 
 void PrintFocusHierarchyImp(const View* view,
@@ -51,7 +51,7 @@ void PrintFocusHierarchyImp(const View* view,
   *out << view;
   *out << '\n';
 
-  if (view->child_count() > 0)
+  if (!view->children().empty())
     PrintFocusHierarchyImp(view->child_at(0), indent + 2, out);
 
   const View* next_focusable = view->GetNextFocusableView();
@@ -137,8 +137,8 @@ std::string PrintViewGraphImpl(const View* view) {
     result.append("\n");
   }
 
-  for (int i = 0; i < view->child_count(); ++i)
-    result.append(PrintViewGraphImpl(view->child_at(i)));
+  for (const View* child : view->children())
+    result.append(PrintViewGraphImpl(child));
 
   return result;
 }

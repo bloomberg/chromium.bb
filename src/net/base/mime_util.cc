@@ -235,7 +235,7 @@ static const char* FindMimeType(const MimeInfo (&mappings)[num_mappings],
       extensions += 1;  // skip over comma
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 static base::FilePath::StringType StringToFilePathStringType(

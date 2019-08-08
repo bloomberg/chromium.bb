@@ -23,46 +23,8 @@ public class AnswerSuggestionViewBinder {
             view.setIconBitmap(model.get(AnswerSuggestionViewProperties.ANSWER_IMAGE));
         } else if (AnswerSuggestionViewProperties.ANSWER_ICON_TYPE.equals(propertyKey)) {
             int type = model.get(AnswerSuggestionViewProperties.ANSWER_ICON_TYPE);
-
             if (type == AnswerIcon.UNDEFINED) return;
-            int drawableId = R.drawable.ic_omnibox_page;
-            switch (type) {
-                case AnswerIcon.CALCULATOR:
-                    drawableId = R.drawable.ic_equals_sign_round;
-                    break;
-                case AnswerIcon.DICTIONARY:
-                    drawableId = R.drawable.ic_book_round;
-                    break;
-                case AnswerIcon.FINANCE:
-                    drawableId = R.drawable.ic_swap_vert_round;
-                    break;
-                case AnswerIcon.KNOWLEDGE:
-                    drawableId = R.drawable.ic_google_round;
-                    break;
-                case AnswerIcon.SUNRISE:
-                    drawableId = R.drawable.ic_wb_sunny_round;
-                    break;
-                case AnswerIcon.TRANSLATION:
-                    drawableId = R.drawable.logo_translate_round;
-                    break;
-                case AnswerIcon.WEATHER:
-                    drawableId = R.drawable.logo_partly_cloudy_light;
-                    break;
-                case AnswerIcon.EVENT:
-                    drawableId = R.drawable.ic_event_round;
-                    break;
-                case AnswerIcon.CURRENCY:
-                    drawableId = R.drawable.ic_loop_round;
-                    break;
-                case AnswerIcon.SPORTS:
-                    drawableId = R.drawable.ic_google_round;
-                    break;
-                default:
-                    assert false : "Invalid answer type: " + type;
-                    break;
-            }
-
-            view.setFallbackIconRes(drawableId);
+            view.setFallbackIconRes(getAnswerIcon(type));
         } else if (AnswerSuggestionViewProperties.TEXT_LINE_1_TEXT.equals(propertyKey)) {
             view.setLine1TextContent(model.get(AnswerSuggestionViewProperties.TEXT_LINE_1_TEXT));
         } else if (AnswerSuggestionViewProperties.TEXT_LINE_2_TEXT.equals(propertyKey)) {
@@ -75,6 +37,43 @@ public class AnswerSuggestionViewBinder {
                            propertyKey)) {
             view.setLine2AccessibilityDescription(model.get(
                     AnswerSuggestionViewProperties.TEXT_LINE_2_ACCESSIBILITY_DESCRIPTION));
+        }
+    }
+
+    /**
+     * Convert AnswerIcon type to drawable resource type representing answer icon.
+     *
+     * Answers are not shown when user is in incognito mode, so we can rely on
+     * configuration UI to define colors for light and dark mode that will be used
+     * by the icons below.
+     *
+     * @param type AnswerIcon type to get drawable for.
+     */
+    private static final int getAnswerIcon(@AnswerIcon int type) {
+        switch (type) {
+            case AnswerIcon.CALCULATOR:
+                return R.drawable.ic_equals_sign_round;
+            case AnswerIcon.DICTIONARY:
+                return R.drawable.ic_book_round;
+            case AnswerIcon.FINANCE:
+                return R.drawable.ic_swap_vert_round;
+            case AnswerIcon.KNOWLEDGE:
+                return R.drawable.ic_google_round;
+            case AnswerIcon.SUNRISE:
+                return R.drawable.ic_wb_sunny_round;
+            case AnswerIcon.TRANSLATION:
+                return R.drawable.logo_translate_round;
+            case AnswerIcon.WEATHER:
+                return R.drawable.logo_partly_cloudy;
+            case AnswerIcon.EVENT:
+                return R.drawable.ic_event_round;
+            case AnswerIcon.CURRENCY:
+                return R.drawable.ic_loop_round;
+            case AnswerIcon.SPORTS:
+                return R.drawable.ic_google_round;
+            default:
+                assert false : "Invalid answer type: " + type;
+                return 0;
         }
     }
 }

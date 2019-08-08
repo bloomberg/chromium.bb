@@ -1632,7 +1632,11 @@ TEST_P(ImageTest, MipLevels)
     // Driver returns OOM in read pixels, some internal error.
     ANGLE_SKIP_TEST_IF(IsOzone() && IsOpenGLES());
     // Also fails on NVIDIA Shield TV bot.
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
+    ANGLE_SKIP_TEST_IF(IsNVIDIAShield() && IsOpenGLES());
+    // On Vulkan, the clear operation in the loop is optimized with a render pass loadOp=Clear.  On
+    // Linux/Intel, that operation is mistakenly clearing the rest of the mips to 0.
+    // http://anglebug.com/3284
+    ANGLE_SKIP_TEST_IF(IsVulkan() && IsLinux() && IsIntel());
 
     EGLWindow *window = getEGLWindow();
     ANGLE_SKIP_TEST_IF(!hasOESExt() || !hasBaseExt() || !has2DTextureExt());

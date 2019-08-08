@@ -28,7 +28,7 @@
 #include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/tpm/install_attributes.h"
@@ -38,6 +38,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
+#include "third_party/re2/src/re2/re2.h"
 
 using google::protobuf::RepeatedField;
 using google::protobuf::RepeatedPtrField;
@@ -72,8 +73,10 @@ const char* const kKnownSettings[] = {
     kDeviceAutoUpdateTimeRestrictions,
     kDeviceDisabled,
     kDeviceDisabledMessage,
+    kDeviceDisplayResolution,
+    kDeviceDockMacAddressSource,
     kDeviceHostnameTemplate,
-    kDeviceLoginScreenAppInstallList,
+    kDeviceLoginScreenExtensions,
     kDeviceLoginScreenInputMethods,
     kDeviceLoginScreenLocales,
     kDeviceOffHours,
@@ -82,10 +85,10 @@ const char* const kKnownSettings[] = {
     kDeviceNativePrintersBlacklist,
     kDeviceNativePrintersWhitelist,
     kDeviceQuirksDownloadEnabled,
-    kDeviceUnaffiliatedCrostiniAllowed,
-    kDeviceWilcoDtcAllowed,
-    kDeviceDisplayResolution,
     kDeviceRebootOnUserSignout,
+    kDeviceUnaffiliatedCrostiniAllowed,
+    kDeviceWiFiAllowed,
+    kDeviceWilcoDtcAllowed,
     kDisplayRotationDefault,
     kExtensionCacheSize,
     kHeartbeatEnabled,
@@ -145,6 +148,15 @@ void SetJsonDeviceSetting(const std::string& setting_name,
     pref_value_map->SetValue(
         setting_name, base::Value::FromUniquePtrValue(std::move(decoded_json)));
   }
+}
+
+// Puts the policy value into the settings store if only it matches the regex pattern.
+void SetSettingWithValidatingRegex(const std::string& policy_name,
+                                   const std::string& policy_value,
+                                   const std::string& pattern,
+                                   PrefValueMap* pref_value_map) {
+  if (RE2::FullMatch(policy_value, pattern))
+    pref_value_map->SetString(policy_name, policy_value);
 }
 
 void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
@@ -315,9 +327,10 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
       !policy.login_screen_domain_auto_complete()
            .login_screen_domain_auto_complete()
            .empty()) {
-    new_values_cache->SetString(kAccountsPrefLoginScreenDomainAutoComplete,
-                                policy.login_screen_domain_auto_complete()
-                                    .login_screen_domain_auto_complete());
+    SetSettingWithValidatingRegex(kAccountsPrefLoginScreenDomainAutoComplete,
+                                  policy.login_screen_domain_auto_complete()
+                                      .login_screen_domain_auto_complete(),
+                                  policy::hostNameRegex, new_values_cache);
   }
 
   if (policy.has_login_authentication_behavior() &&
@@ -340,13 +353,14 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                                base::Value(std::move(list)));
   }
 
-  if (policy.has_device_login_screen_app_install_list()) {
+  if (policy.has_device_login_screen_extensions()) {
     std::vector<base::Value> apps;
-    const em::DeviceLoginScreenAppInstallListProto& proto(
-        policy.device_login_screen_app_install_list());
-    for (const auto& app : proto.device_login_screen_app_install_list())
+    const em::DeviceLoginScreenExtensionsProto& proto(
+        policy.device_login_screen_extensions());
+    for (const auto& app : proto.device_login_screen_extensions()) {
       apps.push_back(base::Value(app));
-    new_values_cache->SetValue(kDeviceLoginScreenAppInstallList,
+    }
+    new_values_cache->SetValue(kDeviceLoginScreenExtensions,
                                base::Value(std::move(apps)));
   }
 
@@ -624,6 +638,14 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     new_values_cache->SetBoolean(kAllowBluetooth, true);
   }
 
+  if (policy.has_device_wifi_allowed() &&
+      policy.device_wifi_allowed().has_device_wifi_allowed()) {
+    new_values_cache->SetBoolean(
+        kDeviceWiFiAllowed, policy.device_wifi_allowed().device_wifi_allowed());
+  } else {
+    new_values_cache->SetBoolean(kDeviceWiFiAllowed, true);
+  }
+
   if (policy.has_quirks_download_enabled() &&
       policy.quirks_download_enabled().has_quirks_download_enabled()) {
     new_values_cache->SetBoolean(
@@ -772,6 +794,13 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
           kDeviceWilcoDtcAllowed,
           base::Value(container.device_wilco_dtc_allowed()));
     }
+  }
+
+  if (policy.has_device_dock_mac_address_source() &&
+      policy.device_dock_mac_address_source().has_source()) {
+    new_values_cache->SetInteger(
+        kDeviceDockMacAddressSource,
+        policy.device_dock_mac_address_source().source());
   }
 }
 

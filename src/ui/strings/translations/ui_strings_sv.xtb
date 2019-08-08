@@ -21,6 +21,7 @@
 <translation id="169515659049020177">Skift</translation>
 <translation id="1710340000377843106">nu</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minut}other{# minuter}}</translation>
+<translation id="1756116796893109054">Fliken skickas …</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Period</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 månad}other{# månader}}</translation>
@@ -34,6 +35,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Välj &amp;alla</translation>
 <translation id="1938451708255335766">Starta om appen om du vill anpassa visningstätheten för fönstret.</translation>
+<translation id="208586643495776849">Försök igen</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}other{# d}}</translation>
 <translation id="2148716181193084225">Idag</translation>
 <translation id="2168039046890040389">Page Up</translation>
@@ -51,11 +53,14 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">Kalibreringen är slutförd</translation>
 <translation id="252373100621549798">Okänd visning</translation>
+<translation id="2573731672208488250">{HOURS,plural, =1{om 1 tim}other{om # tim}}</translation>
 <translation id="2583543531130364912">Kalibrera pekskärmen</translation>
 <translation id="2666092431469916601">Överst</translation>
+<translation id="2701330563083355633">Delades från <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">Kopiera till Urklipp</translation>
 <translation id="2803313416453193357">Öppna mappen</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 år sedan}other{# år sedan}}</translation>
+<translation id="2907671656515444832">{DAYS,plural, =1{om 1 dag}other{om # dgr}}</translation>
 <translation id="2931838996092594335">klicka</translation>
 <translation id="3036649622769666520">Öppna filer</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
@@ -67,6 +72,7 @@
 <translation id="3234408098842461169">Nedpil</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dag}other{# dagar}}</translation>
 <translation id="335581015389089642">Tal</translation>
+<translation id="3443810440409579745">En flik har tagits emot.</translation>
 <translation id="3479552764303398839">Inte nu</translation>
 <translation id="348799646910989694">Hyllan döljs automatiskt</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dag kvar}other{# dagar kvar}}</translation>
@@ -96,6 +102,7 @@
 <translation id="4730374152663651037">OFTA ANVÄNDA</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 månad kvar}other{# månader kvar}}</translation>
 <translation id="4841881773802181781">Infogning</translation>
+<translation id="4881695831933465202">Öppna</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekund}other{# sekunder}}</translation>
 <translation id="4971687151119236543">Föregående spår</translation>
 <translation id="5046499563572181734">Tryck här</translation>
@@ -103,6 +110,7 @@
 <translation id="5137751499640340777">Starta Google Assistent</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Utökningstriangel</translation>
+<translation id="5278860589123563674">Det gick inte att skicka</translation>
 <translation id="528468243742722775">Avsluta</translation>
 <translation id="5329858601952122676">&amp;Ta bort</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> ovanpå <ph name="IN_PLACE_APP" />, om du släpper skapas en mapp.</translation>
@@ -114,6 +122,7 @@
 <translation id="5613020302032141669">Vänsterpil</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dag och }other{# dagar och }}</translation>
+<translation id="5866104238061687188">{YEARS,plural, =1{om 1 år}other{om # år}}</translation>
 <translation id="5895138241574237353">Starta om</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 sekund kvar}other{# sekunder kvar}}</translation>
 <translation id="5941711191222866238">Minimera</translation>
@@ -145,7 +154,6 @@
 <translation id="6808150112686056157">Stoppa</translation>
 <translation id="6845383723252244143">Välj mapp</translation>
 <translation id="6845533974506654842">tryck</translation>
-<translation id="686304767576508198">Har delats från</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 timme kvar}other{# timmar kvar}}</translation>
 <translation id="688711909580084195">Namnlös webbsida</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/sek</translation>
@@ -170,6 +178,7 @@
 <translation id="7907591526440419938">Öppna fil</translation>
 <translation id="7969046989155602842">Kommando</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Fler än en oläst avisering}other{Fler än # olästa aviseringar}}</translation>
+<translation id="8086866675552927481">{MINUTES,plural, =1{om 1 min}other{om # min}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{för 1 timme sedan}other{för # timmar sedan}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sek kvar}other{# sek kvar}}</translation>
@@ -198,6 +207,7 @@
 <translation id="8806053966018712535">Mappen <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Kommentera bild</translation>
 <translation id="8841375032071747811">Bakåtknapp</translation>
+<translation id="8876215549894133151">Format:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="8926951137623668982">Hyllan döljs alltid</translation>
 <translation id="9002566407876343676">öppna</translation>

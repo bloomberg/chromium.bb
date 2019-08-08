@@ -30,12 +30,19 @@ class InstallFinalizer {
   using CreateOsShortcutsCallback =
       base::OnceCallback<void(bool shortcuts_created)>;
 
+  struct FinalizeOptions {
+    bool policy_installed = false;
+    bool no_network_install = false;
+  };
+
   // Write the WebApp data to disk and register the app.
   virtual void FinalizeInstall(const WebApplicationInfo& web_app_info,
+                               const FinalizeOptions& options,
                                InstallFinalizedCallback callback) = 0;
 
   virtual bool CanCreateOsShortcuts() const = 0;
   virtual void CreateOsShortcuts(const AppId& app_id,
+                                 bool add_to_desktop,
                                  CreateOsShortcutsCallback callback) = 0;
 
   virtual bool CanPinAppToShelf() const = 0;

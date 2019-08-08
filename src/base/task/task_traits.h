@@ -22,10 +22,10 @@ namespace base {
 
 class PostTaskAndroid;
 
-// Valid priorities supported by the task scheduler. Note: internal algorithms
-// depend on priorities being expressed as a continuous zero-based list from
-// lowest to highest priority. Users of this API shouldn't otherwise care about
-// nor use the underlying values.
+// Valid priorities supported by the task scheduling infrastructure.
+// Note: internal algorithms depend on priorities being expressed as a
+// continuous zero-based list from lowest to highest priority. Users of this API
+// shouldn't otherwise care about nor use the underlying values.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.base.task
 enum class TaskPriority {
   // This will always be equal to the lowest priority available.
@@ -48,7 +48,7 @@ enum class TaskPriority {
   HIGHEST = USER_BLOCKING,
 };
 
-// Valid shutdown behaviors supported by the task scheduler.
+// Valid shutdown behaviors supported by the thread pool.
 enum class TaskShutdownBehavior {
   // Tasks posted with this mode which have not started executing before
   // shutdown is initiated will never run. Tasks with this mode running at
@@ -72,9 +72,9 @@ enum class TaskShutdownBehavior {
   // executing when shutdown is invoked will be allowed to continue and
   // will block shutdown until completion.
   //
-  // Note: Because TaskScheduler::Shutdown() may block while these tasks are
+  // Note: Because ThreadPool::Shutdown() may block while these tasks are
   // executing, care must be taken to ensure that they do not block on the
-  // thread that called TaskScheduler::Shutdown(), as this may lead to deadlock.
+  // thread that called ThreadPool::Shutdown(), as this may lead to deadlock.
   SKIP_ON_SHUTDOWN,
 
   // Tasks posted with this mode before shutdown is complete will block shutdown
@@ -139,7 +139,7 @@ class BASE_EXPORT TaskTraits {
   //     (1) don't block (ref. MayBlock() and WithBaseSyncPrimitives()),
   //     (2) prefer inheriting the current priority to specifying their own, and
   //     (3) can either block shutdown or be skipped on shutdown
-  //         (TaskScheduler implementation is free to choose a fitting default).
+  //         (ThreadPool implementation is free to choose a fitting default).
   //
   // To get TaskTraits for tasks that require stricter guarantees and/or know
   // the specific TaskPriority appropriate for them, provide arguments of type
@@ -191,16 +191,6 @@ class BASE_EXPORT TaskTraits {
                other.shutdown_behavior_set_explicitly_ &&
            may_block_ == other.may_block_ &&
            with_base_sync_primitives_ == other.with_base_sync_primitives_;
-  }
-
-  // Returns TaskTraits constructed by combining |left| and |right|. If a trait
-  // is specified in both |left| and |right|, the returned TaskTraits will have
-  // the value from |right|. Note that extension traits are not merged: any
-  // extension traits in |left| are discarded if extension traits are present in
-  // |right|.
-  static constexpr TaskTraits Override(const TaskTraits& left,
-                                       const TaskTraits& right) {
-    return TaskTraits(left, right);
   }
 
   // Sets the priority of tasks with these traits to |priority|.
@@ -265,25 +255,6 @@ class BASE_EXPORT TaskTraits {
         with_base_sync_primitives_(with_base_sync_primitives) {
     static_assert(sizeof(TaskTraits) == 24, "Keep this constructor up to date");
   }
-
-  constexpr TaskTraits(const TaskTraits& left, const TaskTraits& right)
-      : extension_(right.extension_.extension_id !=
-                           TaskTraitsExtensionStorage::kInvalidExtensionId
-                       ? right.extension_
-                       : left.extension_),
-        priority_(right.priority_set_explicitly_ ? right.priority_
-                                                 : left.priority_),
-        shutdown_behavior_(right.shutdown_behavior_set_explicitly_
-                               ? right.shutdown_behavior_
-                               : left.shutdown_behavior_),
-        priority_set_explicitly_(left.priority_set_explicitly_ ||
-                                 right.priority_set_explicitly_),
-        shutdown_behavior_set_explicitly_(
-            left.shutdown_behavior_set_explicitly_ ||
-            right.shutdown_behavior_set_explicitly_),
-        may_block_(left.may_block_ || right.may_block_),
-        with_base_sync_primitives_(left.with_base_sync_primitives_ ||
-                                   right.with_base_sync_primitives_) {}
 
   // Ordered for packing.
   TaskTraitsExtensionStorage extension_;

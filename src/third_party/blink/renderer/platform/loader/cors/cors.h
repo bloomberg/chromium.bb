@@ -126,7 +126,7 @@ PLATFORM_EXPORT WebHTTPHeaderSet
 ExtractCorsExposedHeaderNamesList(network::mojom::FetchCredentialsMode,
                                   const ResourceResponse&);
 
-PLATFORM_EXPORT bool IsOnAccessControlResponseHeaderWhitelist(const String&);
+PLATFORM_EXPORT bool IsCorsSafelistedResponseHeader(const String&);
 
 // Checks whether request mode 'no-cors' is allowed for a certain context.
 PLATFORM_EXPORT bool IsNoCorsAllowedContext(mojom::RequestContextType);

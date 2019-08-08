@@ -8,9 +8,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
+#include "media/base/cdm_config.h"
 #include "media/base/media_util.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_types.h"
@@ -29,10 +31,12 @@ using ::testing::_;
 
 namespace media {
 
-const VideoCodec kDefaultCodec = kCodecVP9;
 const VideoCodecProfile kDefaultProfile = VP9PROFILE_PROFILE0;
 const int kDefaultHeight = 480;
 const int kDefaultWidth = 640;
+const char kDefaultKeySystem[] = "org.w3.clearkey";
+const bool kDefaultUseHwSecureCodecs = true;
+const CdmConfig kDefaultCdmConfig = {false, false, kDefaultUseHwSecureCodecs};
 const double kDefaultFps = 30;
 const int kDecodeCountIncrement = 20;
 const int kDroppedCountIncrement = 1;
@@ -47,11 +51,6 @@ VideoDecoderConfig MakeVideoConfig(VideoCodec codec,
                             VideoColorSpace::JPEG(), VIDEO_ROTATION_0,
                             coded_size, visible_rect, natural_size,
                             EmptyExtraData(), Unencrypted());
-}
-
-VideoDecoderConfig MakeDefaultVideoConfig() {
-  return MakeVideoConfig(kDefaultCodec, kDefaultProfile,
-                         gfx::Size(kDefaultWidth, kDefaultHeight));
 }
 
 PipelineStatistics MakeStats(int frames_decoded,
@@ -76,13 +75,16 @@ class RecordInterceptor : public mojom::VideoDecodeStatsRecorder {
   // Until move-only types work.
   void StartNewRecord(mojom::PredictionFeaturesPtr features) override {
     MockStartNewRecord(features->profile, features->video_size,
-                       features->frames_per_sec);
+                       features->frames_per_sec, features->key_system,
+                       features->use_hw_secure_codecs);
   }
 
-  MOCK_METHOD3(MockStartNewRecord,
+  MOCK_METHOD5(MockStartNewRecord,
                void(VideoCodecProfile profile,
                     const gfx::Size& natural_size,
-                    int frames_per_sec));
+                    int frames_per_sec,
+                    std::string key_system,
+                    bool use_hw_secure_codecs));
 
   void UpdateRecord(mojom::PredictionTargetsPtr targets) override {
     MockUpdateRecord(targets->frames_decoded, targets->frames_dropped,
@@ -180,7 +182,11 @@ class VideoDecodeStatsReporterTest : public ::testing::Test {
   }
 
   // Inject mock objects and create a new |reporter_| to test.
-  void MakeReporter() {
+  void MakeReporter(
+      VideoCodecProfile profile = kDefaultProfile,
+      const gfx::Size& natural_size = gfx::Size(kDefaultWidth, kDefaultHeight),
+      const std::string key_system = kDefaultKeySystem,
+      const base::Optional<CdmConfig> cdm_config = kDefaultCdmConfig) {
     mojom::VideoDecodeStatsRecorderPtr recorder_ptr;
     SetupRecordInterceptor(&recorder_ptr, &interceptor_);
 
@@ -188,7 +194,7 @@ class VideoDecodeStatsReporterTest : public ::testing::Test {
         std::move(recorder_ptr),
         base::Bind(&VideoDecodeStatsReporterTest::GetPipelineStatsCB,
                    base::Unretained(this)),
-        MakeDefaultVideoConfig(), task_runner_,
+        profile, natural_size, key_system, cdm_config, task_runner_,
         task_runner_->GetMockTickClock());
   }
 
@@ -198,10 +204,6 @@ class VideoDecodeStatsReporterTest : public ::testing::Test {
   }
 
   bool ShouldBeReporting() const { return reporter_->ShouldBeReporting(); }
-
-  const VideoDecoderConfig& CurrentVideoConfig() const {
-    return reporter_->video_config_;
-  }
 
   base::TimeDelta CurrentStatsCbInterval() const {
     return reporter_->stats_cb_timer_.GetCurrentDelay();
@@ -217,7 +219,13 @@ class VideoDecodeStatsReporterTest : public ::testing::Test {
   //  2) Playing should unblock the reporter to begin reporting (e.g. not in
   //     hidden state)
   //  3) No progress made yet toward stabilizing framerate.
-  void StartPlayingAndStabilizeFramerate() {
+  void StartPlayingAndStabilizeFramerate(
+      VideoCodecProfile expected_profile = kDefaultProfile,
+      gfx::Size expected_natural_size = gfx::Size(kDefaultWidth,
+                                                  kDefaultHeight),
+      int expected_fps = kDefaultFps,
+      std::string expected_key_system = kDefaultKeySystem,
+      bool expected_use_hw_secure_codecs = kDefaultUseHwSecureCodecs) {
     DCHECK(!reporter_->is_playing_);
     DCHECK_EQ(reporter_->num_stable_fps_samples_, 0);
 
@@ -234,24 +242,29 @@ class VideoDecodeStatsReporterTest : public ::testing::Test {
     EXPECT_CALL(*this, GetPipelineStatsCB());
     FastForward(kRecordingInterval);
 
-    StabilizeFramerateAndStartNewRecord(kDefaultProfile, kDefaultSize_,
-                                        kDefaultFps);
+    StabilizeFramerateAndStartNewRecord(expected_profile, expected_natural_size,
+                                        expected_fps, expected_key_system,
+                                        expected_use_hw_secure_codecs);
   }
 
-  // Call just after detecting a change to framerate. |profile|, |natural_size|,
-  // and |frames_per_sec| should match the call to StartNewRecord(...) once the
-  // framerate is stabilized. |fps_timer_speed| indicates the expected timer
-  // interval to be used during stabilization (see FpsStabiliaztionSpeed
-  // definition).
+  // Call just after detecting a change to framerate. |expected_profile|,
+  // |expected_natural_size|, and |expected_fps| will be verified against
+  // intercepted call to StartNewRecord(...) once the framerate is stabilized.
+  // |fps_timer_speed| indicates the expected timer interval to be used during
+  // stabilization (see FpsStabiliaztionSpeed definition).
   // Preconditions:
   //  1. Do not call if framerate already stable (know what you're testing).
   //  2. Only call with GetPipelineStatsCB configured to return
   //     progressing decode stats with a steady framerate.
   void StabilizeFramerateAndStartNewRecord(
-      VideoCodecProfile profile,
-      gfx::Size natural_size,
-      int frames_per_sec,
+      VideoCodecProfile expected_profile,
+      gfx::Size expected_natural_size,
+      int expected_fps,
+      std::string expected_key_system,
+      bool expected_use_hw_secure_codecs,
       FpsStabiliaztionSpeed fps_timer_speed = FAST_STABILIZE_FPS) {
+    ASSERT_TRUE(ShouldBeReporting());
+
     base::TimeDelta last_frame_duration = kNoTimestamp;
     uint32_t last_decoded_frames = 0;
 
@@ -271,7 +284,9 @@ class VideoDecodeStatsReporterTest : public ::testing::Test {
       // The final iteration stabilizes framerate and starts a new record.
       if (CurrentStableFpsSamples() == kRequiredStableFpsSamples - 1) {
         EXPECT_CALL(*interceptor_,
-                    MockStartNewRecord(profile, natural_size, frames_per_sec));
+                    MockStartNewRecord(expected_profile, expected_natural_size,
+                                       expected_fps, expected_key_system,
+                                       expected_use_hw_secure_codecs));
       }
 
       if (fps_timer_speed == FAST_STABILIZE_FPS) {
@@ -455,7 +470,8 @@ TEST_F(VideoDecodeStatsReporterTest, RecordingStopsWhenHidden) {
   // called to update offsets to ignore stats while hidden.
   EXPECT_CALL(*this, GetPipelineStatsCB());
   EXPECT_CALL(*interceptor_,
-              MockStartNewRecord(kDefaultProfile, kDefaultSize_, kDefaultFps));
+              MockStartNewRecord(kDefaultProfile, kDefaultSize_, kDefaultFps,
+                                 kDefaultKeySystem, kDefaultUseHwSecureCodecs));
   reporter_->OnShown();
 
   // Update offsets for new record and verify updates resume as time advances.
@@ -501,83 +517,6 @@ TEST_F(VideoDecodeStatsReporterTest, RecordingStopsWhenNoDecodeProgress) {
                                    decoded_power_efficient_offset);
 }
 
-TEST_F(VideoDecodeStatsReporterTest, NewRecordStartsForSizeChange) {
-  StartPlayingAndStabilizeFramerate();
-
-  // Framerate is now stable! Recorded stats should be offset by the values
-  // last provided to GetPipelineStatsCB.
-  uint32_t decoded_offset = pipeline_decoded_frames_;
-  uint32_t dropped_offset = pipeline_dropped_frames_;
-  uint32_t decoded_power_efficient_offset =
-      pipeline_decoded_power_efficient_frames_;
-
-  AdvanceTimeAndVerifyRecordUpdate(decoded_offset, dropped_offset,
-                                   decoded_power_efficient_offset);
-
-  // Change the natural size.
-  const gfx::Size size_720p(1280, 720);
-  reporter_->OnNaturalSizeChanged(size_720p);
-
-  // Next stats update will not cause a record update. We must first check
-  // to see if the framerate changes and start a new record.
-  EXPECT_CALL(*this, GetPipelineStatsCB());
-  EXPECT_CALL(*interceptor_, MockUpdateRecord(_, _, _)).Times(0);
-  FastForward(kRecordingInterval);
-
-  // A new record is started with the latest natural size as soon as the
-  // framerate is confirmed (re-stabilized).
-  StabilizeFramerateAndStartNewRecord(kDefaultProfile, size_720p, kDefaultFps);
-
-  // Offsets should be adjusted so the new record starts at zero.
-  decoded_offset = pipeline_decoded_frames_;
-  dropped_offset = pipeline_dropped_frames_;
-  decoded_power_efficient_offset = pipeline_decoded_power_efficient_frames_;
-
-  // Stats callbacks and record updates should proceed as usual.
-  AdvanceTimeAndVerifyRecordUpdate(decoded_offset, dropped_offset,
-                                   decoded_power_efficient_offset);
-}
-
-TEST_F(VideoDecodeStatsReporterTest, NewRecordStartsForConfigChange) {
-  StartPlayingAndStabilizeFramerate();
-
-  // Framerate is now stable! Recorded stats should be offset by the values
-  // last provided to GetPipelineStatsCB.
-  uint32_t decoded_offset = pipeline_decoded_frames_;
-  uint32_t dropped_offset = pipeline_dropped_frames_;
-  uint32_t decoded_power_efficient_offset =
-      pipeline_decoded_power_efficient_frames_;
-
-  AdvanceTimeAndVerifyRecordUpdate(decoded_offset, dropped_offset,
-                                   decoded_power_efficient_offset);
-
-  // Change the config to use profile 2.
-  auto new_config =
-      MakeVideoConfig(kCodecVP9, VP9PROFILE_PROFILE2, kDefaultSize_);
-  EXPECT_FALSE(new_config.Matches(CurrentVideoConfig()));
-  reporter_->OnVideoConfigChanged(new_config);
-
-  // Next stats update will not cause a record update. We must first check
-  // to see if the framerate changes and start a new record.
-  EXPECT_CALL(*this, GetPipelineStatsCB());
-  EXPECT_CALL(*interceptor_, MockUpdateRecord(_, _, _)).Times(0);
-  FastForward(kRecordingInterval);
-
-  // A new record is started with the latest configuration as soon as the
-  // framerate is confirmed (re-stabilized).
-  StabilizeFramerateAndStartNewRecord(VP9PROFILE_PROFILE2, kDefaultSize_,
-                                      kDefaultFps);
-
-  // Offsets should be adjusted so the new record starts at zero.
-  decoded_offset = pipeline_decoded_frames_;
-  dropped_offset = pipeline_dropped_frames_;
-  decoded_power_efficient_offset = pipeline_decoded_power_efficient_frames_;
-
-  // Stats callbacks and record updates should proceed as usual.
-  AdvanceTimeAndVerifyRecordUpdate(decoded_offset, dropped_offset,
-                                   decoded_power_efficient_offset);
-}
-
 TEST_F(VideoDecodeStatsReporterTest, NewRecordStartsForFpsChange) {
   StartPlayingAndStabilizeFramerate();
 
@@ -605,7 +544,8 @@ TEST_F(VideoDecodeStatsReporterTest, NewRecordStartsForFpsChange) {
   // A new record is started with the latest frames per second as soon as the
   // framerate is confirmed (re-stabilized).
   StabilizeFramerateAndStartNewRecord(kDefaultProfile, kDefaultSize_,
-                                      kDefaultFps * 2);
+                                      kDefaultFps * 2, kDefaultKeySystem,
+                                      kDefaultUseHwSecureCodecs);
 
   // Offsets should be adjusted so the new record starts at zero.
   decoded_offset = pipeline_decoded_frames_;
@@ -635,7 +575,7 @@ TEST_F(VideoDecodeStatsReporterTest, FpsStabilizationFailed) {
 
   // We should not start nor update a record while failing to detect fps.
   EXPECT_CALL(*interceptor_, MockUpdateRecord(_, _, _)).Times(0);
-  EXPECT_CALL(*interceptor_, MockStartNewRecord(_, _, _)).Times(0);
+  EXPECT_CALL(*interceptor_, MockStartNewRecord(_, _, _, _, _)).Times(0);
   FastForward(kRecordingInterval);
   int num_fps_samples = 1;
 
@@ -664,30 +604,6 @@ TEST_F(VideoDecodeStatsReporterTest, FpsStabilizationFailed) {
   reporter_->OnHidden();
   reporter_->OnShown();
   FastForward(kRecordingInterval * 10);
-
-  // Unlike the above, a config change suggests the stream itself has changed so
-  // we should make a new attempt at detecting a stable FPS.
-  VideoDecoderConfig new_config =
-      MakeVideoConfig(kDefaultCodec, VP9PROFILE_PROFILE2, kDefaultSize_);
-  EXPECT_FALSE(new_config.Matches(CurrentVideoConfig()));
-  reporter_->OnVideoConfigChanged(new_config);
-  EXPECT_CALL(*this, GetPipelineStatsCB());
-  FastForward(kRecordingInterval);
-
-  // With |pipeline_framerate_| holding steady, FPS should stabilize. The new
-  // record should indicate we're using VP9 Profile 2.
-  StabilizeFramerateAndStartNewRecord(VP9PROFILE_PROFILE2, kDefaultSize_,
-                                      pipeline_framerate_);
-
-  // Framerate is now stable! Recorded stats should be offset by the values
-  // last provided to GetPipelineStatsCB.
-  uint32_t decoded_offset = pipeline_decoded_frames_;
-  uint32_t dropped_offset = pipeline_dropped_frames_;
-  uint32_t decoded_power_efficient_offset =
-      pipeline_decoded_power_efficient_frames_;
-
-  AdvanceTimeAndVerifyRecordUpdate(decoded_offset, dropped_offset,
-                                   decoded_power_efficient_offset);
 }
 
 TEST_F(VideoDecodeStatsReporterTest, FpsStabilizationFailed_TinyWindows) {
@@ -711,7 +627,8 @@ TEST_F(VideoDecodeStatsReporterTest, FpsStabilizationFailed_TinyWindows) {
   // create tiny windows.
   for (int i = 0; i < kMaxTinyFpsWindows; i++) {
     StabilizeFramerateAndStartNewRecord(kDefaultProfile, kDefaultSize_,
-                                        pipeline_framerate_);
+                                        pipeline_framerate_, kDefaultKeySystem,
+                                        kDefaultUseHwSecureCodecs);
 
     // Framerate is now stable! Recorded stats should be offset by the values
     // last provided to GetPipelineStatsCB.
@@ -746,26 +663,6 @@ TEST_F(VideoDecodeStatsReporterTest, FpsStabilizationFailed_TinyWindows) {
   reporter_->OnHidden();
   reporter_->OnShown();
   FastForward(kRecordingInterval * 10);
-
-  // Unlike the above, a natural size change suggests the stream itself has
-  // changed so we should make a new attempt at detecting a stable FPS.
-  gfx::Size size_720p(1280, 720);
-  reporter_->OnNaturalSizeChanged(size_720p);
-  EXPECT_CALL(*this, GetPipelineStatsCB());
-  FastForward(kRecordingInterval);
-
-  // With |pipeline_framerate_| holding steady, FPS stabilization should work.
-  StabilizeFramerateAndStartNewRecord(kDefaultProfile, size_720p,
-                                      pipeline_framerate_);
-
-  // Framerate is now stable! Recorded stats should be offset by the values
-  // last provided to GetPipelineStatsCB.
-  decoded_offset = pipeline_decoded_frames_;
-  dropped_offset = pipeline_dropped_frames_;
-  decoded_power_efficient_offset = pipeline_decoded_power_efficient_frames_;
-
-  AdvanceTimeAndVerifyRecordUpdate(decoded_offset, dropped_offset,
-                                   decoded_power_efficient_offset);
 }
 
 TEST_F(VideoDecodeStatsReporterTest, ThrottleFpsTimerIfNoDecodeProgress) {
@@ -826,8 +723,9 @@ TEST_F(VideoDecodeStatsReporterTest, ThrottleFpsTimerIfNoDecodeProgress) {
   // Finish framerate stabilization with a slower timer frequency. The slower
   // timer is used to avoid firing high frequency timers indefinitely for
   // machines/networks that are struggling to keep up.
-  StabilizeFramerateAndStartNewRecord(kDefaultProfile, kDefaultSize_,
-                                      kDefaultFps, SLOW_STABILIZE_FPS);
+  StabilizeFramerateAndStartNewRecord(
+      kDefaultProfile, kDefaultSize_, kDefaultFps, kDefaultKeySystem,
+      kDefaultUseHwSecureCodecs, SLOW_STABILIZE_FPS);
 
   // Framerate is now stable! Recorded stats should be offset by the values
   // last provided to GetPipelineStatsCB.
@@ -840,108 +738,6 @@ TEST_F(VideoDecodeStatsReporterTest, ThrottleFpsTimerIfNoDecodeProgress) {
                                    decoded_power_efficient_offset);
 }
 
-TEST_F(VideoDecodeStatsReporterTest, ConfigChangeStillProcessedWhenHidden) {
-  StartPlayingAndStabilizeFramerate();
-
-  // Framerate is now stable! Recorded stats should be offset by the values
-  // last provided to GetPipelineStatsCB.
-  uint32_t decoded_offset = pipeline_decoded_frames_;
-  uint32_t dropped_offset = pipeline_dropped_frames_;
-  uint32_t decoded_power_efficient_offset =
-      pipeline_decoded_power_efficient_frames_;
-
-  // Verify that UpdateRecord calls come at the recording interval with
-  // correct values.
-  AdvanceTimeAndVerifyRecordUpdate(decoded_offset, dropped_offset,
-                                   decoded_power_efficient_offset);
-
-  // When hidden, expect no stats callbacks and no record updates. Advance a few
-  // recording intervals just to be sure.
-  reporter_->OnHidden();
-  EXPECT_FALSE(ShouldBeReporting());
-  EXPECT_CALL(*this, GetPipelineStatsCB()).Times(0);
-  EXPECT_CALL(*interceptor_, MockUpdateRecord(_, _, _)).Times(0);
-  FastForward(kRecordingInterval * 3);
-
-  // Config changes may still arrive when hidden and should not be dropped.
-  // Change the config to use VP9 Profile 2.
-  VideoDecoderConfig new_config =
-      MakeVideoConfig(kDefaultCodec, VP9PROFILE_PROFILE2, kDefaultSize_);
-  EXPECT_FALSE(new_config.Matches(CurrentVideoConfig()));
-  reporter_->OnVideoConfigChanged(new_config);
-
-  // Still, no record updates should be made until the the reporter is shown.
-  FastForward(kRecordingInterval * 3);
-
-  // When shown, the reporting timer should start running again.
-  reporter_->OnShown();
-  EXPECT_CALL(*this, GetPipelineStatsCB());
-  FastForward(kRecordingInterval);
-
-  // Framerate should be re-detected whenever the stream config changes. A new
-  // record should be started using VP9 Profile 2 from the new config.
-  StabilizeFramerateAndStartNewRecord(VP9PROFILE_PROFILE2, kDefaultSize_,
-                                      kDefaultFps);
-
-  // Update offsets for new record and verify updates resume as time advances.
-  decoded_offset = pipeline_decoded_frames_;
-  dropped_offset = pipeline_dropped_frames_;
-  decoded_power_efficient_offset = pipeline_decoded_power_efficient_frames_;
-  AdvanceTimeAndVerifyRecordUpdate(decoded_offset, dropped_offset,
-                                   decoded_power_efficient_offset);
-}
-
-TEST_F(VideoDecodeStatsReporterTest, ConfigChangeStillProcessedWhenPaused) {
-  StartPlayingAndStabilizeFramerate();
-
-  // Framerate is now stable! Recorded stats should be offset by the values
-  // last provided to GetPipelineStatsCB.
-  uint32_t decoded_offset = pipeline_decoded_frames_;
-  uint32_t dropped_offset = pipeline_dropped_frames_;
-  uint32_t decoded_power_efficient_offset =
-      pipeline_decoded_power_efficient_frames_;
-
-  // Verify that UpdateRecord calls come at the recording interval with
-  // correct values.
-  AdvanceTimeAndVerifyRecordUpdate(decoded_offset, dropped_offset,
-                                   decoded_power_efficient_offset);
-
-  // Pause and verify record updates stop.
-  reporter_->OnPaused();
-  EXPECT_FALSE(ShouldBeReporting());
-  EXPECT_CALL(*this, GetPipelineStatsCB()).Times(0);
-  EXPECT_CALL(*interceptor_, MockUpdateRecord(_, _, _)).Times(0);
-  FastForward(kRecordingInterval * 3);
-
-  // Config changes are still possible when paused (e.g. user seeks to a new
-  // config). Change the config to VP9 Profile 2.
-  auto new_config =
-      MakeVideoConfig(kCodecVP9, VP9PROFILE_PROFILE2, kDefaultSize_);
-  EXPECT_FALSE(new_config.Matches(CurrentVideoConfig()));
-  reporter_->OnVideoConfigChanged(new_config);
-
-  // Playback is still paused, so reporting should be stopped.
-  EXPECT_FALSE(ShouldBeReporting());
-  EXPECT_CALL(*this, GetPipelineStatsCB()).Times(0);
-  EXPECT_CALL(*interceptor_, MockUpdateRecord(_, _, _)).Times(0);
-  FastForward(kRecordingInterval * 3);
-
-  // Upon playing, expect the new config to re-trigger framerate detection and
-  // to begin a new record using VP9 Profile 2. Fast forward an initial
-  // recording interval to pick up the config change.
-  reporter_->OnPlaying();
-  EXPECT_CALL(*this, GetPipelineStatsCB());
-  FastForward(kRecordingInterval);
-  StabilizeFramerateAndStartNewRecord(VP9PROFILE_PROFILE2, kDefaultSize_,
-                                      kDefaultFps);
-
-  // Update offsets for new record and verify record updates.
-  decoded_offset = pipeline_decoded_frames_;
-  dropped_offset = pipeline_dropped_frames_;
-  decoded_power_efficient_offset = pipeline_decoded_power_efficient_frames_;
-  AdvanceTimeAndVerifyRecordUpdate(decoded_offset, dropped_offset,
-                                   decoded_power_efficient_offset);
-}
 
 TEST_F(VideoDecodeStatsReporterTest, FpsBucketing) {
   StartPlayingAndStabilizeFramerate();
@@ -961,13 +757,13 @@ TEST_F(VideoDecodeStatsReporterTest, FpsBucketing) {
 
   // Small changes to framerate should not trigger a new record.
   pipeline_framerate_ = kDefaultFps + .5;
-  EXPECT_CALL(*interceptor_, MockStartNewRecord(_, _, _)).Times(0);
+  EXPECT_CALL(*interceptor_, MockStartNewRecord(_, _, _, _, _)).Times(0);
   AdvanceTimeAndVerifyRecordUpdate(decoded_offset, dropped_offset,
                                    decoded_power_efficient_offset);
 
   // Small changes in the other direction should also not trigger a new record.
   pipeline_framerate_ = kDefaultFps - .5;
-  EXPECT_CALL(*interceptor_, MockStartNewRecord(_, _, _)).Times(0);
+  EXPECT_CALL(*interceptor_, MockStartNewRecord(_, _, _, _, _)).Times(0);
   AdvanceTimeAndVerifyRecordUpdate(decoded_offset, dropped_offset,
                                    decoded_power_efficient_offset);
 
@@ -980,7 +776,8 @@ TEST_F(VideoDecodeStatsReporterTest, FpsBucketing) {
 
   // Stabilize new framerate.
   StabilizeFramerateAndStartNewRecord(kDefaultProfile, kDefaultSize_,
-                                      kDefaultFps * 2);
+                                      kDefaultFps * 2, kDefaultKeySystem,
+                                      kDefaultUseHwSecureCodecs);
 
   // Update offsets for new record and verify recording.
   decoded_offset = pipeline_decoded_frames_;
@@ -1000,7 +797,8 @@ TEST_F(VideoDecodeStatsReporterTest, FpsBucketing) {
   int bucketed_fps = GetFpsBucket(pipeline_framerate_);
   EXPECT_NE(bucketed_fps, pipeline_framerate_);
   StabilizeFramerateAndStartNewRecord(kDefaultProfile, kDefaultSize_,
-                                      bucketed_fps);
+                                      bucketed_fps, kDefaultKeySystem,
+                                      kDefaultUseHwSecureCodecs);
 
   // Update offsets for new record and verify recording.
   decoded_offset = pipeline_decoded_frames_;
@@ -1011,108 +809,45 @@ TEST_F(VideoDecodeStatsReporterTest, FpsBucketing) {
 }
 
 TEST_F(VideoDecodeStatsReporterTest, ResolutionBucketing) {
-  StartPlayingAndStabilizeFramerate();
-  EXPECT_EQ(kDefaultFps, pipeline_framerate_);
-
-  // Framerate is now stable! Recorded stats should be offset by the values
-  // last provided to GetPipelineStatsCB.
-  uint32_t decoded_offset = pipeline_decoded_frames_;
-  uint32_t dropped_offset = pipeline_dropped_frames_;
-  uint32_t decoded_power_efficient_offset =
-      pipeline_decoded_power_efficient_frames_;
-
-  // Verify that UpdateRecord calls come at the recording interval with
-  // correct values.
-  AdvanceTimeAndVerifyRecordUpdate(decoded_offset, dropped_offset,
-                                   decoded_power_efficient_offset);
+  MakeReporter();
+  EXPECT_TRUE(reporter_->MatchesBucketedNaturalSize(kDefaultSize_));
 
   // Note that our current size fits perfectly into known buckets...
   EXPECT_EQ(GetSizeBucket(kDefaultSize_), kDefaultSize_);
 
   // A slightly smaller size should fall into the same size bucket as before.
   gfx::Size slightly_smaller_size(kDefaultWidth - 2, kDefaultHeight - 2);
-  EXPECT_EQ(GetSizeBucket(kDefaultSize_), GetSizeBucket(slightly_smaller_size));
-  // Using the same bucket means we expect it continues to use the same record.
-  // Verify recording progresses as if size were unchanged.
-  reporter_->OnNaturalSizeChanged(slightly_smaller_size);
-  EXPECT_CALL(*interceptor_, MockStartNewRecord(_, _, _)).Times(0);
-  AdvanceTimeAndVerifyRecordUpdate(decoded_offset, dropped_offset,
-                                   decoded_power_efficient_offset);
+  EXPECT_TRUE(reporter_->MatchesBucketedNaturalSize(slightly_smaller_size));
 
   // Since the original size perfectly fits a known size bucket, any small
   // increase should cause the next larger bucket should be chosen. This is done
   // to surface cut off resolutions in hardware decoders. HW acceleration can be
   // critical to smooth decode at higher resolutions.
   gfx::Size slightly_larger_size(kDefaultWidth + 1, kDefaultHeight + 1);
-  gfx::Size larger_size_bucket = GetSizeBucket(slightly_larger_size);
-  EXPECT_NE(GetSizeBucket(kDefaultSize_), larger_size_bucket);
-  // Given that the buckets are different, a new record should be started when
-  // size changes to the slightly larger value.
-  reporter_->OnNaturalSizeChanged(slightly_larger_size);
+  EXPECT_FALSE(reporter_->MatchesBucketedNaturalSize(slightly_larger_size));
 
-  // Fast forward by one interval to detect resolution change.
-  EXPECT_CALL(*this, GetPipelineStatsCB());
-  FastForward(kRecordingInterval);
-
-  // Stabilize new framerate and verify record updates come with new offsets.
-  StabilizeFramerateAndStartNewRecord(kDefaultProfile, larger_size_bucket,
-                                      kDefaultFps);
-  decoded_offset = pipeline_decoded_frames_;
-  dropped_offset = pipeline_dropped_frames_;
-  decoded_power_efficient_offset = pipeline_decoded_power_efficient_frames_;
-  AdvanceTimeAndVerifyRecordUpdate(decoded_offset, dropped_offset,
-                                   decoded_power_efficient_offset);
+  MakeReporter(kDefaultProfile, slightly_larger_size);
+  EXPECT_TRUE(reporter_->MatchesBucketedNaturalSize(slightly_larger_size));
 
   // With |slightly_larger_size| describing the bottom of its bucket, we should
   // have of room to increase a little further within this bucket, without
   // triggering the start of a new record.
   slightly_larger_size = gfx::Size(slightly_larger_size.width() + 1,
                                    slightly_larger_size.height() + 1);
-  EXPECT_EQ(larger_size_bucket, GetSizeBucket(slightly_larger_size));
-  reporter_->OnNaturalSizeChanged(slightly_larger_size);
-  EXPECT_CALL(*interceptor_, MockStartNewRecord(_, _, _)).Times(0);
-  AdvanceTimeAndVerifyRecordUpdate(decoded_offset, dropped_offset,
-                                   decoded_power_efficient_offset);
+  EXPECT_TRUE(reporter_->MatchesBucketedNaturalSize(slightly_larger_size));
 
-  // Big changes in resolution should always trigger a new record.
+  // Big changes in resolution should fall into a different bucket
   gfx::Size big_resolution(kDefaultWidth * 2, kDefaultHeight * 2);
-  reporter_->OnNaturalSizeChanged(big_resolution);
-
-  // Fast forward by one interval to detect resolution change.
-  EXPECT_CALL(*this, GetPipelineStatsCB());
-  FastForward(kRecordingInterval);
-
-  // Stabilize new framerate and verify record updates come with new offsets.
-  StabilizeFramerateAndStartNewRecord(kDefaultProfile, big_resolution,
-                                      kDefaultFps);
-  decoded_offset = pipeline_decoded_frames_;
-  dropped_offset = pipeline_dropped_frames_;
-  decoded_power_efficient_offset = pipeline_decoded_power_efficient_frames_;
-  AdvanceTimeAndVerifyRecordUpdate(decoded_offset, dropped_offset,
-                                   decoded_power_efficient_offset);
+  EXPECT_FALSE(reporter_->MatchesBucketedNaturalSize(big_resolution));
 }
 
 TEST_F(VideoDecodeStatsReporterTest, ResolutionTooSmall) {
-  StartPlayingAndStabilizeFramerate();
-  EXPECT_EQ(kDefaultFps, pipeline_framerate_);
+  // Initialize the natural size to something tiny.
+  gfx::Size tiny_size(10, 15);
+  MakeReporter(kDefaultProfile, tiny_size);
 
-  // Framerate is now stable! Recorded stats should be offset by the values
-  // last provided to GetPipelineStatsCB.
-  uint32_t decoded_offset = pipeline_decoded_frames_;
-  uint32_t dropped_offset = pipeline_dropped_frames_;
-  uint32_t decoded_power_efficient_offset =
-      pipeline_decoded_power_efficient_frames_;
-
-  // Verify that UpdateRecord calls come at the recording interval with
-  // correct values.
-  AdvanceTimeAndVerifyRecordUpdate(decoded_offset, dropped_offset,
-                                   decoded_power_efficient_offset);
-
-  // Change the natural size to something tiny.
-  const gfx::Size tiny_size(10, 15);
   // Tiny size should "bucket" to empty.
-  EXPECT_TRUE(GetSizeBucket(tiny_size).IsEmpty());
-  reporter_->OnNaturalSizeChanged(tiny_size);
+  EXPECT_TRUE(reporter_->MatchesBucketedNaturalSize(gfx::Size()));
 
   // Verify reporting has stopped because because resolution is so small. Fast
   // forward through several intervals to verify no callbacks are made while the
@@ -1124,21 +859,42 @@ TEST_F(VideoDecodeStatsReporterTest, ResolutionTooSmall) {
 
   // Change the size to something small, but reasonable.
   const gfx::Size small_size(75, 75);
-  const gfx::Size bucketed_small_size = GetSizeBucket(small_size);
-  EXPECT_FALSE(bucketed_small_size.IsEmpty());
-  reporter_->OnNaturalSizeChanged(small_size);
+  MakeReporter(kDefaultProfile, small_size);
 
-  // Fast forward by one interval to detect resolution change.
-  EXPECT_CALL(*this, GetPipelineStatsCB());
-  FastForward(kRecordingInterval);
   // Stabilize new framerate and verify record updates come with new offsets.
-  StabilizeFramerateAndStartNewRecord(kDefaultProfile, bucketed_small_size,
-                                      kDefaultFps);
-  decoded_offset = pipeline_decoded_frames_;
-  dropped_offset = pipeline_dropped_frames_;
-  decoded_power_efficient_offset = pipeline_decoded_power_efficient_frames_;
+  StartPlayingAndStabilizeFramerate(kDefaultProfile, GetSizeBucket(small_size));
+
+  // Framerate is now stable! Recorded stats should be offset by the values
+  // last provided to GetPipelineStatsCB.
+  uint32_t decoded_offset = pipeline_decoded_frames_;
+  uint32_t dropped_offset = pipeline_dropped_frames_;
+  uint32_t decoded_power_efficient_offset =
+      pipeline_decoded_power_efficient_frames_;
   AdvanceTimeAndVerifyRecordUpdate(decoded_offset, dropped_offset,
                                    decoded_power_efficient_offset);
+}
+
+TEST_F(VideoDecodeStatsReporterTest, VaryEmeProperties) {
+  // Readability helpers
+  const gfx::Size kDefaultSize(kDefaultWidth, kDefaultHeight);
+  const char kEmptyKeySystem[] = "";
+  const bool kNonDefaultHwSecureCodecs = !kDefaultUseHwSecureCodecs;
+  const CdmConfig kNonDefaultCdmConfig = {false, false,
+                                          kNonDefaultHwSecureCodecs};
+  const char kFooKeySystem[] = "fookeysytem";
+
+  // Make reporter with no EME properties.
+  MakeReporter(kDefaultProfile, kDefaultSize, kEmptyKeySystem, base::nullopt);
+  // Verify the empty key system and non-default hw_secure_codecs.
+  StartPlayingAndStabilizeFramerate(kDefaultProfile, kDefaultSize, kDefaultFps,
+                                    kEmptyKeySystem, kNonDefaultHwSecureCodecs);
+
+  // Make a new reporter with a non-default, non-empty key system.
+  MakeReporter(kDefaultProfile, kDefaultSize, kFooKeySystem,
+               kNonDefaultCdmConfig);
+  // Verify non-default key system
+  StartPlayingAndStabilizeFramerate(kDefaultProfile, kDefaultSize, kDefaultFps,
+                                    kFooKeySystem, kNonDefaultHwSecureCodecs);
 }
 
 }  // namespace media

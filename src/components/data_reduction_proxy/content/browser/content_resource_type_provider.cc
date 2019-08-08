@@ -27,9 +27,9 @@ ResourceTypeProvider::ContentType GetContentTypeInternal(
     return ContentResourceTypeProvider::CONTENT_TYPE_UNKNOWN;
 
   content::ResourceType resource_type = request_info->GetResourceType();
-  if (resource_type == content::RESOURCE_TYPE_MEDIA)
+  if (resource_type == content::ResourceType::kMedia)
     return ContentResourceTypeProvider::CONTENT_TYPE_MEDIA;
-  if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
+  if (resource_type == content::ResourceType::kMainFrame)
     return ContentResourceTypeProvider::CONTENT_TYPE_MAIN_FRAME;
   return ContentResourceTypeProvider::CONTENT_TYPE_UNKNOWN;
 }

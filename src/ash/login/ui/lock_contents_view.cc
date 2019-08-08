@@ -40,7 +40,6 @@
 #include "base/command_line.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/user_manager/user_type.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -56,7 +55,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/text_constants.h"
-#include "ui/views/accessibility/ax_aura_obj_cache.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
@@ -589,13 +588,9 @@ void LockContentsView::AboutToRequestFocusFromTabTraversal(bool reverse) {
 void LockContentsView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Shelf* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
   ShelfWidget* shelf_widget = shelf->shelf_widget();
-  int next_id = views::AXAuraObjCache::GetInstance()->GetID(shelf_widget);
-  node_data->AddIntAttribute(ax::mojom::IntAttribute::kNextFocusId, next_id);
+  GetViewAccessibility().OverrideNextFocus(shelf_widget);
 
-  int previous_id =
-      views::AXAuraObjCache::GetInstance()->GetID(shelf->GetStatusAreaWidget());
-  node_data->AddIntAttribute(ax::mojom::IntAttribute::kPreviousFocusId,
-                             previous_id);
+  GetViewAccessibility().OverridePreviousFocus(shelf->GetStatusAreaWidget());
   node_data->SetNameExplicitlyEmpty();
 }
 
@@ -766,31 +761,42 @@ void LockContentsView::OnFingerprintAuthResult(const AccountId& account_id,
   big_view->auth_user()->NotifyFingerprintAuthResult(success);
 }
 
-void LockContentsView::OnAuthEnabledForUserChanged(
-    const AccountId& user,
-    bool enabled,
-    const base::Optional<base::Time>& auth_reenabled_time) {
+void LockContentsView::OnAuthEnabledForUser(const AccountId& user) {
   LockContentsView::UserState* state = FindStateForUser(user);
   if (!state) {
-    LOG(ERROR) << "Unable to find user when changing auth enabled state to "
-               << enabled;
+    LOG(ERROR) << "Unable to find user when enabling auth.";
     return;
   }
 
-  DCHECK(enabled || auth_reenabled_time);
-  state->disable_auth = !enabled;
+  state->disable_auth = false;
   disable_lock_screen_note_ = state->disable_auth;
   OnLockScreenNoteStateChanged(
-      disable_lock_screen_note_
-          ? mojom::TrayActionState::kNotAvailable
-          : Shell::Get()->tray_action()->GetLockScreenNoteState());
+      Shell::Get()->tray_action()->GetLockScreenNoteState());
+
+  LoginBigUserView* big_user =
+      TryToFindBigUser(user, true /*require_auth_active*/);
+  if (big_user && big_user->auth_user())
+    LayoutAuth(big_user, nullptr /*opt_to_hide*/, true /*animate*/);
+}
+
+void LockContentsView::OnAuthDisabledForUser(
+    const AccountId& user,
+    const ash::mojom::AuthDisabledDataPtr& auth_disabled_data) {
+  LockContentsView::UserState* state = FindStateForUser(user);
+  if (!state) {
+    LOG(ERROR) << "Unable to find user when disabling auth";
+    return;
+  }
+
+  state->disable_auth = true;
+  disable_lock_screen_note_ = state->disable_auth;
+  OnLockScreenNoteStateChanged(mojom::TrayActionState::kNotAvailable);
 
   LoginBigUserView* big_user =
       TryToFindBigUser(user, true /*require_auth_active*/);
   if (big_user && big_user->auth_user()) {
     LayoutAuth(big_user, nullptr /*opt_to_hide*/, true /*animate*/);
-    if (auth_reenabled_time)
-      big_user->auth_user()->SetAuthReenabledTime(auth_reenabled_time.value());
+    big_user->auth_user()->SetAuthDisabledMessage(auth_disabled_data);
   }
 }
 
@@ -917,7 +923,7 @@ void LockContentsView::OnSystemInfoChanged(
   };
 
   // Initialize the system info view.
-  if (system_info_->child_count() == 0) {
+  if (system_info_->children().empty()) {
     for (int i = 0; i < 3; ++i)
       system_info_->AddChildView(create_info_label());
   }
@@ -1096,24 +1102,38 @@ void LockContentsView::OnFocusLeavingLockScreenApps(bool reverse) {
 }
 
 void LockContentsView::OnOobeDialogStateChanged(mojom::OobeDialogState state) {
+  oobe_dialog_visible_ = state != mojom::OobeDialogState::HIDDEN;
+
+  // Deactivate the lock screen widget while the dialog is visible to
+  // prevent lock screen from grabbing focus and hiding the OOBE dialog.
+  GetWidget()->widget_delegate()->SetCanActivate(!oobe_dialog_visible_);
+
+  // Block login screen events, to prevent actions on user pods shown in the
+  // background (e.g. hover over user name, or clicking a pod) from having
+  // effect.
+  set_can_process_events_within_subtree(!oobe_dialog_visible_);
+
   if (state == mojom::OobeDialogState::HIDDEN && primary_big_view_)
     primary_big_view_->RequestFocus();
 }
 
 void LockContentsView::OnFocusLeavingSystemTray(bool reverse) {
   // This function is called when the system tray is losing focus. We want to
-  // focus the first or last child in this view, or a lock screen app window if
-  // one is active (in which case lock contents should not have focus). In the
-  // later case, still focus lock screen first, to synchronously take focus away
-  // from the system shelf (or tray) - lock shelf view expect the focus to be
-  // taken when it passes it to lock screen view, and can misbehave in case the
-  // focus is kept in it.
+  // focus the first or last child in this view, a lock screen app window if
+  // one is active (in which case lock contents should not have focus), or the
+  // OOBE dialog modal if it's active. In the later cases, still focus lock
+  // screen first, to synchronously take focus away from the system shelf (or
+  // tray) - lock shelf view expect the focus to be taken when it passes it
+  // to lock screen view, and can misbehave in case the focus is kept in it.
   FocusFirstOrLastFocusableChild(this, reverse);
 
   if (lock_screen_apps_active_) {
     Shell::Get()->login_screen_controller()->FocusLockScreenApps(reverse);
     return;
   }
+
+  if (oobe_dialog_visible_)
+    Shell::Get()->login_screen_controller()->FocusOobeDialog();
 }
 
 void LockContentsView::OnDisplayMetricsChanged(const display::Display& display,
@@ -1314,7 +1334,12 @@ void LockContentsView::DoLayout() {
 
   // Set preferred size before running layout actions, as layout actions may
   // depend on the preferred size to determine layout.
-  SetPreferredSize(display.size());
+  gfx::Size preferred_size = display.size();
+  preferred_size.set_height(preferred_size.height() -
+                            keyboard::KeyboardController::Get()
+                                ->GetWorkspaceOccludedBounds()
+                                .height());
+  SetPreferredSize(preferred_size);
 
   bool landscape = login_views_utils::ShouldShowLandscape(GetWidget());
   for (auto& action : layout_actions_)

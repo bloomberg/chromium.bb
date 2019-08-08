@@ -146,6 +146,7 @@ void BrowserViewLayout::Init(
     Browser* browser,
     views::ClientView* browser_view,
     views::View* top_container,
+    views::View* tab_strip_region_view,
     TabStrip* tab_strip,
     views::View* toolbar,
     InfoBarContainerView* infobar_container,
@@ -155,6 +156,7 @@ void BrowserViewLayout::Init(
   browser_ = browser;
   browser_view_ = browser_view;
   top_container_ = top_container;
+  tab_strip_region_view_ = tab_strip_region_view;
   tab_strip_ = tab_strip;
   toolbar_ = toolbar;
   infobar_container_ = infobar_container;
@@ -338,9 +340,9 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
   int top_inset = delegate_->GetTopInsetInBrowserView();
   int top = LayoutTabStripRegion(top_inset);
   if (delegate_->IsTabStripVisible()) {
-    tab_strip_->SetBackgroundOffset(
-        tab_strip_->GetMirroredX() + browser_view_->GetMirroredX() +
-            delegate_->GetThemeBackgroundXInset());
+    tab_strip_->SetBackgroundOffset(tab_strip_region_view_->GetMirroredX() +
+                                    browser_view_->GetMirroredX() +
+                                    delegate_->GetThemeBackgroundXInset());
   }
   top = LayoutToolbar(top);
 
@@ -388,18 +390,20 @@ gfx::Size BrowserViewLayout::GetPreferredSize(const views::View* host) const {
 
 int BrowserViewLayout::LayoutTabStripRegion(int top) {
   if (!delegate_->IsTabStripVisible()) {
-    tab_strip_->SetVisible(false);
-    tab_strip_->SetBounds(0, 0, 0, 0);
+    tab_strip_region_view_->SetVisible(false);
+    tab_strip_region_view_->SetBounds(0, 0, 0, 0);
     return top;
   }
   // This retrieves the bounds for the tab strip based on whether or not we show
   // anything to the left of it, like the incognito avatar.
-  gfx::Rect tabstrip_bounds(delegate_->GetBoundsForTabStripInBrowserView());
+  gfx::Rect tab_strip_region_bounds(
+      delegate_->GetBoundsForTabStripRegionInBrowserView());
 
-  tab_strip_->SetVisible(true);
-  tab_strip_->SetBoundsRect(tabstrip_bounds);
+  tab_strip_region_view_->SetVisible(true);
+  tab_strip_region_view_->SetBoundsRect(tab_strip_region_bounds);
 
-  return tabstrip_bounds.bottom() - GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
+  return tab_strip_region_bounds.bottom() -
+         GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
 }
 
 int BrowserViewLayout::LayoutToolbar(int top) {
@@ -417,15 +421,6 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top, int browser_view_y) {
       top + browser_view_y - kConstrainedWindowOverlap;
 
   if (bookmark_bar_) {
-    // If we're showing the Bookmark bar in detached style, then we
-    // need to show any Info bar _above_ the Bookmark bar, since the
-    // Bookmark bar is styled to look like it's part of the page.
-    if (bookmark_bar_->IsDetached()) {
-      web_contents_modal_dialog_top_y_ =
-          top + browser_view_y - kConstrainedWindowOverlap;
-      return LayoutBookmarkBar(LayoutInfoBar(top));
-    }
-    // Otherwise, Bookmark bar first, Info bar second.
     top = std::max(toolbar_->bounds().bottom(), LayoutBookmarkBar(top));
   }
 
@@ -492,13 +487,9 @@ void BrowserViewLayout::UpdateTopContainerBounds() {
   // top container view paints parts of the frame (title, window controls)
   // during an immersive fullscreen reveal.
   int height = 0;
-  for (int i = 0; i < top_container_->child_count(); ++i) {
-    views::View* child = top_container_->child_at(i);
-    if (!child->visible())
-      continue;
-    int child_bottom = child->bounds().bottom();
-    if (child_bottom > height)
-      height = child_bottom;
+  for (views::View* child : top_container_->children()) {
+    if (child->visible())
+      height = std::max(height, child->bounds().bottom());
   }
 
   // Ensure that the top container view reaches the topmost view in the

@@ -118,12 +118,15 @@ const char kYoutubeAppId[] = "blpcfgokakmgnkcojhhkbfbldkacnbeo";
 const char kGeniusAppId[] = "ljoammodoonkhnehlncldjelhidljdpi";
 
 #if defined(OS_CHROMEOS)
+// TODO(michaelpg): Deprecate old app IDs before adding new ones to avoid bloat.
 const char kHighlightsAppId[] = "lpmakjfjcconjeehbidjclhdlpjmfjjj";
-const char kHighlightsAlt1AppId[] = "iggildboghmjpbjcpmobahnkmoefkike";
-const char kHighlightsAlt2AppId[] = "elhbopodaklenjkeihkdhhfaghalllba";
+const char kHighlightsEveAppId[] = "iggildboghmjpbjcpmobahnkmoefkike";
+const char kHighlightsNocturneAppId[] = "elhbopodaklenjkeihkdhhfaghalllba";
+const char kHighlightsAltAppId[] = "gjeelkjnolfmhphfhhjokaijbicopfln";
 const char kScreensaverAppId[] = "mnoijifedipmbjaoekhadjcijipaijjc";
-const char kScreensaverAlt1AppId[] = "gdobaoeekhiklaljmhladjfdfkigampc";
-const char kScreensaverAlt2AppId[] = "lminefdanffajachfahfpmphfkhahcnj";
+const char kScreensaverEveAppId[] = "gdobaoeekhiklaljmhladjfdfkigampc";
+const char kScreensaverNocturneAppId[] = "lminefdanffajachfahfpmphfkhahcnj";
+const char kScreensaverAltAppId[] = "bnabjkecnachpogjlfilfcnlpcmacglh";
 #endif
 
 const char kProdHangoutsExtensionId[] = "nckgahadagoaajjgafhacjanaoiihapd";

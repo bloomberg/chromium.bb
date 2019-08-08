@@ -16,21 +16,6 @@ const base::Feature kCalculateNativeWinOcclusion{
     "CalculateNativeWinOcclusion", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // OW_WIN
 
-// Enables the full screen handwriting virtual keyboard behavior.
-const base::Feature kEnableFullscreenHandwritingVirtualKeyboard = {
-    "enable-fullscreen-handwriting-virtual-keyboard",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kEnableStylusVirtualKeyboard = {
-    "enable-stylus-virtual-keyboard", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kEnableVirtualKeyboardUkm = {
-    "EnableVirtualKeyboardUkm", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables all upcoming UI features.
-const base::Feature kExperimentalUi{"ExperimentalUi",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
 #if defined(OS_CHROMEOS)
 // Integrate input method specific settings to Chrome OS settings page.
 // https://crbug.com/895886.
@@ -82,6 +67,11 @@ const base::Feature kUiCompositorScrollWithLayers = {
 #endif
 };
 
+// Enables compositor threaded scrollbar scrolling by mapping pointer events to
+// gesture events.
+const base::Feature kCompositorThreadedScrollbarScrolling = {
+    "CompositorThreadedScrollbarScrolling", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_WIN)
 // Enables InputPane API for controlling on screen keyboard.
 const base::Feature kInputPaneOnScreenKeyboard = {
@@ -92,7 +82,7 @@ const base::Feature kPointerEventsForTouch = {"PointerEventsForTouch",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 // Enables using TSF (over IMM32) for IME.
 const base::Feature kTSFImeSupport = {"TSFImeSupport",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsUsingWMPointerForTouch() {
   return base::win::GetVersion() >= base::win::VERSION_WIN8 &&
@@ -135,9 +125,13 @@ const base::Feature kMash = {"Mash", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kMashOopViz = {"MashOopViz",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Runs the window service in-process. Launch bug https://crbug.com/909816
 const base::Feature kSingleProcessMash = {"SingleProcessMash",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if defined(OS_CHROMEOS)
+// Connecting the client and IME engine via Mojo. https://crbug.com/937167
+const base::Feature kMojoIMF = {"MojoIMF", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 bool IsUsingWindowService() {
   return IsSingleProcessMash() || IsMultiProcessMash();
@@ -154,6 +148,14 @@ bool IsMashOopVizEnabled() {
 bool IsSingleProcessMash() {
   return base::FeatureList::IsEnabled(features::kSingleProcessMash) &&
          !base::FeatureList::IsEnabled(features::kMash);
+}
+
+bool IsMojoImfEnabled() {
+#if defined(OS_CHROMEOS)
+  return base::FeatureList::IsEnabled(features::kMojoIMF);
+#else
+  return false;
+#endif
 }
 
 bool IsAutomaticUiAdjustmentsForTouchEnabled() {

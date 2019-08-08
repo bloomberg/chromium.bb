@@ -32,7 +32,8 @@ class WebSocketFactory final {
                        mojom::TrustedHeaderClientPtr header_client,
                        int32_t process_id,
                        int32_t render_frame_id,
-                       const url::Origin& origin);
+                       const url::Origin& origin,
+                       uint32_t options);
 
  private:
   class Delegate;

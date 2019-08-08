@@ -11,7 +11,9 @@ include_rules = [
   "+components/viz/test",
   "+services/viz/public/interfaces",
 
-  "+chromeos/audio", # For WebRTC tests.
+  # For WebRTC tests.
+  "+chromeos/audio",
+  "+chromeos/dbus/audio",
   # Testing utilities can access anything in content/
   "+content",
   "+device/bluetooth", # For WebBluetooth tests

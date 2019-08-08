@@ -28,9 +28,9 @@ struct CONTENT_EXPORT MHTMLGenerationParams {
   // Run page problem detectors while generating MTHML if true.
   bool use_page_problem_detectors = false;
 
-  // Whether to use Mojo for the MHTML serialization pipeline.
+  // Whether to compute the hash of the contents while saving the MHTML file.
   // This is triggered by the feature flag kOnTheFlyMhtmlHashComputation.
-  bool use_mojo_for_mhtml_serialization = false;
+  bool compute_contents_hash = false;
 };
 
 }  // namespace content

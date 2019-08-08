@@ -15,12 +15,17 @@
 #include "ui/base/mpris/buildflags/buildflags.h"
 
 #if BUILDFLAG(USE_MPRIS)
+#include "content/browser/media/mpris_notifier.h"
 #include "ui/base/mpris/mpris_service.h"  // nogncheck
 #endif
 
 #if defined(OS_MACOSX)
 #include "content/browser/media/now_playing_info_center_notifier.h"
 #include "ui/base/now_playing/now_playing_info_center_delegate.h"
+#endif
+
+#if defined(OS_WIN)
+#include "content/browser/media/system_media_controls_notifier.h"
 #endif
 
 namespace content {
@@ -156,6 +161,9 @@ void MediaKeysListenerManagerImpl::EnsureAuxiliaryServices() {
 
 #if BUILDFLAG(USE_MPRIS)
   mpris::MprisService::GetInstance()->StartService();
+
+  mpris_notifier_ = std::make_unique<MprisNotifier>(connector_);
+  mpris_notifier_->Initialize();
 #endif
 
 #if defined(OS_MACOSX)
@@ -173,6 +181,12 @@ void MediaKeysListenerManagerImpl::EnsureAuxiliaryServices() {
             connector_, std::move(now_playing_info_center_delegate));
   }
 #endif
+
+#if defined(OS_WIN)
+  system_media_controls_notifier_ =
+      std::make_unique<SystemMediaControlsNotifier>(connector_);
+  system_media_controls_notifier_->Initialize();
+#endif  // defined(OS_WIN)
 
   auxiliary_services_started_ = true;
 }

@@ -27,12 +27,18 @@ class TestViewsHostable : public ui::ViewsHostableView {
  private:
   // ui::ViewsHostableView:
   void ViewsHostableAttach(ui::ViewsHostableView::Host* host) override {
-    parent_accessibility_element_ = host->GetAccessibilityElement();
   }
   void ViewsHostableDetach() override { parent_accessibility_element_ = nil; }
   void ViewsHostableSetBounds(const gfx::Rect& bounds_in_window) override {}
   void ViewsHostableSetVisible(bool visible) override {}
   void ViewsHostableMakeFirstResponder() override {}
+  void ViewsHostableSetParentAccessible(
+      gfx::NativeViewAccessible parent_accessibility_element) override {
+    parent_accessibility_element_ = parent_accessibility_element;
+  }
+  gfx::NativeViewAccessible ViewsHostableGetAccessibilityElement() override {
+    return nil;
+  }
 
   id parent_accessibility_element_ = nil;
 };
@@ -48,7 +54,7 @@ namespace views {
 
 class NativeViewHostMacTest : public test::NativeViewHostTestBase {
  public:
-  NativeViewHostMacTest() {}
+  NativeViewHostMacTest() = default;
 
   // testing::Test:
   void TearDown() override {

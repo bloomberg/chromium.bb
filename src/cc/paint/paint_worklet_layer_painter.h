@@ -10,11 +10,13 @@
 
 namespace cc {
 
+class PaintWorkletInput;
+
 class CC_EXPORT PaintWorkletLayerPainter {
  public:
   virtual ~PaintWorkletLayerPainter() {}
 
-  virtual sk_sp<PaintRecord> Paint() = 0;
+  virtual sk_sp<PaintRecord> Paint(PaintWorkletInput*) = 0;
 };
 
 }  // namespace cc

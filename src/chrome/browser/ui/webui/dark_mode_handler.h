@@ -61,8 +61,8 @@ class DarkModeHandler : public content::WebUIMessageHandler {
 
   bool UseDarkMode() const;
 
-  // Generates a dictionary with "dark" and "darkMode" i18n keys based on
-  // |using_dark_|. Called initialize and on each change for notifications.
+  // Generates a dictionary with "dark" i18n key based on |using_dark_|. Called
+  // in Initialize() and on each change for notifications.
   std::unique_ptr<base::DictionaryValue> GetDataSourceUpdate() const;
 
   void OnDarkModeChanged(bool dark_mode);

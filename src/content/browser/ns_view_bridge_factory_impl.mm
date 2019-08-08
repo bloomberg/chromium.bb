@@ -49,19 +49,14 @@ class RenderWidgetHostNSViewBridgeOwner
 
   // RenderWidgetHostNSViewClientHelper implementation.
   id GetRootBrowserAccessibilityElement() override {
-    if (!remote_accessibility_element_) {
-      int64_t browser_pid = 0;
-      std::vector<uint8_t> element_token;
-      client_->SyncGetRootAccessibilityElement(&browser_pid, &element_token);
-      [NSAccessibilityRemoteUIElement
-          registerRemoteUIProcessIdentifier:browser_pid];
-      remote_accessibility_element_ =
-          ui::RemoteAccessibility::GetRemoteElementFromToken(element_token);
-    }
-    return remote_accessibility_element_.get();
+    // The RenderWidgetHostViewCocoa in the app shim process does not
+    // participate in the accessibility tree. Only the instance in the browser
+    // process does.
+    return nil;
   }
   id GetFocusedBrowserAccessibilityElement() override {
-    return GetRootBrowserAccessibilityElement();
+    // See above.
+    return nil;
   }
   void SetAccessibilityWindow(NSWindow* window) override {
     client_->SetRemoteAccessibilityWindowToken(

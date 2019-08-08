@@ -17,8 +17,7 @@ namespace examples {
 TabbedPaneExample::TabbedPaneExample() : ExampleBase("Tabbed Pane") {
 }
 
-TabbedPaneExample::~TabbedPaneExample() {
-}
+TabbedPaneExample::~TabbedPaneExample() = default;
 
 void TabbedPaneExample::CreateExampleView(View* container) {
   tabbed_pane_ = new TabbedPane();
@@ -61,7 +60,7 @@ void TabbedPaneExample::ButtonPressed(Button* sender, const ui::Event& event) {
     AddButton("Added");
   } else if (sender == add_at_) {
     const base::string16 label = ASCIIToUTF16("Added at 1");
-    tabbed_pane_->AddTabAtIndex(1, label, new LabelButton(NULL, label));
+    tabbed_pane_->AddTabAtIndex(1, label, new LabelButton(nullptr, label));
   } else if (sender == select_at_) {
     if (tabbed_pane_->GetTabCount() > 1)
       tabbed_pane_->SelectTabAt(1);
@@ -75,13 +74,13 @@ void TabbedPaneExample::TabSelectedAt(int index) {
 }
 
 void TabbedPaneExample::PrintStatus() {
-  ExampleBase::PrintStatus("Tab Count:%d, Selected Tab:%d",
+  ExampleBase::PrintStatus("Tab Count:%" PRIuS ", Selected Tab:%" PRIuS,
                            tabbed_pane_->GetTabCount(),
                            tabbed_pane_->GetSelectedTabIndex());
 }
 
 void TabbedPaneExample::AddButton(const std::string& label) {
-  LabelButton* button = new LabelButton(NULL, ASCIIToUTF16(label));
+  LabelButton* button = new LabelButton(nullptr, ASCIIToUTF16(label));
   tabbed_pane_->AddTab(ASCIIToUTF16(label), button);
 }
 

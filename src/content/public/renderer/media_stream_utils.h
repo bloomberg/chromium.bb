@@ -7,16 +7,11 @@
 
 #include <memory>
 
-#include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "media/base/channel_layout.h"
 #include "media/capture/video_capture_types.h"
-#include "third_party/blink/public/common/media/video_capture.h"
 
 namespace blink {
 class WebMediaStream;
-class WebMediaStreamSink;
-class WebMediaStreamTrack;
 }
 
 namespace media {
@@ -35,31 +30,6 @@ CONTENT_EXPORT bool AddVideoTrackToMediaStream(
     std::unique_ptr<media::VideoCapturerSource> video_source,
     bool is_remote,
     blink::WebMediaStream* web_media_stream);
-
-// Requests that a refresh frame be sent "soon" (e.g., to resolve picture loss
-// or quality issues).
-CONTENT_EXPORT void RequestRefreshFrameFromVideoTrack(
-    const blink::WebMediaStreamTrack& video_track);
-
-// Calls to these methods must be done on the main render thread.
-// Note that |callback| for frame delivery happens on the IO thread.
-// Warning: Calling RemoveSinkFromMediaStreamTrack does not immediately stop
-// frame delivery through the |callback|, since frames are being delivered on
-// a different thread.
-// |is_sink_secure| indicates if |sink| meets output protection requirement.
-// Generally, this should be false unless you know what you are doing.
-CONTENT_EXPORT void AddSinkToMediaStreamTrack(
-    const blink::WebMediaStreamTrack& track,
-    blink::WebMediaStreamSink* sink,
-    const blink::VideoCaptureDeliverFrameCB& callback,
-    bool is_sink_secure);
-CONTENT_EXPORT void RemoveSinkFromMediaStreamTrack(
-    const blink::WebMediaStreamTrack& track,
-    blink::WebMediaStreamSink* sink);
-
-CONTENT_EXPORT void OnFrameDroppedAtMediaStreamSink(
-    const blink::WebMediaStreamTrack& track,
-    media::VideoCaptureFrameDropReason reason);
 
 }  // namespace content
 

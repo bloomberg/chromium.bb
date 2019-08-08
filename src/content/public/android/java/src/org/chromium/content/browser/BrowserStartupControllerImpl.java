@@ -5,7 +5,6 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
-import android.os.Handler;
 import android.os.StrictMode;
 import android.support.annotation.IntDef;
 
@@ -306,6 +305,12 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
     }
 
     @Override
+    public boolean isServiceManagerSuccessfullyStarted() {
+        ThreadUtils.assertOnUiThread();
+        return mServiceManagerStarted && mStartupSuccess;
+    }
+
+    @Override
     public void addStartupCompletedObserver(StartupCallback callback) {
         ThreadUtils.assertOnUiThread();
         if (mFullBrowserStartupDone) {
@@ -367,7 +372,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
     // Queue the callbacks to run. Since running the callbacks clears the list it is safe to call
     // this more than once.
     private void enqueueCallbackExecution(final int startupFailure) {
-        new Handler().post(new Runnable() {
+        PostTask.postTask(UiThreadTaskTraits.BOOTSTRAP, new Runnable() {
             @Override
             public void run() {
                 executeEnqueuedCallbacks(startupFailure);
@@ -376,7 +381,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
     }
 
     private void postStartupCompleted(final StartupCallback callback) {
-        new Handler().post(new Runnable() {
+        PostTask.postTask(UiThreadTaskTraits.BOOTSTRAP, new Runnable() {
             @Override
             public void run() {
                 if (mStartupSuccess) {
@@ -421,6 +426,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
             }
         };
 
+        ResourceExtractor.get().setResultTraits(UiThreadTaskTraits.BOOTSTRAP);
         if (completionCallback == null) {
             // If no continuation callback is specified, then force the resource extraction
             // to complete.
@@ -445,6 +451,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
     @Override
     public void initChromiumBrowserProcessForTests() {
         ResourceExtractor resourceExtractor = ResourceExtractor.get();
+        resourceExtractor.setResultTraits(UiThreadTaskTraits.BOOTSTRAP);
         resourceExtractor.startExtractingResources("en");
         resourceExtractor.waitForCompletion();
         nativeSetCommandLineFlags(false);

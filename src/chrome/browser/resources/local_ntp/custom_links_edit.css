@@ -75,8 +75,8 @@ input {
   caret-color: rgb(var(--GB600-rgb));
   color: rgb(var(--GG900-rgb));
   font-size: 13px;
-  height: 32px;
-  line-height: 24px;
+  line-height: 1.6;
+  min-height: 32px;
   outline: none;
   padding-inline-end: 8px;
   padding-inline-start: 8px;

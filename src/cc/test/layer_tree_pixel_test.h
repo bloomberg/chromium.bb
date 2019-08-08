@@ -36,10 +36,24 @@ class TextureLayer;
 
 class LayerTreePixelTest : public LayerTreeTest {
  public:
+  // TODO(sgilhuly): Once the pixel tests are working on skia gl, add the option
+  // for skia vulkan.
   enum PixelTestType {
     PIXEL_TEST_GL,
+    PIXEL_TEST_SKIA_GL,
     PIXEL_TEST_SOFTWARE,
   };
+
+  static std::string TestTypeToString(PixelTestType test_type) {
+    switch (test_type) {
+      case PIXEL_TEST_GL:
+        return "GL";
+      case PIXEL_TEST_SKIA_GL:
+        return "Skia GL";
+      case PIXEL_TEST_SOFTWARE:
+        return "Software";
+    }
+  }
 
  protected:
   LayerTreePixelTest();
@@ -101,6 +115,11 @@ class LayerTreePixelTest : public LayerTreeTest {
                                       scoped_refptr<Layer> content_root,
                                       Layer* target,
                                       base::FilePath file_name);
+
+  void SetPixelTestType(PixelTestType test_type) {
+    test_type_ = test_type;
+    use_skia_renderer_ = test_type == PIXEL_TEST_SKIA_GL;
+  }
 
   SkBitmap CopyMailboxToBitmap(const gfx::Size& size,
                                const gpu::Mailbox& mailbox,

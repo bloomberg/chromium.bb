@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_stream.h"
 #include "net/test/gtest_util.h"
-#include "net/third_party/quic/core/quic_data_writer.h"
-#include "net/third_party/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
+#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_stream_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/test/mock_p2p_quic_stream_delegate.h"

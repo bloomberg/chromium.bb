@@ -5,11 +5,12 @@
 #ifndef GPU_IPC_HOST_GPU_MEMORY_BUFFER_SUPPORT_H_
 #define GPU_IPC_HOST_GPU_MEMORY_BUFFER_SUPPORT_H_
 
+#include <functional>
 #include <unordered_set>
 #include <utility>
 #include <vector>
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "ui/gfx/buffer_types.h"
 
 namespace gpu {

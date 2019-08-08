@@ -322,7 +322,7 @@ FILE 10842 f:\dd\vctools\crt\crtw32\eh\typinfo.cpp
 FILE 10933 f:\dd\vctools\crt\crtw32\eh\hooks.cpp
 FILE 11032 f:\dd\vctools\crt\crtw32\rtc\initsect.cpp
 FILE 11055 f:\dd\vctools\crt\crtw32\h\rtcpriv.h
-FUNC 1000 6 0 google_breakpad::i
+FUNC 1000 6 0 static int google_breakpad::i()
 1000 0 51 1
 1000 5 52 1
 1005 1 53 1
@@ -352,7 +352,7 @@ FUNC 1178 5 0 operator delete(void *)
 1178 0 20 6742
 1178 5 23 6742
 FUNC 1180 39 0 type_info::`scalar deleting destructor'(unsigned int)
-FUNC 11bc 180 0 __tmainCRTStartup
+FUNC 11bc 180 0 static int __tmainCRTStartup()
 11bc a 172 9116
 11c6 c 188 9116
 11d2 4e 196 9116
@@ -384,7 +384,7 @@ FUNC 11bc 180 0 __tmainCRTStartup
 1329 6 278 9116
 132f 2 282 9116
 1331 b 283 9116
-FUNC 133c 2c 0 fast_error_exit
+FUNC 133c 2c 0 static void fast_error_exit(int)
 133c 6 305 9116
 1342 b 315 9116
 134d 5 317 9116
@@ -652,7 +652,7 @@ FUNC 1b4c 4b 0 init_pointers
 1b85 8 889 9790
 1b8d 5 900 9790
 1b92 5 893 9790
-FUNC 1b98 60 0 _initterm
+FUNC 1b98 60 0 static void _initterm( * *,  * *)
 1b98 30 941 9790
 1bc8 5 948 9790
 1bcd 8 953 9790
@@ -673,7 +673,7 @@ FUNC 1c34 a 0 lockexit
 FUNC 1c40 a 0 unlockexit
 1c40 0 851 9790
 1c40 a 852 9790
-FUNC 1c4c 195 0 doexit
+FUNC 1c4c 195 0 static void doexit(int, int, int)
 1c4c 24 552 9790
 1c70 b 568 9790
 1c7b d 571 9790
@@ -799,7 +799,7 @@ FUNC 2140 f3 0 setargv
 221c 4 177 9411
 2220 3 138 9411
 2223 10 178 9411
-FUNC 2234 1c7 0 parse_cmdline
+FUNC 2234 1c7 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
 2234 1d 223 9411
 2251 15 230 9411
 2266 7 231 9411
@@ -1524,7 +1524,7 @@ FUNC 3ef8 a8 0 _LocaleUpdate::_LocaleUpdate(localeinfo_struct *)
 3f8e 2 260 208
 3f90 7 262 208
 3f97 9 264 208
-FUNC 3fa0 7d 0 getSystemCP
+FUNC 3fa0 7d 0 static int getSystemCP(int)
 3fa0 8 295 8253
 3fa8 c 297 8253
 3fb4 7 298 8253
@@ -1538,7 +1538,7 @@ FUNC 3fa0 7d 0 getSystemCP
 3ff0 12 320 8253
 4002 15 323 8253
 4017 6 324 8253
-FUNC 4020 8e 0 setSBCS
+FUNC 4020 8e 0 static void setSBCS(struct threadmbcinfostruct *)
 4020 14 374 8253
 4034 7 378 8253
 403b 12 379 8253
@@ -1550,7 +1550,7 @@ FUNC 4020 8e 0 setSBCS
 4080 c 395 8253
 408c d 396 8253
 4099 15 397 8253
-FUNC 40b0 1e1 0 setSBUpLow
+FUNC 40b0 1e1 0 static void setSBUpLow(struct threadmbcinfostruct *)
 40b0 2e 413 8253
 40de e 423 8253
 40ec 14 426 8253
@@ -1872,7 +1872,7 @@ FUNC 4f28 1d 0 unlock_file2
 4f2d 5 342 5182
 4f32 8 343 5182
 4f3a b 351 5182
-FUNC 4f48 79 0 x_ismbbtype_l
+FUNC 4f48 79 0 static int x_ismbbtype_l(struct localeinfo_struct *, unsigned int, int, int)
 4f48 11 223 8159
 4f59 13 224 8159
 4f6c 45 232 8159
@@ -2332,7 +2332,7 @@ FUNC 5a6c 3fa 0 _free_lc_time
 5e48 c 331 3520
 5e54 c 333 3520
 5e60 6 336 3520
-FUNC 5e68 2ec 0 __crtLCMapStringA_stat
+FUNC 5e68 2ec 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, const wchar_t *, unsigned long, const char *, int, char *, int, int, int)
 5e68 2d 96 8449
 5e95 13 101 8449
 5ea8 21 102 8449
@@ -2368,7 +2368,7 @@ FUNC 6154 96 0 _crtLCMapStringA
 6166 13 259 8449
 6179 5f 271 8449
 61d8 12 272 8449
-FUNC 61ec 176 0 __crtGetStringTypeA_stat
+FUNC 61ec 176 0 static int __crtGetStringTypeA_stat(struct localeinfo_struct *, unsigned long, const char *, int, unsigned short *, int, int)
 61ec 2d 60 8545
 6219 14 80 8545
 622d 7 81 8545
@@ -2841,7 +2841,7 @@ FUNC 6c1c 79 0 flush
 FUNC 6c98 a 0 flushall
 6c98 0 193 5660
 6c98 a 194 5660
-FUNC 6ca4 e6 0 flsall
+FUNC 6ca4 e6 0 static int flsall(int)
 6ca4 1c 228 5660
 6cc0 2 230 5660
 6cc2 2 231 5660
@@ -3645,7 +3645,7 @@ FUNC 9b08 3b0 0 cftoa_l
 9e7e 4 626 9904
 9e82 16 628 9904
 9e98 20 629 9904
-FUNC 9eb8 1f9 0 _cftoe2_l
+FUNC 9eb8 1f9 0 static int _cftoe2_l(char *, unsigned __int64, int, int, struct _strflt *, char, struct localeinfo_struct *)
 9eb8 20 242 9904
 9ed8 1a 246 9904
 9ef2 5 249 9904
@@ -3691,7 +3691,7 @@ a15b 3 376 9904
 a15e 2 377 9904
 a160 32 380 9904
 a192 19 383 9904
-FUNC a1ac 161 0 _cftof2_l
+FUNC a1ac 161 0 static int _cftof2_l(char *, unsigned __int64, int, struct _strflt *, char, struct localeinfo_struct *)
 a1ac 19 638 9904
 a1c5 7 640 9904
 a1cc 19 641 9904
@@ -4097,76 +4097,76 @@ b952 15 130 9988
 b967 15 136 9988
 PUBLIC b97c 0 RtlUnwindEx
 PUBLIC b982 0 IsProcessorFeaturePresent
-FUNC b990 1e 0 __tmainCRTStartup$filt$0
+FUNC b990 1e 0 static  __tmainCRTStartup$filt$0()
 b990 1e 267 9116
-FUNC b9ae 19 0 `type_info::_Type_info_dtor'::`1'::fin$0
+FUNC b9ae 19 0 static  `type_info::_Type_info_dtor'::`1'::fin$0()
 b9ae 9 72 10741
 b9b7 10 73 10741
-FUNC b9c7 19 0 _freefls$fin$1
+FUNC b9c7 19 0 static  _freefls$fin$1()
 b9c7 9 413 9313
 b9d0 10 414 9313
-FUNC b9e0 19 0 _freefls$fin$0
+FUNC b9e0 19 0 static  _freefls$fin$0()
 b9e0 9 429 9313
 b9e9 10 430 9313
-FUNC b9f9 19 0 _initptd$fin$1
+FUNC b9f9 19 0 static  _initptd$fin$1()
 b9f9 9 226 9313
 ba02 10 228 9313
-FUNC ba12 19 0 _initptd$fin$0
+FUNC ba12 19 0 static  _initptd$fin$0()
 ba12 9 247 9313
 ba1b 10 248 9313
-FUNC ba2b 24 0 doexit$fin$0
+FUNC ba2b 24 0 static  doexit$fin$0()
 ba2b 9 665 9790
 ba34 9 666 9790
 ba3d 12 667 9790
-FUNC ba4f 1b 0 _ioinit$fin$0
+FUNC ba4f 1b 0 static  _ioinit$fin$0()
 ba4f 9 325 1584
 ba58 12 326 1584
-FUNC ba6a 1d 0 _mtinitlocknum$fin$0
+FUNC ba6a 1d 0 static  _mtinitlocknum$fin$0()
 ba6a 9 292 9509
 ba73 14 293 9509
-FUNC ba87 19 0 __updatetlocinfo$fin$0
+FUNC ba87 19 0 static  __updatetlocinfo$fin$0()
 ba87 9 293 3702
 ba90 10 295 3702
-FUNC baa0 19 0 __updatetmbcinfo$fin$0
+FUNC baa0 19 0 static  __updatetmbcinfo$fin$0()
 baa0 9 538 8253
 baa9 10 540 8253
-FUNC bab9 19 0 _setmbcp$fin$0
+FUNC bab9 19 0 static  _setmbcp$fin$0()
 bab9 9 659 8253
 bac2 10 661 8253
-FUNC bae0 20 0 _IsNonwritableInCurrentImage$filt$0
+FUNC bae0 20 0 static  _IsNonwritableInCurrentImage$filt$0()
 bae0 20 181 3978
-FUNC bb00 14 0 _onexit$fin$0
+FUNC bb00 14 0 static  _onexit$fin$0()
 bb00 e 89 3795
 bb0e 6 90 3795
-FUNC bb14 1e 0 raise$fin$0
+FUNC bb14 1e 0 static  raise$fin$0()
 bb14 9 574 4150
 bb1d 6 575 4150
 bb23 f 576 4150
-FUNC bb32 28 0 flsall$fin$0
+FUNC bb32 28 0 static  flsall$fin$0()
 bb32 9 276 5660
 bb3b 1f 277 5660
-FUNC bb5a 19 0 flsall$fin$1
+FUNC bb5a 19 0 static  flsall$fin$1()
 bb5a 9 282 5660
 bb63 10 283 5660
-FUNC bb73 19 0 _fcloseall$fin$0
+FUNC bb73 19 0 static  _fcloseall$fin$0()
 bb73 9 69 5472
 bb7c 10 70 5472
-FUNC bb8c 19 0 _locterm$fin$0
+FUNC bb8c 19 0 static  _locterm$fin$0()
 bb8c 9 193 4530
 bb95 10 195 4530
-FUNC bba5 17 0 _commit$fin$0
+FUNC bba5 17 0 static  _commit$fin$0()
 bba5 9 72 1490
 bbae e 73 1490
-FUNC bbbc 17 0 _write$fin$0
+FUNC bbbc 17 0 static  _write$fin$0()
 bbbc 9 81 1964
 bbc5 e 82 1964
-FUNC bbd3 18 0 fclose$fin$0
+FUNC bbd3 18 0 static  fclose$fin$0()
 bbd3 9 58 5556
 bbdc f 59 5556
-FUNC bbeb 19 0 __lock_fhandle$fin$0
+FUNC bbeb 19 0 static  __lock_fhandle$fin$0()
 bbeb 9 451 1865
 bbf4 10 452 1865
-FUNC bc04 17 0 _close$fin$0
+FUNC bc04 17 0 static  _close$fin$0()
 bc04 9 60 1396
 bc0d e 61 1396
 STACK CFI INIT 1010 6a .cfa: $rsp .ra: .cfa 8 - ^

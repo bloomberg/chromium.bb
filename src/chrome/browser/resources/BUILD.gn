@@ -20,9 +20,9 @@ if (closure_compile) {
         "discards:closure_compile",
         "downloads:closure_compile",
         "history:closure_compile",
+        "local_ntp:closure_compile",
         "local_state:closure_compile",
         "management:closure_compile",
-        "md_user_manager:closure_compile",
         "media_router:closure_compile",
         "ntp4:closure_compile",
         "omnibox:closure_compile",
@@ -31,6 +31,7 @@ if (closure_compile) {
         "quota_internals:closure_compile",
         "settings:closure_compile",
         "signin/dice_sync_confirmation:closure_compile",
+        "user_manager:closure_compile",
         "welcome/dice_welcome:closure_compile",
         "welcome/onboarding_welcome:closure_compile",
       ]
@@ -39,7 +40,7 @@ if (closure_compile) {
       deps += [ "chromeos:closure_compile" ]
     }
     if (enable_extensions) {
-      deps += [ "md_extensions:closure_compile" ]
+      deps += [ "extensions:closure_compile" ]
     }
     if (is_android) {
       deps += [
@@ -87,16 +88,6 @@ grit("quota_internals_resources") {
   output_dir = "$root_gen_dir/chrome"
 }
 
-grit("translate_internals_resources") {
-  source = "translate_internals/translate_internals_resources.grd"
-  defines = chrome_grit_defines
-  outputs = [
-    "grit/translate_internals_resources.h",
-    "translate_internals_resources.pak",
-  ]
-  output_dir = "$root_gen_dir/chrome"
-}
-
 grit("webapks_ui_resources") {
   source = "webapks/webapks_ui_resources.grd"
   defines = chrome_grit_defines
@@ -113,6 +104,20 @@ if (!is_android) {
     defines = chrome_grit_defines
     if (enable_hangout_services_extension) {
       defines += [ "enable_hangout_services_extension" ]
+    }
+
+    if (is_chromeos) {
+      # The .grd contains references to generated files.
+      source_is_generated = true
+
+      deps = [
+        "//chrome/browser/resources/chromeos/kiosk_next_home:mojom_bin",
+      ]
+
+      grit_flags = [
+        "-E",
+        "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+      ]
     }
 
     outputs = [
@@ -163,6 +168,37 @@ if (!is_android) {
   }
 }
 
+if (is_chromeos) {
+  grit("os_settings_resources") {
+    if (optimize_webui) {
+      source = "settings/os_settings_resources_vulcanized.grd"
+
+      # The .grd contains references to generated files.
+      source_is_generated = true
+
+      deps = [
+        "//chrome/browser/resources/settings/chromeos:build",
+      ]
+
+      grit_flags = [
+        "-E",
+        "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+      ]
+    } else {
+      source = "settings/os_settings_resources.grd"
+    }
+
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/os_settings_resources.h",
+      "grit/os_settings_resources_map.cc",
+      "grit/os_settings_resources_map.h",
+      "os_settings_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chrome"
+  }
+}
+
 if (!is_android && !is_chromeos) {
   grit("onboarding_welcome_resources") {
     source = "welcome/onboarding_welcome/onboarding_welcome_resources.grd"
@@ -181,20 +217,20 @@ if (!is_android && !is_chromeos) {
 if (enable_extensions) {
   grit("extensions_resources") {
     if (optimize_webui) {
-      source = "md_extensions/extensions_resources_vulcanized.grd"
+      source = "extensions/extensions_resources_vulcanized.grd"
 
       # The .grd contains references to generated files.
       source_is_generated = true
 
       deps = [
-        "//chrome/browser/resources/md_extensions:build",
+        "//chrome/browser/resources/extensions:build",
       ]
       grit_flags = [
         "-E",
         "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
       ]
     } else {
-      source = "md_extensions/extensions_resources.grd"
+      source = "extensions/extensions_resources.grd"
     }
 
     defines = chrome_grit_defines

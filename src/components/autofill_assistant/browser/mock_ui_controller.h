@@ -37,6 +37,9 @@ class MockUiController : public UiController {
   MOCK_METHOD1(OnTouchableAreaChanged, void(const std::vector<RectF>& areas));
   MOCK_CONST_METHOD0(Terminate, bool());
   MOCK_CONST_METHOD0(GetDropOutReason, Metrics::DropOutReason());
+  MOCK_METHOD1(OnResizeViewportChanged, void(bool resize_viewport));
+  MOCK_METHOD1(OnPeekModeChanged,
+               void(ConfigureBottomSheetProto::PeekMode peek_mode));
 };
 
 }  // namespace autofill_assistant

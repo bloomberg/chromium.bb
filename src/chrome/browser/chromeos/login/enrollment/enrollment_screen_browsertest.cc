@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/login/enrollment/mock_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
-#include "chrome/browser/chromeos/login/screens/mock_base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
@@ -46,14 +45,10 @@ class EnrollmentScreenTest : public InProcessBrowserTest {
     ShowLoginWizard(OobeScreen::SCREEN_OOBE_ENROLLMENT);
     EXPECT_EQ(WizardController::default_controller()->current_screen(),
               enrollment_screen());
-    static_cast<BaseScreen*>(enrollment_screen())->base_screen_delegate_ =
-        &mock_base_screen_delegate_;
     enrollment_screen()->set_exit_callback_for_testing(base::BindRepeating(
         &EnrollmentScreenTest::HandleScreenExit, base::Unretained(this)));
   }
   void TearDownOnMainThread() override {
-    static_cast<BaseScreen*>(enrollment_screen())->base_screen_delegate_ =
-        WizardController::default_controller();
     InProcessBrowserTest::TearDownOnMainThread();
   }
 
@@ -63,10 +58,6 @@ class EnrollmentScreenTest : public InProcessBrowserTest {
         WizardController::default_controller()->screen_manager());
     EXPECT_TRUE(enrollment_screen);
     return enrollment_screen;
-  }
-
-  MockBaseScreenDelegate* mock_base_screen_delegate() {
-    return &mock_base_screen_delegate_;
   }
 
   // Runs loop until the enrollment screen reports exit. It will return the
@@ -91,7 +82,6 @@ class EnrollmentScreenTest : public InProcessBrowserTest {
       screen_exit_waiter_->Quit();
   }
 
-  MockBaseScreenDelegate mock_base_screen_delegate_;
   base::Optional<EnrollmentScreen::Result> screen_result_;
 
   // Created lazily in WaitForScreenExit().

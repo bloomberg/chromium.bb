@@ -44,23 +44,24 @@ bool FakeWebFrame::CallJavaScriptFunction(
   if (!can_call_function_) {
     return false;
   }
-  last_javascript_call_ = std::string("__gCrWeb." + name + "(");
+  std::string javascript_call = std::string("__gCrWeb." + name + "(");
   bool first = true;
   for (auto& param : parameters) {
     if (!first) {
-      last_javascript_call_ += ", ";
+      javascript_call += ", ";
     }
     first = false;
     std::string paramString;
     base::JSONWriter::Write(param, &paramString);
-    last_javascript_call_ += paramString;
+    javascript_call += paramString;
   }
-  last_javascript_call_ += ");";
+  javascript_call += ");";
+  java_script_calls_.push_back(javascript_call);
   return can_call_function_;
 }
 
 bool FakeWebFrame::CallJavaScriptFunction(
-    std::string name,
+    const std::string& name,
     const std::vector<base::Value>& parameters,
     base::OnceCallback<void(const base::Value*)> callback,
     base::TimeDelta timeout) {

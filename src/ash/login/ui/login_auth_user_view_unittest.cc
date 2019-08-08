@@ -12,7 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"

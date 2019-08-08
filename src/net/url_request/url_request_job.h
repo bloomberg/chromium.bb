@@ -180,9 +180,9 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
   // obtaining the credentials passing them to SetAuth.
   virtual bool NeedsAuth();
 
-  // Fills the authentication info with the server's response.
-  virtual void GetAuthChallengeInfo(
-      scoped_refptr<AuthChallengeInfo>* auth_info);
+  // Returns a copy of the authentication challenge that came with the server's
+  // response.
+  virtual std::unique_ptr<AuthChallengeInfo> GetAuthChallengeInfo();
 
   // Resend the request with authentication credentials.
   virtual void SetAuth(const AuthCredentials& credentials);

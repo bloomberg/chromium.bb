@@ -38,18 +38,18 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/account_id/account_id.h"
-#include "components/arc/arc_data_remover.h"
 #include "components/arc/arc_features.h"
-#include "components/arc/arc_instance_mode.h"
 #include "components/arc/arc_prefs.h"
-#include "components/arc/arc_session_runner.h"
-#include "components/arc/arc_supervision_transition.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/metrics/arc_metrics_service.h"
 #include "components/arc/metrics/stability_metrics_manager.h"
+#include "components/arc/session/arc_data_remover.h"
+#include "components/arc/session/arc_instance_mode.h"
+#include "components/arc/session/arc_session_runner.h"
+#include "components/arc/session/arc_supervision_transition.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -64,6 +64,10 @@ ArcSessionManager* g_arc_session_manager = nullptr;
 
 // Allows the session manager to skip creating UI in unit tests.
 bool g_ui_enabled = true;
+
+// Allows the session manager to create ArcTermsOfServiceOobeNegotiator in
+// tests, even when the tests are set to skip creating UI.
+bool g_enable_arc_terms_of_service_oobe_negotiator_in_tests = false;
 
 base::Optional<bool> g_enable_check_android_management_in_tests;
 
@@ -83,16 +87,6 @@ void MaybeUpdateOptInCancelUMA(const ArcSupportHost* support_host) {
   UpdateOptInCancelUMA(OptInCancelReason::USER_CANCEL);
 }
 
-chromeos::SessionManagerClient* GetSessionManagerClient() {
-  // If the DBusThreadManager or the SessionManagerClient aren't available,
-  // there isn't much we can do. This should only happen when running tests.
-  if (!chromeos::DBusThreadManager::IsInitialized() ||
-      !chromeos::DBusThreadManager::Get() ||
-      !chromeos::DBusThreadManager::Get()->GetSessionManagerClient())
-    return nullptr;
-  return chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
-}
-
 // Returns true if launching the Play Store on OptIn succeeded is needed.
 // Launch Play Store app, except for the following cases:
 // * When Opt-in verification is disabled (for tests);
@@ -101,7 +95,7 @@ chromeos::SessionManagerClient* GetSessionManagerClient() {
 //   kiosk app and device is not needed for opt-in;
 // * In Public Session mode, because Play Store will be hidden from users
 //   and only apps configured by policy should be installed.
-// * When ARC is managed and all OptIn preferences are managed/unused, too,
+// * When ARC is managed, and user does not go through OOBE opt-in,
 //   because the whole OptIn flow should happen as seamless as possible for
 //   the user.
 // For Active Directory users we always show a page notifying them that they
@@ -126,10 +120,8 @@ bool ShouldLaunchPlayStoreApp(Profile* profile,
   if (IsArcOptInVerificationDisabled())
     return false;
 
-  if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile) &&
-      AreArcAllOptInPreferencesIgnorableForProfile(profile)) {
+  if (ShouldStartArcSilentlyForManagedProfile(profile))
     return false;
-  }
 
   return true;
 }
@@ -219,18 +211,16 @@ ArcSessionManager::ArcSessionManager(
   DCHECK(!g_arc_session_manager);
   g_arc_session_manager = this;
   arc_session_runner_->AddObserver(this);
-  chromeos::SessionManagerClient* client = GetSessionManagerClient();
-  if (client)
-    client->AddObserver(this);
+  if (chromeos::SessionManagerClient::Get())
+    chromeos::SessionManagerClient::Get()->AddObserver(this);
   ResetStabilityMetrics();
 }
 
 ArcSessionManager::~ArcSessionManager() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  chromeos::SessionManagerClient* client = GetSessionManagerClient();
-  if (client)
-    client->RemoveObserver(this);
+  if (chromeos::SessionManagerClient::Get())
+    chromeos::SessionManagerClient::Get()->RemoveObserver(this);
 
   Shutdown();
   arc_session_runner_->RemoveObserver(this);
@@ -248,6 +238,12 @@ ArcSessionManager* ArcSessionManager::Get() {
 // static
 void ArcSessionManager::SetUiEnabledForTesting(bool enable) {
   g_ui_enabled = enable;
+}
+
+// static
+void ArcSessionManager::SetArcTermsOfServiceOobeNegotiatorEnabledForTesting(
+    bool enable) {
+  g_enable_arc_terms_of_service_oobe_negotiator_in_tests = enable;
 }
 
 // static
@@ -823,9 +819,12 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
   }
 
   if (IsArcOobeOptInActive()) {
-    VLOG(1) << "Use OOBE negotiator.";
-    terms_of_service_negotiator_ =
-        std::make_unique<ArcTermsOfServiceOobeNegotiator>();
+    if (g_enable_arc_terms_of_service_oobe_negotiator_in_tests ||
+        g_ui_enabled) {
+      VLOG(1) << "Use OOBE negotiator.";
+      terms_of_service_negotiator_ =
+          std::make_unique<ArcTermsOfServiceOobeNegotiator>();
+    }
   } else if (support_host_) {
     VLOG(1) << "Use default negotiator.";
     terms_of_service_negotiator_ =
@@ -834,9 +833,18 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
   }
 
   if (!terms_of_service_negotiator_) {
-    // The only case reached here is when g_ui_enabled is false so ARC support
-    // host is not created in SetProfile(), for testing purpose.
-    DCHECK(!g_ui_enabled) << "Negotiator is not created on production.";
+    // The only case reached here is when g_ui_enabled is false so
+    // 1. ARC support host is not created in SetProfile(), and
+    // 2. ArcTermsOfServiceOobeNegotiator is not created with OOBE test setup
+    // unless test explicitly called
+    // SetArcTermsOfServiceOobeNegotiatorEnabledForTesting(true).
+    if (IsArcOobeOptInActive()) {
+      DCHECK(!g_enable_arc_terms_of_service_oobe_negotiator_in_tests &&
+             !g_ui_enabled)
+          << "OOBE negotiator is not created on production.";
+    } else {
+      DCHECK(!g_ui_enabled) << "Negotiator is not created on production.";
+    }
     return;
   }
 
@@ -999,7 +1007,15 @@ void ArcSessionManager::StartArc() {
 
   std::string locale;
   std::string preferred_languages;
-  GetLocaleAndPreferredLanguages(profile_, &locale, &preferred_languages);
+  if (IsArcLocaleSyncDisabled()) {
+    // Use fixed locale and preferred languages for auto-tests.
+    locale = "en-US";
+    preferred_languages = "en-US,en";
+    VLOG(1) << "Locale and preferred languages are fixed to " << locale << ","
+            << preferred_languages << ".";
+  } else {
+    GetLocaleAndPreferredLanguages(profile_, &locale, &preferred_languages);
+  }
 
   ArcSession::UpgradeParams params;
 

@@ -8,6 +8,7 @@
 <translation id="1664224225747386870">لم يتمّ تسجيل أيّ بيانات.</translation>
 <translation id="1862930711583847113">تعذّر تصدير <ph name="FILE" /></translation>
 <translation id="2036868001356139588">مدة المؤقِّت</translation>
+<translation id="2050339315714019657">رأسي</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> نشطة</translation>
 <translation id="229579744168541441">تصدير إلى القرص</translation>
 <translation id="2501278716633472235">الرجوع</translation>
@@ -20,14 +21,19 @@
 <translation id="3081586908890909590">التبديل لتسجيل فيديو</translation>
 <translation id="3183731565330012717">نوع الشبكة</translation>
 <translation id="3227137524299004712">الميكروفون</translation>
+<translation id="3517926952904427380">تعذّر التقاط صور أشخاص</translation>
 <translation id="3569311554794739032">هل تريد فعلاً إزالة <ph name="FILE" />؟</translation>
+<translation id="3810838688059735925">الفيديوهات</translation>
 <translation id="4279490309300973883">النسخ المطابق</translation>
+<translation id="4329152592498422850">التبديل لالتقاط صورة مربّعة</translation>
 <translation id="4445542136948522167">إيقاف التقاط الصورة</translation>
+<translation id="4628948037717959914">صورة</translation>
 <translation id="4649291346448517080">تعذّر حفظ الملف</translation>
 <translation id="4890010094662541459">3 × 3</translation>
 <translation id="5057360777601936059">الكاميرا غير مُتاحة حاليًا.
         يُرجى التحقُّق من اتصال الكاميرا بشكلٍ صحيح.</translation>
 <translation id="5152121255775685072">الانتقال إلى المعرض</translation>
+<translation id="5671277269877808209">وضع المربّع</translation>
 <translation id="5869546221129391014">شبكة</translation>
 <translation id="6073451960410192870">إيقاف التسجيل</translation>
 <translation id="6233780560267770709">3 × 3</translation>
@@ -46,6 +52,7 @@
 <translation id="8145038249676204903">التبديل لالتقاط صورة</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8428213095426709021">الإعدادات</translation>
+<translation id="8815966864175525708">التبديل لالتقاط صورة أشخاص</translation>
 <translation id="8870695351537079478">يتعذّر بدء التسجيل</translation>
 <translation id="9045155556724273246">10 ثوانٍ</translation>
 <translation id="945522503751344254">إرسال تعليقات</translation>

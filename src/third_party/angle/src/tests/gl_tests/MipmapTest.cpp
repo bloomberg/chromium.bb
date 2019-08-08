@@ -777,12 +777,11 @@ TEST_P(MipmapTest, MipMapGenerationD3D9Bug)
 // level zero.
 TEST_P(MipmapTest, TextureCubeGeneralLevelZero)
 {
-    // This test seems to fail only on Android Vulkan.
-    // TODO(jmadill): Diagnose and fix. http://anglebug.com/2817
-    ANGLE_SKIP_TEST_IF(IsVulkan() && IsAndroid());
-
     // http://anglebug.com/3145
     ANGLE_SKIP_TEST_IF(IsFuchsia() && IsIntel() && IsVulkan());
+
+    // http://anglebug.com/2822
+    ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, mTextureCube);
 
@@ -825,6 +824,9 @@ TEST_P(MipmapTest, TextureCubeRenderToLevelZero)
 {
     // http://anglebug.com/3145
     ANGLE_SKIP_TEST_IF(IsFuchsia() && IsIntel() && IsVulkan());
+
+    // http://anglebug.com/2822
+    ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, mTextureCube);
 

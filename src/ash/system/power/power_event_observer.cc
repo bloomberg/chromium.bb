@@ -19,7 +19,6 @@
 #include "base/location.h"
 #include "base/scoped_observer.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/user_activity/user_activity_detector.h"

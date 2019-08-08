@@ -93,7 +93,7 @@ class PixelTest : public testing::Test {
   std::unique_ptr<base::Thread> io_thread_;
   std::unique_ptr<viz::GpuServiceImpl> gpu_service_;
   std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
-  scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor_;
+  std::unique_ptr<gpu::CommandBufferTaskExecutor> task_executor_;
 
   viz::RendererSettings renderer_settings_;
   gfx::Size device_viewport_size_;
@@ -110,7 +110,7 @@ class PixelTest : public testing::Test {
 
   void SetUpGLWithoutRenderer(bool flipped_output_surface);
   void SetUpGLRenderer(bool flipped_output_surface);
-  void SetUpSkiaRenderer();
+  void SetUpSkiaRenderer(bool flipped_output_surface);
   void SetUpSoftwareRenderer();
 
   void TearDown() override;
@@ -139,6 +139,18 @@ class RendererPixelTest : public PixelTest {
  public:
   RendererType* renderer() {
     return static_cast<RendererType*>(renderer_.get());
+  }
+
+  // Text string for graphics backend of the RendererType. Suitable for
+  // generating separate base line file paths.
+  const char* renderer_type() {
+    if (std::is_base_of<viz::GLRenderer, RendererType>::value)
+      return "gl";
+    if (std::is_base_of<viz::SkiaRenderer, RendererType>::value)
+      return "skia";
+    if (std::is_base_of<viz::SoftwareRenderer, RendererType>::value)
+      return "software";
+    return "unknown";
   }
 
   bool use_gpu() { return !!child_context_provider_; }
@@ -184,6 +196,21 @@ class GLRendererWithFlippedSurface : public viz::GLRenderer {
                         std::move(current_task_runner)) {}
 };
 
+class SkiaRendererWithFlippedSurface : public viz::SkiaRenderer {
+ public:
+  SkiaRendererWithFlippedSurface(
+      const viz::RendererSettings* settings,
+      viz::OutputSurface* output_surface,
+      viz::DisplayResourceProvider* resource_provider,
+      viz::SkiaOutputSurface* skia_output_surface,
+      DrawMode mode)
+      : SkiaRenderer(settings,
+                     output_surface,
+                     resource_provider,
+                     skia_output_surface,
+                     mode) {}
+};
+
 template <>
 inline void RendererPixelTest<viz::GLRenderer>::SetUp() {
   SetUpGLRenderer(false);
@@ -211,7 +238,12 @@ inline void RendererPixelTest<SoftwareRendererWithExpandedViewport>::SetUp() {
 
 template <>
 inline void RendererPixelTest<viz::SkiaRenderer>::SetUp() {
-  SetUpSkiaRenderer();
+  SetUpSkiaRenderer(false);
+}
+
+template <>
+inline void RendererPixelTest<SkiaRendererWithFlippedSurface>::SetUp() {
+  SetUpSkiaRenderer(true);
 }
 
 typedef RendererPixelTest<viz::GLRenderer> GLRendererPixelTest;

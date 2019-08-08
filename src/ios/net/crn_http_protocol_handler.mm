@@ -162,7 +162,7 @@ class HttpProtocolHandlerCore
                           const RedirectInfo& new_url,
                           bool* defer_redirect) override;
   void OnAuthRequired(URLRequest* request,
-                      AuthChallengeInfo* auth_info) override;
+                      const AuthChallengeInfo& auth_info) override;
   void OnCertificateRequested(URLRequest* request,
                               SSLCertRequestInfo* cert_request_info) override;
   void OnSSLCertificateError(URLRequest* request,
@@ -401,8 +401,9 @@ void HttpProtocolHandlerCore::OnReceivedRedirect(
   StopNetRequest();
 }
 
-void HttpProtocolHandlerCore::OnAuthRequired(URLRequest* request,
-                                             AuthChallengeInfo* auth_info) {
+void HttpProtocolHandlerCore::OnAuthRequired(
+    URLRequest* request,
+    const AuthChallengeInfo& auth_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // A request with no tab ID should not hit HTTP authentication.
   if (tracker_) {

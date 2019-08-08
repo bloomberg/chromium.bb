@@ -23,10 +23,6 @@
 #include "components/sync/model/syncable_service.h"
 #include "url/gurl.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace dom_distiller {
 
 // Interface for accessing the stored/synced DomDistiller entries.
@@ -72,19 +68,15 @@ class DomDistillerStore : public DomDistillerStoreInterface {
  public:
   typedef std::vector<ArticleEntry> EntryVector;
 
-  // Creates storage using the given database for local storage. Initializes the
-  // database with |database_dir|.
+  // Creates storage using the given database for local storage.
   DomDistillerStore(
-      std::unique_ptr<leveldb_proto::ProtoDatabase<ArticleEntry>> database,
-      const base::FilePath& database_dir);
+      std::unique_ptr<leveldb_proto::ProtoDatabase<ArticleEntry>> database);
 
   // Creates storage using the given database for local storage. Initializes the
-  // database with |database_dir|.  Also initializes the internal model to
-  // |initial_model|.
+  // internal model to |initial_model|.
   DomDistillerStore(
       std::unique_ptr<leveldb_proto::ProtoDatabase<ArticleEntry>> database,
-      const std::vector<ArticleEntry>& initial_data,
-      const base::FilePath& database_dir);
+      const std::vector<ArticleEntry>& initial_data);
 
   ~DomDistillerStore() override;
 
@@ -100,7 +92,7 @@ class DomDistillerStore : public DomDistillerStoreInterface {
   void RemoveObserver(DomDistillerObserver* observer) override;
 
  private:
-  void OnDatabaseInit(bool success);
+  void OnDatabaseInit(leveldb_proto::Enums::InitStatus status);
   void OnDatabaseLoad(bool success, std::unique_ptr<EntryVector> entries);
   void OnDatabaseSave(bool success);
 

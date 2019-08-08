@@ -8,7 +8,7 @@
 #include <tuple>
 
 #include "base/guid.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -46,8 +46,6 @@ class TwoClientPasswordsSyncTest
   TwoClientPasswordsSyncTest() : SyncTest(TWO_CLIENT) {}
 
   ~TwoClientPasswordsSyncTest() override {}
-
-  bool TestUsesSelfNotifications() override { return false; }
 
  protected:
   // TODO(crbug.com/915219): This leads to a data race and thus all tests here
@@ -133,7 +131,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ENABLED(MAYBE_Race)) {
 #define MAYBE_MergeWithTheMostRecent MergeWithTheMostRecent
 #endif
 IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest,
-                       E2E_ENABLED(MAYBE_MergeWithTheMostRecent)) {
+                       MAYBE_MergeWithTheMostRecent) {
   // Setup the test to have Form 0 and Form 1 added on both clients. Form 0 is
   // more recent on Client 0, and Form 1 is more recent on Client 1. They should
   // be merged such that recent passwords are chosen.
@@ -232,6 +230,36 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, MAYBE_Update) {
 
 // Flaky on TSAN: crbug.com/915219
 #if defined(THREAD_SANITIZER)
+#define MAYBE_AddTwice DISABLED_AddTwice
+#else
+#define MAYBE_AddTwice AddTwice
+#endif
+IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, MAYBE_AddTwice) {
+  // Password store supports adding the same form twice, so this is testing this
+  // behaviour.
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllProfilesContainSamePasswordForms());
+
+  PasswordForm form = CreateTestPasswordForm(0);
+  AddLogin(GetPasswordStore(0), form);
+  ASSERT_EQ(1, GetPasswordCount(0));
+
+  // Wait for client 0 to commit and client 1 to receive the update.
+  ASSERT_TRUE(SamePasswordFormsChecker().Wait());
+  ASSERT_EQ(1, GetPasswordCount(1));
+
+  // Update the password and add it again to client 0.
+  form.password_value = base::ASCIIToUTF16("new_password");
+  AddLogin(GetPasswordStore(0), form);
+  ASSERT_EQ(1, GetPasswordCount(0));
+
+  // Wait for client 1 to receive the update.
+  ASSERT_TRUE(SamePasswordFormsChecker().Wait());
+  ASSERT_EQ(1, GetPasswordCount(1));
+}
+
+// Flaky on TSAN: crbug.com/915219
+#if defined(THREAD_SANITIZER)
 #define MAYBE_Delete DISABLED_Delete
 #else
 #define MAYBE_Delete Delete
@@ -278,7 +306,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest,
   // When client 1 hits a passphrase required state, we can infer that
   // client 0's passphrase has been committed. to the server.
   ASSERT_TRUE(GetClient(1)->SetupSyncNoWaitForCompletion(
-      syncer::UserSelectableTypes()));
+      syncer::UserSelectableTypeSet::All()));
   ASSERT_TRUE(PassphraseRequiredChecker(GetSyncService(1)).Wait());
 
   // Get client 1 out of the passphrase required state.

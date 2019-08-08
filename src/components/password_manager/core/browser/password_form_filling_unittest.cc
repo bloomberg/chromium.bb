@@ -97,7 +97,6 @@ class PasswordFormFillingTest : public testing::Test {
 TEST_F(PasswordFormFillingTest, NoSavedCredentials) {
   std::map<base::string16, const autofill::PasswordForm*> best_matches;
 
-  EXPECT_CALL(driver_, AllowPasswordGenerationForForm(observed_form_));
   EXPECT_CALL(driver_, InformNoSavedCredentials());
   EXPECT_CALL(driver_, FillPasswordForm(_)).Times(0);
   EXPECT_CALL(driver_, ShowInitialPasswordAccountSuggestions(_)).Times(0);
@@ -117,8 +116,6 @@ TEST_F(PasswordFormFillingTest, Autofill) {
     another_saved_match.password_value += ASCIIToUTF16("1");
     best_matches[another_saved_match.username_value] = &another_saved_match;
 
-    EXPECT_CALL(driver_, AllowPasswordGenerationForForm(observed_form_))
-        .Times(is_blacklisted ? 0 : 1);
     EXPECT_CALL(driver_, InformNoSavedCredentials()).Times(0);
     PasswordFormFillData fill_data;
     EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
@@ -212,7 +209,6 @@ TEST_F(PasswordFormFillingTest, AutofillPSLMatch) {
   std::map<base::string16, const autofill::PasswordForm*> best_matches;
   best_matches[saved_match_.username_value] = &psl_saved_match_;
 
-  EXPECT_CALL(driver_, AllowPasswordGenerationForForm(observed_form_));
   EXPECT_CALL(driver_, InformNoSavedCredentials()).Times(0);
   PasswordFormFillData fill_data;
   EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));

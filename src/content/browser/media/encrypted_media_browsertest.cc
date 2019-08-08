@@ -329,9 +329,10 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
 #if defined(OS_ANDROID)
   // https://crbug.com/778245
-  if (base::android::BuildInfo::GetInstance()->sdk_int() <=
-      base::android::SDK_VERSION_KITKAT) {
-    DVLOG(0) << "Skipping test - FrameSizeChange is flaky on KitKat devices.";
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <
+      base::android::SDK_VERSION_MARSHMALLOW) {
+    DVLOG(0) << "Skipping test - FrameSizeChange is flaky on KitKat and "
+                "Lollipop devices.";
     return;
   }
 #endif
@@ -355,8 +356,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_Encryption_CENS) {
                       media::kError);
 }
 
-#if !defined(OS_ANDROID)
-// TODO(crbug.com/813845): Enable CBCS support on Chrome for Android.
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_Encryption_CBCS) {
   std::string expected_result =
       BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME) ? media::kEnded : media::kError;
@@ -379,7 +378,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
   RunMultipleFileTest("bear-640x360-v_frag-cenc.mp4",
                       "bear-640x360-a_frag-cbcs.mp4", expected_result);
 }
-#endif  // !defined(OS_ANDROID)
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, UnknownKeySystemThrowsException) {

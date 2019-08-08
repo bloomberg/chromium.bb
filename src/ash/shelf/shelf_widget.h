@@ -119,6 +119,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   // SessionObserver overrides:
   void OnSessionStateChanged(session_manager::SessionState state) override;
+  void OnUserSessionAdded(const AccountId& account_id) override;
 
   SkColor GetShelfBackgroundColor() const;
   bool GetHitTestRects(aura::Window* target,

@@ -51,6 +51,7 @@ class AnimationHost;
 }
 
 namespace blink {
+enum class PaintPropertyChangeType : unsigned char;
 class EffectPaintPropertyNode;
 class GraphicsContext;
 class GraphicsLayer;
@@ -58,6 +59,7 @@ class IntRect;
 class IntSize;
 class LocalFrame;
 class Page;
+class PaintArtifactCompositor;
 class RootFrameViewport;
 class ScrollPaintPropertyNode;
 class TransformPaintPropertyNode;
@@ -95,10 +97,6 @@ class CORE_EXPORT VisualViewport final
   USING_GARBAGE_COLLECTED_MIXIN(VisualViewport);
 
  public:
-  static VisualViewport* Create(Page& host) {
-    return MakeGarbageCollected<VisualViewport>(host);
-  }
-
   explicit VisualViewport(Page&);
   ~VisualViewport() override;
 
@@ -136,11 +134,6 @@ class CORE_EXPORT VisualViewport final
   // +/- zooming).
   FloatRect VisibleRect(IncludeScrollbarsInRect = kExcludeScrollbars) const;
 
-  // Similar to VisibleRect but this returns the rect relative to the main
-  // document's top-left corner.
-  FloatRect VisibleRectInDocument(
-      IncludeScrollbarsInRect = kExcludeScrollbars) const;
-
   // Resets the viewport to initial state.
   void Reset();
 
@@ -149,14 +142,13 @@ class CORE_EXPORT VisualViewport final
   void MainFrameDidChangeSize();
 
   // Sets scale and location in one operation, preventing intermediate clamping.
-  void SetScaleAndLocation(float scale, const FloatPoint& location);
+  void SetScaleAndLocation(float scale,
+                           bool is_pinch_gesture_active,
+                           const FloatPoint& location);
+
   void SetScale(float);
   float Scale() const { return scale_; }
-
-  // Update scale factor, magnifying or minifying by magnifyDelta, centered
-  // around the point specified by anchor in window coordinates. Returns false
-  // if page scale factor is left unchanged.
-  bool MagnifyScaleAroundAnchor(float magnify_delta, const FloatPoint& anchor);
+  bool IsPinchGestureActive() const { return is_pinch_gesture_active_; }
 
   // Convert the given rect in the main LocalFrameView's coordinates into a rect
   // in the viewport. The given and returned rects are in CSS pixels, meaning
@@ -195,7 +187,8 @@ class CORE_EXPORT VisualViewport final
   ChromeClient* GetChromeClient() const override;
   void SetScrollOffset(const ScrollOffset&,
                        ScrollType,
-                       ScrollBehavior = kScrollBehaviorInstant) override;
+                       ScrollBehavior,
+                       ScrollCallback on_finish) override;
   bool IsThrottled() const override {
     // VisualViewport is always in the main frame, so the frame does not get
     // throttled.
@@ -270,8 +263,9 @@ class CORE_EXPORT VisualViewport final
   // Create/update the page scale translation, viewport scroll, and viewport
   // translation property nodes. Also set the layer states (inner viewport
   // container, page scale layer, inner viewport scroll layer) to reference
-  // these nodes.
-  void UpdatePaintPropertyNodesIfNeeded(
+  // these nodes. Returns the maximum paint property change type for any of the
+  // viewport's nodes.
+  PaintPropertyChangeType UpdatePaintPropertyNodesIfNeeded(
       PaintPropertyTreeBuilderFragmentContext& context);
 
   CompositorElementId GetCompositorOverscrollElasticityElementId() const;
@@ -280,10 +274,11 @@ class CORE_EXPORT VisualViewport final
   bool NeedsPaintPropertyUpdate() const { return needs_paint_property_update_; }
 
  private:
-  bool DidSetScaleOrLocation(float scale, const FloatPoint& location);
+  bool DidSetScaleOrLocation(float scale,
+                             bool is_pinch_gesture_active,
+                             const FloatPoint& location);
 
-
-  void UpdateStyleAndLayoutIgnorePendingStylesheets() const;
+  void UpdateStyleAndLayout() const;
 
   void EnqueueScrollEvent();
   void EnqueueResizeEvent();
@@ -323,6 +318,7 @@ class CORE_EXPORT VisualViewport final
     return *page_;
   }
 
+  PaintArtifactCompositor* GetPaintArtifactCompositor() const;
   CompositorElementId GetCompositorScrollElementId() const;
 
   // Contracts the given size by the thickness of any visible scrollbars. Does
@@ -358,6 +354,7 @@ class CORE_EXPORT VisualViewport final
   // Offset of the visual viewport from the main frame's origin, in CSS pixels.
   ScrollOffset offset_;
   float scale_;
+  bool is_pinch_gesture_active_;
 
   // The Blink viewport size. This is effectively the size of the rect Blink is
   // rendering into and includes space consumed by scrollbars. While it will

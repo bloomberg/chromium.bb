@@ -532,6 +532,7 @@ public class TestAwContentsClient extends NullContentsClient {
                 Collections.synchronizedMap(new HashMap<String, AwWebResourceResponse>());
         private Map<String, AwWebResourceRequest> mRequestsByUrls =
                 Collections.synchronizedMap(new HashMap<String, AwWebResourceRequest>());
+        private Runnable mRunnableForFirstTimeCallback;
         // This is read on another thread, so needs to be marked volatile.
         private volatile AwWebResourceResponse mShouldInterceptRequestReturnValue;
         void setReturnValue(AwWebResourceResponse value) {
@@ -557,7 +558,14 @@ public class TestAwContentsClient extends NullContentsClient {
         public void notifyCalled(AwWebResourceRequest request) {
             mShouldInterceptRequestUrls.add(request.url);
             mRequestsByUrls.put(request.url, request);
+            if (mRunnableForFirstTimeCallback != null) {
+                mRunnableForFirstTimeCallback.run();
+                mRunnableForFirstTimeCallback = null;
+            }
             notifyCalled();
+        }
+        public void runDuringFirstTimeCallback(Runnable r) {
+            mRunnableForFirstTimeCallback = r;
         }
     }
 

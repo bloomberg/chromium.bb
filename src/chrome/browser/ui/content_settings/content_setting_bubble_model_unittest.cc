@@ -35,6 +35,7 @@
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
+#include "services/device/public/cpp/device_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -987,6 +988,228 @@ TEST_F(ContentSettingBubbleModelTest, SubresourceFilter) {
   EXPECT_EQ(bubble_content.manage_text,
             l10n_util::GetStringUTF16(IDS_ALWAYS_ALLOW_ADS));
   EXPECT_EQ(0U, bubble_content.media_menus.size());
+}
+
+// Regression test for https://crbug.com/955408
+// See also: ContentSettingImageModelTest.SensorAccessPermissionsChanged
+TEST_F(ContentSettingBubbleModelTest, SensorAccessPermissionsChanged) {
+  // Enable all sensors just to avoid hardcoding the expected messages to the
+  // motion sensor-specific ones.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kGenericSensorExtraClasses);
+
+  WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.example.com"));
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+
+  // Go from allow by default to block by default to allow by default.
+  {
+    settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SENSORS,
+                                           CONTENT_SETTING_ALLOW);
+    content_settings->OnContentAllowed(CONTENT_SETTINGS_TYPE_SENSORS);
+    std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+            NULL, web_contents(), CONTENT_SETTINGS_TYPE_SENSORS));
+    const auto& bubble_content = content_setting_bubble_model->bubble_content();
+
+    EXPECT_EQ(bubble_content.title,
+              l10n_util::GetStringUTF16(IDS_ALLOWED_SENSORS_TITLE));
+    EXPECT_EQ(bubble_content.message,
+              l10n_util::GetStringUTF16(IDS_ALLOWED_SENSORS_MESSAGE));
+    ASSERT_EQ(bubble_content.radio_group.radio_items.size(), 2U);
+    EXPECT_EQ(bubble_content.radio_group.radio_items[0],
+              l10n_util::GetStringUTF16(IDS_ALLOWED_SENSORS_NO_ACTION));
+    EXPECT_EQ(
+        bubble_content.radio_group.radio_items[1],
+        l10n_util::GetStringFUTF16(IDS_ALLOWED_SENSORS_BLOCK,
+                                   url_formatter::FormatUrlForSecurityDisplay(
+                                       web_contents()->GetURL())));
+    EXPECT_EQ(bubble_content.radio_group.default_item, 0);
+
+    settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SENSORS,
+                                           CONTENT_SETTING_BLOCK);
+    content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_SENSORS);
+    content_setting_bubble_model =
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+            NULL, web_contents(), CONTENT_SETTINGS_TYPE_SENSORS);
+    const auto& bubble_content_2 =
+        content_setting_bubble_model->bubble_content();
+
+    EXPECT_EQ(bubble_content_2.title,
+              l10n_util::GetStringUTF16(IDS_BLOCKED_SENSORS_TITLE));
+    EXPECT_EQ(bubble_content_2.message,
+              l10n_util::GetStringUTF16(IDS_BLOCKED_SENSORS_MESSAGE));
+    EXPECT_EQ(bubble_content_2.radio_group.radio_items.size(), 2U);
+    EXPECT_EQ(
+        bubble_content_2.radio_group.radio_items[0],
+        l10n_util::GetStringFUTF16(IDS_BLOCKED_SENSORS_UNBLOCK,
+                                   url_formatter::FormatUrlForSecurityDisplay(
+                                       web_contents()->GetURL())));
+    EXPECT_EQ(bubble_content_2.radio_group.radio_items[1],
+              l10n_util::GetStringUTF16(IDS_BLOCKED_SENSORS_NO_ACTION));
+    EXPECT_EQ(bubble_content_2.radio_group.default_item, 1);
+
+    settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SENSORS,
+                                           CONTENT_SETTING_ALLOW);
+    content_settings->OnContentAllowed(CONTENT_SETTINGS_TYPE_SENSORS);
+    content_setting_bubble_model =
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+            NULL, web_contents(), CONTENT_SETTINGS_TYPE_SENSORS);
+    const auto& bubble_content_3 =
+        content_setting_bubble_model->bubble_content();
+
+    EXPECT_EQ(bubble_content_3.title,
+              l10n_util::GetStringUTF16(IDS_ALLOWED_SENSORS_TITLE));
+    EXPECT_EQ(bubble_content_3.message,
+              l10n_util::GetStringUTF16(IDS_ALLOWED_SENSORS_MESSAGE));
+    ASSERT_EQ(bubble_content_3.radio_group.radio_items.size(), 2U);
+    EXPECT_EQ(bubble_content_3.radio_group.radio_items[0],
+              l10n_util::GetStringUTF16(IDS_ALLOWED_SENSORS_NO_ACTION));
+    EXPECT_EQ(
+        bubble_content_3.radio_group.radio_items[1],
+        l10n_util::GetStringFUTF16(IDS_ALLOWED_SENSORS_BLOCK,
+                                   url_formatter::FormatUrlForSecurityDisplay(
+                                       web_contents()->GetURL())));
+    EXPECT_EQ(bubble_content_3.radio_group.default_item, 0);
+  }
+
+  content_settings->ClearContentSettingsExceptForNavigationRelatedSettings();
+
+  // Go from block by default to allow by default to block by default.
+  {
+    settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SENSORS,
+                                           CONTENT_SETTING_BLOCK);
+    content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_SENSORS);
+    std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+            NULL, web_contents(), CONTENT_SETTINGS_TYPE_SENSORS));
+    const auto& bubble_content = content_setting_bubble_model->bubble_content();
+
+    EXPECT_EQ(bubble_content.title,
+              l10n_util::GetStringUTF16(IDS_BLOCKED_SENSORS_TITLE));
+    EXPECT_EQ(bubble_content.message,
+              l10n_util::GetStringUTF16(IDS_BLOCKED_SENSORS_MESSAGE));
+    ASSERT_EQ(bubble_content.radio_group.radio_items.size(), 2U);
+    EXPECT_EQ(
+        bubble_content.radio_group.radio_items[0],
+        l10n_util::GetStringFUTF16(IDS_BLOCKED_SENSORS_UNBLOCK,
+                                   url_formatter::FormatUrlForSecurityDisplay(
+                                       web_contents()->GetURL())));
+    EXPECT_EQ(bubble_content.radio_group.radio_items[1],
+              l10n_util::GetStringUTF16(IDS_BLOCKED_SENSORS_NO_ACTION));
+    EXPECT_EQ(bubble_content.radio_group.default_item, 1);
+
+    settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SENSORS,
+                                           CONTENT_SETTING_ALLOW);
+    content_settings->OnContentAllowed(CONTENT_SETTINGS_TYPE_SENSORS);
+    content_setting_bubble_model =
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+            NULL, web_contents(), CONTENT_SETTINGS_TYPE_SENSORS);
+    const auto& bubble_content_2 =
+        content_setting_bubble_model->bubble_content();
+
+    EXPECT_EQ(bubble_content_2.title,
+              l10n_util::GetStringUTF16(IDS_ALLOWED_SENSORS_TITLE));
+    EXPECT_EQ(bubble_content_2.message,
+              l10n_util::GetStringUTF16(IDS_ALLOWED_SENSORS_MESSAGE));
+    EXPECT_EQ(bubble_content_2.radio_group.radio_items.size(), 2U);
+    EXPECT_EQ(bubble_content_2.radio_group.radio_items[0],
+              l10n_util::GetStringUTF16(IDS_ALLOWED_SENSORS_NO_ACTION));
+    EXPECT_EQ(
+        bubble_content_2.radio_group.radio_items[1],
+        l10n_util::GetStringFUTF16(IDS_ALLOWED_SENSORS_BLOCK,
+                                   url_formatter::FormatUrlForSecurityDisplay(
+                                       web_contents()->GetURL())));
+    EXPECT_EQ(bubble_content_2.radio_group.default_item, 0);
+
+    settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SENSORS,
+                                           CONTENT_SETTING_BLOCK);
+    content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_SENSORS);
+    content_setting_bubble_model =
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+            NULL, web_contents(), CONTENT_SETTINGS_TYPE_SENSORS);
+    const auto& bubble_content_3 =
+        content_setting_bubble_model->bubble_content();
+
+    EXPECT_EQ(bubble_content_3.title,
+              l10n_util::GetStringUTF16(IDS_BLOCKED_SENSORS_TITLE));
+    EXPECT_EQ(bubble_content_3.message,
+              l10n_util::GetStringUTF16(IDS_BLOCKED_SENSORS_MESSAGE));
+    ASSERT_EQ(bubble_content_3.radio_group.radio_items.size(), 2U);
+    EXPECT_EQ(
+        bubble_content_3.radio_group.radio_items[0],
+        l10n_util::GetStringFUTF16(IDS_BLOCKED_SENSORS_UNBLOCK,
+                                   url_formatter::FormatUrlForSecurityDisplay(
+                                       web_contents()->GetURL())));
+    EXPECT_EQ(bubble_content_3.radio_group.radio_items[1],
+              l10n_util::GetStringUTF16(IDS_BLOCKED_SENSORS_NO_ACTION));
+    EXPECT_EQ(bubble_content_3.radio_group.default_item, 1);
+  }
+
+  content_settings->ClearContentSettingsExceptForNavigationRelatedSettings();
+
+  // Block by default but allow a specific site.
+  {
+    settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SENSORS,
+                                           CONTENT_SETTING_BLOCK);
+    settings_map->SetContentSettingDefaultScope(
+        web_contents()->GetURL(), web_contents()->GetURL(),
+        CONTENT_SETTINGS_TYPE_SENSORS, std::string(), CONTENT_SETTING_ALLOW);
+    content_settings->OnContentAllowed(CONTENT_SETTINGS_TYPE_SENSORS);
+    std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+            NULL, web_contents(), CONTENT_SETTINGS_TYPE_SENSORS));
+    const auto& bubble_content = content_setting_bubble_model->bubble_content();
+
+    EXPECT_EQ(bubble_content.title,
+              l10n_util::GetStringUTF16(IDS_ALLOWED_SENSORS_TITLE));
+    EXPECT_EQ(bubble_content.message,
+              l10n_util::GetStringUTF16(IDS_ALLOWED_SENSORS_MESSAGE));
+    ASSERT_EQ(bubble_content.radio_group.radio_items.size(), 2U);
+    EXPECT_EQ(bubble_content.radio_group.radio_items[0],
+              l10n_util::GetStringUTF16(IDS_ALLOWED_SENSORS_NO_ACTION));
+    EXPECT_EQ(
+        bubble_content.radio_group.radio_items[1],
+        l10n_util::GetStringFUTF16(IDS_ALLOWED_SENSORS_BLOCK,
+                                   url_formatter::FormatUrlForSecurityDisplay(
+                                       web_contents()->GetURL())));
+    EXPECT_EQ(bubble_content.radio_group.default_item, 0);
+  }
+
+  content_settings->ClearContentSettingsExceptForNavigationRelatedSettings();
+  // Clear site-specific exceptions.
+  settings_map->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_SENSORS);
+
+  // Allow by default but block a specific site.
+  {
+    settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SENSORS,
+                                           CONTENT_SETTING_ALLOW);
+    settings_map->SetContentSettingDefaultScope(
+        web_contents()->GetURL(), web_contents()->GetURL(),
+        CONTENT_SETTINGS_TYPE_SENSORS, std::string(), CONTENT_SETTING_BLOCK);
+    content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_SENSORS);
+    std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+            NULL, web_contents(), CONTENT_SETTINGS_TYPE_SENSORS));
+    const auto& bubble_content = content_setting_bubble_model->bubble_content();
+
+    EXPECT_EQ(bubble_content.title,
+              l10n_util::GetStringUTF16(IDS_BLOCKED_SENSORS_TITLE));
+    EXPECT_EQ(bubble_content.message,
+              l10n_util::GetStringUTF16(IDS_BLOCKED_SENSORS_MESSAGE));
+    ASSERT_EQ(bubble_content.radio_group.radio_items.size(), 2U);
+    EXPECT_EQ(
+        bubble_content.radio_group.radio_items[0],
+        l10n_util::GetStringFUTF16(IDS_BLOCKED_SENSORS_UNBLOCK,
+                                   url_formatter::FormatUrlForSecurityDisplay(
+                                       web_contents()->GetURL())));
+    EXPECT_EQ(bubble_content.radio_group.radio_items[1],
+              l10n_util::GetStringUTF16(IDS_BLOCKED_SENSORS_NO_ACTION));
+    EXPECT_EQ(bubble_content.radio_group.default_item, 1);
+  }
 }
 
 TEST_F(ContentSettingBubbleModelTest, PopupBubbleModelListItems) {

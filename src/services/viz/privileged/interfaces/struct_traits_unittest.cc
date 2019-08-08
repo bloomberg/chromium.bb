@@ -8,6 +8,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/viz/privileged/interfaces/compositing/renderer_settings_struct_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/mojo/color_space_mojom_traits.h"
 
 namespace viz {
 

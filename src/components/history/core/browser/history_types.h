@@ -272,6 +272,8 @@ struct QueryOptions {
 // QueryURLResult encapsulates the result of a call to HistoryBackend::QueryURL.
 struct QueryURLResult {
   QueryURLResult();
+  QueryURLResult(const QueryURLResult&);
+  QueryURLResult(QueryURLResult&&);
   ~QueryURLResult();
 
   // Indicates whether the call to HistoryBackend::QueryURL was successfull

@@ -11,8 +11,6 @@
 
 namespace blink {
 
-class XRStageBounds;
-
 class XRBoundedReferenceSpace final : public XRReferenceSpace {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -20,24 +18,22 @@ class XRBoundedReferenceSpace final : public XRReferenceSpace {
   XRBoundedReferenceSpace(XRSession*);
   ~XRBoundedReferenceSpace() override;
 
-  void UpdateBoundsGeometry(XRStageBounds*);
-
   std::unique_ptr<TransformationMatrix> DefaultPose() override;
   std::unique_ptr<TransformationMatrix> TransformBasePose(
       const TransformationMatrix& base_pose) override;
 
-  HeapVector<Member<DOMPointReadOnly>> boundsGeometry() const {
-    return bounds_geometry_;
-  }
+  void setOriginOffset(XRRigidTransform*) override;
+
+  HeapVector<Member<DOMPointReadOnly>> boundsGeometry();
 
   void Trace(blink::Visitor*) override;
 
  private:
-  void UpdateFloorLevelTransform();
+  void EnsureUpdated();
 
   HeapVector<Member<DOMPointReadOnly>> bounds_geometry_;
   std::unique_ptr<TransformationMatrix> floor_level_transform_;
-  unsigned int display_info_id_ = 0;
+  unsigned int stage_parameters_id_ = 0;
 };
 
 }  // namespace blink

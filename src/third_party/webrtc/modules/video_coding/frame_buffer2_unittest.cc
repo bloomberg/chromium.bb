@@ -25,8 +25,8 @@
 #include "test/gmock.h"
 #include "test/gtest.h"
 
-using testing::_;
-using testing::Return;
+using ::testing::_;
+using ::testing::Return;
 
 namespace webrtc {
 namespace video_coding {
@@ -95,8 +95,6 @@ class FrameObjectFake : public EncodedFrame {
 
 class VCMReceiveStatisticsCallbackMock : public VCMReceiveStatisticsCallback {
  public:
-  MOCK_METHOD2(OnReceiveRatesUpdated,
-               void(uint32_t bitRate, uint32_t frameRate));
   MOCK_METHOD3(OnCompleteFrame,
                void(bool is_keyframe,
                     size_t size_bytes,

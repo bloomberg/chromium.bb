@@ -107,8 +107,7 @@ def CbuildbotArgs(options):
                  '--no-buildbot-tags'))
 
     if options.production:
-      # This is expected to fail on workstations without an explicit --debug,
-      # or running 'branch-util'.
+      # This is expected to fail on workstations without an explicit --debug.
       args.append('--buildbot')
     else:
       args.append('--debug')
@@ -122,8 +121,7 @@ def CbuildbotArgs(options):
                  '--no-buildbot-tags'))
 
     if options.production:
-      # This is expected to fail on workstations without an explicit --debug,
-      # or running 'branch-util'.
+      # This is expected to fail on workstations without an explicit --debug.
       args.append('--buildbot')
 
   else:
@@ -304,7 +302,8 @@ def PushLocalPatches(local_patches, user_email, dryrun=False):
   return extra_args
 
 
-def RunRemote(site_config, options, patch_pool, staging=False):
+def RunRemote(site_config, options, patch_pool, staging=False,
+              production=False):
   """Schedule remote tryjobs."""
   logging.info('Scheduling remote tryjob(s): %s',
                ', '.join(options.build_configs))
@@ -312,6 +311,9 @@ def RunRemote(site_config, options, patch_pool, staging=False):
   luci_builder = None
   if staging:
     luci_builder = config_lib.LUCI_BUILDER_STAGING
+  # Production tryjobs actually execute in the Release group
+  elif production:
+    luci_builder = config_lib.LUCI_BUILDER_RELEASE
 
   user_email = FindUserEmail(options)
 
@@ -625,28 +627,6 @@ List Examples:
              'be specified multiple times. No valid for '
              'non-payloads configs.')
 
-    # branch_util tryjob specific options.
-    branch_util_group = parser.add_argument_group(
-        'branch_util',
-        description='Options only used by branch-util tryjobs.')
-
-    branch_util_group.add_argument(
-        '--branch-name', dest='passthrough', action='append_option_value',
-        help='The branch to create or delete.')
-    branch_util_group.add_argument(
-        '--delete-branch', dest='passthrough', action='append_option',
-        help='Delete the branch specified in --branch-name.')
-    branch_util_group.add_argument(
-        '--rename-to', dest='passthrough', action='append_option_value',
-        help='Rename a branch to the specified name.')
-    branch_util_group.add_argument(
-        '--force-create', dest='passthrough', action='append_option',
-        help='Overwrites an existing branch.')
-    branch_util_group.add_argument(
-        '--skip-remote-push', dest='passthrough', action='append_option',
-        help='Do not actually push to remote git repos.  '
-             'Used for end-to-end testing branching.')
-
     configs_group = parser.add_argument_group(
         'Configs',
         description='Options for displaying available build configs.')
@@ -673,6 +653,8 @@ List Examples:
       return RunRemote(site_config, self.options, patch_pool)
     elif self.options.where == STAGING:
       return RunRemote(site_config, self.options, patch_pool, staging=True)
+    elif self.options.production:
+      return RunRemote(site_config, self.options, patch_pool, production=True)
     elif self.options.where == LOCAL:
       return RunLocal(self.options)
     elif self.options.where == CBUILDBOT:

@@ -177,6 +177,14 @@ void GetLocaleAndPreferredLanguages(const Profile* profle,
                                     std::string* out_locale,
                                     std::string* out_preferred_languages);
 
+// Returns Android instance id. Result is returned in callback. |ok| is set to
+// true in case app instance is ready and Android id was successfully requested.
+// 0 is reserved for |android_id| for unregistered Android instances, however
+// this should not happen normally because app instance is active after ARC
+// provisioning is done.
+void GetAndroidId(
+    base::OnceCallback<void(bool ok, int64_t android_id)> callback);
+
 }  // namespace arc
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_UTILS_H_

@@ -3,7 +3,12 @@
 // found in the LICENSE file.
 
 #include "services/viz/privileged/interfaces/compositing/renderer_settings_struct_traits.h"
+
 #include "services/viz/public/cpp/compositing/resource_settings_struct_traits.h"
+
+#if defined(OS_ANDROID)
+#include "ui/gfx/mojo/color_space_mojom_traits.h"
+#endif
 
 namespace mojo {
 
@@ -11,8 +16,6 @@ namespace mojo {
 bool StructTraits<viz::mojom::RendererSettingsDataView, viz::RendererSettings>::
     Read(viz::mojom::RendererSettingsDataView data,
          viz::RendererSettings* out) {
-  bool success = true;
-
   out->allow_antialiasing = data.allow_antialiasing();
   out->force_antialiasing = data.force_antialiasing();
   out->force_blending_with_shaders = data.force_blending_with_shaders();
@@ -33,12 +36,21 @@ bool StructTraits<viz::mojom::RendererSettingsDataView, viz::RendererSettings>::
   out->requires_alpha_channel = data.requires_alpha_channel();
 
 #if defined(OS_ANDROID)
-  success = data.ReadInitialScreenSize(&out->initial_screen_size);
-  success = data.ReadColorSpace(&out->color_space);
+  if (!data.ReadInitialScreenSize(&out->initial_screen_size))
+    return false;
+
+  if (!data.ReadColorSpace(&out->color_space))
+    return false;
+
   out->backed_by_surface_texture = data.backed_by_surface_texture();
 #endif
 
-  return success;
+#if defined(USE_OZONE)
+  if (!data.ReadOverlayStrategies(&out->overlay_strategies))
+    return false;
+#endif
+
+  return true;
 }
 
 }  // namespace mojo

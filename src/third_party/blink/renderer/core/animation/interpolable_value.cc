@@ -56,7 +56,7 @@ void InterpolableList::Interpolate(const InterpolableValue& to,
 }
 
 std::unique_ptr<InterpolableValue> InterpolableList::CloneAndZero() const {
-  std::unique_ptr<InterpolableList> result = InterpolableList::Create(length());
+  auto result = std::make_unique<InterpolableList>(length());
   for (wtf_size_t i = 0; i < length(); i++)
     result->Set(i, values_[i]->CloneAndZero());
   return std::move(result);

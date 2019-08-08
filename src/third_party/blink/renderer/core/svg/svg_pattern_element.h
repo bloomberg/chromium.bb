@@ -100,7 +100,7 @@ class SVGPatternElement final : public SVGElement,
   void BuildPendingResource() override;
   void ClearResourceReferences();
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 
   bool SelfHasRelativeLengths() const override;
 

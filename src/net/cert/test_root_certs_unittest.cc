@@ -41,10 +41,10 @@ const char kGoodCertificateFile[] = "ok_cert.pem";
 TEST(TestRootCertsTest, AddFromPointer) {
   scoped_refptr<X509Certificate> root_cert =
       ImportCertFromFile(GetTestCertsDirectory(), kRootCertificateFile);
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), root_cert.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr), root_cert.get());
 
   TestRootCerts* test_roots = TestRootCerts::GetInstance();
-  ASSERT_NE(static_cast<TestRootCerts*>(NULL), test_roots);
+  ASSERT_NE(static_cast<TestRootCerts*>(nullptr), test_roots);
   EXPECT_TRUE(test_roots->IsEmpty());
 
   EXPECT_TRUE(test_roots->Add(root_cert.get()));
@@ -58,7 +58,7 @@ TEST(TestRootCertsTest, AddFromPointer) {
 // behave the same as when adding from an existing certificate.
 TEST(TestRootCertsTest, AddFromFile) {
   TestRootCerts* test_roots = TestRootCerts::GetInstance();
-  ASSERT_NE(static_cast<TestRootCerts*>(NULL), test_roots);
+  ASSERT_NE(static_cast<TestRootCerts*>(nullptr), test_roots);
   EXPECT_TRUE(test_roots->IsEmpty());
 
   base::FilePath cert_path =
@@ -77,12 +77,12 @@ TEST(TestRootCertsTest, AddFromFile) {
 // is properly being set and cleared.
 TEST(TestRootCertsTest, OverrideTrust) {
   TestRootCerts* test_roots = TestRootCerts::GetInstance();
-  ASSERT_NE(static_cast<TestRootCerts*>(NULL), test_roots);
+  ASSERT_NE(static_cast<TestRootCerts*>(nullptr), test_roots);
   EXPECT_TRUE(test_roots->IsEmpty());
 
   scoped_refptr<X509Certificate> test_cert =
       ImportCertFromFile(GetTestCertsDirectory(), kGoodCertificateFile);
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr), test_cert.get());
 
   // Test that the good certificate fails verification, because the root
   // certificate should not yet be trusted.

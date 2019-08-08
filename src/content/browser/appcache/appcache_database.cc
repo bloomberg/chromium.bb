@@ -11,13 +11,16 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/appcache/appcache_backfillers.h"
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_histograms.h"
+#include "content/public/common/content_features.h"
 #include "sql/database.h"
 #include "sql/error_delegate_util.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
+#include "storage/browser/quota/padding_key.h"
 
 namespace content {
 
@@ -38,8 +41,9 @@ namespace {
 // Version 5 - 2013-03-29 - https://crrev.com/12628006 (unsupported)
 // Version 6 - 2013-09-20 - https://crrev.com/23503069 (unsupported)
 // Version 7 - 2015-07-09 - https://crrev.com/879393002
-const int kCurrentVersion = 7;
-const int kCompatibleVersion = 7;
+// Version 8 - 2019-03-18 - https://crrev.com/c/1488059
+const int kCurrentVersion = 8;
+const int kCompatibleVersion = 8;
 const bool kCreateIfNeeded = true;
 const bool kDontCreate = false;
 
@@ -70,44 +74,45 @@ struct IndexInfo {
 };
 
 const TableInfo kTables[] = {
-  { kGroupsTable,
-    "(group_id INTEGER PRIMARY KEY,"
-    " origin TEXT,"
-    " manifest_url TEXT,"
-    " creation_time INTEGER,"
-    " last_access_time INTEGER,"
-    " last_full_update_check_time INTEGER,"
-    " first_evictable_error_time INTEGER)" },
+    {kGroupsTable,
+     "(group_id INTEGER PRIMARY KEY,"
+     " origin TEXT,"
+     " manifest_url TEXT,"
+     " creation_time INTEGER,"
+     " last_access_time INTEGER,"
+     " last_full_update_check_time INTEGER,"
+     " first_evictable_error_time INTEGER)"},
 
-  { kCachesTable,
-    "(cache_id INTEGER PRIMARY KEY,"
-    " group_id INTEGER,"
-    " online_wildcard INTEGER CHECK(online_wildcard IN (0, 1)),"
-    " update_time INTEGER,"
-    " cache_size INTEGER)" },  // intentionally not normalized
+    {kCachesTable,
+     "(cache_id INTEGER PRIMARY KEY,"
+     " group_id INTEGER,"
+     " online_wildcard INTEGER CHECK(online_wildcard IN (0, 1)),"
+     " update_time INTEGER,"
+     " cache_size INTEGER,"      // intentionally not normalized
+     " padding_size INTEGER)"},  // intentionally not normalized
 
-  { kEntriesTable,
-    "(cache_id INTEGER,"
-    " url TEXT,"
-    " flags INTEGER,"
-    " response_id INTEGER,"
-    " response_size INTEGER)" },
+    {kEntriesTable,
+     "(cache_id INTEGER,"
+     " url TEXT,"
+     " flags INTEGER,"
+     " response_id INTEGER,"
+     " response_size INTEGER,"
+     " padding_size INTEGER)"},
 
-  { kNamespacesTable,
-    "(cache_id INTEGER,"
-    " origin TEXT,"  // intentionally not normalized
-    " type INTEGER,"
-    " namespace_url TEXT,"
-    " target_url TEXT,"
-    " is_pattern INTEGER CHECK(is_pattern IN (0, 1)))" },
+    {kNamespacesTable,
+     "(cache_id INTEGER,"
+     " origin TEXT,"  // intentionally not normalized
+     " type INTEGER,"
+     " namespace_url TEXT,"
+     " target_url TEXT,"
+     " is_pattern INTEGER CHECK(is_pattern IN (0, 1)))"},
 
-  { kOnlineWhiteListsTable,
-    "(cache_id INTEGER,"
-    " namespace_url TEXT,"
-    " is_pattern INTEGER CHECK(is_pattern IN (0, 1)))" },
+    {kOnlineWhiteListsTable,
+     "(cache_id INTEGER,"
+     " namespace_url TEXT,"
+     " is_pattern INTEGER CHECK(is_pattern IN (0, 1)))"},
 
-  { kDeletableResponseIdsTable,
-    "(response_id INTEGER NOT NULL)" },
+    {kDeletableResponseIdsTable, "(response_id INTEGER NOT NULL)"},
 };
 
 const IndexInfo kIndexes[] = {
@@ -239,13 +244,20 @@ void AppCacheDatabase::Disable() {
 }
 
 int64_t AppCacheDatabase::GetOriginUsage(const url::Origin& origin) {
-  std::vector<CacheRecord> records;
-  if (!FindCachesForOrigin(origin, &records))
+  std::vector<CacheRecord> caches;
+  if (!FindCachesForOrigin(origin, &caches))
     return 0;
 
   int64_t origin_usage = 0;
-  for (const auto& record : records)
-    origin_usage += record.cache_size;
+  bool padding_enabled =
+      base::FeatureList::IsEnabled(features::kAppCacheIncludePaddingInQuota);
+  for (const auto& cache : caches) {
+    if (padding_enabled) {
+      origin_usage += cache.cache_size + cache.padding_size;
+    } else {
+      origin_usage += cache.cache_size;
+    }
+  }
   return origin_usage;
 }
 
@@ -507,7 +519,8 @@ bool AppCacheDatabase::FindCache(int64_t cache_id, CacheRecord* record) {
     return false;
 
   static const char kSql[] =
-      "SELECT cache_id, group_id, online_wildcard, update_time, cache_size"
+      "SELECT cache_id, group_id, online_wildcard, update_time, cache_size, "
+      "padding_size"
       " FROM Caches WHERE cache_id = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -527,7 +540,8 @@ bool AppCacheDatabase::FindCacheForGroup(int64_t group_id,
     return false;
 
   static const char kSql[] =
-      "SELECT cache_id, group_id, online_wildcard, update_time, cache_size"
+      "SELECT cache_id, group_id, online_wildcard, update_time, cache_size, "
+      "padding_size"
       "  FROM Caches WHERE group_id = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -561,15 +575,18 @@ bool AppCacheDatabase::InsertCache(const CacheRecord* record) {
 
   static const char kSql[] =
       "INSERT INTO Caches (cache_id, group_id, online_wildcard,"
-      "                    update_time, cache_size)"
-      "  VALUES(?, ?, ?, ?, ?)";
+      "                    update_time, cache_size, padding_size)"
+      "  VALUES(?, ?, ?, ?, ?, ?)";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, record->cache_id);
   statement.BindInt64(1, record->group_id);
   statement.BindBool(2, record->online_wildcard);
   statement.BindInt64(3, record->update_time.ToInternalValue());
+  DCHECK_GE(record->cache_size, 0);
   statement.BindInt64(4, record->cache_size);
+  DCHECK_GE(record->padding_size, 0);
+  statement.BindInt64(5, record->padding_size);
 
   return statement.Run();
 }
@@ -593,7 +610,8 @@ bool AppCacheDatabase::FindEntriesForCache(int64_t cache_id,
     return false;
 
   static const char kSql[] =
-      "SELECT cache_id, url, flags, response_id, response_size FROM Entries"
+      "SELECT cache_id, url, flags, response_id, response_size, padding_size "
+      "FROM Entries"
       "  WHERE cache_id = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -615,7 +633,8 @@ bool AppCacheDatabase::FindEntriesForUrl(
     return false;
 
   static const char kSql[] =
-      "SELECT cache_id, url, flags, response_id, response_size FROM Entries"
+      "SELECT cache_id, url, flags, response_id, response_size, padding_size "
+      "FROM Entries"
       "  WHERE url = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -638,7 +657,8 @@ bool AppCacheDatabase::FindEntry(int64_t cache_id,
     return false;
 
   static const char kSql[] =
-      "SELECT cache_id, url, flags, response_id, response_size FROM Entries"
+      "SELECT cache_id, url, flags, response_id, response_size, padding_size "
+      "FROM Entries"
       "  WHERE cache_id = ? AND url = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -659,15 +679,19 @@ bool AppCacheDatabase::InsertEntry(const EntryRecord* record) {
     return false;
 
   static const char kSql[] =
-      "INSERT INTO Entries (cache_id, url, flags, response_id, response_size)"
-      "  VALUES(?, ?, ?, ?, ?)";
+      "INSERT INTO Entries (cache_id, url, flags, response_id, response_size, "
+      "padding_size)"
+      "  VALUES(?, ?, ?, ?, ?, ?)";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, record->cache_id);
   statement.BindString(1, record->url.spec());
   statement.BindInt(2, record->flags);
   statement.BindInt64(3, record->response_id);
+  DCHECK_GE(record->response_size, 0);
   statement.BindInt64(4, record->response_size);
+  DCHECK_GE(record->padding_size, 0);
+  statement.BindInt64(5, record->padding_size);
 
   return statement.Run();
 }
@@ -994,6 +1018,7 @@ void AppCacheDatabase::ReadCacheRecord(
   record->update_time =
       base::Time::FromInternalValue(statement.ColumnInt64(3));
   record->cache_size = statement.ColumnInt64(4);
+  record->padding_size = statement.ColumnInt64(5);
 }
 
 void AppCacheDatabase::ReadEntryRecord(
@@ -1003,6 +1028,7 @@ void AppCacheDatabase::ReadEntryRecord(
   record->flags = statement.ColumnInt(2);
   record->response_id = statement.ColumnInt64(3);
   record->response_size = statement.ColumnInt64(4);
+  record->padding_size = statement.ColumnInt64(5);
 }
 
 void AppCacheDatabase::ReadNamespaceRecords(
@@ -1155,8 +1181,22 @@ bool AppCacheDatabase::CreateSchema() {
 }
 
 bool AppCacheDatabase::UpgradeSchema() {
-  // The version on disk is deprecated.
-  return DeleteExistingAndCreateNewDatabase();
+  // Start from scratch for versions that would require unsupported migrations.
+  if (meta_table_->GetVersionNumber() < 7)
+    return DeleteExistingAndCreateNewDatabase();
+
+  sql::Transaction transaction(db_.get());
+  if (!transaction.Begin())
+    return false;
+  if (!db_->Execute("ALTER TABLE Caches ADD COLUMN padding_size INTEGER"))
+    return false;
+  if (!db_->Execute("ALTER TABLE Entries ADD COLUMN padding_size INTEGER"))
+    return false;
+  meta_table_->SetVersionNumber(8);
+  meta_table_->SetCompatibleVersionNumber(8);
+  if (!AppCacheBackfillerVersion8(db_.get()).BackfillPaddingSizes())
+    return false;
+  return transaction.Commit();
 }
 
 void AppCacheDatabase::ResetConnectionAndTables() {

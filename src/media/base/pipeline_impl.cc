@@ -137,7 +137,6 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   void OnVideoConfigChange(const VideoDecoderConfig& config) final;
   void OnVideoNaturalSizeChange(const gfx::Size& size) final;
   void OnVideoOpacityChange(bool opaque) final;
-  void OnDurationChange(base::TimeDelta duration) final;
   void OnRemotePlayStateChange(MediaStatus::State state) final;
 
   // Common handlers for notifications from renderers and demuxer.
@@ -761,11 +760,6 @@ void PipelineImpl::RendererWrapper::OnVideoConfigChange(
   main_task_runner_->PostTask(FROM_HERE,
                               base::BindOnce(&PipelineImpl::OnVideoConfigChange,
                                              weak_pipeline_, config));
-}
-
-void PipelineImpl::RendererWrapper::OnDurationChange(base::TimeDelta duration) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-  SetDuration(duration);
 }
 
 void PipelineImpl::RendererWrapper::OnRemotePlayStateChange(

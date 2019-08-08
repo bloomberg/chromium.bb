@@ -104,17 +104,19 @@ void LogResponseProfilingData(const ClientToServerResponse& response) {
 
 SyncerError ServerConnectionErrorAsSyncerError(
     const HttpResponse::ServerConnectionCode server_status,
-    int net_error_code) {
+    int net_error_code,
+    int http_status_code) {
   switch (server_status) {
     case HttpResponse::CONNECTION_UNAVAILABLE:
       return SyncerError::NetworkConnectionUnavailable(net_error_code);
     case HttpResponse::IO_ERROR:
       return SyncerError(SyncerError::NETWORK_IO_ERROR);
     case HttpResponse::SYNC_SERVER_ERROR:
-      // FIXME what does this mean?
-      return SyncerError(SyncerError::SYNC_SERVER_ERROR);
+      // This means the server returned a non-401 HTTP error.
+      return SyncerError::HttpError(http_status_code);
     case HttpResponse::SYNC_AUTH_ERROR:
-      return SyncerError(SyncerError::SYNC_AUTH_ERROR);
+      // This means the server returned an HTTP 401 (unauthorized) error.
+      return SyncerError::HttpError(http_status_code);
     case HttpResponse::SERVER_CONNECTION_OK:
     case HttpResponse::NONE:
     default:
@@ -156,14 +158,10 @@ ClientAction PBActionToClientAction(const sync_pb::SyncEnums::Action& action) {
   switch (action) {
     case sync_pb::SyncEnums::UPGRADE_CLIENT:
       return UPGRADE_CLIENT;
-    case sync_pb::SyncEnums::CLEAR_USER_DATA_AND_RESYNC:
-      return CLEAR_USER_DATA_AND_RESYNC;
-    case sync_pb::SyncEnums::ENABLE_SYNC_ON_ACCOUNT:
-      return ENABLE_SYNC_ON_ACCOUNT;
-    case sync_pb::SyncEnums::STOP_AND_RESTART_SYNC:
-      return STOP_AND_RESTART_SYNC;
-    case sync_pb::SyncEnums::DISABLE_SYNC_ON_CLIENT:
-      return DISABLE_SYNC_ON_CLIENT;
+    case sync_pb::SyncEnums::DEPRECATED_CLEAR_USER_DATA_AND_RESYNC:
+    case sync_pb::SyncEnums::DEPRECATED_ENABLE_SYNC_ON_ACCOUNT:
+    case sync_pb::SyncEnums::DEPRECATED_STOP_AND_RESTART_SYNC:
+    case sync_pb::SyncEnums::DEPRECATED_DISABLE_SYNC_ON_CLIENT:
     case sync_pb::SyncEnums::UNKNOWN_ACTION:
       return UNKNOWN_ACTION;
     default:
@@ -372,7 +370,7 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
           "Sync.PostedDataTypeGetUpdatesRequest",
           ModelTypeToHistogramInt(GetModelTypeFromSpecificsFieldNumber(
               progress_marker.data_type_id())),
-          static_cast<int>(MODEL_TYPE_COUNT));
+          static_cast<int>(ModelType::NUM_ENTRIES));
     }
   }
 
@@ -470,8 +468,8 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
     DCHECK_NE(server_status, HttpResponse::SERVER_CONNECTION_OK);
 
     return ServerConnectionErrorAsSyncerError(
-        server_status,
-        cycle->context()->connection_manager()->net_error_code());
+        server_status, cycle->context()->connection_manager()->net_error_code(),
+        cycle->context()->connection_manager()->http_status_code());
   }
   LogClientToServerResponse(*response);
 
@@ -493,27 +491,14 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
           command.max_commit_batch_size());
     }
 
-    if (command.has_set_sync_long_poll_interval()) {
-      base::TimeDelta interval =
-          base::TimeDelta::FromSeconds(command.set_sync_long_poll_interval());
-      if (interval.is_zero()) {
-        DLOG(WARNING)
-            << "Received zero long poll interval from server. Ignoring.";
-      } else {
-        cycle->context()->set_long_poll_interval(interval);
-        cycle->delegate()->OnReceivedLongPollIntervalUpdate(interval);
-      }
-    }
-
     if (command.has_set_sync_poll_interval()) {
       base::TimeDelta interval =
           base::TimeDelta::FromSeconds(command.set_sync_poll_interval());
       if (interval.is_zero()) {
-        DLOG(WARNING)
-            << "Received zero short poll interval from server. Ignoring.";
+        DLOG(WARNING) << "Received zero poll interval from server. Ignoring.";
       } else {
-        cycle->context()->set_short_poll_interval(interval);
-        cycle->delegate()->OnReceivedShortPollIntervalUpdate(interval);
+        cycle->context()->set_poll_interval(interval);
+        cycle->delegate()->OnReceivedPollIntervalUpdate(interval);
       }
     }
 

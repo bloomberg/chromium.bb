@@ -4,6 +4,9 @@
 
 #include "chrome/browser/download/download_request_limiter.h"
 
+#include <iterator>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
@@ -223,8 +226,8 @@ void DownloadRequestLimiter::TabDownloadState::WebContentsDestroyed() {
 }
 
 void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
-    const DownloadRequestLimiter::Callback& callback) {
-  callbacks_.push_back(callback);
+    DownloadRequestLimiter::Callback callback) {
+  callbacks_.push_back(std::move(callback));
   DCHECK(web_contents_);
   if (is_showing_prompt())
     return;
@@ -363,15 +366,16 @@ bool DownloadRequestLimiter::TabDownloadState::NotifyCallbacks(bool allow) {
     std::vector<DownloadRequestLimiter::Callback>::iterator start, end;
     start = callbacks_.begin();
     end = callbacks_.begin() + kMaxDownloadsAtOnce;
-    callbacks.assign(start, end);
+    callbacks.assign(std::make_move_iterator(start),
+                     std::make_move_iterator(end));
     callbacks_.erase(start, end);
     throttled = true;
   }
 
-  for (const auto& callback : callbacks) {
+  for (auto& callback : callbacks) {
     // When callback runs, it can cause the WebContents to be destroyed.
     base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(callback, allow));
+                             base::BindOnce(std::move(callback), allow));
   }
 
   return throttled;
@@ -466,45 +470,46 @@ void DownloadRequestLimiter::CanDownload(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const GURL& url,
     const std::string& request_method,
-    const Callback& callback) {
+    Callback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::WebContents* originating_contents = web_contents_getter.Run();
   if (!originating_contents) {
     // The WebContents was closed, don't allow the download.
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
   if (!originating_contents->GetDelegate()) {
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
   // Note that because |originating_contents| might go away before
   // OnCanDownloadDecided is invoked, we look it up by |render_process_host_id|
   // and |render_view_id|.
-  base::Callback<void(bool)> can_download_callback = base::Bind(
+  base::OnceCallback<void(bool)> can_download_callback = base::BindOnce(
       &DownloadRequestLimiter::OnCanDownloadDecided, factory_.GetWeakPtr(),
-      web_contents_getter, request_method, callback);
+      web_contents_getter, request_method, std::move(callback));
 
-  originating_contents->GetDelegate()->CanDownload(url, request_method,
-                                                   can_download_callback);
+  originating_contents->GetDelegate()->CanDownload(
+      url, request_method, std::move(can_download_callback));
 }
 
 void DownloadRequestLimiter::OnCanDownloadDecided(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const std::string& request_method,
-    const Callback& orig_callback,
+    Callback orig_callback,
     bool allow) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::WebContents* originating_contents = web_contents_getter.Run();
   if (!originating_contents || !allow) {
-    orig_callback.Run(false);
+    std::move(orig_callback).Run(false);
     return;
   }
 
-  CanDownloadImpl(originating_contents, request_method, orig_callback);
+  CanDownloadImpl(originating_contents, request_method,
+                  std::move(orig_callback));
 }
 
 HostContentSettingsMap* DownloadRequestLimiter::GetContentSettings(
@@ -516,7 +521,7 @@ HostContentSettingsMap* DownloadRequestLimiter::GetContentSettings(
 void DownloadRequestLimiter::CanDownloadImpl(
     content::WebContents* originating_contents,
     const std::string& request_method,
-    const Callback& callback) {
+    Callback callback) {
   DCHECK(originating_contents);
 
   TabDownloadState* state =
@@ -538,20 +543,20 @@ void DownloadRequestLimiter::CanDownloadImpl(
       } else {
         state->SetDownloadStatusAndNotify(ALLOW_ALL_DOWNLOADS);
       }
-      callback.Run(true);
+      std::move(callback).Run(true);
       state->increment_download_count();
       break;
 
     case ALLOW_ONE_DOWNLOAD:
       state->SetDownloadStatusAndNotify(PROMPT_BEFORE_DOWNLOAD);
-      callback.Run(true);
+      std::move(callback).Run(true);
       state->increment_download_count();
       break;
 
     case DOWNLOADS_NOT_ALLOWED:
       state->SetDownloadStatusAndNotify(DOWNLOADS_NOT_ALLOWED);
       ret = false;
-      callback.Run(false);
+      std::move(callback).Run(false);
       break;
 
     case PROMPT_BEFORE_DOWNLOAD: {
@@ -566,19 +571,19 @@ void DownloadRequestLimiter::CanDownloadImpl(
       switch (setting) {
         case CONTENT_SETTING_ALLOW: {
           state->SetDownloadStatusAndNotify(ALLOW_ALL_DOWNLOADS);
-          callback.Run(true);
+          std::move(callback).Run(true);
           state->increment_download_count();
           break;
         }
         case CONTENT_SETTING_BLOCK: {
           state->SetDownloadStatusAndNotify(DOWNLOADS_NOT_ALLOWED);
           ret = false;
-          callback.Run(false);
+          std::move(callback).Run(false);
           break;
         }
         case CONTENT_SETTING_DEFAULT:
         case CONTENT_SETTING_ASK:
-          state->PromptUserForDownload(callback);
+          state->PromptUserForDownload(std::move(callback));
           state->increment_download_count();
           break;
         case CONTENT_SETTING_SESSION_ONLY:
@@ -606,6 +611,6 @@ void DownloadRequestLimiter::Remove(TabDownloadState* state,
 }
 
 void DownloadRequestLimiter::SetOnCanDownloadDecidedCallbackForTesting(
-    Callback callback) {
+    CanDownloadDecidedCallback callback) {
   on_can_download_decided_callback_ = callback;
 }

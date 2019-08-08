@@ -143,7 +143,7 @@ void StartServiceInUtilityProcess(
     const ContentBrowserClient::ProcessNameCallback& process_name_callback,
     base::Optional<std::string> process_group,
     service_manager::mojom::ServiceRequest request,
-    service_manager::mojom::PIDReceiverPtr pid_receiver,
+    service_manager::Service::CreatePackagedServiceInstanceCallback callback,
     service_manager::mojom::ServiceInfoPtr service_info) {
   DCHECK(service_info);
   service_manager::SandboxType sandbox_type =
@@ -172,24 +172,16 @@ void StartServiceInUtilityProcess(
         base::Token{1, 1}));
     impl->SetSandboxType(sandbox_type);
     impl->Start();
-    impl->SetLaunchCallback(
-        base::BindOnce([](service_manager::mojom::PIDReceiverPtr pid_receiver,
-                          base::ProcessId pid) { pid_receiver->SetPID(pid); },
-                       std::move(pid_receiver)));
     if (weak_host)
       *weak_host = impl->AsWeakPtr();
     process_host = impl;
   }
 
-  service_manager::mojom::ServiceFactoryPtr service_factory;
-  BindInterface(process_host, mojo::MakeRequest(&service_factory));
-
-  // CreateService expects a non-null PIDReceiverPtr, but we don't actually
-  // expect the utility process to report anything on it. Send a dead-end proxy.
-  service_manager::mojom::PIDReceiverPtr dead_pid_receiver;
-  mojo::MakeRequest(&dead_pid_receiver);
-  service_factory->CreateService(std::move(request), service_name,
-                                 std::move(dead_pid_receiver));
+  process_host->RunService(
+      service_name,
+      mojo::PendingReceiver<service_manager::mojom::Service>(
+          request.PassMessagePipe()),
+      std::move(callback));
 }
 
 // Determine a sandbox type for a service and launch a process for it.
@@ -198,34 +190,33 @@ void QueryAndStartServiceInUtilityProcess(
     const ContentBrowserClient::ProcessNameCallback& process_name_callback,
     base::Optional<std::string> process_group,
     service_manager::mojom::ServiceRequest request,
-    service_manager::mojom::PIDReceiverPtr pid_receiver) {
+    service_manager::Service::CreatePackagedServiceInstanceCallback callback) {
   ServiceManagerContext::GetConnectorForIOThread()->QueryService(
       service_name,
       base::BindOnce(&StartServiceInUtilityProcess, service_name,
                      process_name_callback, std::move(process_group),
-                     std::move(request), std::move(pid_receiver)));
+                     std::move(request), std::move(callback)));
 }
 
-// Request service_manager::mojom::ServiceFactory from GPU process host. Must be
-// called on IO thread.
+// Send a RunService request through the GpuProcessHost.
 void StartServiceInGpuProcess(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request,
-    service_manager::mojom::PIDReceiverPtr pid_receiver) {
+    service_manager::Service::CreatePackagedServiceInstanceCallback callback) {
   GpuProcessHost* process_host = GpuProcessHost::Get();
   if (!process_host) {
     DLOG(ERROR) << "GPU process host not available.";
     return;
   }
 
-  service_manager::mojom::ServiceFactoryPtr service_factory;
   // TODO(xhwang): It's possible that |process_host| is non-null, but the actual
   // process is dead. In that case, |request| will be dropped and application
   // load requests through ServiceFactory will also fail. Make sure we handle
   // these cases correctly.
-  BindInterfaceInGpuProcess(mojo::MakeRequest(&service_factory));
-  service_factory->CreateService(std::move(request), service_name,
-                                 std::move(pid_receiver));
+  process_host->gpu_host()->RunService(
+      service_name, mojo::PendingReceiver<service_manager::mojom::Service>(
+                        request.PassMessagePipe()));
+  std::move(callback).Run(base::nullopt);
 }
 
 class NullServiceProcessLauncherFactory
@@ -714,7 +705,7 @@ ServiceManagerContext::ServiceManagerContext(
   }
 
   for (const auto& service : out_of_process_services) {
-    packaged_services_connection_->AddServiceRequestHandlerWithPID(
+    packaged_services_connection_->AddServiceRequestHandlerWithCallback(
         service.first,
         base::BindRepeating(&QueryAndStartServiceInUtilityProcess,
                             service.first, service.second.process_name_callback,
@@ -722,12 +713,12 @@ ServiceManagerContext::ServiceManagerContext(
   }
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-  packaged_services_connection_->AddServiceRequestHandlerWithPID(
+  packaged_services_connection_->AddServiceRequestHandlerWithCallback(
       media::mojom::kMediaServiceName,
       base::Bind(&StartServiceInGpuProcess, media::mojom::kMediaServiceName));
 #endif
 
-  packaged_services_connection_->AddServiceRequestHandlerWithPID(
+  packaged_services_connection_->AddServiceRequestHandlerWithCallback(
       shape_detection::mojom::kServiceName,
       base::Bind(&StartServiceInGpuProcess,
                  shape_detection::mojom::kServiceName));

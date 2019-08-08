@@ -24,7 +24,7 @@ XRUnboundedReferenceSpace::TransformBasePose(
     const TransformationMatrix& base_pose) {
   // For now we assume that poses returned by systems that support unbounded
   // reference spaces are already in the correct space.
-  return TransformationMatrix::Create(base_pose);
+  return std::make_unique<TransformationMatrix>(base_pose);
 }
 
 void XRUnboundedReferenceSpace::Trace(blink::Visitor* visitor) {

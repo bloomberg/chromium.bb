@@ -217,7 +217,7 @@ TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorWithoutInitDecode) {
   CreateDecoder(webrtc::kVideoCodecVP8);
   webrtc::EncodedImage input_image;
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_UNINITIALIZED,
-            rtc_decoder_->Decode(input_image, false, nullptr, 0));
+            rtc_decoder_->Decode(input_image, false, 0));
 }
 
 TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorOnIncompleteFrame) {
@@ -226,7 +226,7 @@ TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorOnIncompleteFrame) {
   webrtc::EncodedImage input_image;
   input_image._completeFrame = false;
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR,
-            rtc_decoder_->Decode(input_image, false, nullptr, 0));
+            rtc_decoder_->Decode(input_image, false, 0));
 }
 
 TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorOnMissingFrames) {
@@ -235,9 +235,8 @@ TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorOnMissingFrames) {
   webrtc::EncodedImage input_image;
   input_image._completeFrame = true;
   bool missingFrames = true;
-  EXPECT_EQ(
-      WEBRTC_VIDEO_CODEC_ERROR,
-      rtc_decoder_->Decode(input_image, missingFrames, nullptr, 0));
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR,
+            rtc_decoder_->Decode(input_image, missingFrames, 0));
 }
 
 TEST_F(RTCVideoDecoderTest, FallBackToSoftwareOnVp9Svc) {
@@ -248,14 +247,10 @@ TEST_F(RTCVideoDecoderTest, FallBackToSoftwareOnVp9Svc) {
   CreateDecoder(webrtc::kVideoCodecVP9);
   Initialize();
 
-  webrtc::CodecSpecificInfo codec_specific_info;
-  codec_specific_info.codecType = webrtc::kVideoCodecVP9;
-  codec_specific_info.codecSpecific.VP9.ss_data_available = true;
-  codec_specific_info.codecSpecific.VP9.num_spatial_layers = 2;
-
   webrtc::EncodedImage input_image;
+  input_image.SetSpatialIndex(1);
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE,
-            rtc_decoder_->Decode(input_image, false, &codec_specific_info, 0));
+            rtc_decoder_->Decode(input_image, false, 0));
 }
 
 TEST_F(RTCVideoDecoderTest, ReleaseReturnsOk) {
@@ -369,11 +364,11 @@ TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForNotifyError) {
   input_image._completeFrame = true;
   input_image._encodedWidth = 0;
   input_image._encodedHeight = 0;
-  input_image._frameType = webrtc::kVideoFrameDelta;
+  input_image._frameType = webrtc::VideoFrameType::kVideoFrameDelta;
   input_image.set_buffer(buffer, sizeof(buffer));
   input_image.set_size(sizeof(buffer));
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR,
-            rtc_decoder_->Decode(input_image, false, nullptr, 0));
+            rtc_decoder_->Decode(input_image, false, 0));
   RunUntilIdle();
 
   // Notify the decoder about a platform error.
@@ -384,13 +379,13 @@ TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForNotifyError) {
   // Expect decode call to reset decoder, and set up a new VDA to track it.
   SetUpResetVDA();
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR,
-            rtc_decoder_->Decode(input_image, false, nullptr, 0));
+            rtc_decoder_->Decode(input_image, false, 0));
   EXPECT_EQ(1, rtc_decoder_->GetVDAErrorCounterForTesting());
 
   // Decoder expects a frame with size after reset, so drops any other frames.
   // However, we should still increment the error counter.
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR,
-            rtc_decoder_->Decode(input_image, false, nullptr, 0));
+            rtc_decoder_->Decode(input_image, false, 0));
   EXPECT_EQ(2, rtc_decoder_->GetVDAErrorCounterForTesting());
 }
 
@@ -406,7 +401,7 @@ TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForRunningOutOfPendingBuffers) {
   input_image._completeFrame = true;
   input_image._encodedWidth = 640;
   input_image._encodedHeight = 480;
-  input_image._frameType = webrtc::kVideoFrameKey;
+  input_image._frameType = webrtc::VideoFrameType::kVideoFrameKey;
   input_image.set_buffer(buffer, sizeof(buffer));
   input_image.set_size(sizeof(buffer));
 
@@ -415,8 +410,7 @@ TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForRunningOutOfPendingBuffers) {
   const uint32_t kMaxNumDecodeRequests = 100;
   uint32_t i = 0;
   while (i++ < kMaxNumDecodeRequests) {
-    const int32_t result =
-        rtc_decoder_->Decode(input_image, false, nullptr, 0);
+    const int32_t result = rtc_decoder_->Decode(input_image, false, 0);
     RunUntilIdle();
     if (result == WEBRTC_VIDEO_CODEC_OK)
       EXPECT_EQ(0, rtc_decoder_->GetVDAErrorCounterForTesting());
@@ -445,12 +439,12 @@ TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForSendingFramesWithoutSize) {
   input_image._completeFrame = true;
   input_image._encodedWidth = 0;
   input_image._encodedHeight = 0;
-  input_image._frameType = webrtc::kVideoFrameKey;
+  input_image._frameType = webrtc::VideoFrameType::kVideoFrameKey;
   input_image.set_buffer(buffer, sizeof(buffer));
   input_image.set_size(sizeof(buffer));
   const int kNumDecodeRequests = 3;
   for (int i = 0; i < kNumDecodeRequests; i++) {
-    const int32_t result = rtc_decoder_->Decode(input_image, false, nullptr, 0);
+    const int32_t result = rtc_decoder_->Decode(input_image, false, 0);
     RunUntilIdle();
     EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR, result);
     EXPECT_EQ(i + 1, rtc_decoder_->GetVDAErrorCounterForTesting());
@@ -467,20 +461,18 @@ TEST_P(RTCVideoDecoderTest, Reinitialize) {
   input_image._completeFrame = true;
   input_image._encodedWidth = 640;
   input_image._encodedHeight = 480;
-  input_image._frameType = webrtc::kVideoFrameKey;
+  input_image._frameType = webrtc::VideoFrameType::kVideoFrameKey;
   input_image.set_buffer(buffer, sizeof(buffer));
   input_image.set_size(sizeof(buffer));
   EXPECT_CALL(*mock_vda_, Decode(_)).Times(1);
-  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
-            rtc_decoder_->Decode(input_image, false, nullptr, 0));
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, rtc_decoder_->Decode(input_image, false, 0));
   RunUntilIdle();
 
   // InitDecode and Decode after Release should succeed.
   EXPECT_CALL(*mock_vda_, Reset()).Times(1);
   rtc_decoder_->Release();
   Initialize();
-  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
-            rtc_decoder_->Decode(input_image, false, nullptr, 0));
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, rtc_decoder_->Decode(input_image, false, 0));
 }
 
 INSTANTIATE_TEST_SUITE_P(CodecProfiles,

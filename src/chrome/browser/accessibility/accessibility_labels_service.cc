@@ -55,9 +55,10 @@ void AccessibilityLabelsService::Init() {
           &AccessibilityLabelsService::OnImageLabelsEnabledChanged,
           weak_factory_.GetWeakPtr()));
 
-  // Log whether the feature is enabled after startup.
-  content::BrowserAccessibilityState::GetInstance()->AddHistogramCallback(
-      base::BindRepeating(
+  // Log whether the feature is enabled after startup. This must be run on the
+  // UI thread because it accesses prefs.
+  content::BrowserAccessibilityState::GetInstance()
+      ->AddUIThreadHistogramCallback(base::BindRepeating(
           &AccessibilityLabelsService::UpdateAccessibilityLabelsHistograms,
           weak_factory_.GetWeakPtr()));
 }
@@ -124,6 +125,9 @@ void AccessibilityLabelsService::OnImageLabelsEnabledChanged() {
 }
 
 void AccessibilityLabelsService::UpdateAccessibilityLabelsHistograms() {
+  if (!profile_ || !profile_->GetPrefs())
+    return;
+
   base::UmaHistogramBoolean("Accessibility.ImageLabels",
                             profile_->GetPrefs()->GetBoolean(
                                 prefs::kAccessibilityImageLabelsEnabled));

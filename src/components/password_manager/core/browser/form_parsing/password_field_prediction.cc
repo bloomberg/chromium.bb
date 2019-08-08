@@ -86,9 +86,13 @@ FormPredictions ConvertToFormPredictions(const FormStructure& form_structure) {
             predictions.may_use_prefilled_placeholder();
       }
 
-      result[field->unique_renderer_id] = PasswordFieldPrediction{
-          .type = server_type,
-          .may_use_prefilled_placeholder = may_use_prefilled_placeholder};
+      result.push_back(
+          {.renderer_id = field->unique_renderer_id,
+           .type = server_type,
+           .may_use_prefilled_placeholder = may_use_prefilled_placeholder});
+#if defined(OS_IOS)
+      result.back().unique_id = field->unique_id;
+#endif
     }
   }
 

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.suggestions;
 
 import android.content.res.ColorStateList;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
@@ -26,10 +25,8 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.Promise;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
@@ -52,28 +49,25 @@ public class SuggestionsBinder {
     private final SuggestionsUiDelegate mUiDelegate;
     private final boolean mIsContextual;
 
-    private final View mCardContainerView;
+    protected final View mCardContainerView;
     private final LinearLayout mTextLayout;
     private final TextView mHeadlineTextView;
     private final @Nullable TextView mSnippetTextView;
-    private final TextView mPublisherTextView;
-    private final TextView mAgeTextView;
+    private final @Nullable TextView mPublisherTextView;
+    protected final TextView mAgeTextView;
     // TODO(twellington): Try to change this back to a TintedImageView. This was changed for a crash
     // in contextual suggestions that occurs when trying to mutate state when tinting a
     // LayerDrawable that contains a RoundedBitmapDrawable on older versions of Android.
     private final ImageView mThumbnailView;
     private final @Nullable ImageView mVideoBadge;
-    private final ImageView mOfflineBadge;
-    private final View mPublisherBar;
+    private final @Nullable ImageView mOfflineBadge;
+    protected final @Nullable View mPublisherBar;
     private final int mThumbnailSize;
     private final int mSmallThumbnailCornerRadius;
 
     boolean mShowThumbnail;
     boolean mHasVideoBadge;
     boolean mHasOfflineBadge;
-
-    @Nullable
-    private ImageFetcher.DownloadThumbnailRequest mThumbnailRequest;
 
     private SnippetArticle mSuggestion;
 
@@ -100,15 +94,9 @@ public class SuggestionsBinder {
         mOfflineBadge = mCardContainerView.findViewById(R.id.offline_icon);
         mPublisherBar = mCardContainerView.findViewById(R.id.publisher_bar);
 
-        if (mIsContextual) {
-            mThumbnailSize = mCardContainerView.getResources().getDimensionPixelSize(
-                    R.dimen.snippets_thumbnail_size_small);
-        } else {
-            mThumbnailSize = getThumbnailSize(mCardContainerView.getResources());
-        }
-
+        mThumbnailSize = getThumbnailSize();
         mSmallThumbnailCornerRadius = mCardContainerView.getResources().getDimensionPixelSize(
-                R.dimen.default_card_corner_radius);
+                R.dimen.default_rounded_corner_radius);
     }
 
     public void updateViewInformation(SnippetArticle suggestion) {
@@ -117,7 +105,9 @@ public class SuggestionsBinder {
         mSuggestion = suggestion;
 
         mHeadlineTextView.setText(suggestion.mTitle);
-        mPublisherTextView.setText(getPublisherString(suggestion));
+        if (mPublisherTextView != null) {
+            mPublisherTextView.setText(getPublisherString(suggestion));
+        }
         mAgeTextView.setText(getArticleAge(suggestion));
 
         setFavicon();
@@ -138,22 +128,22 @@ public class SuggestionsBinder {
         mShowThumbnail = showThumbnail;
         updateVisibilityForBadges();
 
-        ViewGroup.MarginLayoutParams publisherBarParams =
-                (ViewGroup.MarginLayoutParams) mPublisherBar.getLayoutParams();
-
-        if (showHeadline && !mIsContextual) {
-            // When we show a headline and not a description, we reduce the top margin of the
-            // publisher bar.
-            publisherBarParams.topMargin = mPublisherBar.getResources().getDimensionPixelSize(
-                    R.dimen.snippets_publisher_margin_top);
-        } else {
-            // When there is no headline and no description, we remove the top margin of the
-            // publisher bar.
-            publisherBarParams.topMargin = 0;
-        }
-
         mTextLayout.setMinimumHeight(showThumbnail ? mThumbnailSize : 0);
-        mPublisherBar.setLayoutParams(publisherBarParams);
+        if (mPublisherBar != null) {
+            ViewGroup.MarginLayoutParams publisherBarParams =
+                    (ViewGroup.MarginLayoutParams) mPublisherBar.getLayoutParams();
+            if (showHeadline && !mIsContextual) {
+                // When we show a headline and not a description, we reduce the top margin of the
+                // publisher bar.
+                publisherBarParams.topMargin = mPublisherBar.getResources().getDimensionPixelSize(
+                        R.dimen.snippets_publisher_margin_top);
+            } else {
+                // When there is no headline and no description, we remove the top margin of the
+                // publisher bar.
+                publisherBarParams.topMargin = 0;
+            }
+            mPublisherBar.setLayoutParams(publisherBarParams);
+        }
 
         if (mSnippetTextView != null) {
             mSnippetTextView.setVisibility(showSnippet ? View.VISIBLE : View.GONE);
@@ -175,16 +165,13 @@ public class SuggestionsBinder {
                     mHasVideoBadge && !mHasOfflineBadge ? View.VISIBLE : View.GONE);
         }
 
-        mOfflineBadge.setVisibility(mHasOfflineBadge ? View.VISIBLE : View.GONE);
+        if (mOfflineBadge != null) {
+            mOfflineBadge.setVisibility(mHasOfflineBadge ? View.VISIBLE : View.GONE);
+        }
     }
 
     private void setFavicon() {
-        // The favicon of the publisher should match the TextView height.
-        int widthSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-        int heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-        mPublisherTextView.measure(widthSpec, heightSpec);
-        int publisherFaviconSizePx = mPublisherTextView.getMeasuredHeight();
-
+        int publisherFaviconSizePx = getPublisherFaviconSizePx();
         Drawable favicon = mSuggestion.getPublisherFavicon();
         if (favicon != null) {
             setFaviconOnView(favicon, publisherFaviconSizePx);
@@ -196,8 +183,8 @@ public class SuggestionsBinder {
         // from moving later.
         setDefaultFaviconOnView(publisherFaviconSizePx);
         Callback<Bitmap> faviconCallback = bitmap -> {
-            Drawable drawable =
-                    new BitmapDrawable(mPublisherTextView.getContext().getResources(), bitmap);
+            Drawable drawable = new BitmapDrawable(
+                    getPublisherIconTextView().getContext().getResources(), bitmap);
             // If the device has sufficient memory, store the favicon to skip the download task
             // next time we display this snippet.
             if (!SysUtils.isLowEndDevice() && mSuggestion != null) {
@@ -210,9 +197,6 @@ public class SuggestionsBinder {
     }
 
     private void setThumbnail() {
-        // If there's still a pending thumbnail fetch, cancel it.
-        cancelThumbnailFetch();
-
         // mThumbnailView's visibility is modified in updateFieldsVisibility().
         if (mThumbnailView.getVisibility() != View.VISIBLE) return;
 
@@ -222,68 +206,25 @@ public class SuggestionsBinder {
             return;
         }
 
-        if (mSuggestion.isDownload()) {
-            setDownloadThumbnail();
-            return;
-        }
-
         // Temporarily set placeholder and then fetch the thumbnail from a provider.
         mThumbnailView.setBackground(null);
         if (mIsContextual) {
             mThumbnailView.setImageResource(
                     R.drawable.contextual_suggestions_placeholder_thumbnail);
-        } else if (ChromeFeatureList.isEnabled(
-                           ChromeFeatureList.CONTENT_SUGGESTIONS_THUMBNAIL_DOMINANT_COLOR)) {
+        } else {
             ColorDrawable colorDrawable =
                     new ColorDrawable(mSuggestion.getThumbnailDominantColor() != null
                                     ? mSuggestion.getThumbnailDominantColor()
                                     : ApiCompatibilityUtils.getColor(mThumbnailView.getResources(),
                                             R.color.thumbnail_placeholder_on_primary_bg));
+
             mThumbnailView.setImageDrawable(colorDrawable);
-        } else {
-            mThumbnailView.setImageResource(R.drawable.ic_snippet_thumbnail_placeholder);
         }
         if (!mIsContextual) ApiCompatibilityUtils.setImageTintList(mThumbnailView, null);
 
         // Fetch thumbnail for the current article.
         mImageFetcher.makeArticleThumbnailRequest(
                 mSuggestion, new FetchThumbnailCallback(mSuggestion, mThumbnailSize));
-    }
-
-    private void setDownloadThumbnail() {
-        assert mSuggestion.isDownload();
-        if (!mSuggestion.isAssetDownload()) {
-            setThumbnailFromFileType(DownloadFilter.Type.PAGE);
-            return;
-        }
-
-        @DownloadFilter.Type
-        int fileType = DownloadFilter.fromMimeType(mSuggestion.getAssetDownloadMimeType());
-        if (fileType == DownloadFilter.Type.IMAGE) {
-            // For image downloads, attempt to fetch a thumbnail.
-            ImageFetcher.DownloadThumbnailRequest thumbnailRequest =
-                    mImageFetcher.makeDownloadThumbnailRequest(mSuggestion, mThumbnailSize);
-
-            Promise<Bitmap> thumbnailReceivedPromise = thumbnailRequest.getPromise();
-
-            if (thumbnailReceivedPromise.isFulfilled()) {
-                // If the thumbnail was cached, then it will be retrieved synchronously, the promise
-                // will be fulfilled and we can set the thumbnail immediately.
-                verifyBitmap(thumbnailReceivedPromise.getResult());
-                setThumbnail(ThumbnailGradient.createDrawableWithGradientIfNeeded(
-                        thumbnailReceivedPromise.getResult(), mCardContainerView.getResources()));
-
-                return;
-            }
-
-            mThumbnailRequest = thumbnailRequest;
-
-            // Queue a callback to be called after the thumbnail is retrieved asynchronously.
-            thumbnailReceivedPromise.then(new FetchThumbnailCallback(mSuggestion, mThumbnailSize));
-        }
-
-        // Set a placeholder for the file type.
-        setThumbnailFromFileType(fileType);
     }
 
     private void setThumbnail(Drawable thumbnail) {
@@ -310,23 +251,16 @@ public class SuggestionsBinder {
     }
 
     private void setDefaultFaviconOnView(int faviconSizePx) {
-        setFaviconOnView(
-                ApiCompatibilityUtils.getDrawable(
-                        mPublisherTextView.getContext().getResources(), R.drawable.default_favicon),
+        setFaviconOnView(ApiCompatibilityUtils.getDrawable(
+                                 getPublisherIconTextView().getContext().getResources(),
+                                 R.drawable.default_favicon),
                 faviconSizePx);
     }
 
     private void setFaviconOnView(Drawable drawable, int faviconSizePx) {
         drawable.setBounds(0, 0, faviconSizePx, faviconSizePx);
-        mPublisherTextView.setCompoundDrawablesRelative(drawable, null, null, null);
-        mPublisherTextView.setVisibility(View.VISIBLE);
-    }
-
-    private void cancelThumbnailFetch() {
-        if (mThumbnailRequest != null) {
-            mThumbnailRequest.cancel();
-            mThumbnailRequest = null;
-        }
+        getPublisherIconTextView().setCompoundDrawablesRelative(drawable, null, null, null);
+        getPublisherIconTextView().setVisibility(View.VISIBLE);
     }
 
     private void fadeThumbnailIn(Drawable thumbnail) {
@@ -357,7 +291,7 @@ public class SuggestionsBinder {
         return BidiFormatter.getInstance().unicodeWrap(suggestion.mPublisher);
     }
 
-    private static String getArticleAge(SnippetArticle suggestion) {
+    private String getArticleAge(SnippetArticle suggestion) {
         if (suggestion.mPublishTimestampMilliseconds == 0) return "";
 
         // DateUtils.getRelativeTimeSpanString(...) calls through to TimeZone.getDefault(). If this
@@ -377,7 +311,7 @@ public class SuggestionsBinder {
         }
 
         // We add a dash before the elapsed time, e.g. " - 14 minutes ago".
-        return String.format(ARTICLE_AGE_FORMAT_STRING,
+        return String.format(getArticleAgeFormatString(),
                 BidiFormatter.getInstance().unicodeWrap(relativeTimeSpan));
     }
 
@@ -408,14 +342,7 @@ public class SuggestionsBinder {
                         mCapturedSuggestion.isArticle() ? ThumbnailUtils.OPTIONS_RECYCLE_INPUT : 0);
             }
 
-            Drawable drawable;
-            if (mIsContextual) {
-                drawable = ViewUtils.createRoundedBitmapDrawable(
-                        thumbnail, mSmallThumbnailCornerRadius);
-            } else {
-                drawable = ThumbnailGradient.createDrawableWithGradientIfNeeded(
-                        thumbnail, mThumbnailView.getResources());
-            }
+            Drawable drawable = createThumbnailDrawable(thumbnail);
 
             // If the device has sufficient memory, store the image to skip the download task
             // next time we display this snippet.
@@ -444,7 +371,7 @@ public class SuggestionsBinder {
     public void recycle() {
         // Clear the thumbnail and favicon drawables to allow the bitmap memory to be reclaimed.
         mThumbnailView.setImageDrawable(null);
-        mPublisherTextView.setCompoundDrawables(null, null, null, null);
+        getPublisherIconTextView().setCompoundDrawables(null, null, null, null);
 
         mSuggestion = null;
     }
@@ -454,7 +381,59 @@ public class SuggestionsBinder {
         assert bitmap.getWidth() <= mThumbnailSize || bitmap.getHeight() <= mThumbnailSize;
     }
 
-    private static int getThumbnailSize(Resources resources) {
-        return resources.getDimensionPixelSize(R.dimen.snippets_thumbnail_size);
+    /**
+     * Get the size, shared width and height, for article thumbnails. This value will be used to
+     * configure sizes of the thumbnails's {@link ImageView} and other elements within the card.
+     * @return The size of the thumbnail.
+     */
+    protected int getThumbnailSize() {
+        if (mIsContextual) {
+            return mCardContainerView.getResources().getDimensionPixelSize(
+                    R.dimen.snippets_thumbnail_size_small);
+        } else {
+            return mCardContainerView.getResources().getDimensionPixelSize(
+                    R.dimen.snippets_thumbnail_size);
+        }
+    }
+
+    /**
+     * Get the size, shared width and height, for the publisher favicon. This value will be used to
+     * configure the sizes of the rest of the publisher bar.
+     * @return The size of the publisher favicon.
+     */
+    protected int getPublisherFaviconSizePx() {
+        // The favicon of the publisher should match the TextView height.
+        int widthSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+        int heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+        getPublisherIconTextView().measure(widthSpec, heightSpec);
+        return getPublisherIconTextView().getMeasuredHeight();
+    }
+
+    /**
+     * @return Formattable string with one %s to insert the age text.
+     */
+    protected String getArticleAgeFormatString() {
+        return ARTICLE_AGE_FORMAT_STRING;
+    }
+
+    /**
+     * @return The {@link TextView} that will be used to contain the publisher favicon.
+     */
+    protected TextView getPublisherIconTextView() {
+        return mPublisherTextView;
+    }
+
+    /**
+     * Create the {@link Drawable} for article thumbnail, from a simple {@link Bitmap}.
+     * @param thumbnail The fetched thumbnail image for the article.
+     * @return A {@link Drawable} to give to the view.
+     */
+    protected Drawable createThumbnailDrawable(Bitmap thumbnail) {
+        if (mIsContextual) {
+            return ViewUtils.createRoundedBitmapDrawable(thumbnail, mSmallThumbnailCornerRadius);
+        } else {
+            return ThumbnailGradient.createDrawableWithGradientIfNeeded(
+                    thumbnail, mThumbnailView.getResources());
+        }
     }
 }

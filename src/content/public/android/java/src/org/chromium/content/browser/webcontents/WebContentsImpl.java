@@ -354,6 +354,12 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
+    public RenderFrameHost getFocusedFrame() {
+        checkNotDestroyed();
+        return nativeGetFocusedFrame(mNativeWebContentsAndroid);
+    }
+
+    @Override
     public String getTitle() {
         checkNotDestroyed();
         return nativeGetTitle(mNativeWebContentsAndroid);
@@ -728,6 +734,12 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
+    public void setSpatialNavigationDisabled(boolean disabled) {
+        checkNotDestroyed();
+        nativeSetSpatialNavigationDisabled(mNativeWebContentsAndroid, disabled);
+    }
+
+    @Override
     public void writeContentBitmapToDiskAsync(
             int width, int height, String path, Callback<String> callback) {
         checkNotDestroyed();
@@ -956,6 +968,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     private native void nativeSetTopLevelNativeWindow(
             long nativeWebContentsAndroid, WindowAndroid windowAndroid);
     private native RenderFrameHost nativeGetMainFrame(long nativeWebContentsAndroid);
+    private native RenderFrameHost nativeGetFocusedFrame(long nativeWebContentsAndroid);
     private native String nativeGetTitle(long nativeWebContentsAndroid);
     private native String nativeGetVisibleURL(long nativeWebContentsAndroid);
     private native String nativeGetEncoding(long nativeWebContentsAndroid);
@@ -1003,6 +1016,8 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
             long nativeWebContentsAndroid, AccessibilitySnapshotCallback callback);
     private native void nativeSetOverscrollRefreshHandler(
             long nativeWebContentsAndroid, OverscrollRefreshHandler nativeOverscrollRefreshHandler);
+    private native void nativeSetSpatialNavigationDisabled(
+            long nativeWebContentsAndroid, boolean disabled);
     private native void nativeWriteContentBitmapToDisk(long nativeWebContentsAndroid, int width,
             int height, String path, Callback<String> callback);
     private native void nativeReloadLoFiImages(long nativeWebContentsAndroid);

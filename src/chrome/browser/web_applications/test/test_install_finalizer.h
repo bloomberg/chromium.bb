@@ -22,9 +22,11 @@ class TestInstallFinalizer final : public InstallFinalizer {
 
   // InstallFinalizer:
   void FinalizeInstall(const WebApplicationInfo& web_app_info,
+                       const FinalizeOptions& options,
                        InstallFinalizedCallback callback) override;
   bool CanCreateOsShortcuts() const override;
   void CreateOsShortcuts(const AppId& app_id,
+                         bool add_to_desktop,
                          CreateOsShortcutsCallback callback) override;
   bool CanPinAppToShelf() const override;
   void PinAppToShelf(const AppId& app_id) override;
@@ -42,6 +44,8 @@ class TestInstallFinalizer final : public InstallFinalizer {
     return std::move(web_app_info_copy_);
   }
 
+  bool finalized_policy_install() { return finalized_policy_install_.value(); }
+
   int num_create_os_shortcuts_calls() { return num_create_os_shortcuts_calls_; }
   int num_reparent_tab_calls() { return num_reparent_tab_calls_; }
   int num_reveal_appshim_calls() { return num_reveal_appshim_calls_; }
@@ -49,6 +53,7 @@ class TestInstallFinalizer final : public InstallFinalizer {
 
  private:
   std::unique_ptr<WebApplicationInfo> web_app_info_copy_;
+  base::Optional<bool> finalized_policy_install_;
 
   base::Optional<AppId> next_app_id_;
   base::Optional<InstallResultCode> next_result_code_;

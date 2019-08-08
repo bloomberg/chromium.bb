@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/loader/resource/font_resource.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -106,12 +107,6 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
     USING_GARBAGE_COLLECTED_MIXIN(FontResourceHelper);
 
    public:
-    static FontResourceHelper* Create(
-        FontResource* resource,
-        base::SingleThreadTaskRunner* task_runner) {
-      return MakeGarbageCollected<FontResourceHelper>(resource, task_runner);
-    }
-
     FontResourceHelper(FontResource* resource,
                        base::SingleThreadTaskRunner* task_runner) {
       SetResource(resource, task_runner);
@@ -129,7 +124,12 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
   mutable Member<FontResourceHelper> fetched_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSFontFaceSrcValue, IsFontFaceSrcValue());
+template <>
+struct DowncastTraits<CSSFontFaceSrcValue> {
+  static bool AllowFrom(const CSSValue& value) {
+    return value.IsFontFaceSrcValue();
+  }
+};
 
 }  // namespace blink
 

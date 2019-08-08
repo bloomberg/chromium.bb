@@ -28,7 +28,8 @@ const CSSValue* ConsumeSingleType(const CSSSyntaxComponent& syntax,
       if (range.Peek().GetType() == kIdentToken &&
           range.Peek().Value() == syntax.GetString()) {
         range.ConsumeIncludingWhitespace();
-        return CSSCustomIdentValue::Create(AtomicString(syntax.GetString()));
+        return MakeGarbageCollected<CSSCustomIdentValue>(
+            AtomicString(syntax.GetString()));
       }
       return nullptr;
     case CSSSyntaxType::kLength:

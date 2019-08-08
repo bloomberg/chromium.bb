@@ -15,7 +15,6 @@
 namespace blink {
 
 class DtlsTransportProxy;
-class DOMArrayBuffer;
 class RTCIceTransport;
 
 enum class RTCDtlsTransportState {
@@ -33,7 +32,6 @@ enum class RTCDtlsTransportState {
 class MODULES_EXPORT RTCDtlsTransport final
     : public EventTargetWithInlineData,
       public ContextClient,
-      public ActiveScriptWrappable<RTCDtlsTransport>,
       public DtlsTransportProxy::Delegate {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(RTCDtlsTransport);
@@ -48,7 +46,6 @@ class MODULES_EXPORT RTCDtlsTransport final
   // rtc_dtls_transport.idl
   RTCIceTransport* iceTransport() const;
   String state() const;
-  const HeapVector<Member<DOMArrayBuffer>>& getRemoteCertificates() const;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
@@ -56,9 +53,6 @@ class MODULES_EXPORT RTCDtlsTransport final
   // DtlsTransportProxy::Delegate
   void OnStartCompleted(webrtc::DtlsTransportInformation info) override;
   void OnStateChange(webrtc::DtlsTransportInformation info) override;
-
-  // ActiveScriptWrappable overrides
-  bool HasPendingActivity() const override;
 
   // EventTarget overrides.
   const AtomicString& InterfaceName() const override;
@@ -68,13 +62,14 @@ class MODULES_EXPORT RTCDtlsTransport final
   // Others
   void ChangeState(webrtc::DtlsTransportInformation info);
   webrtc::DtlsTransportInterface* native_transport();
+  void Close();
 
  private:
   webrtc::DtlsTransportInformation current_state_;
-  HeapVector<Member<DOMArrayBuffer>> remote_certificates_;
   rtc::scoped_refptr<webrtc::DtlsTransportInterface> native_transport_;
   std::unique_ptr<DtlsTransportProxy> proxy_;
   Member<RTCIceTransport> ice_transport_;
+  bool closed_from_owner_ = false;
 };
 
 }  // namespace blink

@@ -21,6 +21,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">現在</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 分鐘}other{# 分鐘}}</translation>
+<translation id="1756116796893109054">正在傳送分頁...</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">句號</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 個月}other{# 個月}}</translation>
@@ -34,6 +35,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">選取全部(&amp;A)</translation>
 <translation id="1938451708255335766">如要調整視窗顯示密度，請重新啟動應用程式。</translation>
+<translation id="208586643495776849">請再試一次</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 天}other{# 天}}</translation>
 <translation id="2148716181193084225">今天</translation>
 <translation id="2168039046890040389">向上翻頁</translation>
@@ -51,11 +53,14 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">校正完成</translation>
 <translation id="252373100621549798">顯示器不明</translation>
+<translation id="2573731672208488250">{HOURS,plural, =1{1 小時內}other{# 小時內}}</translation>
 <translation id="2583543531130364912">校正觸控螢幕</translation>
 <translation id="2666092431469916601">置頂</translation>
+<translation id="2701330563083355633">透過 <ph name="DEVICE_NAME" /> 分享</translation>
 <translation id="2743387203779672305">複製到剪貼簿</translation>
 <translation id="2803313416453193357">開啟資料夾</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 年前}other{# 年前}}</translation>
+<translation id="2907671656515444832">{DAYS,plural, =1{1 天內}other{# 天內}}</translation>
 <translation id="2931838996092594335">點選</translation>
 <translation id="3036649622769666520">開啟檔案</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
@@ -67,6 +72,7 @@
 <translation id="3234408098842461169">向下鍵</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 天}other{# 天}}</translation>
 <translation id="335581015389089642">語音</translation>
+<translation id="3443810440409579745">已收到分頁。</translation>
 <translation id="3479552764303398839">現在不要</translation>
 <translation id="348799646910989694">自動隱藏檔案櫃</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{還剩 1 天}other{還剩 # 天}}</translation>
@@ -96,6 +102,7 @@
 <translation id="4730374152663651037">常用的應用程式</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{還剩 1 個月}other{還剩 # 個月}}</translation>
 <translation id="4841881773802181781">插入</translation>
+<translation id="4881695831933465202">開啟</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 秒}other{# 秒}}</translation>
 <translation id="4971687151119236543">上一首媒體曲目</translation>
 <translation id="5046499563572181734">輕觸這裡</translation>
@@ -103,6 +110,7 @@
 <translation id="5137751499640340777">開啟 Google 助理</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">顯示/隱藏三角標記</translation>
+<translation id="5278860589123563674">無法傳送</translation>
 <translation id="528468243742722775">結束</translation>
 <translation id="5329858601952122676">刪除(&amp;D)</translation>
 <translation id="5395308026110844773">「<ph name="DRAGGED_APP_NAME" />」已拖曳到「<ph name="IN_PLACE_APP" />」上方，放開滑鼠即可建立資料夾。</translation>
@@ -114,6 +122,7 @@
 <translation id="5613020302032141669">向左鍵</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 分鐘}other{# 分鐘}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 天 }other{# 天 }}</translation>
+<translation id="5866104238061687188">{YEARS,plural, =1{1 年內}other{# 年內}}</translation>
 <translation id="5895138241574237353">重新啟動</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{還剩 1 秒}other{還剩 # 秒}}</translation>
 <translation id="5941711191222866238">縮到最小</translation>
@@ -145,7 +154,6 @@
 <translation id="6808150112686056157">停止媒體播放</translation>
 <translation id="6845383723252244143">選取資料夾</translation>
 <translation id="6845533974506654842">按下</translation>
-<translation id="686304767576508198">分享者：</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{還剩 1 小時}other{還剩 # 小時}}</translation>
 <translation id="688711909580084195">無標題網頁</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/秒</translation>
@@ -170,6 +178,7 @@
 <translation id="7907591526440419938">開啟檔案</translation>
 <translation id="7969046989155602842">Command 鍵</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{超過 1 則未讀通知}other{超過 # 則未讀通知}}</translation>
+<translation id="8086866675552927481">{MINUTES,plural, =1{1 分鐘內}other{# 分鐘內}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 小時前}other{# 小時前}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{還剩 1 秒}other{還剩 # 秒}}</translation>
@@ -198,6 +207,7 @@
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" />資料夾</translation>
 <translation id="883911313571074303">為圖片加註</translation>
 <translation id="8841375032071747811">返回按鈕</translation>
+<translation id="8876215549894133151">格式：</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">一律隱藏檔案櫃</translation>
 <translation id="9002566407876343676">開啟</translation>

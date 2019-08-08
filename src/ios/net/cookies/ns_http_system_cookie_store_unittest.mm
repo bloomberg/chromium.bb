@@ -28,8 +28,6 @@ class NSHTTPSystemCookieStoreTestDelegate {
         shared_store_([NSHTTPCookieStorage sharedHTTPCookieStorage]),
         store_(std::make_unique<net::NSHTTPSystemCookieStore>(shared_store_)) {}
 
-  bool IsTestEnabled() { return true; }
-
   bool IsCookieSet(NSHTTPCookie* system_cookie, NSURL* url) {
     // Verify that cookie is set in system storage.
     NSHTTPCookie* result_cookie = nil;

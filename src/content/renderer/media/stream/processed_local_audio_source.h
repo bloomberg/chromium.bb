@@ -25,6 +25,8 @@ class AudioBus;
 
 namespace content {
 
+CONTENT_EXPORT bool IsApmInAudioServiceEnabled();
+
 class PeerConnectionDependencyFactory;
 
 // Represents a local source of audio data that is routed through the WebRTC
@@ -43,9 +45,10 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
       int consumer_render_frame_id,
       const blink::MediaStreamDevice& device,
       bool disable_local_echo,
-      const AudioProcessingProperties& audio_processing_properties,
+      const blink::AudioProcessingProperties& audio_processing_properties,
       const ConstraintsCallback& started_callback,
-      PeerConnectionDependencyFactory* factory);
+      PeerConnectionDependencyFactory* factory,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   ~ProcessedLocalAudioSource() final;
 
@@ -60,7 +63,7 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
     allow_invalid_render_frame_id_for_testing_ = allowed;
   }
 
-  const AudioProcessingProperties& audio_processing_properties() const {
+  const blink::AudioProcessingProperties& audio_processing_properties() const {
     return audio_processing_properties_;
   }
 
@@ -127,7 +130,7 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
 
   PeerConnectionDependencyFactory* const pc_factory_;
 
-  AudioProcessingProperties audio_processing_properties_;
+  blink::AudioProcessingProperties audio_processing_properties_;
 
   // Callback that's called when the audio source has been initialized.
   ConstraintsCallback started_callback_;

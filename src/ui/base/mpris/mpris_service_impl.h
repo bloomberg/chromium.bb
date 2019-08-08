@@ -9,9 +9,11 @@
 
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
+#include "base/timer/timer.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
 #include "ui/base/mpris/mpris_service.h"
@@ -46,6 +48,10 @@ class COMPONENT_EXPORT(MPRIS) MprisServiceImpl : public MprisService {
   void SetCanGoPrevious(bool value) override;
   void SetCanPlay(bool value) override;
   void SetCanPause(bool value) override;
+  void SetPlaybackStatus(PlaybackStatus value) override;
+  void SetTitle(const base::string16& value) override;
+  void SetArtist(const base::string16& value) override;
+  void SetAlbum(const base::string16& value) override;
   std::string GetServiceName() const override;
 
   // Used for testing with a mock DBus Bus.
@@ -91,9 +97,17 @@ class COMPONENT_EXPORT(MPRIS) MprisServiceImpl : public MprisService {
                            const std::string& property_name,
                            const base::Value& new_value);
 
+  // Sets a value on the Metadata property map and sends a PropertiesChanged
+  // signal if necessary.
+  void SetMetadataPropertyInternal(const std::string& property_name,
+                                   const base::Value& new_value);
+
+  // Updates a timer to debounce calls to |EmitPropertiesChangedSignal|.
+  void EmitPropertiesChangedSignalDebounced();
+
   // Emits a org.freedesktop.DBus.Properties.PropertiesChanged signal for the
   // given map of changed properties.
-  void EmitPropertiesChangedSignal(const PropertyMap& changed_properties);
+  void EmitPropertiesChangedSignal();
 
   // Writes all properties onto writer.
   void AddPropertiesToWriter(dbus::MessageWriter* writer,
@@ -117,6 +131,17 @@ class COMPONENT_EXPORT(MPRIS) MprisServiceImpl : public MprisService {
 
   // True if we have finished creating the DBus service and received ownership.
   bool service_ready_ = false;
+
+  // True if we failed to start the MPRIS DBus service.
+  bool service_failed_to_start_ = false;
+
+  // Used to only send 1 PropertiesChanged signal when many properties are
+  // changed at once.
+  base::OneShotTimer properties_changed_debounce_timer_;
+
+  // Holds a list of properties that have changed since the last time we emitted
+  // a PropertiesChanged signal.
+  base::flat_set<std::string> changed_properties_;
 
   base::ObserverList<MprisServiceObserver> observers_;
 

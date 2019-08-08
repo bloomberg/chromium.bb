@@ -116,7 +116,8 @@ GCMSocketStreamTest::GCMSocketStreamTest()
 
   network_context_ = std::make_unique<network::NetworkContext>(
       network_service_.get(), mojo::MakeRequest(&network_context_ptr_),
-      &url_request_context_);
+      &url_request_context_,
+      /*cors_exempt_header_list=*/std::vector<std::string>());
 }
 
 GCMSocketStreamTest::~GCMSocketStreamTest() {}
@@ -143,8 +144,8 @@ void GCMSocketStreamTest::PumpLoop() {
 
 base::StringPiece GCMSocketStreamTest::DoInputStreamRead(int bytes) {
   int total_bytes_read = 0;
-  const void* initial_buffer = NULL;
-  const void* buffer = NULL;
+  const void* initial_buffer = nullptr;
+  const void* buffer = nullptr;
   int size = 0;
 
   do {

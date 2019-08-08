@@ -62,13 +62,12 @@ public:
      */
     void absClear(const SkIRect* rect, const SkPMColor4f& color);
 
-    void stencilRect(const GrHardClip&,
-                     const GrUserStencilSettings* ss,
-                     GrAAType,
-                     const SkMatrix& viewMatrix,
-                     const SkRect& rect);
+    void stencilRect(
+            const GrHardClip&, const GrUserStencilSettings* ss, GrAA doStencilMSAA,
+            const SkMatrix& viewMatrix, const SkRect& rect);
 
-    void stencilPath(const GrHardClip&, GrAAType, const SkMatrix& viewMatrix, const GrPath*);
+    void stencilPath(
+            const GrHardClip&, GrAA doStencilMSAA, const SkMatrix& viewMatrix, const GrPath*);
 
     /**
      * Draws a rect, either AA or not, and touches the stencil buffer with the user stencil settings
@@ -78,7 +77,7 @@ public:
                             const GrUserStencilSettings*,
                             SkRegion::Op op,
                             bool invert,
-                            GrAA,
+                            GrAA doStencilMSAA,
                             const SkMatrix& viewMatrix,
                             const SkRect&);
 
@@ -90,9 +89,15 @@ public:
                             const GrUserStencilSettings*,
                             SkRegion::Op op,
                             bool invert,
-                            GrAA,
+                            GrAA doStencilMSAA,
                             const SkMatrix& viewMatrix,
                             const SkPath&);
+
+    void drawFilledRect(
+            const GrClip& clip, GrPaint&& paint, GrAA aa, const SkMatrix& m, const SkRect& rect,
+            const GrUserStencilSettings* ss = nullptr) {
+        fRenderTargetContext->drawFilledRect(clip, std::move(paint), aa, m, rect, ss);
+    }
 
     SkBudgeted isBudgeted() const;
 

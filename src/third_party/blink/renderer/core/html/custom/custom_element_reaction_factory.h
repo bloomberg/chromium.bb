@@ -13,7 +13,7 @@ namespace blink {
 class CustomElementDefinition;
 class CustomElementReaction;
 class Document;
-class FileOrUSVString;
+class FileOrUSVStringOrFormData;
 class HTMLFormElement;
 class QualifiedName;
 
@@ -42,12 +42,12 @@ class CustomElementReactionFactory {
       HTMLFormElement* nullable_form);
   static CustomElementReaction& CreateFormReset(
       CustomElementDefinition& definition);
-  static CustomElementReaction& CreateDisabledStateChanged(
+  static CustomElementReaction& CreateFormDisabled(
       CustomElementDefinition& definition,
       bool is_disabled);
-  static CustomElementReaction& CreateRestoreValue(
+  static CustomElementReaction& CreateFormStateRestore(
       CustomElementDefinition& definition,
-      const FileOrUSVString& value,
+      const FileOrUSVStringOrFormData& value,
       const String& mode);
 };
 

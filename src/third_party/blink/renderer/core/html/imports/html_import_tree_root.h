@@ -8,7 +8,6 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/html/imports/html_import.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
@@ -43,7 +42,7 @@ class HTMLImportTreeRoot final : public HTMLImport, public NameClient {
  private:
   void RecalcTimerFired(TimerBase*);
 
-  TraceWrapperMember<Document> document_;
+  Member<Document> document_;
   TaskRunnerTimer<HTMLImportTreeRoot> recalc_timer_;
 
   // List of import which has been loaded or being loaded.

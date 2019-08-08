@@ -63,6 +63,12 @@ enum DisplayConfigOperation {
   kShowNative,
 };
 
+// Describes who initiated configuration change.
+enum DisplayConfigSource {
+  kUser = 0,
+  kPolicy
+};
+
 // Defines a pair of display + touch points used for touch calibration.
 struct TouchCalibrationPair {
   // The coordinates of the display point.
@@ -239,9 +245,12 @@ interface CrosDisplayConfigController {
   GetDisplayUnitInfoList(bool single_unified) =>
     (array<DisplayUnitInfo> info_list);
 
-  // Sets |properties| for individual display with identifier |id|. Returns
-  // Success if the properties are valid or an error value otherwise.
-  SetDisplayProperties(string id, DisplayConfigProperties properties) =>
+  // Sets |properties| for individual display with identifier |id|. |source|
+  // should describe who initiated the change. Returns Success if the properties
+  // are valid or an error value otherwise.
+  SetDisplayProperties(string id,
+                       DisplayConfigProperties properties,
+                       DisplayConfigSource source) =>
     (DisplayConfigResult result);
 
   // Enables or disables unified desktop mode. If the current display mode is

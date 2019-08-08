@@ -24,6 +24,7 @@ import dependency_manager  # pylint: disable=import-error
 from telemetry.internal.util import binary_manager
 from telemetry.core import exceptions
 from telemetry.internal.backends.chrome import chrome_browser_backend
+from telemetry.internal.util import format_for_logging
 from telemetry.internal.util import path
 
 
@@ -223,6 +224,8 @@ class DesktopBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
       ])
 
     cmd = [self._executable]
+    if self.browser.platform.GetOSName() == 'mac':
+      cmd.append('--use-mock-keychain')  # crbug.com/865247
     cmd.extend(startup_args)
     cmd.append('about:blank')
     env = os.environ.copy()
@@ -232,7 +235,7 @@ class DesktopBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
       sys.stderr.write(
           'Chrome log file will be saved in %s\n' % self.log_file_path)
       env['CHROME_LOG_FILE'] = self.log_file_path
-    # Make sure we have predictable lanugage settings that don't differ from the
+    # Make sure we have predictable language settings that don't differ from the
     # recording.
     for name in ('LC_ALL', 'LC_MESSAGES', 'LANG'):
       encoding = 'en_US.UTF-8'
@@ -241,8 +244,7 @@ class DesktopBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
                      name, env[name], encoding)
       env[name] = 'en_US.UTF-8'
 
-    logging.info('Chrome Env: %s', repr(env))
-    logging.info('Starting Chrome %s', cmd)
+    self.LogStartCommand(cmd, env)
 
     if not self.browser_options.show_stdout:
       self._tmp_output_file = tempfile.NamedTemporaryFile('w', 0)
@@ -251,19 +253,32 @@ class DesktopBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
     else:
       self._proc = subprocess.Popen(cmd, env=env)
 
-    try:
-      self.BindDevToolsClient()
-      # browser is foregrounded by default on Windows and Linux, but not Mac.
-      if self.browser.platform.GetOSName() == 'mac':
-        subprocess.Popen([
-            'osascript', '-e',
-            ('tell application "%s" to activate' % self._executable)
-        ])
-      if self._supports_extensions:
-        self._WaitForExtensionsToLoad()
-    except:
-      self.Close()
-      raise
+    self.BindDevToolsClient()
+    # browser is foregrounded by default on Windows and Linux, but not Mac.
+    if self.browser.platform.GetOSName() == 'mac':
+      subprocess.Popen([
+          'osascript', '-e',
+          ('tell application "%s" to activate' % self._executable)
+      ])
+    if self._supports_extensions:
+      self._WaitForExtensionsToLoad()
+
+  def LogStartCommand(self, command, env):
+    """Log the command used to start Chrome.
+
+    In order to keep the length of logs down (see crbug.com/943650),
+    we sometimes trim the start command depending on browser_options.
+    The command may change between runs, but usually in innocuous ways like
+    --user-data-dir changes to a new temporary directory. Some benchmarks
+    do use different startup arguments for different stories, but this is
+    discouraged. This method could be changed to print arguments that are
+    different since the last run if need be.
+    """
+    formatted_command = format_for_logging.ShellFormat(
+        command, trim=self.browser_options.trim_logs)
+    logging.info('Starting Chrome: %s\n', formatted_command)
+    if not self.browser_options.trim_logs:
+      logging.info('Chrome Env: %s', env)
 
   def BindDevToolsClient(self):
     # In addition to the work performed by the base class, quickly check if

@@ -14,12 +14,12 @@ enum RTCDtlsTransportState {
 
 [
     Exposed=Window,
-    ActiveScriptWrappable,
     RuntimeEnabled=RTCDtlsTransport
 ] interface RTCDtlsTransport : EventTarget {
     readonly attribute RTCIceTransport iceTransport;
     readonly attribute RTCDtlsTransportState state;
-    sequence<ArrayBuffer> getRemoteCertificates();
+    // TODO(https://crbug.com/943972): Implement getRemoteCertificates().
+    // sequence<ArrayBuffer> getRemoteCertificates();
     attribute EventHandler onstatechange;
     attribute EventHandler onerror;
 };

@@ -10,14 +10,17 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/win/scoped_variant.h"
 #include "base/win/windows_version.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/renderer_host/legacy_render_widget_host_win.h"
 #include "content/common/accessibility_messages.h"
+#include "content/public/common/content_switches.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
+#include "ui/accessibility/platform/ax_platform_node_delegate_utils_win.h"
 #include "ui/base/win/atl_module.h"
 
 namespace content {
@@ -72,6 +75,15 @@ HWND BrowserAccessibilityManagerWin::GetParentHWND() {
   return delegate->AccessibilityGetAcceleratedWidget();
 }
 
+void BrowserAccessibilityManagerWin::OnSubtreeWillBeDeleted(ui::AXTree* tree,
+                                                            ui::AXNode* node) {
+  BrowserAccessibilityManager::OnSubtreeWillBeDeleted(tree, node);
+
+  BrowserAccessibility* obj = GetFromAXNode(node);
+  FireWinAccessibilityEvent(EVENT_OBJECT_HIDE, obj);
+  FireUiaStructureChangedEvent(StructureChangeType_ChildRemoved, obj);
+}
+
 void BrowserAccessibilityManagerWin::UserIsReloading() {
   if (GetRoot())
     FireWinAccessibilityEvent(IA2_EVENT_DOCUMENT_RELOAD, GetRoot());
@@ -86,6 +98,10 @@ void BrowserAccessibilityManagerWin::FireFocusEvent(
     BrowserAccessibility* node) {
   BrowserAccessibilityManager::FireFocusEvent(node);
   DCHECK(node);
+
+  if (node->GetRole() == ax::mojom::Role::kMenu)
+    FireUiaAccessibilityEvent(UIA_MenuOpenedEventId, node);
+
   FireWinAccessibilityEvent(EVENT_OBJECT_FOCUS, node);
   FireUiaAccessibilityEvent(UIA_AutomationFocusChangedEventId, node);
 }
@@ -95,11 +111,39 @@ void BrowserAccessibilityManagerWin::FireBlinkEvent(
     BrowserAccessibility* node) {
   BrowserAccessibilityManager::FireBlinkEvent(event_type, node);
   switch (event_type) {
+    case ax::mojom::Event::kClicked:
+      if (ui::IsInvokable(node->GetData()))
+        FireUiaAccessibilityEvent(UIA_Invoke_InvokedEventId, node);
+      break;
+    case ax::mojom::Event::kEndOfTest: {
+      if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
+        // Event tests use kEndOfTest as a sentinel to mark the end of the test.
+        Microsoft::WRL::ComPtr<IUIAutomationRegistrar> registrar;
+        CoCreateInstance(CLSID_CUIAutomationRegistrar, NULL,
+                         CLSCTX_INPROC_SERVER, IID_IUIAutomationRegistrar,
+                         &registrar);
+        CHECK(registrar.Get());
+        UIAutomationEventInfo custom_event = {kUiaTestCompleteSentinelGuid,
+                                              kUiaTestCompleteSentinel};
+        EVENTID custom_event_id = 0;
+        CHECK(SUCCEEDED(
+            registrar->RegisterEvent(&custom_event, &custom_event_id)));
+
+        FireUiaAccessibilityEvent(custom_event_id, node);
+      }
+      break;
+    }
     case ax::mojom::Event::kLocationChanged:
       FireWinAccessibilityEvent(IA2_EVENT_VISIBLE_DATA_CHANGED, node);
       break;
     case ax::mojom::Event::kScrolledToAnchor:
       FireWinAccessibilityEvent(EVENT_SYSTEM_SCROLLINGSTART, node);
+      break;
+    case ax::mojom::Event::kTextChanged:
+      FireUiaTextContainerEvent(UIA_Text_TextChangedEventId, node);
+      break;
+    case ax::mojom::Event::kTextSelectionChanged:
+      FireUiaTextContainerEvent(UIA_Text_TextSelectionChangedEventId, node);
       break;
     default:
       break;
@@ -128,17 +172,77 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
   }
 
   switch (event_type) {
+    case ui::AXEventGenerator::Event::ACCESS_KEY_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_AccessKeyPropertyId, node);
+      break;
     case ui::AXEventGenerator::Event::ACTIVE_DESCENDANT_CHANGED:
       FireWinAccessibilityEvent(IA2_EVENT_ACTIVE_DESCENDANT_CHANGED, node);
       break;
     case ui::AXEventGenerator::Event::ALERT:
       FireWinAccessibilityEvent(EVENT_SYSTEM_ALERT, node);
+      FireUiaAccessibilityEvent(UIA_SystemAlertEventId, node);
+      break;
+    case ui::AXEventGenerator::Event::CHECKED_STATE_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_ToggleToggleStatePropertyId, node);
       break;
     case ui::AXEventGenerator::Event::CHILDREN_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_REORDER, node);
+      FireUiaStructureChangedEvent(StructureChangeType_ChildrenReordered, node);
+      break;
+    case ui::AXEventGenerator::Event::CLASS_NAME_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_ClassNamePropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::COLLAPSED:
+    case ui::AXEventGenerator::Event::EXPANDED:
+      FireUiaPropertyChangedEvent(
+          UIA_ExpandCollapseExpandCollapseStatePropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::CONTROLS_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_ControllerForPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::DESCRIBED_BY_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_DescribedByPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_FullDescriptionPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::DOCUMENT_SELECTION_CHANGED: {
+      // Fire the event on the object where the focus of the selection is.
+      int32_t focus_id = GetTreeData().sel_focus_object_id;
+      BrowserAccessibility* focus_object = GetFromID(focus_id);
+      if (focus_object && focus_object->HasVisibleCaretOrSelection())
+        FireWinAccessibilityEvent(IA2_EVENT_TEXT_CARET_MOVED, focus_object);
+      break;
+    }
+    case ui::AXEventGenerator::Event::ENABLED_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_IsEnabledPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::FLOW_FROM_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_FlowsFromPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::FLOW_TO_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_FlowsToPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::HIERARCHICAL_LEVEL_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_LevelPropertyId, node);
       break;
     case ui::AXEventGenerator::Event::IMAGE_ANNOTATION_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_NAMECHANGE, node);
+      break;
+    case ui::AXEventGenerator::Event::INVALID_STATUS_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_IsDataValidForFormPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::KEY_SHORTCUTS_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_AcceleratorKeyPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::LABELED_BY_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_LabeledByPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::LANGUAGE_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_CulturePropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::LIVE_REGION_CREATED:
+      FireUiaPropertyChangedEvent(UIA_LiveSettingPropertyId, node);
       break;
     case ui::AXEventGenerator::Event::LIVE_REGION_CHANGED:
       // This event is redundant with the IA2_EVENT_TEXT_INSERTED events;
@@ -157,43 +261,99 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::LOAD_COMPLETE:
       FireWinAccessibilityEvent(IA2_EVENT_DOCUMENT_LOAD_COMPLETE, node);
       break;
-    case ui::AXEventGenerator::Event::SCROLL_POSITION_CHANGED:
+    case ui::AXEventGenerator::Event::LAYOUT_INVALIDATED:
+      FireUiaAccessibilityEvent(UIA_LayoutInvalidatedEventId, node);
+      break;
+    case ui::AXEventGenerator::Event::MULTISELECTABLE_STATE_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_SelectionCanSelectMultiplePropertyId,
+                                  node);
+      break;
+    case ui::AXEventGenerator::Event::NAME_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_NamePropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::PLACEHOLDER_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_HelpTextPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::POSITION_IN_SET_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_PositionInSetPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::READONLY_CHANGED:
+      if (ui::IsRangeValueSupported(node->GetData()))
+        FireUiaPropertyChangedEvent(UIA_RangeValueIsReadOnlyPropertyId, node);
+      else if (ui::IsValuePatternSupported(node))
+        FireUiaPropertyChangedEvent(UIA_ValueIsReadOnlyPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::REQUIRED_STATE_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_IsRequiredForFormPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::ROLE_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_AriaRolePropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::SCROLL_HORIZONTAL_POSITION_CHANGED:
       FireWinAccessibilityEvent(EVENT_SYSTEM_SCROLLINGEND, node);
+      FireUiaPropertyChangedEvent(UIA_ScrollHorizontalScrollPercentPropertyId,
+                                  node);
+      break;
+    case ui::AXEventGenerator::Event::SCROLL_VERTICAL_POSITION_CHANGED:
+      FireWinAccessibilityEvent(EVENT_SYSTEM_SCROLLINGEND, node);
+      FireUiaPropertyChangedEvent(UIA_ScrollVerticalScrollPercentPropertyId,
+                                  node);
+      break;
+    case ui::AXEventGenerator::Event::SELECTED_CHANGED:
+      HandleSelectedStateChanged(node);
       break;
     case ui::AXEventGenerator::Event::SELECTED_CHILDREN_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_SELECTIONWITHIN, node);
       break;
-    case ui::AXEventGenerator::Event::DOCUMENT_SELECTION_CHANGED: {
-      // Fire the event on the object where the focus of the selection is.
-      int32_t focus_id = GetTreeData().sel_focus_object_id;
-      BrowserAccessibility* focus_object = GetFromID(focus_id);
-      if (focus_object && focus_object->HasVisibleCaretOrSelection())
-        FireWinAccessibilityEvent(IA2_EVENT_TEXT_CARET_MOVED, focus_object);
+    case ui::AXEventGenerator::Event::SET_SIZE_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_SizeOfSetPropertyId, node);
       break;
-    }
+    case ui::AXEventGenerator::Event::SUBTREE_CREATED:
+      FireWinAccessibilityEvent(EVENT_OBJECT_SHOW, node);
+      FireUiaStructureChangedEvent(StructureChangeType_ChildAdded, node);
+      break;
+    case ui::AXEventGenerator::Event::VALUE_CHANGED:
+      FireWinAccessibilityEvent(EVENT_OBJECT_VALUECHANGE, node);
+      if (ui::IsRangeValueSupported(node->GetData()))
+        FireUiaPropertyChangedEvent(UIA_RangeValueValuePropertyId, node);
+      else if (ui::IsValuePatternSupported(node))
+        FireUiaPropertyChangedEvent(UIA_ValueValuePropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::VALUE_MAX_CHANGED:
+      if (IsRangeValueSupported(node->GetData()))
+        FireUiaPropertyChangedEvent(UIA_RangeValueMaximumPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::VALUE_MIN_CHANGED:
+      if (IsRangeValueSupported(node->GetData()))
+        FireUiaPropertyChangedEvent(UIA_RangeValueMinimumPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::VALUE_STEP_CHANGED:
+      if (IsRangeValueSupported(node->GetData())) {
+        FireUiaPropertyChangedEvent(UIA_RangeValueSmallChangePropertyId, node);
+        FireUiaPropertyChangedEvent(UIA_RangeValueLargeChangePropertyId, node);
+      }
+      break;
     case ui::AXEventGenerator::Event::AUTO_COMPLETE_CHANGED:
-    case ui::AXEventGenerator::Event::CHECKED_STATE_CHANGED:
-    case ui::AXEventGenerator::Event::COLLAPSED:
-    case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:
     case ui::AXEventGenerator::Event::DOCUMENT_TITLE_CHANGED:
-    case ui::AXEventGenerator::Event::EXPANDED:
-    case ui::AXEventGenerator::Event::INVALID_STATUS_CHANGED:
-    case ui::AXEventGenerator::Event::LIVE_REGION_CREATED:
     case ui::AXEventGenerator::Event::LIVE_REGION_NODE_CHANGED:
     case ui::AXEventGenerator::Event::LOAD_START:
     case ui::AXEventGenerator::Event::MENU_ITEM_SELECTED:
-    case ui::AXEventGenerator::Event::NAME_CHANGED:
     case ui::AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
     case ui::AXEventGenerator::Event::RELATED_NODE_CHANGED:
-    case ui::AXEventGenerator::Event::ROLE_CHANGED:
     case ui::AXEventGenerator::Event::ROW_COUNT_CHANGED:
-    case ui::AXEventGenerator::Event::SELECTED_CHANGED:
     case ui::AXEventGenerator::Event::STATE_CHANGED:
-    case ui::AXEventGenerator::Event::VALUE_CHANGED:
       // There are some notifications that aren't meaningful on Windows.
       // It's okay to skip them.
       break;
   }
+}
+
+void BrowserAccessibilityManagerWin::OnFocusLost(BrowserAccessibility* node) {
+  BrowserAccessibilityManager::OnFocusLost(node);
+  DCHECK(node);
+
+  if (node->GetRole() == ax::mojom::Role::kMenu)
+    FireUiaAccessibilityEvent(UIA_MenuClosedEventId, node);
 }
 
 void BrowserAccessibilityManagerWin::FireWinAccessibilityEvent(
@@ -228,6 +388,78 @@ void BrowserAccessibilityManagerWin::FireUiaAccessibilityEvent(
                             uia_event);
 }
 
+void BrowserAccessibilityManagerWin::FireUiaPropertyChangedEvent(
+    LONG uia_property,
+    BrowserAccessibility* node) {
+  if (!::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
+    return;
+  if (!ShouldFireEventForNode(node))
+    return;
+
+  // The old value is not used by the system
+  VARIANT old_value = {};
+  old_value.vt = VT_EMPTY;
+
+  auto* provider = ToBrowserAccessibilityWin(node)->GetCOM();
+  base::win::ScopedVariant new_value;
+  if (SUCCEEDED(
+          provider->GetPropertyValue(uia_property, new_value.Receive()))) {
+    ::UiaRaiseAutomationPropertyChangedEvent(provider, uia_property, old_value,
+                                             new_value);
+  }
+}
+
+void BrowserAccessibilityManagerWin::FireUiaStructureChangedEvent(
+    StructureChangeType change_type,
+    BrowserAccessibility* node) {
+  if (!::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
+    return;
+  if (!ShouldFireEventForNode(node))
+    return;
+
+  auto* provider = ToBrowserAccessibilityWin(node);
+  auto* provider_com = provider ? provider->GetCOM() : nullptr;
+  if (!provider || !provider_com)
+    return;
+
+  switch (change_type) {
+    case StructureChangeType_ChildRemoved: {
+      // 'ChildRemoved' fires on the parent and provides the runtime ID of
+      // the removed child (which was passed as |node|).
+      auto* parent = ToBrowserAccessibilityWin(node->PlatformGetParent());
+      auto* parent_com = parent ? parent->GetCOM() : nullptr;
+      if (parent && parent_com) {
+        ui::AXPlatformNodeWin::RuntimeIdArray runtime_id;
+        provider_com->GetRuntimeIdArray(runtime_id);
+        UiaRaiseStructureChangedEvent(parent_com, change_type,
+                                      runtime_id.data(), runtime_id.size());
+      }
+      break;
+    }
+
+    default: {
+      // All other types are fired on |node|.  For 'ChildAdded' |node| is the
+      // child that was added; for other types, it's the parent container.
+      UiaRaiseStructureChangedEvent(provider_com, change_type, nullptr, 0);
+    }
+  }
+}
+
+void BrowserAccessibilityManagerWin::FireUiaTextContainerEvent(
+    LONG uia_event,
+    BrowserAccessibility* node) {
+  // If the node supports text pattern, fire the event from itself, otherwise,
+  // fire the event from the closest ancestor that supports text pattern.
+  while (node) {
+    if (ToBrowserAccessibilityWin(node)->GetCOM()->IsPatternProviderSupported(
+            UIA_TextPatternId)) {
+      FireUiaAccessibilityEvent(uia_event, node);
+      return;
+    }
+    node = node->PlatformGetParent();
+  }
+}
+
 bool BrowserAccessibilityManagerWin::CanFireEvents() {
   if (!BrowserAccessibilityManager::CanFireEvents())
     return false;
@@ -257,7 +489,7 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
   BrowserAccessibilityManager::OnAtomicUpdateFinished(tree, root_changed,
                                                       changes);
 
-  if (root_changed &&
+  if (root_changed && IsRootTree() &&
       switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
     // If a fragment root has been created, inform it that the content root has
     // changed.
@@ -352,11 +584,13 @@ bool BrowserAccessibilityManagerWin::ShouldFireEventForNode(
   if (!node || !node->CanFireEvents())
     return false;
 
-  // If there's no root delegate, this may be a new frame that hasn't
-  // yet been swapped in or added to the frame tree. Suppress firing events
-  // until then.
+  // If the root delegate isn't the main-frame, this may be a new frame that
+  // hasn't yet been swapped in or added to the frame tree. Suppress firing
+  // events until then.
   BrowserAccessibilityDelegate* root_delegate = GetDelegateFromRootManager();
   if (!root_delegate)
+    return false;
+  if (!root_delegate->AccessibilityIsMainFrame())
     return false;
 
   // Don't fire events when this document might be stale as the user has
@@ -370,6 +604,33 @@ bool BrowserAccessibilityManagerWin::ShouldFireEventForNode(
     return false;
 
   return true;
+}
+
+void BrowserAccessibilityManagerWin::HandleSelectedStateChanged(
+    BrowserAccessibility* node) {
+  const bool is_selected =
+      node->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+
+  bool multiselect = false;
+  auto* selection_container = node->PlatformGetSelectionContainer();
+  if (selection_container &&
+      selection_container->HasState(ax::mojom::State::kMultiselectable))
+    multiselect = true;
+
+  if (multiselect) {
+    if (is_selected) {
+      FireWinAccessibilityEvent(EVENT_OBJECT_SELECTIONADD, node);
+      FireUiaAccessibilityEvent(
+          UIA_SelectionItem_ElementAddedToSelectionEventId, node);
+    } else {
+      FireWinAccessibilityEvent(EVENT_OBJECT_SELECTIONREMOVE, node);
+      FireUiaAccessibilityEvent(
+          UIA_SelectionItem_ElementRemovedFromSelectionEventId, node);
+    }
+  } else if (is_selected) {
+    FireWinAccessibilityEvent(EVENT_OBJECT_SELECTION, node);
+    FireUiaAccessibilityEvent(UIA_SelectionItem_ElementSelectedEventId, node);
+  }
 }
 
 }  // namespace content

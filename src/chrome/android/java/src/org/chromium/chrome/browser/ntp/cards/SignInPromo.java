@@ -41,9 +41,9 @@ public class SignInPromo extends OptionalLeaf {
     private boolean mDismissed;
 
     /**
-     * Whether the signin status means that the user has the possibility to sign in.
+     * Whether signin promo can be shown.
      */
-    private boolean mCanSignIn;
+    private boolean mShowSigninPromo;
 
     /**
      * Whether personalized suggestions can be shown. If it's not the case, we have no reason to
@@ -59,7 +59,8 @@ public class SignInPromo extends OptionalLeaf {
         Context context = ContextUtils.getApplicationContext();
         SigninManager signinManager = SigninManager.get();
 
-        mCanSignIn = signinManager.isSignInAllowed() && !signinManager.isSignedInOnNative();
+        mShowSigninPromo = signinManager.isSignInAllowed() && !signinManager.isSignedInOnNative()
+                && SigninPromoController.isSignInPromoAllowed();
         updateVisibility();
 
         int imageSize = context.getResources().getDimensionPixelSize(R.dimen.user_picture_size);
@@ -138,7 +139,7 @@ public class SignInPromo extends OptionalLeaf {
     }
 
     private void updateVisibility() {
-        setVisibilityInternal(!mDismissed && mCanSignIn && mCanShowPersonalizedSuggestions);
+        setVisibilityInternal(!mDismissed && mShowSigninPromo && mCanShowPersonalizedSuggestions);
     }
 
     @Override
@@ -204,20 +205,22 @@ public class SignInPromo extends OptionalLeaf {
             // Listening to onSignInAllowedChanged is important for the FRE. Sign in is not allowed
             // until it is completed, but the NTP is initialised before the FRE is even shown. By
             // implementing this we can show the promo if the user did not sign in during the FRE.
-            mCanSignIn = mSigninManager.isSignInAllowed();
+            mShowSigninPromo = mSigninManager.isSignInAllowed()
+                    && SigninPromoController.isSignInPromoAllowed();
             updateVisibility();
         }
 
         // SignInStateObserver implementation.
         @Override
         public void onSignedIn() {
-            mCanSignIn = false;
+            mShowSigninPromo = false;
             updateVisibility();
         }
 
         @Override
         public void onSignedOut() {
-            mCanSignIn = mSigninManager.isSignInAllowed();
+            mShowSigninPromo = mSigninManager.isSignInAllowed()
+                    && SigninPromoController.isSignInPromoAllowed();
             updateVisibility();
         }
 

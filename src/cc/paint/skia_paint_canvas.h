@@ -9,12 +9,12 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_record.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/gpu/GrContext.h"
 
 namespace cc {
 class ImageProvider;
@@ -44,7 +44,10 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
                   sk_sp<SkColorSpace> target_color_space,
                   ImageProvider* image_provider = nullptr,
                   ContextFlushes context_flushes = ContextFlushes());
+  SkiaPaintCanvas(const SkiaPaintCanvas&) = delete;
   ~SkiaPaintCanvas() override;
+
+  SkiaPaintCanvas& operator=(const SkiaPaintCanvas&) = delete;
 
   void reset_image_provider() { image_provider_ = nullptr; }
 
@@ -141,19 +144,19 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
       PlaybackParams::CustomDataRasterCallback custom_raster_callback);
 
  private:
-  void WrapCanvasInColorSpaceXformCanvas(
-      sk_sp<SkColorSpace> target_color_space);
   void FlushAfterDrawIfNeeded();
+
+  int max_texture_size() const {
+    auto* context = canvas_->getGrContext();
+    return context ? context->maxTextureSize() : 0;
+  }
 
   SkCanvas* canvas_;
   std::unique_ptr<SkCanvas> owned_;
-  std::unique_ptr<SkCanvas> color_space_xform_canvas_;
   ImageProvider* image_provider_ = nullptr;
 
   const ContextFlushes context_flushes_;
   int num_of_ops_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(SkiaPaintCanvas);
 };
 
 }  // namespace cc

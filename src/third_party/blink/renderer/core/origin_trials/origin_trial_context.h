@@ -8,6 +8,7 @@
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
@@ -70,11 +71,11 @@ class CORE_EXPORT OriginTrialContext final
 
   // Forces a given origin-trial-enabled feature to be enabled in this context
   // and immediately adds required bindings to already initialized JS contexts.
-  void AddFeature(const String& feature);
+  void AddFeature(OriginTrialFeature feature);
 
-  // Returns true if the trial (and therefore the feature or features it
-  // controls) should be considered enabled for the current execution context.
-  bool IsTrialEnabled(const String& trial_name) const;
+  // Returns true if the feature should be considered enabled for the current
+  // execution context.
+  bool IsFeatureEnabled(OriginTrialFeature feature) const;
 
   // Installs JavaScript bindings on the relevant objects for any features which
   // should be enabled by the current set of trial tokens. This method is called
@@ -96,8 +97,8 @@ class CORE_EXPORT OriginTrialContext final
   bool EnableTrialFromToken(const String& token);
 
   Vector<String> tokens_;
-  HashSet<String> enabled_trials_;
-  HashSet<String> installed_trials_;
+  HashSet<OriginTrialFeature> enabled_features_;
+  HashSet<OriginTrialFeature> installed_features_;
   std::unique_ptr<TrialTokenValidator> trial_token_validator_;
 };
 

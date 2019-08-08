@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/modules/mediasource/source_buffer.h"
 #include "third_party/blink/renderer/modules/mediasource/source_buffer_list.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -149,16 +148,16 @@ class MediaSource final : public EventTargetWithInlineData,
   AtomicString ready_state_;
   Member<EventQueue> async_event_queue_;
 
-  // Here, using TraceWrapperMember, instead of Member, to keep
+  // Here, using Member, instead of Member, to keep
   // |attached_element_|, |source_buffers_|, |active_source_buffers_|, and their
   // wrappers from being collected if we are alive or traceable from a GC root.
   // Activity by this MediaSource or on references to objects returned by
   // exercising this MediaSource (such as an app manipulating a SourceBuffer
   // retrieved via activeSourceBuffers()) may cause events to be dispatched by
   // these other objects.
-  TraceWrapperMember<HTMLMediaElement> attached_element_;
-  TraceWrapperMember<SourceBufferList> source_buffers_;
-  TraceWrapperMember<SourceBufferList> active_source_buffers_;
+  Member<HTMLMediaElement> attached_element_;
+  Member<SourceBufferList> source_buffers_;
+  Member<SourceBufferList> active_source_buffers_;
 
   Member<TimeRanges> live_seekable_range_;
 

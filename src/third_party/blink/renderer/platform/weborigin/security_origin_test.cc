@@ -204,7 +204,7 @@ TEST_F(SecurityOriginTest, IsSecureViaTrustworthy) {
   for (const char* test : urls) {
     KURL url(test);
     EXPECT_FALSE(SecurityOrigin::IsSecure(url));
-    SecurityPolicy::AddOriginTrustworthyWhiteList(
+    SecurityPolicy::AddOriginToTrustworthySafelist(
         SecurityOrigin::CreateFromString(url)->ToRawString());
     EXPECT_TRUE(SecurityOrigin::IsSecure(url));
   }
@@ -213,7 +213,7 @@ TEST_F(SecurityOriginTest, IsSecureViaTrustworthy) {
 TEST_F(SecurityOriginTest, IsSecureViaTrustworthyHostnamePattern) {
   KURL url("http://bar.foo.com");
   EXPECT_FALSE(SecurityOrigin::IsSecure(url));
-  SecurityPolicy::AddOriginTrustworthyWhiteList("*.foo.com");
+  SecurityPolicy::AddOriginToTrustworthySafelist("*.foo.com");
   EXPECT_TRUE(SecurityOrigin::IsSecure(url));
 }
 
@@ -221,7 +221,7 @@ TEST_F(SecurityOriginTest, IsSecureViaTrustworthyHostnamePattern) {
 TEST_F(SecurityOriginTest, IsSecureViaTrustworthyHostnamePatternEmptyHostname) {
   KURL url("file://foo");
   EXPECT_FALSE(SecurityOrigin::IsSecure(url));
-  SecurityPolicy::AddOriginTrustworthyWhiteList("*.foo.com");
+  SecurityPolicy::AddOriginToTrustworthySafelist("*.foo.com");
   EXPECT_FALSE(SecurityOrigin::IsSecure(url));
 }
 
@@ -830,6 +830,27 @@ TEST_F(SecurityOriginTest, EdgeCases) {
       SecurityOrigin::CreateFromString("file:///foo/bar");
   local->BlockLocalAccessFromLocalOrigin();
   EXPECT_TRUE(local->IsSameSchemeHostPort(local.get()));
+}
+
+TEST_F(SecurityOriginTest, RegistrableDomain) {
+  scoped_refptr<SecurityOrigin> opaque = SecurityOrigin::CreateUniqueOpaque();
+  EXPECT_TRUE(opaque->RegistrableDomain().IsNull());
+
+  scoped_refptr<SecurityOrigin> ip_address =
+      SecurityOrigin::CreateFromString("http://0.0.0.0");
+  EXPECT_TRUE(ip_address->RegistrableDomain().IsNull());
+
+  scoped_refptr<SecurityOrigin> public_suffix =
+      SecurityOrigin::CreateFromString("http://com");
+  EXPECT_TRUE(public_suffix->RegistrableDomain().IsNull());
+
+  scoped_refptr<SecurityOrigin> registrable =
+      SecurityOrigin::CreateFromString("http://example.com");
+  EXPECT_EQ(String("example.com"), registrable->RegistrableDomain());
+
+  scoped_refptr<SecurityOrigin> subdomain =
+      SecurityOrigin::CreateFromString("http://foo.example.com");
+  EXPECT_EQ(String("example.com"), subdomain->RegistrableDomain());
 }
 
 }  // namespace blink

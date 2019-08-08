@@ -89,7 +89,7 @@ LoginHandler::LoginModelData::LoginModelData(
   DCHECK(model);
 }
 
-LoginHandler::LoginHandler(net::AuthChallengeInfo* auth_info,
+LoginHandler::LoginHandler(const net::AuthChallengeInfo& auth_info,
                            content::WebContents* web_contents,
                            LoginAuthRequiredCallback auth_required_callback)
     : WebContentsObserver(web_contents),
@@ -98,7 +98,6 @@ LoginHandler::LoginHandler(net::AuthChallengeInfo* auth_info,
       prompt_started_(false),
       weak_factory_(this) {
   DCHECK(web_contents);
-  DCHECK(auth_info_) << "LoginHandler constructed with NULL auth info";
 }
 
 LoginHandler::~LoginHandler() {
@@ -139,7 +138,7 @@ void LoginHandler::Start(
       base::BindOnce(&LoginHandler::MaybeSetUpLoginPrompt,
                      weak_factory_.GetWeakPtr(), request_url, is_main_frame);
   if (api->MaybeProxyAuthRequest(web_contents()->GetBrowserContext(),
-                                 auth_info_.get(), std::move(response_headers),
+                                 auth_info_, std::move(response_headers),
                                  request_id, is_main_frame,
                                  std::move(continuation))) {
     return;
@@ -185,7 +184,7 @@ void LoginHandler::SetAuth(const base::string16& username,
   if (password_manager) {
     password_form_.username_value = username;
     password_form_.password_value = password;
-    password_manager->ProvisionallySavePassword(password_form_, nullptr);
+    password_manager->OnPasswordHttpAuthFormSubmitted(password_form_);
     if (logger) {
       logger->LogPasswordForm(
           autofill::SavePasswordProgressLogger::STRING_LOGINHANDLER_FORM,
@@ -236,7 +235,7 @@ void LoginHandler::Observe(int type,
   DCHECK(login_details->handler() != this);
 
   // Only handle notification for the identical auth info.
-  if (!login_details->handler()->auth_info()->Equals(*auth_info()))
+  if (login_details->handler()->auth_info() != auth_info())
     return;
 
   // Ignore login notification events from other profiles.
@@ -472,7 +471,7 @@ void LoginHandler::MaybeSetUpLoginPrompt(
       request_url.GetOrigin();
   if (is_request_for_main_frame &&
       (is_cross_origin_request || web_contents()->ShowingInterstitialPage() ||
-       auth_info()->is_proxy) &&
+       auth_info().is_proxy) &&
       web_contents()->GetDelegate()->GetDisplayMode(web_contents()) !=
           blink::kWebDisplayModeStandalone) {
     RecordHttpAuthPromptType(AUTH_PROMPT_TYPE_WITH_INTERSTITIAL);
@@ -486,7 +485,7 @@ void LoginHandler::MaybeSetUpLoginPrompt(
     // This cancels any existing interstitial.
     interstitial_delegate_ =
         (new LoginInterstitialDelegate(
-             web_contents(), auth_info()->is_proxy ? GURL() : request_url,
+             web_contents(), auth_info().is_proxy ? GURL() : request_url,
              std::move(callback)))
             ->GetWeakPtr();
 
@@ -518,7 +517,7 @@ void LoginHandler::ShowLoginPrompt(const GURL& request_url) {
 
   base::string16 authority;
   base::string16 explanation;
-  GetDialogStrings(request_url, *auth_info(), &authority, &explanation);
+  GetDialogStrings(request_url, auth_info(), &authority, &explanation);
 
   password_manager::PasswordManager* password_manager =
       GetPasswordManagerForLogin();
@@ -548,7 +547,7 @@ void LoginHandler::ShowLoginPrompt(const GURL& request_url) {
   }
 
   PasswordForm observed_form(
-      MakeInputForPasswordManager(request_url, *auth_info()));
+      MakeInputForPasswordManager(request_url, auth_info()));
   LoginModelData model_data(password_manager, observed_form);
   BuildViewAndNotify(authority, explanation, &model_data);
 }
@@ -570,7 +569,7 @@ void LoginHandler::BuildViewAndNotify(
 // ----------------------------------------------------------------------------
 // Public API
 std::unique_ptr<content::LoginDelegate> CreateLoginPrompt(
-    net::AuthChallengeInfo* auth_info,
+    const net::AuthChallengeInfo& auth_info,
     content::WebContents* web_contents,
     const content::GlobalRequestID& request_id,
     bool is_request_for_main_frame,

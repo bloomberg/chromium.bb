@@ -153,6 +153,7 @@
 <translation id="4240294130679914010">‏حذف نصب‌کننده برنامه میزبان کار با Chrome</translation>
 <translation id="4277463233460010382">این رایانه پیکربندی شده است تا به یک یا چند کلاینت اجازه دهد بدون وارد کردن پین وصل شوند.</translation>
 <translation id="4277736576214464567">کد دسترسی نامعتبر است. لطفاً دوباره امتحان کنید.</translation>
+<translation id="4281844954008187215">شرایط استفاده از سرویس</translation>
 <translation id="4361728918881830843">‏برای فعال کردن اتصال راه‌دور به یک رایانه دیگر، کنترل رایانه ازراه‌دور Chrome را نصب کنید و سپس روی «<ph name="BUTTON_NAME" />» کلیک کنید.</translation>
 <translation id="4394049700291259645">غیر فعال کردن</translation>
 <translation id="4405930547258349619">کتابخانه اصلی</translation>
@@ -346,6 +347,7 @@ Chrome
 <translation id="8747048596626351634">‏جلسه خراب شد یا شروع نشد. درصورت وجود ~/.chrome-remote-desktop-session در رایانه راه‌ دور، مطمئن شوید که یک فرآیند پیش‌زمینه طولانی‌مدت مثل محیط دسک‌تاپ یا مدیر پنجره را راه‌اندازی می‌کند.</translation>
 <translation id="8759753423332885148">بیشتر بیاموزید.</translation>
 <translation id="8791202241915690908">‏بارگیری نصب‌کننده میزبان Chromoting</translation>
+<translation id="8804164990146287819">خط‌مشی رازداری</translation>
 <translation id="894763922177556086">خوب</translation>
 <translation id="895780780740011433">‏برای Windows 7 و بالاتر</translation>
 <translation id="897805526397249209">‏برای فعال کردن اتصالات راه دور به رایانه دیگر، کار با Chrome را نصب کنید و روی «<ph name="BUTTON_NAME" />» کلیک کنید.</translation>

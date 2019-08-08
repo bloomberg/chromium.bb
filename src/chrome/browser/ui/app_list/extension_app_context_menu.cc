@@ -7,12 +7,13 @@
 #include "ash/public/cpp/app_menu_constants.h"
 #include "base/bind.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/context_menu_params.h"
@@ -54,11 +55,7 @@ int ExtensionAppContextMenu::GetLaunchStringId() const {
   // If --enable-new-bookmark-apps is enabled, then only check if
   // USE_LAUNCH_TYPE_WINDOW is checked, as USE_LAUNCH_TYPE_PINNED (i.e. open
   // as pinned tab) and fullscreen-by-default windows do not exist.
-  bool launch_in_window =
-      extensions::util::IsNewBookmarkAppsEnabled()
-          ? IsCommandIdChecked(ash::USE_LAUNCH_TYPE_WINDOW)
-          : !(IsCommandIdChecked(ash::USE_LAUNCH_TYPE_PINNED) ||
-              IsCommandIdChecked(ash::USE_LAUNCH_TYPE_REGULAR));
+  bool launch_in_window = IsCommandIdChecked(ash::USE_LAUNCH_TYPE_WINDOW);
   return launch_in_window ? IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW
                           : IDS_APP_LIST_CONTEXT_MENU_NEW_TAB;
 }
@@ -91,8 +88,12 @@ void ExtensionAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
         profile(), this, menu_model,
         base::Bind(MenuItemHasLauncherContext));
 
+    bool is_system_web_app = web_app::WebAppProvider::Get(profile())
+                                 ->system_web_app_manager()
+                                 .IsSystemWebApp(app_id());
+
     // First, add the primary actions.
-    if (!is_platform_app_)
+    if (!is_platform_app_ && !is_system_web_app)
       CreateOpenNewSubmenu(menu_model);
 
     // Create default items.
@@ -112,10 +113,10 @@ void ExtensionAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
                          is_platform_app_ ? IDS_APP_LIST_UNINSTALL_ITEM
                                           : IDS_APP_LIST_EXTENSIONS_UNINSTALL);
 
-    if (controller()->CanDoShowAppInfoFlow()) {
+    if (controller()->CanDoShowAppInfoFlow() && !is_system_web_app) {
       AddContextMenuOption(menu_model, ash::SHOW_APP_INFO,
                            IDS_APP_CONTEXT_MENU_SHOW_INFO);
-  }
+    }
   }
 }
 
@@ -189,17 +190,13 @@ void ExtensionAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
     controller()->DoShowAppInfoFlow(profile(), app_id());
   } else if (command_id >= ash::USE_LAUNCH_TYPE_COMMAND_START &&
              command_id < ash::USE_LAUNCH_TYPE_COMMAND_END) {
-    extensions::LaunchType launch_type = static_cast<extensions::LaunchType>(
-        command_id - ash::USE_LAUNCH_TYPE_COMMAND_START);
-    // When bookmark apps are enabled, hosted apps can only toggle between
-    // LAUNCH_TYPE_WINDOW and LAUNCH_TYPE_REGULAR.
-    if (extensions::util::IsNewBookmarkAppsEnabled()) {
-      launch_type = (controller()->GetExtensionLaunchType(profile(),
-                                                          app_id()) ==
-                     extensions::LAUNCH_TYPE_WINDOW)
-                        ? extensions::LAUNCH_TYPE_REGULAR
-                        : extensions::LAUNCH_TYPE_WINDOW;
-    }
+    // Hosted apps can only toggle between LAUNCH_TYPE_WINDOW and
+    // LAUNCH_TYPE_REGULAR.
+    extensions::LaunchType launch_type =
+        (controller()->GetExtensionLaunchType(profile(), app_id()) ==
+         extensions::LAUNCH_TYPE_WINDOW)
+            ? extensions::LAUNCH_TYPE_REGULAR
+            : extensions::LAUNCH_TYPE_WINDOW;
     controller()->SetExtensionLaunchType(profile(), app_id(), launch_type);
   } else if (command_id == ash::OPTIONS) {
     controller()->ShowOptionsPage(profile(), app_id());

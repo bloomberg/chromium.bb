@@ -36,7 +36,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/system/procfs_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {

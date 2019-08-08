@@ -26,6 +26,14 @@
 namespace chromeos {
 namespace smb_client {
 
+namespace {
+
+void SaveMountResult(SmbMountResult* out, SmbMountResult result) {
+  *out = result;
+}
+
+}  // namespace
+
 class SmbServiceTest : public testing::Test {
  protected:
   SmbServiceTest() : profile_(NULL) {
@@ -59,6 +67,16 @@ class SmbServiceTest : public testing::Test {
 
   ~SmbServiceTest() override {}
 
+  void ExpectInvalidUrl(const std::string& url) {
+    SmbMountResult result = SmbMountResult::SUCCESS;
+    smb_service_->CallMount({} /* options */, base::FilePath(url),
+                            "" /* username */, "" /* password */,
+                            false /* use_chromad_kerberos */,
+                            false /* should_open_file_manager_after_mount */,
+                            base::BindOnce(&SaveMountResult, &result));
+    EXPECT_EQ(result, SmbMountResult::INVALID_URL);
+  }
+
   content::TestBrowserThreadBundle
       thread_bundle_;        // Included so tests magically don't crash.
   TestingProfile* profile_;  // Not owned.
@@ -70,6 +88,19 @@ class SmbServiceTest : public testing::Test {
   // Extension Registry and Registry needed for fsp_service.
   std::unique_ptr<extensions::ExtensionRegistry> extension_registry_;
 };
+
+TEST_F(SmbServiceTest, InvalidUrls) {
+  ExpectInvalidUrl("");
+  ExpectInvalidUrl("foo");
+  ExpectInvalidUrl("\\foo");
+  ExpectInvalidUrl("\\\\foo");
+  ExpectInvalidUrl("\\\\foo\\");
+  ExpectInvalidUrl("file://foo/bar");
+  ExpectInvalidUrl("smb://foo");
+  ExpectInvalidUrl("smb://user@password:foo");
+  ExpectInvalidUrl("smb:\\\\foo\\bar");
+  ExpectInvalidUrl("//foo/bar");
+}
 
 }  // namespace smb_client
 }  // namespace chromeos

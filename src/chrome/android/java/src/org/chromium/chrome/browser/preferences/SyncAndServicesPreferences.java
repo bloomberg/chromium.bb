@@ -23,7 +23,6 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.content.res.AppCompatResources;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -55,8 +54,8 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
-import org.chromium.components.sync.ProtocolErrorClientAction;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.widget.ButtonCompat;
 
 import java.lang.annotation.Retention;
@@ -167,8 +166,8 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
         mSyncCategory = (PreferenceCategory) findPreference(PREF_SYNC_CATEGORY);
         mSyncErrorCard = findPreference(PREF_SYNC_ERROR_CARD);
-        mSyncErrorCard.setIcon(
-                AppCompatResources.getDrawable(getActivity(), R.drawable.ic_sync_error_40dp));
+        mSyncErrorCard.setIcon(UiUtils.getTintedDrawable(
+                getActivity(), R.drawable.ic_sync_error_40dp, R.color.default_red));
         mSyncErrorCard.setOnPreferenceClickListener(
                 SyncPreferenceUtils.toOnClickListener(this, this::onSyncErrorCardClicked));
         mSyncRequested = (ChromeSwitchPreference) findPreference(PREF_SYNC_REQUESTED);
@@ -404,8 +403,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             return SyncError.AUTH_ERROR;
         }
 
-        if (mProfileSyncService.getProtocolErrorClientAction()
-                == ProtocolErrorClientAction.UPGRADE_CLIENT) {
+        if (mProfileSyncService.requiresClientUpgrade()) {
             return SyncError.CLIENT_OUT_OF_DATE;
         }
 

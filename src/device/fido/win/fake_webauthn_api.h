@@ -5,8 +5,11 @@
 #ifndef DEVICE_FIDO_WIN_FAKE_WEBAUTHN_API_H_
 #define DEVICE_FIDO_WIN_FAKE_WEBAUTHN_API_H_
 
-#include "base/macros.h"
+#include "device/fido/public_key_credential_descriptor.h"
+#include "device/fido/public_key_credential_rp_entity.h"
+#include "device/fido/public_key_credential_user_entity.h"
 #include "device/fido/win/webauthn_api.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace device {
 
@@ -23,33 +26,26 @@ class FakeWinWebAuthnApi : public WinWebAuthnApi {
 
   // WinWebAuthnApi:
   bool IsAvailable() const override;
-  // The following methods all return E_NOTIMPL immediately.
   HRESULT IsUserVerifyingPlatformAuthenticatorAvailable(
       BOOL* available) override;
-  void AuthenticatorMakeCredential(
+  HRESULT AuthenticatorMakeCredential(
       HWND h_wnd,
-      GUID cancellation_id,
-      PublicKeyCredentialRpEntity rp,
-      PublicKeyCredentialUserEntity user,
-      std::vector<WEBAUTHN_COSE_CREDENTIAL_PARAMETER>
-          cose_credential_parameter_values,
-      std::string client_data_json,
-      std::vector<WEBAUTHN_EXTENSION> extensions,
-      base::Optional<std::vector<PublicKeyCredentialDescriptor>> exclude_list,
-      WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS options,
-      AuthenticatorMakeCredentialCallback callback) override;
-  void AuthenticatorGetAssertion(
+      PCWEBAUTHN_RP_ENTITY_INFORMATION rp,
+      PCWEBAUTHN_USER_ENTITY_INFORMATION user,
+      PCWEBAUTHN_COSE_CREDENTIAL_PARAMETERS cose_credential_parameters,
+      PCWEBAUTHN_CLIENT_DATA client_data,
+      PCWEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS options,
+      PWEBAUTHN_CREDENTIAL_ATTESTATION* credential_attestation_ptr) override;
+  HRESULT AuthenticatorGetAssertion(
       HWND h_wnd,
-      GUID cancellation_id,
-      base::string16 rp_id,
-      base::Optional<base::string16> opt_app_id,
-      std::string client_data_json,
-      base::Optional<std::vector<PublicKeyCredentialDescriptor>> allow_list,
-      WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS options,
-      AuthenticatorGetAssertionCallback callback) override;
+      LPCWSTR rp_id,
+      PCWEBAUTHN_CLIENT_DATA client_data,
+      PCWEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS options,
+      PWEBAUTHN_ASSERTION* assertion_ptr) override;
   HRESULT CancelCurrentOperation(GUID* cancellation_id) override;
-  // Returns L"not implemented".
-  const wchar_t* GetErrorName(HRESULT hr) override;
+  PCWSTR GetErrorName(HRESULT hr) override;
+  void FreeCredentialAttestation(PWEBAUTHN_CREDENTIAL_ATTESTATION) override;
+  void FreeAssertion(PWEBAUTHN_ASSERTION pWebAuthNAssertion) override;
 
  private:
   bool is_available_ = true;

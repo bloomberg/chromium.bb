@@ -43,6 +43,8 @@ class CONTENT_EXPORT NowPlayingInfoCenterNotifier
   void MediaSessionActionsChanged(
       const std::vector<media_session::mojom::MediaSessionAction>& actions)
       override {}
+  void MediaSessionChanged(
+      const base::Optional<base::UnguessableToken>& request_id) override {}
 
  private:
   // Our connection to the underlying OS API for MPNowPlayingInfoCenter.

@@ -60,7 +60,7 @@ namespace {
 
 DEFINE_SPECIFICS_TO_VALUE_TEST(encrypted)
 
-static_assert(44 == syncer::MODEL_TYPE_COUNT,
+static_assert(44 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new field, add a DEFINE_SPECIFICS_TO_VALUE_TEST "
               "for your field below, and optionally a test for the specific "
               "conversions.");

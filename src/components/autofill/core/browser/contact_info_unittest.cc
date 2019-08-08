@@ -11,8 +11,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -396,5 +399,97 @@ INSTANTIATE_TEST_SUITE_P(
                     NamePartsAreEmptyTestCase{"Marion", "", "", "", false},
                     NamePartsAreEmptyTestCase{"", "Mitchell", "", "", false},
                     NamePartsAreEmptyTestCase{"", "", "Morrison", "", false}));
+
+TEST(CompanyTest, CompanyNameYear) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillRejectCompanyBirthyear},
+      /*disabled_features=*/{});
+
+  AutofillProfile profile;
+  CompanyInfo company(&profile);
+  ASSERT_FALSE(profile.IsVerified());
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Google"));
+  EXPECT_EQ(UTF8ToUTF16("Google"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("1987"));
+  EXPECT_EQ(UTF8ToUTF16(""), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("It was 1987."));
+  EXPECT_EQ(UTF8ToUTF16("It was 1987."), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("1987 was the year."));
+  EXPECT_EQ(UTF8ToUTF16("1987 was the year."),
+            company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Yes, 1987 was the year."));
+  EXPECT_EQ(UTF8ToUTF16("Yes, 1987 was the year."),
+            company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("2019"));
+  EXPECT_EQ(UTF8ToUTF16(""), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("1818"));
+  EXPECT_EQ(UTF8ToUTF16("1818"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("2345"));
+  EXPECT_EQ(UTF8ToUTF16("2345"), company.GetRawInfo(COMPANY_NAME));
+
+  profile.set_origin("Not empty");
+  ASSERT_TRUE(profile.IsVerified());
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Google"));
+  EXPECT_EQ(UTF8ToUTF16("Google"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("1987"));
+  EXPECT_EQ(UTF8ToUTF16("1987"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("2019"));
+  EXPECT_EQ(UTF8ToUTF16("2019"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("1818"));
+  EXPECT_EQ(UTF8ToUTF16("1818"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("2345"));
+  EXPECT_EQ(UTF8ToUTF16("2345"), company.GetRawInfo(COMPANY_NAME));
+}
+
+TEST(CompanyTest, CompanyNameYearCopy) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillRejectCompanyBirthyear},
+      /*disabled_features=*/{});
+
+  AutofillProfile profile;
+  ASSERT_FALSE(profile.IsVerified());
+
+  CompanyInfo company_google(&profile);
+  CompanyInfo company_year(&profile);
+
+  company_google.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Google"));
+  company_year.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("1987"));
+
+  company_google = company_year;
+  EXPECT_EQ(UTF8ToUTF16(""), company_google.GetRawInfo(COMPANY_NAME));
+}
+
+TEST(CompanyTest, CompanyNameYearIsEqual) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillRejectCompanyBirthyear},
+      /*disabled_features=*/{});
+
+  AutofillProfile profile;
+  ASSERT_FALSE(profile.IsVerified());
+
+  CompanyInfo company_old(&profile);
+  CompanyInfo company_young(&profile);
+
+  company_old.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("2019"));
+  company_young.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("1987"));
+
+  EXPECT_EQ(company_old, company_young);
+}
 
 }  // namespace autofill

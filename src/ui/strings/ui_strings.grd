@@ -335,6 +335,9 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="is_macosx">
+        <message name="IDS_SAVE_PAGE_FILE_FORMAT_PROMPT_MAC" desc="The title of the File Format label for saving a page.">
+          Format:
+        </message>
         <message name="IDS_SELECT_FOLDER_BUTTON_TITLE" desc="The name of the Select button in the folder selection dialog.">
           Select
         </message>
@@ -725,6 +728,18 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_NOTIFICATION_DURATION_YEARS_SHORTEST" desc="Phrase describing a time duration using years that is as short as possible, preferrably one character. Should be same as AndroidPlatform msgId 7848711145196397042. (frameworks/base/core/res/res/values/strings.xml:plurals:duration_years_shortest) [ICU Syntax]">
         {YEARS, plural, =1 {1y} other {#y}}
       </message>
+      <message name="IDS_MESSAGE_NOTIFICATION_DURATION_MINUTES_SHORTEST_FUTURE" desc="Phrase describing a time duration using minutes that is as short as possible, preferrably one character. This version should be a future point in time. Should be same as AndroidPlatform msgId 3277614521231489951. (frameworks/base/core/res/res/values/strings.xml:plurals:duration_minutes_shortest_future) [ICU Syntax]">
+        {MINUTES, plural, =1 {in 1m} other {in #m}}
+      </message>
+      <message name="IDS_MESSAGE_NOTIFICATION_DURATION_HOURS_SHORTEST_FUTURE" desc="Phrase describing a time duration using hours that is as short as possible, preferrably one character. This version should be a future point in time. Should be same as AndroidPlatform msgId 2152452368397489370. (frameworks/base/core/res/res/values/strings.xml:plurals:duration_hours_shortest_future) [ICU Syntax]">
+        {HOURS, plural, =1 {in 1h} other {in #h}}
+      </message>
+      <message name="IDS_MESSAGE_NOTIFICATION_DURATION_DAYS_SHORTEST_FUTURE" desc="Phrase describing a time duration using days that is as short as possible, preferrably one character. This version should be a future point in time. Should be same as AndroidPlatform msgId 8088331502820295701. (frameworks/base/core/res/res/values/strings.xml:plurals:duration_days_shortest_future) [ICU Syntax]">
+        {DAYS, plural, =1 {in 1d} other {in #d}}
+      </message>
+      <message name="IDS_MESSAGE_NOTIFICATION_DURATION_YEARS_SHORTEST_FUTURE" desc="Phrase describing a time duration using years that is as short as possible, preferrably one character. This version should be a future point in time. Should be same as AndroidPlatform msgId 2317006667145250301. (frameworks/base/core/res/res/values/strings.xml:plurals:duration_years_shortest_future) [ICU Syntax]">
+        {YEARS, plural, =1 {in 1y} other {in #y}}
+      </message>
       <message name="IDS_MESSAGE_CENTER_BLOCK_ALL_NOTIFICATIONS_SITE" desc="The label for the radio button to block all the notifications from this notification origin.">
         Block all notifications from this site
       </message>
@@ -749,8 +764,17 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME" desc="The spoken feedback text for the settings button in a notification. Usually 'button' is suffixed to this text automatically.">
         Notification settings
       </message>
-      <message name="IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_DEVICE_INFO_PREFIX" desc="For SEND_TAB_TO_SELF notification, this will be a prefix of device info.">
-        Shared from 
+      <message name="IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_DEVICE_INFO" desc="The message text for the notification when the user receive a shared tab from another device. It shows the name of the device which shared the tab.">
+        Shared from <ph name="DEVICE_NAME">$1<ex>Ted's Pixel 2</ex></ph>
+      </message>
+      <message name="IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_CONFIRMATION_SUCCESS" desc="The title text for the comformation notification when the user successfully share a tab to other devices.">
+        Sending tab...
+      </message>
+      <message name="IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_CONFIRMATION_FAILURE_TITLE" desc="The title text for the comformation notification when the user failed to share a tab to other devices.">
+        Failed to send
+      </message>
+      <message name="IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_CONFIRMATION_FAILURE_MESSAGE" desc="The message text for the comformation notification when the user failed to share a tab to other devices.">
+        Please try again
       </message>
       <if expr="chromeos">
         <message name="IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME" desc="The name of screenshot notifier that is a system component">
@@ -921,6 +945,14 @@ need to be translated for each locale.-->
       </message>
       <message name="IDS_BADGE_UNREAD_NOTIFICATIONS" desc="The accessibility text which will be read by a screen reader when there are notifcatications">
         {UNREAD_NOTIFICATIONS, plural, =1 {1 Unread Notification} other {# Unread Notifications}}
+      </message>
+
+      <!-- Send Tab To Self -->
+      <message name="IDS_SEND_TAB_TO_SELF_INFOBAR_MESSAGE" desc="The message text for the infobar when a user receives a shared tab from another device.">
+        Tab received.
+      </message>
+      <message name="IDS_SEND_TAB_TO_SELF_INFOBAR_MESSAGE_URL" desc="Clickable text displayed as part of a URL in the inforbar displayed when a user receives a shared tab from another device.">
+        Open
       </message>
     </messages>
   </release>

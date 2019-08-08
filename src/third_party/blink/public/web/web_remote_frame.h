@@ -52,20 +52,18 @@ class WebRemoteFrame : public WebFrame {
   // beginning.
   virtual WebLocalFrame* CreateLocalChild(WebTreeScopeType,
                                           const WebString& name,
-                                          WebSandboxFlags,
+                                          const FramePolicy&,
                                           WebLocalFrameClient*,
                                           blink::InterfaceRegistry*,
                                           mojo::ScopedMessagePipeHandle,
                                           WebFrame* previous_sibling,
-                                          const ParsedFeaturePolicy&,
                                           const WebFrameOwnerProperties&,
                                           FrameOwnerElementType,
                                           WebFrame* opener) = 0;
 
   virtual WebRemoteFrame* CreateRemoteChild(WebTreeScopeType,
                                             const WebString& name,
-                                            WebSandboxFlags,
-                                            const ParsedFeaturePolicy&,
+                                            const FramePolicy&,
                                             FrameOwnerElementType,
                                             WebRemoteFrameClient*,
                                             WebFrame* opener) = 0;
@@ -132,6 +130,11 @@ class WebRemoteFrame : public WebFrame {
   // Update the user activation state in appropriate part of this frame's
   // "local" frame tree (ancestors-only vs all-nodes).
   virtual void UpdateUserActivationState(UserActivationUpdateType) = 0;
+
+  // Transfers user activation state from |source_frame| to this frame, which
+  // must be in the same frame tree as |source_frame|.
+  virtual void TransferUserActivationFrom(
+      blink::WebRemoteFrame* source_frame) = 0;
 
   virtual void SetHasReceivedUserGestureBeforeNavigation(bool value) = 0;
 

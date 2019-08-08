@@ -19,6 +19,9 @@ interface MediaControllerManager {
   // automatically route commands to the correct session if the active session
   // changes. If there is no active session then commands will be no-ops.
   CreateActiveMediaController(MediaController& request);
+
+  // Suspends all media sessions.
+  SuspendAllSessions();
 };
 
 // Controls a MediaSession. If the media session is not controllable then the
@@ -82,6 +85,10 @@ interface MediaControllerObserver {
   // Called when the bound media session action list has changed. This tells
   // the observer which actions can be used to control the session.
   MediaSessionActionsChanged(array<MediaSessionAction> action);
+
+  // Called when the bound media session changes. This tells the observer the
+  // |request_id| of the new session of null if it is not bound to a session.
+  MediaSessionChanged(mojo_base.mojom.UnguessableToken? request_id);
 };
 
 // The observer for observing when images associated with a media controller

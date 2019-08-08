@@ -21,8 +21,11 @@ class FakeLocationBarModelDelegate : public LocationBarModelDelegate {
   void SetShouldPreventElision(bool should_prevent_elision) {
     should_prevent_elision_ = should_prevent_elision;
   }
-  void SetSecurityInfo(const security_state::SecurityInfo& info) {
-    security_info_ = info;
+  void SetSecurityLevel(security_state::SecurityLevel level) {
+    security_level_ = level;
+  }
+  void SetVisibleSecurityStateConnectionInfoUninitialized() {
+    connection_info_initialized_ = false;
   }
 
   // LocationBarModelDelegate:
@@ -39,8 +42,16 @@ class FakeLocationBarModelDelegate : public LocationBarModelDelegate {
 
   bool ShouldPreventElision() const override { return should_prevent_elision_; }
 
-  void GetSecurityInfo(security_state::SecurityInfo* result) const override {
-    *result = security_info_;
+  security_state::SecurityLevel GetSecurityLevel() const override {
+    return security_level_;
+  }
+
+  std::unique_ptr<security_state::VisibleSecurityState>
+  GetVisibleSecurityState() const override {
+    std::unique_ptr<security_state::VisibleSecurityState> state =
+        std::make_unique<security_state::VisibleSecurityState>();
+    state->connection_info_initialized = connection_info_initialized_;
+    return state;
   }
 
   AutocompleteClassifier* GetAutocompleteClassifier() override {
@@ -53,9 +64,10 @@ class FakeLocationBarModelDelegate : public LocationBarModelDelegate {
 
  private:
   GURL url_;
-  security_state::SecurityInfo security_info_;
+  security_state::SecurityLevel security_level_;
   TestOmniboxClient omnibox_client_;
   bool should_prevent_elision_ = false;
+  bool connection_info_initialized_ = true;
 };
 
 class LocationBarModelImplTest : public testing::Test {
@@ -107,19 +119,13 @@ TEST_F(LocationBarModelImplTest, PreventElisionWorks) {
             model()->GetURLForDisplay());
 
   // Verify that query in omnibox is turned off.
-  security_state::SecurityInfo info;
-  info.connection_info_initialized = true;
-  info.security_level = security_state::SecurityLevel::SECURE;
-  delegate()->SetSecurityInfo(info);
+  delegate()->SetSecurityLevel(security_state::SecurityLevel::SECURE);
   EXPECT_FALSE(model()->GetDisplaySearchTerms(nullptr));
 }
 
 TEST_F(LocationBarModelImplTest, QueryInOmniboxFeatureFlagWorks) {
   delegate()->SetURL(kValidSearchResultsPage);
-  security_state::SecurityInfo info;
-  info.connection_info_initialized = true;
-  info.security_level = security_state::SecurityLevel::SECURE;
-  delegate()->SetSecurityInfo(info);
+  delegate()->SetSecurityLevel(security_state::SecurityLevel::SECURE);
 
   EXPECT_FALSE(model()->GetDisplaySearchTerms(nullptr));
 
@@ -135,30 +141,22 @@ TEST_F(LocationBarModelImplTest, QueryInOmniboxSecurityLevel) {
 
   delegate()->SetURL(kValidSearchResultsPage);
 
-  security_state::SecurityInfo info;
-  info.connection_info_initialized = true;
-
-  info.security_level = security_state::SecurityLevel::SECURE;
-  delegate()->SetSecurityInfo(info);
+  delegate()->SetSecurityLevel(security_state::SecurityLevel::SECURE);
   EXPECT_TRUE(model()->GetDisplaySearchTerms(nullptr));
 
-  info.security_level = security_state::SecurityLevel::EV_SECURE;
-  delegate()->SetSecurityInfo(info);
+  delegate()->SetSecurityLevel(security_state::SecurityLevel::EV_SECURE);
   EXPECT_TRUE(model()->GetDisplaySearchTerms(nullptr));
 
   // Insecure levels should not be allowed to display search terms.
-  info.security_level = security_state::SecurityLevel::NONE;
-  delegate()->SetSecurityInfo(info);
+  delegate()->SetSecurityLevel(security_state::SecurityLevel::NONE);
   EXPECT_FALSE(model()->GetDisplaySearchTerms(nullptr));
 
-  info.security_level = security_state::SecurityLevel::DANGEROUS;
-  delegate()->SetSecurityInfo(info);
+  delegate()->SetSecurityLevel(security_state::SecurityLevel::DANGEROUS);
   EXPECT_FALSE(model()->GetDisplaySearchTerms(nullptr));
 
   // But ignore the level if the connection info has not been initialized.
-  info.connection_info_initialized = false;
-  info.security_level = security_state::SecurityLevel::NONE;
-  delegate()->SetSecurityInfo(info);
+  delegate()->SetVisibleSecurityStateConnectionInfoUninitialized();
+  delegate()->SetSecurityLevel(security_state::SecurityLevel::NONE);
   EXPECT_TRUE(model()->GetDisplaySearchTerms(nullptr));
 }
 
@@ -166,11 +164,7 @@ TEST_F(LocationBarModelImplTest,
        QueryInOmniboxDefaultSearchProviderWithAndWithoutQuery) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(omnibox::kQueryInOmnibox);
-
-  security_state::SecurityInfo info;
-  info.connection_info_initialized = true;
-  info.security_level = security_state::SecurityLevel::SECURE;
-  delegate()->SetSecurityInfo(info);
+  delegate()->SetSecurityLevel(security_state::SecurityLevel::SECURE);
 
   delegate()->SetURL(kValidSearchResultsPage);
   base::string16 result;
@@ -192,10 +186,7 @@ TEST_F(LocationBarModelImplTest, QueryInOmniboxNonDefaultSearchProvider) {
   const GURL kNonDefaultSearchProvider(
       "https://search.yahoo.com/search?ei=UTF-8&fr=crmas&p=foo+query");
   delegate()->SetURL(kNonDefaultSearchProvider);
-  security_state::SecurityInfo info;
-  info.connection_info_initialized = true;
-  info.security_level = security_state::SecurityLevel::SECURE;
-  delegate()->SetSecurityInfo(info);
+  delegate()->SetSecurityLevel(security_state::SecurityLevel::SECURE);
 
   base::string16 result;
   EXPECT_FALSE(model()->GetDisplaySearchTerms(&result));
@@ -206,10 +197,7 @@ TEST_F(LocationBarModelImplTest, QueryInOmniboxLookalikeURL) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(omnibox::kQueryInOmnibox);
 
-  security_state::SecurityInfo info;
-  info.connection_info_initialized = true;
-  info.security_level = security_state::SecurityLevel::SECURE;
-  delegate()->SetSecurityInfo(info);
+  delegate()->SetSecurityLevel(security_state::SecurityLevel::SECURE);
 
   const GURL kLookalikeURLQuery(
       "https://www.google.com/search?q=lookalike.com");

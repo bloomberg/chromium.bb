@@ -28,33 +28,41 @@ class MockPostProcessor : public PostProcessingPipeline {
                     const base::Value* filter_description_list,
                     int channels);
   ~MockPostProcessor() override;
-  MOCK_METHOD4(
-      ProcessFrames,
-      int(float* data, int num_frames, float current_volume, bool is_silence));
+  MOCK_METHOD4(ProcessFrames,
+               double(float* data,
+                      int num_frames,
+                      float current_volume,
+                      bool is_silence));
   MOCK_METHOD1(SetContentType, void(AudioContentType));
-  bool SetSampleRate(int sample_rate) override { return true; }
+  bool SetOutputSampleRate(int sample_rate) override {
+    sample_rate_ = sample_rate;
+    return true;
+  }
+  int GetInputSampleRate() const override { return sample_rate_; }
   bool IsRinging() override { return ringing_; }
-  int delay() { return rendering_delay_; }
+  int delay() { return rendering_delay_frames_; }
   std::string name() const { return name_; }
   float* GetOutputBuffer() override { return output_buffer_; }
-  int NumOutputChannels() override { return num_output_channels_; }
+  int NumOutputChannels() const override { return num_output_channels_; }
 
   MOCK_METHOD2(SetPostProcessorConfig,
                void(const std::string& name, const std::string& config));
   MOCK_METHOD1(UpdatePlayoutChannel, void(int));
 
  private:
-  int DoProcessFrames(float* data,
-                      int num_frames,
-                      float current_volume,
-                      bool is_silence) {
+  double DoProcessFrames(float* data,
+                         int num_frames,
+                         float current_volume,
+                         bool is_silence) {
     output_buffer_ = data;
-    return rendering_delay_;
+    return static_cast<double>(rendering_delay_frames_) / sample_rate_;
+    ;
   }
 
   MockPostProcessorFactory* const factory_;
   const std::string name_;
-  int rendering_delay_ = 0;
+  int sample_rate_;
+  int rendering_delay_frames_ = 0;
   bool ringing_ = false;
   float* output_buffer_ = nullptr;
   int num_output_channels_;

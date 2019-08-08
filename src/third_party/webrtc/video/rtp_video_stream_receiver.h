@@ -32,14 +32,13 @@
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/rtp_rtcp/source/contributing_sources.h"
 #include "modules/video_coding/h264_sps_pps_tracker.h"
-#include "modules/video_coding/include/video_coding_defines.h"
 #include "modules/video_coding/loss_notification_controller.h"
 #include "modules/video_coding/packet_buffer.h"
 #include "modules/video_coding/rtp_frame_reference_finder.h"
 #include "rtc_base/constructor_magic.h"
 #include "rtc_base/critical_section.h"
 #include "rtc_base/numerics/sequence_number_util.h"
-#include "rtc_base/sequenced_task_checker.h"
+#include "rtc_base/synchronization/sequence_checker.h"
 #include "rtc_base/thread_annotations.h"
 #include "rtc_base/thread_checker.h"
 #include "video/buffered_frame_decryptor.h"
@@ -59,8 +58,6 @@ class UlpfecReceiver;
 class RtpVideoStreamReceiver : public LossNotificationSender,
                                public RecoveredPacketReceiver,
                                public RtpPacketSinkInterface,
-                               public VCMFrameTypeCallback,
-                               public VCMPacketRequestCallback,
                                public video_coding::OnAssembledFrameCallback,
                                public video_coding::OnCompleteFrameCallback,
                                public OnDecryptedFrameCallback,
@@ -105,22 +102,21 @@ class RtpVideoStreamReceiver : public LossNotificationSender,
   void OnRtpPacket(const RtpPacketReceived& packet) override;
 
   // TODO(philipel): Stop using VCMPacket in the new jitter buffer and then
-  //                 remove this function.
-  int32_t OnReceivedPayloadData(const uint8_t* payload_data,
-                                size_t payload_size,
-                                const WebRtcRTPHeader* rtp_header);
+  //                 remove this function. Public only for tests.
   int32_t OnReceivedPayloadData(
       const uint8_t* payload_data,
       size_t payload_size,
-      const WebRtcRTPHeader* rtp_header,
+      const RTPHeader& rtp_header,
+      const RTPVideoHeader& video_header,
+      VideoFrameType frame_type,
       const absl::optional<RtpGenericFrameDescriptor>& generic_descriptor,
       bool is_recovered);
 
   // Implements RecoveredPacketReceiver.
   void OnRecoveredPacket(const uint8_t* packet, size_t packet_length) override;
 
-  // Implements VCMFrameTypeCallback.
-  int32_t RequestKeyFrame() override;
+  // Send an RTCP keyframe request.
+  void RequestKeyFrame();
 
   // Implements LossNotificationSender.
   void SendLossNotification(uint16_t last_decoded_seq_num,
@@ -138,10 +134,6 @@ class RtpVideoStreamReceiver : public LossNotificationSender,
   // Don't use, still experimental.
   void RequestPacketRetransmit(const std::vector<uint16_t>& sequence_numbers);
 
-  // Implements VCMPacketRequestCallback.
-  int32_t ResendPackets(const uint16_t* sequenceNumbers,
-                        uint16_t length) override;
-
   // Implements OnAssembledFrameCallback.
   void OnAssembledFrame(
       std::unique_ptr<video_coding::RtpFrameObject> frame) override;
@@ -155,7 +147,13 @@ class RtpVideoStreamReceiver : public LossNotificationSender,
       std::unique_ptr<video_coding::RtpFrameObject> frame) override;
 
   // Implements OnDecryptionStatusChangeCallback.
-  void OnDecryptionStatusChange(int status) override;
+  void OnDecryptionStatusChange(
+      FrameDecryptorInterface::Status status) override;
+
+  // Optionally set a frame decryptor after a stream has started. This will not
+  // reset the decoder state.
+  void SetFrameDecryptor(
+      rtc::scoped_refptr<FrameDecryptorInterface> frame_decryptor);
 
   // Called by VideoReceiveStream when stats are updated.
   void UpdateRtt(int64_t max_rtt_ms);
@@ -196,7 +194,7 @@ class RtpVideoStreamReceiver : public LossNotificationSender,
   ReceiveStatistics* const rtp_receive_statistics_;
   std::unique_ptr<UlpfecReceiver> ulpfec_receiver_;
 
-  rtc::SequencedTaskChecker worker_task_checker_;
+  SequenceChecker worker_task_checker_;
   bool receiving_ RTC_GUARDED_BY(worker_task_checker_);
   int64_t last_packet_log_ms_ RTC_GUARDED_BY(worker_task_checker_);
 

@@ -91,20 +91,45 @@ std::unique_ptr<Pffft::FloatBuffer> Pffft::CreateBuffer() const {
   return buffer;
 }
 
-void Pffft::ForwardTransform(const FloatBuffer& in, FloatBuffer* out) {
+void Pffft::ForwardTransform(const FloatBuffer& in,
+                             FloatBuffer* out,
+                             bool ordered) {
   RTC_DCHECK_EQ(in.size(), GetBufferSize(fft_size_, fft_type_));
   RTC_DCHECK_EQ(in.size(), out->size());
   RTC_DCHECK(scratch_buffer_);
-  pffft_transform(pffft_status_, in.const_data(), out->data(), scratch_buffer_,
-                  PFFFT_FORWARD);
+  if (ordered) {
+    pffft_transform_ordered(pffft_status_, in.const_data(), out->data(),
+                            scratch_buffer_, PFFFT_FORWARD);
+  } else {
+    pffft_transform(pffft_status_, in.const_data(), out->data(),
+                    scratch_buffer_, PFFFT_FORWARD);
+  }
 }
 
-void Pffft::BackwardTransform(const FloatBuffer& in, FloatBuffer* out) {
+void Pffft::BackwardTransform(const FloatBuffer& in,
+                              FloatBuffer* out,
+                              bool ordered) {
   RTC_DCHECK_EQ(in.size(), GetBufferSize(fft_size_, fft_type_));
   RTC_DCHECK_EQ(in.size(), out->size());
   RTC_DCHECK(scratch_buffer_);
-  pffft_transform(pffft_status_, in.const_data(), out->data(), scratch_buffer_,
-                  PFFFT_BACKWARD);
+  if (ordered) {
+    pffft_transform_ordered(pffft_status_, in.const_data(), out->data(),
+                            scratch_buffer_, PFFFT_BACKWARD);
+  } else {
+    pffft_transform(pffft_status_, in.const_data(), out->data(),
+                    scratch_buffer_, PFFFT_BACKWARD);
+  }
+}
+
+void Pffft::FrequencyDomainConvolve(const FloatBuffer& fft_x,
+                                    const FloatBuffer& fft_y,
+                                    FloatBuffer* out,
+                                    float scaling) {
+  RTC_DCHECK_EQ(fft_x.size(), GetBufferSize(fft_size_, fft_type_));
+  RTC_DCHECK_EQ(fft_x.size(), fft_y.size());
+  RTC_DCHECK_EQ(fft_x.size(), out->size());
+  pffft_zconvolve_accumulate(pffft_status_, fft_x.const_data(),
+                             fft_y.const_data(), out->data(), scaling);
 }
 
 }  // namespace webrtc

@@ -5,6 +5,9 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/sequenced_task_runner.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "build/build_config.h"
 #include "net/base/network_change_notifier_posix.h"
 #include "net/dns/dns_config_service_posix.h"
@@ -25,6 +28,7 @@ class NetworkChangeNotifierPosix::DnsConfigService
 
   // net::internal::DnsConfigService() overrides.
   bool StartWatching() override {
+    CreateReaders();
     // DNS config changes are handled and notified by the network
     // state handlers.
     return true;
@@ -37,58 +41,40 @@ class NetworkChangeNotifierPosix::DnsConfigService
   }
 };
 
-NetworkChangeNotifierPosix::NotifierThread::NotifierThread()
-    : base::Thread("NetworkChangeNotifier") {
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-}
-
-NetworkChangeNotifierPosix::NotifierThread::~NotifierThread() {
-  DCHECK(!Thread::IsRunning());
-}
-
-void NetworkChangeNotifierPosix::NotifierThread::OnNetworkChange() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  dns_config_service_->OnNetworkChange();
-}
-
-void NetworkChangeNotifierPosix::NotifierThread::Init() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  dns_config_service_.reset(new DnsConfigService());
-  dns_config_service_->WatchConfig(
-      base::BindRepeating(&NetworkChangeNotifier::SetDnsConfig));
-  dns_config_service_->OnNetworkChange();
-}
-
-void NetworkChangeNotifierPosix::NotifierThread::CleanUp() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  dns_config_service_.reset();
-}
-
 NetworkChangeNotifierPosix::NetworkChangeNotifierPosix(
     NetworkChangeNotifier::ConnectionType initial_connection_type,
     NetworkChangeNotifier::ConnectionSubtype initial_connection_subtype)
     : NetworkChangeNotifier(NetworkChangeCalculatorParamsPosix()),
+      dns_config_service_runner_(
+          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
+      dns_config_service_(
+          new DnsConfigService(),
+          // Ensure DnsConfigService lives on |dns_config_service_runner_|
+          // to prevent races where NetworkChangeNotifierPosix outlives
+          // ScopedTaskEnvironment. https://crbug.com/938126
+          base::OnTaskRunnerDeleter(dns_config_service_runner_)),
       connection_type_(initial_connection_type),
       max_bandwidth_mbps_(
           NetworkChangeNotifier::GetMaxBandwidthMbpsForConnectionSubtype(
               initial_connection_subtype)) {
-  notifier_thread_.StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+  dns_config_service_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &NetworkChangeNotifierPosix::DnsConfigService::WatchConfig,
+          base::Unretained(dns_config_service_.get()),
+          base::BindRepeating(&NetworkChangeNotifier::SetDnsConfig)));
+  OnDNSChanged();
 }
 
-NetworkChangeNotifierPosix::~NetworkChangeNotifierPosix() {
-  notifier_thread_.Stop();
-}
+NetworkChangeNotifierPosix::~NetworkChangeNotifierPosix() = default;
 
 void NetworkChangeNotifierPosix::OnDNSChanged() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // The Unretained thread pointer is ok here because if the thread gets
-  // deleted, the callback won't be called.
-  notifier_thread_.task_runner()->PostTask(
+  dns_config_service_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &NetworkChangeNotifierPosix::NotifierThread::OnNetworkChange,
-          base::Unretained(&notifier_thread_)));
+          &NetworkChangeNotifierPosix::DnsConfigService::OnNetworkChange,
+          base::Unretained(dns_config_service_.get())));
 }
 
 void NetworkChangeNotifierPosix::OnIPAddressChanged() {

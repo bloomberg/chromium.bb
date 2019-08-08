@@ -34,7 +34,7 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
   // |view_token| is passed to Scenic to attach the view to the view tree.
   ScenicWindow(ScenicWindowManager* window_manager,
                PlatformWindowDelegate* delegate,
-               fuchsia::ui::gfx::ExportToken view_token);
+               fuchsia::ui::views::ViewToken view_token);
   ~ScenicWindow() override;
 
   scenic::Session* scenic_session() { return &scenic_session_; }

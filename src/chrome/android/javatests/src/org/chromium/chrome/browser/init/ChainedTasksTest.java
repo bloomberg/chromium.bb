@@ -10,10 +10,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,12 +52,9 @@ public class ChainedTasksTest {
         final ChainedTasks tasks = new ChainedTasks();
         for (String message : expectedMessages) tasks.add(new TestRunnable(messages, message));
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                tasks.start(true);
-                Assert.assertEquals(expectedMessages, messages);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            tasks.start(true);
+            Assert.assertEquals(expectedMessages, messages);
         });
     }
 
@@ -113,12 +110,9 @@ public class ChainedTasksTest {
             }
         });
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                tasks.start(false);
-                Assert.assertTrue("No task should run synchronously", messages.isEmpty());
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            tasks.start(false);
+            Assert.assertTrue("No task should run synchronously", messages.isEmpty());
         });
         Assert.assertTrue(finished.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         Assert.assertEquals(expectedMessages, messages);

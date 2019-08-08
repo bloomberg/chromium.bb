@@ -3,14 +3,15 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/webauthn/authenticator_request_scheduler.h"
+#include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_service_manager_context.h"
@@ -22,9 +23,11 @@
 namespace {
 
 class WebAuthFocusTest : public InProcessBrowserTest,
-                         public PermissionRequestManager::Observer {
+                         public AuthenticatorRequestDialogModel::Observer {
  protected:
-  WebAuthFocusTest() : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+  WebAuthFocusTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
+        permission_requested_(false) {}
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -37,49 +40,32 @@ class WebAuthFocusTest : public InProcessBrowserTest,
     return https_server_.GetURL(hostname, relative_url);
   }
 
-  // PermissionRequestManager::Observer implementation
-  void OnBubbleAdded() override {
-    // If this object is registered as a PermissionRequestManager observer then
-    // it'll attempt to complete all permissions bubbles by sending keystrokes.
-    // Note, however, that macOS rejects the permission bubble while other
-    // platforms accept it, because there's no key sequence for accepting a
-    // bubble on macOS.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            [](Browser* browser) {
-              for (const auto& key : std::vector<ui::KeyboardCode> {
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
-                     // Press tab (to select the "Allow" button of the
-                     // permissions prompt) and then enter to activate it.
-                     ui::KeyboardCode::VKEY_TAB, ui::KeyboardCode::VKEY_RETURN,
-#elif defined(OS_MACOSX)
-                       // There is no way to allow the bubble, we have to
-                       // press escape to reject it.
-                       ui::KeyboardCode::VKEY_ESCAPE,
-#else
-                       // Press tab twice (to select the "Allow" button of the
-                       // permissions prompt) and then enter to activate it.
-                       ui::KeyboardCode::VKEY_TAB,
-                       ui::KeyboardCode::VKEY_TAB,
-                       ui::KeyboardCode::VKEY_RETURN,
-#endif
-                   }) {
-                ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-                    browser, key,
-                    /*control=*/false, /*shift=*/false, /*alt=*/false,
-                    /*command=*/false));
-              }
-            },
-            browser()));
-  }
+  bool permission_requested() { return permission_requested_; }
+
+  AuthenticatorRequestDialogModel* dialog_model_;
 
  private:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
 
+  // AuthenticatorRequestDialogModel::Observer:
+  void OnStepTransition() override {
+    if (dialog_model_->current_step() !=
+        AuthenticatorRequestDialogModel::Step::kAttestationPermissionRequest)
+      return;
+
+    // Simulate accepting the permission request.
+    dialog_model_->OnAttestationPermissionResponse(true);
+    permission_requested_ = true;
+  }
+
+  void OnModelDestroyed() override {}
+
   net::EmbeddedTestServer https_server_;
+
+  // Set to true when the permission sheet is triggered.
+  bool permission_requested_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAuthFocusTest);
 };
@@ -182,26 +168,23 @@ IN_PROC_BROWSER_TEST_F(WebAuthFocusTest, Focus) {
   EXPECT_EQ(result, "OK");
 
   // Requesting "direct" attestation will trigger a permissions prompt.
+  virtual_device.mutable_state()->simulate_press_callback =
+      base::BindLambdaForTesting([&]() {
+        dialog_model_ =
+            AuthenticatorRequestScheduler::GetRequestDelegateForTest(
+                initial_web_contents)
+                ->WeakDialogModelForTesting();
+        dialog_model_->AddObserver(this);
+      });
+
   const std::string get_assertion_with_attestation_script =
       base::ReplaceStringPlaceholders(
           kRegisterTemplate, std::vector<std::string>{"direct"}, nullptr);
-
-  PermissionRequestManager* const permission_request_manager =
-      PermissionRequestManager::FromWebContents(initial_web_contents);
-  // The observer callback will trigger the permissions prompt.
-  permission_request_manager->AddObserver(this);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       initial_web_contents, get_assertion_with_attestation_script, &result));
-#if defined(OS_MACOSX)
-  // The permissions bubble has to be rejected on macOS because there's no key
-  // sequence to accept it. Therefore a NotAllowedError is expected. This is not
-  // ideal as a timeout causes the same result, but it is distinct from a focus
-  // error.
-  EXPECT_THAT(result, ::testing::HasSubstr("NotAllowedError: "));
-#else
+
+  EXPECT_TRUE(permission_requested());
   EXPECT_EQ(result, "OK");
-#endif
-  permission_request_manager->RemoveObserver(this);
 }
 
 }  // anonymous namespace

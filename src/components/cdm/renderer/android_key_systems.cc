@@ -119,6 +119,8 @@ SupportedKeySystemResponse QueryKeySystemSupport(
 #if BUILDFLAG(ENABLE_WIDEVINE)
 void AddAndroidWidevine(
     std::vector<std::unique_ptr<KeySystemProperties>>* concrete_key_systems) {
+  // TODO(crbug.com/853336): Use media.mojom.KeySystemSupport instead of
+  // separate IPC.
   auto response = QueryKeySystemSupport(kWidevineKeySystem);
 
   auto codecs = response.non_secure_codecs;
@@ -138,10 +140,11 @@ void AddAndroidWidevine(
   if (codecs != media::EME_CODEC_NONE) {
     DVLOG(3) << __func__ << " Widevine supported.";
 
-    // TODO(crbug.com/813845): Determine 'cbcs' support, which may vary by
-    // Android version.
     base::flat_set<media::EncryptionMode> encryption_schemes = {
         media::EncryptionMode::kCenc};
+    if (response.is_cbcs_encryption_supported) {
+      encryption_schemes.insert(media::EncryptionMode::kCbcs);
+    }
 
     concrete_key_systems->emplace_back(new WidevineKeySystemProperties(
         codecs,                        // Regular codecs.
@@ -164,6 +167,9 @@ void AddAndroidWidevine(
 
 void AddAndroidPlatformKeySystems(
     std::vector<std::unique_ptr<KeySystemProperties>>* concrete_key_systems) {
+  // TODO(crbug.com/853336): Update media.mojom.KeySystemSupport to handle this
+  // case and use it instead.
+
   std::vector<std::string> key_system_names;
   content::RenderThread::Get()->Send(
       new ChromeViewHostMsg_GetPlatformKeySystemNames(&key_system_names));

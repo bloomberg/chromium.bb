@@ -29,7 +29,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface OmniboxCoordinator ()
+@interface OmniboxCoordinator () <OmniboxViewControllerDelegate>
 // Object taking care of adding the accessory views to the keyboard.
 @property(nonatomic, strong)
     ToolbarAssistiveKeyboardDelegateImpl* keyboardDelegate;
@@ -68,6 +68,7 @@
   self.viewController.dispatcher =
       static_cast<id<BrowserCommands, LoadQueryCommands, OmniboxFocuser>>(
           self.dispatcher);
+  self.viewController.delegate = self;
   self.mediator = [[OmniboxMediator alloc] init];
   self.mediator.templateURLService =
       ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState);
@@ -97,6 +98,8 @@
   self.editController = nil;
   self.viewController = nil;
   self.mediator = nil;
+
+  [NSNotificationCenter.defaultCenter removeObserver:self];
 }
 
 - (void)updateOmniboxState {
@@ -162,6 +165,13 @@
 
 - (id<EditViewAnimatee>)animatee {
   return self.viewController;
+}
+
+#pragma mark - OmniboxViewControllerDelegate
+
+- (void)omniboxViewControllerTextInputModeDidChange:
+    (OmniboxViewController*)omniboxViewController {
+  _editView->UpdatePopupAppearance();
 }
 
 #pragma mark - private

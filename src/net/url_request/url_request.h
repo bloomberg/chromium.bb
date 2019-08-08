@@ -21,7 +21,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "net/base/auth.h"
-#include "net/base/completion_callback.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_states.h"
 #include "net/base/load_timing_info.h"
@@ -188,7 +187,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
     // When it does so, the request will be reissued, restarting the sequence
     // of On* callbacks.
     virtual void OnAuthRequired(URLRequest* request,
-                                AuthChallengeInfo* auth_info);
+                                const AuthChallengeInfo& auth_info);
 
     // Called when we receive an SSL CertificateRequest message for client
     // authentication.  The delegate should call
@@ -499,11 +498,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // Indicate if this response was fetched from disk cache.
   bool was_cached() const { return response_info_.was_cached; }
-
-  // Returns true if the URLRequest was delivered through a proxy.
-  bool was_fetched_via_proxy() const {
-    return response_info_.was_fetched_via_proxy;
-  }
 
   // Returns true if the URLRequest was delivered over SPDY.
   bool was_fetched_via_spdy() const {
@@ -830,7 +824,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // These functions delegate to |delegate_|.  See URLRequest::Delegate for the
   // meaning of these functions.
-  void NotifyAuthRequired(AuthChallengeInfo* auth_info);
+  void NotifyAuthRequired(std::unique_ptr<AuthChallengeInfo> auth_info);
   void NotifyAuthRequiredComplete(NetworkDelegate::AuthRequiredResponse result);
   void NotifyCertificateRequested(SSLCertRequestInfo* cert_request_info);
   void NotifySSLCertificateError(const SSLInfo& ssl_info, bool fatal);
@@ -954,7 +948,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // |NotifyAuthRequired| on the NetworkDelegate. |auth_info_| holds
   // the authentication challenge being handled by |NotifyAuthRequired|.
   AuthCredentials auth_credentials_;
-  scoped_refptr<AuthChallengeInfo> auth_info_;
+  std::unique_ptr<AuthChallengeInfo> auth_info_;
 
   int64_t received_response_content_length_;
 

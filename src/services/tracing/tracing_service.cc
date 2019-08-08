@@ -59,9 +59,10 @@ class ServiceListener : public service_manager::mojom::ServiceManagerListener {
       return;
     }
 
-    // Let the Coordinator know it should be expecting a connection
-    // from this process.
+    // Let the Coordinator and the perfetto service know it should be expecting
+    // a connection from this process.
     coordinator_->AddExpectedPID(pid);
+    PerfettoService::GetInstance()->AddActiveServicePid(pid);
 
     mojom::TracedProcessPtr traced_process;
     connector_->BindInterface(
@@ -89,6 +90,7 @@ class ServiceListener : public service_manager::mojom::ServiceManagerListener {
       // to connect to the tracing service.
       if (CountServicesWithPID(pid) == 0) {
         coordinator_->RemoveExpectedPID(pid);
+        PerfettoService::GetInstance()->RemoveActiveServicePid(pid);
       }
     }
   }
@@ -103,6 +105,7 @@ class ServiceListener : public service_manager::mojom::ServiceManagerListener {
     }
 
     coordinator_->FinishedReceivingRunningPIDs();
+    PerfettoService::GetInstance()->SetActiveServicePidsInitialized();
   }
 
   void OnServicePIDReceived(const service_manager::Identity& identity,

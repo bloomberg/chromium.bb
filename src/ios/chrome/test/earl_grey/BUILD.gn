@@ -22,6 +22,10 @@ group("all_tests") {
     ":ios_chrome_tab_grid_egtests",
     ":ios_chrome_translate_egtests",
     ":ios_chrome_ui_egtests",
+    ":ios_chrome_ui_payments_egtests",
+    ":ios_chrome_ui_qr_scanner_egtests",
+    ":ios_chrome_ui_settings_egtests",
+    ":ios_chrome_ui_signin_interaction_egtests",
     ":ios_chrome_unified_consent_egtests",
     ":ios_chrome_web_egtests",
   ]
@@ -88,10 +92,10 @@ chrome_ios_eg_test("ios_chrome_tab_grid_egtests") {
 
 chrome_ios_eg_test("ios_chrome_ui_egtests") {
   deps = [
-    "//ios/chrome/browser/ui:eg_tests",
     "//ios/chrome/browser/ui/activity_services:eg_tests",
     "//ios/chrome/browser/ui/alert_coordinator:eg_tests",
     "//ios/chrome/browser/ui/autofill:eg_tests",
+    "//ios/chrome/browser/ui/browser_view:eg_tests",
     "//ios/chrome/browser/ui/content_suggestions:eg_tests",
     "//ios/chrome/browser/ui/dialogs:eg_tests",
     "//ios/chrome/browser/ui/download:eg_tests",
@@ -100,23 +104,44 @@ chrome_ios_eg_test("ios_chrome_ui_egtests") {
     "//ios/chrome/browser/ui/fullscreen:eg_tests",
     "//ios/chrome/browser/ui/history:eg_tests",
     "//ios/chrome/browser/ui/infobars:eg_tests",
+    "//ios/chrome/browser/ui/keyboard:eg_tests",
     "//ios/chrome/browser/ui/ntp:eg_tests",
     "//ios/chrome/browser/ui/omnibox/popup:eg_tests",
     "//ios/chrome/browser/ui/omnibox/popup/shortcuts:eg_tests",
     "//ios/chrome/browser/ui/page_info:eg_tests",
-    "//ios/chrome/browser/ui/payments:eg_tests",
     "//ios/chrome/browser/ui/popup_menu:eg_tests",
     "//ios/chrome/browser/ui/print:eg_tests",
-    "//ios/chrome/browser/ui/qr_scanner:eg_tests",
     "//ios/chrome/browser/ui/recent_tabs:eg_tests",
     "//ios/chrome/browser/ui/sad_tab:eg_tests",
     "//ios/chrome/browser/ui/safe_mode:eg_tests",
-    "//ios/chrome/browser/ui/settings/sync/utils:eg_tests",
     "//ios/chrome/browser/ui/side_swipe:eg_tests",
-    "//ios/chrome/browser/ui/signin_interaction:eg_tests",
     "//ios/chrome/browser/ui/tabs:eg_tests",
     "//ios/chrome/browser/ui/toolbar:eg_tests",
     "//ios/chrome/browser/ui/webui:eg_tests",
+  ]
+}
+
+chrome_ios_eg_test("ios_chrome_ui_payments_egtests") {
+  deps = [
+    "//ios/chrome/browser/ui/payments:eg_tests",
+  ]
+}
+
+chrome_ios_eg_test("ios_chrome_ui_qr_scanner_egtests") {
+  deps = [
+    "//ios/chrome/browser/ui/qr_scanner:eg_tests",
+  ]
+}
+
+chrome_ios_eg_test("ios_chrome_ui_settings_egtests") {
+  deps = [
+    "//ios/chrome/browser/ui/settings/sync/utils:eg_tests",
+  ]
+}
+
+chrome_ios_eg_test("ios_chrome_ui_signin_interaction_egtests") {
+  deps = [
+    "//ios/chrome/browser/ui/signin_interaction:eg_tests",
   ]
 }
 
@@ -211,10 +236,12 @@ chrome_ios_eg_test("ios_chrome_external_url_egtests") {
 chrome_ios_eg_test("ios_chrome_unified_consent_egtests") {
   deps = [
     "//ios/chrome/browser/ui/settings/google_services:unified_consent_eg_tests",
+    "//ios/chrome/browser/ui/signin_interaction:unity_eg_tests",
   ]
 }
 
 source_set("test_support") {
+  defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
@@ -222,14 +249,18 @@ source_set("test_support") {
     "accessibility_util.mm",
     "chrome_actions.h",
     "chrome_actions.mm",
+    "chrome_actions_app_interface.h",
+    "chrome_actions_app_interface.mm",
     "chrome_earl_grey.h",
     "chrome_earl_grey.mm",
     "chrome_earl_grey_ui.h",
     "chrome_earl_grey_ui.mm",
+    "chrome_error_util.h",
+    "chrome_error_util.mm",
     "chrome_matchers.h",
     "chrome_matchers.mm",
-    "chrome_matchers_shorthand.h",
-    "chrome_matchers_shorthand.mm",
+    "chrome_matchers_app_interface.h",
+    "chrome_matchers_app_interface.mm",
     "chrome_test_case.h",
     "chrome_test_case.mm",
   ]
@@ -267,6 +298,7 @@ source_set("test_support") {
     "//ios/third_party/material_components_ios",
     "//ios/web",
     "//ios/web:earl_grey_test_support",
+    "//ios/web/public/test:element_selector",
     "//ios/web/public/test/http_server",
     "//ui/base",
     "//ui/base:test_support",
@@ -297,5 +329,81 @@ source_set("hooks") {
   ]
   deps = [
     "//ios/chrome/app:tests_hook",
+  ]
+}
+
+source_set("eg_app_support+eg2") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "chrome_actions_app_interface.h",
+    "chrome_actions_app_interface.mm",
+    "chrome_error_util.h",
+    "chrome_error_util.mm",
+    "chrome_matchers_app_interface.h",
+    "chrome_matchers_app_interface.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//components/signin/core/browser",
+    "//components/strings",
+    "//components/unified_consent",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/authentication/cells",
+    "//ios/chrome/browser/ui/bookmarks:bookmarks_ui",
+    "//ios/chrome/browser/ui/content_suggestions:content_suggestions_ui",
+    "//ios/chrome/browser/ui/location_bar:location_bar",
+    "//ios/chrome/browser/ui/omnibox:omnibox_internal",
+    "//ios/chrome/browser/ui/payments:payments_ui",
+    "//ios/chrome/browser/ui/popup_menu:constants",
+    "//ios/chrome/browser/ui/settings:settings",
+    "//ios/chrome/browser/ui/settings/cells",
+    "//ios/chrome/browser/ui/settings/clear_browsing_data",
+    "//ios/chrome/browser/ui/settings/google_services",
+    "//ios/chrome/browser/ui/settings/sync",
+    "//ios/chrome/browser/ui/static_content",
+    "//ios/chrome/browser/ui/toolbar/public",
+    "//ios/chrome/test/app:test_support",
+    "//ios/testing/earl_grey:eg_app_support+eg2",
+    "//ios/testing/earl_grey:eg_app_support+eg2",
+    "//ios/third_party/earl_grey2:app_framework+link",
+    "//ios/web:eg_app_support+eg2",
+    "//ios/web/public/test:element_selector",
+    "//ui/base",
+    "//ui/base:test_support",
+  ]
+}
+
+source_set("eg_test_support+eg2") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+
+  sources = [
+    "chrome_actions.h",
+    "chrome_actions.mm",
+    "chrome_actions_app_interface.h",
+    "chrome_error_util.h",
+    "chrome_error_util.mm",
+    "chrome_matchers.h",
+    "chrome_matchers.mm",
+    "chrome_matchers_app_interface.h",
+  ]
+
+  deps = [
+    "//base",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+    "//ios/web/public/test:element_selector",
+    "//url",
   ]
 }

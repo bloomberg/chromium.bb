@@ -434,8 +434,7 @@ class BlinkPerfCanvas(_BlinkPerfBenchmark):
       page.skipped_gpus = []
     return story_set
 
-@benchmark.Info(emails=['hayato@chromium.org',
-                        'tkent@chromium.org'],
+@benchmark.Info(emails=['hayato@chromium.org'],
                 component='Blink>DOM',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfDOM(_BlinkPerfBenchmark):
@@ -456,6 +455,11 @@ class BlinkPerfEvents(_BlinkPerfBenchmark):
   def Name(cls):
     return 'blink_perf.events'
 
+  # TODO(yoichio): Migrate EventsDispatching tests to V1 and remove this flags
+  # crbug.com/937716.
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs(['--enable-blink-features=ShadowDOMV0'])
+
 
 @benchmark.Info(emails=['cblume@chromium.org'],
                 component='Internals>Images>Codecs',
@@ -474,6 +478,7 @@ class BlinkPerfImageDecoder(_BlinkPerfBenchmark):
 
 
 @benchmark.Info(emails=['eae@chromium.org'],
+                component='Blink>Layout',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfLayout(_BlinkPerfBenchmark):
   SUBDIR = 'layout'
@@ -484,6 +489,7 @@ class BlinkPerfLayout(_BlinkPerfBenchmark):
 
 
 @benchmark.Info(emails=['dmurph@chromium.org'],
+                component='Blink>Storage',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfOWPStorage(_BlinkPerfBenchmark):
   SUBDIR = 'owp_storage'
@@ -546,3 +552,8 @@ class BlinkPerfShadowDOM(_BlinkPerfBenchmark):
   @classmethod
   def Name(cls):
     return 'blink_perf.shadow_dom'
+
+  # TODO(yoichio): Migrate shadow-style-share tests to V1 and remove this flags
+  # crbug.com/937716.
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs(['--enable-blink-features=ShadowDOMV0'])

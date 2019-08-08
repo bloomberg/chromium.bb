@@ -32,8 +32,8 @@ struct BufferInfo {
 // HAL process.
 class CAPTURE_EXPORT RequestBuilder {
  public:
-  using RequestBufferCallback =
-      base::RepeatingCallback<base::Optional<BufferInfo>(StreamType)>;
+  using RequestBufferCallback = base::RepeatingCallback<
+      base::Optional<BufferInfo>(StreamType, base::Optional<uint64_t>)>;
 
   RequestBuilder(CameraDeviceContext* device_context,
                  // Callback to request buffer from StreamBufferManager. Having
@@ -42,10 +42,12 @@ class CAPTURE_EXPORT RequestBuilder {
                  RequestBufferCallback request_buffer_callback);
   ~RequestBuilder();
 
-  // Builds a capture request by given streams and settings.
+  // Builds a capture request by given streams and settings. The
+  // |input_buffer_id| is used for reprocess request.
   cros::mojom::Camera3CaptureRequestPtr BuildRequest(
       std::set<StreamType> stream_types,
-      cros::mojom::CameraMetadataPtr settings);
+      cros::mojom::CameraMetadataPtr settings,
+      base::Optional<uint64_t> input_buffer_id);
 
  private:
   cros::mojom::CameraBufferHandlePtr CreateCameraBufferHandle(
@@ -58,6 +60,9 @@ class CAPTURE_EXPORT RequestBuilder {
       cros::mojom::CameraBufferHandlePtr buffer_handle);
 
   CameraDeviceContext* device_context_;
+
+  // The frame number. Increased by one for each capture request sent.
+  uint32_t frame_number_;
 
   RequestBufferCallback request_buffer_callback_;
 };

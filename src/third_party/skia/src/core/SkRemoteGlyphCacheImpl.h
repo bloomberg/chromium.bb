@@ -43,7 +43,13 @@ public:
 
     const SkGlyph& getGlyphMetrics(SkGlyphID glyphID, SkPoint position) override;
 
-    bool decideCouldDrawFromPath(const SkGlyph& glyph) override;
+    SkSpan<const SkGlyphPos> prepareForDrawing(const SkGlyphID glyphIDs[],
+                                               const SkPoint positions[],
+                                               size_t n,
+                                               int maxDimension,
+                                               SkGlyphPos results[]) override;
+
+    void generatePath(const SkGlyph& glyph) override;
 
     void onAboutToExitScope() override {}
 
@@ -110,23 +116,6 @@ protected:
     void drawGlyphRunList(const SkGlyphRunList& glyphRunList) override;
 
 private:
-    void processGlyphRun(
-            const SkPoint& origin, const SkGlyphRun& glyphRun, const SkPaint& runPaint);
-
-    void processGlyphRunForMask(
-            const SkGlyphRun& glyphRun, const SkMatrix& runMatrix,
-            SkPoint origin, const SkPaint& paint);
-
-    void processGlyphRunForPaths(
-            const SkGlyphRun& glyphRun, const SkMatrix& runMatrix,
-            SkPoint origin, const SkPaint& paint);
-
-#if SK_SUPPORT_GPU
-    bool maybeProcessGlyphRunForDFT(
-            const SkGlyphRun& glyphRun, const SkMatrix& runMatrix,
-            SkPoint origin, const SkPaint& paint);
-#endif
-
     SkStrikeServer* const fStrikeServer;
     const SkTextBlobCacheDiffCanvas::Settings fSettings;
     SkGlyphRunListPainter fPainter;

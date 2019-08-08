@@ -13,6 +13,7 @@
 #include "components/mirroring/mojom/mirroring_service_host.mojom.h"
 #include "components/mirroring/mojom/resource_provider.mojom.h"
 #include "content/public/browser/desktop_media_id.h"
+#include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -81,6 +82,10 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
   // content::WebContentsObserver implementation.
   void WebContentsDestroyed() override;
 
+  // Registers the media stream to show a capture indicator icon on the
+  // tabstrip.
+  void ShowCaptureIndicator();
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // OffscreenTab::Owner implementation.
   void RequestMediaAccessPermission(
@@ -106,6 +111,10 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
 
   // Used to create an audio loopback stream through the Audio Service.
   std::unique_ptr<content::AudioLoopbackStreamCreator> audio_stream_creator_;
+
+  // The lifetime of the capture indicator icon on the tabstrip is tied to that
+  // of |media_stream_ui_|.
+  std::unique_ptr<content::MediaStreamUI> media_stream_ui_;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   std::unique_ptr<OffscreenTab> offscreen_tab_;

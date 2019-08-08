@@ -44,6 +44,12 @@ def add_bindings_scripts_dir_to_sys_path():
         sys.path.insert(0, path_to_bindings_scripts)
 
 
+def add_build_scripts_dir_to_sys_path():
+    path_to_build_scripts = os.path.join(get_source_dir(), 'build', 'scripts')
+    if path_to_build_scripts not in sys.path:
+        sys.path.insert(0, path_to_build_scripts)
+
+
 def add_blinkpy_thirdparty_dir_to_sys_path():
     path = get_blinkpy_thirdparty_dir()
     if path not in sys.path:
@@ -147,6 +153,18 @@ class PathFinder(object):
 
     def path_from_web_tests(self, *comps):
         return self._filesystem.join(self.web_tests_dir(), *comps)
+
+    def strip_web_tests_path(self, wpt_test_abs_path):
+        web_tests_path = self.path_from_web_tests('')
+        if wpt_test_abs_path.startswith(web_tests_path):
+            return wpt_test_abs_path[len(web_tests_path):]
+        return wpt_test_abs_path
+
+    def strip_webdriver_tests_path(self, wpt_webdriver_test_path):
+        webdriver_prefix = self._filesystem.join('external', 'wpt', 'webdriver', '')
+        if wpt_webdriver_test_path.startswith(webdriver_prefix):
+            return wpt_webdriver_test_path[len(webdriver_prefix):]
+        return wpt_webdriver_test_path
 
     @memoized
     def depot_tools_base(self):

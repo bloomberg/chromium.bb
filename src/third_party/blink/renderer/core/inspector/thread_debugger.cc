@@ -135,9 +135,9 @@ unsigned ThreadDebugger::PromiseRejected(
   else if (message.StartsWith("Uncaught "))
     message = message.Substring(0, 8) + " (in promise)" + message.Substring(8);
 
-  ReportConsoleMessage(ToExecutionContext(context), kJSMessageSource,
-                       mojom::ConsoleMessageLevel::kError, message,
-                       location.get());
+  ReportConsoleMessage(
+      ToExecutionContext(context), mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kError, message, location.get());
   String url = location->Url();
   return GetV8Inspector()->exceptionThrown(
       context, ToV8InspectorStringView(default_message), exception,

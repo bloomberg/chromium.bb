@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/arc/common/volume_mounter.mojom.h"
-#include "components/arc/connection_observer.h"
+#include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 

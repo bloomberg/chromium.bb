@@ -32,7 +32,7 @@ class MockDataReductionProxySettings : public C {
  public:
   MockDataReductionProxySettings<C>() : C() {
   }
-  MOCK_METHOD0(GetOriginalProfilePrefs, PrefService*());
+  MOCK_CONST_METHOD0(GetOriginalProfilePrefs, PrefService*());
   MOCK_METHOD0(GetLocalStatePrefs, PrefService*());
   MOCK_CONST_METHOD1(RecordStartupState, void(ProxyStartupState state));
 };

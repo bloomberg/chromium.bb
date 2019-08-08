@@ -123,11 +123,25 @@ void AXPlatformNodeBase::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
 }
 
 #if defined(OS_MACOSX)
-void AXPlatformNodeBase::AnnounceText(base::string16& text) {}
+void AXPlatformNodeBase::AnnounceText(const base::string16& text) {}
 #endif
 
 AXPlatformNodeDelegate* AXPlatformNodeBase::GetDelegate() const {
   return delegate_;
+}
+
+bool AXPlatformNodeBase::IsDescendantOf(AXPlatformNode* ancestor) const {
+  if (!ancestor)
+    return false;
+
+  if (this == ancestor)
+    return true;
+
+  AXPlatformNodeBase* parent = FromNativeViewAccessible(GetParent());
+  if (!parent)
+    return false;
+
+  return parent->IsDescendantOf(ancestor);
 }
 
 // Helpers.
@@ -276,6 +290,79 @@ bool AXPlatformNodeBase::GetString16Attribute(
   return GetData().GetString16Attribute(attribute, value);
 }
 
+bool AXPlatformNodeBase::HasInheritedStringAttribute(
+    ax::mojom::StringAttribute attribute) const {
+  const AXPlatformNodeBase* current_node = this;
+
+  do {
+    if (!current_node->delegate_) {
+      return false;
+    }
+
+    if (current_node->GetData().HasStringAttribute(attribute)) {
+      return true;
+    }
+
+    current_node = FromNativeViewAccessible(current_node->GetParent());
+  } while (current_node);
+
+  return false;
+}
+
+const std::string& AXPlatformNodeBase::GetInheritedStringAttribute(
+    ax::mojom::StringAttribute attribute) const {
+  const AXPlatformNodeBase* current_node = this;
+
+  do {
+    if (!current_node->delegate_) {
+      return base::EmptyString();
+    }
+
+    if (current_node->GetData().HasStringAttribute(attribute)) {
+      return current_node->GetData().GetStringAttribute(attribute);
+    }
+
+    current_node = FromNativeViewAccessible(current_node->GetParent());
+  } while (current_node);
+
+  return base::EmptyString();
+}
+
+base::string16 AXPlatformNodeBase::GetInheritedString16Attribute(
+    ax::mojom::StringAttribute attribute) const {
+  return base::UTF8ToUTF16(GetInheritedStringAttribute(attribute));
+}
+
+bool AXPlatformNodeBase::GetInheritedStringAttribute(
+    ax::mojom::StringAttribute attribute,
+    std::string* value) const {
+  const AXPlatformNodeBase* current_node = this;
+
+  do {
+    if (!current_node->delegate_) {
+      return false;
+    }
+
+    if (current_node->GetData().GetStringAttribute(attribute, value)) {
+      return true;
+    }
+
+    current_node = FromNativeViewAccessible(current_node->GetParent());
+  } while (current_node);
+
+  return false;
+}
+
+bool AXPlatformNodeBase::GetInheritedString16Attribute(
+    ax::mojom::StringAttribute attribute,
+    base::string16* value) const {
+  std::string value_utf8;
+  if (!GetInheritedStringAttribute(attribute, &value_utf8))
+    return false;
+  *value = base::UTF8ToUTF16(value_utf8);
+  return true;
+}
+
 bool AXPlatformNodeBase::HasIntListAttribute(
     ax::mojom::IntListAttribute attribute) const {
   if (!delegate_)
@@ -368,16 +455,30 @@ base::string16 AXPlatformNodeBase::GetInnerText() const {
   return text;
 }
 
-bool AXPlatformNodeBase::IsRangeValueSupported() const {
+bool AXPlatformNodeBase::IsSelectionItemSupported() const {
   switch (GetData().role) {
-    case ax::mojom::Role::kMeter:
-    case ax::mojom::Role::kProgressIndicator:
-    case ax::mojom::Role::kSlider:
-    case ax::mojom::Role::kSpinButton:
-    case ax::mojom::Role::kScrollBar:
+    // An ARIA 1.1+ role of "cell", or a role of "row" inside
+    // an ARIA 1.1 role of "table", should not be selectable.
+    // ARIA "table" is not interactable, ARIA "grid" is.
+    case ax::mojom::Role::kCell:
+    case ax::mojom::Role::kColumnHeader:
+    case ax::mojom::Role::kRow:
+    case ax::mojom::Role::kRowHeader: {
+      AXPlatformNodeBase* table = GetTable();
+      if (!table)
+        return false;
+
+      return table->GetData().role == ax::mojom::Role::kGrid ||
+             table->GetData().role == ax::mojom::Role::kTreeGrid;
+    }
+    case ax::mojom::Role::kListBoxOption:
+    case ax::mojom::Role::kListItem:
+    case ax::mojom::Role::kMenuItemRadio:
+    case ax::mojom::Role::kMenuListOption:
+    case ax::mojom::Role::kRadioButton:
+    case ax::mojom::Role::kTab:
+    case ax::mojom::Role::kTreeItem:
       return true;
-    case ax::mojom::Role::kSplitter:
-      return GetData().HasState(ax::mojom::State::kFocusable);
     default:
       return false;
   }
@@ -581,20 +682,6 @@ bool AXPlatformNodeBase::HasCaret() {
   return focus_object->IsDescendantOf(this);
 }
 
-bool AXPlatformNodeBase::IsDescendantOf(AXPlatformNodeBase* ancestor) {
-  if (!ancestor)
-    return false;
-
-  if (this == ancestor)
-    return true;
-
-  AXPlatformNodeBase* parent = FromNativeViewAccessible(GetParent());
-  if (!parent)
-    return false;
-
-  return parent->IsDescendantOf(ancestor);
-}
-
 bool AXPlatformNodeBase::IsLeaf() {
   if (GetChildCount() == 0)
     return true;
@@ -676,12 +763,13 @@ base::string16 AXPlatformNodeBase::GetText() const {
 
 base::string16 AXPlatformNodeBase::GetValue() const {
   // Expose slider value.
-  if (IsRangeValueSupported()) {
+  if (IsRangeValueSupported(GetData()))
     return GetRangeValueText();
-  } else if (ui::IsDocument(GetData().role)) {
-    // On Windows, the value of a document should be its URL.
+
+  // On Windows, the value of a document should be its URL.
+  if (ui::IsDocument(GetData().role))
     return base::UTF8ToUTF16(delegate_->GetTreeData().url);
-  }
+
   base::string16 value =
       GetString16Attribute(ax::mojom::StringAttribute::kValue);
 
@@ -843,7 +931,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
   if (IsCellOrTableHeader(GetData().role)) {
     int32_t index = delegate_->GetTableCellIndex();
     if (index >= 0) {
-      std::string str_index(base::IntToString(index));
+      std::string str_index(base::NumberToString(index));
       AddAttributeToList("table-cell-index", str_index, attributes);
     }
   }
@@ -893,8 +981,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
 
   // Expose row or column header sort direction.
   int32_t sort_direction;
-  if ((GetData().role == ax::mojom::Role::kColumnHeader ||
-       GetData().role == ax::mojom::Role::kRowHeader) &&
+  if (IsTableHeader(GetData().role) &&
       GetIntAttribute(ax::mojom::IntAttribute::kSortDirection,
                       &sort_direction)) {
     switch (static_cast<ax::mojom::SortDirection>(sort_direction)) {
@@ -929,7 +1016,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
   }
 
   // Expose slider value.
-  if (IsRangeValueSupported()) {
+  if (IsRangeValueSupported(GetData())) {
     std::string value = base::UTF16ToUTF8(GetRangeValueText());
     if (!value.empty())
       AddAttributeToList("valuetext", value, attributes);
@@ -1023,7 +1110,7 @@ void AXPlatformNodeBase::AddAttributeToList(
 
   auto maybe_value = ComputeAttribute(delegate_, attribute);
   if (maybe_value.has_value()) {
-    std::string str_value = base::IntToString(maybe_value.value());
+    std::string str_value = base::NumberToString(maybe_value.value());
     AddAttributeToList(name, str_value, attributes);
   }
 }
@@ -1034,16 +1121,16 @@ void AXPlatformNodeBase::AddAttributeToList(const char* name,
   AddAttributeToList(name, value.c_str(), attributes);
 }
 
-AXHypertext::AXHypertext() {}
+AXHypertext::AXHypertext() = default;
 AXHypertext::AXHypertext(const AXHypertext& other) = default;
-AXHypertext::~AXHypertext() {}
+AXHypertext::~AXHypertext() = default;
 
-AXHypertext AXPlatformNodeBase::ComputeHypertext() {
-  AXHypertext result;
+void AXPlatformNodeBase::UpdateComputedHypertext() {
+  hypertext_ = AXHypertext();
 
   if (IsPlainTextField()) {
-    result.hypertext = GetValue();
-    return result;
+    hypertext_.hypertext = GetValue();
+    return;
   }
 
   int child_count = delegate_->GetChildCount();
@@ -1051,10 +1138,11 @@ AXHypertext AXPlatformNodeBase::ComputeHypertext() {
   if (!child_count) {
     if (IsRichTextField()) {
       // We don't want to expose any associated label in IA2 Hypertext.
-      return result;
+      return;
     }
-    result.hypertext = GetString16Attribute(ax::mojom::StringAttribute::kName);
-    return result;
+    hypertext_.hypertext =
+        GetString16Attribute(ax::mojom::StringAttribute::kName);
+    return;
   }
 
   // Construct the hypertext for this node, which contains the concatenation
@@ -1069,19 +1157,17 @@ AXHypertext AXPlatformNodeBase::ComputeHypertext() {
     DCHECK(child);
     // Similar to Firefox, we don't expose text-only objects in IA2 hypertext.
     if (child->IsTextOnlyObject()) {
-      hypertext +=
+      hypertext_.hypertext +=
           child->GetString16Attribute(ax::mojom::StringAttribute::kName);
     } else {
-      int32_t char_offset = static_cast<int32_t>(hypertext.size());
+      int32_t char_offset = static_cast<int32_t>(hypertext_.hypertext.size());
       int32_t child_unique_id = child->GetUniqueId();
-      int32_t index = static_cast<int32_t>(result.hyperlinks.size());
-      result.hyperlink_offset_to_index[char_offset] = index;
-      result.hyperlinks.push_back(child_unique_id);
-      hypertext += kEmbeddedCharacter;
+      int32_t index = static_cast<int32_t>(hypertext_.hyperlinks.size());
+      hypertext_.hyperlink_offset_to_index[char_offset] = index;
+      hypertext_.hyperlinks.push_back(child_unique_id);
+      hypertext_.hypertext += kEmbeddedCharacter;
     }
   }
-  result.hypertext = hypertext;
-  return result;
 }
 
 void AXPlatformNodeBase::AddAttributeToList(const char* name,
@@ -1109,6 +1195,382 @@ void AXPlatformNodeBase::SanitizeStringAttribute(const std::string& input,
   base::ReplaceChars(*output, ",", "\\,", output);
   base::ReplaceChars(*output, "=", "\\=", output);
   base::ReplaceChars(*output, ";", "\\;", output);
+}
+
+AXPlatformNodeBase* AXPlatformNodeBase::GetHyperlinkFromHypertextOffset(
+    int offset) {
+  std::map<int32_t, int32_t>::iterator iterator =
+      hypertext_.hyperlink_offset_to_index.find(offset);
+  if (iterator == hypertext_.hyperlink_offset_to_index.end())
+    return nullptr;
+
+  int32_t index = iterator->second;
+  DCHECK_GE(index, 0);
+  DCHECK_LT(index, static_cast<int32_t>(hypertext_.hyperlinks.size()));
+  int32_t id = hypertext_.hyperlinks[index];
+  auto* hyperlink =
+      static_cast<AXPlatformNodeBase*>(AXPlatformNodeBase::GetFromUniqueId(id));
+  if (!hyperlink)
+    return nullptr;
+  return hyperlink;
+}
+
+int32_t AXPlatformNodeBase::GetHyperlinkIndexFromChild(
+    AXPlatformNodeBase* child) {
+  if (hypertext_.hyperlinks.empty())
+    return -1;
+
+  auto iterator = std::find(hypertext_.hyperlinks.begin(),
+                            hypertext_.hyperlinks.end(), child->GetUniqueId());
+  if (iterator == hypertext_.hyperlinks.end())
+    return -1;
+
+  return static_cast<int32_t>(iterator - hypertext_.hyperlinks.begin());
+}
+
+int32_t AXPlatformNodeBase::GetHypertextOffsetFromHyperlinkIndex(
+    int32_t hyperlink_index) {
+  for (auto& offset_index : hypertext_.hyperlink_offset_to_index) {
+    if (offset_index.second == hyperlink_index)
+      return offset_index.first;
+  }
+  return -1;
+}
+
+int32_t AXPlatformNodeBase::GetHypertextOffsetFromChild(
+    AXPlatformNodeBase* child) {
+  // TODO(dougt) DCHECK(child.owner()->PlatformGetParent() == owner());
+
+  // Handle the case when we are dealing with a text-only child.
+  // Note that this object might be a platform leaf, e.g. an ARIA searchbox.
+  // Also, text-only children should not be present at tree roots and so no
+  // cross-tree traversal is necessary.
+  if (child->IsTextOnlyObject()) {
+    int32_t hypertext_offset = 0;
+    int32_t index_in_parent = child->GetDelegate()->GetIndexInParent();
+    DCHECK_GE(index_in_parent, 0);
+    DCHECK_LT(index_in_parent,
+              static_cast<int32_t>(GetDelegate()->GetChildCount()));
+    for (uint32_t i = 0; i < static_cast<uint32_t>(index_in_parent); ++i) {
+      auto* sibling = static_cast<AXPlatformNodeBase*>(
+          FromNativeViewAccessible(GetDelegate()->ChildAtIndex(i)));
+      DCHECK(sibling);
+      if (sibling->IsTextOnlyObject()) {
+        hypertext_offset += (int32_t)sibling->GetText().size();
+      } else {
+        ++hypertext_offset;
+      }
+    }
+    return hypertext_offset;
+  }
+
+  int32_t hyperlink_index = GetHyperlinkIndexFromChild(child);
+  if (hyperlink_index < 0)
+    return -1;
+
+  return GetHypertextOffsetFromHyperlinkIndex(hyperlink_index);
+}
+
+int32_t AXPlatformNodeBase::GetHypertextOffsetFromDescendant(
+    AXPlatformNodeBase* descendant) {
+  auto* parent_object = static_cast<AXPlatformNodeBase*>(
+      FromNativeViewAccessible(descendant->GetDelegate()->GetParent()));
+  while (parent_object && parent_object != this) {
+    descendant = parent_object;
+    parent_object = static_cast<AXPlatformNodeBase*>(
+        FromNativeViewAccessible(descendant->GetParent()));
+  }
+  if (!parent_object)
+    return -1;
+
+  return parent_object->GetHypertextOffsetFromChild(descendant);
+}
+
+int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
+    AXPlatformNodeBase* endpoint_object,
+    int endpoint_offset) {
+  // There are three cases:
+  // 1. Either the selection endpoint is inside this object or is an ancestor
+  // of of this object. endpoint_offset should be returned.
+  // 2. The selection endpoint is a pure descendant of this object. The offset
+  // of the character corresponding to the subtree in which the endpoint is
+  // located should be returned.
+  // 3. The selection endpoint is in a completely different part of the tree.
+  // Either 0 or text_length should be returned depending on the direction
+  // that one needs to travel to find the endpoint.
+
+  // Case 1.
+  //
+  // IsDescendantOf includes the case when endpoint_object == this.
+  if (IsDescendantOf(endpoint_object))
+    return endpoint_offset;
+
+  AXPlatformNodeBase* common_parent = this;
+  int32_t index_in_common_parent = GetDelegate()->GetIndexInParent();
+  while (common_parent && !endpoint_object->IsDescendantOf(common_parent)) {
+    index_in_common_parent = common_parent->GetDelegate()->GetIndexInParent();
+    common_parent = static_cast<AXPlatformNodeBase*>(
+        FromNativeViewAccessible(common_parent->GetParent()));
+  }
+  if (!common_parent)
+    return -1;
+
+  DCHECK_GE(index_in_common_parent, 0);
+  DCHECK(!(common_parent->IsTextOnlyObject()));
+
+  // Case 2.
+  //
+  // We already checked in case 1 if our endpoint is inside this object.
+  // We can safely assume that it is a descendant or in a completely different
+  // part of the tree.
+  if (common_parent == this) {
+    int32_t hypertext_offset =
+        GetHypertextOffsetFromDescendant(endpoint_object);
+    auto* parent = static_cast<AXPlatformNodeBase*>(
+        FromNativeViewAccessible(endpoint_object->GetParent()));
+    if (parent == this && endpoint_object->IsTextOnlyObject()) {
+      hypertext_offset += endpoint_offset;
+    }
+
+    return hypertext_offset;
+  }
+
+  // Case 3.
+  //
+  // We can safely assume that the endpoint is in another part of the tree or
+  // at common parent, and that this object is a descendant of common parent.
+  int32_t endpoint_index_in_common_parent = -1;
+  for (int i = 0; i < common_parent->GetDelegate()->GetChildCount(); ++i) {
+    auto* child = static_cast<AXPlatformNodeBase*>(FromNativeViewAccessible(
+        common_parent->GetDelegate()->ChildAtIndex(i)));
+    DCHECK(child);
+    if (endpoint_object->IsDescendantOf(child)) {
+      endpoint_index_in_common_parent =
+          child->GetDelegate()->GetIndexInParent();
+      break;
+    }
+  }
+  DCHECK_GE(endpoint_index_in_common_parent, 0);
+
+  if (endpoint_index_in_common_parent < index_in_common_parent)
+    return 0;
+  if (endpoint_index_in_common_parent > index_in_common_parent)
+    return static_cast<int32_t>(GetText().size());
+
+  NOTREACHED();
+  return -1;
+}
+
+int AXPlatformNodeBase::GetSelectionAnchor() {
+  int32_t anchor_id = GetDelegate()->GetTreeData().sel_anchor_object_id;
+  AXPlatformNodeBase* anchor_object =
+      static_cast<AXPlatformNodeBase*>(GetDelegate()->GetFromNodeID(anchor_id));
+  if (!anchor_object)
+    return -1;
+
+  int anchor_offset = int{GetDelegate()->GetTreeData().sel_anchor_offset};
+  return GetHypertextOffsetFromEndpoint(anchor_object, anchor_offset);
+}
+
+int AXPlatformNodeBase::GetSelectionFocus() {
+  int32_t focus_id = GetDelegate()->GetTreeData().sel_focus_object_id;
+  AXPlatformNodeBase* focus_object =
+      static_cast<AXPlatformNodeBase*>(GetDelegate()->GetFromNodeID(focus_id));
+  if (!focus_object)
+    return -1;
+
+  int focus_offset = int{GetDelegate()->GetTreeData().sel_focus_offset};
+  return GetHypertextOffsetFromEndpoint(focus_object, focus_offset);
+}
+
+void AXPlatformNodeBase::GetSelectionOffsets(int* selection_start,
+                                             int* selection_end) {
+  DCHECK(selection_start && selection_end);
+
+  if (IsPlainTextField() &&
+      GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart,
+                      selection_start) &&
+      GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, selection_end)) {
+    return;
+  }
+
+  *selection_start = GetSelectionAnchor();
+  *selection_end = GetSelectionFocus();
+  if (*selection_start < 0 || *selection_end < 0)
+    return;
+
+  // There are three cases when a selection would start and end on the same
+  // character:
+  // 1. Anchor and focus are both in a subtree that is to the right of this
+  // object.
+  // 2. Anchor and focus are both in a subtree that is to the left of this
+  // object.
+  // 3. Anchor and focus are in a subtree represented by a single embedded
+  // object character.
+  // Only case 3 refers to a valid selection because cases 1 and 2 fall
+  // outside this object in their entirety.
+  // Selections that span more than one character are by definition inside
+  // this object, so checking them is not necessary.
+  if (*selection_start == *selection_end && !HasCaret()) {
+    *selection_start = -1;
+    *selection_end = -1;
+    return;
+  }
+
+  // The IA2 Spec says that if the largest of the two offsets falls on an
+  // embedded object character and if there is a selection in that embedded
+  // object, it should be incremented by one so that it points after the
+  // embedded object character.
+  // This is a signal to AT software that the embedded object is also part of
+  // the selection.
+  int* largest_offset =
+      (*selection_start <= *selection_end) ? selection_end : selection_start;
+  AXPlatformNodeBase* hyperlink =
+      GetHyperlinkFromHypertextOffset(*largest_offset);
+  if (!hyperlink)
+    return;
+
+  int hyperlink_selection_start, hyperlink_selection_end;
+  hyperlink->GetSelectionOffsets(&hyperlink_selection_start,
+                                 &hyperlink_selection_end);
+  if (hyperlink_selection_start >= 0 && hyperlink_selection_end >= 0 &&
+      hyperlink_selection_start != hyperlink_selection_end) {
+    ++(*largest_offset);
+  }
+}
+
+bool AXPlatformNodeBase::IsSameHypertextCharacter(
+    const AXHypertext& old_hypertext,
+    size_t old_char_index,
+    size_t new_char_index) {
+  if (old_char_index >= old_hypertext.hypertext.size() ||
+      new_char_index >= hypertext_.hypertext.size()) {
+    return false;
+  }
+
+  // For anything other than the "embedded character", we just compare the
+  // characters directly.
+  base::char16 old_ch = old_hypertext.hypertext[old_char_index];
+  base::char16 new_ch = hypertext_.hypertext[new_char_index];
+  if (old_ch != new_ch)
+    return false;
+  if (new_ch != kEmbeddedCharacter)
+    return true;
+
+  // If it's an embedded character, they're only identical if the child id
+  // the hyperlink points to is the same.
+  const std::map<int32_t, int32_t>& old_offset_to_index =
+      old_hypertext.hyperlink_offset_to_index;
+  const std::vector<int32_t>& old_hyperlinks = old_hypertext.hyperlinks;
+  int32_t old_hyperlinkscount = static_cast<int32_t>(old_hyperlinks.size());
+  auto iter = old_offset_to_index.find(static_cast<int32_t>(old_char_index));
+  int old_index = (iter != old_offset_to_index.end()) ? iter->second : -1;
+  int old_child_id = (old_index >= 0 && old_index < old_hyperlinkscount)
+                         ? old_hyperlinks[old_index]
+                         : -1;
+
+  const std::map<int32_t, int32_t>& new_offset_to_index =
+      hypertext_.hyperlink_offset_to_index;
+  const std::vector<int32_t>& new_hyperlinks = hypertext_.hyperlinks;
+  int32_t new_hyperlinkscount = static_cast<int32_t>(new_hyperlinks.size());
+  iter = new_offset_to_index.find(static_cast<int32_t>(new_char_index));
+  int new_index = (iter != new_offset_to_index.end()) ? iter->second : -1;
+  int new_child_id = (new_index >= 0 && new_index < new_hyperlinkscount)
+                         ? new_hyperlinks[new_index]
+                         : -1;
+
+  return old_child_id == new_child_id;
+}
+
+// Return true if the index represents a text character.
+bool AXPlatformNodeBase::IsText(const base::string16& text,
+                                size_t index,
+                                bool is_indexed_from_end) {
+  size_t text_len = text.size();
+  if (index == text_len)
+    return false;
+  auto ch = text[is_indexed_from_end ? text_len - index - 1 : index];
+  return ch != kEmbeddedCharacter;
+}
+
+void AXPlatformNodeBase::ComputeHypertextRemovedAndInserted(
+    const AXHypertext& old_hypertext,
+    size_t* start,
+    size_t* old_len,
+    size_t* new_len) {
+  *start = 0;
+  *old_len = 0;
+  *new_len = 0;
+
+  // Do not compute for static text objects, otherwise redundant text change
+  // announcements will occur in live regions, as the parent hypertext also
+  // changes.
+  if (GetData().role == ax::mojom::Role::kStaticText)
+    return;
+
+  const base::string16& old_text = old_hypertext.hypertext;
+  const base::string16& new_text = hypertext_.hypertext;
+
+  // TODO(accessibility) Plumb through which part of text changed so we don't
+  // have to guess what changed based on character differences. This can be
+  // wrong in some cases as follows:
+  // -- EDITABLE --
+  // If editable: when part of the text node changes, assume only that part
+  // changed, and not the entire thing. For example, if "car" changes to
+  // "cat", assume only 1 letter changed. This code compares common characters
+  // to guess what has changed.
+  // -- NOT EDITABLE --
+  // When part of the text changes, assume the entire node's text changed. For
+  // example, if "car" changes to "cat" then assume all 3 letters changed.
+  // Note, it is possible (though rare) that CharacterData methods are used to
+  // remove, insert, replace or append a substring.
+  bool allow_partial_text_node_changes =
+      GetData().HasState(ax::mojom::State::kEditable);
+  size_t prefix_index = 0;
+  size_t common_prefix = 0;
+  while (prefix_index < old_text.size() && prefix_index < new_text.size() &&
+         IsSameHypertextCharacter(old_hypertext, prefix_index, prefix_index)) {
+    ++prefix_index;
+    if (allow_partial_text_node_changes ||
+        (!IsText(old_text, prefix_index) && !IsText(new_text, prefix_index))) {
+      common_prefix = prefix_index;
+    }
+  }
+
+  size_t suffix_index = 0;
+  size_t common_suffix = 0;
+  while (common_prefix + suffix_index < old_text.size() &&
+         common_prefix + suffix_index < new_text.size() &&
+         IsSameHypertextCharacter(old_hypertext,
+                                  old_text.size() - suffix_index - 1,
+                                  new_text.size() - suffix_index - 1)) {
+    ++suffix_index;
+    if (allow_partial_text_node_changes ||
+        (!IsText(old_text, suffix_index, true) &&
+         !IsText(new_text, suffix_index, true))) {
+      common_suffix = suffix_index;
+    }
+  }
+
+  *start = common_prefix;
+  *old_len = old_text.size() - common_prefix - common_suffix;
+  *new_len = new_text.size() - common_prefix - common_suffix;
+}
+
+int AXPlatformNodeBase::FindTextBoundary(
+    TextBoundaryType boundary_type,
+    int offset,
+    TextBoundaryDirection direction,
+    ax::mojom::TextAffinity affinity) const {
+  base::Optional<int> boundary = GetDelegate()->FindTextBoundary(
+      boundary_type, offset, direction, affinity);
+  if (boundary.has_value())
+    return *boundary;
+
+  std::vector<int32_t> unused_line_start_offsets;
+  return static_cast<int>(
+      FindAccessibleTextBoundary(GetText(), unused_line_start_offsets,
+                                 boundary_type, offset, direction, affinity));
 }
 
 }  // namespace ui

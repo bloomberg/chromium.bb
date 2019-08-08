@@ -6,10 +6,10 @@ package org.chromium.chrome.browser.suggestions;
 
 import android.support.v7.widget.RecyclerView;
 
-import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.ntp.cards.ActionItem.State;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.FaviconFetchResult;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
@@ -66,10 +66,6 @@ public abstract class SuggestionsMetrics {
     }
 
     // Effect/Purpose of the interactions. Most are recorded in |content_suggestions_metrics.h|
-
-    public static void recordActionViewAll() {
-        RecordUserAction.record("Suggestions.Category.ViewAll");
-    }
 
     /**
      * Records metrics for the visit to the provided content suggestion, such as the time spent on
@@ -130,14 +126,11 @@ public abstract class SuggestionsMetrics {
     }
 
     /**
-     * @return A {@link DurationTracker} to notify to report how long the spinner is visible
+     * @return A {@link SpinnerDurationTracker} to notify to report how long the spinner is visible
      * for.
      */
-    public static DurationTracker getSpinnerVisibilityReporter() {
-        return new DurationTracker((duration) -> {
-            RecordHistogram.recordTimesHistogram(
-                    "ContentSuggestions.Feed.FetchPendingSpinner.VisibleDuration", duration);
-        });
+    public static SpinnerDurationTracker getSpinnerVisibilityReporter() {
+        return new SpinnerDurationTracker();
     }
 
     /**
@@ -171,31 +164,90 @@ public abstract class SuggestionsMetrics {
     }
 
     /**
-     * Utility class to track the duration of an event. Call {@link #startTracking()} and
-     * {@link #endTracking()} to notify about the key moments. These methods are no-ops when called
-     * while tracking is not in the expected state.
+     * Utility class to track the duration of a spinner. Call {@link #startTracking(state)} when a
+     * Spinner start, call {@link #endCompleteTracking()} when a loading spinner finishes showing,
+     * and call {@link #endIncompleteTracking()} when a spinner is destroyed without completing.
+     * These methods are no-ops when called while tracking is not in the expected state.
      */
-    public static class DurationTracker {
+    public static class SpinnerDurationTracker {
         private long mTrackingStartTimeMs;
-        private final Callback<Long> mTrackingCompleteCallback;
+        private @State int mSpinnerType;
 
-        private DurationTracker(Callback<Long> trackingCompleteCallback) {
-            mTrackingCompleteCallback = trackingCompleteCallback;
-        }
-
-        public void startTracking() {
-            if (isTracking()) return;
-            mTrackingStartTimeMs = System.currentTimeMillis();
-        }
-
-        public void endTracking() {
-            if (!isTracking()) return;
-            mTrackingCompleteCallback.onResult(System.currentTimeMillis() - mTrackingStartTimeMs);
+        private SpinnerDurationTracker() {
             mTrackingStartTimeMs = 0;
+        }
+
+        /**
+         * Start tracking of the spinner.
+         * @param state The state of the {@link ActionItem}.
+         */
+        public void startTracking(@State int state) {
+            assert state == State.INITIAL_LOADING || state == State.MORE_BUTTON_LOADING;
+
+            if (isTracking()) return;
+
+            if (state == State.INITIAL_LOADING || state == State.MORE_BUTTON_LOADING) {
+                mSpinnerType = state;
+            }
+            mTrackingStartTimeMs = System.currentTimeMillis();
+            recordSpinnerShowUMA(state);
+        }
+
+        /**
+         * Stop tracking of the spinner which is destroyed without completing.
+         */
+        public void endCompleteTracking() {
+            if (!isTracking()) return;
+            recordSpinnerTimeUMA("ContentSuggestions.Feed.FetchPendingSpinner.VisibleDuration");
+        }
+
+        /**
+         * Stop tracking of the spinner which finishes showing.
+         */
+        public void endIncompleteTracking() {
+            if (!isTracking()) return;
+            recordSpinnerTimeUMA(
+                    "ContentSuggestions.Feed.FetchPendingSpinner.VisibleDurationWithoutCompleting");
         }
 
         private boolean isTracking() {
             return mTrackingStartTimeMs > 0;
+        }
+
+        private void recordSpinnerTimeUMA(String baseName) {
+            long duration = System.currentTimeMillis() - mTrackingStartTimeMs;
+            RecordHistogram.recordTimesHistogram(baseName, duration);
+
+            if (mSpinnerType == State.INITIAL_LOADING) {
+                RecordHistogram.recordTimesHistogram(baseName + ".InitialLoad", duration);
+            } else if (mSpinnerType == State.MORE_BUTTON_LOADING) {
+                RecordHistogram.recordTimesHistogram(baseName + ".MoreButton", duration);
+            }
+            mTrackingStartTimeMs = 0;
+        }
+
+        private void recordSpinnerShowUMA(@State int state) {
+            int feedSpinnerType;
+
+            // Here is convert the to {@link SpinnerType} in /third_party/feed/src/main/java/com/
+            // google/android/libraries/feed/host/logging/SpinnerType.java.
+            // {@link SpinnerType} cannot be directly used here since feed libraries are not always
+            // compiled.
+            switch (state) {
+                case State.INITIAL_LOADING:
+                    feedSpinnerType = /*SpinnerType.INITIAL_LOAD=*/1;
+                    break;
+                case State.MORE_BUTTON_LOADING:
+                    feedSpinnerType = /*SpinnerType.MORE_BUTTON=*/3;
+                    break;
+                default:
+                    // This is not a spinner type, so do not record it.
+                    return;
+            }
+
+            RecordHistogram.recordEnumeratedHistogram(
+                    "ContentSuggestions.Feed.FetchPendingSpinner.Shown", feedSpinnerType,
+                    /*SpinnerType.NEXT_VALUE=*/6);
         }
     }
 }

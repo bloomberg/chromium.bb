@@ -61,13 +61,18 @@ bool GrRecordingContext::init(sk_sp<const GrCaps> caps, sk_sp<GrSkSLFPFactoryCac
     fTextBlobCache.reset(new GrTextBlobCache(textblobcache_overbudget_CB, this,
                                              this->contextID()));
 
+    return true;
+}
+
+void GrRecordingContext::setupDrawingManager(bool explicitlyAllocate, bool sortOpLists) {
     GrPathRendererChain::Options prcOptions;
     prcOptions.fAllowPathMaskCaching = this->options().fAllowPathMaskCaching;
 #if GR_TEST_UTILS
     prcOptions.fGpuPathRenderers = this->options().fGpuPathRenderers;
 #endif
-    if (this->options().fDisableCoverageCountingPaths) {
-        prcOptions.fGpuPathRenderers &= ~GpuPathRenderers::kCoverageCounting;
+    // FIXME: Once this is removed from Chrome and Android, rename to fEnable"".
+    if (!this->options().fDisableCoverageCountingPaths) {
+        prcOptions.fGpuPathRenderers |= GpuPathRenderers::kCoverageCounting;
     }
     if (this->options().fDisableDistanceFieldPaths) {
         prcOptions.fGpuPathRenderers &= ~GpuPathRenderers::kSmall;
@@ -90,13 +95,16 @@ bool GrRecordingContext::init(sk_sp<const GrCaps> caps, sk_sp<GrSkSLFPFactoryCac
     }
 #endif
 
+    // SHORT TERM TODO: until intermediate flushes at allocation time are added we need to obey the
+    // reduceOpListSplitting flag. Once that lands we should always reduce opList splitting in
+    // DDL contexts/drawing managers. We should still obey the options for non-DDL drawing managers
+    // until predictive intermediate flushes are added (i.e., we can't reorder forever).
     fDrawingManager.reset(new GrDrawingManager(this,
-                                               prcOptions,
-                                               textContextOptions,
-                                               this->explicitlyAllocateGPUResources(),
-                                               this->options().fSortRenderTargets,
-                                               this->options().fReduceOpListSplitting));
-    return true;
+                                                prcOptions,
+                                                textContextOptions,
+                                                explicitlyAllocate,
+                                                sortOpLists,
+                                                this->options().fReduceOpListSplitting));
 }
 
 void GrRecordingContext::abandonContext() {
@@ -241,6 +249,7 @@ static inline GrPixelConfig GrPixelConfigFallback(GrPixelConfig config) {
         case kBGRA_8888_GrPixelConfig:
         case kRGBA_1010102_GrPixelConfig:
         case kRGBA_half_GrPixelConfig:
+        case kRGBA_half_Clamped_GrPixelConfig:
             return kRGBA_8888_GrPixelConfig;
         case kSBGRA_8888_GrPixelConfig:
             return kSRGBA_8888_GrPixelConfig;

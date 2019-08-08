@@ -81,17 +81,6 @@ class FetchManager::Loader final
   USING_GARBAGE_COLLECTED_MIXIN(Loader);
 
  public:
-  static Loader* Create(ExecutionContext* execution_context,
-                        FetchManager* fetch_manager,
-                        ScriptPromiseResolver* resolver,
-                        FetchRequestData* request,
-                        bool is_isolated_world,
-                        AbortSignal* signal) {
-    return MakeGarbageCollected<Loader>(execution_context, fetch_manager,
-                                        resolver, request, is_isolated_world,
-                                        signal);
-  }
-
   Loader(ExecutionContext*,
          FetchManager*,
          ScriptPromiseResolver*,
@@ -103,9 +92,9 @@ class FetchManager::Loader final
 
   // ThreadableLoaderClient implementation.
   bool WillFollowRedirect(const KURL&, const ResourceResponse&) override;
-  void DidReceiveResponse(unsigned long, const ResourceResponse&) override;
+  void DidReceiveResponse(uint64_t, const ResourceResponse&) override;
   void DidStartLoadingResponseBody(BytesConsumer&) override;
-  void DidFinishLoading(unsigned long) override;
+  void DidFinishLoading(uint64_t) override;
   void DidFail(const ResourceError&) override;
   void DidFailRedirectCheck() override;
 
@@ -293,7 +282,7 @@ bool FetchManager::Loader::WillFollowRedirect(
   }
 
   if (redirect_mode == network::mojom::FetchRedirectMode::kManual) {
-    const unsigned long unused = 0;
+    const uint64_t unused = 0;
     // There is no need to read the body of redirect response because there is
     // no way to read the body of opaque-redirect filtered response's internal
     // response.
@@ -316,7 +305,7 @@ bool FetchManager::Loader::WillFollowRedirect(
 }
 
 void FetchManager::Loader::DidReceiveResponse(
-    unsigned long,
+    uint64_t,
     const ResourceResponse& response) {
   // TODO(horo): This check could be false when we will use the response url
   // in service worker responses. (crbug.com/553535)
@@ -425,7 +414,7 @@ void FetchManager::Loader::DidReceiveResponse(
     response_data->SetURLList(response.UrlListViaServiceWorker());
   }
 
-  response_data->SetMIMEType(response.MimeType());
+  response_data->SetMimeType(response.MimeType());
   response_data->SetResponseTime(response.ResponseTime());
 
   if (response.WasCached()) {
@@ -501,7 +490,7 @@ void FetchManager::Loader::DidStartLoadingResponseBody(BytesConsumer& body) {
   place_holder_body_ = nullptr;
 }
 
-void FetchManager::Loader::DidFinishLoading(unsigned long) {
+void FetchManager::Loader::DidFinishLoading(uint64_t) {
   DCHECK(!place_holder_body_);
   DCHECK(!failed_);
 
@@ -597,7 +586,7 @@ void FetchManager::Loader::Start(ExceptionState& exception_state) {
       PerformNetworkError("Fetch API cannot load " +
                           fetch_request_data_->Url().GetString() +
                           ". Request mode is \"no-cors\" but the redirect mode "
-                          " is not \"follow\".");
+                          "is not \"follow\".");
       return;
     }
 
@@ -692,7 +681,7 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
   ResourceRequest request(fetch_request_data_->Url());
   request.SetRequestorOrigin(fetch_request_data_->Origin());
   request.SetRequestContext(fetch_request_data_->Context());
-  request.SetHTTPMethod(fetch_request_data_->Method());
+  request.SetHttpMethod(fetch_request_data_->Method());
   request.SetFetchWindowId(fetch_request_data_->WindowId());
 
   switch (fetch_request_data_->Mode()) {
@@ -716,14 +705,14 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
     // the headers have a name listed in the forbidden header names.
     DCHECK(!cors::IsForbiddenHeaderName(header.first));
 
-    request.AddHTTPHeaderField(AtomicString(header.first),
+    request.AddHttpHeaderField(AtomicString(header.first),
                                AtomicString(header.second));
   }
 
   if (fetch_request_data_->Method() != http_names::kGET &&
       fetch_request_data_->Method() != http_names::kHEAD) {
     if (fetch_request_data_->Buffer()) {
-      request.SetHTTPBody(
+      request.SetHttpBody(
           fetch_request_data_->Buffer()->DrainAsFormData(exception_state));
       if (exception_state.HadException())
         return;
@@ -795,7 +784,7 @@ void FetchManager::Loader::PerformDataFetch() {
   request.SetRequestorOrigin(fetch_request_data_->Origin());
   request.SetRequestContext(fetch_request_data_->Context());
   request.SetUseStreamOnResponse(true);
-  request.SetHTTPMethod(fetch_request_data_->Method());
+  request.SetHttpMethod(fetch_request_data_->Method());
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
   request.SetFetchRedirectMode(FetchRedirectMode::kError);
   request.SetFetchImportanceMode(fetch_request_data_->Importance());
@@ -818,8 +807,9 @@ void FetchManager::Loader::Failed(const String& message) {
   if (execution_context_->IsContextDestroyed())
     return;
   if (!message.IsEmpty()) {
-    execution_context_->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kError, message));
+    execution_context_->AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kError, message));
   }
   if (resolver_) {
     ScriptState* state = resolver_->GetScriptState();
@@ -846,7 +836,7 @@ ScriptPromise FetchManager::Fetch(ScriptState* script_state,
                                   FetchRequestData* request,
                                   AbortSignal* signal,
                                   ExceptionState& exception_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   DCHECK(signal);
@@ -857,9 +847,9 @@ ScriptPromise FetchManager::Fetch(ScriptState* script_state,
 
   request->SetContext(mojom::RequestContextType::FETCH);
 
-  Loader* loader =
-      Loader::Create(GetExecutionContext(), this, resolver, request,
-                     script_state->World().IsIsolatedWorld(), signal);
+  auto* loader = MakeGarbageCollected<Loader>(
+      GetExecutionContext(), this, resolver, request,
+      script_state->World().IsIsolatedWorld(), signal);
   loaders_.insert(loader);
   signal->AddAlgorithm(WTF::Bind(&Loader::Abort, WrapWeakPersistent(loader)));
   // TODO(ricea): Reject the Response body with AbortError, not TypeError.

@@ -16,7 +16,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.customtabs.trusted.TrustedWebActivityServiceConnectionManager;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -30,8 +29,8 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
-import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
@@ -130,10 +129,6 @@ public class NotificationPlatformBridge {
         } else {
             mNotificationManager = new NotificationManagerProxyImpl(context);
         }
-        mTwaClient = new TrustedWebActivityClient(
-                new TrustedWebActivityServiceConnectionManager(context),
-                new TrustedWebActivityUmaRecorder(),
-                NotificationUmaTracker.getInstance());
     }
 
     /**
@@ -592,9 +587,9 @@ public class NotificationPlatformBridge {
         if (forWebApk) {
             WebApkServiceClient.getInstance().notifyNotification(
                     webApkPackage, notificationBuilder, notificationId, PLATFORM_ID);
-        } else if (mTwaClient.twaExistsForScope(Uri.parse(scopeUrl))) {
-            mTwaClient.notifyNotification(Uri.parse(scopeUrl), notificationId, PLATFORM_ID,
-                    notificationBuilder);
+        } else if (getTwaClient().twaExistsForScope(Uri.parse(scopeUrl))) {
+            getTwaClient().notifyNotification(Uri.parse(scopeUrl), notificationId, PLATFORM_ID,
+                    notificationBuilder, NotificationUmaTracker.getInstance());
         } else {
             // Set up a pending intent for going to the settings screen for |origin|.
             Intent settingsIntent = PreferencesLauncher.createIntentForSettingsPage(context,
@@ -731,8 +726,8 @@ public class NotificationPlatformBridge {
             return;
         }
 
-        if (mTwaClient.twaExistsForScope(Uri.parse(scopeUrl))) {
-            mTwaClient.cancelNotification(Uri.parse(scopeUrl), notificationId, PLATFORM_ID);
+        if (getTwaClient().twaExistsForScope(Uri.parse(scopeUrl))) {
+            getTwaClient().cancelNotification(Uri.parse(scopeUrl), notificationId, PLATFORM_ID);
 
             // There's an edge case where a notification was displayed by Chrome, a Trusted Web
             // Activity is then installed and run then the notification is cancelled by javascript.
@@ -782,6 +777,13 @@ public class NotificationPlatformBridge {
             boolean incognito, boolean byUser) {
         nativeOnNotificationClosed(mNativeNotificationPlatformBridge, notificationId, origin,
                 profileId, incognito, byUser);
+    }
+
+    private TrustedWebActivityClient getTwaClient() {
+        if (mTwaClient == null) {
+            mTwaClient = ChromeApplication.getComponent().resolveTrustedWebActivityClient();
+        }
+        return mTwaClient;
     }
 
     private static native void nativeInitializeNotificationPlatformBridge();

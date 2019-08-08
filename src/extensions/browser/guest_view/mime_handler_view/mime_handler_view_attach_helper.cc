@@ -12,22 +12,25 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/webplugininfo.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_embedder.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/skia/include/core/SkColor.h"
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "content/public/browser/plugin_service.h"
+#endif
+
 using content::BrowserThread;
 using content::RenderFrameHost;
-using content::SiteInstance;
 
 namespace extensions {
 
@@ -45,6 +48,7 @@ const uint32_t kFullPageMimeHandlerViewDataPipeSize = 256U;
 
 SkColor GetBackgroundColorStringForMimeType(const GURL& url,
                                             const std::string& mime_type) {
+#if BUILDFLAG(ENABLE_PLUGINS)
   std::vector<content::WebPluginInfo> web_plugin_info_array;
   std::vector<std::string> unused_actual_mime_types;
   content::PluginService::GetInstance()->GetPluginInfoArray(
@@ -55,6 +59,7 @@ SkColor GetBackgroundColorStringForMimeType(const GURL& url,
         return info.background_color;
     }
   }
+#endif
   return content::WebPluginInfo::kDefaultBackgroundColor;
 }
 
@@ -63,90 +68,6 @@ using ProcessIdToHelperMap =
 ProcessIdToHelperMap* GetProcessIdToHelperMap() {
   static base::NoDestructor<ProcessIdToHelperMap> instance;
   return instance.get();
-}
-
-// Helper class which tracks navigations related to |frame_tree_node_id| and
-// looks for a same-SiteInstance child RenderFrameHost created which has
-// |frame_tree_node_id| as its parent's FrameTreeNode Id.
-class PendingFullPageNavigation : public content::WebContentsObserver {
- public:
-  PendingFullPageNavigation(int32_t frame_tree_node_id,
-                            const GURL& resource_url,
-                            const std::string& mime_type,
-                            const std::string& stream_id);
-  ~PendingFullPageNavigation() override;
-
-  // content::WebContentsObserver overrides.
-  void DidStartNavigation(content::NavigationHandle* handle) override;
-  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
-  void WebContentsDestroyed() override;
-
- private:
-  const int32_t frame_tree_node_id_;
-  const GURL resource_url_;
-  const std::string mime_type_;
-  const std::string stream_id_;
-};
-
-using PendingNavigationMap =
-    base::flat_map<int32_t, std::unique_ptr<PendingFullPageNavigation>>;
-
-PendingNavigationMap* GetPendingFullPageNavigationsMap() {
-  static base::NoDestructor<PendingNavigationMap> instance;
-  return instance.get();
-}
-
-// Returns true if the mime type is relevant to MimeHandlerView.
-bool IsRelevantMimeType(const std::string& mime_type) {
-  // TODO(ekaramad): Figure out what other relevant mime-types are, e.g., for
-  // quick office.
-  return mime_type == "application/pdf" || mime_type == "text/pdf";
-}
-
-PendingFullPageNavigation::PendingFullPageNavigation(
-    int32_t frame_tree_node_id,
-    const GURL& resource_url,
-    const std::string& mime_type,
-    const std::string& stream_id)
-    : content::WebContentsObserver(
-          content::WebContents::FromFrameTreeNodeId(frame_tree_node_id)),
-      frame_tree_node_id_(frame_tree_node_id),
-      resource_url_(resource_url),
-      mime_type_(mime_type),
-      stream_id_(stream_id) {}
-
-PendingFullPageNavigation::~PendingFullPageNavigation() {}
-
-void PendingFullPageNavigation::DidStartNavigation(
-    content::NavigationHandle* handle) {
-  // This observer is created after the observed |frame_tree_node_id_| started
-  // its navigation to the |resource_url|. If any new navigations start then
-  // we should stop now and do not create a MHVG.
-  if (handle->GetFrameTreeNodeId() == frame_tree_node_id_)
-    GetPendingFullPageNavigationsMap()->erase(frame_tree_node_id_);
-}
-
-void PendingFullPageNavigation::RenderFrameCreated(
-    content::RenderFrameHost* render_frame_host) {
-  if (render_frame_host->GetParent() &&
-      render_frame_host->GetParent()->GetFrameTreeNodeId() ==
-          frame_tree_node_id_ &&
-      render_frame_host->GetParent()->GetLastCommittedURL() == resource_url_) {
-    // This suggests that a same-origin child frame is created under the
-    // RFH associated with |frame_tree_node_id_|. This suggests that the HTML
-    // string is loaded in the observed frame's document and now the renderer
-    // can initiate the MimeHandlerViewFrameContainer creation process.
-    mojom::MimeHandlerViewContainerManagerPtr container_manager;
-    render_frame_host->GetParent()->GetRemoteInterfaces()->GetInterface(
-        &container_manager);
-    container_manager->CreateFrameContainer(resource_url_, mime_type_,
-                                            stream_id_);
-    GetPendingFullPageNavigationsMap()->erase(frame_tree_node_id_);
-  }
-}
-
-void PendingFullPageNavigation::WebContentsDestroyed() {
-  GetPendingFullPageNavigationsMap()->erase(frame_tree_node_id_);
 }
 
 }  // namespace
@@ -176,8 +97,6 @@ void MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
     std::string* payload,
     uint32_t* data_pipe_size) {
   if (!content::MimeHandlerViewMode::UsesCrossProcessFrame())
-    return;
-  if (!IsRelevantMimeType(mime_type))
     return;
   auto color = GetBackgroundColorStringForMimeType(resource_url, mime_type);
   auto html_str =
@@ -239,9 +158,8 @@ void MimeHandlerViewAttachHelper::CreateFullPageMimeHandlerView(
     const GURL& resource_url,
     const std::string& mime_type,
     const std::string& stream_id) {
-  auto& map = *GetPendingFullPageNavigationsMap();
-  map[frame_tree_node_id] = std::make_unique<PendingFullPageNavigation>(
-      frame_tree_node_id, resource_url, mime_type, stream_id);
+  MimeHandlerViewEmbedder::Create(frame_tree_node_id, resource_url, mime_type,
+                                  stream_id);
 }
 
 MimeHandlerViewAttachHelper::MimeHandlerViewAttachHelper(

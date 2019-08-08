@@ -100,6 +100,17 @@ void TestMediaControllerObserver::MediaSessionActionsChanged(
   }
 }
 
+void TestMediaControllerObserver::MediaSessionChanged(
+    const base::Optional<base::UnguessableToken>& request_id) {
+  session_request_id_ = request_id;
+
+  if (expected_request_id_.has_value() &&
+      expected_request_id_ == session_request_id_) {
+    run_loop_->Quit();
+    expected_request_id_.reset();
+  }
+}
+
 void TestMediaControllerObserver::WaitForState(
     mojom::MediaSessionInfo::SessionState wanted_state) {
   if (session_info_ && session_info()->state == wanted_state)
@@ -153,6 +164,15 @@ void TestMediaControllerObserver::WaitForExpectedActions(
     return;
 
   expected_actions_ = actions;
+  StartWaiting();
+}
+
+void TestMediaControllerObserver::WaitForSession(
+    const base::Optional<base::UnguessableToken>& request_id) {
+  if (session_request_id_.has_value() && session_request_id_ == request_id)
+    return;
+
+  expected_request_id_ = request_id;
   StartWaiting();
 }
 

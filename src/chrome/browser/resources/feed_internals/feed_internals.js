@@ -20,6 +20,10 @@ function updatePageWithProperties() {
     /** @type {!feedInternals.mojom.Properties} */
     const properties = response.properties;
     $('is-feed-enabled').textContent = properties.isFeedEnabled;
+    $('is-feed-visible').textContent = properties.isFeedVisible;
+    $('is-feed-allowed').textContent = properties.isFeedAllowed;
+    $('is-prefetching-enabled').textContent = properties.isPrefetchingEnabled;
+    $('feed-fetch-url').textContent = properties.feedFetchUrl.url;
   });
 }
 
@@ -44,6 +48,7 @@ function updatePageWithLastFetchProperties() {
     /** @type {!feedInternals.mojom.LastFetchProperties} */
     const properties = response.properties;
     $('last-fetch-status').textContent = properties.lastFetchStatus;
+    $('last-fetch-trigger').textContent = properties.lastFetchTrigger;
     $('last-fetch-time').textContent = toDateString(properties.lastFetchTime);
     $('refresh-suppress-time').textContent =
         toDateString(properties.refreshSuppressTime);
@@ -70,9 +75,9 @@ function updatePageWithCurrentContent() {
       item.querySelector('.publisher').textContent = suggestion.publisherName;
 
       // Populate template with link metadata.
-      setLinkNode(item.querySelector('a.url'), suggestion.url);
-      setLinkNode(item.querySelector('a.image'), suggestion.imageUrl);
-      setLinkNode(item.querySelector('a.favicon'), suggestion.faviconUrl);
+      setLinkNode(item.querySelector('a.url'), suggestion.url.url);
+      setLinkNode(item.querySelector('a.image'), suggestion.imageUrl.url);
+      setLinkNode(item.querySelector('a.favicon'), suggestion.faviconUrl.url);
 
       after.appendChild(item);
     }
@@ -103,6 +108,16 @@ function toDateString(time) {
 }
 
 /**
+ * Update last fetch properties and current content following a Feed refresh.
+ */
+function updateAfterRefresh() {
+  // TODO(crbug.com/939907): Listen for Feed update events rather than waiting
+  // an arbitrary period of time.
+  setTimeout(updatePageWithLastFetchProperties, 1000);
+  setTimeout(updatePageWithCurrentContent, 1000);
+}
+
+/**
  * Hook up buttons to event listeners.
  */
 function setupEventListeners() {
@@ -113,14 +128,26 @@ function setupEventListeners() {
 
   $('clear-cached-data').addEventListener('click', function() {
     pageHandler.clearCachedDataAndRefreshFeed();
+    updateAfterRefresh();
+  });
 
-    // TODO(chouinard): Investigate whether the Feed library's
-    // AppLifecycleListener.onClearAll methods could accept a callback to notify
-    // when cache clear and Feed refresh operations are complete. If not,
-    // consider adding backend->frontend mojo communication to listen for
-    // updates, rather than waiting an arbitrary period of time.
-    setTimeout(updatePageWithLastFetchProperties, 1000);
-    setTimeout(updatePageWithCurrentContent, 1000);
+  $('refresh-feed').addEventListener('click', function() {
+    pageHandler.refreshFeed();
+    updateAfterRefresh();
+  });
+
+  $('dump-feed-process-scope').addEventListener('click', function() {
+    pageHandler.getFeedProcessScopeDump().then(response => {
+      $('feed-process-scope-dump').textContent = response.dump;
+      $('feed-process-scope-details').open = true;
+    });
+  });
+
+  $('load-feed-histograms').addEventListener('click', function() {
+    pageHandler.getFeedHistograms().then(response => {
+      $('feed-histograms-log').textContent = response.log;
+      $('feed-histograms-details').open = true;
+    });
   });
 }
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -16,6 +17,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/notifications/metrics/notification_metrics_logger.h"
 #include "chrome/browser/notifications/metrics/notification_metrics_logger_factory.h"
@@ -32,11 +34,14 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/platform_notification_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/notifications/notification_resources.h"
@@ -96,13 +101,32 @@ static bool ShouldDisplayWebNotificationOnFullScreen(Profile* profile,
   return false;
 }
 
-}  // namespace
+// Records the total number of deleted notifications after all storage
+// partitions are done and called OnDeleted. Uses the ref count to keep track
+// of pending callbacks.
+class RevokeDeleteCountRecorder
+    : public base::RefCounted<RevokeDeleteCountRecorder> {
+ public:
+  RevokeDeleteCountRecorder() : total_deleted_count_(0) {}
 
-// static
-PlatformNotificationServiceImpl*
-PlatformNotificationServiceImpl::GetInstance() {
-  return base::Singleton<PlatformNotificationServiceImpl>::get();
-}
+  void OnDeleted(bool success, size_t deleted_count) {
+    total_deleted_count_ += deleted_count;
+  }
+
+ private:
+  friend class base::RefCounted<RevokeDeleteCountRecorder>;
+
+  ~RevokeDeleteCountRecorder() {
+    UMA_HISTOGRAM_COUNTS_100("Notifications.Permissions.RevokeDeleteCount",
+                             total_deleted_count_);
+  }
+
+  size_t total_deleted_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(RevokeDeleteCountRecorder);
+};
+
+}  // namespace
 
 // static
 void PlatformNotificationServiceImpl::RegisterProfilePrefs(
@@ -112,11 +136,53 @@ void PlatformNotificationServiceImpl::RegisterProfilePrefs(
   // notification IDs may occur as they were previously stored in a different
   // data store.
   registry->RegisterIntegerPref(prefs::kNotificationNextPersistentId, 10000);
+
+  // Store the next notification trigger time for each profile. If none is set,
+  // this will default to base::Time::Max.
+  registry->RegisterTimePref(prefs::kNotificationNextTriggerTime,
+                             base::Time::Max());
 }
 
-PlatformNotificationServiceImpl::PlatformNotificationServiceImpl() = default;
+PlatformNotificationServiceImpl::PlatformNotificationServiceImpl(
+    Profile* profile)
+    : profile_(profile),
+      trigger_scheduler_(NotificationTriggerScheduler::Create()) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(profile_);
+  HostContentSettingsMapFactory::GetForProfile(profile_)->AddObserver(this);
+}
 
 PlatformNotificationServiceImpl::~PlatformNotificationServiceImpl() = default;
+
+void PlatformNotificationServiceImpl::Shutdown() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  HostContentSettingsMapFactory::GetForProfile(profile_)->RemoveObserver(this);
+  // Clear the profile as we're not supposed to use it anymore.
+  profile_ = nullptr;
+}
+
+void PlatformNotificationServiceImpl::OnContentSettingChanged(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+    return;
+
+  auto recorder = base::MakeRefCounted<RevokeDeleteCountRecorder>();
+  content::BrowserContext::ForEachStoragePartition(
+      profile_,
+      base::BindRepeating(
+          [](scoped_refptr<RevokeDeleteCountRecorder> recorder,
+             content::StoragePartition* partition) {
+            partition->GetPlatformNotificationContext()
+                ->DeleteAllNotificationDataForBlockedOrigins(base::BindOnce(
+                    &RevokeDeleteCountRecorder::OnDeleted, recorder));
+          },
+          recorder));
+}
 
 bool PlatformNotificationServiceImpl::WasClosedProgrammatically(
     const std::string& notification_id) {
@@ -125,7 +191,6 @@ bool PlatformNotificationServiceImpl::WasClosedProgrammatically(
 
 // TODO(awdf): Rename to DisplayNonPersistentNotification (Similar for Close)
 void PlatformNotificationServiceImpl::DisplayNotification(
-    BrowserContext* browser_context,
     const std::string& notification_id,
     const GURL& origin,
     const blink::PlatformNotificationData& notification_data,
@@ -135,24 +200,21 @@ void PlatformNotificationServiceImpl::DisplayNotification(
   // Posted tasks can request notifications to be added, which would cause a
   // crash (see |ScopedKeepAlive|). We just do nothing here, the user would not
   // see the notification anyway, since we are shutting down.
-  if (g_browser_process->IsShuttingDown())
+  if (g_browser_process->IsShuttingDown() || !profile_)
     return;
 
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  DCHECK(profile);
   DCHECK_EQ(0u, notification_data.actions.size());
   DCHECK_EQ(0u, notification_resources.action_icons.size());
 
-  message_center::Notification notification =
-      CreateNotificationFromData(profile, origin, notification_id,
-                                 notification_data, notification_resources);
+  message_center::Notification notification = CreateNotificationFromData(
+      origin, notification_id, notification_data, notification_resources);
 
-  NotificationDisplayServiceFactory::GetForProfile(profile)->Display(
-      NotificationHandler::Type::WEB_NON_PERSISTENT, notification);
+  NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
+      NotificationHandler::Type::WEB_NON_PERSISTENT, notification,
+      /*metadata=*/nullptr);
 }
 
 void PlatformNotificationServiceImpl::DisplayPersistentNotification(
-    BrowserContext* browser_context,
     const std::string& notification_id,
     const GURL& service_worker_scope,
     const GURL& origin,
@@ -165,73 +227,93 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
   // Posted tasks can request notifications to be added, which would cause a
   // crash (see |ScopedKeepAlive|). We just do nothing here, the user would not
   // see the notification anyway, since we are shutting down.
-  if (g_browser_process->IsShuttingDown())
+  // TODO(knollr): IsShuttingDown check should not be required anymore, but some
+  // tests try to display a notification during shutdown.
+  if (g_browser_process->IsShuttingDown() || !profile_)
     return;
 
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  DCHECK(profile);
-
-  message_center::Notification notification =
-      CreateNotificationFromData(profile, origin, notification_id,
-                                 notification_data, notification_resources);
+  message_center::Notification notification = CreateNotificationFromData(
+      origin, notification_id, notification_data, notification_resources);
   auto metadata = std::make_unique<PersistentNotificationMetadata>();
   metadata->service_worker_scope = service_worker_scope;
 
-  NotificationDisplayServiceFactory::GetForProfile(profile)->Display(
+  NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
       NotificationHandler::Type::WEB_PERSISTENT, notification,
       std::move(metadata));
 
-  NotificationMetricsLoggerFactory::GetForBrowserContext(browser_context)
+  NotificationMetricsLoggerFactory::GetForBrowserContext(profile_)
       ->LogPersistentNotificationShown();
 }
 
 void PlatformNotificationServiceImpl::CloseNotification(
-    BrowserContext* browser_context,
     const std::string& notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (g_browser_process->IsShuttingDown() || !profile_)
+    return;
 
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  DCHECK(profile);
-
-  NotificationDisplayServiceFactory::GetForProfile(profile)->Close(
+  NotificationDisplayServiceFactory::GetForProfile(profile_)->Close(
       NotificationHandler::Type::WEB_NON_PERSISTENT, notification_id);
 }
 
 void PlatformNotificationServiceImpl::ClosePersistentNotification(
-    BrowserContext* browser_context,
     const std::string& notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  DCHECK(profile);
+  if (g_browser_process->IsShuttingDown() || !profile_)
+    return;
 
   closed_notifications_.insert(notification_id);
 
-  NotificationDisplayServiceFactory::GetForProfile(profile)->Close(
+  NotificationDisplayServiceFactory::GetForProfile(profile_)->Close(
       NotificationHandler::Type::WEB_PERSISTENT, notification_id);
 }
 
 void PlatformNotificationServiceImpl::GetDisplayedNotifications(
-    BrowserContext* browser_context,
     DisplayedNotificationsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (g_browser_process->IsShuttingDown() || !profile_)
+    return;
 
-  Profile* profile = Profile::FromBrowserContext(browser_context);
   // Tests will not have a message center.
-  if (!profile || profile->AsTestingProfile()) {
+  if (profile_->AsTestingProfile()) {
     std::set<std::string> displayed_notifications;
     std::move(callback).Run(std::move(displayed_notifications),
                             false /* supports_synchronization */);
     return;
   }
-  NotificationDisplayServiceFactory::GetForProfile(profile)->GetDisplayed(
+  NotificationDisplayServiceFactory::GetForProfile(profile_)->GetDisplayed(
       std::move(callback));
 }
 
-int64_t PlatformNotificationServiceImpl::ReadNextPersistentNotificationId(
-    BrowserContext* browser_context) {
+void PlatformNotificationServiceImpl::ScheduleTrigger(base::Time timestamp) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  PrefService* prefs = Profile::FromBrowserContext(browser_context)->GetPrefs();
+  if (g_browser_process->IsShuttingDown() || !profile_)
+    return;
+
+  PrefService* prefs = profile_->GetPrefs();
+  base::Time current_trigger =
+      prefs->GetTime(prefs::kNotificationNextTriggerTime);
+
+  if (current_trigger > timestamp)
+    prefs->SetTime(prefs::kNotificationNextTriggerTime, timestamp);
+
+  trigger_scheduler_->ScheduleTrigger(timestamp);
+}
+
+base::Time PlatformNotificationServiceImpl::ReadNextTriggerTimestamp() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (g_browser_process->IsShuttingDown() || !profile_)
+    return base::Time::Max();
+
+  PrefService* prefs = profile_->GetPrefs();
+  return prefs->GetTime(prefs::kNotificationNextTriggerTime);
+}
+
+int64_t PlatformNotificationServiceImpl::ReadNextPersistentNotificationId() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (g_browser_process->IsShuttingDown() || !profile_)
+    return 0;
+
+  PrefService* prefs = profile_->GetPrefs();
 
   int64_t current_id = prefs->GetInteger(prefs::kNotificationNextPersistentId);
   int64_t next_id = current_id + 1;
@@ -241,9 +323,11 @@ int64_t PlatformNotificationServiceImpl::ReadNextPersistentNotificationId(
 }
 
 void PlatformNotificationServiceImpl::RecordNotificationUkmEvent(
-    BrowserContext* browser_context,
     const NotificationDatabaseData& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (g_browser_process->IsShuttingDown() || !profile_)
+    return;
+
   // Only record the event if a user explicitly interacted with the notification
   // to close it.
   if (data.closed_reason != NotificationDatabaseData::ClosedReason::USER &&
@@ -253,30 +337,34 @@ void PlatformNotificationServiceImpl::RecordNotificationUkmEvent(
 
   // Query the HistoryService so we only record a notification if the origin is
   // in the user's history.
-  Profile* profile = Profile::FromBrowserContext(browser_context);
   history::HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile,
+      HistoryServiceFactory::GetForProfile(profile_,
                                            ServiceAccessType::EXPLICIT_ACCESS);
   DCHECK(history_service);
   history_service->QueryURL(
       data.origin, /*want_visits=*/false,
       base::BindOnce(
           &PlatformNotificationServiceImpl::OnUrlHistoryQueryComplete,
-          base::Unretained(this), data),
+          std::move(history_query_complete_closure_for_testing_), data),
       &task_tracker_);
 }
 
+NotificationTriggerScheduler*
+PlatformNotificationServiceImpl::GetNotificationTriggerScheduler() {
+  return trigger_scheduler_.get();
+}
+
+// static
 void PlatformNotificationServiceImpl::OnUrlHistoryQueryComplete(
+    base::OnceClosure callback,
     const content::NotificationDatabaseData& data,
     bool found_url,
     const history::URLRow& url_row,
     const history::VisitVector& visits) {
-  // Post the |history_query_complete_closure_for_testing_| closure to the
-  // current task runner to inform tests that the history query has completed.
-  if (history_query_complete_closure_for_testing_) {
-    base::PostTask(FROM_HERE,
-                   std::move(history_query_complete_closure_for_testing_));
-  }
+  // Post the |callback| closure to the current task runner to inform tests that
+  // the history query has completed.
+  if (callback)
+    base::PostTask(FROM_HERE, std::move(callback));
 
   // Only record the notification if the |data.origin| is in the history
   // service.
@@ -329,7 +417,6 @@ void PlatformNotificationServiceImpl::OnUrlHistoryQueryComplete(
 
 message_center::Notification
 PlatformNotificationServiceImpl::CreateNotificationFromData(
-    Profile* profile,
     const GURL& origin,
     const std::string& notification_id,
     const blink::PlatformNotificationData& notification_data,
@@ -354,13 +441,12 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
       message_center::NotifierId(origin), optional_fields,
       nullptr /* delegate */);
 
-  notification.set_context_message(
-      DisplayNameForContextMessage(profile, origin));
+  notification.set_context_message(DisplayNameForContextMessage(origin));
   notification.set_vibration_pattern(notification_data.vibration_pattern);
   notification.set_timestamp(notification_data.timestamp);
   notification.set_renotify(notification_data.renotify);
   notification.set_silent(notification_data.silent);
-  if (ShouldDisplayWebNotificationOnFullScreen(profile, origin)) {
+  if (ShouldDisplayWebNotificationOnFullScreen(profile_, origin)) {
     notification.set_fullscreen_visibility(
         message_center::FullscreenVisibility::OVER_USER);
   }
@@ -404,13 +490,12 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
 }
 
 base::string16 PlatformNotificationServiceImpl::DisplayNameForContextMessage(
-    Profile* profile,
     const GURL& origin) const {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // If the source is an extension, lookup the display name.
   if (origin.SchemeIs(extensions::kExtensionScheme)) {
     const extensions::Extension* extension =
-        extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
+        extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
             origin.host(), extensions::ExtensionRegistry::EVERYTHING);
     DCHECK(extension);
 

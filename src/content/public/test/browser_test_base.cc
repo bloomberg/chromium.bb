@@ -266,9 +266,6 @@ void BrowserTestBase::SetUp() {
   // not affect the results.
   command_line->AppendSwitchASCII(switches::kForceDisplayColorProfile, "srgb");
 
-  // Disable compositor Ukm in browser tests until crbug.com/761524 is resolved.
-  command_line->AppendSwitch(switches::kDisableCompositorUkmForTests);
-
   test_host_resolver_ = std::make_unique<TestHostResolver>();
 
   ContentBrowserSanityChecker scoped_enable_sanity_checks;
@@ -335,10 +332,10 @@ void BrowserTestBase::SetUp() {
   MainFunctionParams params(*command_line);
   params.ui_task = ui_task.release();
   params.created_main_parts_closure = created_main_parts_closure.release();
-  base::TaskScheduler::Create("Browser");
+  base::ThreadPool::Create("Browser");
   DCHECK(!field_trial_list_);
   field_trial_list_ = SetUpFieldTrialsAndFeatureList();
-  StartBrowserTaskScheduler();
+  StartBrowserThreadPool();
   BrowserTaskExecutor::Create();
   BrowserTaskExecutor::PostFeatureListSetup();
   // TODO(phajdan.jr): Check return code, http://crbug.com/374738 .
@@ -539,13 +536,15 @@ void BrowserTestBase::InitializeNetworkProcess() {
          rule.resolver_type !=
              net::RuleBasedHostResolverProc::Rule::kResolverTypeIPLiteral) ||
         rule.address_family != net::AddressFamily::ADDRESS_FAMILY_UNSPECIFIED ||
-        !!rule.latency_ms || rule.replacement.empty())
+        !!rule.latency_ms)
       continue;
     network::mojom::RulePtr mojo_rule = network::mojom::Rule::New();
     if (rule.resolver_type ==
         net::RuleBasedHostResolverProc::Rule::kResolverTypeSystem) {
       mojo_rule->resolver_type =
-          network::mojom::ResolverType::kResolverTypeSystem;
+          rule.replacement.empty()
+              ? network::mojom::ResolverType::kResolverTypeDirectLookup
+              : network::mojom::ResolverType::kResolverTypeSystem;
     } else {
       mojo_rule->resolver_type =
           network::mojom::ResolverType::kResolverTypeIPLiteral;

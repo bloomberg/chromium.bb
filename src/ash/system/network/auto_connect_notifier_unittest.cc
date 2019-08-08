@@ -13,8 +13,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/timer/mock_timer.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/auto_connect_handler.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_handler.h"
@@ -41,7 +41,7 @@ class AutoConnectNotifierTest : public AshTestBase {
   void SetUp() override {
     chromeos::NetworkCertLoader::Initialize();
     chromeos::NetworkCertLoader::ForceHardwareBackedForTesting();
-    chromeos::DBusThreadManager::Initialize();
+    chromeos::shill_clients::InitializeFakes();
     chromeos::NetworkHandler::Initialize();
     CHECK(chromeos::NetworkHandler::Get()->auto_connect_handler());
     AshTestBase::SetUp();
@@ -52,11 +52,9 @@ class AutoConnectNotifierTest : public AshTestBase {
         ->auto_connect_->set_timer_for_testing(
             base::WrapUnique(mock_notification_timer_));
 
-    chromeos::DBusThreadManager::Get()
-        ->GetShillServiceClient()
-        ->GetTestInterface()
-        ->AddService(kTestServicePath, kTestServiceGuid, kTestServiceName,
-                     shill::kTypeWifi, shill::kStateOnline, true /* visible*/);
+    chromeos::ShillServiceClient::Get()->GetTestInterface()->AddService(
+        kTestServicePath, kTestServiceGuid, kTestServiceName, shill::kTypeWifi,
+        shill::kStateOnline, true /* visible*/);
     // Ensure fake DBus service initialization completes.
     base::RunLoop().RunUntilIdle();
   }
@@ -64,7 +62,7 @@ class AutoConnectNotifierTest : public AshTestBase {
   void TearDown() override {
     AshTestBase::TearDown();
     chromeos::NetworkHandler::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
+    chromeos::shill_clients::Shutdown();
     chromeos::NetworkCertLoader::Shutdown();
   }
 
@@ -76,7 +74,7 @@ class AutoConnectNotifierTest : public AshTestBase {
   }
 
   void SuccessfullyJoinWifiNetwork() {
-    chromeos::DBusThreadManager::Get()->GetShillServiceClient()->Connect(
+    chromeos::ShillServiceClient::Get()->Connect(
         dbus::ObjectPath(kTestServicePath), base::BindRepeating([]() {}),
         chromeos::ShillServiceClient::ErrorCallback());
     base::RunLoop().RunUntilIdle();

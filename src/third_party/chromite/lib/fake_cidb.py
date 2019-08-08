@@ -528,7 +528,8 @@ class FakeCIDBConnection(object):
   def GetBuildStatusesWithBuildbucketIds(self, buildbucket_ids):
     rows = []
     for row in self.buildTable:
-      if row['buildbucket_id'] in buildbucket_ids:
+      if (row['buildbucket_id'] in buildbucket_ids or
+          str(row['buildbucket_id']) in buildbucket_ids):
         rows.append(self._TrimStatus(row))
 
     return rows

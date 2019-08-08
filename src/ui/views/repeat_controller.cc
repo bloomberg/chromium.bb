@@ -4,24 +4,24 @@
 
 #include "ui/views/repeat_controller.h"
 
+#include <utility>
+
 using base::TimeDelta;
 
 namespace views {
 
 // The delay before the first and then subsequent repeats. Values taken from
 // XUL code: http://mxr.mozilla.org/seamonkey/source/layout/xul/base/src/nsRepeatService.cpp#52
-const int kInitialRepeatDelay = 250;
-const int kRepeatDelay = 50;
+constexpr int kInitialRepeatDelay = 250;
+constexpr int kRepeatDelay = 50;
 
 ///////////////////////////////////////////////////////////////////////////////
 // RepeatController, public:
 
-RepeatController::RepeatController(const base::Closure& callback)
-    : callback_(callback) {
-}
+RepeatController::RepeatController(base::RepeatingClosure callback)
+    : callback_(std::move(callback)) {}
 
-RepeatController::~RepeatController() {
-}
+RepeatController::~RepeatController() = default;
 
 void RepeatController::Start() {
   // The first timer is slightly longer than subsequent repeats.

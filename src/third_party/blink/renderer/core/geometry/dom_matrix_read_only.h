@@ -47,12 +47,12 @@ class CORE_EXPORT DOMMatrixReadOnly : public ScriptWrappable {
   template <typename T>
   DOMMatrixReadOnly(T sequence, int size) {
     if (size == 6) {
-      matrix_ =
-          TransformationMatrix::Create(sequence[0], sequence[1], sequence[2],
-                                       sequence[3], sequence[4], sequence[5]);
+      matrix_ = std::make_unique<TransformationMatrix>(
+          sequence[0], sequence[1], sequence[2], sequence[3], sequence[4],
+          sequence[5]);
       is2d_ = true;
     } else if (size == 16) {
-      matrix_ = TransformationMatrix::Create(
+      matrix_ = std::make_unique<TransformationMatrix>(
           sequence[0], sequence[1], sequence[2], sequence[3], sequence[4],
           sequence[5], sequence[6], sequence[7], sequence[8], sequence[9],
           sequence[10], sequence[11], sequence[12], sequence[13], sequence[14],

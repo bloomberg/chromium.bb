@@ -89,10 +89,15 @@ void BrowserAccessibilityStateImpl::PlatformInitialize() {
       new gfx::SingletonHwndObserver(base::BindRepeating(&OnWndProc)));
 }
 
-void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
-  // NOTE: this method is run from the file thread to reduce jank, since
-  // there's no guarantee these system calls will return quickly. Be careful
-  // not to add any code that isn't safe to run from a non-main thread!
+void BrowserAccessibilityStateImpl::
+    UpdatePlatformSpecificHistogramsOnUIThread() {}
+
+void BrowserAccessibilityStateImpl::
+    UpdatePlatformSpecificHistogramsOnOtherThread() {
+  // NOTE: this method is run from another thread to reduce jank, since
+  // there's no guarantee these system calls will return quickly. Code that
+  // needs to run in the UI thread can be run in
+  // UpdatePlatformSpecificHistogramsOnUIThread instead.
 
   AUDIODESCRIPTION audio_description = {0};
   audio_description.cbSize = sizeof(AUDIODESCRIPTION);

@@ -5,6 +5,9 @@
 #
 # Config file for various nacl compilation scenarios
 #
+
+from __future__ import print_function
+
 import os
 import sys
 
@@ -39,7 +42,7 @@ class ToolchainConfig(object):
   def SanityCheck(self):
     for t in self._tools_needed:
       if not os.access(t, os.R_OK | os.X_OK):
-        print "ERROR: missing tool ", t
+        print("ERROR: missing tool ", t)
         sys.exit(-1)
 
   def GetDescription(self):

@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -253,7 +252,7 @@ void SyncInternalsMessageHandler::HandleGetAllNodes(const ListValue* args) {
     // asynchronously, and potentially at times we're not allowed to call into
     // the javascript side. We guard against this by invalidating this weak ptr
     // should javascript become disallowed.
-    service->GetAllNodes(
+    service->GetAllNodesForDebugging(
         base::Bind(&SyncInternalsMessageHandler::OnReceivedAllNodes,
                    weak_ptr_factory_.GetWeakPtr(), request_id));
   }
@@ -263,9 +262,10 @@ void SyncInternalsMessageHandler::HandleRequestUserEventsVisibility(
     const base::ListValue* args) {
   DCHECK(args->empty());
   AllowJavascript();
-  CallJavascriptFunction(
-      syncer::sync_ui_util::kUserEventsVisibilityCallback,
-      Value(base::FeatureList::IsEnabled(switches::kSyncUserEvents)));
+  // TODO(crbug.com/934333): Get rid of this callback now that user events are
+  // always enabled.
+  CallJavascriptFunction(syncer::sync_ui_util::kUserEventsVisibilityCallback,
+                         Value(true));
 }
 
 void SyncInternalsMessageHandler::HandleSetIncludeSpecifics(

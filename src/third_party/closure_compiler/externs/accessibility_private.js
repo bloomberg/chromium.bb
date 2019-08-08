@@ -256,6 +256,12 @@ chrome.accessibilityPrivate.onSelectToSpeakStateChanged = function(state) {};
 chrome.accessibilityPrivate.toggleDictation = function() {};
 
 /**
+ * Opens or closes the virtual keyboard.
+ * @param {!boolean} isVisible
+ */
+chrome.accessibilityPrivate.setVirtualKeyboardVisible = function(isVisible) {};
+
+/**
  * Fired whenever ChromeVox should output introduction.
  * @type {!ChromeEvent}
  */

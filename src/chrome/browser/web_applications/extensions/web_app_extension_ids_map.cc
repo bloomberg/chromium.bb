@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/values.h"
@@ -28,7 +29,8 @@ namespace {
 //   "extension_ids": {
 //     "https://events.google.com/io2016/?utm_source=web_app_manifest": {
 //       "extension_id": "mjgafbdfajpigcjmkgmeokfbodbcfijl",
-//       "install_source": 1
+//       "install_source": 1,
+//       "is_placeholder": true,
 //     },
 //     "https://www.chromestatus.com/features": {
 //       "extension_id": "fedbieoalmbobgfjapopkghdmhgncnaa",
@@ -44,6 +46,7 @@ namespace {
 // kExtensionId and kInstallSource.
 constexpr char kExtensionId[] = "extension_id";
 constexpr char kInstallSource[] = "install_source";
+constexpr char kIsPlaceholder[] = "is_placeholder";
 
 // Returns the base::Value in |pref_service| corresponding to our stored dict
 // for |extension_id|, or nullptr if it doesn't exist.
@@ -173,6 +176,37 @@ base::Optional<std::string> ExtensionIdsMap::LookupExtensionId(
     }
   }
   return base::nullopt;
+}
+
+base::Optional<std::string> ExtensionIdsMap::LookupPlaceholderAppId(
+    const GURL& url) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  const base::Value* entry =
+      pref_service_->GetDictionary(prefs::kWebAppsExtensionIDs)
+          ->FindKey(url.spec());
+  if (!entry)
+    return base::nullopt;
+
+  base::Optional<bool> is_placeholder = entry->FindBoolKey(kIsPlaceholder);
+  if (!is_placeholder.has_value() || !is_placeholder.value())
+    return base::nullopt;
+
+  return *entry->FindStringKey(kExtensionId);
+}
+
+void ExtensionIdsMap::SetIsPlaceholder(const GURL& url, bool is_placeholder) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  DCHECK(pref_service_->GetDictionary(prefs::kWebAppsExtensionIDs)
+             ->HasKey(url.spec()));
+  DictionaryPrefUpdate update(pref_service_, prefs::kWebAppsExtensionIDs);
+  base::Value* map = update.Get();
+
+  auto* app_entry = map->FindKey(url.spec());
+  DCHECK(app_entry);
+
+  app_entry->SetBoolKey(kIsPlaceholder, is_placeholder);
 }
 
 }  // namespace web_app

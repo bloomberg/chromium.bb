@@ -9,6 +9,7 @@
 
 #include "chrome/browser/installable/installable_logging.h"
 #include "chrome/browser/installable/installable_manager.h"
+#include "url/gurl.h"
 
 struct InstallableData;
 
@@ -27,7 +28,9 @@ class FakeInstallableManager : public InstallableManager {
 
   // InstallableManager:
   void GetData(const InstallableParams& params,
-               const InstallableCallback& callback) override;
+               InstallableCallback callback) override;
+
+  void RunCallback(InstallableCallback callback);
 
   // Create the manager and attach it to |web_contents|.
   static FakeInstallableManager* CreateForWebContents(
@@ -42,6 +45,7 @@ class FakeInstallableManager : public InstallableManager {
       std::unique_ptr<blink::Manifest> manifest);
 
  private:
+  GURL manifest_url_;
   std::unique_ptr<blink::Manifest> manifest_;
   std::unique_ptr<InstallableData> data_;
 };

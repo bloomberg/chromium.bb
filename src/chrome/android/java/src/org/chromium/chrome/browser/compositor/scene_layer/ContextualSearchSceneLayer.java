@@ -66,6 +66,7 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
         boolean searchPromoVisible = promoControl.isVisible();
         float searchPromoHeightPx = promoControl.getHeightPx();
         float searchPromoOpacity = promoControl.getOpacity();
+        int searchPromoBackgroundColor = promoControl.getBackgroundColor();
 
         int searchBarBannerTextViewId = barBannerControl.getViewId();
         boolean searchBarBannerVisible = barBannerControl.isVisible();
@@ -78,8 +79,8 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
         float customImageVisibilityPercentage = imageControl.getCustomImageVisibilityPercentage();
         int barImageSize = imageControl.getBarImageSize();
 
-        boolean quickActionIconVisible = imageControl.getQuickActionIconVisible();
-        int quickActionIconResId = imageControl.getQuickActionIconResourceId();
+        boolean quickActionIconVisible = imageControl.getCardIconVisible();
+        int quickActionIconResId = imageControl.getCardIconResourceId();
 
         boolean thumbnailVisible = imageControl.getThumbnailVisible();
         String thumbnailUrl = imageControl.getThumbnailUrl();
@@ -138,8 +139,9 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
                 R.drawable.contextual_search_promo_ripple, searchBarBannerTextViewId, mDpToPx,
                 panel.getFullscreenWidth() * mDpToPx, panel.getTabHeight() * mDpToPx,
                 panel.getBasePageBrightness(), panel.getBasePageY() * mDpToPx, panelWebContents,
-                searchPromoVisible, searchPromoHeightPx, searchPromoOpacity, searchBarBannerVisible,
-                searchBarBannerHeightPx, searchBarBannerPaddingPx, searchBarBannerRippleWidthPx,
+                searchPromoVisible, searchPromoHeightPx, searchPromoOpacity,
+                searchPromoBackgroundColor, searchBarBannerVisible, searchBarBannerHeightPx,
+                searchBarBannerPaddingPx, searchBarBannerRippleWidthPx,
                 searchBarBannerRippleOpacity, searchBarBannerTextOpacity, searchPanelX * mDpToPx,
                 searchPanelY * mDpToPx, searchPanelWidth * mDpToPx, searchPanelHeight * mDpToPx,
                 searchBarMarginSide * mDpToPx, searchBarHeight * mDpToPx, searchContextOpacity,
@@ -209,13 +211,13 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
             int searchPromoResourceId, int barBannerRippleResourceId, int barBannerTextResourceId,
             float dpToPx, float layoutWidth, float layoutHeight, float basePageBrightness,
             float basePageYOffset, WebContents webContents, boolean searchPromoVisible,
-            float searchPromoHeight, float searchPromoOpacity, boolean searchBarBannerVisible,
-            float searchBarBannerHeight, float searchBarBannerPaddingPx,
-            float searchBarBannerRippleWidth, float searchBarBannerRippleOpacity,
-            float searchBarBannerTextOpacity, float searchPanelX, float searchPanelY,
-            float searchPanelWidth, float searchPanelHeight, float searchBarMarginSide,
-            float searchBarHeight, float searchContextOpacity, float searchTextLayerMinHeight,
-            float searchTermOpacity, float searchTermCaptionSpacing,
+            float searchPromoHeight, float searchPromoOpacity, int searchPromoBackgroundColor,
+            boolean searchBarBannerVisible, float searchBarBannerHeight,
+            float searchBarBannerPaddingPx, float searchBarBannerRippleWidth,
+            float searchBarBannerRippleOpacity, float searchBarBannerTextOpacity,
+            float searchPanelX, float searchPanelY, float searchPanelWidth, float searchPanelHeight,
+            float searchBarMarginSide, float searchBarHeight, float searchContextOpacity,
+            float searchTextLayerMinHeight, float searchTermOpacity, float searchTermCaptionSpacing,
             float searchCaptionAnimationPercentage, boolean searchCaptionVisible,
             boolean searchBarBorderVisible, float searchBarBorderHeight,
             boolean searchBarShadowVisible, float searchBarShadowOpacity,

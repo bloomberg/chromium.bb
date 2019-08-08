@@ -150,7 +150,6 @@ void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
 
 #if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_WIN)
   content::UpdateFontRendererPreferencesFromSystemSettings(prefs);
-  content::UpdateFocusRingPreferencesFromSystemSettings(prefs);
 #endif
 
 #if !defined(OS_MACOSX)

@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/thread_test_helper.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -22,6 +23,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "storage/browser/fileapi/file_system_features.h"
 #include "storage/browser/quota/quota_manager.h"
 
 using storage::QuotaManager;
@@ -30,35 +32,52 @@ namespace content {
 
 // This browser test is aimed towards exercising the File System API bindings
 // and the actual implementation that lives in the browser side.
-class FileSystemBrowserTest : public ContentBrowserTest {
+class FileSystemBrowserTest : public ContentBrowserTest,
+                              public testing::WithParamInterface<bool> {
  public:
-  FileSystemBrowserTest() {}
+  FileSystemBrowserTest() {
+    is_incognito_ = GetParam();
+    feature_list_.InitAndEnableFeature(
+        storage::features::kEnableFilesystemInIncognito);
+  }
 
-  void SimpleTest(const GURL& test_url, bool incognito = false) {
+  void SimpleTest(const GURL& test_url) {
     // The test page will perform tests on FileAPI, then navigate to either
     // a #pass or #fail ref.
-    Shell* the_browser = incognito ? CreateOffTheRecordBrowser() : shell();
-
     VLOG(0) << "Navigating to URL and blocking.";
-    NavigateToURLBlockUntilNavigationsComplete(the_browser, test_url, 2);
+    NavigateToURLBlockUntilNavigationsComplete(browser(), test_url, 2);
     VLOG(0) << "Navigation done.";
-    std::string result =
-        the_browser->web_contents()->GetLastCommittedURL().ref();
+    std::string result = browser()->web_contents()->GetLastCommittedURL().ref();
     if (result != "pass") {
       std::string js_result;
       ASSERT_TRUE(ExecuteScriptAndExtractString(
-          the_browser, "window.domAutomationController.send(getLog())",
+          browser(), "window.domAutomationController.send(getLog())",
           &js_result));
       FAIL() << "Failed: " << js_result;
     }
   }
+
+  Shell* browser() {
+    if (!browser_)
+      browser_ = is_incognito() ? CreateOffTheRecordBrowser() : shell();
+    return browser_;
+  }
+
+  bool is_incognito() { return is_incognito_; }
+
+ protected:
+  bool is_incognito_;
+  Shell* browser_ = nullptr;
+  base::test::ScopedFeatureList feature_list_;
 };
+
+INSTANTIATE_TEST_SUITE_P(, FileSystemBrowserTest, ::testing::Bool());
 
 class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
  public:
   void SetUpOnMainThread() override {
     SetLowQuota(BrowserContext::GetDefaultStoragePartition(
-                    shell()->web_contents()->GetBrowserContext())
+                    browser()->web_contents()->GetBrowserContext())
                     ->GetQuotaManager());
   }
 
@@ -75,21 +94,25 @@ class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
     storage::QuotaSettings settings;
     settings.pool_size = 25 * kMeg;
     settings.per_host_quota = 5 * kMeg;
-    settings.must_remain_available = 100 * kMeg;
+    settings.must_remain_available = 10 * kMeg;
     settings.refresh_interval = base::TimeDelta::Max();
     qm->SetQuotaSettings(settings);
   }
 };
 
-IN_PROC_BROWSER_TEST_F(FileSystemBrowserTest, RequestTest) {
+INSTANTIATE_TEST_SUITE_P(,
+                         FileSystemBrowserTestWithLowQuota,
+                         ::testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(FileSystemBrowserTest, RequestTest) {
   SimpleTest(GetTestUrl("fileapi", "request_test.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemBrowserTest, CreateTest) {
+IN_PROC_BROWSER_TEST_P(FileSystemBrowserTest, CreateTest) {
   SimpleTest(GetTestUrl("fileapi", "create_test.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemBrowserTestWithLowQuota, QuotaTest) {
+IN_PROC_BROWSER_TEST_P(FileSystemBrowserTestWithLowQuota, QuotaTest) {
   SimpleTest(GetTestUrl("fileapi", "quota_test.html"));
 }
 

@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApplicationState;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -40,6 +39,7 @@ import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
@@ -74,7 +74,7 @@ public class OfflineIndicatorControllerTest {
         ConnectivityDetector.setDelegateForTesting(new ConnectivityDetectorDelegateStub(
                 ConnectivityDetector.ConnectionState.NONE, true /*shouldSkipHttpProbes*/));
         mActivityTestRule.startMainActivityOnBlankPage();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             if (!NetworkChangeNotifier.isInitialized()) {
                 NetworkChangeNotifier.init();
             }
@@ -329,7 +329,7 @@ public class OfflineIndicatorControllerTest {
 
     private void setNetworkConnectivity(boolean connected) {
         mIsConnected = connected;
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             NetworkChangeNotifier.forceConnectivityState(connected);
             OfflineIndicatorController.getInstance()
                     .getConnectivityDetectorForTesting()
@@ -340,7 +340,7 @@ public class OfflineIndicatorControllerTest {
     }
 
     private void setApplicationState(int newState) {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             OfflineIndicatorController.getInstance().onApplicationStateChange(newState);
         });
     }
@@ -361,7 +361,7 @@ public class OfflineIndicatorControllerTest {
     private void loadPageWithoutWaiting(String pageUrl, String headers) throws Exception {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             LoadUrlParams params = new LoadUrlParams(
                     pageUrl, PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR);
             if (headers != null) {
@@ -382,22 +382,18 @@ public class OfflineIndicatorControllerTest {
         mActivityTestRule.loadUrl(url);
 
         final Semaphore semaphore = new Semaphore(0);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Profile profile = Profile.getLastUsedProfile();
-                OfflinePageBridge offlinePageBridge = OfflinePageBridge.getForProfile(profile);
-                offlinePageBridge.savePage(mActivityTestRule.getWebContents(), CLIENT_ID,
-                        new OfflinePageBridge.SavePageCallback() {
-                            @Override
-                            public void onSavePageDone(
-                                    int savePageResult, String url, long offlineId) {
-                                Assert.assertEquals(
-                                        "Save failed.", SavePageResult.SUCCESS, savePageResult);
-                                semaphore.release();
-                            }
-                        });
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Profile profile = Profile.getLastUsedProfile();
+            OfflinePageBridge offlinePageBridge = OfflinePageBridge.getForProfile(profile);
+            offlinePageBridge.savePage(mActivityTestRule.getWebContents(), CLIENT_ID,
+                    new OfflinePageBridge.SavePageCallback() {
+                        @Override
+                        public void onSavePageDone(int savePageResult, String url, long offlineId) {
+                            Assert.assertEquals(
+                                    "Save failed.", SavePageResult.SUCCESS, savePageResult);
+                            semaphore.release();
+                        }
+                    });
         });
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -428,28 +424,21 @@ public class OfflineIndicatorControllerTest {
     }
 
     private static void hideOfflineIndicator(ChromeActivity activity) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                OfflineIndicatorController.getInstance().hideOfflineIndicator(activity);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { OfflineIndicatorController.getInstance().hideOfflineIndicator(activity); });
     }
 
     private static boolean isErrorPage(final Tab tab) {
         final boolean[] isShowingError = new boolean[1];
-        ThreadUtils.runOnUiThreadBlocking(() -> { isShowingError[0] = tab.isShowingErrorPage(); });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { isShowingError[0] = tab.isShowingErrorPage(); });
         return isShowingError[0];
     }
 
     private static boolean isOfflinePage(final Tab tab) {
         final boolean[] isOffline = new boolean[1];
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                isOffline[0] = OfflinePageUtils.isOfflinePage(tab);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { isOffline[0] = OfflinePageUtils.isOfflinePage(tab); });
         return isOffline[0];
     }
 }

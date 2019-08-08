@@ -506,7 +506,7 @@ void HTMLCollection::UpdateIdNameCache() const {
   if (HasValidIdNameCache())
     return;
 
-  NamedItemCache* cache = NamedItemCache::Create();
+  auto* cache = MakeGarbageCollected<NamedItemCache>();
   unsigned length = this->length();
   for (unsigned i = 0; i < length; ++i) {
     Element* element = item(i);

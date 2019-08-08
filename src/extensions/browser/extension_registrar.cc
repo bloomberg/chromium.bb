@@ -111,6 +111,7 @@ void ExtensionRegistrar::AddExtension(
 void ExtensionRegistrar::AddNewExtension(
     scoped_refptr<const Extension> extension) {
   if (extension_prefs_->IsExtensionBlacklisted(extension->id())) {
+    DCHECK(!Manifest::IsComponentLocation(extension->location()));
     // Only prefs is checked for the blacklist. We rely on callers to check the
     // blacklist before calling into here, e.g. CrxInstaller checks before
     // installation then threads through the install and pending install flow
@@ -118,6 +119,7 @@ void ExtensionRegistrar::AddNewExtension(
     // extensions.
     registry_->AddBlacklisted(extension);
   } else if (delegate_->ShouldBlockExtension(extension.get())) {
+    DCHECK(!Manifest::IsComponentLocation(extension->location()));
     registry_->AddBlocked(extension);
   } else if (extension_prefs_->IsExtensionDisabled(extension->id())) {
     registry_->AddDisabled(extension);

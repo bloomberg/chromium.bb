@@ -298,9 +298,15 @@ CJS_Result CJX_HostPseudoModel::openList(
     pNode = resolveNodeRS.objects.front()->AsNode();
   }
 
+  if (!pNode)
+    return CJS_Result::Success();
+
   CXFA_LayoutProcessor* pDocLayout = GetDocument()->GetLayoutProcessor();
-  CXFA_FFWidget* hWidget =
-      XFA_GetWidgetFromLayoutItem(pDocLayout->GetLayoutItem(pNode));
+  CXFA_LayoutItem* pLayoutItem = pDocLayout->GetLayoutItem(pNode);
+  if (!pLayoutItem)
+    return CJS_Result::Success();
+
+  CXFA_FFWidget* hWidget = XFA_GetWidgetFromLayoutItem(pLayoutItem);
   if (!hWidget)
     return CJS_Result::Success();
 
@@ -468,9 +474,7 @@ CJS_Result CJX_HostPseudoModel::getFocus(
     return CJS_Result::Success();
 
   CFXJSE_Value* value =
-      GetDocument()->GetScriptContext()->GetJSValueFromMap(pNode);
-  if (!value)
-    return CJS_Result::Success(runtime->NewNull());
+      GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(pNode);
 
   return CJS_Result::Success(
       value->DirectGetValue().Get(runtime->GetIsolate()));

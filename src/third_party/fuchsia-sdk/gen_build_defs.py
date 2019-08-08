@@ -187,12 +187,10 @@ def ConvertSdkManifests():
   with open(build_output_path, 'w') as buildfile:
     buildfile.write(_GENERATED_PREAMBLE)
 
-    for next_part in toplevel_meta['parts']:
-      parsed = json.load(open(os.path.join(sdk_base_dir, next_part)))
-      if 'type' not in parsed:
-        raise Exception("Couldn't find 'type' node in %s." % next_part)
+    for part in toplevel_meta['parts']:
+      parsed = json.load(open(os.path.join(sdk_base_dir, part['meta'])))
 
-      convert_function = _CONVERSION_FUNCTION_MAP.get(parsed['type'])
+      convert_function = _CONVERSION_FUNCTION_MAP.get(part['type'])
       if convert_function is None:
         raise Exception('Unexpected SDK artifact type %s in %s.' %
                         (parsed['type'], next_part))

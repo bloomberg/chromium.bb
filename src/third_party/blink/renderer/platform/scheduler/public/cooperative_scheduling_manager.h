@@ -13,42 +13,63 @@ namespace blink {
 namespace scheduler {
 
 // This class manages the states for cooperative scheduling and decides whether
-// or not to run a nested loop or not.
+// or not to run a nested loop for reentrant JS execution in cross-site frames.
 class PLATFORM_EXPORT CooperativeSchedulingManager {
   USING_FAST_MALLOC(CooperativeSchedulingManager);
 
  public:
-  // This class is used to mark JS executions that have a C++ stack that has
-  // been whitelisted for reentry.
-  class PLATFORM_EXPORT WhitelistedStackScope {
+  // Reentrant JS execution is not allowed unless there is an instance of this
+  // scoper alive. This is to ensure that reentrant JS execution can only happen
+  // in C++ stacks with a simple, known state.
+  class PLATFORM_EXPORT AllowedStackScope {
     STACK_ALLOCATED();
 
    public:
-    WhitelistedStackScope(CooperativeSchedulingManager*);
-    ~WhitelistedStackScope();
+    explicit AllowedStackScope(CooperativeSchedulingManager*);
+    ~AllowedStackScope();
 
    private:
-    CooperativeSchedulingManager* cooperative_scheduling_manager_;
+    CooperativeSchedulingManager* const cooperative_scheduling_manager_;
   };
 
   // Returns an shared instance for the current thread.
   static CooperativeSchedulingManager* Instance();
 
   CooperativeSchedulingManager();
+  virtual ~CooperativeSchedulingManager() = default;
 
-  // Returns true if the C++ stack has been whitelisted for reentry.
-  bool InWhitelistedStackScope() const {
-    return whitelisted_stack_scope_depth_ > 0;
-  }
+  // Returns true if reentry is allowed in the current C++ stack.
+  bool InAllowedStackScope() const { return allowed_stack_scope_depth_ > 0; }
+
+  // Calls to this should be inserted where nested loops can be run safely.
+  // Typically this is is where Blink has not modified any global state that the
+  // nested code could touch.
+  void Safepoint();
+
+ protected:
+  virtual void RunNestedLoop();
 
  private:
-  void EnterWhitelistedStackScope();
-  void LeaveWhitelistedStackScope();
+  void EnterAllowedStackScope();
+  void LeaveAllowedStackScope();
+  void SafepointSlow();
 
-  int whitelisted_stack_scope_depth_ = 0;
+  int allowed_stack_scope_depth_ = 0;
+  bool running_nested_loop_ = false;
+  WTF::TimeTicks wait_until_;
 
   DISALLOW_COPY_AND_ASSIGN(CooperativeSchedulingManager);
 };
+
+inline void CooperativeSchedulingManager::Safepoint() {
+  if (!InAllowedStackScope())
+    return;
+
+  if (WTF::CurrentTimeTicks() < wait_until_)
+    return;
+
+  SafepointSlow();
+}
 
 }  // namespace scheduler
 }  // namespace blink

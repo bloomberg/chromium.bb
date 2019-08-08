@@ -29,8 +29,8 @@
 #include "components/services/unzip/public/cpp/unzip.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
-#include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/install/sandboxed_unpacker_failure_reason.h"
@@ -212,6 +212,8 @@ std::set<base::FilePath> GetMessageCatalogPathsToBeSanitized(
   return message_catalog_paths;
 }
 
+base::Optional<crx_file::VerifierFormat> g_verifier_format_override_for_test;
+
 }  // namespace
 
 SandboxedUnpackerClient::SandboxedUnpackerClient()
@@ -219,6 +221,17 @@ SandboxedUnpackerClient::SandboxedUnpackerClient()
           base::CreateSingleThreadTaskRunnerWithTraits(
               {content::BrowserThread::UI})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
+
+SandboxedUnpacker::ScopedVerifierFormatOverrideForTest::
+    ScopedVerifierFormatOverrideForTest(crx_file::VerifierFormat format) {
+  DCHECK(!g_verifier_format_override_for_test.has_value());
+  g_verifier_format_override_for_test = format;
+}
+
+SandboxedUnpacker::ScopedVerifierFormatOverrideForTest::
+    ~ScopedVerifierFormatOverrideForTest() {
+  g_verifier_format_override_for_test.reset();
 }
 
 SandboxedUnpacker::SandboxedUnpacker(
@@ -295,7 +308,8 @@ void SandboxedUnpacker::StartWithCrx(const CRXFileInfo& crx_info) {
 
   // Extract the public key and validate the package.
   if (!ValidateSignature(crx_info.path, expected_hash,
-                         crx_info.required_format))
+                         g_verifier_format_override_for_test.value_or(
+                             crx_info.required_format)))
     return;  // ValidateSignature() already reported the error.
 
   // Copy the crx file into our working directory.
@@ -688,19 +702,26 @@ void SandboxedUnpacker::IndexAndPersistJSONRulesetIfNeeded(
     return;
   }
 
-  declarative_net_request::IndexAndPersistRules(
+  auto ruleset_source =
+      declarative_net_request::RulesetSource::CreateStatic(*extension_);
+  ruleset_source.IndexAndPersistJSONRuleset(
       connector_.get(), *data_decoder_service_filter_.instance_id(),
-      declarative_net_request::RulesetSource::Create(*extension_),
       base::BindOnce(&SandboxedUnpacker::OnJSONRulesetIndexed, this,
                      std::move(manifest)));
 }
 
 void SandboxedUnpacker::OnJSONRulesetIndexed(
     std::unique_ptr<base::DictionaryValue> manifest,
-    declarative_net_request::IndexAndPersistRulesResult result) {
+    declarative_net_request::IndexAndPersistJSONRulesetResult result) {
   if (result.success) {
     if (!result.warnings.empty())
       extension_->AddInstallWarnings(std::move(result.warnings));
+    UMA_HISTOGRAM_COUNTS_100000(
+        declarative_net_request::kManifestRulesCountHistogram,
+        result.rules_count);
+    UMA_HISTOGRAM_TIMES(
+        declarative_net_request::kIndexAndPersistRulesTimeHistogram,
+        result.index_and_persist_time);
     ReportSuccess(std::move(manifest), result.ruleset_checksum);
     return;
   }

@@ -37,7 +37,8 @@ component("lib") {
     "//chromeos/audio",
     "//chromeos/constants",
     "//chromeos/dbus",
-    "//chromeos/dbus:power_manager_proto",
+    "//chromeos/dbus/power",
+    "//chromeos/dbus/power:power_manager_proto",
     "//components/account_id",
     "//services/device/public/mojom",
     "//services/identity/public/mojom",
@@ -119,6 +120,10 @@ component("lib") {
     ]
 
     libs = [ "$root_out_dir/libassistant.so" ]
+
+    data = [
+      "$root_out_dir/libassistant.so",
+    ]
   }
 }
 
@@ -129,6 +134,7 @@ source_set("tests") {
     "//base",
     "//base/test:test_support",
     "//chromeos/dbus:test_support",
+    "//chromeos/dbus/power",
     "//chromeos/services/assistant/public/mojom",
     "//mojo/public/cpp/bindings:bindings",
     "//services/device/public/mojom",

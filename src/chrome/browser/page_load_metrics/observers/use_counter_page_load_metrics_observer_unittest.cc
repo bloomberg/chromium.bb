@@ -169,7 +169,7 @@ TEST_F(UseCounterPageLoadMetricsObserverTest, CountDuplicatedFeatures) {
 }
 
 TEST_F(UseCounterPageLoadMetricsObserverTest, RecordCSSProperties) {
-  // CSSPropertyFont (5), CSSPropertyZoom (19)
+  // CSSPropertyID::kFont (5), CSSPropertyID::kZoom (19)
   page_load_metrics::mojom::PageLoadFeatures page_load_features_0;
   page_load_metrics::mojom::PageLoadFeatures page_load_features_1;
   page_load_features_0.css_properties = {5, 19};
@@ -178,7 +178,7 @@ TEST_F(UseCounterPageLoadMetricsObserverTest, RecordCSSProperties) {
 }
 
 TEST_F(UseCounterPageLoadMetricsObserverTest, RecordAnimatedCSSProperties) {
-  // CSSPropertyFont (5), CSSPropertyZoom (19)
+  // CSSPropertyID::kFont (5), CSSPropertyID::kZoom (19)
   page_load_metrics::mojom::PageLoadFeatures page_load_features_0;
   page_load_metrics::mojom::PageLoadFeatures page_load_features_1;
   page_load_features_0.css_properties = {5, 19};

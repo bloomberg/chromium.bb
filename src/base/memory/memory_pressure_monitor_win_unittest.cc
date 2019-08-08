@@ -204,8 +204,8 @@ TEST_F(WinMemoryPressureMonitorTest, CheckMemoryPressure) {
   // Large-memory.
   testing::StrictMock<TestMemoryPressureMonitor> monitor(true);
   MemoryPressureListener listener(
-      base::Bind(&TestMemoryPressureMonitor::OnMemoryPressure,
-                 base::Unretained(&monitor)));
+      base::BindRepeating(&TestMemoryPressureMonitor::OnMemoryPressure,
+                          base::Unretained(&monitor)));
 
   // Checking the memory pressure at 0% load should not produce any
   // events.

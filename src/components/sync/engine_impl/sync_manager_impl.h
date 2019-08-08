@@ -96,7 +96,6 @@ class SyncManagerImpl
   ModelTypeConnector* GetModelTypeConnector() override;
   std::unique_ptr<ModelTypeConnector> GetModelTypeConnectorProxy() override;
   const std::string cache_guid() override;
-  bool ReceivedExperiment(Experiments* experiments) override;
   bool HasUnsyncedItemsForTest() override;
   SyncEncryptionHandler* GetEncryptionHandler() override;
   std::vector<std::unique_ptr<ProtocolEvent>> GetBufferedProtocolEvents()
@@ -173,8 +172,6 @@ class SyncManagerImpl
   void NudgeForRefresh(ModelType type) override;
 
   const SyncScheduler* scheduler() const;
-
-  bool GetHasInvalidAuthTokenForTest() const;
 
  protected:
   // Helper functions.  Virtual for testing.

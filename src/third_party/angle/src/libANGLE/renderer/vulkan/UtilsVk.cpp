@@ -18,6 +18,7 @@ namespace rx
 
 namespace BufferUtils_comp   = vk::InternalShader::BufferUtils_comp;
 namespace ConvertVertex_comp = vk::InternalShader::ConvertVertex_comp;
+namespace ImageClear_frag    = vk::InternalShader::ImageClear_frag;
 namespace ImageCopy_frag     = vk::InternalShader::ImageCopy_frag;
 
 namespace
@@ -117,6 +118,25 @@ uint32_t GetConvertVertexFlags(const UtilsVk::ConvertVertexParameters &params)
     return flags;
 }
 
+uint32_t GetImageClearFlags(const angle::Format &format, uint32_t attachmentIndex)
+{
+    constexpr uint32_t kAttachmentFlagStep =
+        ImageClear_frag::kAttachment1 - ImageClear_frag::kAttachment0;
+
+    static_assert(gl::IMPLEMENTATION_MAX_DRAW_BUFFERS == 8,
+                  "ImageClear shader assumes maximum 8 draw buffers");
+    static_assert(
+        ImageClear_frag::kAttachment0 + 7 * kAttachmentFlagStep == ImageClear_frag::kAttachment7,
+        "ImageClear AttachmentN flag calculation needs correction");
+
+    uint32_t flags = ImageClear_frag::kAttachment0 + attachmentIndex * kAttachmentFlagStep;
+
+    flags |= format.isInt()
+                 ? ImageClear_frag::kIsInt
+                 : format.isUint() ? ImageClear_frag::kIsUint : ImageClear_frag::kIsFloat;
+
+    return flags;
+}
 uint32_t GetImageCopyFlags(const vk::Format &srcFormat, const vk::Format &destFormat)
 {
     const angle::Format &srcAngleFormat  = srcFormat.angleFormat();
@@ -139,7 +159,7 @@ uint32_t GetFormatDefaultChannelMask(const vk::Format &format)
     uint32_t mask = 0;
 
     const angle::Format &angleFormat   = format.angleFormat();
-    const angle::Format &textureFormat = format.textureFormat();
+    const angle::Format &textureFormat = format.imageFormat();
 
     // Red can never be introduced due to format emulation (except for luma which is handled
     // especially)
@@ -180,7 +200,11 @@ void UtilsVk::destroy(VkDevice device)
     {
         program.destroy(device);
     }
-    mImageClearProgram.destroy(device);
+    mImageClearProgramVSOnly.destroy(device);
+    for (vk::ShaderProgramHelper &program : mImageClearProgram)
+    {
+        program.destroy(device);
+    }
     for (vk::ShaderProgramHelper &program : mImageCopyPrograms)
     {
         program.destroy(device);
@@ -316,8 +340,6 @@ angle::Result UtilsVk::setupProgram(vk::Context *context,
     RendererVk *renderer = context->getRenderer();
 
     bool isCompute = function >= Function::ComputeStartIndex;
-    VkPipelineBindPoint bindPoint =
-        isCompute ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS;
     VkShaderStageFlags pushConstantsShaderStage =
         isCompute ? VK_SHADER_STAGE_COMPUTE_BIT : VK_SHADER_STAGE_FRAGMENT_BIT;
 
@@ -335,12 +357,19 @@ angle::Result UtilsVk::setupProgram(vk::Context *context,
         program->setShader(gl::ShaderType::Compute, fsCsShader);
         ANGLE_TRY(program->getComputePipeline(context, pipelineLayout.get(), &pipelineAndSerial));
         pipelineAndSerial->updateSerial(serial);
-        commandBuffer->bindPipeline(bindPoint, pipelineAndSerial->get());
+        commandBuffer->bindComputePipeline(pipelineAndSerial->get());
+        if (descriptorSet != VK_NULL_HANDLE)
+        {
+            commandBuffer->bindComputeDescriptorSets(pipelineLayout.get(), &descriptorSet);
+        }
     }
     else
     {
         program->setShader(gl::ShaderType::Vertex, vsShader);
-        program->setShader(gl::ShaderType::Fragment, fsCsShader);
+        if (fsCsShader)
+        {
+            program->setShader(gl::ShaderType::Fragment, fsCsShader);
+        }
 
         // This value is not used but is passed to getGraphicsPipeline to avoid a nullptr check.
         const vk::GraphicsPipelineDesc *descPtr;
@@ -350,13 +379,12 @@ angle::Result UtilsVk::setupProgram(vk::Context *context,
             context, &renderer->getRenderPassCache(), renderer->getPipelineCache(), serial,
             pipelineLayout.get(), *pipelineDesc, gl::AttributesMask(), &descPtr, &helper));
         helper->updateSerial(serial);
-        commandBuffer->bindPipeline(bindPoint, helper->getPipeline());
-    }
-
-    if (descriptorSet != VK_NULL_HANDLE)
-    {
-        commandBuffer->bindDescriptorSets(bindPoint, pipelineLayout.get(), 0, 1, &descriptorSet, 0,
-                                          nullptr);
+        commandBuffer->bindGraphicsPipeline(helper->getPipeline());
+        if (descriptorSet != VK_NULL_HANDLE)
+        {
+            commandBuffer->bindGraphicsDescriptorSets(pipelineLayout.get(), 0, 1, &descriptorSet, 0,
+                                                      nullptr);
+        }
     }
 
     commandBuffer->pushConstants(pipelineLayout.get(), pushConstantsShaderStage, 0,
@@ -580,14 +608,15 @@ angle::Result UtilsVk::startRenderPass(ContextVk *contextVk,
 {
     RendererVk *renderer = contextVk->getRenderer();
 
-    vk::RenderPass *renderPass = nullptr;
-    ANGLE_TRY(renderer->getCompatibleRenderPass(contextVk, renderPassDesc, &renderPass));
+    vk::RenderPass *compatibleRenderPass = nullptr;
+    ANGLE_TRY(renderer->getCompatibleRenderPass(contextVk, renderPassDesc, &compatibleRenderPass));
 
     VkFramebufferCreateInfo framebufferInfo = {};
 
+    // Minimize the framebuffer coverage to only cover up to the render area.
     framebufferInfo.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
     framebufferInfo.flags           = 0;
-    framebufferInfo.renderPass      = renderPass->getHandle();
+    framebufferInfo.renderPass      = compatibleRenderPass->getHandle();
     framebufferInfo.attachmentCount = 1;
     framebufferInfo.pAttachments    = imageView->ptr();
     framebufferInfo.width           = renderArea.x + renderArea.width;
@@ -597,69 +626,93 @@ angle::Result UtilsVk::startRenderPass(ContextVk *contextVk,
     vk::Framebuffer framebuffer;
     ANGLE_VK_TRY(contextVk, framebuffer.init(contextVk->getDevice(), framebufferInfo));
 
-    // TODO(jmadill): Proper clear value implementation. http://anglebug.com/2361
+    vk::AttachmentOpsArray renderPassAttachmentOps;
     std::vector<VkClearValue> clearValues = {{}};
     ASSERT(clearValues.size() == 1);
 
+    renderPassAttachmentOps.initWithLoadStore(0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                              VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
     ANGLE_TRY(image->beginRenderPass(contextVk, framebuffer, renderArea, renderPassDesc,
-                                     clearValues, commandBufferOut));
+                                     renderPassAttachmentOps, clearValues, commandBufferOut));
 
     renderer->releaseObject(renderer->getCurrentQueueSerial(), &framebuffer);
 
     return angle::Result::Continue;
 }
 
-angle::Result UtilsVk::clearImage(ContextVk *contextVk,
-                                  FramebufferVk *framebuffer,
-                                  const ClearImageParameters &params)
+angle::Result UtilsVk::clearFramebuffer(ContextVk *contextVk,
+                                        FramebufferVk *framebuffer,
+                                        const ClearFramebufferParameters &params)
 {
     RendererVk *renderer = contextVk->getRenderer();
 
     ANGLE_TRY(ensureImageClearResourcesInitialized(contextVk));
 
+    const gl::Rectangle &scissoredRenderArea = params.clearArea;
+
     vk::CommandBuffer *commandBuffer;
-    if (!framebuffer->appendToStartedRenderPass(renderer->getCurrentQueueSerial(), &commandBuffer))
+    if (!framebuffer->appendToStartedRenderPass(renderer->getCurrentQueueSerial(),
+                                                scissoredRenderArea, &commandBuffer))
     {
-        ANGLE_TRY(framebuffer->startNewRenderPass(contextVk, &commandBuffer));
+        ANGLE_TRY(framebuffer->startNewRenderPass(contextVk, scissoredRenderArea, &commandBuffer));
     }
 
     ImageClearShaderParams shaderParams;
-    shaderParams.clearValue = params.clearValue;
+    shaderParams.clearValue = params.colorClearValue;
 
     vk::GraphicsPipelineDesc pipelineDesc;
     pipelineDesc.initDefaults();
-    pipelineDesc.setColorWriteMask(params.colorMaskFlags, *params.alphaMask);
+    pipelineDesc.setColorWriteMask(0, gl::DrawBufferMask());
+    pipelineDesc.setSingleColorWriteMask(params.colorAttachmentIndex, params.colorMaskFlags);
     pipelineDesc.setRenderPassDesc(*params.renderPassDesc);
+    // Note: depth test is disabled by default so this should be unnecessary, but works around an
+    // Intel bug on windows.  http://anglebug.com/3348
+    pipelineDesc.setDepthWriteEnabled(false);
 
-    const gl::Rectangle &renderArea = framebuffer->getFramebuffer()->getRenderPassRenderArea();
-    bool invertViewport             = contextVk->isViewportFlipEnabledForDrawFBO();
+    // Clear stencil by enabling stencil write with the right mask.
+    if (params.clearStencil)
+    {
+        const uint8_t compareMask       = 0xFF;
+        const uint8_t clearStencilValue = params.stencilClearValue;
+
+        pipelineDesc.setStencilTestEnabled(true);
+        pipelineDesc.setStencilFrontFuncs(clearStencilValue, VK_COMPARE_OP_ALWAYS, compareMask);
+        pipelineDesc.setStencilBackFuncs(clearStencilValue, VK_COMPARE_OP_ALWAYS, compareMask);
+        pipelineDesc.setStencilFrontOps(VK_STENCIL_OP_REPLACE, VK_STENCIL_OP_REPLACE,
+                                        VK_STENCIL_OP_REPLACE);
+        pipelineDesc.setStencilBackOps(VK_STENCIL_OP_REPLACE, VK_STENCIL_OP_REPLACE,
+                                       VK_STENCIL_OP_REPLACE);
+        pipelineDesc.setStencilFrontWriteMask(params.stencilMask);
+        pipelineDesc.setStencilBackWriteMask(params.stencilMask);
+    }
 
     VkViewport viewport;
-    gl_vk::GetViewport(renderArea, 0.0f, 1.0f, invertViewport, params.renderAreaHeight, &viewport);
+    gl::Rectangle completeRenderArea = framebuffer->getCompleteRenderArea();
+    bool invertViewport              = contextVk->isViewportFlipEnabledForDrawFBO();
+    gl_vk::GetViewport(completeRenderArea, 0.0f, 1.0f, invertViewport, params.renderAreaHeight,
+                       &viewport);
     pipelineDesc.setViewport(viewport);
 
-    VkRect2D scissor;
-    const gl::State &glState = contextVk->getState();
-    gl_vk::GetScissor(glState, invertViewport, renderArea, &scissor);
-    // TODO(courtneygo): workaround for scissor issue on some devices. http://anglebug.com/3114
-    if ((scissor.extent.width == 0) || (scissor.extent.height == 0))
-    {
-        return angle::Result::Continue;
-    }
-    pipelineDesc.setScissor(scissor);
+    pipelineDesc.setScissor(gl_vk::GetRect(params.clearArea));
 
     vk::ShaderLibrary &shaderLibrary                    = renderer->getShaderLibrary();
     vk::RefCounted<vk::ShaderAndSerial> *vertexShader   = nullptr;
     vk::RefCounted<vk::ShaderAndSerial> *fragmentShader = nullptr;
+    vk::ShaderProgramHelper *imageClearProgram          = &mImageClearProgramVSOnly;
+
     ANGLE_TRY(shaderLibrary.getFullScreenQuad_vert(contextVk, 0, &vertexShader));
-    ANGLE_TRY(shaderLibrary.getImageClear_frag(contextVk, 0, &fragmentShader));
+    if (params.clearColor)
+    {
+        uint32_t flags = GetImageClearFlags(*params.colorFormat, params.colorAttachmentIndex);
+        ANGLE_TRY(shaderLibrary.getImageClear_frag(contextVk, flags, &fragmentShader));
+        imageClearProgram = &mImageClearProgram[flags];
+    }
 
     ANGLE_TRY(setupProgram(contextVk, Function::ImageClear, fragmentShader, vertexShader,
-                           &mImageClearProgram, &pipelineDesc, VK_NULL_HANDLE, &shaderParams,
+                           imageClearProgram, &pipelineDesc, VK_NULL_HANDLE, &shaderParams,
                            sizeof(shaderParams), commandBuffer));
-
-    commandBuffer->draw(6, 1, 0, 0);
-
+    commandBuffer->draw(6, 0);
     return angle::Result::Continue;
 }
 
@@ -783,12 +836,23 @@ angle::Result UtilsVk::copyImage(ContextVk *contextVk,
     ANGLE_TRY(setupProgram(contextVk, Function::ImageCopy, fragmentShader, vertexShader,
                            &mImageCopyPrograms[flags], &pipelineDesc, descriptorSet, &shaderParams,
                            sizeof(shaderParams), commandBuffer));
-
-    commandBuffer->draw(6, 1, 0, 0);
-
+    commandBuffer->draw(6, 0);
     descriptorPoolBinding.reset();
 
     return angle::Result::Continue;
 }
+
+UtilsVk::ClearFramebufferParameters::ClearFramebufferParameters()
+    : renderPassDesc(nullptr),
+      renderAreaHeight(0),
+      clearColor(false),
+      clearStencil(false),
+      stencilMask(0),
+      colorMaskFlags(0),
+      colorAttachmentIndex(0),
+      colorFormat(nullptr),
+      colorClearValue{},
+      stencilClearValue(0)
+{}
 
 }  // namespace rx

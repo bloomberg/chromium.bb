@@ -16,10 +16,9 @@ namespace features {
 // https://crbug.com/709824.
 ASH_PUBLIC_EXPORT extern const base::Feature kDockedMagnifier;
 
-// Enables dragging one or more tabs out of a browser window in tablet mode.
-// TODO(xdai): Remove this after the feature is launched.
-// https://crbug.com/823769.
-ASH_PUBLIC_EXPORT extern const base::Feature kDragTabsInTabletMode;
+// Enables dragging and snapping an overview window in clamshell mode.
+// TODO(crbug.com/890029): Remove this when the feature is fully launched.
+ASH_PUBLIC_EXPORT extern const base::Feature kDragToSnapInClamshellMode;
 
 // Enables rounded corners in overview mode for testing.
 // TODO(crbug.com/903486): Remove this when new rounded corners implementation
@@ -37,6 +36,12 @@ ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenInlineReply;
 // screen. This option is effective when |kLockScreenNotification| is enabled.
 ASH_PUBLIC_EXPORT extern const base::Feature
     kLockScreenHideSensitiveNotificationsSupport;
+
+// Enables hiding of ARC media notifications. If this is enabled, all ARC
+// notifications that are of the media type will not be shown. This
+// is because they will be replaced by native media session notifications.
+// TODO(beccahughes): Remove after launch. (https://crbug.com/897836)
+ASH_PUBLIC_EXPORT extern const base::Feature kHideArcMediaNotifications;
 
 // Enables the media session notification. If this is enabled, we will show
 // a notification that shows the currently playing media with controls.
@@ -80,8 +85,14 @@ ASH_PUBLIC_EXPORT extern const base::Feature kUseBluetoothSystemInAsh;
 // Enables the Supervised User Deprecation notices.
 ASH_PUBLIC_EXPORT extern const base::Feature kSupervisedUserDeprecationNotice;
 
+// Uses fragment shader for all the rounded corners instead of mask layer. This
+// improves memory performance by avoiding render surfaces where ever possible.
+ASH_PUBLIC_EXPORT extern const base::Feature kUseShaderRoundedCorner;
+
 // Enables the notification stacking bar redesigned UI.
 ASH_PUBLIC_EXPORT extern const base::Feature kNotificationStackingBarRedesign;
+
+ASH_PUBLIC_EXPORT bool IsHideArcMediaNotificationsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerAppEnabled();
 
@@ -106,6 +117,8 @@ ASH_PUBLIC_EXPORT bool IsViewsLoginEnabled();
 ASH_PUBLIC_EXPORT bool IsVirtualDesksEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSupervisedUserDeprecationNoticeEnabled();
+
+ASH_PUBLIC_EXPORT bool ShouldUseShaderRoundedCorner();
 
 ASH_PUBLIC_EXPORT bool IsNotificationStackingBarRedesignEnabled();
 

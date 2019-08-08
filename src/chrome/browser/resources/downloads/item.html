@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://downloads/i18n_setup.html">
 <link rel="import" href="chrome://downloads/icon_loader.html">
 <link rel="import" href="chrome://downloads/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
@@ -18,7 +19,6 @@
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 
@@ -243,23 +243,11 @@
         color: var(--controlled-by-active-link-color);
       }
 
-      #remove-wrapper {
-        align-self: flex-start;
-        margin: 0;
-      }
 
-      #remove-wrapper > paper-icon-button-light {
-        --cr-icon-size: 16px;
-        color: var(--google-grey-refresh-700);
-        height: 32px;
-        margin-inline-end: 8px;
-        margin-inline-start: 0;
+      cr-icon-button {
+        --cr-icon-button-icon-size: 16px;
+        --cr-icon-button-margin-end: 8px;
         margin-top: 8px;
-        width: 32px;
-      }
-
-      :host-context([dark]) #remove-wrapper > paper-icon-button-light {
-        color: var(--google-grey-refresh-500);
       }
 
       #incognito {
@@ -283,9 +271,9 @@
       }
     </style>
 
-    <h3 id="date">[[computeDate_(data.hideDate,
-                                 data.sinceString,
-                                 data.dateString)]]</h3>
+    <div id="date">[[computeDate_(data.hideDate,
+        data.sinceString,
+        data.dateString)]]</div>
 
     <div id="content" on-dragstart="onDragStart_"
         class$="[[computeClass_(isActive_, isDangerous_, showProgress_)]]"
@@ -376,18 +364,12 @@
           </div>
         </template>
       </div>
-
-      <div id="remove-wrapper" class="icon-wrapper ">
-        <paper-icon-button-light class="icon-clear"
-            style$="[[computeRemoveStyle_(isDangerous_, showCancel_)]]">
-          <button id="remove"
-              title="$i18n{controlRemoveFromList}"
-              aria-label$="[[controlRemoveFromListAriaLabel_]]"
-              on-click="onRemoveTap_" focus-row-control focus-type="remove">
-          </button>
-        </paper-icon-button-light>
-      </div>
-
+      <cr-icon-button class="icon-clear"
+          style$="[[computeRemoveStyle_(isDangerous_, showCancel_)]]"
+          id="remove" title="$i18n{controlRemoveFromList}"
+          aria-label$="[[controlRemoveFromListAriaLabel_]]"
+          on-click="onRemoveTap_" focus-row-control focus-type="remove">
+      </cr-icon-button>
       <div id="incognito" title="$i18n{inIncognito}" hidden="[[!data.otr]]">
       </div>
     </div>

@@ -150,9 +150,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
   void OnWindowAddedToRootWindow(aura::Window* window) override;
   void OnWindowRemovingFromRootWindow(aura::Window* window,
                                       aura::Window* new_root) override;
-  void OnWillMoveWindowToDisplay(aura::Window* window,
-                                 int64_t new_display_id) override;
-  void OnDidMoveWindowToDisplay(aura::Window* window) override;
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
 
   // aura::WindowTreeHostObserver:
@@ -178,14 +175,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
 
   std::unique_ptr<aura::ClientSurfaceEmbedder> client_surface_embedder_;
 
-  // Set to true in OnWillMoveWindowToDisplay() and false in
-  // OnDidMoveWindowToDisplay().
+  // Set to true in OnWindowRemovingFromRootWindow() when |window_| is moving
+  // to a new root window and reset to false in OnWindowAddedToRootWindow().
   bool is_moving_across_displays_ = false;
-
-  // Set to true if the bounds changes between the time
-  // OnWillMoveWindowToDisplay() is called and OnDidMoveWindowToDisplay() is
-  // called.
-  bool display_move_changed_bounds_ = false;
 
   // Used for non-top-levels to watch for changes in screen coordinates.
   std::unique_ptr<aura_extra::WindowPositionInRootMonitor>

@@ -46,16 +46,17 @@ public class PermissionNavigationTest {
      *
      * @throws Exception
      */
+    @Test
     // @MediumTest
     // @Feature({"Permissions"})
-    @Test
     @CommandLineFlags.Add("enable-features=" + PermissionTestRule.MODAL_FLAG)
     // Flaky on official bots, https://crbug.com/699851#c8
     @DisabledTest
     public void testNavigationDismissesModalPermissionPrompt() throws Exception {
         mPermissionRule.setUpUrl(TEST_FILE);
         mPermissionRule.runJavaScriptCodeInCurrentTab("requestGeolocationPermission()");
-        DialogShownCriteria criteriaShown = new DialogShownCriteria("Dialog not shown", true);
+        DialogShownCriteria criteriaShown = new DialogShownCriteria(
+                mPermissionRule.getActivity().getModalDialogManager(), "Dialog not shown", true);
         CriteriaHelper.pollUiThread(criteriaShown);
 
         mPermissionRule.runJavaScriptCodeInCurrentTab("navigate()");
@@ -72,7 +73,8 @@ public class PermissionNavigationTest {
         callbackHelper.waitForCallback(0);
         tab.removeObserver(navigationWaiter);
 
-        DialogShownCriteria criteriaNotShown = new DialogShownCriteria("Dialog shown", false);
+        DialogShownCriteria criteriaNotShown = new DialogShownCriteria(
+                mPermissionRule.getActivity().getModalDialogManager(), "Dialog shown", false);
         CriteriaHelper.pollUiThread(criteriaNotShown);
     }
 }

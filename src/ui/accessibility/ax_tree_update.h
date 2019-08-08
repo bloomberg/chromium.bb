@@ -90,12 +90,11 @@ std::string AXTreeUpdateBase<AXNodeData, AXTreeData>::ToString() const {
 
   if (node_id_to_clear != 0) {
     result += "AXTreeUpdate: clear node " +
-        base::IntToString(node_id_to_clear) + "\n";
+              base::NumberToString(node_id_to_clear) + "\n";
   }
 
   if (root_id != 0) {
-    result += "AXTreeUpdate: root id " +
-        base::IntToString(root_id) + "\n";
+    result += "AXTreeUpdate: root id " + base::NumberToString(root_id) + "\n";
   }
 
   // The challenge here is that we want to indent the nodes being updated

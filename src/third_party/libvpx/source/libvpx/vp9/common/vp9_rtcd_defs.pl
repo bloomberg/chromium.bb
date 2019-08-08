@@ -134,14 +134,10 @@ specialize qw/vp9_quantize_fp neon sse2 avx2 vsx/, "$ssse3_x86_64";
 add_proto qw/void vp9_quantize_fp_32x32/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *round_ptr, const int16_t *quant_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan";
 specialize qw/vp9_quantize_fp_32x32 neon vsx/, "$ssse3_x86_64";
 
-add_proto qw/void vp9_fdct8x8_quant/, "const int16_t *input, int stride, tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *round_ptr, const int16_t *quant_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan";
-
 if (vpx_config("CONFIG_VP9_HIGHBITDEPTH") eq "yes") {
   specialize qw/vp9_block_error avx2 sse2/;
 
   specialize qw/vp9_block_error_fp avx2 sse2/;
-
-  specialize qw/vp9_fdct8x8_quant sse2 ssse3 neon/;
 
   add_proto qw/int64_t vp9_highbd_block_error/, "const tran_low_t *coeff, const tran_low_t *dqcoeff, intptr_t block_size, int64_t *ssz, int bd";
   specialize qw/vp9_highbd_block_error sse2/;
@@ -149,8 +145,6 @@ if (vpx_config("CONFIG_VP9_HIGHBITDEPTH") eq "yes") {
   specialize qw/vp9_block_error avx2 msa sse2/;
 
   specialize qw/vp9_block_error_fp neon avx2 sse2/;
-
-  specialize qw/vp9_fdct8x8_quant sse2 ssse3 neon/;
 }
 
 # fdct functions
@@ -192,6 +186,7 @@ specialize qw/vp9_apply_temporal_filter sse4_1/;
 
   if (vpx_config("CONFIG_VP9_HIGHBITDEPTH") eq "yes") {
     add_proto qw/void vp9_highbd_apply_temporal_filter/, "const uint16_t *y_src, int y_src_stride, const uint16_t *y_pre, int y_pre_stride, const uint16_t *u_src, const uint16_t *v_src, int uv_src_stride, const uint16_t *u_pre, const uint16_t *v_pre, int uv_pre_stride, unsigned int block_width, unsigned int block_height, int ss_x, int ss_y, int strength, const int *const blk_fw, int use_32x32, uint32_t *y_accum, uint16_t *y_count, uint32_t *u_accum, uint16_t *u_count, uint32_t *v_accum, uint16_t *v_count";
+    specialize qw/vp9_highbd_apply_temporal_filter sse4_1/;
   }
 }
 

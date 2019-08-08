@@ -28,84 +28,10 @@
 #include "third_party/blink/renderer/core/style/style_inherited_variables.h"
 #include "third_party/blink/renderer/core/style/style_non_inherited_variables.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
-#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
-
-namespace {
-
-CSSParserToken ResolveUrl(const CSSParserToken& token,
-                          Vector<String>& backing_strings,
-                          const String& base_url,
-                          WTF::TextEncoding charset) {
-  DCHECK(token.GetType() == kUrlToken || token.GetType() == kStringToken);
-
-  StringView string_view = token.Value();
-
-  if (string_view.IsNull())
-    return token;
-
-  String relative_url = string_view.ToString();
-  KURL base = !base_url.IsNull() ? KURL(base_url) : KURL();
-  KURL absolute_url = charset.IsValid() ? KURL(base, relative_url, charset)
-                                        : KURL(base, relative_url);
-
-  backing_strings.push_back(absolute_url.GetString());
-
-  return token.CopyWithUpdatedString(StringView(backing_strings.back()));
-}
-
-// Rewrites (in-place) kUrlTokens and kFunctionToken/CSSValueUrls to contain
-// absolute URLs.
-void ResolveRelativeUrls(Vector<CSSParserToken>& tokens,
-                         Vector<String>& backing_strings,
-                         const String& base_url,
-                         const WTF::TextEncoding& charset) {
-  CSSParserToken* token = tokens.begin();
-  CSSParserToken* end = tokens.end();
-
-  while (token < end) {
-    if (token->GetType() == kUrlToken) {
-      *token = ResolveUrl(*token, backing_strings, base_url, charset);
-    } else if (token->FunctionId() == CSSValueUrl) {
-      if (token + 1 < end && token[1].GetType() == kStringToken)
-        token[1] = ResolveUrl(token[1], backing_strings, base_url, charset);
-    }
-    ++token;
-  }
-}
-
-// Registered properties need to substitute as absolute values. This means
-// that 'em' units (for instance) are converted to 'px ' and calc()-expressions
-// are resolved. This function creates new tokens equivalent to the computed
-// value of the registered property.
-//
-// This is necessary to make things like font-relative units in inherited
-// (and registered) custom properties work correctly.
-scoped_refptr<CSSVariableData> ComputedVariableData(
-    const CSSVariableData& variable_data,
-    const CSSValue& computed_value) {
-  String text = computed_value.CssText();
-
-  CSSTokenizer tokenizer(text);
-  Vector<CSSParserToken> tokens;
-  tokens.AppendVector(tokenizer.TokenizeToEOF());
-
-  Vector<String> backing_strings;
-  backing_strings.push_back(text);
-
-  const bool has_font_units = false;
-  const bool has_root_font_units = false;
-  const bool absolutized = true;
-
-  return CSSVariableData::CreateResolved(
-      tokens, std::move(backing_strings), variable_data.IsAnimationTainted(),
-      has_font_units, has_root_font_units, absolutized);
-}
-
-}  // namespace
 
 CSSVariableResolver::Fallback CSSVariableResolver::ResolveFallback(
     CSSParserTokenRange range,
@@ -120,12 +46,14 @@ CSSVariableResolver::Fallback CSSVariableResolver::ResolveFallback(
   if (!ResolveTokenRange(range, options, result))
     return Fallback::kFail;
   if (registration) {
-    CSSParserTokenRange range(result.tokens);
-    range = range.MakeSubRange(&range.Peek(first_fallback_token), range.end());
+    CSSParserTokenRange resolved_range(result.tokens);
+    resolved_range = resolved_range.MakeSubRange(
+        &resolved_range.Peek(first_fallback_token), resolved_range.end());
     const CSSParserContext* context =
         StrictCSSParserContext(state_.GetDocument().GetSecureContextMode());
     const bool is_animation_tainted = false;
-    if (!registration->Syntax().Parse(range, context, is_animation_tainted))
+    if (!registration->Syntax().Parse(resolved_range, context,
+                                      is_animation_tainted))
       return Fallback::kFail;
   }
   return Fallback::kSuccess;
@@ -208,23 +136,29 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
 
   DCHECK(!!resolved_data == !!resolved_value);
 
-  // If so enabled by options, and the resolved_data isn't absolutized already
-  // (which is the case when resolved_data was inherited from the parent style),
-  // perform absolutization now.
-  if (options.absolutize) {
-    if (resolved_value && !resolved_data->IsAbsolutized()) {
-      resolved_value = &StyleBuilderConverter::ConvertRegisteredPropertyValue(
-          state_, *resolved_value);
-      resolved_data =
-          ComputedVariableData(*resolved_data.get(), *resolved_value);
-    }
-    if (resolved_data != variable_data)
-      SetVariable(name, registration, resolved_data);
+  // Registered custom properties substitute as token sequences equivalent to
+  // their computed values. CSSVariableData instances which represent such token
+  // sequences are called "absolutized".
+  if (resolved_value && !resolved_data->IsAbsolutized()) {
+    resolved_value = &StyleBuilderConverter::ConvertRegisteredPropertyValue(
+        state_, *resolved_value, resolved_data->BaseURL(),
+        resolved_data->Charset());
+    resolved_data =
+        StyleBuilderConverter::ConvertRegisteredPropertyVariableData(
+            *resolved_value, resolved_data->IsAnimationTainted());
+    DCHECK(resolved_data->IsAbsolutized());
   }
 
-  // Even if options.absolutize=false, we store the resolved_value if we
-  // parsed it. This is required to calculate the animations update before
-  // the absolutization pass.
+  // If options.absolutize=false, we want to keep the original (non-absolute)
+  // token sequence to retain any var()-references. This makes it possible to
+  // resolve the var()-reference again, using a different (e.g. animated) value.
+  if (options.absolutize && resolved_data != variable_data)
+    SetVariable(name, registration, resolved_data);
+
+  // The options.absolutize flag does not apply to the computed value, only
+  // to the tokens used for substitution. Hence, store the computed value on
+  // ComputedStyle, regardless of the flag. This is needed to correctly
+  // calculate animations.
   if (value != resolved_value)
     SetRegisteredVariable(name, *registration, resolved_value);
 
@@ -239,9 +173,8 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
     AtomicString name,
     const CSSVariableData& variable_data,
     const Options& options,
-    bool resolve_urls,
     bool& cycle_detected) {
-  DCHECK(variable_data.NeedsVariableResolution() || resolve_urls);
+  DCHECK(variable_data.NeedsVariableResolution());
 
   Result result;
   result.is_animation_tainted = variable_data.IsAnimationTainted();
@@ -262,15 +195,11 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
   }
   cycle_detected = false;
 
-  if (resolve_urls) {
-    ResolveRelativeUrls(result.tokens, result.backing_strings,
-                        variable_data.BaseURL(), variable_data.Charset());
-  }
-
   return CSSVariableData::CreateResolved(
       result.tokens, std::move(result.backing_strings),
       result.is_animation_tainted, result.has_font_units,
-      result.has_root_font_units, result.absolutized);
+      result.has_root_font_units, result.absolutized, variable_data.BaseURL(),
+      variable_data.Charset());
 }
 
 scoped_refptr<CSSVariableData>
@@ -280,21 +209,9 @@ CSSVariableResolver::ResolveCustomPropertyIfNeeded(
     const Options& options,
     bool& cycle_detected) {
   DCHECK(variable_data);
-  bool resolve_urls = ShouldResolveRelativeUrls(name, *variable_data);
-  if (!variable_data->NeedsVariableResolution() && !resolve_urls)
+  if (!variable_data->NeedsVariableResolution())
     return variable_data;
-  return ResolveCustomProperty(name, *variable_data, options, resolve_urls,
-                               cycle_detected);
-}
-
-bool CSSVariableResolver::ShouldResolveRelativeUrls(
-    const AtomicString& name,
-    const CSSVariableData& variable_data) {
-  if (!variable_data.NeedsUrlResolution())
-    return false;
-  const PropertyRegistration* registration =
-      registry_ ? registry_->Registration(name) : nullptr;
-  return registration ? registration->Syntax().HasUrlSyntax() : false;
+  return ResolveCustomProperty(name, *variable_data, options, cycle_detected);
 }
 
 bool CSSVariableResolver::IsVariableDisallowed(
@@ -413,6 +330,9 @@ bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
            Fallback::kSuccess;
   }
 
+  if (variable_data->Tokens().size() > kMaxSubstitutionTokens)
+    return false;
+
   result.tokens.AppendVector(variable_data->Tokens());
   // TODO(alancutter): Avoid adding backing strings multiple times in a row.
   result.backing_strings.AppendVector(variable_data->BackingStrings());
@@ -451,11 +371,11 @@ bool CSSVariableResolver::ResolveTokenRange(CSSParserTokenRange range,
   bool success = true;
   while (!range.AtEnd()) {
     const CSSParserToken& token = range.Peek();
-    if (token.FunctionId() == CSSValueVar ||
-        token.FunctionId() == CSSValueEnv) {
-      success &=
-          ResolveVariableReference(range.ConsumeBlock(), options,
-                                   token.FunctionId() == CSSValueEnv, result);
+    if (token.FunctionId() == CSSValueID::kVar ||
+        token.FunctionId() == CSSValueID::kEnv) {
+      success &= ResolveVariableReference(
+          range.ConsumeBlock(), options, token.FunctionId() == CSSValueID::kEnv,
+          result);
     } else {
       result.tokens.push_back(range.Consume());
     }
@@ -472,7 +392,7 @@ const CSSValue* CSSVariableResolver::ResolveVariableReferences(
   Options options;
   options.disallow_animation_tainted = disallow_animation_tainted;
 
-  if (id == CSSPropertyFontSize) {
+  if (id == CSSPropertyID::kFontSize) {
     bool is_root =
         state_.GetElement() &&
         state_.GetElement() == state_.GetDocument().documentElement();
@@ -480,14 +400,14 @@ const CSSValue* CSSVariableResolver::ResolveVariableReferences(
     options.disallow_registered_root_font_units = is_root;
   }
 
-  if (value.IsPendingSubstitutionValue()) {
-    return ResolvePendingSubstitutions(id, ToCSSPendingSubstitutionValue(value),
-                                       options);
+  if (auto* substition_value =
+          DynamicTo<cssvalue::CSSPendingSubstitutionValue>(value)) {
+    return ResolvePendingSubstitutions(id, *substition_value, options);
   }
 
-  if (value.IsVariableReferenceValue()) {
-    return ResolveVariableReferences(id, ToCSSVariableReferenceValue(value),
-                                     options);
+  if (auto* variable_reference_value =
+          DynamicTo<CSSVariableReferenceValue>(value)) {
+    return ResolveVariableReferences(id, *variable_reference_value, options);
   }
 
   NOTREACHED();
@@ -513,7 +433,7 @@ const CSSValue* CSSVariableResolver::ResolveVariableReferences(
 
 const CSSValue* CSSVariableResolver::ResolvePendingSubstitutions(
     CSSPropertyID id,
-    const CSSPendingSubstitutionValue& pending_value,
+    const cssvalue::CSSPendingSubstitutionValue& pending_value,
     const Options& options) {
   // Longhands from shorthand references follow this path.
   HeapHashMap<CSSPropertyID, Member<const CSSValue>>& property_cache =
@@ -565,8 +485,7 @@ CSSVariableResolver::ResolveCustomPropertyAnimationKeyframe(
     return nullptr;
   }
 
-  bool resolve_urls = false;
-  return ResolveCustomProperty(name, *keyframe.Value(), Options(), resolve_urls,
+  return ResolveCustomProperty(name, *keyframe.Value(), Options(),
                                cycle_detected);
 }
 

@@ -10,6 +10,8 @@
 
 #include "api/test/neteq_simulator_factory.h"
 
+#include <string>
+
 #include "absl/memory/memory.h"
 #include "modules/audio_coding/neteq/tools/neteq_test_factory.h"
 #include "rtc_base/checks.h"
@@ -43,10 +45,35 @@ std::unique_ptr<NetEqSimulator> NetEqSimulatorFactory::CreateSimulator(
   RTC_CHECK_EQ(argc, 3) << "Wrong number of input arguments. Expected 3, got "
                         << argc;
   // TODO(ivoc) Stop (ab)using command-line flags in this function.
+  const std::string output_audio_filename(argv[2]);
   NetEqTestFactory::Config config;
   config.replacement_audio_file = FLAG_replacement_audio_file;
   config.max_nr_packets_in_buffer = FLAG_max_nr_packets_in_buffer;
-  return factory_->InitializeTest(argv[1], argv[2], config);
+  config.output_audio_filename = output_audio_filename;
+  return factory_->InitializeTestFromFile(argv[1], config);
+}
+
+std::unique_ptr<NetEqSimulator> NetEqSimulatorFactory::CreateSimulatorFromFile(
+    absl::string_view event_log_filename,
+    absl::string_view replacement_audio_filename,
+    Config simulation_config) {
+  NetEqTestFactory::Config config;
+  config.replacement_audio_file = std::string(replacement_audio_filename);
+  config.max_nr_packets_in_buffer = simulation_config.max_nr_packets_in_buffer;
+  return factory_->InitializeTestFromFile(std::string(event_log_filename),
+                                          config);
+}
+
+std::unique_ptr<NetEqSimulator>
+NetEqSimulatorFactory::CreateSimulatorFromString(
+    absl::string_view event_log_file_contents,
+    absl::string_view replacement_audio_filename,
+    Config simulation_config) {
+  NetEqTestFactory::Config config;
+  config.replacement_audio_file = std::string(replacement_audio_filename);
+  config.max_nr_packets_in_buffer = simulation_config.max_nr_packets_in_buffer;
+  return factory_->InitializeTestFromString(
+      std::string(event_log_file_contents), config);
 }
 
 }  // namespace test

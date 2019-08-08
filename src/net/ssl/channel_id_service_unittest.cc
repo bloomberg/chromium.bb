@@ -44,7 +44,7 @@ class MockChannelIDStoreWithAsyncGet
     : public DefaultChannelIDStore {
  public:
   MockChannelIDStoreWithAsyncGet()
-      : DefaultChannelIDStore(NULL), channel_id_count_(0) {}
+      : DefaultChannelIDStore(nullptr), channel_id_count_(0) {}
 
   int GetChannelID(const std::string& server_identifier,
                    std::unique_ptr<crypto::ECPrivateKey>* key_result,
@@ -91,7 +91,7 @@ void MockChannelIDStoreWithAsyncGet::CallGetChannelIDCallbackWithResult(
 class ChannelIDServiceTest : public TestWithScopedTaskEnvironment {
  public:
   ChannelIDServiceTest()
-      : service_(new ChannelIDService(new DefaultChannelIDStore(NULL))) {}
+      : service_(new ChannelIDService(new DefaultChannelIDStore(nullptr))) {}
 
  protected:
   std::unique_ptr<ChannelIDService> service_;
@@ -137,17 +137,17 @@ TEST_F(ChannelIDServiceTest, CacheHit) {
   std::string host("encrypted.google.com");
 
   int error;
-  TestCompletionCallback callback;
+  TestCompletionCallback callback1;
   ChannelIDService::Request request;
 
   // Asynchronous completion.
   std::unique_ptr<crypto::ECPrivateKey> key1;
   EXPECT_EQ(0u, service_->channel_id_count());
-  error = service_->GetOrCreateChannelID(host, &key1, callback.callback(),
+  error = service_->GetOrCreateChannelID(host, &key1, callback1.callback(),
                                          &request);
   EXPECT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request.is_active());
-  error = callback.WaitForResult();
+  error = callback1.WaitForResult();
   EXPECT_THAT(error, IsOk());
   EXPECT_EQ(1u, service_->channel_id_count());
   EXPECT_TRUE(key1);
@@ -155,7 +155,8 @@ TEST_F(ChannelIDServiceTest, CacheHit) {
 
   // Synchronous completion.
   std::unique_ptr<crypto::ECPrivateKey> key2;
-  error = service_->GetOrCreateChannelID(host, &key2, callback.callback(),
+  TestCompletionCallback callback2;
+  error = service_->GetOrCreateChannelID(host, &key2, callback2.callback(),
                                          &request);
   EXPECT_FALSE(request.is_active());
   EXPECT_THAT(error, IsOk());
@@ -164,7 +165,8 @@ TEST_F(ChannelIDServiceTest, CacheHit) {
 
   // Synchronous get.
   std::unique_ptr<crypto::ECPrivateKey> key3;
-  error = service_->GetChannelID(host, &key3, callback.callback(), &request);
+  TestCompletionCallback callback3;
+  error = service_->GetChannelID(host, &key3, callback3.callback(), &request);
   EXPECT_FALSE(request.is_active());
   EXPECT_THAT(error, IsOk());
   EXPECT_EQ(1u, service_->channel_id_count());

@@ -82,8 +82,7 @@ bool CanZoomIn(content::WebContents* contents);
 bool CanZoomOut(content::WebContents* contents);
 bool CanResetZoom(content::WebContents* contents);
 void RestoreTab(Browser* browser);
-TabStripModelDelegate::RestoreTabType GetRestoreTabType(
-    const Browser* browser);
+TabStripModelDelegate::RestoreTabType GetRestoreTabType(const Browser* browser);
 void SelectNextTab(
     Browser* browser,
     TabStripModel::UserGestureDetails gesture_detail =
@@ -122,7 +121,6 @@ void Translate(Browser* browser);
 void ManagePasswordsForPage(Browser* browser);
 void SavePage(Browser* browser);
 bool CanSavePage(const Browser* browser);
-void SendToMyDevices(Browser* browser);
 void ShowFindBar(Browser* browser);
 void Print(Browser* browser);
 bool CanPrint(Browser* browser);

@@ -47,6 +47,19 @@ class AnimationWorkletMutatorDispatcherImpl::OutputVectorRef
   Vector<std::unique_ptr<AnimationWorkletDispatcherOutput>> vector_;
 };
 
+struct AnimationWorkletMutatorDispatcherImpl::AsyncMutationRequest {
+  std::unique_ptr<AnimationWorkletDispatcherInput> input_state;
+  AsyncMutationCompleteCallback done_callback;
+
+  AsyncMutationRequest(
+      std::unique_ptr<AnimationWorkletDispatcherInput> input_state,
+      AsyncMutationCompleteCallback done_callback)
+      : input_state(std::move(input_state)),
+        done_callback(std::move(done_callback)) {}
+
+  ~AsyncMutationRequest() = default;
+};
+
 AnimationWorkletMutatorDispatcherImpl::AnimationWorkletMutatorDispatcherImpl(
     bool main_thread_task_runner)
     : client_(nullptr),
@@ -134,16 +147,28 @@ bool AnimationWorkletMutatorDispatcherImpl::MutateAsynchronously(
 
   if (!mutator_input_map_.IsEmpty()) {
     // Still running mutations from a previous frame.
-    if (queuing_strategy == MutateQueuingStrategy::kDrop) {
-      // Skip this frame to avoid lagging behind.
-      return false;
+    switch (queuing_strategy) {
+      case MutateQueuingStrategy::kDrop:
+        // Skip this frame to avoid lagging behind.
+        return false;
+
+      case MutateQueuingStrategy::kQueueHighPriority:
+        // Can only have one priority request in-flight.
+        DCHECK(!queued_priority_request.get());
+        queued_priority_request = std::make_unique<AsyncMutationRequest>(
+            std::move(mutator_input), std::move(done_callback));
+        return true;
+
+      case MutateQueuingStrategy::kQueueAndReplaceNormalPriority:
+        if (queued_replaceable_request.get()) {
+          // Cancel previously queued request.
+          std::move(queued_replaceable_request->done_callback)
+              .Run(MutateStatus::kCanceled);
+        }
+        queued_replaceable_request = std::make_unique<AsyncMutationRequest>(
+            std::move(mutator_input), std::move(done_callback));
+        return true;
     }
-    DCHECK(queuing_strategy == MutateQueuingStrategy::kQueueAndReplace);
-    DCHECK(!queued_mutator_input_);
-    // Preemptive queue.
-    queued_mutator_input_.reset(mutator_input.release());
-    queued_on_async_mutation_complete_ = std::move(done_callback);
-    return true;
   }
 
   mutator_input_map_ = CreateInputMap(*mutator_input);
@@ -184,11 +209,15 @@ void AnimationWorkletMutatorDispatcherImpl::AsyncMutationsDone(
   DCHECK(host_queue_->BelongsToCurrentThread());
   bool update_applied = ApplyMutationsOnHostThread();
   auto done_callback = std::move(on_async_mutation_complete_);
-  if (queued_mutator_input_.get()) {
-    mutator_input_map_ = CreateInputMap(*queued_mutator_input_);
-    queued_mutator_input_.reset();
-    // Trigger queued mutation request.
-    MutateAsynchronouslyInternal(std::move(queued_on_async_mutation_complete_));
+  std::unique_ptr<AsyncMutationRequest> queued_request;
+  if (queued_priority_request.get()) {
+    queued_request.reset(queued_priority_request.release());
+  } else if (queued_replaceable_request.get()) {
+    queued_request.reset(queued_replaceable_request.release());
+  }
+  if (queued_request.get()) {
+    mutator_input_map_ = CreateInputMap(*queued_request->input_state);
+    MutateAsynchronouslyInternal(std::move(queued_request->done_callback));
   }
   TRACE_EVENT_ASYNC_END0("cc",
                          "AnimationWorkletMutatorDispatcherImpl::MutateAsync",

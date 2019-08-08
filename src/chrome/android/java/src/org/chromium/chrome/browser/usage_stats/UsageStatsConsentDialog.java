@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.usage_stats;
 import android.app.Activity;
 import android.content.res.Resources;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modaldialog.AppModalPresenter;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -26,11 +27,11 @@ public class UsageStatsConsentDialog {
     private PropertyModel mDialogModel;
 
     private boolean mIsRevocation;
-    private boolean mIsStandaloneActivity;
+    private Callback<Boolean> mDidConfirmCallback;
 
     public static UsageStatsConsentDialog create(
-            Activity activity, boolean isRevocation, boolean isStandaloneActivity) {
-        return new UsageStatsConsentDialog(activity, isRevocation, isStandaloneActivity);
+            Activity activity, boolean isRevocation, Callback<Boolean> didConfirmCallback) {
+        return new UsageStatsConsentDialog(activity, isRevocation, didConfirmCallback);
     }
 
     /** Show this dialog in the context of its enclosing activity. */
@@ -60,10 +61,10 @@ public class UsageStatsConsentDialog {
     }
 
     private UsageStatsConsentDialog(
-            Activity activity, boolean isRevocation, boolean isStandaloneActivity) {
+            Activity activity, boolean isRevocation, Callback<Boolean> didConfirmCallback) {
         mActivity = activity;
         mIsRevocation = isRevocation;
-        mIsStandaloneActivity = isStandaloneActivity;
+        mDidConfirmCallback = didConfirmCallback;
     }
 
     private ModalDialogProperties.Controller makeController() {
@@ -71,31 +72,26 @@ public class UsageStatsConsentDialog {
             @Override
             public void onClick(PropertyModel model, int buttonType) {
                 UsageStatsService service = UsageStatsService.getInstance();
-                int result = Activity.RESULT_CANCELED;
+                boolean didConfirm = false;
                 switch (buttonType) {
                     case ModalDialogProperties.ButtonType.POSITIVE:
-                        service.setOptInState(!mIsRevocation);
-                        result = Activity.RESULT_OK;
+                        didConfirm = true;
                         break;
                     case ModalDialogProperties.ButtonType.NEGATIVE:
-                        service.setOptInState(mIsRevocation);
-                        result = Activity.RESULT_CANCELED;
                         break;
                 }
 
-                if (mIsStandaloneActivity) {
-                    mActivity.setResult(result);
+                if (didConfirm) {
+                    service.setOptInState(!mIsRevocation);
                 }
 
+                mDidConfirmCallback.onResult(didConfirm);
                 dismiss();
             }
 
             @Override
             public void onDismiss(PropertyModel model, int dismissalCause) {
-                if (mIsStandaloneActivity) {
-                    mActivity.finish();
-                }
-
+                mDidConfirmCallback.onResult(false);
                 mManager.destroy();
             }
         };

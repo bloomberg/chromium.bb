@@ -53,8 +53,8 @@
 #include "third_party/blink/renderer/platform/instance_counters.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/timer.h"
-#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 
 #define MEDIA_KEY_SESSION_LOG_LEVEL 3
 
@@ -337,20 +337,13 @@ class SimpleResultPromise : public ContentDecryptionModuleResultPromise {
   Member<MediaKeySession> session_;
 };
 
-MediaKeySession* MediaKeySession::Create(
-    ScriptState* script_state,
-    MediaKeys* media_keys,
-    WebEncryptedMediaSessionType session_type) {
-  return MakeGarbageCollected<MediaKeySession>(script_state, media_keys,
-                                               session_type);
-}
-
 MediaKeySession::MediaKeySession(ScriptState* script_state,
                                  MediaKeys* media_keys,
                                  WebEncryptedMediaSessionType session_type)
     : ContextLifecycleObserver(ExecutionContext::From(script_state)),
-      async_event_queue_(EventQueue::Create(GetExecutionContext(),
-                                            TaskType::kMediaElementEvent)),
+      async_event_queue_(
+          MakeGarbageCollected<EventQueue>(GetExecutionContext(),
+                                           TaskType::kMediaElementEvent)),
       media_keys_(media_keys),
       session_type_(session_type),
       expiration_(std::numeric_limits<double>::quiet_NaN()),

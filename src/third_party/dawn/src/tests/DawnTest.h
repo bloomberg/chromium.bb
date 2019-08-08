@@ -143,8 +143,8 @@ class DawnTest : public ::testing::TestWithParam<dawn_native::BackendType> {
     std::ostringstream& AddBufferExpectation(const char* file,
                                              int line,
                                              const dawn::Buffer& buffer,
-                                             uint32_t offset,
-                                             uint32_t size,
+                                             uint64_t offset,
+                                             uint64_t size,
                                              detail::Expectation* expectation);
     std::ostringstream& AddTextureExpectation(const char* file,
                                               int line,
@@ -171,40 +171,40 @@ class DawnTest : public ::testing::TestWithParam<dawn_native::BackendType> {
     void FlushWire();
 
     // Tracking for validation errors
-    static void OnDeviceError(const char* message, dawnCallbackUserdata userdata);
+    static void OnDeviceError(const char* message, DawnCallbackUserdata userdata);
     bool mExpectError = false;
     bool mError = false;
 
     // MapRead buffers used to get data for the expectations
     struct ReadbackSlot {
         dawn::Buffer buffer;
-        uint32_t bufferSize;
+        uint64_t bufferSize;
         const void* mappedData = nullptr;
     };
     std::vector<ReadbackSlot> mReadbackSlots;
 
     // Maps all the buffers and fill ReadbackSlot::mappedData
     void MapSlotsSynchronously();
-    static void SlotMapReadCallback(dawnBufferMapAsyncStatus status,
+    static void SlotMapReadCallback(DawnBufferMapAsyncStatus status,
                                     const void* data,
-                                    uint32_t dataLength,
-                                    dawnCallbackUserdata userdata);
+                                    uint64_t dataLength,
+                                    DawnCallbackUserdata userdata);
     size_t mNumPendingMapOperations = 0;
 
     // Reserve space where the data for an expectation can be copied
     struct ReadbackReservation {
         dawn::Buffer buffer;
         size_t slot;
-        uint32_t offset;
+        uint64_t offset;
     };
-    ReadbackReservation ReserveReadback(uint32_t readbackSize);
+    ReadbackReservation ReserveReadback(uint64_t readbackSize);
 
     struct DeferredExpectation {
         const char* file;
         int line;
         size_t readbackSlot;
-        uint32_t readbackOffset;
-        uint32_t size;
+        uint64_t readbackOffset;
+        uint64_t size;
         uint32_t rowBytes;
         uint32_t rowPitch;
         std::unique_ptr<detail::Expectation> expectation;

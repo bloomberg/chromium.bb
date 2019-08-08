@@ -547,11 +547,13 @@ ResourceMetadata DisplayResourceProvider::LockForExternalUse(ResourceId id) {
   // TODO(penghuang): support software resource.
   DCHECK(resource->is_gpu_resource_type());
 
+  metadata.resource_id = id;
   metadata.mailbox_holder = resource->transferable.mailbox_holder;
   metadata.size = resource->transferable.size;
   metadata.resource_format = resource->transferable.format;
   metadata.mailbox_holder.sync_token = resource->sync_token();
   metadata.color_space = resource->transferable.color_space;
+  metadata.origin = kTopLeft_GrSurfaceOrigin;
 
   resource->locked_for_external_use = true;
   return metadata;
@@ -666,10 +668,10 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   to_return.reserve(unused.size());
   std::vector<ReturnedResource*> need_synchronization_resources;
   std::vector<GLbyte*> unverified_sync_tokens;
-  std::vector<sk_sp<SkImage>> external_used_sk_images;
+  std::vector<ResourceId> external_used_resource_ids;
   std::vector<ReturnedResource*> external_used_resources;
   if (external_use_client_) {
-    external_used_sk_images.reserve(unused.size());
+    external_used_resource_ids.reserve(unused.size());
     external_used_resources.reserve(unused.size());
   }
 
@@ -683,7 +685,7 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
     auto sk_image_it = resource_sk_images_.find(local_id);
     if (sk_image_it != resource_sk_images_.end()) {
       if (external_use_client_) {
-        external_used_sk_images.push_back(std::move(sk_image_it->second));
+        external_used_resource_ids.push_back(local_id);
         is_external_used_resource = true;
       }
       resource_sk_images_.erase(sk_image_it);
@@ -770,11 +772,9 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   for (ReturnedResource* returned : need_synchronization_resources)
     returned->sync_token = new_sync_token;
 
-  if (external_use_client_ && !external_used_sk_images.empty()) {
-    auto sync_token = external_use_client_->ReleasePromiseSkImages(
-        std::move(external_used_sk_images));
-    for (auto* to_return : external_used_resources)
-      to_return->sync_token = sync_token;
+  if (external_use_client_ && !external_used_resource_ids.empty()) {
+    external_use_client_->ReleaseCachedPromiseSkImages(
+        std::move(external_used_resource_ids));
   }
 
   if (!to_return.empty())
@@ -879,7 +879,8 @@ DisplayResourceProvider::ScopedSamplerGL::~ScopedSamplerGL() = default;
 DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
     DisplayResourceProvider* resource_provider,
     ResourceId resource_id,
-    SkAlphaType alpha_type)
+    SkAlphaType alpha_type,
+    GrSurfaceOrigin origin)
     : resource_provider_(resource_provider), resource_id_(resource_id) {
   const ChildResource* resource = resource_provider->LockForRead(resource_id);
   DCHECK(resource);
@@ -902,7 +903,7 @@ DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
                                      GrMipMapped::kNo, texture_info);
     sk_image_ = SkImage::MakeFromTexture(
         resource_provider->compositor_context_provider_->GrContext(),
-        backend_texture, kTopLeft_GrSurfaceOrigin,
+        backend_texture, origin,
         ResourceFormatToClosestSkColorType(!resource_provider->IsSoftware(),
                                            resource->transferable.format),
         alpha_type, resource->transferable.color_space.ToSkColorSpace());
@@ -921,6 +922,7 @@ DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
     return;
   }
 
+  DCHECK(origin == kTopLeft_GrSurfaceOrigin);
   SkBitmap sk_bitmap;
   resource_provider->PopulateSkBitmapWithResource(&sk_bitmap, resource);
   sk_bitmap.setImmutable();
@@ -949,21 +951,6 @@ ResourceMetadata DisplayResourceProvider::LockSetForExternalUse::LockResource(
   DCHECK(!base::ContainsValue(resources_, id));
   resources_.push_back(id);
   return resource_provider_->LockForExternalUse(id);
-}
-
-sk_sp<SkImage>
-DisplayResourceProvider::LockSetForExternalUse::LockResourceAndCreateSkImage(
-    ResourceId id,
-    SkAlphaType alpha_type) {
-  auto metadata = LockResource(id);
-  metadata.alpha_type = alpha_type;
-  auto& resource_sk_image = resource_provider_->resource_sk_images_[id];
-  if (!resource_sk_image) {
-    resource_sk_image =
-        resource_provider_->external_use_client_->MakePromiseSkImage(
-            std::move(metadata));
-  }
-  return resource_sk_image;
 }
 
 void DisplayResourceProvider::LockSetForExternalUse::UnlockResources(

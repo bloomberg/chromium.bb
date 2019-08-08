@@ -87,14 +87,18 @@ interface WindowManager {
   // The modal parent of a child modal window. Type: window Id.
   const string kChildModalParent_Property = "prop:child-modal-parent";
 
-  // If true, the window is considered as has-content and occludes windows
-  // behind it.
-  const string kClientWindowHasContent_Property =
-      "prop:client-window-has-content";
+  // If true, the window's layer has drawn content.
+  const string kWindowLayerDrawn_Property = "prop:window-layer-drawn";
 
   // Whether the window is trying to draw attention to itself (e.g. pulsing its
   // shelf icon). Type: bool.
   const string kDrawAttention_Property = "prop:draw-attention";
+
+  // The bounds in screen coordinates that an embedded window wants to be moved
+  // out of. Maps to aura::client::kEmbeddedWindowEnsureNotInRect.
+  // Type: gfx::Rect.
+  const string kEmbeddedWindowEnsureNotInRect =
+      "prop:embedded-window-ensure-not-in-rect";
 
   // Used to explicitly control whether a window appears in the most recently
   // used list of windows. Maps to aura::client::kExcludeFromMruKey. Type: bool.

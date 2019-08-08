@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "third_party/blink/public/platform/modules/hyphenation/hyphenation.mojom.h"
+#include "third_party/blink/public/mojom/hyphenation/hyphenation.mojom.h"
 
 namespace hyphenation {
 

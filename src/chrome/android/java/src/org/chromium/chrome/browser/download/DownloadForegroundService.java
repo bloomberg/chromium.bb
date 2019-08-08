@@ -21,7 +21,7 @@ import android.support.v4.app.ServiceCompat;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.notifications.ForegroundServiceUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -60,7 +60,8 @@ public class DownloadForegroundService extends Service {
      */
     public static void startDownloadForegroundService(Context context) {
         // TODO(crbug.com/770389): Grab a WakeLock here until the service has started.
-        AppHooks.get().startForegroundService(new Intent(context, DownloadForegroundService.class));
+        ForegroundServiceUtils.getInstance().startForegroundService(
+                new Intent(context, DownloadForegroundService.class));
     }
 
     /**
@@ -241,7 +242,7 @@ public class DownloadForegroundService extends Service {
     @VisibleForTesting
     void startForegroundInternal(int notificationId, Notification notification) {
         Log.w(TAG, "startForegroundInternal id: " + notificationId);
-        AppHooks.get().startForeground(
+        ForegroundServiceUtils.getInstance().startForeground(
                 this, notificationId, notification, 0 /* foregroundServiceType */);
     }
 

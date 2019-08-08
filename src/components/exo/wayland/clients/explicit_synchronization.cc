@@ -8,6 +8,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/files/scoped_file.h"
 #include "base/message_loop/message_loop.h"
 #include "components/exo/wayland/clients/client_helper.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -98,11 +99,13 @@ void ExplicitSynchronizationClient::Run() {
                       surface_size_.height());
     wl_surface_attach(surface_.get(), buffer->buffer.get(), 0, 0);
 
-    // TODO(afrantzis): Acquire a dma-fence fd and use
-    // zwp_surface_synchronization_v1.set_acquire_fence to synchronize once
-    // the server supports it.
-    eglClientWaitSyncKHR(eglGetCurrentDisplay(), buffer->egl_sync->get(),
-                         EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, EGL_FOREVER_KHR);
+    // Get a fence fd from from EGLSyncKHR and use it as the
+    // acquire fence for the commit.
+    base::ScopedFD fence_fd(eglDupNativeFenceFDANDROID(
+        eglGetCurrentDisplay(), buffer->egl_sync->get()));
+    DCHECK_GE(fence_fd.get(), 0);
+    zwp_linux_surface_synchronization_v1_set_acquire_fence(
+        surface_synchronization.get(), fence_fd.get());
 
     // Set up the frame callback.
     frame_callback_pending = true;

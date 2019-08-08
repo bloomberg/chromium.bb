@@ -38,11 +38,10 @@ class ShaderD3D : public ShaderImpl
               const gl::Extensions &extensions);
     ~ShaderD3D() override;
 
-    // ShaderImpl implementation
-    ShCompileOptions prepareSourceAndReturnOptions(const gl::Context *context,
-                                                   std::stringstream *sourceStream,
-                                                   std::string *sourcePath) override;
-    bool postTranslateCompile(gl::ShCompilerInstance *compiler, std::string *infoLog) override;
+    std::shared_ptr<WaitableCompileEvent> compile(const gl::Context *context,
+                                                  gl::ShCompilerInstance *compilerInstance,
+                                                  ShCompileOptions options) override;
+
     std::string getDebugInfo() const override;
 
     // D3D-specific methods
@@ -72,6 +71,7 @@ class ShaderD3D : public ShaderImpl
     bool usesPointCoord() const { return mUsesPointCoord; }
     bool usesDepthRange() const { return mUsesDepthRange; }
     bool usesFragDepth() const { return mUsesFragDepth; }
+    bool usesVertexID() const { return mUsesVertexID; }
     bool usesViewID() const { return mUsesViewID; }
     bool hasANGLEMultiviewEnabled() const { return mHasANGLEMultiviewEnabled; }
 
@@ -88,6 +88,7 @@ class ShaderD3D : public ShaderImpl
     bool mUsesDepthRange;
     bool mUsesFragDepth;
     bool mHasANGLEMultiviewEnabled;
+    bool mUsesVertexID;
     bool mUsesViewID;
     bool mUsesDiscardRewriting;
     bool mUsesNestedBreak;

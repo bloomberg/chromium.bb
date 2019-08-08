@@ -336,6 +336,66 @@ GLenum ToGLenum(FogMode from)
 }
 
 template <>
+GraphicsResetStatus FromGLenum<GraphicsResetStatus>(GLenum from)
+{
+    switch (from)
+    {
+        case GL_NO_ERROR:
+            return GraphicsResetStatus::NoError;
+        case GL_GUILTY_CONTEXT_RESET:
+            return GraphicsResetStatus::GuiltyContextReset;
+        case GL_INNOCENT_CONTEXT_RESET:
+            return GraphicsResetStatus::InnocentContextReset;
+        case GL_UNKNOWN_CONTEXT_RESET:
+            return GraphicsResetStatus::UnknownContextReset;
+        default:
+            return GraphicsResetStatus::InvalidEnum;
+    }
+}
+
+GLenum ToGLenum(GraphicsResetStatus from)
+{
+    switch (from)
+    {
+        case GraphicsResetStatus::NoError:
+            return GL_NO_ERROR;
+        case GraphicsResetStatus::GuiltyContextReset:
+            return GL_GUILTY_CONTEXT_RESET;
+        case GraphicsResetStatus::InnocentContextReset:
+            return GL_INNOCENT_CONTEXT_RESET;
+        case GraphicsResetStatus::UnknownContextReset:
+            return GL_UNKNOWN_CONTEXT_RESET;
+        default:
+            UNREACHABLE();
+            return 0;
+    }
+}
+
+template <>
+HandleType FromGLenum<HandleType>(GLenum from)
+{
+    switch (from)
+    {
+        case GL_HANDLE_TYPE_OPAQUE_FD_EXT:
+            return HandleType::OpaqueFd;
+        default:
+            return HandleType::InvalidEnum;
+    }
+}
+
+GLenum ToGLenum(HandleType from)
+{
+    switch (from)
+    {
+        case HandleType::OpaqueFd:
+            return GL_HANDLE_TYPE_OPAQUE_FD_EXT;
+        default:
+            UNREACHABLE();
+            return 0;
+    }
+}
+
+template <>
 HintSetting FromGLenum<HintSetting>(GLenum from)
 {
     switch (from)

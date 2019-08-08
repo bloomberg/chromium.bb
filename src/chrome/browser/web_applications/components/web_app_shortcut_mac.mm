@@ -19,6 +19,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #import "base/mac/launch_services_util.h"
 #include "base/mac/mac_util.h"
@@ -427,11 +428,6 @@ void LaunchShimOnFileThread(web_app::LaunchShimUpdateBehavior update_behavior,
       base::BindOnce(std::move(launched_callback), base::Process()));
 }
 
-base::FilePath GetAppLoaderPath() {
-  return base::mac::PathForFrameworkBundleResource(
-      base::mac::NSToCFCast(@"app_mode_loader.app"));
-}
-
 base::FilePath GetLocalizableAppShortcutsSubdirName() {
   static const char kChromiumAppDirName[] = "Chromium Apps.localized";
   static const char kChromeAppDirName[] = "Chrome Apps.localized";
@@ -713,11 +709,62 @@ base::FilePath WebAppShortcutCreator::GetFallbackBasename() const {
 
 bool WebAppShortcutCreator::BuildShortcut(
     const base::FilePath& staging_path) const {
-  // Update the app's plist and icon in a temp directory. This works around
-  // a Finder bug where the app's icon doesn't properly update.
-  if (!base::CopyDirectory(GetAppLoaderPath(), staging_path, true)) {
-    LOG(ERROR) << "Copying app to staging path: " << staging_path.value()
-               << " failed.";
+  if (!base::DirectoryExists(staging_path.DirName())) {
+    LOG(ERROR) << "Staging path directory does not exit: "
+               << staging_path.DirName();
+    return false;
+  }
+
+  const base::FilePath framework_bundle_path = base::mac::FrameworkBundlePath();
+
+  const base::FilePath executable_path =
+      framework_bundle_path.Append("Helpers").Append("app_mode_loader");
+  const base::FilePath plist_path =
+      framework_bundle_path.Append("Resources").Append("app_mode-Info.plist");
+
+  const base::FilePath destination_contents_path =
+      staging_path.Append("Contents");
+  const base::FilePath destination_executable_path =
+      destination_contents_path.Append("MacOS");
+
+  // First create the .app bundle directory structure.
+  // Use NSFileManager so that the permissions can be set appropriately. The
+  // base::CreateDirectory() routine forces mode 0700.
+  NSError* error = nil;
+  if (![[NSFileManager defaultManager]
+                 createDirectoryAtURL:base::mac::FilePathToNSURL(
+                                          destination_executable_path)
+          withIntermediateDirectories:YES
+                           attributes:@{
+                             NSFilePosixPermissions : @(0755)
+                           }
+                                error:&error]) {
+    LOG(ERROR) << "Failed to create destination executable path: "
+               << destination_executable_path
+               << ", error=" << base::SysNSStringToUTF8([error description]);
+    return false;
+  }
+
+  // Copy the executable file.
+  if (!base::CopyFile(executable_path, destination_executable_path.Append(
+                                           executable_path.BaseName()))) {
+    LOG(ERROR) << "Failed to copy executable: " << executable_path;
+    return false;
+  }
+
+  // Copy the Info.plist.
+  if (!base::CopyFile(plist_path,
+                      destination_contents_path.Append("Info.plist"))) {
+    LOG(ERROR) << "Failed to copy plist: " << plist_path;
+    return false;
+  }
+
+  // Write the PkgInfo file.
+  constexpr char kPkgInfoData[] = "APPL????";
+  constexpr size_t kPkgInfoDataSize = base::size(kPkgInfoData) - 1;
+  if (base::WriteFile(destination_contents_path.Append("PkgInfo"), kPkgInfoData,
+                      kPkgInfoDataSize) != kPkgInfoDataSize) {
+    LOG(ERROR) << "Failed to write PkgInfo file: " << destination_contents_path;
     return false;
   }
 
@@ -911,14 +958,6 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
             forKey:app_mode::kLSHasLocalizedDisplayNameKey];
   [plist setObject:[NSNumber numberWithBool:YES]
             forKey:app_mode::kNSHighResolutionCapableKey];
-  [plist
-      setObject:[NSNumber numberWithUnsignedInteger:
-                              app_mode::kCurrentChromeAppModeInfoMajorVersion]
-         forKey:app_mode::kCrAppModeMajorVersionKey];
-  [plist
-      setObject:[NSNumber numberWithUnsignedInteger:
-                              app_mode::kCurrentChromeAppModeInfoMinorVersion]
-         forKey:app_mode::kCrAppModeMinorVersionKey];
   if (info_->extension_id == app_mode::kAppListModeId) {
     // Prevent the app list from bouncing in the dock, and getting a run light.
     [plist setObject:[NSNumber numberWithBool:YES] forKey:kLSUIElement];

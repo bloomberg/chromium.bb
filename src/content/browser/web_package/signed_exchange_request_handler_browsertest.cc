@@ -445,6 +445,65 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
       PrefetchIsEnabled() ? 2 : 1);
 }
 
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, BadMICE) {
+  InstallMockCertChainInterceptor();
+  InstallMockCert();
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url =
+      embedded_test_server()->GetURL("/sxg/test.example.org_test_bad_mice.sxg");
+
+  if (PrefetchIsEnabled())
+    TriggerPrefetch(url, false);
+
+  const base::string16 title_good = base::ASCIIToUTF16("Reached End: false");
+  const base::string16 title_bad = base::ASCIIToUTF16("Reached End: true");
+  TitleWatcher title_watcher(shell()->web_contents(), title_good);
+  title_watcher.AlsoWaitForTitle(title_bad);
+  NavigateToURL(shell(), url);
+  EXPECT_EQ(title_good, title_watcher.WaitAndGetTitle());
+
+  histogram_tester_.ExpectTotalCount(kLoadResultHistogram,
+                                     PrefetchIsEnabled() ? 2 : 1);
+  {
+    SCOPED_TRACE(testing::Message()
+                 << "testing SignedExchangeLoadResult::kMerkleIntegrityError");
+    histogram_tester_.ExpectBucketCount(
+        kLoadResultHistogram, SignedExchangeLoadResult::kMerkleIntegrityError,
+        PrefetchIsEnabled() ? 2 : 1);
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, BadMICESmall) {
+  InstallMockCertChainInterceptor();
+  InstallMockCert();
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url = embedded_test_server()->GetURL(
+      "/sxg/test.example.org_test_bad_mice_small.sxg");
+
+  if (PrefetchIsEnabled())
+    TriggerPrefetch(url, false);
+
+  // Note: TitleWatcher is not needed. NavigateToURL waits until navigation
+  // complete.
+  NavigateToURL(shell(), url);
+
+  histogram_tester_.ExpectTotalCount(kLoadResultHistogram,
+                                     PrefetchIsEnabled() ? 2 : 1);
+  {
+    SCOPED_TRACE(testing::Message()
+                 << "testing SignedExchangeLoadResult::kMerkleIntegrityError");
+    histogram_tester_.ExpectBucketCount(
+        kLoadResultHistogram, SignedExchangeLoadResult::kMerkleIntegrityError,
+        PrefetchIsEnabled() ? 2 : 1);
+  }
+}
+
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
   InstallUrlInterceptor(GURL("https://cert.example.org/cert.msg"),
                         "content/test/data/sxg/404.msg");
@@ -771,6 +830,8 @@ class SignedExchangeAcceptHeaderBrowserTest
     https_server_.ServeFilesFromSourceDirectory("content/test/data");
     https_server_.RegisterRequestHandler(
         base::BindRepeating(&self::RedirectResponseHandler));
+    https_server_.RegisterRequestHandler(
+        base::BindRepeating(&self::FallbackSxgResponseHandler));
     https_server_.RegisterRequestMonitor(
         base::BindRepeating(&self::MonitorRequest, base::Unretained(this)));
     ASSERT_TRUE(https_server_.Start());
@@ -785,16 +846,16 @@ class SignedExchangeAcceptHeaderBrowserTest
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   }
 
-  bool ShouldHaveSXGAcceptHeaderInEnabledOrigin() const { return GetParam(); }
+  bool IsSignedExchangeEnabled() const { return GetParam(); }
 
-  bool ShouldHaveSXGAcceptHeader() const { return GetParam(); }
-
-  void CheckAcceptHeader(const GURL& url, bool is_navigation) {
+  void CheckAcceptHeader(const GURL& url,
+                         bool is_navigation,
+                         bool is_fallback) {
     const auto accept_header = GetInterceptedAcceptHeader(url);
     ASSERT_TRUE(accept_header);
     EXPECT_EQ(
         *accept_header,
-        ShouldHaveSXGAcceptHeader()
+        IsSignedExchangeEnabled() && !is_fallback
             ? (is_navigation
                    ? std::string(network::kFrameAcceptHeader) +
                          std::string(kAcceptHeaderSignedExchangeSuffix)
@@ -806,14 +867,22 @@ class SignedExchangeAcceptHeaderBrowserTest
   void CheckNavigationAcceptHeader(const std::vector<GURL>& urls) {
     for (const auto& url : urls) {
       SCOPED_TRACE(url);
-      CheckAcceptHeader(url, true /* is_navigation */);
+      CheckAcceptHeader(url, true /* is_navigation */, false /* is_fallback */);
     }
   }
 
   void CheckPrefetchAcceptHeader(const std::vector<GURL>& urls) {
     for (const auto& url : urls) {
       SCOPED_TRACE(url);
-      CheckAcceptHeader(url, false /* is_navigation */);
+      CheckAcceptHeader(url, false /* is_navigation */,
+                        false /* is_fallback */);
+    }
+  }
+
+  void CheckFallbackAcceptHeader(const std::vector<GURL>& urls) {
+    for (const auto& url : urls) {
+      SCOPED_TRACE(url);
+      CheckAcceptHeader(url, true /* is_navigation */, true /* is_fallback */);
     }
   }
 
@@ -844,6 +913,33 @@ class SignedExchangeAcceptHeaderBrowserTest
     return std::move(http_response);
   }
 
+  // Responds with a prologue-only signed exchange that triggers a fallback
+  // redirect.
+  static std::unique_ptr<net::test_server::HttpResponse>
+  FallbackSxgResponseHandler(const net::test_server::HttpRequest& request) {
+    const std::string prefix = "/fallback_sxg?";
+    if (!base::StartsWith(request.relative_url, prefix,
+                          base::CompareCase::SENSITIVE)) {
+      return std::unique_ptr<net::test_server::HttpResponse>();
+    }
+    std::string fallback_url(request.relative_url.substr(prefix.length()));
+
+    std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
+        new net::test_server::BasicHttpResponse);
+    http_response->set_code(net::HTTP_OK);
+    http_response->set_content_type("application/signed-exchange;v=b3");
+
+    std::string sxg("sxg1-b3", 8);
+    sxg.push_back(fallback_url.length() >> 8);
+    sxg.push_back(fallback_url.length() & 0xff);
+    sxg += fallback_url;
+    // FallbackUrlAndAfter() requires 6 more bytes for sizes of next fields.
+    sxg.resize(sxg.length() + 6);
+
+    http_response->set_content(sxg);
+    return std::move(http_response);
+  }
+
   void MonitorRequest(const net::test_server::HttpRequest& request) {
     const auto it = request.headers.find(std::string(network::kAcceptHeader));
     if (it == request.headers.end())
@@ -860,8 +956,6 @@ class SignedExchangeAcceptHeaderBrowserTest
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest, Simple) {
   const GURL test_url = https_server_.GetURL("/sxg/test.html");
-  EXPECT_EQ(ShouldHaveSXGAcceptHeaderInEnabledOrigin(),
-            signed_exchange_utils::IsSignedExchangeHandlingEnabled());
   NavigateAndWaitForTitle(test_url, test_url.spec());
   CheckNavigationAcceptHeader({test_url});
 }
@@ -874,6 +968,20 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest, Redirect) {
   NavigateAndWaitForTitle(redirect_redirect_url, test_url.spec());
 
   CheckNavigationAcceptHeader({redirect_redirect_url, redirect_url, test_url});
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
+                       FallbackRedirect) {
+  if (!IsSignedExchangeEnabled())
+    return;
+
+  const GURL fallback_url = https_server_.GetURL("/sxg/test.html");
+  const GURL test_url =
+      https_server_.GetURL("/fallback_sxg?" + fallback_url.spec());
+  NavigateAndWaitForTitle(test_url, fallback_url.spec());
+
+  CheckNavigationAcceptHeader({test_url});
+  CheckFallbackAcceptHeader({fallback_url});
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
@@ -922,13 +1030,12 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest, ServiceWorker) {
 
     const std::string expected_title =
         is_generated_scope
-            ? (ShouldHaveSXGAcceptHeader() ? frame_accept_with_sxg
-                                           : frame_accept)
+            ? (IsSignedExchangeEnabled() ? frame_accept_with_sxg : frame_accept)
             : "Done";
     const base::Optional<std::string> expected_target_accept_header =
         is_generated_scope
             ? base::nullopt
-            : base::Optional<std::string>(ShouldHaveSXGAcceptHeader()
+            : base::Optional<std::string>(IsSignedExchangeEnabled()
                                               ? frame_accept_with_sxg
                                               : frame_accept);
 

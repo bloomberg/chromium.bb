@@ -189,6 +189,43 @@ struct EnumTraits<ash::mojom::ShelfLaunchSource, ash::ShelfLaunchSource> {
 };
 
 template <>
+struct EnumTraits<ash::mojom::ShelfAutoHideBehavior,
+                  ash::ShelfAutoHideBehavior> {
+  static ash::mojom::ShelfAutoHideBehavior ToMojom(
+      ash::ShelfAutoHideBehavior input) {
+    switch (input) {
+      case ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
+        return ash::mojom::ShelfAutoHideBehavior::
+            SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+      case ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER:
+        return ash::mojom::ShelfAutoHideBehavior::
+            SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
+      case ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN:
+        return ash::mojom::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
+    }
+    NOTREACHED();
+    return ash::mojom::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+  }
+
+  static bool FromMojom(ash::mojom::ShelfAutoHideBehavior input,
+                        ash::ShelfAutoHideBehavior* out) {
+    switch (input) {
+      case ash::mojom::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
+        *out = ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+        return true;
+      case ash::mojom::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_BEHAVIOR_NEVER:
+        *out = ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
+        return true;
+      case ash::mojom::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_ALWAYS_HIDDEN:
+        *out = ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
+        return true;
+    }
+    NOTREACHED();
+    return false;
+  }
+};
+
+template <>
 struct ASH_PUBLIC_EXPORT
     StructTraits<ash::mojom::ShelfIDDataView, ash::ShelfID> {
   static const std::string& app_id(const ash::ShelfID& i) { return i.app_id; }

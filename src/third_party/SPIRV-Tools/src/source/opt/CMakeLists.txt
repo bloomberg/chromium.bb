@@ -31,6 +31,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   dead_branch_elim_pass.h
   dead_insert_elim_pass.h
   dead_variable_elimination.h
+  decompose_initialized_variables_pass.h
   decoration_manager.h
   def_use_manager.h
   dominator_analysis.h
@@ -40,12 +41,14 @@ set(SPIRV_TOOLS_OPT_SOURCES
   eliminate_dead_functions_util.h
   eliminate_dead_members_pass.h
   feature_manager.h
+  fix_storage_class.h
   flatten_decoration_pass.h
   fold.h
   folding_rules.h
   fold_spec_constant_op_and_composite_pass.h
   freeze_spec_constant_value_pass.h
   function.h
+  generate_webgpu_initializers_pass.h
   if_conversion.h
   inline_exhaustive_pass.h
   inline_opaque_pass.h
@@ -96,6 +99,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   simplification_pass.h
   ssa_rewrite_pass.h
   strength_reduction_pass.h
+  strip_atomic_counter_memory_pass.h
   strip_debug_info_pass.h
   strip_reflect_info_pass.h
   struct_cfg_analysis.h
@@ -127,6 +131,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   dead_branch_elim_pass.cpp
   dead_insert_elim_pass.cpp
   dead_variable_elimination.cpp
+  decompose_initialized_variables_pass.cpp
   decoration_manager.cpp
   def_use_manager.cpp
   dominator_analysis.cpp
@@ -136,12 +141,14 @@ set(SPIRV_TOOLS_OPT_SOURCES
   eliminate_dead_functions_util.cpp
   eliminate_dead_members_pass.cpp
   feature_manager.cpp
+  fix_storage_class.cpp
   flatten_decoration_pass.cpp
   fold.cpp
   folding_rules.cpp
   fold_spec_constant_op_and_composite_pass.cpp
   freeze_spec_constant_value_pass.cpp
   function.cpp
+  generate_webgpu_initializers_pass.cpp
   if_conversion.cpp
   inline_exhaustive_pass.cpp
   inline_opaque_pass.cpp
@@ -152,6 +159,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   instrument_pass.cpp
   ir_context.cpp
   ir_loader.cpp
+  legalize_vector_shuffle_pass.cpp
   licm_pass.cpp
   local_access_chain_convert_pass.cpp
   local_redundancy_elimination.cpp
@@ -189,6 +197,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   simplification_pass.cpp
   ssa_rewrite_pass.cpp
   strength_reduction_pass.cpp
+  strip_atomic_counter_memory_pass.cpp
   strip_debug_info_pass.cpp
   strip_reflect_info_pass.cpp
   struct_cfg_analysis.cpp

@@ -24,8 +24,8 @@ SnippetsInternalsUI::SnippetsInternalsUI(content::WebUI* web_ui)
       "script-src chrome://resources 'self' 'unsafe-eval';");
   source->AddResourcePath("snippets_internals.css", IDR_SNIPPETS_INTERNALS_CSS);
   source->AddResourcePath("snippets_internals.js", IDR_SNIPPETS_INTERNALS_JS);
-  source->AddResourcePath("snippets_internals.mojom.js",
-                          IDR_SNIPPETS_INTERNALS_MOJO_JS);
+  source->AddResourcePath("snippets_internals.mojom-lite.js",
+                          IDR_SNIPPETS_INTERNALS_MOJOM_LITE_JS);
   source->SetDefaultResource(IDR_SNIPPETS_INTERNALS_HTML);
   source->UseGzip();
 

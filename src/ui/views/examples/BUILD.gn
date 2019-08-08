@@ -121,6 +121,7 @@ executable("views_examples_exe") {
     "//components/viz/host",
     "//components/viz/service",
     "//ui/base",
+    "//ui/base/ime/init",
     "//ui/compositor",
     "//ui/compositor:test_support",
     "//ui/gfx",

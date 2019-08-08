@@ -142,8 +142,8 @@ StyleElement::ProcessingResult StyleElement::CreateSheet(Element& element,
   const ContentSecurityPolicy* csp = document.GetContentSecurityPolicy();
   bool passes_content_security_policy_checks =
       ShouldBypassMainWorldCSP(element) ||
-      csp->AllowInline(ContentSecurityPolicy::InlineType::kInlineStyleElement,
-                       &element, text, element.nonce(), document.Url(),
+      csp->AllowInline(ContentSecurityPolicy::InlineType::kStyle, &element,
+                       text, element.nonce(), document.Url(),
                        start_position_.line_);
 
   // Clearing the current sheet may remove the cache entry so create the new

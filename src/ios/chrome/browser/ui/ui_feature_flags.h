@@ -32,4 +32,15 @@ extern const base::Feature kCopiedContentBehavior;
 // Feature to apply UI Refresh theme to the settings.
 extern const base::Feature kSettingsRefresh;
 
+// Feature to display search engine favicons in Settings.
+extern const base::Feature kDisplaySearchEngineFavicon;
+
+// Feature to display the new omnibox popup design with favicons, search engine
+// favicon in the omnibox, rich entities support, new layout.
+extern const base::Feature kNewOmniboxPopupLayout;
+
+// Feature to display the omnibox with default search engine favicon
+// in the omnibox.
+extern const base::Feature kOmniboxUseDefaultSearchEngineFavicon;
+
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

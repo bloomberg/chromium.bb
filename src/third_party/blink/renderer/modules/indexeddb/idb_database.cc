@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_version_change_event.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks_impl.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_transaction_impl.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -91,23 +92,22 @@ const char IDBDatabase::kTransactionReadOnlyErrorMessage[] =
 const char IDBDatabase::kDatabaseClosedErrorMessage[] =
     "The database connection is closed.";
 
-IDBDatabase* IDBDatabase::Create(ExecutionContext* context,
-                                 std::unique_ptr<WebIDBDatabase> database,
-                                 IDBDatabaseCallbacks* callbacks,
-                                 v8::Isolate* isolate) {
-  return MakeGarbageCollected<IDBDatabase>(context, std::move(database),
-                                           callbacks, isolate);
-}
-
 IDBDatabase::IDBDatabase(ExecutionContext* context,
                          std::unique_ptr<WebIDBDatabase> backend,
                          IDBDatabaseCallbacks* callbacks,
                          v8::Isolate* isolate)
     : ContextLifecycleObserver(context),
       backend_(std::move(backend)),
-      event_queue_(EventQueue::Create(context, TaskType::kDatabaseAccess)),
+      event_queue_(
+          MakeGarbageCollected<EventQueue>(context, TaskType::kDatabaseAccess)),
       database_callbacks_(callbacks),
-      isolate_(isolate) {
+      isolate_(isolate),
+      feature_handle_for_scheduler_(
+          context
+              ? context->GetScheduler()->RegisterFeature(
+                    SchedulingPolicy::Feature::kIndexedDBConnection,
+                    {SchedulingPolicy::RecordMetricsForBackForwardCache()})
+              : FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle()) {
   database_callbacks_->Connect(this);
 }
 
@@ -197,7 +197,6 @@ void IDBDatabase::OnChanges(
     if (observer_lookup_result != observers_.end()) {
       IDBObserver* observer = observer_lookup_result->value;
 
-      IDBTransaction* transaction = nullptr;
       auto transactions_lookup_result = transactions.find(map_entry.first);
       if (transactions_lookup_result != transactions.end()) {
         const std::pair<int64_t, Vector<int64_t>>& obs_txn =
@@ -206,22 +205,17 @@ void IDBDatabase::OnChanges(
         for (int64_t store_id : obs_txn.second) {
           stores.insert(metadata_.object_stores.at(store_id)->name);
         }
-
-        transaction = IDBTransaction::CreateObserver(
-            GetExecutionContext(), obs_txn.first, stores, this);
       }
 
       observer->Callback()->InvokeAndReportException(
-          observer, IDBObserverChanges::Create(this, transaction, observations,
-                                               map_entry.second));
-      if (transaction)
-        transaction->SetActive(false);
+          observer, MakeGarbageCollected<IDBObserverChanges>(
+                        this, nullptr, observations, map_entry.second));
     }
   }
 }
 
 DOMStringList* IDBDatabase::objectStoreNames() const {
-  DOMStringList* object_store_names = DOMStringList::Create();
+  auto* object_store_names = MakeGarbageCollected<DOMStringList>();
   for (const auto& it : metadata_.object_stores)
     object_store_names->Append(it.value->name);
   object_store_names->Sort();
@@ -305,15 +299,15 @@ IDBObjectStore* IDBDatabase::createObjectStore(
 
   int64_t object_store_id = metadata_.max_object_store_id + 1;
   DCHECK_NE(object_store_id, IDBObjectStoreMetadata::kInvalidId);
-  backend_->CreateObjectStore(version_change_transaction_->Id(),
-                              object_store_id, name, key_path, auto_increment);
+  version_change_transaction_->transaction_backend()->CreateObjectStore(
+      object_store_id, name, key_path, auto_increment);
 
   scoped_refptr<IDBObjectStoreMetadata> store_metadata =
       base::AdoptRef(new IDBObjectStoreMetadata(
           name, object_store_id, key_path, auto_increment,
           WebIDBDatabase::kMinimumIndexId));
-  IDBObjectStore* object_store =
-      IDBObjectStore::Create(store_metadata, version_change_transaction_.Get());
+  auto* object_store = MakeGarbageCollected<IDBObjectStore>(
+      store_metadata, version_change_transaction_.Get());
   version_change_transaction_->ObjectStoreCreated(name, object_store);
   metadata_.object_stores.Set(object_store_id, std::move(store_metadata));
   ++metadata_.max_object_store_id;
@@ -351,8 +345,8 @@ void IDBDatabase::deleteObjectStore(const String& name,
     return;
   }
 
-  backend_->DeleteObjectStore(version_change_transaction_->Id(),
-                              object_store_id);
+  version_change_transaction_->transaction_backend()->DeleteObjectStore(
+      object_store_id);
   version_change_transaction_->ObjectStoreDeleted(object_store_id, name);
   metadata_.object_stores.erase(object_store_id);
 }
@@ -420,11 +414,19 @@ IDBTransaction* IDBDatabase::transaction(
     return nullptr;
   }
 
+  // TODO(cmp): Delete |transaction_id| once all users are removed.
   int64_t transaction_id = NextTransactionId();
-  backend_->CreateTransaction(transaction_id, object_store_ids, mode);
+  auto transaction_backend = std::make_unique<WebIDBTransactionImpl>(
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(TaskType::kDatabaseAccess),
+      transaction_id);
 
-  return IDBTransaction::CreateNonVersionChange(script_state, transaction_id,
-                                                scope, mode, this);
+  backend_->CreateTransaction(transaction_backend->CreateRequest(),
+                              transaction_id, object_store_ids, mode);
+
+  return IDBTransaction::CreateNonVersionChange(
+      script_state, std::move(transaction_backend), transaction_id, scope, mode,
+      this);
 }
 
 void IDBDatabase::ForceClose() {
@@ -440,6 +442,7 @@ void IDBDatabase::close() {
     return;
 
   close_pending_ = true;
+  feature_handle_for_scheduler_.reset();
 
   if (transactions_.IsEmpty())
     CloseConnection();

@@ -8,7 +8,6 @@
 <translation id="1984705450038014246">Chrome データを同期</translation>
 <translation id="2147651015520127414">このウェブサイトの証明書が <ph name="ISSUER" /> 発行のものであると確認されました。</translation>
 <translation id="2199719347983604670">Chrome 同期のデータ</translation>
-<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2342981853652716282">Chrome にログインすると、ブックマーク、パスワード、その他の設定をどのデバイスからでもご利用いただけます。</translation>
 <translation id="2347208864470321755">この機能を有効にすると、外国語のページで翻訳ツールが表示されます。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">画像を保存するには、[設定] をタップして写真の使用を Chrome に許可してください</translation>
@@ -22,7 +21,6 @@
 <translation id="3282568296779691940">Chrome にログイン</translation>
 <translation id="3345341804167540816">Chromeをどこでも使用</translation>
 <translation id="384394811301901750">現在 Google Chrome ではカメラを使用できません</translation>
-<translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3980220367029651214">同期アカウントを <ph name="USER_EMAIL1" /> から <ph name="USER_EMAIL2" /> へ切り替えます。既存の Chrome データは <ph name="DOMAIN" /> で管理されています。データはこのデバイスから削除されますが、<ph name="USER_EMAIL1" /> で保持されます。</translation>
 <translation id="3988789688219830639">Google Chrome で写真または動画にアクセスできません。iOS の [設定] &gt; [プライバシー] &gt; [写真] でアクセスを有効にしてください。</translation>
 <translation id="4099578267706723511">使用統計情報と障害レポートを Google に送信して、Chrome の品質向上にご協力ください。</translation>
@@ -34,6 +32,7 @@
 <translation id="5389212809648216794">カメラは別のアプリが使用中のため、Google Chrome では使用できません</translation>
 <translation id="5639704535586432836">[設定] &gt; [プライバシー] &gt; [カメラ] &gt; [Google Chrome] の順に選択し、カメラをオンにします。</translation>
 <translation id="5642200033778930880">Google Chrome では、分割表示モードでカメラを使用することはできません</translation>
+<translation id="5690427481109656848">Google LLC</translation>
 <translation id="5854621639439811139">Chrome の使い方のヒント: 戻る、進む、検索など一部のボタンは画面の下部に表示されるようになりました。</translation>
 <translation id="6036420186814142909">Google Chromeには、インターネットのデータやウェブページの読み込み速度を管理できる機能があります。
 <ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
@@ -51,6 +50,7 @@
 <translation id="7437998757836447326">Chrome からログアウト</translation>
 <translation id="756809126120519699">Chrome データの消去完了</translation>
 <translation id="7626032353295482388">Chrome へようこそ</translation>
+<translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. All rights reserved.</translation>
 <translation id="840168496893712993">アドオンが原因でChromeがクラッシュしました。アドオンをアンインストールしてみてください。</translation>
 <translation id="8459495907675268833">選択したデータが Chrome から削除され、同期されたデバイスからも削除されました。他の Google サービスでの検索や操作など、Google アカウントの他の形式の閲覧履歴が history.google.com に残ることがあります。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

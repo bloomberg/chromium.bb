@@ -5,6 +5,7 @@ package org.chromium.ui.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IdRes;
 import android.support.annotation.Px;
@@ -105,11 +106,20 @@ public class ChipView extends LinearLayout {
             mIcon.setVisibility(ViewGroup.GONE);
             return;
         }
+
         mIcon.setVisibility(ViewGroup.VISIBLE);
         mIcon.setImageResource(icon);
-        if (mPrimaryText.getTextColors() != null && tintWithTextColor) {
-            ApiCompatibilityUtils.setImageTintList(mIcon, mPrimaryText.getTextColors());
-        }
+        setTint(tintWithTextColor);
+    }
+
+    /**
+     * Sets the icon at the start of the chip view.
+     * @param drawable Drawable to display.
+     */
+    public void setIcon(Drawable drawable, boolean tintWithTextColor) {
+        mIcon.setVisibility(ViewGroup.VISIBLE);
+        mIcon.setImageDrawable(drawable);
+        setTint(tintWithTextColor);
     }
 
     /**
@@ -133,5 +143,18 @@ public class ChipView extends LinearLayout {
             addView(mSecondaryText);
         }
         return mSecondaryText;
+    }
+
+    /**
+     * Sets the correct tinting on the Chip's image view.
+     * @param tintWithTextColor If true then the image view will be tinted with the primary text
+     *      color. If not, the tint will be cleared.
+     */
+    private void setTint(boolean tintWithTextColor) {
+        if (mPrimaryText.getTextColors() != null && tintWithTextColor) {
+            ApiCompatibilityUtils.setImageTintList(mIcon, mPrimaryText.getTextColors());
+        } else {
+            ApiCompatibilityUtils.setImageTintList(mIcon, null);
+        }
     }
 }

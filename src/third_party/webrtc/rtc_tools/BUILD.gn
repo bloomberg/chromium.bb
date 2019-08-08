@@ -183,7 +183,7 @@ if (!build_with_chromium) {
       "../logging:rtc_event_log_impl_base",
       "../media:rtc_audio_video",
       "../media:rtc_media_base",
-      "../rtc_base:rtc_base",
+      "../rtc_base",
       "../rtc_base:rtc_base_approved",
       "../rtc_base:rtc_json",
       "../rtc_base/system:file_wrapper",
@@ -255,7 +255,6 @@ if (!build_with_chromium) {
     ]
 
     deps = [
-      "..:webrtc_common",
       "../common_video",
     ]
   }
@@ -285,6 +284,8 @@ if (!build_with_chromium) {
       sources = [
         "event_log_visualizer/analyzer.cc",
         "event_log_visualizer/analyzer.h",
+        "event_log_visualizer/log_simulation.cc",
+        "event_log_visualizer/log_simulation.h",
         "event_log_visualizer/plot_base.cc",
         "event_log_visualizer/plot_base.h",
         "event_log_visualizer/plot_protobuf.cc",
@@ -296,12 +297,13 @@ if (!build_with_chromium) {
       defines = [ "ENABLE_RTC_EVENT_LOG" ]
       deps = [
         ":chart_proto",
-        "../:webrtc_common",
+        "../api:function_view",
 
         # TODO(kwiberg): Remove this dependency.
         "../api/audio_codecs:audio_codecs_api",
         "../api/transport:field_trial_based_config",
         "../api/transport:goog_cc",
+        "../api/transport:network_control",
         "../call:call_interfaces",
         "../call:video_stream_api",
         "../logging:rtc_event_log_api",
@@ -411,11 +413,10 @@ if (rtc_include_tests) {
       ":video_file_reader",
       ":video_file_writer",
       ":video_quality_analysis",
-      "../:webrtc_common",
       "../api:scoped_refptr",
       "../api/video:video_frame",
       "../api/video:video_frame_i420",
-      "../common_video:common_video",
+      "../common_video",
       "../rtc_base",
       "../rtc_base:checks",
       "../test:fileutils",
@@ -471,7 +472,6 @@ if (rtc_include_tests) {
       ]
 
       deps = [
-        "..:webrtc_common",
         "../common_audio",
         "../modules/audio_processing",
         "../modules/audio_processing:audioproc_debug_proto",

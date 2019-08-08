@@ -155,8 +155,7 @@ void WebServiceWorkerProviderImpl::GetRegistrations(
 }
 
 void WebServiceWorkerProviderImpl::GetRegistrationForReady(
-    std::unique_ptr<WebServiceWorkerGetRegistrationForReadyCallbacks>
-        callbacks) {
+    GetRegistrationForReadyCallback callback) {
   if (!context_->container_host()) {
     return;
   }
@@ -166,7 +165,7 @@ void WebServiceWorkerProviderImpl::GetRegistrationForReady(
       this);
   context_->container_host()->GetRegistrationForReady(base::BindOnce(
       &WebServiceWorkerProviderImpl::OnDidGetRegistrationForReady,
-      weak_factory_.GetWeakPtr(), std::move(callbacks)));
+      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 bool WebServiceWorkerProviderImpl::ValidateScopeAndScriptURL(
@@ -297,7 +296,7 @@ void WebServiceWorkerProviderImpl::OnDidGetRegistrations(
 }
 
 void WebServiceWorkerProviderImpl::OnDidGetRegistrationForReady(
-    std::unique_ptr<WebServiceWorkerGetRegistrationForReadyCallbacks> callbacks,
+    GetRegistrationForReadyCallback callback,
     blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration) {
   TRACE_EVENT_ASYNC_END0(
       "ServiceWorker", "WebServiceWorkerProviderImpl::GetRegistrationForReady",
@@ -314,7 +313,7 @@ void WebServiceWorkerProviderImpl::OnDidGetRegistrationForReady(
   CHECK(registration);
   DCHECK_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
             registration->registration_id);
-  callbacks->OnSuccess(
+  std::move(callback).Run(
       registration.To<blink::WebServiceWorkerRegistrationObjectInfo>());
 }
 

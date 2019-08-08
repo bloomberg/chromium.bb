@@ -10,11 +10,14 @@ import uuid
 
 from google.appengine.api import datastore_errors
 from google.appengine.api import taskqueue
+from google.appengine.ext import deferred
 from google.appengine.ext import ndb
 from google.appengine.runtime import apiproxy_errors
 
+from dashboard import update_bug_with_results
 from dashboard.common import utils
 from dashboard.models import histogram
+from dashboard.pinpoint.models import errors
 from dashboard.pinpoint.models import job_state
 from dashboard.pinpoint.models import results2
 from dashboard.services import gerrit_service
@@ -32,12 +35,16 @@ _CRYING_CAT_FACE = u'\U0001f63f'
 _RIGHT_ARROW = u'\u2192'
 _ROUND_PUSHPIN = u'\U0001f4cd'
 
+_MAX_RECOVERABLE_RETRIES = 3
 
 OPTION_STATE = 'STATE'
 OPTION_TAGS = 'TAGS'
 
 
 COMPARISON_MODES = job_state.COMPARISON_MODES
+
+RETRY_OPTIONS = taskqueue.TaskRetryOptions(task_retry_limit=8,
+                                           min_backoff_seconds=2)
 
 
 def JobFromId(job_id):
@@ -103,6 +110,8 @@ class Job(ndb.Model):
 
   difference_count = ndb.IntegerProperty()
 
+  retry_count = ndb.IntegerProperty(default=0)
+
 
   @classmethod
   def New(cls, quests, changes, arguments=None, bug_id=None,
@@ -162,7 +171,11 @@ class Job(ndb.Model):
 
   @property
   def url(self):
-    return 'https://%s/job/%s' % (os.environ['HTTP_HOST'], self.job_id)
+    host = os.environ['HTTP_HOST']
+    # TODO(crbug.com/939723): Remove this workaround when not needed.
+    if host == 'pinpoint.chromeperf.appspot.com':
+      host = 'pinpoint-dot-chromeperf.appspot.com'
+    return 'https://%s/job/%s' % (host, self.job_id)
 
   @property
   def results_url(self):
@@ -207,7 +220,9 @@ class Job(ndb.Model):
 
     title = _ROUND_PUSHPIN + ' Pinpoint job started.'
     comment = '\n'.join((title, self.url))
-    self._PostBugComment(comment, send_email=False)
+    deferred.defer(
+        _PostBugCommentDeferred, self.bug_id, comment, send_email=False,
+        _retry_options=RETRY_OPTIONS)
 
   def _Complete(self):
     if self.comparison_mode:
@@ -225,7 +240,9 @@ class Job(ndb.Model):
     if not self.comparison_mode:
       # There is no comparison metric.
       title = "<b>%s Job complete. See results below.</b>" % _ROUND_PUSHPIN
-      self._PostBugComment('\n'.join((title, self.url)))
+      deferred.defer(
+          _PostBugCommentDeferred, self.bug_id, '\n'.join((title, self.url)),
+          _retry_options=RETRY_OPTIONS)
       return
 
     # There is a comparison metric.
@@ -233,109 +250,62 @@ class Job(ndb.Model):
 
     if not differences:
       title = "<b>%s Couldn't reproduce a difference.</b>" % _ROUND_PUSHPIN
-      self._PostBugComment('\n'.join((title, self.url)))
+      deferred.defer(
+          _PostBugCommentDeferred, self.bug_id, '\n'.join((title, self.url)),
+          _retry_options=RETRY_OPTIONS)
       return
 
-    # Include list of Changes.
-    owner = None
-    sheriff = None
-    cc_list = set()
     difference_details = []
+    commit_infos = []
     for change_a, change_b in differences:
       if change_b.patch:
         commit_info = change_b.patch.AsDict()
       else:
         commit_info = change_b.last_commit.AsDict()
 
-      # TODO: Assign the largest difference, not the last one.
-      owner = commit_info['author']
-      sheriff = utils.GetSheriffForAutorollCommit(
-          commit_info['author'], commit_info['message'])
-      cc_list.add(commit_info['author'])
-
       values_a = self.state.ResultValues(change_a)
       values_b = self.state.ResultValues(change_b)
       difference = _FormatDifferenceForBug(commit_info, values_a, values_b,
                                            self.state.metric)
       difference_details.append(difference)
+      commit_infos.append(commit_info)
 
-    # Header.
-    if len(differences) == 1:
-      status = 'Found a significant difference after 1 commit.'
-    else:
-      status = ('Found significant differences after each of %d commits.' %
-                len(differences))
-
-    title = '<b>%s %s</b>' % (_ROUND_PUSHPIN, status)
-    header = '\n'.join((title, self.url))
-
-    # Body.
-    body = '\n\n'.join(difference_details)
-    if sheriff:
-      owner = sheriff
-      body += '\n\nAssigning to sheriff %s because "%s" is a roll.' % (
-          sheriff, commit_info['subject'])
-
-    # Footer.
-    footer = ('Understanding performance regressions:\n'
-              '  http://g.co/ChromePerformanceRegressions')
-
-    if differences:
-      footer += self._FormatDocumentationUrls()
-
-    # Bring it all together.
-    comment = '\n\n'.join((header, body, footer))
-    current_bug_status = self._GetBugStatus()
-    if (not current_bug_status or
-        current_bug_status in ['Untriaged', 'Unconfirmed', 'Available']):
-      # Set the bug status and owner if this bug is opened and unowned.
-      self._PostBugComment(comment, status='Assigned',
-                           cc_list=sorted(cc_list), owner=owner)
-    else:
-      # Only update the comment and cc list if this bug is assigned or closed.
-      self._PostBugComment(comment, cc_list=sorted(cc_list))
-
-  def _FormatDocumentationUrls(self):
-    if not self.tags:
-      return ''
-
-    # TODO(simonhatch): Tags isn't the best way to get at this, but wait until
-    # we move this back into the dashboard so we have a better way of getting
-    # at the test path.
-    # crbug.com/876899
-    test_path = self.tags.get('test_path')
-    if not test_path:
-      return ''
-
-    test_suite = utils.TestKey('/'.join(test_path.split('/')[:3]))
-
-    docs = histogram.SparseDiagnostic.GetMostRecentDataByNamesSync(
-        test_suite, [reserved_infos.DOCUMENTATION_URLS.name])
-
-    if not docs:
-      return ''
-
-    docs = docs[reserved_infos.DOCUMENTATION_URLS.name].get('values')
-
-    footer = '\n\n%s:\n  %s' % (docs[0][0], docs[0][1])
-
-    return footer
+    deferred.defer(
+        _UpdatePostAndMergeDeferred,
+        difference_details, commit_infos, self.bug_id, self.tags, self.url,
+        _retry_options=RETRY_OPTIONS)
 
   def _UpdateGerritIfNeeded(self):
     if self.gerrit_server and self.gerrit_change_id:
-      gerrit_service.PostChangeComment(
+      deferred.defer(
+          _UpdateGerritDeferred,
           self.gerrit_server,
           self.gerrit_change_id,
-          '%s Job complete.\n\nSee results at: %s' % (_ROUND_PUSHPIN, self.url))
+          '%s Job complete.\n\nSee results at: %s' % (_ROUND_PUSHPIN, self.url),
+          _retry_options=RETRY_OPTIONS)
 
-  def Fail(self):
-    self.exception = traceback.format_exc()
+  def Fail(self, exception=None):
+    if exception:
+      self.exception = exception
+    else:
+      self.exception = traceback.format_exc()
 
     title = _CRYING_CAT_FACE + ' Pinpoint job stopped with an error.'
-    comment = '\n'.join((title, self.url, '', sys.exc_info()[1].message))
-    self._PostBugComment(comment)
+    exc_info = sys.exc_info()
+    exc_message = ''
+    if exc_info[1]:
+      exc_message = sys.exc_info()[1].message
+    elif self.exception:
+      exc_message = self.exception.splitlines()[-1]
 
-  def _Schedule(self):
+    self.task = None
+
+    comment = '\n'.join((title, self.url, '', exc_message))
+    deferred.defer(
+        _PostBugCommentDeferred, self.bug_id, comment,
+        _retry_options=RETRY_OPTIONS)
+
+  def _Schedule(self, countdown=_TASK_INTERVAL):
     # Set a task name to deduplicate retries. This adds some latency, but we're
     # not latency-sensitive. If Job.Run() works asynchronously in the future,
     # we don't need to worry about duplicate tasks.
@@ -344,13 +314,25 @@ class Job(ndb.Model):
     try:
       task = taskqueue.add(
           queue_name='job-queue', url='/api/run/' + self.job_id,
-          name=task_name, countdown=_TASK_INTERVAL)
+          name=task_name, countdown=countdown)
     except (apiproxy_errors.DeadlineExceededError, taskqueue.TransientError):
-      task = taskqueue.add(
-          queue_name='job-queue', url='/api/run/' + self.job_id,
-          name=task_name, countdown=_TASK_INTERVAL)
+      raise errors.RecoverableError()
 
     self.task = task.name
+
+  def _MaybeScheduleRetry(self):
+    if not hasattr(self, 'retry_count') or self.retry_count is None:
+      self.retry_count = 0
+
+    if self.retry_count >= _MAX_RECOVERABLE_RETRIES:
+      return False
+
+    self.retry_count += 1
+
+    # Back off exponentially
+    self._Schedule(countdown=_TASK_INTERVAL * (2 ** self.retry_count))
+
+    return True
 
   def Run(self):
     """Runs this Job.
@@ -374,6 +356,12 @@ class Job(ndb.Model):
         self._Schedule()
       else:
         self._Complete()
+
+      self.retry_count = 0
+    except errors.RecoverableError:
+      if not self._MaybeScheduleRetry():
+        self.Fail()
+        raise
     except BaseException:
       self.Fail()
       raise
@@ -428,22 +416,97 @@ class Job(ndb.Model):
       d['tags'] = {'tags': self.tags}
     return d
 
-  def _PostBugComment(self, *args, **kwargs):
-    if not self.bug_id:
-      return
 
-    issue_tracker = issue_tracker_service.IssueTrackerService(
-        utils.ServiceAccountHttp())
-    issue_tracker.AddBugComment(self.bug_id, *args, **kwargs)
+def _GetBugStatus(issue_tracker, bug_id):
+  if not bug_id:
+    return None
 
-  def _GetBugStatus(self):
-    if not self.bug_id:
-      return None
+  issue_data = issue_tracker.GetIssue(bug_id)
+  if not issue_data:
+    return None
 
-    issue_tracker = issue_tracker_service.IssueTrackerService(
-        utils.ServiceAccountHttp())
-    issue_data = issue_tracker.GetIssue(self.bug_id)
-    return issue_data.get('status')
+  return issue_data.get('status')
+
+
+def _ComputePostMergeDetails(issue_tracker, commit_cache_key, cc_list):
+  merge_details = {}
+  if commit_cache_key:
+    merge_details = update_bug_with_results.GetMergeIssueDetails(
+        issue_tracker, commit_cache_key)
+    if merge_details['id']:
+      cc_list = []
+  return merge_details, cc_list
+
+
+def _PostBugCommentDeferred(bug_id, *args, **kwargs):
+  if not bug_id:
+    return
+
+  issue_tracker = issue_tracker_service.IssueTrackerService(
+      utils.ServiceAccountHttp())
+  issue_tracker.AddBugComment(bug_id, *args, **kwargs)
+
+
+def _GenerateCommitCacheKey(commit_infos):
+  commit_cache_key = None
+  if len(commit_infos) == 1:
+    commit_cache_key = update_bug_with_results._GetCommitHashCacheKey(
+        commit_infos[0]['git_hash'])
+  return commit_cache_key
+
+
+def _ComputePostOwnerSheriffCCList(commit_infos):
+  owner = None
+  sheriff = None
+  cc_list = set()
+  for cur_commit in commit_infos:
+    # TODO: Assign the largest difference, not the last one.
+    owner = cur_commit['author']
+    sheriff = utils.GetSheriffForAutorollCommit(owner, cur_commit['message'])
+    cc_list.add(cur_commit['author'])
+    if sheriff:
+      owner = sheriff
+  return owner, sheriff, cc_list
+
+
+def _UpdatePostAndMergeDeferred(
+    difference_details, commit_infos, bug_id, tags, url):
+  if not bug_id:
+    return
+
+  commit_cache_key = _GenerateCommitCacheKey(commit_infos)
+
+  # Bring it all together.
+  owner, sheriff, cc_list = _ComputePostOwnerSheriffCCList(commit_infos)
+  comment = _FormatComment(difference_details, commit_infos, sheriff, tags, url)
+
+  issue_tracker = issue_tracker_service.IssueTrackerService(
+      utils.ServiceAccountHttp())
+
+  merge_details, cc_list = _ComputePostMergeDetails(
+      issue_tracker, commit_cache_key, cc_list)
+
+  current_bug_status = _GetBugStatus(issue_tracker, bug_id)
+  if not current_bug_status:
+    return
+
+  status = None
+  bug_owner = None
+  if current_bug_status in ['Untriaged', 'Unconfirmed', 'Available']:
+    # Set the bug status and owner if this bug is opened and unowned.
+    status = 'Assigned'
+    bug_owner = owner
+
+  issue_tracker.AddBugComment(bug_id, comment, status=status,
+                              cc_list=sorted(cc_list), owner=bug_owner,
+                              merge_issue=merge_details.get('id'))
+
+  update_bug_with_results.UpdateMergeIssue(
+      commit_cache_key, merge_details, bug_id)
+
+
+def _UpdateGerritDeferred(*args, **kwargs):
+  gerrit_service.PostChangeComment(*args, **kwargs)
 
 
 def _FormatDifferenceForBug(commit_info, values_a, values_b, metric):
@@ -473,3 +536,58 @@ def _FormatDifferenceForBug(commit_info, values_a, values_b, metric):
     difference += ' (%+.4g)' % (mean_b - mean_a)
 
   return '\n'.join((subject, commit_info['url'], difference))
+
+
+def _FormatComment(difference_details, commit_infos, sheriff, tags, url):
+  if len(difference_details) == 1:
+    status = 'Found a significant difference after 1 commit.'
+  else:
+    status = ('Found significant differences after each of %d commits.' %
+              len(difference_details))
+
+  title = '<b>%s %s</b>' % (_ROUND_PUSHPIN, status)
+  header = '\n'.join((title, url))
+
+  # Body.
+  body = '\n\n'.join(difference_details)
+  if sheriff:
+    body += '\n\nAssigning to sheriff %s because "%s" is a roll.' % (
+        sheriff, commit_infos[-1]['subject'])
+
+  # Footer.
+  footer = ('Understanding performance regressions:\n'
+            '  http://g.co/ChromePerformanceRegressions')
+
+  if difference_details:
+    footer += _FormatDocumentationUrls(tags)
+
+  # Bring it all together.
+  comment = '\n\n'.join((header, body, footer))
+  return comment
+
+
+def _FormatDocumentationUrls(tags):
+  if not tags:
+    return ''
+
+  # TODO(simonhatch): Tags isn't the best way to get at this, but wait until
+  # we move this back into the dashboard so we have a better way of getting
+  # at the test path.
+  # crbug.com/876899
+  test_path = tags.get('test_path')
+  if not test_path:
+    return ''
+
+  test_suite = utils.TestKey('/'.join(test_path.split('/')[:3]))
+
+  docs = histogram.SparseDiagnostic.GetMostRecentDataByNamesSync(
+      test_suite, [reserved_infos.DOCUMENTATION_URLS.name])
+
+  if not docs:
+    return ''
+
+  docs = docs[reserved_infos.DOCUMENTATION_URLS.name].get('values')
+
+  footer = '\n\n%s:\n  %s' % (docs[0][0], docs[0][1])
+
+  return footer

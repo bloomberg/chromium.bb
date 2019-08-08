@@ -9,12 +9,19 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
+#include "base/command_line.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
+#include "components/tracing/common/tracing_switches.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
-#include "services/tracing/perfetto/chrome_event_bundle_json_exporter.h"
+#include "services/tracing/perfetto/consumer_host.h"
 #include "services/tracing/perfetto/perfetto_service.h"
+#include "services/tracing/perfetto/track_event_json_exporter.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_config.h"
+#include "services/tracing/public/cpp/trace_event_args_whitelist.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/consumer.h"
@@ -33,15 +40,42 @@ namespace tracing {
 class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
  public:
   TracingSession(const base::trace_event::TraceConfig& chrome_config,
-                 base::OnceClosure tracing_over_callback)
-      : tracing_over_callback_(std::move(tracing_over_callback)) {
-    json_trace_exporter_ = std::make_unique<ChromeEventBundleJsonExporter>(
-        chrome_config.IsArgumentFilterEnabled(),
-        base::BindRepeating(&TracingSession::OnJSONTraceEventCallback,
-                            base::Unretained(this)));
+                 base::OnceClosure tracing_over_callback,
+                 const base::RepeatingCallback<void(base::ProcessId)>&
+                     on_pid_started_tracing)
+      : tracing_over_callback_(std::move(tracing_over_callback)),
+        on_pid_started_tracing_(std::move(on_pid_started_tracing)) {
+    // In legacy backend, the trace event agent sets the predicate used by
+    // TraceLog. For perfetto backend, ensure that predicate is always set
+    // before creating the exporter. The agent can be created later than this
+    // point.
+    if (base::trace_event::TraceLog::GetInstance()
+            ->GetArgumentFilterPredicate()
+            .is_null()) {
+      base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
+          base::BindRepeating(&IsTraceEventArgsWhitelisted));
+      base::trace_event::TraceLog::GetInstance()->SetMetadataFilterPredicate(
+          base::BindRepeating(&IsMetadataWhitelisted));
+    }
+
+    JSONTraceExporter::ArgumentFilterPredicate arg_filter_predicate;
+    JSONTraceExporter::MetadataFilterPredicate metadata_filter_predicate;
+    if (chrome_config.IsArgumentFilterEnabled()) {
+      auto* trace_log = base::trace_event::TraceLog::GetInstance();
+      arg_filter_predicate = trace_log->GetArgumentFilterPredicate();
+      metadata_filter_predicate = trace_log->GetMetadataFilterPredicate();
+    }
+    auto json_event_callback = base::BindRepeating(
+        &TracingSession::OnJSONTraceEventCallback, base::Unretained(this));
+    json_trace_exporter_ = std::make_unique<TrackEventJSONExporter>(
+        std::move(arg_filter_predicate), std::move(metadata_filter_predicate),
+        std::move(json_event_callback));
     perfetto::TracingService* service =
         PerfettoService::GetInstance()->GetService();
     consumer_endpoint_ = service->ConnectConsumer(this, /*uid=*/0);
+    consumer_endpoint_->ObserveEvents(
+        perfetto::TracingService::ConsumerEndpoint::ObservableEventType::
+            kDataSourceInstances);
 
     // Start tracing.
     auto perfetto_config = CreatePerfettoConfiguration(chrome_config);
@@ -64,34 +98,11 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
 
   perfetto::TraceConfig CreatePerfettoConfiguration(
       const base::trace_event::TraceConfig& chrome_config) {
-    perfetto::TraceConfig perfetto_config;
-    size_t size_limit = chrome_config.GetTraceBufferSizeInKb();
-    if (size_limit == 0) {
-      size_limit = 100 * 1024;
-    }
-    perfetto_config.add_buffers()->set_size_kb(size_limit);
-
-    // Perfetto uses clock_gettime for its internal snapshotting, which gets
-    // blocked by the sandboxed and isn't needed for Chrome regardless.
-    perfetto_config.set_disable_clock_snapshotting(true);
-
-    auto* trace_event_data_source = perfetto_config.add_data_sources();
-    for (auto& enabled_pid :
-         chrome_config.process_filter_config().included_process_ids()) {
-      *trace_event_data_source->add_producer_name_filter() =
-          base::StrCat({mojom::kPerfettoProducerName, ".",
-                        base::NumberToString(enabled_pid)});
-    }
-
-    // We strip the process filter from the config string we send to Perfetto,
-    // so perfetto doesn't reject it from a future
-    // TracingService::ChangeTraceConfig call due to being an unsupported
-    // update.
+#if DCHECK_IS_ON()
     base::trace_event::TraceConfig processfilter_stripped_config(chrome_config);
     processfilter_stripped_config.SetProcessFilterConfig(
         base::trace_event::TraceConfig::ProcessFilterConfig());
 
-#if DCHECK_IS_ON()
     // Ensure that the process filter is the only thing that gets changed
     // in a configuration during a tracing session.
     DCHECK((last_config_for_perfetto_.ToString() ==
@@ -101,40 +112,7 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
     last_config_for_perfetto_ = processfilter_stripped_config;
 #endif
 
-    auto* trace_event_config = trace_event_data_source->mutable_config();
-    trace_event_config->set_name(mojom::kTraceEventDataSourceName);
-    trace_event_config->set_target_buffer(0);
-    auto* chrome_proto_config = trace_event_config->mutable_chrome_config();
-    chrome_proto_config->set_trace_config(
-        processfilter_stripped_config.ToString());
-
-// Only CrOS and Cast support system tracing.
-#if defined(OS_CHROMEOS) || (defined(IS_CHROMECAST) && defined(OS_LINUX))
-    auto* system_trace_config =
-        perfetto_config.add_data_sources()->mutable_config();
-    system_trace_config->set_name(mojom::kSystemTraceDataSourceName);
-    system_trace_config->set_target_buffer(0);
-    auto* system_chrome_config = system_trace_config->mutable_chrome_config();
-    system_chrome_config->set_trace_config(
-        processfilter_stripped_config.ToString());
-#endif
-
-#if defined(OS_CHROMEOS)
-    auto* arc_trace_config =
-        perfetto_config.add_data_sources()->mutable_config();
-    arc_trace_config->set_name(mojom::kArcTraceDataSourceName);
-    arc_trace_config->set_target_buffer(0);
-    auto* arc_chrome_config = arc_trace_config->mutable_chrome_config();
-    arc_chrome_config->set_trace_config(
-        processfilter_stripped_config.ToString());
-#endif
-
-    auto* trace_metadata_config =
-        perfetto_config.add_data_sources()->mutable_config();
-    trace_metadata_config->set_name(mojom::kMetaDataSourceName);
-    trace_metadata_config->set_target_buffer(0);
-
-    return perfetto_config;
+    return GetDefaultPerfettoConfig(chrome_config);
   }
 
   void StopAndFlush(mojo::ScopedDataPipeProducerHandle stream,
@@ -216,12 +194,36 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
         .Run(true, percent_full, 0 /*approx_event_count*/);
   }
 
+  void OnObservableEvents(const perfetto::ObservableEvents& events) override {
+    for (const auto& state_change : events.instance_state_changes()) {
+      if (state_change.state() !=
+          perfetto::ObservableEvents::DataSourceInstanceStateChange::
+              DATA_SOURCE_INSTANCE_STATE_STARTED) {
+        continue;
+      }
+
+      if (state_change.data_source_name() != mojom::kTraceEventDataSourceName) {
+        continue;
+      }
+
+      // Attempt to parse the PID out of the producer name.
+      base::ProcessId pid;
+      if (!ConsumerHost::ParsePidFromProducerName(state_change.producer_name(),
+                                                  &pid)) {
+        continue;
+      }
+
+      on_pid_started_tracing_.Run(pid);
+    }
+  }
+
  private:
   mojo::ScopedDataPipeProducerHandle stream_;
   std::unique_ptr<JSONTraceExporter> json_trace_exporter_;
   StopAndFlushCallback stop_and_flush_callback_;
   base::OnceClosure tracing_over_callback_;
   RequestBufferUsageCallback request_buffer_usage_callback_;
+  base::RepeatingCallback<void(base::ProcessId)> on_pid_started_tracing_;
 
 #if DCHECK_IS_ON()
   base::trace_event::TraceConfig last_config_for_perfetto_;
@@ -266,55 +268,85 @@ void PerfettoTracingCoordinator::BindCoordinatorRequest(
 void PerfettoTracingCoordinator::StartTracing(const std::string& config,
                                               StartTracingCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  parsed_config_ = base::trace_event::TraceConfig(config);
+  base::trace_event::TraceConfig new_parsed_config(config);
+  bool waiting_for_tracing_start = !start_tracing_callback_.is_null();
+  bool configs_are_identical =
+      (new_parsed_config.ToString() == parsed_config_.ToString());
+  if (waiting_for_tracing_start ||
+      (tracing_session_ && configs_are_identical)) {
+    std::move(callback).Run(configs_are_identical);
+    return;
+  }
+
+  base::trace_event::TraceConfig old_parsed_config(parsed_config_);
+  parsed_config_ = new_parsed_config;
+
   if (!tracing_session_) {
     tracing_session_ = std::make_unique<TracingSession>(
         parsed_config_,
         base::BindOnce(&PerfettoTracingCoordinator::OnTracingOverCallback,
-                       weak_factory_.GetWeakPtr()));
+                       base::Unretained(this)),
+        base::BindRepeating(&PerfettoTracingCoordinator::OnPIDStartedTracing,
+                            base::Unretained(this)));
+
+    agent_registry_->SetAgentInitializationCallback(
+        base::BindRepeating(
+            &PerfettoTracingCoordinator::WaitForAgentToBeginTracing,
+            weak_factory_.GetWeakPtr()),
+        false /* call_on_new_agents_only */);
+
   } else {
+    agent_registry_->ForAllAgents(
+        [this, &old_parsed_config,
+         &new_parsed_config](AgentRegistry::AgentEntry* agent_entry) {
+          if (!old_parsed_config.process_filter_config().IsEnabled(
+                  agent_entry->pid()) &&
+              new_parsed_config.process_filter_config().IsEnabled(
+                  agent_entry->pid())) {
+            WaitForAgentToBeginTracing(agent_entry);
+          }
+        });
+
     tracing_session_->ChangeTraceConfig(parsed_config_);
   }
-
-  agent_registry_->SetAgentInitializationCallback(
-      base::BindRepeating(&PerfettoTracingCoordinator::PingAgent,
-                          weak_factory_.GetWeakPtr()),
-      false /* call_on_new_agents_only */);
 
   SetStartTracingCallback(std::move(callback));
 }
 
-void PerfettoTracingCoordinator::PingAgent(
+void PerfettoTracingCoordinator::OnPIDStartedTracing(base::ProcessId pid) {
+  agent_registry_->ForAllAgents(
+      [this, pid](AgentRegistry::AgentEntry* agent_entry) {
+        if (pid == agent_entry->pid()) {
+          OnAgentStartedTracing(agent_entry);
+        }
+      });
+}
+
+void PerfettoTracingCoordinator::OnAgentStartedTracing(
     AgentRegistry::AgentEntry* agent_entry) {
-  if (!parsed_config_.process_filter_config().IsEnabled(agent_entry->pid()))
+  agent_entry->RemoveDisconnectClosure(GetStartTracingClosureName());
+  CallStartTracingCallbackIfNeeded();
+}
+
+void PerfettoTracingCoordinator::WaitForAgentToBeginTracing(
+    AgentRegistry::AgentEntry* agent_entry) {
+  if (!agent_entry->pid() ||
+      !parsed_config_.process_filter_config().IsEnabled(agent_entry->pid()))
     return;
 
-  // TODO(oysteine): While we're still using the Agent
-  // system as a fallback when using Perfetto, rather than
-  // the browser directly using a Consumer interface, we have to
-  // attempt to linearize with newly connected agents so we only
-  // call the BeginTracing callback when we can be sure
-  // that all current agents have registered with Perfetto and
-  // started tracing if requested. We do this linearization
-  // explicitly using WaitForTracingEnabled() which will wait
-  // for the TraceLog to be enabled before calling its provided
-  // callback.
-  auto closure = base::BindRepeating(
-      [](base::WeakPtr<PerfettoTracingCoordinator> coordinator,
-         AgentRegistry::AgentEntry* agent_entry) {
-        bool removed =
-            agent_entry->RemoveDisconnectClosure(GetStartTracingClosureName());
-        DCHECK(removed);
+  // TODO(oysteine): While we're still using the Agent system as a fallback when
+  // using Perfetto, rather than the browser directly using a Consumer
+  // interface, we have to attempt to linearize with newly connected agents so
+  // we only call the BeginTracing callback when we can be sure that all current
+  // agents have registered with Perfetto and started tracing if requested. We
+  // do this by adding a disconnect closure to all newly connected agents and
+  // then wait for Perfetto to tell us their data sources are connected.
+  agent_entry->AddDisconnectClosure(
+      GetStartTracingClosureName(),
+      base::BindOnce(&PerfettoTracingCoordinator::OnAgentStartedTracing,
+                     weak_factory_.GetWeakPtr(),
+                     base::Unretained(agent_entry)));
 
-        if (coordinator) {
-          coordinator->CallStartTracingCallbackIfNeeded();
-        }
-      },
-      weak_factory_.GetWeakPtr(), base::Unretained(agent_entry));
-
-  agent_entry->AddDisconnectClosure(GetStartTracingClosureName(), closure);
-
-  agent_entry->agent()->WaitForTracingEnabled(closure);
   RemoveExpectedPID(agent_entry->pid());
 }
 

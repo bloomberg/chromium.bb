@@ -5,12 +5,16 @@
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 
 #include "base/bind.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
+#include "chrome/browser/sync/test/integration/sync_test.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
 UpdatedProgressMarkerChecker::UpdatedProgressMarkerChecker(
-    browser_sync::ProfileSyncService* service)
+    syncer::ProfileSyncService* service)
     : SingleClientStatusChangeChecker(service), weak_ptr_factory_(this) {
+  DCHECK(sync_datatype_helper::test()->TestUsesSelfNotifications());
+
   // HasUnsyncedItemsForTest() posts a task to the sync thread which guarantees
   // that all tasks posted to the sync thread before this constructor have been
   // processed.
@@ -26,7 +30,8 @@ bool UpdatedProgressMarkerChecker::IsExitConditionSatisfied() {
     return false;
   }
 
-  const syncer::SyncCycleSnapshot& snap = service()->GetLastCycleSnapshot();
+  const syncer::SyncCycleSnapshot& snap =
+      service()->GetLastCycleSnapshotForDebugging();
   // Assuming the lack of ongoing remote changes, the progress marker can be
   // considered updated when:
   // 1. Progress markers are non-empty (which discards the default value for
@@ -59,7 +64,8 @@ void UpdatedProgressMarkerChecker::OnSyncCycleCompleted(
   }
 
   // Override |has_unsynced_items_| with the result of the sync cycle.
-  const syncer::SyncCycleSnapshot& snap = service()->GetLastCycleSnapshot();
+  const syncer::SyncCycleSnapshot& snap =
+      service()->GetLastCycleSnapshotForDebugging();
   has_unsynced_items_ = snap.has_remaining_local_changes();
   CheckExitCondition();
 }

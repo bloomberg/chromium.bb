@@ -40,8 +40,8 @@ bool HasNodeWithName(ui::AXTree* tree, const std::string& name) {
 // Subclass of AXAuraWindowUtils that skips any aura::Window named ParentWindow.
 class TestAXAuraWindowUtils : public AXAuraWindowUtils {
  public:
-  TestAXAuraWindowUtils() {}
-  ~TestAXAuraWindowUtils() override {}
+  TestAXAuraWindowUtils() = default;
+  ~TestAXAuraWindowUtils() override = default;
 
  private:
   aura::Window* GetParent(aura::Window* window) override {
@@ -113,8 +113,8 @@ class AXAuraWindowUtilsTest : public ViewsTestBase {
   std::unique_ptr<ui::AXTree> GetAccessibilityTreeFromWindow(
       aura::Window* window) {
     ui::AXTreeID tree_id = ui::AXTreeID::CreateNewAXTreeID();
-    AXAuraObjCache* cache = AXAuraObjCache::GetInstance();
-    AXTreeSourceViews tree_source(cache->GetOrCreate(window), tree_id);
+    AXAuraObjCache cache;
+    AXTreeSourceViews tree_source(cache.GetOrCreate(window), tree_id, &cache);
     AuraAXTreeSerializer serializer(&tree_source);
     ui::AXTreeUpdate serialized_tree;
     serializer.SerializeChanges(tree_source.GetRoot(), &serialized_tree);

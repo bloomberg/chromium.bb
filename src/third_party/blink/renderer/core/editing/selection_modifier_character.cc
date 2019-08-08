@@ -38,6 +38,8 @@
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_navigator.h"
@@ -159,6 +161,18 @@ struct TraversalLeft {
     DCHECK(RuntimeEnabledFeatures::BidiCaretAffinityEnabled());
     return caret_navigator.LeftPositionOf(caret_position);
   }
+
+  static NGCaretNavigator::Position MostBackwardPositionInFirstLine(
+      const NGCaretNavigator& caret_navigator) {
+    DCHECK(RuntimeEnabledFeatures::BidiCaretAffinityEnabled());
+    return caret_navigator.RightmostPositionInFirstLine();
+  }
+
+  static NGCaretNavigator::Position MostBackwardPositionInLastLine(
+      const NGCaretNavigator& caret_navigator) {
+    DCHECK(RuntimeEnabledFeatures::BidiCaretAffinityEnabled());
+    return caret_navigator.RightmostPositionInLastLine();
+  }
 };
 
 // The traversal strategy for |RightPositionOf()|.
@@ -271,6 +285,18 @@ struct TraversalRight {
       const NGCaretNavigator::Position& caret_position) {
     DCHECK(RuntimeEnabledFeatures::BidiCaretAffinityEnabled());
     return caret_navigator.RightPositionOf(caret_position);
+  }
+
+  static NGCaretNavigator::Position MostBackwardPositionInFirstLine(
+      const NGCaretNavigator& caret_navigator) {
+    DCHECK(RuntimeEnabledFeatures::BidiCaretAffinityEnabled());
+    return caret_navigator.LeftmostPositionInFirstLine();
+  }
+
+  static NGCaretNavigator::Position MostBackwardPositionInLastLine(
+      const NGCaretNavigator& caret_navigator) {
+    DCHECK(RuntimeEnabledFeatures::BidiCaretAffinityEnabled());
+    return caret_navigator.LeftmostPositionInLastLine();
   }
 };
 
@@ -495,9 +521,202 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
   }
 }
 
+// TODO(xiaochengh): This class will likely be reused elsewhere. Move it to its
+// own files.
+class InlineFormattingContextTraversal {
+  STATIC_ONLY(InlineFormattingContextTraversal);
+
+ public:
+  static LayoutBlockFlow* PreviousContextOf(const LayoutBlockFlow& start) {
+    const LayoutObject* stay_within = AncestorToStayWithin(start);
+    for (LayoutObject* runner =
+             start.PreviousInPostOrderBeforeChildren(stay_within);
+         runner;) {
+      if (ShouldNotEnter(*runner)) {
+        runner = runner->PreviousInPostOrderBeforeChildren(stay_within);
+        continue;
+      }
+
+      if (IsValidContextForCaretNavigation(*runner))
+        return To<LayoutBlockFlow>(runner);
+
+      runner = runner->PreviousInPostOrder(stay_within);
+    }
+    return nullptr;
+  }
+
+  static LayoutBlockFlow* NextContextOf(const LayoutBlockFlow& start) {
+    const LayoutObject* stay_within = AncestorToStayWithin(start);
+    for (LayoutObject* runner = start.NextInPreOrderAfterChildren(stay_within);
+         runner;) {
+      if (ShouldNotEnter(*runner)) {
+        runner = runner->NextInPreOrderAfterChildren(stay_within);
+        continue;
+      }
+
+      if (IsValidContextForCaretNavigation(*runner))
+        return To<LayoutBlockFlow>(runner);
+
+      runner = runner->NextInPreOrder(stay_within);
+    }
+    return nullptr;
+  }
+
+ private:
+  static bool IsValidContextForCaretNavigation(LayoutObject& object) {
+    auto* block_flow = DynamicTo<LayoutBlockFlow>(object);
+    if (!block_flow || !object.ChildrenInline())
+      return false;
+
+    if (block_flow->IsLayoutNGMixin()) {
+      if (!block_flow->HasNGInlineNodeData() ||
+          !block_flow->GetNGInlineNodeData()->text_content.length()) {
+        return false;
+      }
+    }
+
+    const NGOffsetMapping* mapping = NGInlineNode::GetOffsetMapping(block_flow);
+    DCHECK(mapping);
+
+    // Reject empty blocks
+    // TODO(xiaochengh): We may need to support empty block.
+    if (!mapping->GetText().length())
+      return false;
+
+    // Reject if the block has CSS-generated contents only
+    for (const NGOffsetMappingUnit& unit : mapping->GetUnits()) {
+      if (unit.GetType() != NGOffsetMappingUnitType::kCollapsed &&
+          unit.AssociatedNode())
+        return true;
+    }
+    return false;
+  }
+
+  // TODO(xiaochengh): Move it to another place as it seems general.
+  static bool IsUserAgentShadowHost(const LayoutObject& object) {
+    if (!object.NonPseudoNode() || !object.NonPseudoNode()->IsElementNode())
+      return false;
+    const Element& element = *ToElement(object.NonPseudoNode());
+    return element.GetShadowRoot() && element.GetShadowRoot()->IsUserAgent();
+  }
+
+  static bool ShouldNotEnter(const LayoutObject& object) {
+    // Heuristic rules of whether caret movement can enter an object.
+    // TODO(xiaochengh): The rules will likely be extended in the future.
+    return IsUserAgentShadowHost(object);
+  }
+
+  static bool ShouldNotExit(const LayoutObject& object) {
+    // Heuristic rules of whether caret movement can exit an object.
+    // TODO(xiaochengh): The rules will likely be extended in the future.
+    return IsUserAgentShadowHost(object);
+  }
+
+  static const LayoutObject* AncestorToStayWithin(
+      const LayoutBlockFlow& start) {
+    for (const LayoutObject* runner = start.Parent(); runner;
+         runner = runner->Parent()) {
+      if (ShouldNotExit(*runner))
+        return runner;
+    }
+    return nullptr;
+  }
+};
+
+template <typename Strategy, typename Traversal>
+PositionWithAffinityTemplate<Strategy> TraverseOutOfCurrentContext(
+    const LayoutBlockFlow& context,
+    NGCaretNavigator::VisualMovementResultType type) {
+  // TODO(xiaochengh): Handle the case where we move out from an inline block
+  // into its parent/ancestor inline formatting context.
+
+  const bool is_before_context =
+      type == NGCaretNavigator::VisualMovementResultType::kBeforeContext;
+  LayoutBlockFlow* target_context =
+      is_before_context
+          ? InlineFormattingContextTraversal::PreviousContextOf(context)
+          : InlineFormattingContextTraversal::NextContextOf(context);
+  if (!target_context)
+    return PositionWithAffinityTemplate<Strategy>();
+
+  if (!target_context->IsLayoutNGMixin()) {
+    // We have traversed to a legacy block.
+    // TODO(xiaochengh): In most cases, we reach here by crossing an editability
+    // boundary, for which we can simply return null. Investigate if there are
+    // other cases that require a non-trivial fallback.
+    return PositionWithAffinityTemplate<Strategy>();
+  }
+
+  NGCaretNavigator target_navigator(*target_context);
+  const NGCaretNavigator::Position result =
+      is_before_context
+          ? Traversal::MostBackwardPositionInLastLine(target_navigator)
+          : Traversal::MostBackwardPositionInFirstLine(target_navigator);
+
+  DCHECK(NGInlineNode::GetOffsetMapping(target_context));
+  return FromPositionInDOMTree<Strategy>(
+      NGInlineNode::GetOffsetMapping(target_context)
+          ->GetPositionWithAffinity(result));
+}
+
+template <typename Strategy, typename Traversal>
+PositionWithAffinityTemplate<Strategy> TraverseIntoChildContext(
+    const PositionTemplate<Strategy>& position) {
+  DCHECK(position.IsNotNull());
+  DCHECK(position.IsBeforeAnchor() || position.IsAfterAnchor()) << position;
+  DCHECK(position.AnchorNode()->GetLayoutObject()) << position;
+  DCHECK(position.AnchorNode()->GetLayoutObject()->IsLayoutBlockFlow())
+      << position;
+
+  auto* target_block =
+      To<LayoutBlockFlow>(position.AnchorNode()->GetLayoutObject());
+
+  if (!target_block->IsLayoutNGMixin()) {
+    // In most cases, we reach here by crossing editing boundary, in which case
+    // returning null position suffices.
+    // TODO(xiaochengh): Investigate if there are other cases that need a
+    // non-trivial legacy fallback.
+    return PositionWithAffinityTemplate<Strategy>();
+  }
+
+  if (!target_block->ChildrenInline() || !target_block->HasNGInlineNodeData() ||
+      !target_block->GetNGInlineNodeData()->text_content.length()) {
+    // TODO(xiaochengh): Implement when |target_block| has its own child blocks,
+    // or when |target_block| is empty.
+    return PositionWithAffinityTemplate<Strategy>();
+  }
+
+  NGCaretNavigator caret_navigator(*target_block);
+  DCHECK(caret_navigator.GetText().length());
+
+  const NGCaretNavigator::Position position_in_target =
+      position.IsBeforeAnchor()
+          ? Traversal::MostBackwardPositionInFirstLine(caret_navigator)
+          : Traversal::MostBackwardPositionInLastLine(caret_navigator);
+
+  // When moving into inline block, the caret moves over the first character
+  // seamlessly as if there's no inline block boundary. For example:
+  // RightPositionOf(foo|<inline-block>bar</inline-block>)
+  // -> foo<inline-block>b|ar</inline-block>
+  const NGCaretNavigator::VisualCaretMovementResult result_position =
+      Traversal::ForwardPositionOf(caret_navigator, position_in_target);
+
+  if (!result_position.IsWithinContext()) {
+    // TODO(xiaochengh): We reach here if |target_block| starts with an
+    // enterable child context. Fix it with proper block navigation.
+    // Also investigate if we reach here for other reasons.
+    return PositionWithAffinityTemplate<Strategy>();
+  }
+
+  const NGOffsetMapping* mapping = NGInlineNode::GetOffsetMapping(target_block);
+  return FromPositionInDOMTree<Strategy>(
+      mapping->GetPositionWithAffinity(*result_position.position));
+}
+
 template <typename Strategy, typename Traversal>
 PositionWithAffinityTemplate<Strategy> TraverseWithBidiCaretAffinity(
-    const PositionWithAffinityTemplate<Strategy> start_position_with_affinity) {
+    const PositionWithAffinityTemplate<Strategy>&
+        start_position_with_affinity) {
   const PositionTemplate<Strategy> start_position =
       start_position_with_affinity.GetPosition();
   const Position start_position_in_dom = ToPositionInDOMTree(start_position);
@@ -547,15 +766,21 @@ PositionWithAffinityTemplate<Strategy> TraverseWithBidiCaretAffinity(
         result_caret_position.position.value()));
   }
 
-  // We reach here if we need to move out of the current block.
-  if (result_caret_position.IsBeforeContext()) {
-    // TODO(xiaochengh): Move to the visual end of the previous block.
-    return PositionWithAffinityTemplate<Strategy>();
+  if (result_caret_position.HasEnteredChildContext()) {
+    DCHECK(result_caret_position.position.has_value());
+    const PositionTemplate<Strategy> outside_child_context =
+        FromPositionInDOMTree<Strategy>(
+            mapping->GetPositionWithAffinity(*result_caret_position.position))
+            .GetPosition();
+
+    return TraverseIntoChildContext<Strategy, Traversal>(outside_child_context);
   }
 
-  DCHECK(result_caret_position.IsAfterContext());
-  // TODO(xiaochengh): Move to the visual beginning of the next block.
-  return PositionWithAffinityTemplate<Strategy>();
+  // We reach here if we need to move out of the current block.
+  DCHECK(result_caret_position.IsBeforeContext() ||
+         result_caret_position.IsAfterContext());
+  return TraverseOutOfCurrentContext<Strategy, Traversal>(
+      *context, result_caret_position.type);
 }
 
 template <typename Strategy, typename Traversal>

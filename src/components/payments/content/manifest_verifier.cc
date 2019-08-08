@@ -18,8 +18,8 @@
 #include "components/webdata/common/web_data_results.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/console_message_level.h"
 #include "net/base/url_util.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 

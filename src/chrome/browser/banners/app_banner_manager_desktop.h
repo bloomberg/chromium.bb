@@ -11,10 +11,6 @@
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-namespace extensions {
-class BookmarkAppHelper;
-}
-
 namespace banners {
 
 // Manages web app banners for desktop platforms.
@@ -36,11 +32,9 @@ class AppBannerManagerDesktop
   explicit AppBannerManagerDesktop(content::WebContents* web_contents);
 
   // AppBannerManager overrides.
-  void CreateBookmarkApp(WebappInstallSource install_source) override;
-  void DidFinishCreatingBookmarkApp(
-      const extensions::Extension* extension,
-      const WebApplicationInfo& web_app_info) override;
-  void ResetCurrentPageData() override;
+  void CreateWebApp(WebappInstallSource install_source) override;
+  void DidFinishCreatingWebApp(const web_app::AppId& app_id,
+                               web_app::InstallResultCode code) override;
 
  private:
   friend class content::WebContentsUserData<AppBannerManagerDesktop>;
@@ -61,8 +55,6 @@ class AppBannerManagerDesktop
                          const GURL& url,
                          double score,
                          SiteEngagementService::EngagementType type) override;
-
-  std::unique_ptr<extensions::BookmarkAppHelper> bookmark_app_helper_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

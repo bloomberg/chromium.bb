@@ -4,7 +4,7 @@
 
 #include "base/fuchsia/service_directory.h"
 
-#include <lib/fdio/util.h>
+#include <lib/fdio/fdio.h>
 #include <lib/zx/channel.h>
 #include <utility>
 

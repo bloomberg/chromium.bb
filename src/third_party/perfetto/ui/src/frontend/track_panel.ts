@@ -221,6 +221,7 @@ export class TrackPanel extends Panel<TrackPanelAttrs> {
     ctx.translate(TRACK_SHELL_WIDTH, 0);
 
     this.track.renderCanvas(ctx);
+
     ctx.restore();
 
     const localState = globals.frontendLocalState;
@@ -257,6 +258,15 @@ export class TrackPanel extends Panel<TrackPanelAttrs> {
                               globals.state.currentSelection.endTs,
                               size.height,
                               `rgba(52,69,150,0.3)`);
+      }
+      if (globals.state.currentSelection.kind === 'SLICE' &&
+          globals.sliceDetails.wakeupTs !== undefined) {
+        drawVerticalLineAtTime(
+            ctx,
+            localState.timeScale,
+            globals.sliceDetails.wakeupTs,
+            size.height,
+            `black`);
       }
     }
   }

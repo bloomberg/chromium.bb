@@ -108,6 +108,9 @@ class BackgroundFetchDelegateImpl
                          VisualsCallback callback) override;
   void GetShareInfoForItem(const offline_items_collection::ContentId& id,
                            ShareCallback callback) override;
+  void RenameItem(const offline_items_collection::ContentId& id,
+                  const std::string& name,
+                  RenameCallback callback) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
 

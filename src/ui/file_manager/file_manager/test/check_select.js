@@ -22,7 +22,7 @@ checkselect.testCancelCheckSelectModeAfterAction = (done) => {
       })
       .then(result => {
         assertEquals(
-            2, document.querySelectorAll('#file-list li[selected').length);
+            2, document.querySelectorAll('#file-list li[selected]').length);
         // Click selection menu (3-dots).
         assertTrue(test.fakeMouseClick('#selection-menu-button'));
         return test.waitForElement(

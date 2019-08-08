@@ -150,7 +150,7 @@ std::unique_ptr<SessionDescriptionInterface> CreateSessionDescription(
     std::unique_ptr<cricket::SessionDescription> description) {
   auto jsep_description = absl::make_unique<JsepSessionDescription>(type);
   bool initialize_success = jsep_description->Initialize(
-      description.release(), session_id, session_version);
+      std::move(description), session_id, session_version);
   RTC_DCHECK(initialize_success);
   return std::move(jsep_description);
 }
@@ -185,7 +185,7 @@ JsepSessionDescription::JsepSessionDescription(
 JsepSessionDescription::~JsepSessionDescription() {}
 
 bool JsepSessionDescription::Initialize(
-    cricket::SessionDescription* description,
+    std::unique_ptr<cricket::SessionDescription> description,
     const std::string& session_id,
     const std::string& session_version) {
   if (!description)
@@ -193,14 +193,21 @@ bool JsepSessionDescription::Initialize(
 
   session_id_ = session_id;
   session_version_ = session_version;
-  description_.reset(description);
+  description_ = std::move(description);
   candidate_collection_.resize(number_of_mediasections());
   return true;
 }
 
+bool JsepSessionDescription::Initialize(
+    cricket::SessionDescription* description,
+    const std::string& session_id,
+    const std::string& session_version) {
+  return Initialize(absl::WrapUnique(description), session_id, session_version);
+}
+
 bool JsepSessionDescription::AddCandidate(
     const IceCandidateInterface* candidate) {
-  if (!candidate || candidate->sdp_mline_index() < 0)
+  if (!candidate)
     return false;
   size_t mediasection_index = 0;
   if (!GetMediasectionIndex(candidate, &mediasection_index)) {
@@ -284,7 +291,18 @@ bool JsepSessionDescription::GetMediasectionIndex(
   if (!candidate || !index) {
     return false;
   }
-  *index = static_cast<size_t>(candidate->sdp_mline_index());
+
+  // If the candidate has no valid mline index or sdp_mid, it is impossible
+  // to find a match.
+  if (candidate->sdp_mid().empty() &&
+      (candidate->sdp_mline_index() < 0 ||
+       static_cast<size_t>(candidate->sdp_mline_index()) >=
+           description_->contents().size())) {
+    return false;
+  }
+
+  if (candidate->sdp_mline_index() >= 0)
+    *index = static_cast<size_t>(candidate->sdp_mline_index());
   if (description_ && !candidate->sdp_mid().empty()) {
     bool found = false;
     // Try to match the sdp_mid with content name.

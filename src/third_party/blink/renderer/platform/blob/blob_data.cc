@@ -101,14 +101,9 @@ mojom::blink::BlobRegistry* GetThreadSpecificRegistry() {
 
 }  // namespace
 
-constexpr long long BlobData::kToEndOfFile;
+constexpr int64_t BlobData::kToEndOfFile;
 
 RawData::RawData() = default;
-
-std::unique_ptr<BlobData> BlobData::Create() {
-  return base::WrapUnique(
-      new BlobData(FileCompositionStatus::NO_UNKNOWN_SIZE_FILES));
-}
 
 std::unique_ptr<BlobData> BlobData::CreateForFileWithUnknownSize(
     const String& path) {
@@ -164,8 +159,8 @@ void BlobData::AppendData(scoped_refptr<RawData> data) {
 }
 
 void BlobData::AppendFile(const String& path,
-                          long long offset,
-                          long long length,
+                          int64_t offset,
+                          int64_t length,
                           double expected_modification_time) {
   DCHECK_EQ(file_composition_, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
@@ -183,8 +178,8 @@ void BlobData::AppendFile(const String& path,
 }
 
 void BlobData::AppendBlob(scoped_refptr<BlobDataHandle> data_handle,
-                          long long offset,
-                          long long length) {
+                          int64_t offset,
+                          int64_t length) {
   DCHECK_EQ(file_composition_, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
   DCHECK(!data_handle->IsSingleUnknownSizeFile())
@@ -197,8 +192,8 @@ void BlobData::AppendBlob(scoped_refptr<BlobDataHandle> data_handle,
 }
 
 void BlobData::AppendFileSystemURL(const KURL& url,
-                                   long long offset,
-                                   long long length,
+                                   int64_t offset,
+                                   int64_t length,
                                    double expected_modification_time) {
   DCHECK_EQ(file_composition_, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
@@ -310,7 +305,7 @@ BlobDataHandle::BlobDataHandle()
                                         {});
 }
 
-BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
+BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, uint64_t size)
     : uuid_(CreateCanonicalUUIDString()),
       type_(data->ContentType().IsolatedCopy()),
       size_(size),
@@ -324,7 +319,7 @@ BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
 
 BlobDataHandle::BlobDataHandle(const String& uuid,
                                const String& type,
-                               long long size)
+                               uint64_t size)
     : uuid_(uuid.IsolatedCopy()),
       type_(IsValidBlobType(type) ? type.IsolatedCopy() : ""),
       size_(size),
@@ -336,7 +331,7 @@ BlobDataHandle::BlobDataHandle(const String& uuid,
 
 BlobDataHandle::BlobDataHandle(const String& uuid,
                                const String& type,
-                               long long size,
+                               uint64_t size,
                                BlobPtrInfo blob_info)
     : uuid_(uuid.IsolatedCopy()),
       type_(IsValidBlobType(type) ? type.IsolatedCopy() : ""),

@@ -146,11 +146,7 @@ void TestNavigationObserver::OnWebContentsCreated(WebContents* web_contents) {
 void TestNavigationObserver::OnWebContentsDestroyed(
     TestWebContentsObserver* observer,
     WebContents* web_contents) {
-  web_contents_observers_.erase(std::find_if(
-      web_contents_observers_.begin(), web_contents_observers_.end(),
-      [observer](const std::unique_ptr<TestWebContentsObserver>& ptr) {
-        return ptr.get() == observer;
-      }));
+  web_contents_observers_.erase(web_contents_observers_.find(observer));
 }
 
 void TestNavigationObserver::OnNavigationEntryCommitted(

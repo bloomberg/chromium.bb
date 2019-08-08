@@ -62,7 +62,7 @@ WebView::WebView(content::BrowserContext* browser_context)
 }
 
 WebView::~WebView() {
-  SetWebContents(NULL);  // Make sure all necessary tear-down takes place.
+  SetWebContents(nullptr);  // Make sure all necessary tear-down takes place.
 }
 
 content::WebContents* WebView::GetWebContents() {
@@ -119,10 +119,6 @@ void WebView::EnableSizingFromWebContents(const gfx::Size& min_size,
   min_size_ = min_size;
   max_size_ = max_size;
   MaybeEnableAutoResize();
-}
-
-void WebView::SetResizeBackgroundColor(SkColor resize_background_color) {
-  holder_->set_resize_background_color(resize_background_color);
 }
 
 void WebView::SetCrashedOverlayView(View* crashed_overlay_view) {
@@ -435,8 +431,7 @@ std::unique_ptr<content::WebContents> WebView::CreateWebContents(
   }
 
   if (!contents) {
-    content::WebContents::CreateParams create_params(
-        browser_context, NULL);
+    content::WebContents::CreateParams create_params(browser_context, nullptr);
     return content::WebContents::Create(create_params);
   }
 

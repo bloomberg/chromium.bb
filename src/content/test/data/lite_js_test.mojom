@@ -6,6 +6,7 @@ module lite_js_test.mojom;
 
 struct TestStruct {
   int32 x;
+  const bool isValid = false;
 };
 
 union TestUnion {

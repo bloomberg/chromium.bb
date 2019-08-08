@@ -4,6 +4,7 @@
 
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 
+#include <algorithm>
 #include <type_traits>
 
 #include <dlfcn.h>
@@ -24,11 +25,13 @@
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 
 #include "media/base/media_switches.h"
+#include "media/base/video_types.h"
 
 // Auto-generated for dlopen libva libraries
 #include "media/gpu/vaapi/va_stubs.h"
@@ -150,6 +153,10 @@ static const struct {
     {VP9PROFILE_PROFILE3, VAProfileVP9Profile3},
 };
 
+constexpr const char* kMesaGalliumDriverPrefix = "Mesa Gallium driver";
+constexpr const char* kIntelI965DriverPrefix = "Intel i965 driver";
+constexpr const char* kIntelIHDDriverPrefix = "Intel iHD driver";
+
 static const struct {
   std::string va_driver;
   std::string cpu_family;
@@ -158,7 +165,7 @@ static const struct {
 } kBlackListMap[]{
     // TODO(hiroh): Remove once Chrome supports unpacked header.
     // https://crbug.com/828482.
-    {"Mesa Gallium driver",
+    {kMesaGalliumDriverPrefix,
      "AMD STONEY",
      VaapiWrapper::CodecMode::kEncode,
      {VAProfileH264Baseline, VAProfileH264Main, VAProfileH264High,
@@ -377,41 +384,6 @@ void VADisplayState::Deinitialize(VAStatus* status) {
   va_display_ = nullptr;
 }
 
-static std::vector<VAConfigAttrib> GetRequiredAttribs(
-    VaapiWrapper::CodecMode mode,
-    VAProfile profile) {
-  std::vector<VAConfigAttrib> required_attribs;
-
-  // No attribute for kVideoProcess.
-  if (mode == VaapiWrapper::kVideoProcess)
-    return required_attribs;
-
-  // VAConfigAttribRTFormat is common to both encode and decode |mode|s.
-  if (profile == VAProfileVP9Profile2 || profile == VAProfileVP9Profile3) {
-    required_attribs.push_back(
-        {VAConfigAttribRTFormat, VA_RT_FORMAT_YUV420_10BPP});
-  } else {
-    required_attribs.push_back({VAConfigAttribRTFormat, VA_RT_FORMAT_YUV420});
-  }
-
-  if (mode != VaapiWrapper::kEncode)
-    return required_attribs;
-
-  // All encoding use constant bit rate except for JPEG.
-  if (profile != VAProfileJPEGBaseline)
-    required_attribs.push_back({VAConfigAttribRateControl, VA_RC_CBR});
-
-  // VAConfigAttribEncPackedHeaders is H.264 specific.
-  if ((profile >= VAProfileH264Baseline && profile <= VAProfileH264High) ||
-      (profile == VAProfileH264ConstrainedBaseline)) {
-    required_attribs.push_back(
-        {VAConfigAttribEncPackedHeaders,
-         VA_ENC_PACKED_HEADER_SEQUENCE | VA_ENC_PACKED_HEADER_PICTURE});
-  }
-
-  return required_attribs;
-}
-
 static VAEntrypoint GetVaEntryPoint(VaapiWrapper::CodecMode mode,
                                     VAProfile profile) {
   switch (mode) {
@@ -430,21 +402,76 @@ static VAEntrypoint GetVaEntryPoint(VaapiWrapper::CodecMode mode,
   }
 }
 
+static bool GetRequiredAttribs(const base::Lock* va_lock,
+                               VADisplay va_display,
+                               VaapiWrapper::CodecMode mode,
+                               VAProfile profile,
+                               std::vector<VAConfigAttrib>* required_attribs) {
+  va_lock->AssertAcquired();
+  // No attribute for kVideoProcess.
+  if (mode == VaapiWrapper::kVideoProcess)
+    return true;
+
+  // VAConfigAttribRTFormat is common to both encode and decode |mode|s.
+  if (profile == VAProfileVP9Profile2 || profile == VAProfileVP9Profile3) {
+    required_attribs->push_back(
+        {VAConfigAttribRTFormat, VA_RT_FORMAT_YUV420_10BPP});
+  } else {
+    required_attribs->push_back({VAConfigAttribRTFormat, VA_RT_FORMAT_YUV420});
+  }
+
+  if (mode != VaapiWrapper::kEncode)
+    return true;
+
+  // All encoding use constant bit rate except for JPEG.
+  if (profile != VAProfileJPEGBaseline)
+    required_attribs->push_back({VAConfigAttribRateControl, VA_RC_CBR});
+
+  // VAConfigAttribEncPackedHeaders is H.264 specific.
+  if ((profile >= VAProfileH264Baseline && profile <= VAProfileH264High) ||
+      (profile == VAProfileH264ConstrainedBaseline)) {
+    // Encode with Packed header if a driver supports.
+    VAEntrypoint entrypoint =
+        GetVaEntryPoint(VaapiWrapper::CodecMode::kEncode, profile);
+    VAConfigAttrib attrib;
+    attrib.type = VAConfigAttribEncPackedHeaders;
+    VAStatus va_res =
+        vaGetConfigAttributes(va_display, profile, entrypoint, &attrib, 1);
+    if (va_res != VA_STATUS_SUCCESS) {
+      LOG(ERROR) << "GetConfigAttributes failed for va_profile " << profile;
+      return false;
+    }
+
+    if (attrib.value != VA_ENC_PACKED_HEADER_NONE) {
+      required_attribs->push_back(
+          {VAConfigAttribEncPackedHeaders,
+           VA_ENC_PACKED_HEADER_SEQUENCE | VA_ENC_PACKED_HEADER_PICTURE});
+    }
+  }
+  return true;
+}
+
 // This class encapsulates reading and giving access to the list of supported
 // ProfileInfo entries, in a singleton way.
 class VASupportedProfiles {
  public:
   struct ProfileInfo {
     VAProfile va_profile;
+    gfx::Size min_resolution;
     gfx::Size max_resolution;
+    VaapiWrapper::InternalFormats supported_internal_formats;
   };
   static const VASupportedProfiles& Get();
 
   const std::vector<ProfileInfo>& GetSupportedProfileInfosForCodecMode(
       VaapiWrapper::CodecMode mode) const;
 
+  // Determines if the |va_profile| is supported for |mode|. If so (and
+  // |profile_info| is not nullptr), *|profile_info| is filled with the profile
+  // information.
   bool IsProfileSupported(VaapiWrapper::CodecMode mode,
-                          VAProfile va_profile) const;
+                          VAProfile va_profile,
+                          ProfileInfo* profile_info = nullptr) const;
 
  private:
   friend class base::NoDestructor<VASupportedProfiles>;
@@ -462,6 +489,7 @@ class VASupportedProfiles {
   bool IsEntrypointSupported_Locked(VAProfile va_profile,
                                     VAEntrypoint entrypoint) const
       EXCLUSIVE_LOCKS_REQUIRED(va_lock_);
+
   // Returns true if |va_profile| for |entrypoint| with |required_attribs| is
   // supported.
   bool AreAttribsSupported_Locked(
@@ -469,14 +497,17 @@ class VASupportedProfiles {
       VAEntrypoint entrypoint,
       const std::vector<VAConfigAttrib>& required_attribs) const
       EXCLUSIVE_LOCKS_REQUIRED(va_lock_);
-  // Gets maximum resolution for |va_profile| and |entrypoint| with
-  // |required_attribs|. If return value is true, |resolution| is the maximum
-  // resolution.
-  bool GetMaxResolution_Locked(VAProfile va_profile,
-                               VAEntrypoint entrypoint,
-                               std::vector<VAConfigAttrib>& required_attribs,
-                               gfx::Size* resolution) const
+
+  // Fills |profile_info| for |va_profile| and |entrypoint| with
+  // |required_attribs|. If the return value is true, the operation was
+  // successful. Otherwise, the information in *|profile_info| shouldn't be
+  // relied upon.
+  bool FillProfileInfo_Locked(VAProfile va_profile,
+                              VAEntrypoint entrypoint,
+                              std::vector<VAConfigAttrib>& required_attribs,
+                              ProfileInfo* profile_info) const
       EXCLUSIVE_LOCKS_REQUIRED(va_lock_);
+
   std::vector<ProfileInfo> supported_profiles_[VaapiWrapper::kCodecModeMax];
 
   // Pointer to VADisplayState's members |va_lock_| and its |va_display_|.
@@ -501,12 +532,16 @@ VASupportedProfiles::GetSupportedProfileInfosForCodecMode(
 }
 
 bool VASupportedProfiles::IsProfileSupported(VaapiWrapper::CodecMode mode,
-                                             VAProfile va_profile) const {
-  for (const auto& profile : supported_profiles_[mode]) {
-    if (profile.va_profile == va_profile)
-      return true;
-  }
-  return false;
+                                             VAProfile va_profile,
+                                             ProfileInfo* profile_info) const {
+  auto iter = std::find_if(supported_profiles_[mode].begin(),
+                           supported_profiles_[mode].end(),
+                           [va_profile](const ProfileInfo& profile) {
+                             return profile.va_profile == va_profile;
+                           });
+  if (profile_info && iter != supported_profiles_[mode].end())
+    *profile_info = *iter;
+  return iter != supported_profiles_[mode].end();
 }
 
 VASupportedProfiles::VASupportedProfiles()
@@ -559,8 +594,10 @@ VASupportedProfiles::GetSupportedProfileInfosForCodecModeInternal(
       VADisplayState::Get()->va_vendor_string();
   for (const auto& va_profile : va_profiles) {
     VAEntrypoint entrypoint = GetVaEntryPoint(mode, va_profile);
-    std::vector<VAConfigAttrib> required_attribs =
-        GetRequiredAttribs(mode, va_profile);
+    std::vector<VAConfigAttrib> required_attribs;
+    if (!GetRequiredAttribs(va_lock_, va_display_, mode, va_profile,
+                            &required_attribs))
+      continue;
     if (!IsEntrypointSupported_Locked(va_profile, entrypoint))
       continue;
     if (!AreAttribsSupported_Locked(va_profile, entrypoint, required_attribs))
@@ -569,13 +606,12 @@ VASupportedProfiles::GetSupportedProfileInfosForCodecModeInternal(
       continue;
 
     ProfileInfo profile_info;
-    if (!GetMaxResolution_Locked(va_profile, entrypoint, required_attribs,
-                                 &profile_info.max_resolution)) {
-      LOG(ERROR) << "GetMaxResolution failed for va_profile " << va_profile
-                 << " and entrypoint " << entrypoint;
+    if (!FillProfileInfo_Locked(va_profile, entrypoint, required_attribs,
+                                &profile_info)) {
+      LOG(ERROR) << "FillProfileInfo_Locked failed for va_profile "
+                 << va_profile << " and entrypoint " << entrypoint;
       continue;
     }
-    profile_info.va_profile = va_profile;
     supported_profile_infos.push_back(profile_info);
   }
   return supported_profile_infos;
@@ -653,11 +689,11 @@ bool VASupportedProfiles::AreAttribsSupported_Locked(
   return true;
 }
 
-bool VASupportedProfiles::GetMaxResolution_Locked(
+bool VASupportedProfiles::FillProfileInfo_Locked(
     VAProfile va_profile,
     VAEntrypoint entrypoint,
     std::vector<VAConfigAttrib>& required_attribs,
-    gfx::Size* resolution) const {
+    ProfileInfo* profile_info) const {
   va_lock_->AssertAcquired();
   VAConfigID va_config_id;
   VAStatus va_res =
@@ -692,18 +728,91 @@ bool VASupportedProfiles::GetMaxResolution_Locked(
                                     &num_attribs);
   VA_SUCCESS_OR_RETURN(va_res, "vaQuerySurfaceAttributes failed", false);
 
-  resolution->SetSize(0, 0);
+  profile_info->va_profile = va_profile;
+  profile_info->min_resolution = gfx::Size();
+  profile_info->max_resolution = gfx::Size();
   for (const auto& attrib : attrib_list) {
-    if (attrib.type == VASurfaceAttribMaxWidth)
-      resolution->set_width(attrib.value.value.i);
-    else if (attrib.type == VASurfaceAttribMaxHeight)
-      resolution->set_height(attrib.value.value.i);
+    if (attrib.type == VASurfaceAttribMaxWidth) {
+      profile_info->max_resolution.set_width(
+          base::strict_cast<int>(attrib.value.value.i));
+    } else if (attrib.type == VASurfaceAttribMaxHeight) {
+      profile_info->max_resolution.set_height(
+          base::strict_cast<int>(attrib.value.value.i));
+    } else if (attrib.type == VASurfaceAttribMinWidth) {
+      profile_info->min_resolution.set_width(
+          base::strict_cast<int>(attrib.value.value.i));
+    } else if (attrib.type == VASurfaceAttribMinHeight) {
+      profile_info->min_resolution.set_height(
+          base::strict_cast<int>(attrib.value.value.i));
+    }
   }
-  if (resolution->IsEmpty()) {
-    LOG(ERROR) << "Wrong codec resolution: " << resolution->ToString();
+  if (profile_info->max_resolution.IsEmpty()) {
+    LOG(ERROR) << "Empty codec maximum resolution";
     return false;
   }
-  return true;
+
+  // Create a new configuration to find the supported RT formats. We don't pass
+  // required attributes here because we want the driver to tell us all the
+  // supported RT formats.
+  va_res = vaCreateConfig(va_display_, va_profile, entrypoint, nullptr, 0,
+                          &va_config_id);
+  VA_SUCCESS_OR_RETURN(va_res, "vaCreateConfig failed", false);
+  base::ScopedClosureRunner vaconfig_no_attribs_destroyer(base::BindOnce(
+      [](VADisplay display, VAConfigID id) {
+        if (id != VA_INVALID_ID) {
+          VAStatus va_res = vaDestroyConfig(display, id);
+          if (va_res != VA_STATUS_SUCCESS)
+            LOG(ERROR) << "vaDestroyConfig failed. VA error: "
+                       << vaErrorStr(va_res);
+        }
+      },
+      va_display_, va_config_id));
+  profile_info->supported_internal_formats = {};
+  size_t max_num_config_attributes;
+  if (!base::CheckedNumeric<int>(vaMaxNumConfigAttributes(va_display_))
+           .AssignIfValid(&max_num_config_attributes)) {
+    LOG(ERROR) << "Can't get the maximum number of config attributes";
+    return false;
+  }
+  std::vector<VAConfigAttrib> config_attributes(max_num_config_attributes);
+  int num_config_attributes;
+  va_res = vaQueryConfigAttributes(va_display_, va_config_id, &va_profile,
+                                   &entrypoint, config_attributes.data(),
+                                   &num_config_attributes);
+  VA_SUCCESS_OR_RETURN(va_res, "vaQueryConfigAttributes failed", false);
+  for (int i = 0; i < num_config_attributes; i++) {
+    const VAConfigAttrib& attrib = config_attributes[i];
+    if (attrib.type != VAConfigAttribRTFormat)
+      continue;
+    if (attrib.value & VA_RT_FORMAT_YUV420)
+      profile_info->supported_internal_formats.yuv420 = true;
+    if (attrib.value & VA_RT_FORMAT_YUV422)
+      profile_info->supported_internal_formats.yuv422 = true;
+    if (attrib.value & VA_RT_FORMAT_YUV444)
+      profile_info->supported_internal_formats.yuv444 = true;
+    break;
+  }
+
+  // Now work around some driver misreporting for JPEG decoding.
+  if (va_profile == VAProfileJPEGBaseline && entrypoint == VAEntrypointVLD) {
+    if (base::StartsWith(VADisplayState::Get()->va_vendor_string(),
+                         kMesaGalliumDriverPrefix,
+                         base::CompareCase::SENSITIVE)) {
+      // TODO(andrescj): the VAAPI state tracker in mesa does not report
+      // VA_RT_FORMAT_YUV422 as being supported for JPEG decoding. However, it
+      // is happy to allocate YUYV surfaces
+      // (https://gitlab.freedesktop.org/mesa/mesa/commit/5608f442). Remove this
+      // workaround once b/128337341 is resolved.
+      profile_info->supported_internal_formats.yuv422 = true;
+    }
+  }
+  const bool is_any_profile_supported =
+      profile_info->supported_internal_formats.yuv420 ||
+      profile_info->supported_internal_formats.yuv422 ||
+      profile_info->supported_internal_formats.yuv444;
+  DLOG_IF(ERROR, !is_any_profile_supported)
+      << "No cool internal formats supported";
+  return is_any_profile_supported;
 }
 
 // Maps VideoCodecProfile enum values to VaProfile values. This function
@@ -748,6 +857,8 @@ class VASupportedImageFormats {
 
   bool IsImageFormatSupported(const VAImageFormat& va_format) const;
 
+  const std::vector<VAImageFormat>& GetSupportedImageFormats() const;
+
  private:
   friend class base::NoDestructor<VASupportedImageFormats>;
 
@@ -780,6 +891,20 @@ bool VASupportedImageFormats::IsImageFormatSupported(
                            return format.fourcc == va_image_format.fourcc;
                          });
   return it != supported_formats_.end();
+}
+
+const std::vector<VAImageFormat>&
+VASupportedImageFormats::GetSupportedImageFormats() const {
+#if DCHECK_IS_ON()
+  std::string formats_str;
+  for (size_t i = 0; i < supported_formats_.size(); i++) {
+    if (i > 0)
+      formats_str += ", ";
+    formats_str += FourccToString(supported_formats_[i].fourcc);
+  }
+  DVLOG(1) << "Supported image formats: " << formats_str;
+#endif
+  return supported_formats_;
 }
 
 VASupportedImageFormats::VASupportedImageFormats()
@@ -827,10 +952,47 @@ bool VASupportedImageFormats::InitSupportedImageFormats_Locked() {
 
   // Resize the list to the actual number of formats returned by the driver.
   supported_formats_.resize(static_cast<size_t>(num_image_formats));
+
+  // Now work around some driver misreporting.
+  if (base::StartsWith(VADisplayState::Get()->va_vendor_string(),
+                       kMesaGalliumDriverPrefix,
+                       base::CompareCase::SENSITIVE)) {
+    // TODO(andrescj): considering that the VAAPI state tracker in mesa can
+    // convert from NV12 to IYUV when doing vaGetImage(), it's reasonable to
+    // assume that IYUV/I420 is supported. However, it's not currently being
+    // reported. See https://gitlab.freedesktop.org/mesa/mesa/commit/b0a44f10.
+    // Remove this workaround once b/128340287 is resolved.
+    if (std::find_if(supported_formats_.cbegin(), supported_formats_.cend(),
+                     [](const VAImageFormat& format) {
+                       return format.fourcc == VA_FOURCC_I420;
+                     }) == supported_formats_.cend()) {
+      VAImageFormat i420_format{};
+      i420_format.fourcc = VA_FOURCC_I420;
+      supported_formats_.push_back(i420_format);
+    }
+  } else if (base::StartsWith(VADisplayState::Get()->va_vendor_string(),
+                              kIntelIHDDriverPrefix,
+                              base::CompareCase::SENSITIVE)) {
+    // TODO(andrescj): for Intel's media driver, remove everything that's not
+    // I420 or NV12 since it is 'over-advertising' the supported formats. Remove
+    // this workaround once https://crbug.com/955284 is fixed.
+    supported_formats_.erase(
+        std::remove_if(supported_formats_.begin(), supported_formats_.end(),
+                       [](const VAImageFormat& format) {
+                         return format.fourcc != VA_FOURCC_I420 &&
+                                format.fourcc != VA_FOURCC_NV12;
+                       }),
+        supported_formats_.end());
+  }
   return true;
 }
 
 }  // namespace
+
+// static
+const std::string& VaapiWrapper::GetVendorStringForTesting() {
+  return VADisplayState::Get()->va_vendor_string();
+}
 
 // static
 scoped_refptr<VaapiWrapper> VaapiWrapper::Create(
@@ -918,6 +1080,116 @@ bool VaapiWrapper::IsJpegDecodeSupported() {
 }
 
 // static
+VaapiWrapper::InternalFormats
+VaapiWrapper::GetJpegDecodeSupportedInternalFormats() {
+  VASupportedProfiles::ProfileInfo profile_info;
+  if (!VASupportedProfiles::Get().IsProfileSupported(
+          kDecode, VAProfileJPEGBaseline, &profile_info)) {
+    return InternalFormats{};
+  }
+  return profile_info.supported_internal_formats;
+}
+
+// static
+bool VaapiWrapper::IsJpegDecodingSupportedForInternalFormat(
+    unsigned int rt_format) {
+  static const base::NoDestructor<VaapiWrapper::InternalFormats>
+      supported_internal_formats(
+          VaapiWrapper::GetJpegDecodeSupportedInternalFormats());
+  if (rt_format == VA_RT_FORMAT_YUV420)
+    return supported_internal_formats->yuv420;
+  else if (rt_format == VA_RT_FORMAT_YUV422)
+    return supported_internal_formats->yuv422;
+  else if (rt_format == VA_RT_FORMAT_YUV444)
+    return supported_internal_formats->yuv444;
+  return false;
+}
+
+// static
+bool VaapiWrapper::GetJpegDecodeMinResolution(gfx::Size* min_size) {
+  VASupportedProfiles::ProfileInfo profile_info;
+  if (!VASupportedProfiles::Get().IsProfileSupported(
+          kDecode, VAProfileJPEGBaseline, &profile_info)) {
+    return false;
+  }
+  *min_size = profile_info.min_resolution;
+  return true;
+}
+
+// static
+bool VaapiWrapper::GetJpegDecodeMaxResolution(gfx::Size* max_size) {
+  VASupportedProfiles::ProfileInfo profile_info;
+  if (!VASupportedProfiles::Get().IsProfileSupported(
+          kDecode, VAProfileJPEGBaseline, &profile_info)) {
+    return false;
+  }
+  *max_size = profile_info.max_resolution;
+  return true;
+}
+
+// static
+bool VaapiWrapper::GetJpegDecodeSuitableImageFourCC(unsigned int rt_format,
+                                                    uint32_t preferred_fourcc,
+                                                    uint32_t* suitable_fourcc) {
+  if (!IsJpegDecodingSupportedForInternalFormat(rt_format))
+    return false;
+
+  // Work around some driver-specific conversion issues. If you add a workaround
+  // here, please update the VaapiJpegDecoderTest.MinimalImageFormatSupport
+  // test.
+  if (base::StartsWith(VADisplayState::Get()->va_vendor_string(),
+                       kMesaGalliumDriverPrefix,
+                       base::CompareCase::SENSITIVE)) {
+    // The VAAPI mesa state tracker only supports conversion from NV12 to YV12
+    // and IYUV (synonym of I420).
+    if (rt_format == VA_RT_FORMAT_YUV420) {
+      if (preferred_fourcc != VA_FOURCC_I420 &&
+          preferred_fourcc != VA_FOURCC_YV12) {
+        preferred_fourcc = VA_FOURCC_NV12;
+      }
+    } else if (rt_format == VA_RT_FORMAT_YUV422) {
+      preferred_fourcc = VA_FOURCC('Y', 'U', 'Y', 'V');
+    } else {
+      // Out of the three internal formats we care about (4:2:0, 4:2:2, and
+      // 4:4:4), this driver should only support the first two. Since we check
+      // for supported internal formats at the beginning of this function, we
+      // shouldn't get here.
+      NOTREACHED();
+      return false;
+    }
+  } else if (base::StartsWith(VADisplayState::Get()->va_vendor_string(),
+                              kIntelI965DriverPrefix,
+                              base::CompareCase::SENSITIVE)) {
+    // Workaround deduced from observations in samus and nocturne: we found that
+    //
+    // - For a 4:2:2 image, the internal format is 422H.
+    // - For a 4:2:0 image, the internal format is IMC3.
+    // - For a 4:4:4 image, the internal format is 444P.
+    //
+    // For these internal formats and an image format of either 422H or P010, an
+    // intermediate NV12 surface is allocated. Then, a conversion is made from
+    // {422H, IMC3, 444P} -> NV12 -> {422H, P010}. Unfortunately, the
+    // NV12 -> {422H, P010} conversion is unimplemented in
+    // i965_image_pl2_processing(). So, when |preferred_fourcc| is either 422H
+    // or P010, we can just fallback to I420.
+    //
+    if (preferred_fourcc == VA_FOURCC_422H ||
+        preferred_fourcc == VA_FOURCC_P010) {
+      preferred_fourcc = VA_FOURCC_I420;
+    }
+  }
+
+  if (!VASupportedImageFormats::Get().IsImageFormatSupported(
+          VAImageFormat{.fourcc = preferred_fourcc})) {
+    preferred_fourcc = VA_FOURCC_I420;
+  }
+
+  // After workarounds, assume the conversion is supported.
+  *suitable_fourcc = preferred_fourcc;
+  return true;
+}
+
+// static
 bool VaapiWrapper::IsJpegEncodeSupported() {
   return VASupportedProfiles::Get().IsProfileSupported(kEncode,
                                                        VAProfileJPEGBaseline);
@@ -926,6 +1198,12 @@ bool VaapiWrapper::IsJpegEncodeSupported() {
 // static
 bool VaapiWrapper::IsImageFormatSupported(const VAImageFormat& format) {
   return VASupportedImageFormats::Get().IsImageFormatSupported(format);
+}
+
+// static
+const std::vector<VAImageFormat>&
+VaapiWrapper::GetSupportedImageFormatsForTesting() {
+  return VASupportedImageFormats::Get().GetSupportedImageFormats();
 }
 
 bool VaapiWrapper::CreateContextAndSurfaces(
@@ -1185,13 +1463,16 @@ std::unique_ptr<ScopedVAImage> VaapiWrapper::CreateVaImage(
     VASurfaceID va_surface_id,
     VAImageFormat* format,
     const gfx::Size& size) {
-  base::AutoLock auto_lock(*va_lock_);
+  std::unique_ptr<ScopedVAImage> scoped_image;
+  {
+    base::AutoLock auto_lock(*va_lock_);
 
-  VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
-  VA_SUCCESS_OR_RETURN(va_res, "Failed syncing surface", nullptr);
+    VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
+    VA_SUCCESS_OR_RETURN(va_res, "Failed syncing surface", nullptr);
 
-  auto scoped_image = std::make_unique<ScopedVAImage>(
-      va_lock_, va_display_, va_surface_id, format, size);
+    scoped_image = std::make_unique<ScopedVAImage>(va_lock_, va_display_,
+                                                   va_surface_id, format, size);
+  }
   return scoped_image->IsValid() ? std::move(scoped_image) : nullptr;
 }
 
@@ -1200,9 +1481,22 @@ bool VaapiWrapper::UploadVideoFrameToSurface(
     VASurfaceID va_surface_id) {
   base::AutoLock auto_lock(*va_lock_);
 
+  const gfx::Size size = frame->coded_size();
+  bool va_create_put_fallback = false;
   VAImage image;
   VAStatus va_res = vaDeriveImage(va_display_, va_surface_id, &image);
-  VA_SUCCESS_OR_RETURN(va_res, "vaDeriveImage failed", false);
+  if (va_res == VA_STATUS_ERROR_OPERATION_FAILED) {
+    DVLOG(4) << "vaDeriveImage failed and fallback to Create_PutImage";
+    va_create_put_fallback = true;
+    constexpr VAImageFormat kImageFormatNV12{.fourcc = VA_FOURCC_NV12,
+                                             .byte_order = VA_LSB_FIRST,
+                                             .bits_per_pixel = 12};
+    VAImageFormat image_format = kImageFormatNV12;
+
+    va_res = vaCreateImage(va_display_, &image_format, size.width(),
+                           size.height(), &image);
+    VA_SUCCESS_OR_RETURN(va_res, "vaCreateImage failed", false);
+  }
   base::ScopedClosureRunner vaimage_deleter(
       base::Bind(&DestroyVAImage, va_display_, image));
 
@@ -1211,7 +1505,7 @@ bool VaapiWrapper::UploadVideoFrameToSurface(
     return false;
   }
 
-  if (gfx::Rect(image.width, image.height) < gfx::Rect(frame->coded_size())) {
+  if (gfx::Rect(image.width, image.height) < gfx::Rect(size)) {
     LOG(ERROR) << "Buffer too small to fit the frame.";
     return false;
   }
@@ -1250,6 +1544,12 @@ bool VaapiWrapper::UploadVideoFrameToSurface(
         LOG(ERROR) << "Unsupported pixel format: " << frame->format();
         return false;
     }
+  }
+  if (va_create_put_fallback) {
+    va_res = vaPutImage(va_display_, va_surface_id, image.image_id, 0, 0,
+                        size.width(), size.height(), 0, 0, size.width(),
+                        size.height());
+    VA_SUCCESS_OR_RETURN(va_res, "vaPutImage failed", false);
   }
   return ret == 0;
 }
@@ -1308,6 +1608,27 @@ bool VaapiWrapper::DownloadFromVABuffer(VABufferID buffer_id,
   }
 
   return buffer_segment == nullptr;
+}
+
+bool VaapiWrapper::GetVAEncMaxNumOfRefFrames(VideoCodecProfile profile,
+                                             size_t* max_ref_frames) {
+  VAProfile va_profile =
+      ProfileToVAProfile(profile, VaapiWrapper::CodecMode::kEncode);
+  VAEntrypoint entrypoint =
+      GetVaEntryPoint(VaapiWrapper::CodecMode::kEncode, va_profile);
+  VAConfigAttrib attrib;
+  attrib.type = VAConfigAttribEncMaxRefFrames;
+
+  base::AutoLock auto_lock(*va_lock_);
+  VAStatus va_res =
+      vaGetConfigAttributes(va_display_, va_profile, entrypoint, &attrib, 1);
+  if (va_res) {
+    LOG_VA_ERROR_AND_REPORT(va_res, "vaGetConfigAttributes failed");
+    return false;
+  }
+
+  *max_ref_frames = attrib.value;
+  return true;
 }
 
 bool VaapiWrapper::DownloadAndDestroyVABuffer(VABufferID buffer_id,
@@ -1445,10 +1766,18 @@ bool VaapiWrapper::Initialize(CodecMode mode, VAProfile va_profile) {
     TryToSetVADisplayAttributeToLocalGPU();
 
   VAEntrypoint entrypoint = GetVaEntryPoint(mode, va_profile);
-  std::vector<VAConfigAttrib> required_attribs =
-      GetRequiredAttribs(mode, va_profile);
+
+  if (mode == CodecMode::kEncode && IsLowPowerEncSupported(va_profile) &&
+      base::FeatureList::IsEnabled(kVaapiLowPowerEncoder)) {
+    entrypoint = VAEntrypointEncSliceLP;
+    DVLOG(2) << "Enable VA-API Low-Power Encode Entrypoint";
+  }
 
   base::AutoLock auto_lock(*va_lock_);
+  std::vector<VAConfigAttrib> required_attribs;
+  if (!GetRequiredAttribs(va_lock_, va_display_, mode, va_profile,
+                          &required_attribs))
+    return false;
 
   VAStatus va_res =
       vaCreateConfig(va_display_, va_profile, entrypoint,
@@ -1559,6 +1888,41 @@ void VaapiWrapper::TryToSetVADisplayAttributeToLocalGPU() {
   VAStatus va_res = vaSetDisplayAttributes(va_display_, &item, 1);
   if (va_res != VA_STATUS_SUCCESS)
     DVLOG(2) << "vaSetDisplayAttributes unsupported, ignoring by default.";
+}
+
+// Check the support for low-power encode
+bool VaapiWrapper::IsLowPowerEncSupported(VAProfile va_profile) const {
+  // Only enabled for H264/AVC
+  if (va_profile != VAProfileH264ConstrainedBaseline &&
+      va_profile != VAProfileH264Main && va_profile != VAProfileH264High)
+    return false;
+
+  constexpr VAEntrypoint kLowPowerEncEntryPoint = VAEntrypointEncSliceLP;
+  std::vector<VAConfigAttrib> required_attribs;
+
+  base::AutoLock auto_lock(*va_lock_);
+  GetRequiredAttribs(va_lock_, va_display_, VaapiWrapper::CodecMode::kEncode,
+                     va_profile, &required_attribs);
+  // Query the driver for required attributes.
+  std::vector<VAConfigAttrib> attribs = required_attribs;
+  for (size_t i = 0; i < required_attribs.size(); ++i)
+    attribs[i].value = 0;
+
+  VAStatus va_res =
+      vaGetConfigAttributes(va_display_, va_profile, kLowPowerEncEntryPoint,
+                            &attribs[0], attribs.size());
+  VA_SUCCESS_OR_RETURN(va_res, "vaGetConfigAttributes failed", false);
+
+  for (size_t i = 0; i < required_attribs.size(); ++i) {
+    if (attribs[i].type != required_attribs[i].type ||
+        (attribs[i].value & required_attribs[i].value) !=
+            required_attribs[i].value) {
+      DVLOG(1) << "Unsupported value " << required_attribs[i].value
+               << " for attribute type " << required_attribs[i].type;
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace media

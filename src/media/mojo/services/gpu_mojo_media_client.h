@@ -41,8 +41,7 @@ class GpuMojoMediaClient : public MojoMediaClient {
   ~GpuMojoMediaClient() final;
 
   // MojoMediaClient implementation.
-  std::vector<SupportedVideoDecoderConfig> GetSupportedVideoDecoderConfigs()
-      final;
+  SupportedVideoDecoderConfigMap GetSupportedVideoDecoderConfigs() final;
   void Initialize(service_manager::Connector* connector) final;
   std::unique_ptr<AudioDecoder> CreateAudioDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) final;
@@ -50,6 +49,7 @@ class GpuMojoMediaClient : public MojoMediaClient {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       MediaLog* media_log,
       mojom::CommandBufferIdPtr command_buffer_id,
+      VideoDecoderImplementation implementation,
       RequestOverlayInfoCB request_overlay_info_cb,
       const gfx::ColorSpace& target_color_space) final;
   std::unique_ptr<CdmFactory> CreateCdmFactory(

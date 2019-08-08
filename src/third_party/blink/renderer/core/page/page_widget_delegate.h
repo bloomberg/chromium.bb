@@ -36,10 +36,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
-namespace cc {
-class PaintCanvas;
-}
-
 namespace blink {
 class LocalFrame;
 class Page;
@@ -79,7 +75,7 @@ class CORE_EXPORT PageWidgetDelegate {
  public:
   static void Animate(Page&, base::TimeTicks monotonic_frame_begin_time);
 
-  // For the following methods, the |root| argument indicates a root localFrame
+  // For the following methods, the |root| argument indicates a root LocalFrame
   // from which to start performing the specified operation.
 
   // See comment of WebWidget::UpdateLifecycle.
@@ -88,11 +84,9 @@ class CORE_EXPORT PageWidgetDelegate {
                               WebWidget::LifecycleUpdate requested_update,
                               WebWidget::LifecycleUpdateReason reason);
 
-  // See comment of WebWidget::DidBeginFrame
+  // See comment of WebWidget::DidBeginFrame.
   static void DidBeginFrame(LocalFrame& root);
 
-  // See documents of methods with the same names in FrameView class.
-  static void PaintContent(cc::PaintCanvas*, const WebRect&, LocalFrame& root);
   // See FIXME in the function body about nullptr |root|.
   static WebInputEventResult HandleInputEvent(
       PageWidgetEventHandler&,

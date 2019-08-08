@@ -12,9 +12,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_manager_client.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/client_cert_resolver.h"
 #include "chromeos/network/client_cert_util.h"
 #include "chromeos/network/device_state.h"
@@ -678,7 +677,7 @@ void NetworkConnectionHandlerImpl::CallShillConnect(
     const std::string& service_path) {
   NET_LOG_EVENT("Sending Connect Request to Shill", service_path);
   network_state_handler_->ClearLastErrorForNetwork(service_path);
-  DBusThreadManager::Get()->GetShillServiceClient()->Connect(
+  ShillServiceClient::Get()->Connect(
       dbus::ObjectPath(service_path),
       base::Bind(&NetworkConnectionHandlerImpl::HandleShillConnectSuccess,
                  AsWeakPtr(), service_path),
@@ -843,7 +842,7 @@ void NetworkConnectionHandlerImpl::CallShillDisconnect(
     const base::Closure& success_callback,
     const network_handler::ErrorCallback& error_callback) {
   NET_LOG_USER("Disconnect Request", service_path);
-  DBusThreadManager::Get()->GetShillServiceClient()->Disconnect(
+  ShillServiceClient::Get()->Disconnect(
       dbus::ObjectPath(service_path),
       base::Bind(&NetworkConnectionHandlerImpl::HandleShillDisconnectSuccess,
                  AsWeakPtr(), service_path, success_callback),

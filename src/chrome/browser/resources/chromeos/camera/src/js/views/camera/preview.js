@@ -219,7 +219,7 @@ cca.views.camera.Preview.prototype.onWindowResize_ = function(aspectRatio) {
     // TODO(yuli): Update min-width for resizing at portrait orientation.
     var inner = chrome.app.window.current().innerBounds;
     var innerW = inner.minWidth;
-    var innerH = Math.round(innerW / this.aspectRatio_);
+    var innerH = Math.round(innerW * 9 / 16);
 
     // Limit window resizing capability by setting min-height. Don't limit
     // max-height here as it may disable maximize/fullscreen capabilities.
@@ -260,8 +260,8 @@ cca.views.camera.Preview.prototype.onFocusClicked_ = function(event) {
     }
     var aim = document.querySelector('#preview-focus-aim');
     var clone = aim.cloneNode(true);
-    clone.style.left = `${x * 100}%`;
-    clone.style.top = `${y * 100}%`;
+    clone.style.left = `${event.offsetX + this.video_.offsetLeft}px`;
+    clone.style.top = `${event.offsetY + this.video_.offsetTop}px`;
     clone.hidden = false;
     aim.parentElement.replaceChild(clone, aim);
   }).catch(console.error);

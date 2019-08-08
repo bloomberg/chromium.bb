@@ -24,7 +24,6 @@ class GpuMemoryBufferManager;
 namespace viz {
 
 class BufferQueue;
-class SyntheticBeginFrameSource;
 
 // An OutputSurface implementation that directly draws and swap to a GL
 // "buffer_queue" surface (aka one backed by a buffer managed explicitly in
@@ -35,10 +34,8 @@ class GLOutputSurfaceBufferQueue : public GLOutputSurface {
   GLOutputSurfaceBufferQueue(
       scoped_refptr<VizProcessContextProvider> context_provider,
       gpu::SurfaceHandle surface_handle,
-      SyntheticBeginFrameSource* synthetic_begin_frame_source,
+      UpdateVSyncParametersCallback update_vsync_callback,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      uint32_t target,
-      uint32_t internal_format,
       gfx::BufferFormat buffer_format);
 
   ~GLOutputSurfaceBufferQueue() override;

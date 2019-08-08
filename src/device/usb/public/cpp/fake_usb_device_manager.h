@@ -11,6 +11,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "device/usb/public/cpp/fake_usb_device_info.h"
 #include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
@@ -18,6 +19,8 @@
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 namespace device {
+
+class MockUsbMojoDevice;
 
 // This class implements a fake USB device manager which will only be used in
 // tests for device::mojom::UsbDeviceManager's users.
@@ -45,9 +48,14 @@ class FakeUsbDeviceManager : public mojom::UsbDeviceManager {
 
   void RemoveDevice(scoped_refptr<FakeUsbDeviceInfo> device);
 
+  bool SetMockForDevice(const std::string& guid,
+                        MockUsbMojoDevice* mock_device);
+
   bool IsBound() { return !bindings_.empty(); }
 
   void CloseAllBindings() { bindings_.CloseAllBindings(); }
+
+  void RemoveAllDevices();
 
  protected:
   DeviceMap& devices() { return devices_; }
@@ -62,6 +70,11 @@ class FakeUsbDeviceManager : public mojom::UsbDeviceManager {
   void GetDevice(const std::string& guid,
                  mojom::UsbDeviceRequest device_request,
                  mojom::UsbDeviceClientPtr device_client) override;
+
+#if defined(OS_ANDROID)
+  void RefreshDeviceInfo(const std::string& guid,
+                         RefreshDeviceInfoCallback callback) override;
+#endif
 
 #if defined(OS_CHROMEOS)
   void CheckAccess(const std::string& guid,

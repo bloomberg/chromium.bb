@@ -86,6 +86,7 @@ enum ImageDecodeAcceleratorType {
 enum ImageDecodeAcceleratorSubsampling {
   k420,
   k422,
+  k444,
 };
 
 // gpu::ImageDecodeAcceleratorSupportedProfile
@@ -141,7 +142,7 @@ struct GpuInfo {
   string gl_ws_extensions;
   uint32 gl_reset_notification_strategy;
   bool software_rendering;
-  bool direct_rendering;
+  string direct_rendering_version;
   bool sandboxed;
   bool in_process_gpu;
   bool passthrough_cmd_decoder;

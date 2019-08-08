@@ -8,6 +8,8 @@
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
+#import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -44,6 +46,7 @@ void PagePlaceholderTabHelper::CancelPlaceholderForNextNavigation() {
 
 void PagePlaceholderTabHelper::WasShown(web::WebState* web_state) {
   if (add_placeholder_for_next_navigation_) {
+    add_placeholder_for_next_navigation_ = false;
     AddPlaceholder();
   }
 }
@@ -56,7 +59,7 @@ void PagePlaceholderTabHelper::DidStartNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
   DCHECK_EQ(web_state_, web_state);
-  if (add_placeholder_for_next_navigation_) {
+  if (add_placeholder_for_next_navigation_ && web_state->IsVisible()) {
     add_placeholder_for_next_navigation_ = false;
     AddPlaceholder();
   }
@@ -76,38 +79,32 @@ void PagePlaceholderTabHelper::WebStateDestroyed(web::WebState* web_state) {
 }
 
 void PagePlaceholderTabHelper::AddPlaceholder() {
-  if (displaying_placeholder_)
+  // WebState::WasShown() and WebState::IsVisible() are bookkeeping mechanisms
+  // that do not guarantee the WebState's view is in the view hierarchy.
+  // TODO(crbug.com/971364): Do not DCHECK([webState->GetView() window]) here
+  // since this is a known issue.
+  if (displaying_placeholder_ || ![web_state_->GetView() window])
     return;
 
   displaying_placeholder_ = true;
 
   // Lazily create the placeholder view.
   if (!placeholder_view_) {
-    placeholder_view_ = [[UIImageView alloc] init];
+    placeholder_view_ = [[TopAlignedImageView alloc] init];
     placeholder_view_.backgroundColor = [UIColor whiteColor];
-    placeholder_view_.contentMode = UIViewContentModeScaleAspectFit;
-    placeholder_view_.autoresizingMask =
-        UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    placeholder_view_.translatesAutoresizingMaskIntoConstraints = NO;
   }
 
   // Update placeholder view's image and display it on top of WebState's view.
-  __weak UIImageView* weak_placeholder_view = placeholder_view_;
-  __weak UIView* weak_web_state_view = web_state_->GetView();
-  __weak id<CRWWebViewProxy> web_view_proxy = web_state_->GetWebViewProxy();
-
   SnapshotTabHelper* snapshotTabHelper =
       SnapshotTabHelper::FromWebState(web_state_);
   if (snapshotTabHelper) {
+    base::WeakPtr<PagePlaceholderTabHelper> weak_tab_helper =
+        weak_factory_.GetWeakPtr();
     snapshotTabHelper->RetrieveGreySnapshot(^(UIImage* snapshot) {
-      CGRect frame = weak_web_state_view.frame;
-      UIEdgeInsets inset = web_view_proxy.contentInset;
-      frame.origin.x += inset.left;
-      frame.origin.y += inset.top;
-      frame.size.width -= (inset.right + inset.left);
-      frame.size.height -= (inset.bottom + inset.top);
-      weak_placeholder_view.frame = frame;
-      weak_placeholder_view.image = snapshot;
-      [weak_web_state_view addSubview:weak_placeholder_view];
+      if (weak_tab_helper && weak_tab_helper->displaying_placeholder()) {
+        DisplaySnapshotImage(snapshot);
+      }
     });
   }
 
@@ -119,6 +116,21 @@ void PagePlaceholderTabHelper::AddPlaceholder() {
       base::TimeDelta::FromSecondsD(kPlaceholderMaxDisplayTimeInSeconds));
 }
 
+void PagePlaceholderTabHelper::DisplaySnapshotImage(UIImage* snapshot) {
+  DCHECK(web_state_->IsVisible())
+      << "The WebState must be visible to display a page placeholder.";
+  DCHECK([web_state_->GetView() window])
+      << "The WebState's view must be in the main window's view hierarchy.";
+  UIView* web_state_view = web_state_->GetView();
+  NamedGuide* guide = [NamedGuide guideWithName:kContentAreaGuide
+                                           view:web_state_view];
+  DCHECK(guide) << "The ContentArea named guide must be in the WebState view's "
+                   "hierarchy to properly position the page placeholder.";
+  placeholder_view_.image = snapshot;
+  [web_state_view addSubview:placeholder_view_];
+  AddSameConstraints(guide, placeholder_view_);
+}
+
 void PagePlaceholderTabHelper::RemovePlaceholder() {
   if (!displaying_placeholder_)
     return;
@@ -126,7 +138,7 @@ void PagePlaceholderTabHelper::RemovePlaceholder() {
   displaying_placeholder_ = false;
 
   // Remove placeholder view with a fade-out animation.
-  __weak UIImageView* weak_placeholder_view = placeholder_view_;
+  __weak UIView* weak_placeholder_view = placeholder_view_;
   [UIView animateWithDuration:kPlaceholderFadeOutAnimationLengthInSeconds
       animations:^{
         weak_placeholder_view.alpha = 0.0f;

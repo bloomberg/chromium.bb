@@ -162,8 +162,7 @@ bool StructTraits<
       !data.ReadReferrer(&out->referrer) ||
       !data.ReadReferrerPolicy(&out->referrer_policy) ||
       !data.ReadHeaders(&out->headers) ||
-      !data.ReadRequestedWithHeader(&out->requested_with_header) ||
-      !data.ReadClientDataHeader(&out->client_data_header) ||
+      !data.ReadCorsExemptHeaders(&out->cors_exempt_headers) ||
       !data.ReadPriority(&out->priority) ||
       !data.ReadCorsPreflightPolicy(&out->cors_preflight_policy) ||
       !data.ReadFetchRequestMode(&out->fetch_request_mode) ||
@@ -177,7 +176,8 @@ bool StructTraits<
           &out->custom_proxy_pre_cache_headers) ||
       !data.ReadCustomProxyPostCacheHeaders(
           &out->custom_proxy_post_cache_headers) ||
-      !data.ReadFetchWindowId(&out->fetch_window_id)) {
+      !data.ReadFetchWindowId(&out->fetch_window_id) ||
+      !data.ReadDevtoolsRequestId(&out->devtools_request_id)) {
     return false;
   }
 
@@ -192,7 +192,6 @@ bool StructTraits<
   out->appcache_host_id = data.appcache_host_id();
   out->should_reset_appcache = data.should_reset_appcache();
   out->is_external_request = data.is_external_request();
-  out->service_worker_provider_id = data.service_worker_provider_id();
   out->originated_from_service_worker = data.originated_from_service_worker();
   out->skip_service_worker = data.skip_service_worker();
   out->fetch_request_context_type = data.fetch_request_context_type();
@@ -210,8 +209,6 @@ bool StructTraits<
   out->initiated_in_secure_context = data.initiated_in_secure_context();
   out->upgrade_if_insecure = data.upgrade_if_insecure();
   out->is_revalidating = data.is_revalidating();
-  out->custom_proxy_use_alternate_proxy_list =
-      data.custom_proxy_use_alternate_proxy_list();
   return true;
 }
 

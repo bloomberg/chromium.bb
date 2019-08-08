@@ -13,6 +13,7 @@ import("//third_party/blink/public/public_features.gni")
 import("//third_party/blink/renderer/build/scripts/scripts.gni")
 import("//third_party/blink/renderer/config.gni")
 import("//third_party/blink/renderer/platform/platform_generated.gni")
+import("//v8/gni/v8.gni")
 
 # Most targets in this file are private actions so use that as the default.
 visibility = [ ":*" ]
@@ -38,16 +39,23 @@ blink_python_runner("runtime_enabled_features") {
              "../build/scripts/templates/runtime_enabled_features_test_helpers.h.tmpl",
            ]
 
+  build_scripts_output_dir = "$blink_platform_output_dir/../build/scripts"
   outputs = [
     "$blink_platform_output_dir/runtime_enabled_features.cc",
     "$blink_platform_output_dir/runtime_enabled_features.h",
     "$blink_platform_output_dir/testing/runtime_enabled_features_test_helpers.h",
+    "$build_scripts_output_dir/runtime_enabled_features.pickle",
   ]
 
   args = [
     rebase_path(runtime_enabled_features_json5, root_build_dir),
     "--output_dir",
     rebase_path(blink_platform_output_dir, root_build_dir),
+  ]
+
+  visibility += [
+    "//third_party/blink/renderer/bindings/core:interfaces_info_individual_core",
+    "//third_party/blink/renderer/bindings/modules:interfaces_info_individual_modules",
   ]
 }
 
@@ -164,8 +172,8 @@ group("blink_platform_public_deps") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "//third_party/blink/renderer/platform/*" ]
   public_deps = [
+    ":bindings_buildflags",
     ":make_platform_generated",
-    ":rcs_count_everything_buildflags",
     "//base",
     "//cc",
     "//cc/animation",
@@ -191,6 +199,7 @@ group("blink_platform_public_deps") {
     "//third_party/blink/renderer/platform/heap:blink_heap_buildflags",
     "//third_party/blink/renderer/platform/network:make_generated",
     "//third_party/blink/renderer/platform/wtf",
+    "//third_party/boringssl",
     "//third_party/iccjpeg",
     "//third_party/libpng",
     "//third_party/libwebp",
@@ -210,12 +219,14 @@ declare_args() {
   runtime_call_stats_count_everything = false
 }
 
-buildflag_header("rcs_count_everything_buildflags") {
-  header = "runtime_call_stats_count_everything_buildflags.h"
-
+buildflag_header("bindings_buildflags") {
+  header = "buildflags.h"
   header_dir = "third_party/blink/renderer/platform/bindings"
 
-  flags = [ "RCS_COUNT_EVERYTHING=$runtime_call_stats_count_everything" ]
+  flags = [
+    "RAW_HEAP_SNAPSHOTS=$v8_enable_raw_heap_snapshots",
+    "RCS_COUNT_EVERYTHING=$runtime_call_stats_count_everything",
+  ]
 }
 
 config("blink_platform_implementation") {
@@ -443,10 +454,6 @@ jumbo_component("platform") {
     "bindings/script_state.h",
     "bindings/script_wrappable.cc",
     "bindings/script_wrappable.h",
-    "bindings/script_wrappable_marking_visitor.cc",
-    "bindings/script_wrappable_marking_visitor.h",
-    "bindings/script_wrappable_visitor.h",
-    "bindings/script_wrappable_visitor_verifier.h",
     "bindings/shared_persistent.h",
     "bindings/string_resource.cc",
     "bindings/string_resource.h",
@@ -498,6 +505,7 @@ jumbo_component("platform") {
     "date_components.h",
     "exported/file_path_conversion.cc",
     "exported/interface_registry.cc",
+    "exported/mediastream/media_stream_audio_processor_options.cc",
     "exported/mediastream/media_stream_audio_source.cc",
     "exported/mediastream/media_stream_audio_track.cc",
     "exported/mediastream/web_platform_media_stream_source.cc",
@@ -551,6 +559,7 @@ jumbo_component("platform") {
     "exported/web_network_state_notifier.cc",
     "exported/web_prerender.cc",
     "exported/web_prerendering_support.cc",
+    "exported/web_resource_timing_info.cc",
     "exported/web_rtc_answer_options.cc",
     "exported/web_rtc_ice_candidate.cc",
     "exported/web_rtc_offer_options.cc",
@@ -594,8 +603,8 @@ jumbo_component("platform") {
     "fonts/android/font_cache_android.cc",
     "fonts/android/font_unique_name_lookup_android.cc",
     "fonts/android/font_unique_name_lookup_android.h",
-    "fonts/bitmap_glyphs_blacklist.cc",
-    "fonts/bitmap_glyphs_blacklist.h",
+    "fonts/bitmap_glyphs_block_list.cc",
+    "fonts/bitmap_glyphs_block_list.h",
     "fonts/canvas_rotation_in_vertical.h",
     "fonts/character_range.h",
     "fonts/custom_font_data.h",
@@ -665,6 +674,7 @@ jumbo_component("platform") {
     "fonts/mac/font_cache_mac.mm",
     "fonts/mac/font_matcher_mac.h",
     "fonts/mac/font_matcher_mac.mm",
+    "fonts/mac/font_platform_data_mac.h",
     "fonts/mac/font_platform_data_mac.mm",
     "fonts/ng_text_fragment_paint_info.h",
     "fonts/opentype/font_format_check.cc",
@@ -692,7 +702,9 @@ jumbo_component("platform") {
     "fonts/shaping/glyph_bounds_accumulator.h",
     "fonts/shaping/harfbuzz_face.cc",
     "fonts/shaping/harfbuzz_face.h",
+    "fonts/shaping/harfbuzz_font_cache.cc",
     "fonts/shaping/harfbuzz_font_cache.h",
+    "fonts/shaping/harfbuzz_font_data.h",
     "fonts/shaping/harfbuzz_shaper.cc",
     "fonts/shaping/harfbuzz_shaper.h",
     "fonts/shaping/run_segmenter.cc",
@@ -745,6 +757,8 @@ jumbo_component("platform") {
     "fonts/web_font_render_style.cc",
     "fonts/web_font_typeface_factory.cc",
     "fonts/web_font_typeface_factory.h",
+    "fonts/win/dwrite_font_format_support.cc",
+    "fonts/win/dwrite_font_format_support.h",
     "fonts/win/font_cache_skia_win.cc",
     "fonts/win/font_fallback_win.cc",
     "fonts/win/font_fallback_win.h",
@@ -1089,6 +1103,9 @@ jumbo_component("platform") {
     "graphics/paint_invalidation_reason.h",
     "graphics/paint_record_pattern.cc",
     "graphics/paint_record_pattern.h",
+    "graphics/paint_worklet_paint_dispatcher.cc",
+    "graphics/paint_worklet_paint_dispatcher.h",
+    "graphics/paint_worklet_painter.h",
     "graphics/path.cc",
     "graphics/path.h",
     "graphics/path_traversal_state.cc",
@@ -1099,6 +1116,8 @@ jumbo_component("platform") {
     "graphics/picture_snapshot.h",
     "graphics/placeholder_image.cc",
     "graphics/placeholder_image.h",
+    "graphics/platform_paint_worklet_layer_painter.cc",
+    "graphics/platform_paint_worklet_layer_painter.h",
     "graphics/profiling_canvas.cc",
     "graphics/profiling_canvas.h",
     "graphics/replaying_canvas.cc",
@@ -1188,10 +1207,6 @@ jumbo_component("platform") {
     "mac/graphics_context_canvas.mm",
     "mac/local_current_graphics_context.h",
     "mac/local_current_graphics_context.mm",
-    "mac/theme_mac.h",
-    "mac/theme_mac.mm",
-    "mac/version_util_mac.h",
-    "mac/version_util_mac.mm",
     "mac/web_core_ns_cell_extras.h",
     "mac/web_core_ns_cell_extras.mm",
     "mediastream/media_stream_center.cc",
@@ -1320,9 +1335,6 @@ jumbo_component("platform") {
     "text/win/hyphenation_win.cc",
     "text/writing_mode.h",
     "text/writing_mode_utils.h",
-    "theme.cc",
-    "theme.h",
-    "theme_types.h",
     "timer.cc",
     "timer.h",
     "transforms/affine_transform.cc",
@@ -1439,6 +1451,7 @@ jumbo_component("platform") {
     "//base/allocator:buildflags",
     "//components/viz/client",
     "//components/viz/common",
+    "//crypto",
     "//device/vr/public/mojom:mojom_blink",
     "//gin",
     "//media",
@@ -1449,8 +1462,8 @@ jumbo_component("platform") {
     "//services/ws/public/cpp/gpu",
     "//skia:skcms",
     "//third_party:freetype_harfbuzz",
-    "//third_party/blink/public:embedded_frame_sink_mojo_bindings_blink",
     "//third_party/blink/public/common",
+    "//third_party/blink/public/mojom:embedded_frame_sink_mojo_bindings_blink",
     "//third_party/ced",
     "//third_party/emoji-segmenter",
     "//third_party/icu",
@@ -1566,8 +1579,6 @@ jumbo_static_library("test_support") {
     "testing/layer_tree_host_embedder.cc",
     "testing/layer_tree_host_embedder.h",
     "testing/message_loop_for_mojo.h",
-    "testing/mock_web_crypto.cc",
-    "testing/mock_web_crypto.h",
     "testing/paint_property_test_helpers.h",
     "testing/paint_test_configurations.h",
     "testing/picture_matchers.cc",
@@ -1665,7 +1676,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "exported/web_canonical_cookie_test.cc",
     "exported/web_string_test.cc",
     "fonts/android/font_cache_android_test.cc",
-    "fonts/bitmap_glyphs_blacklist_test.cc",
+    "fonts/bitmap_glyphs_block_list_test.cc",
     "fonts/cursor_position_test.cc",
     "fonts/font_cache_test.cc",
     "fonts/font_description_test.cc",
@@ -1769,7 +1780,6 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "loader/allowed_by_nosniff_test.cc",
     "loader/cors/cors_test.cc",
     "mac/graphics_context_canvas_test.mm",
-    "mac/version_util_mac_test.mm",
     "mhtml/mhtml_parser_test.cc",
     "mojo/big_string_mojom_traits_test.cc",
     "mojo/geometry_struct_traits_test.cc",
@@ -1813,7 +1823,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
   if (is_win) {
     sources += [ "text/locale_win_test.cc" ]
   } else if (is_mac) {
-    sources += [ "text/locale_mac_test.cc" ]
+    sources += [ "text/locale_mac_test.mm" ]
   } else if (is_posix || is_fuchsia) {
     sources += [ "text/locale_icu_test.cc" ]
   }
@@ -2122,6 +2132,7 @@ jumbo_source_set("unit_tests") {
 
     # Tests migrated from the web/tests directory.
     "exported/web_image_test.cc",
+    "exported/web_resource_timing_info_test.cc",
     "exported/web_url_request_test.cc",
     "exported/web_url_response_test.cc",
     "timer_perf_test.cc",

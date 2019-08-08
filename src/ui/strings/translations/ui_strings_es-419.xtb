@@ -21,6 +21,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">ahora</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minuto}other{# minutos}}</translation>
+<translation id="1756116796893109054">Enviando pestaña…</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Punto</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 mes}other{# meses}}</translation>
@@ -34,6 +35,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Seleccionar &amp;todo</translation>
 <translation id="1938451708255335766">Para ajustar la densidad de la visualización de la ventana, reinicia la app.</translation>
+<translation id="208586643495776849">Vuelve a intentarlo</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}other{# d}}</translation>
 <translation id="2148716181193084225">Hoy</translation>
 <translation id="2168039046890040389">Retroceder página</translation>
@@ -51,11 +53,14 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">Se completó la calibración</translation>
 <translation id="252373100621549798">Pantalla desconocida</translation>
+<translation id="2573731672208488250">{HOURS,plural, =1{en 1 h}other{en # h}}</translation>
 <translation id="2583543531130364912">Calibrar la pantalla táctil</translation>
 <translation id="2666092431469916601">Superior</translation>
+<translation id="2701330563083355633">Se compartió de <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">Copiar al portapapeles</translation>
 <translation id="2803313416453193357">Abrir carpeta</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Hace 1 año}other{Hace # años}}</translation>
+<translation id="2907671656515444832">{DAYS,plural, =1{en 1 día}other{en # días}}</translation>
 <translation id="2931838996092594335">hacer clic</translation>
 <translation id="3036649622769666520">Abrir archivos</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
@@ -67,6 +72,7 @@
 <translation id="3234408098842461169">Flecha abajo</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 día}other{# días}}</translation>
 <translation id="335581015389089642">Voz</translation>
+<translation id="3443810440409579745">Se recibió una pestaña.</translation>
 <translation id="3479552764303398839">Ahora no</translation>
 <translation id="348799646910989694">Se ocultará la biblioteca automáticamente</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Falta 1 día.}other{Faltan # días.}}</translation>
@@ -96,6 +102,7 @@
 <translation id="4730374152663651037">USADAS CON FRECUENCIA</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Queda 1 mes}other{Quedan # meses}}</translation>
 <translation id="4841881773802181781">Contenido agregado</translation>
+<translation id="4881695831933465202">Abrir</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 segundo}other{# segundos}}</translation>
 <translation id="4971687151119236543">Pista multimedia anterior</translation>
 <translation id="5046499563572181734">Presiona aquí</translation>
@@ -103,6 +110,7 @@
 <translation id="5137751499640340777">Abrir el Asistente de Google</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Triángulo desplegable</translation>
+<translation id="5278860589123563674">No se pudo enviar</translation>
 <translation id="528468243742722775">Finalizar</translation>
 <translation id="5329858601952122676">&amp;Suprimir</translation>
 <translation id="5395308026110844773">Arrastra la app <ph name="DRAGGED_APP_NAME" /> sobre <ph name="IN_PLACE_APP" /> y suéltala para crear una carpeta.</translation>
@@ -114,6 +122,7 @@
 <translation id="5613020302032141669">Flecha izquierda</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 día y }other{# días y }}</translation>
+<translation id="5866104238061687188">{YEARS,plural, =1{en 1 año}other{en # años}}</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Falta 1 segundo.}other{Faltan # segundos.}}</translation>
 <translation id="5941711191222866238">Minimizar</translation>
@@ -145,7 +154,6 @@
 <translation id="6808150112686056157">Detener contenido multimedia</translation>
 <translation id="6845383723252244143">Seleccionar carpeta</translation>
 <translation id="6845533974506654842">hacer clic</translation>
-<translation id="686304767576508198">Compartida desde</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{Falta 1 hora.}other{Faltan # horas.}}</translation>
 <translation id="688711909580084195">Página web sin título</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
@@ -170,6 +178,7 @@
 <translation id="7907591526440419938">Abrir archivo</translation>
 <translation id="7969046989155602842">Comando</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Más de 1 notificación sin leer}other{Más de # notificaciones sin leer}}</translation>
+<translation id="8086866675552927481">{MINUTES,plural, =1{en 1 min}other{en # min}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Hace 1 hora.}other{Hace # horas.}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Falta 1 s.}other{Faltan # s.}}</translation>
@@ -198,6 +207,7 @@
 <translation id="8806053966018712535">Carpeta <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Escribir en la imagen</translation>
 <translation id="8841375032071747811">Botón Atrás</translation>
+<translation id="8876215549894133151">Formato:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">Biblioteca siempre oculta</translation>
 <translation id="9002566407876343676">abrir</translation>

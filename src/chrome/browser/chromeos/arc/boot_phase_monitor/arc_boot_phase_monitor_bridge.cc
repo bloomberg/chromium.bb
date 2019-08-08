@@ -10,22 +10,23 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/one_shot_event.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_instance_throttle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
-#include "components/arc/arc_bridge_service.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/common/one_shot_event.h"
 
 namespace arc {
 namespace {
@@ -124,8 +125,8 @@ ArcBootPhaseMonitorBridge::ArcBootPhaseMonitorBridge(
   auto* extension_system = extensions::ExtensionSystem::Get(profile);
   DCHECK(extension_system);
   extension_system->ready().Post(
-      FROM_HERE, base::Bind(&ArcBootPhaseMonitorBridge::OnExtensionsReady,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&ArcBootPhaseMonitorBridge::OnExtensionsReady,
+                                weak_ptr_factory_.GetWeakPtr()));
 
   // Initialize |enabled_by_policy_| now.
   OnArcPlayStoreEnabledChanged(IsArcPlayStoreEnabledForProfile(profile));
@@ -160,9 +161,7 @@ void ArcBootPhaseMonitorBridge::OnBootCompleted() {
   VLOG(2) << "OnBootCompleted";
   boot_completed_ = true;
 
-  chromeos::SessionManagerClient* session_manager_client =
-      chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
-  session_manager_client->EmitArcBooted(
+  chromeos::SessionManagerClient::Get()->EmitArcBooted(
       cryptohome::CreateAccountIdentifierFromAccountId(account_id_),
       base::BindOnce(&OnEmitArcBooted));
 
@@ -238,6 +237,13 @@ void ArcBootPhaseMonitorBridge::OnExtensionsReady() {
 }
 
 void ArcBootPhaseMonitorBridge::MaybeDisableCpuRestriction() {
+  // Unthrottle ARC instance if the instance is being tested, indicated by the
+  // disable cpu restriction switch.
+  if (chromeos::switches::IsArcCpuRestrictionDisabled() && delegate_) {
+    delegate_->DisableCpuRestriction();
+    return;
+  }
+
   if (throttle_)
     return;
   if (!extensions_ready_ || !enabled_by_policy_)

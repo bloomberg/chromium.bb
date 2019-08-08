@@ -13,6 +13,7 @@
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
@@ -673,7 +674,7 @@ bool ShellSurfaceBase::CanResize() const {
 
 bool ShellSurfaceBase::CanMaximize() const {
   // Shell surfaces in system modal container cannot be maximized.
-  if (container_ != ash::kShellWindowId_DefaultContainer)
+  if (!ash::desks_util::IsDeskContainerId(container_))
     return false;
 
   // Non-transient shell surfaces can be maximized.
@@ -1049,24 +1050,6 @@ void ShellSurfaceBase::InstallCustomWindowTargeter() {
 
 float ShellSurfaceBase::GetScale() const {
   return 1.f;
-}
-
-void ShellSurfaceBase::SetParentWindow(aura::Window* parent) {
-  if (parent_) {
-    parent_->RemoveObserver(this);
-    if (widget_)
-      wm::RemoveTransientChild(parent_, widget_->GetNativeWindow());
-  }
-  parent_ = parent;
-  if (parent_) {
-    parent_->AddObserver(this);
-    if (widget_)
-      wm::AddTransientChild(parent_, widget_->GetNativeWindow());
-  }
-
-  // If |parent_| is set effects the ability to maximize the window.
-  if (widget_)
-    widget_->OnSizeConstraintsChanged();
 }
 
 void ShellSurfaceBase::StartCapture() {

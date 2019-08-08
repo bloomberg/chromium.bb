@@ -36,8 +36,6 @@ class AXViewObjWrapper : public AXAuraObjWrapper, public ViewObserver {
   void OnViewIsDeleting(View* observed_view) override;
 
  private:
-  AXAuraObjCache* const aura_obj_cache_;
-
   View* view_;
 
   DISALLOW_COPY_AND_ASSIGN(AXViewObjWrapper);

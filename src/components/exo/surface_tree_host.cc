@@ -206,8 +206,6 @@ void SurfaceTreeHost::OnLostSharedContext() {
   SubmitCompositorFrame();
 }
 
-void SurfaceTreeHost::OnLostVizProcess() {}
-
 ////////////////////////////////////////////////////////////////////////////////
 // SurfaceTreeHost, protected:
 

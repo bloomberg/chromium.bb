@@ -11,6 +11,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/autocomplete_match_classification.h"
 #include "components/omnibox/browser/in_memory_url_index_types.h"
 
 using bookmarks::BookmarkModel;
@@ -44,31 +45,11 @@ ACMatchClassifications HistoryProvider::SpansFromTermMatch(
     const TermMatches& matches,
     size_t text_length,
     bool is_url) {
-  ACMatchClassification::Style url_style =
+  ACMatchClassification::Style non_match_style =
       is_url ? ACMatchClassification::URL : ACMatchClassification::NONE;
-  ACMatchClassifications spans;
-  if (matches.empty()) {
-    if (text_length)
-      spans.push_back(ACMatchClassification(0, url_style));
-    return spans;
-  }
-  if (matches[0].offset)
-    spans.push_back(ACMatchClassification(0, url_style));
-  size_t match_count = matches.size();
-  for (size_t i = 0; i < match_count;) {
-    size_t offset = matches[i].offset;
-    spans.push_back(ACMatchClassification(
-        offset, ACMatchClassification::MATCH | url_style));
-    // Skip all adjacent matches.
-    do {
-      offset += matches[i].length;
-      ++i;
-    } while ((i < match_count) && (offset == matches[i].offset));
-    if (offset < text_length)
-      spans.push_back(ACMatchClassification(offset, url_style));
-  }
-
-  return spans;
+  return ClassifyTermMatches(matches, text_length,
+                             ACMatchClassification::MATCH | non_match_style,
+                             non_match_style);
 }
 
 HistoryProvider::HistoryProvider(AutocompleteProvider::Type type,

@@ -14,14 +14,16 @@
 #include "url/gurl.h"
 
 // Assumptions made by static_casts used in this file.
+STATIC_ASSERT_ENUM(net::CookieSameSite::UNSPECIFIED,
+                   network::mojom::CookieSameSite::UNSPECIFIED);
 STATIC_ASSERT_ENUM(net::CookieSameSite::NO_RESTRICTION,
                    network::mojom::CookieSameSite::NO_RESTRICTION);
 STATIC_ASSERT_ENUM(net::CookieSameSite::LAX_MODE,
                    network::mojom::CookieSameSite::LAX_MODE);
 STATIC_ASSERT_ENUM(net::CookieSameSite::STRICT_MODE,
                    network::mojom::CookieSameSite::STRICT_MODE);
-STATIC_ASSERT_ENUM(net::CookieSameSite::DEFAULT_MODE,
-                   blink::WebCanonicalCookie::kDefaultSameSiteMode);
+STATIC_ASSERT_ENUM(net::CookieSameSite::EXTENDED_MODE,
+                   network::mojom::CookieSameSite::EXTENDED_MODE);
 
 STATIC_ASSERT_ENUM(net::CookiePriority::COOKIE_PRIORITY_LOW,
                    network::mojom::CookiePriority::LOW);
@@ -143,8 +145,6 @@ base::Optional<WebCanonicalCookie> WebCanonicalCookie::Create(
                             same_site, priority);
 }
 
-constexpr const network::mojom::CookieSameSite
-    WebCanonicalCookie::kDefaultSameSiteMode;
 constexpr const network::mojom::CookiePriority
     WebCanonicalCookie::kDefaultPriority;
 

@@ -244,6 +244,13 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_ShowWidget,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowFullscreenWidget,
                     int /* route_id */)
 
+// Sent from an inactive renderer for the browser to route to the active
+// renderer, instructing it to close.
+//
+// TODO(http://crbug.com/419087): Move this thing to Frame as it's a signal
+// from a swapped out frame to the mainframe of the frame tree.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_RouteCloseEvent)
+
 // Indicates that the current page has been closed, after a ClosePage
 // message.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_ClosePage_ACK)
@@ -267,12 +274,6 @@ IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_ResolveProxy,
                             GURL /* url */,
                             bool /* result */,
                             std::string /* proxy list */)
-
-// Used to go to the session history entry at the given offset (ie, -1 will
-// return the "back" item).
-IPC_MESSAGE_ROUTED2(ViewHostMsg_GoToEntryAtOffset,
-                    int /* offset (from current) of history item to get */,
-                    bool /* has_user_gesture */)
 
 // Notifies that the preferred size of the content changed.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidContentsPreferredSizeChange,

@@ -290,6 +290,7 @@ executable("remoting_console") {
   ]
 
   if (!is_asan) {
+    no_default_deps = true
     ldflags = [
       "/ENTRY:HostEntryPoint",
       # "/NODEFAULTLIB",
@@ -320,6 +321,7 @@ executable("remoting_me2me_host") {
   output_name = "remoting_host"
 
   if (!is_asan) {
+    no_default_deps = true
     ldflags = [
       "/ENTRY:HostEntryPoint",
       # "/NODEFAULTLIB",
@@ -466,6 +468,7 @@ executable("remoting_desktop") {
   ]
 
   if (!is_asan) {
+    no_default_deps = true
     ldflags = [
       "/ENTRY:HostEntryPoint",
       # "/NODEFAULTLIB",

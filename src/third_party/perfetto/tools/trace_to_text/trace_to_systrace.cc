@@ -23,23 +23,13 @@
 #include <functional>
 #include <map>
 #include <memory>
-#include <unordered_map>
 #include <utility>
-#include <vector>
 
 #include "perfetto/base/build_config.h"
 #include "perfetto/base/logging.h"
 #include "perfetto/base/paged_memory.h"
 #include "perfetto/base/string_writer.h"
 #include "perfetto/trace_processor/trace_processor.h"
-#include "perfetto/traced/sys_stats_counters.h"
-#include "tools/trace_to_text/ftrace_event_formatter.h"
-#include "tools/trace_to_text/process_formatter.h"
-#include "tools/trace_to_text/utils.h"
-
-#include "perfetto/trace/trace.pb.h"
-#include "perfetto/trace/trace_packet.pb.h"
-#include "perfetto/trace_processor/raw_query.pb.h"
 
 // When running in Web Assembly, fflush() is a no-op and the stdio buffering
 // sends progress updates to JS only when a write ends with \n.
@@ -53,12 +43,6 @@ namespace perfetto {
 namespace trace_to_text {
 
 namespace {
-using protos::FtraceEvent;
-using protos::FtraceEventBundle;
-using protos::ProcessTree;
-using protos::Trace;
-using protos::TracePacket;
-using protos::SysStats;
 
 // Having an empty traceEvents object is necessary for trace viewer to
 // load the json properly.
@@ -108,6 +92,35 @@ const char kFtraceJsonHeader[] =
     "#           TASK-PID    TGID   CPU#  ||||    TIMESTAMP  FUNCTION\\n"
     "#              | |        |      |   ||||       |         |\\n";
 
+inline void FormatProcess(uint32_t pid,
+                          uint32_t ppid,
+                          const base::StringView& name,
+                          base::StringWriter* writer) {
+  writer->AppendLiteral("root             ");
+  writer->AppendInt(pid);
+  writer->AppendLiteral("     ");
+  writer->AppendInt(ppid);
+  writer->AppendLiteral("   00000   000 null 0000000000 S ");
+  writer->AppendString(name);
+  writer->AppendLiteral("         null");
+}
+
+inline void FormatThread(uint32_t tid,
+                         uint32_t tgid,
+                         const base::StringView& name,
+                         base::StringWriter* writer) {
+  writer->AppendLiteral("root         ");
+  writer->AppendInt(tgid);
+  writer->AppendChar(' ');
+  writer->AppendInt(tid);
+  writer->AppendChar(' ');
+  if (name.empty()) {
+    writer->AppendLiteral("<...>");
+  } else {
+    writer->AppendString(name);
+  }
+}
+
 class QueryWriter {
  public:
   QueryWriter(trace_processor::TraceProcessor* tp, std::ostream* output)
@@ -117,26 +130,10 @@ class QueryWriter {
         output_(output) {}
 
   template <typename Callback>
-  bool RunQuery(base::StringView sql, Callback callback) {
-    auto iterator = tp_->ExecuteQuery(sql);
-    if (!iterator.IsValid()) {
-      PERFETTO_ELOG("Error creating SQL iterator");
-      return false;
-    }
-
+  bool RunQuery(const std::string& sql, Callback callback) {
     char buffer[2048];
-    for (uint32_t rows = 0;; rows++) {
-      using Result = trace_processor::TraceProcessor::Iterator::NextResult;
-
-      auto result = iterator.Next();
-      if (PERFETTO_UNLIKELY(result == Result::kError)) {
-        PERFETTO_ELOG("Error while writing systrace %s",
-                      iterator.GetLastError().value().c_str());
-        return false;
-      } else if (result == Result::kEOF) {
-        break;
-      }
-
+    auto iterator = tp_->ExecuteQuery(sql);
+    for (uint32_t rows = 0; iterator.Next(); rows++) {
       base::StringWriter line_writer(buffer, base::ArraySize(buffer));
       callback(&iterator, &line_writer);
 
@@ -147,6 +144,13 @@ class QueryWriter {
         global_writer_.reset();
       }
       global_writer_.AppendStringView(line_writer.GetStringView());
+    }
+
+    // Check if we have an error in the iterator and print if so.
+    auto opt_error = iterator.GetLastError();
+    if (opt_error.has_value()) {
+      PERFETTO_ELOG("Error while writing systrace %s", opt_error->c_str());
+      return false;
     }
 
     // Flush any dangling pieces in the global writer.
@@ -167,9 +171,9 @@ class QueryWriter {
 
 }  // namespace
 
-int TraceToExperimentalSystrace(std::istream* input,
-                                std::ostream* output,
-                                bool wrap_in_json) {
+int TraceToSystrace(std::istream* input,
+                    std::ostream* output,
+                    bool wrap_in_json) {
   trace_processor::Config config;
   std::unique_ptr<trace_processor::TraceProcessor> tp =
       trace_processor::TraceProcessor::CreateInstance(config);
@@ -280,154 +284,6 @@ int TraceToExperimentalSystrace(std::istream* input,
   };
   if (!q_writer.RunQuery(kRawSql, raw_callback))
     return 1;
-
-  if (wrap_in_json)
-    *output << kTraceFooter;
-
-  return 0;
-}
-
-int TraceToSystrace(std::istream* input,
-                    std::ostream* output,
-                    bool wrap_in_json) {
-  std::multimap<uint64_t, std::string> ftrace_sorted;
-  std::vector<std::string> proc_dump;
-  std::vector<std::string> thread_dump;
-  std::unordered_map<uint32_t /*tid*/, uint32_t /*tgid*/> thread_map;
-  std::unordered_map<uint32_t /*tid*/, std::string> thread_names;
-
-  std::vector<const char*> meminfo_strs = BuildMeminfoCounterNames();
-  std::vector<const char*> vmstat_strs = BuildVmstatCounterNames();
-
-  std::vector<protos::TracePacket> packets_to_process;
-
-  ForEachPacketInTrace(
-      input, [&thread_map, &packets_to_process, &proc_dump, &thread_names,
-              &thread_dump](const protos::TracePacket& packet) {
-        if (!packet.has_process_tree()) {
-          packets_to_process.emplace_back(std::move(packet));
-        }
-        if (packet.has_ftrace_events()) {
-          const FtraceEventBundle& bundle = packet.ftrace_events();
-          for (const FtraceEvent& event : bundle.event()) {
-            if (!event.has_sched_switch())
-              continue;
-            const auto& sched_switch = event.sched_switch();
-            thread_names[static_cast<uint32_t>(sched_switch.prev_pid())] =
-                sched_switch.prev_comm();
-            thread_names[static_cast<uint32_t>(sched_switch.next_pid())] =
-                sched_switch.next_comm();
-          }
-          return;
-        }
-        const ProcessTree& process_tree = packet.process_tree();
-        for (const auto& process : process_tree.processes()) {
-          // Main threads will have the same pid as tgid.
-          thread_map[static_cast<uint32_t>(process.pid())] =
-              static_cast<uint32_t>(process.pid());
-          std::string p = FormatProcess(process);
-          proc_dump.emplace_back(p);
-        }
-        for (const auto& thread : process_tree.threads()) {
-          // Populate thread map for matching tids to tgids.
-          thread_map[static_cast<uint32_t>(thread.tid())] =
-              static_cast<uint32_t>(thread.tgid());
-          if (thread.has_name()) {
-            thread_names[static_cast<uint32_t>(thread.tid())] = thread.name();
-          }
-          std::string t = FormatThread(thread);
-          thread_dump.emplace_back(t);
-        }
-      });
-
-  for (const auto& packet : packets_to_process) {
-    if (packet.has_ftrace_events()) {
-      const FtraceEventBundle& bundle = packet.ftrace_events();
-      for (const FtraceEvent& event : bundle.event()) {
-        std::string line = FormatFtraceEvent(event.timestamp(), bundle.cpu(),
-                                             event, thread_map, thread_names);
-        if (line == "")
-          continue;
-        ftrace_sorted.emplace(event.timestamp(), line);
-      }
-    }  // packet.has_ftrace_events
-
-    if (packet.has_sys_stats()) {
-      const SysStats& sys_stats = packet.sys_stats();
-      for (const auto& meminfo : sys_stats.meminfo()) {
-        FtraceEvent event;
-        uint64_t ts = static_cast<uint64_t>(packet.timestamp());
-        char str[256];
-        event.set_timestamp(ts);
-        event.set_pid(1);
-        sprintf(str, "C|1|%s|%" PRIu64, meminfo_strs[meminfo.key()],
-                static_cast<uint64_t>(meminfo.value()));
-        event.mutable_print()->set_buf(str);
-        ftrace_sorted.emplace(
-            ts, FormatFtraceEvent(ts, 0, event, thread_map, thread_names));
-      }
-      for (const auto& vmstat : sys_stats.vmstat()) {
-        FtraceEvent event;
-        uint64_t ts = static_cast<uint64_t>(packet.timestamp());
-        char str[256];
-        event.set_timestamp(ts);
-        event.set_pid(1);
-        sprintf(str, "C|1|%s|%" PRIu64, vmstat_strs[vmstat.key()],
-                static_cast<uint64_t>(vmstat.value()));
-        event.mutable_print()->set_buf(str);
-        ftrace_sorted.emplace(
-            ts, FormatFtraceEvent(ts, 0, event, thread_map, thread_names));
-      }
-    }
-  }
-
-  if (wrap_in_json) {
-    *output << kTraceHeader;
-    *output << kProcessDumpHeader;
-    for (const auto& process : proc_dump) {
-      *output << process << "\\n";
-    }
-    *output << kThreadHeader;
-    for (const auto& thread : thread_dump) {
-      *output << thread << "\\n";
-    }
-    *output << "\",";
-    *output << kSystemTraceEvents;
-    *output << kFtraceJsonHeader;
-  } else {
-    *output << "TRACE:\n";
-    *output << kFtraceHeader;
-  }
-
-  fprintf(stderr, "\n");
-  size_t total_events = ftrace_sorted.size();
-  size_t written_events = 0;
-  std::vector<char> escaped_str;
-  for (auto it = ftrace_sorted.begin(); it != ftrace_sorted.end(); it++) {
-    if (wrap_in_json) {
-      escaped_str.clear();
-      escaped_str.reserve(it->second.size() * 101 / 100);
-      for (char c : it->second) {
-        if (c == '\\' || c == '"')
-          escaped_str.push_back('\\');
-        escaped_str.push_back(c);
-      }
-      escaped_str.push_back('\\');
-      escaped_str.push_back('n');
-      escaped_str.push_back('\0');
-      *output << escaped_str.data();
-    } else {
-      *output << it->second;
-      *output << "\n";
-    }
-    if (!StdoutIsTty() && (written_events++ % 1000 == 0 ||
-                           written_events == ftrace_sorted.size())) {
-      fprintf(stderr, "Writing trace: %.2f %%" PROGRESS_CHAR,
-              written_events * 100.0 / total_events);
-      fflush(stderr);
-      output->flush();
-    }
-  }
 
   if (wrap_in_json)
     *output << kTraceFooter;

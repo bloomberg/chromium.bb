@@ -34,7 +34,8 @@ body,
 }
 
 #navigation-button {
-  color: white;
+  --cr-icon-button-color: white;
+  margin: 0;
   position: absolute;
   top: 0;
   visibility: hidden;

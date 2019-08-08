@@ -48,6 +48,18 @@ const char* const kValidPolicies[] = {
     "geolocation 'none' 'none' 'none'",
     "geolocation " ORIGIN_A " *",
     "fullscreen  " ORIGIN_A "; payment 'self'",
+    "fullscreen  " ORIGIN_A "(true)",
+    "fullscreen  " ORIGIN_A "(false)",
+    "fullscreen  " ORIGIN_A "(True)",
+    "fullscreen  " ORIGIN_A "(TRUE)",
+    "oversized-images " ORIGIN_A "(2.0)",
+    "oversized-images " ORIGIN_A "(0.0)",
+    "oversized-images " ORIGIN_A "(4)",
+    "oversized-images " ORIGIN_A "(20000)",
+    "oversized-images " ORIGIN_A "(2e50)",
+    "oversized-images " ORIGIN_A "(inf)",
+    "oversized-images " ORIGIN_A "(Inf)",
+    "oversized-images " ORIGIN_A "(INF)",
     "fullscreen " ORIGIN_A "; payment *, geolocation 'self'"};
 
 const char* const kInvalidPolicies[] = {
@@ -59,7 +71,17 @@ const char* const kInvalidPolicies[] = {
     "geolocation https:/bad,origin",
     "geolocation https://example.com, https://a.com",
     "geolocation *, payment data://badorigin",
-    "geolocation ws://xn--fd\xbcwsw3taaaaaBaa333aBBBBBBJBBJBBBt"};
+    "geolocation ws://xn--fd\xbcwsw3taaaaaBaa333aBBBBBBJBBJBBBt",
+    "fullscreen(true)",
+    "fullscreen  " ORIGIN_A "(notabool)",
+    "fullscreen " ORIGIN_A "(2.0)",
+    "oversized-images " ORIGIN_A "(true)",
+    "oversized-images " ORIGIN_A "(Something else)",
+    "oversized-images " ORIGIN_A "(1",
+    "oversized-images " ORIGIN_A "(-1)",
+    "oversized-images " ORIGIN_A "(1.2.3)",
+    "oversized-images " ORIGIN_A "(1.a.3)",
+    "fullscreen  " ORIGIN_A "()"};
 
 }  // namespace
 
@@ -89,8 +111,12 @@ class FeaturePolicyParserTest : public testing::Test {
 
   const PolicyValue min_value = PolicyValue(false);
   const PolicyValue max_value = PolicyValue(true);
-  const PolicyValue min_double_value =
+  const PolicyValue sample_double_value =
+      PolicyValue(1.5, mojom::PolicyValueType::kDecDouble);
+  const PolicyValue default_double_value =
       PolicyValue(2.0, mojom::PolicyValueType::kDecDouble);
+  const PolicyValue min_double_value =
+      PolicyValue::CreateMinPolicyValue(mojom::PolicyValueType::kDecDouble);
   const PolicyValue max_double_value =
       PolicyValue::CreateMaxPolicyValue(mojom::PolicyValueType::kDecDouble);
 };
@@ -101,7 +127,7 @@ TEST_F(FeaturePolicyParserTest, ParseValidPolicy) {
     messages.clear();
     ParseFeaturePolicy(policy_string, origin_a_.get(), origin_b_.get(),
                        &messages, test_feature_name_map);
-    EXPECT_EQ(0UL, messages.size());
+    EXPECT_EQ(0UL, messages.size()) << "Should parse " << policy_string;
   }
 }
 
@@ -111,7 +137,7 @@ TEST_F(FeaturePolicyParserTest, ParseInvalidPolicy) {
     messages.clear();
     ParseFeaturePolicy(policy_string, origin_a_.get(), origin_b_.get(),
                        &messages, test_feature_name_map);
-    EXPECT_LT(0UL, messages.size());
+    EXPECT_LT(0UL, messages.size()) << "Should fail to parse " << policy_string;
   }
 }
 
@@ -303,6 +329,308 @@ TEST_F(FeaturePolicyParserTest, PolicyParsedCorrectlyForOpaqueOrigins) {
       expected_url_origin_b_));
 }
 
+TEST_F(FeaturePolicyParserTest, BooleanPolicyParametersParsedCorrectly) {
+  Vector<String> messages;
+  ParsedFeaturePolicy parsed_policy;
+
+  // Test no origin specified, in a container policy context.
+  // (true)
+  parsed_policy =
+      ParseFeaturePolicy("fullscreen (true)", origin_a_.get(), origin_b_.get(),
+                         &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[0].feature);
+  EXPECT_EQ(min_value, parsed_policy[0].fallback_value);
+  EXPECT_EQ(min_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(1UL, parsed_policy[0].values.size());
+  EXPECT_TRUE(parsed_policy[0].values.begin()->first.IsSameOriginWith(
+      expected_url_origin_b_));
+  EXPECT_EQ(max_value, parsed_policy[0].values.begin()->second);
+
+  // Test no origin specified, in a header context.
+  // (true)
+  parsed_policy = ParseFeaturePolicy("fullscreen (true)", origin_a_.get(),
+                                     nullptr, &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[0].feature);
+  EXPECT_EQ(min_value, parsed_policy[0].fallback_value);
+  EXPECT_EQ(min_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(1UL, parsed_policy[0].values.size());
+  EXPECT_TRUE(parsed_policy[0].values.begin()->first.IsSameOriginWith(
+      expected_url_origin_a_));
+  EXPECT_EQ(max_value, parsed_policy[0].values.begin()->second);
+
+  // Test no origin specified, in a sandboxed container policy context.
+  // (true)
+  scoped_refptr<SecurityOrigin> opaque_origin =
+      SecurityOrigin::CreateUniqueOpaque();
+  parsed_policy =
+      ParseFeaturePolicy("fullscreen (true)", origin_a_.get(), opaque_origin,
+                         &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[0].feature);
+  EXPECT_EQ(min_value, parsed_policy[0].fallback_value);
+  EXPECT_EQ(max_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(0UL, parsed_policy[0].values.size());
+
+  // 'self'(true)
+  parsed_policy =
+      ParseFeaturePolicy("fullscreen 'self'(true)", origin_a_.get(),
+                         origin_b_.get(), &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[0].feature);
+  EXPECT_EQ(min_value, parsed_policy[0].fallback_value);
+  EXPECT_EQ(min_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(1UL, parsed_policy[0].values.size());
+  EXPECT_TRUE(parsed_policy[0].values.begin()->first.IsSameOriginWith(
+      expected_url_origin_a_));
+  EXPECT_EQ(max_value, parsed_policy[0].values.begin()->second);
+
+  // *(false)
+  parsed_policy =
+      ParseFeaturePolicy("fullscreen *(false)", origin_a_.get(),
+                         origin_b_.get(), &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[0].feature);
+  EXPECT_EQ(min_value, parsed_policy[0].fallback_value);
+  EXPECT_EQ(min_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(0UL, parsed_policy[0].values.size());
+
+  // *(true)
+  parsed_policy =
+      ParseFeaturePolicy("fullscreen *(true)", origin_a_.get(), origin_b_.get(),
+                         &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[0].feature);
+  EXPECT_EQ(max_value, parsed_policy[0].fallback_value);
+  EXPECT_EQ(max_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(0UL, parsed_policy[0].values.size());
+}
+
+TEST_F(FeaturePolicyParserTest, DoublePolicyParametersParsedCorrectly) {
+  Vector<String> messages;
+  ParsedFeaturePolicy parsed_policy;
+
+  // 'self'(inf)
+  parsed_policy =
+      ParseFeaturePolicy("oversized-images 'self'(inf)", origin_a_.get(),
+                         origin_b_.get(), &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+            parsed_policy[0].feature);
+  EXPECT_EQ(default_double_value, parsed_policy[0].fallback_value);
+  EXPECT_EQ(default_double_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(1UL, parsed_policy[0].values.size());
+  EXPECT_TRUE(parsed_policy[0].values.begin()->first.IsSameOriginWith(
+      expected_url_origin_a_));
+  EXPECT_EQ(max_double_value, parsed_policy[0].values.begin()->second);
+
+  // 'self'(1.5)
+  parsed_policy =
+      ParseFeaturePolicy("oversized-images 'self'(1.5)", origin_a_.get(),
+                         origin_b_.get(), &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+            parsed_policy[0].feature);
+  EXPECT_EQ(default_double_value, parsed_policy[0].fallback_value);
+  EXPECT_EQ(default_double_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(1UL, parsed_policy[0].values.size());
+  EXPECT_TRUE(parsed_policy[0].values.begin()->first.IsSameOriginWith(
+      expected_url_origin_a_));
+  EXPECT_EQ(sample_double_value, parsed_policy[0].values.begin()->second);
+
+  // *(inf)
+  parsed_policy =
+      ParseFeaturePolicy("oversized-images *(inf)", origin_a_.get(),
+                         origin_b_.get(), &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+            parsed_policy[0].feature);
+  EXPECT_EQ(max_double_value, parsed_policy[0].fallback_value);
+  EXPECT_EQ(max_double_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(0UL, parsed_policy[0].values.size());
+
+  // *(0)
+  parsed_policy =
+      ParseFeaturePolicy("oversized-images *(0)", origin_a_.get(),
+                         origin_b_.get(), &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+            parsed_policy[0].feature);
+  EXPECT_EQ(min_double_value, parsed_policy[0].fallback_value);
+  EXPECT_EQ(min_double_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(0UL, parsed_policy[0].values.size());
+
+  // *(1.5)
+  parsed_policy =
+      ParseFeaturePolicy("oversized-images *(1.5)", origin_a_.get(),
+                         origin_b_.get(), &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+            parsed_policy[0].feature);
+  EXPECT_EQ(sample_double_value, parsed_policy[0].fallback_value);
+  EXPECT_EQ(sample_double_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(0UL, parsed_policy[0].values.size());
+
+  // 'self'(1.5) 'src'(inf)
+  // Fallbacks should be default values.
+  parsed_policy = ParseFeaturePolicy("oversized-images 'self'(1.5) 'src'(inf)",
+                                     origin_a_.get(), origin_b_.get(),
+                                     &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+            parsed_policy[0].feature);
+  EXPECT_EQ(default_double_value, parsed_policy[0].fallback_value);
+  EXPECT_EQ(default_double_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(2UL, parsed_policy[0].values.size());
+  auto origin_and_value = parsed_policy[0].values.begin();
+  EXPECT_TRUE(origin_and_value->first.IsSameOriginWith(expected_url_origin_a_));
+  EXPECT_EQ(sample_double_value, origin_and_value->second);
+  origin_and_value++;
+  EXPECT_TRUE(origin_and_value->first.IsSameOriginWith(expected_url_origin_b_));
+  EXPECT_EQ(max_double_value, origin_and_value->second);
+
+  // *(1.5) 'src'(inf)
+  // Fallbacks should be 1.5
+  parsed_policy =
+      ParseFeaturePolicy("oversized-images *(1.5) 'src'(inf)", origin_a_.get(),
+                         origin_b_.get(), &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+            parsed_policy[0].feature);
+  EXPECT_EQ(sample_double_value, parsed_policy[0].fallback_value);
+  EXPECT_EQ(sample_double_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(1UL, parsed_policy[0].values.size());
+  origin_and_value = parsed_policy[0].values.begin();
+  EXPECT_TRUE(origin_and_value->first.IsSameOriginWith(expected_url_origin_b_));
+  EXPECT_EQ(max_double_value, origin_and_value->second);
+
+  // Test policy: 'self'(1.5) https://example.org(inf)
+  // Fallbacks should be default value.
+  parsed_policy = ParseFeaturePolicy(
+      "oversized-images 'self'(1.5) " ORIGIN_C "(inf)", origin_a_.get(),
+      origin_b_.get(), &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+            parsed_policy[0].feature);
+  EXPECT_EQ(default_double_value, parsed_policy[0].fallback_value);
+  EXPECT_EQ(default_double_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(2UL, parsed_policy[0].values.size());
+  origin_and_value = parsed_policy[0].values.begin();
+  EXPECT_TRUE(origin_and_value->first.IsSameOriginWith(expected_url_origin_a_));
+  EXPECT_EQ(sample_double_value, origin_and_value->second);
+  origin_and_value++;
+  EXPECT_TRUE(origin_and_value->first.IsSameOriginWith(expected_url_origin_c_));
+  EXPECT_EQ(max_double_value, origin_and_value->second);
+
+  // Test policy: 'self'(1.5) https://example.org(inf) *(0)
+  // Fallbacks should be 0.
+  parsed_policy = ParseFeaturePolicy(
+      "oversized-images 'self'(1.5) " ORIGIN_C "(inf) *(0)", origin_a_.get(),
+      origin_b_.get(), &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+            parsed_policy[0].feature);
+  EXPECT_EQ(min_double_value, parsed_policy[0].fallback_value);
+  EXPECT_EQ(min_double_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(2UL, parsed_policy[0].values.size());
+  origin_and_value = parsed_policy[0].values.begin();
+  EXPECT_TRUE(origin_and_value->first.IsSameOriginWith(expected_url_origin_a_));
+  EXPECT_EQ(sample_double_value, origin_and_value->second);
+  origin_and_value++;
+  EXPECT_TRUE(origin_and_value->first.IsSameOriginWith(expected_url_origin_c_));
+  EXPECT_EQ(max_double_value, origin_and_value->second);
+}
+
+TEST_F(FeaturePolicyParserTest, RedundantBooleanItemsRemoved) {
+  Vector<String> messages;
+  ParsedFeaturePolicy parsed_policy;
+
+  // 'self'(true) *(true)
+  parsed_policy =
+      ParseFeaturePolicy("fullscreen 'self'(true) *(true)", origin_a_.get(),
+                         origin_b_.get(), &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[0].feature);
+  EXPECT_EQ(max_value, parsed_policy[0].fallback_value);
+  EXPECT_EQ(max_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(0UL, parsed_policy[0].values.size());
+
+  // 'self'(false)
+  parsed_policy =
+      ParseFeaturePolicy("fullscreen 'self'(false)", origin_a_.get(),
+                         origin_b_.get(), &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[0].feature);
+  EXPECT_EQ(min_value, parsed_policy[0].fallback_value);
+  EXPECT_EQ(min_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(0UL, parsed_policy[0].values.size());
+
+  // (true)
+  parsed_policy =
+      ParseFeaturePolicy("fullscreen (false)", origin_a_.get(), origin_b_.get(),
+                         &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[0].feature);
+  EXPECT_EQ(min_value, parsed_policy[0].fallback_value);
+  EXPECT_EQ(min_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(0UL, parsed_policy[0].values.size());
+}
+
+TEST_F(FeaturePolicyParserTest, RedundantDoubleItemsRemoved) {
+  Vector<String> messages;
+  ParsedFeaturePolicy parsed_policy;
+
+  // 'self'(1.5) *(1.5)
+  parsed_policy =
+      ParseFeaturePolicy("oversized-images 'self'(1.5) *(1.5)", origin_a_.get(),
+                         origin_b_.get(), &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+            parsed_policy[0].feature);
+  EXPECT_EQ(sample_double_value, parsed_policy[0].fallback_value);
+  EXPECT_EQ(sample_double_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(0UL, parsed_policy[0].values.size());
+
+  // 'self'(inf)
+  parsed_policy =
+      ParseFeaturePolicy("oversized-images 'self'(2.0)", origin_a_.get(),
+                         origin_b_.get(), &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+            parsed_policy[0].feature);
+  EXPECT_EQ(default_double_value, parsed_policy[0].fallback_value);
+  EXPECT_EQ(default_double_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(0UL, parsed_policy[0].values.size());
+
+  // (inf)
+  parsed_policy =
+      ParseFeaturePolicy("oversized-images (2.0)", origin_a_.get(),
+                         origin_b_.get(), &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+            parsed_policy[0].feature);
+  EXPECT_EQ(default_double_value, parsed_policy[0].fallback_value);
+  EXPECT_EQ(default_double_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(0UL, parsed_policy[0].values.size());
+}
+
 // Test histogram counting the use of feature policies in header.
 TEST_F(FeaturePolicyParserTest, HeaderHistogram) {
   const char* histogram_name = "Blink.UseCounter.FeaturePolicy.Header";
@@ -348,7 +676,7 @@ TEST_F(FeaturePolicyParserTest, AllowHistogramSameDocument) {
   const char* histogram_name = "Blink.UseCounter.FeaturePolicy.Allow";
   HistogramTester tester;
   Vector<String> messages;
-  std::unique_ptr<DummyPageHolder> dummy = DummyPageHolder::Create();
+  auto dummy = std::make_unique<DummyPageHolder>();
 
   ParseFeaturePolicy("payment; fullscreen", origin_a_.get(), origin_b_.get(),
                      &messages, test_feature_name_map, &dummy->GetDocument());
@@ -373,8 +701,8 @@ TEST_F(FeaturePolicyParserTest, AllowHistogramDifferentDocument) {
   const char* histogram_name = "Blink.UseCounter.FeaturePolicy.Allow";
   HistogramTester tester;
   Vector<String> messages;
-  std::unique_ptr<DummyPageHolder> dummy = DummyPageHolder::Create();
-  std::unique_ptr<DummyPageHolder> dummy2 = DummyPageHolder::Create();
+  auto dummy = std::make_unique<DummyPageHolder>();
+  auto dummy2 = std::make_unique<DummyPageHolder>();
 
   ParseFeaturePolicy("payment; fullscreen", origin_a_.get(), origin_b_.get(),
                      &messages, test_feature_name_map, &dummy->GetDocument());
@@ -418,7 +746,7 @@ TEST_F(FeaturePolicyParserTest, ParseParameterizedFeatures) {
 
   EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
             parsed_policy[0].feature);
-  EXPECT_GE(min_double_value, parsed_policy[0].fallback_value);
+  EXPECT_GE(default_double_value, parsed_policy[0].fallback_value);
   EXPECT_LE(max_double_value, parsed_policy[0].opaque_value);
   EXPECT_EQ(1UL, parsed_policy[0].values.size());
   EXPECT_LE(max_double_value, parsed_policy[0].values.begin()->second);
@@ -657,8 +985,7 @@ TEST_F(FeaturePolicyViolationHistogramTest, PotentialViolation) {
   HistogramTester tester;
   const char* histogram_name =
       "Blink.UseCounter.FeaturePolicy.PotentialViolation";
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_ =
-      DummyPageHolder::Create();
+  auto dummy_page_holder_ = std::make_unique<DummyPageHolder>();
   // Probing feature state should not count.
   dummy_page_holder_->GetDocument().IsFeatureEnabled(
       mojom::FeaturePolicyFeature::kPayment);

@@ -7,20 +7,27 @@
 #include "base/feature_list.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/strings/sys_string_conversions.h"
 #import "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/common/omnibox_features.h"
+#import "ios/chrome/browser/favicon/favicon_loader.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
-#import "ios/chrome/browser/ui/omnibox/autocomplete_match_formatter.h"
+#import "ios/chrome/browser/ui/omnibox/popup/autocomplete_match_formatter.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/common/favicon/favicon_attributes.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+const CGFloat kOmniboxIconSize = 20;
+}  // namespace
 
 @implementation OmniboxPopupMediator {
   // Fetcher for Answers in Suggest images.
@@ -39,12 +46,14 @@
 - (instancetype)initWithFetcher:
                     (std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper>)
                         imageFetcher
+                  faviconLoader:(FaviconLoader*)faviconLoader
                        delegate:(OmniboxPopupMediatorDelegate*)delegate {
   self = [super init];
   if (self) {
     DCHECK(delegate);
     _delegate = delegate;
     _imageFetcher = std::move(imageFetcher);
+    _faviconLoader = faviconLoader;
     _open = NO;
   }
   return self;
@@ -95,6 +104,11 @@
 
 - (void)setTextAlignment:(NSTextAlignment)alignment {
   [self.consumer setTextAlignment:alignment];
+}
+
+- (void)setSemanticContentAttribute:
+    (UISemanticContentAttribute)semanticContentAttribute {
+  [self.consumer setSemanticContentAttribute:semanticContentAttribute];
 }
 
 #pragma mark - AutocompleteResultConsumerDelegate
@@ -161,6 +175,29 @@
         }
       };
   _imageFetcher->FetchImageDataWebpDecoded(imageURL, callback);
+}
+
+#pragma mark - FaviconRetriever
+
+- (void)fetchFavicon:(GURL)pageURL completion:(void (^)(UIImage*))completion {
+  if (!self.faviconLoader) {
+    return;
+  }
+
+  FaviconAttributes* cachedAttributes = self.faviconLoader->FaviconForPageUrl(
+      pageURL, kOmniboxIconSize, kOmniboxIconSize,
+      /*fallback_to_google_server=*/YES, ^(FaviconAttributes* attributes) {
+        if (attributes.faviconImage && !attributes.usesDefaultImage)
+          completion(attributes.faviconImage);
+      });
+
+  // Only use cached attributes when they are a non-default icon. Never show
+  // monograms or default globe icon.
+  if (cachedAttributes.faviconImage && !cachedAttributes.usesDefaultImage) {
+    dispatch_async(dispatch_get_main_queue(), ^() {
+      completion(cachedAttributes.faviconImage);
+    });
+  }
 }
 
 @end

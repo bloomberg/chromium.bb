@@ -17,7 +17,8 @@ namespace blink {
 class PaintPropertyTreePrinterTest : public PaintControllerPaintTest {
  public:
   PaintPropertyTreePrinterTest()
-      : PaintControllerPaintTest(SingleChildLocalFrameClient::Create()) {}
+      : PaintControllerPaintTest(
+            MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
  private:
   void SetUp() override {
@@ -66,8 +67,8 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleScrollTree) {
 
 TEST_P(PaintPropertyTreePrinterTest, SimpleTransformTreePath) {
   SetBodyInnerHTML(
-      "<div id='transform' style='transform: translate3d(10px, 10px, "
-      "0px);'></div>");
+      "<div id='transform' style='transform: translate3d(10px, 10px, 10px);'>"
+      "</div>");
   LayoutObject* transformed_object =
       GetDocument().getElementById("transform")->GetLayoutObject();
   const auto* transformed_object_properties =
@@ -77,7 +78,7 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleTransformTreePath) {
   EXPECT_THAT(transform_path_as_string.Ascii().data(),
               testing::MatchesRegex("root .*\"scroll\".*"
                                     "  .*\"parent\".*"
-                                    "    .*\"matrix\".*"
+                                    "    .*\"translation2d\".*"
                                     "      .*\"matrix\".*"));
 }
 

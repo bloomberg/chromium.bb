@@ -25,7 +25,6 @@
 #include "extensions/buildflags/buildflags.h"
 #include "net/cookies/canonical_cookie.h"
 #include "storage/common/fileapi/file_system_types.h"
-#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
@@ -51,9 +50,6 @@ const char kKeySendFor[] = "sendfor";
 const char kKeyAccessibleToScript[] = "accessibleToScript";
 const char kKeySize[] = "size";
 const char kKeyOrigin[] = "origin";
-const char kKeyManifest[] = "manifest";
-
-const char kKeyAccessed[] = "accessed";
 const char kKeyCreated[] = "created";
 const char kKeyExpires[] = "expires";
 const char kKeyModified[] = "modified";
@@ -155,16 +151,14 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
     case CookieTreeNode::DetailedInfo::TYPE_APPCACHE: {
       dict->SetString(kKeyType, "app_cache");
 
-      const blink::mojom::AppCacheInfo& appcache_info =
-          *node.GetDetailedInfo().appcache_info;
+      const content::StorageUsageInfo& usage_info =
+          *node.GetDetailedInfo().usage_info;
 
-      dict->SetString(kKeyManifest, appcache_info.manifest_url.spec());
-      dict->SetString(kKeySize, ui::FormatBytes(appcache_info.size));
-      dict->SetString(kKeyCreated, base::UTF16ToUTF8(
-          base::TimeFormatFriendlyDateAndTime(appcache_info.creation_time)));
-      dict->SetString(kKeyAccessed, base::UTF16ToUTF8(
-          base::TimeFormatFriendlyDateAndTime(appcache_info.last_access_time)));
-
+      dict->SetString(kKeyOrigin, usage_info.origin.Serialize());
+      dict->SetString(kKeySize, ui::FormatBytes(usage_info.total_size_bytes));
+      dict->SetString(kKeyModified,
+                      base::UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(
+                          usage_info.last_modified)));
       break;
     }
     case CookieTreeNode::DetailedInfo::TYPE_INDEXED_DB: {

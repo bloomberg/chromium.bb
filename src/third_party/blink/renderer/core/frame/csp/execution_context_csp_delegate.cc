@@ -17,11 +17,10 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/ping_loader.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
-#include "third_party/blink/renderer/platform/weborigin/reporting_service_proxy_ptr_holder.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
@@ -52,7 +51,7 @@ void ExecutionContextCSPDelegate::SetAddressSpace(mojom::IPAddressSpace space) {
 }
 
 void ExecutionContextCSPDelegate::SetRequireTrustedTypes() {
-  if (origin_trials::TrustedDOMTypesEnabled(execution_context_))
+  if (RuntimeEnabledFeatures::TrustedDOMTypesEnabled(execution_context_))
     GetSecurityContext().SetRequireTrustedTypes();
 }
 
@@ -154,30 +153,18 @@ void ExecutionContextCSPDelegate::PostViolationReport(
   scoped_refptr<EncodedFormData> report =
       EncodedFormData::Create(stringified_report.Utf8());
 
-  DEFINE_STATIC_LOCAL(ReportingServiceProxyPtrHolder,
-                      reporting_service_proxy_holder, ());
-
   // Construct and route the report to the ReportingContext, to be observed
   // by any ReportingObservers.
-  CSPViolationReportBody* body = CSPViolationReportBody::Create(violation_data);
+  auto* body = MakeGarbageCollected<CSPViolationReportBody>(violation_data);
   Report* observed_report =
       MakeGarbageCollected<Report>("csp-violation", Url().GetString(), body);
-  ReportingContext::From(document)->QueueReport(observed_report);
+  ReportingContext::From(document)->QueueReport(
+      observed_report, use_reporting_api ? report_endpoints : Vector<String>());
+
+  if (use_reporting_api)
+    return;
 
   for (const auto& report_endpoint : report_endpoints) {
-    if (use_reporting_api) {
-      // https://w3c.github.io/webappsec-csp/#report-violation
-      // Step 3.5. If violation’s policy’s directive set contains a directive
-      // named "report-to" (directive): [spec text]
-      //
-      // https://w3c.github.io/reporting/#queue-report
-      // Step 2. If url was not provided by the caller, let url be settings’s
-      // creation URL. [spec text]
-      reporting_service_proxy_holder.QueueCspViolationReport(
-          Url(), report_endpoint, &violation_data);
-      continue;
-    }
-
     // Use the frame's document to complete the endpoint URL, overriding its URL
     // with the blocked document's URL.
     // https://w3c.github.io/webappsec-csp/#report-violation

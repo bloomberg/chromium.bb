@@ -33,11 +33,11 @@
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "base/unguessable_token.h"
+#include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-shared.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
 #include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
-#include "third_party/blink/public/web/web_global_object_reuse_policy.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -71,16 +71,21 @@ class ContentSecurityPolicy;
 class Document;
 class DocumentParser;
 class FrameLoader;
-class FrameResourceFetcherProperties;
 class HistoryItem;
 class LocalFrame;
 class LocalFrameClient;
-class ResourceFetcher;
+class MHTMLArchive;
 class ResourceTimingInfo;
 class SerializedScriptValue;
 class SubresourceFilter;
 class WebServiceWorkerNetworkProvider;
 struct ViewportDescriptionWrapper;
+
+// Indicates whether the global object (i.e. Window instance) associated with
+// the previous document in a browsing context was replaced or reused for the
+// new Document corresponding to the just-committed navigation; effective in the
+// main world and all isolated worlds. WindowProxies are not affected.
+enum class GlobalObjectReusePolicy { kCreateNew, kUseExisting };
 
 // The DocumentLoader fetches a main resource and handles the result.
 class CORE_EXPORT DocumentLoader
@@ -100,11 +105,11 @@ class CORE_EXPORT DocumentLoader
 
   virtual void DetachFromFrame(bool flush_microtask_queue);
 
-  unsigned long MainResourceIdentifier() const;
+  uint64_t MainResourceIdentifier() const;
 
   void ReplaceDocumentWhileExecutingJavaScriptURL(const KURL&,
                                                   Document* owner_document,
-                                                  WebGlobalObjectReusePolicy,
+                                                  GlobalObjectReusePolicy,
                                                   const String& source);
 
   const AtomicString& MimeType() const;
@@ -112,7 +117,7 @@ class CORE_EXPORT DocumentLoader
   const KURL& OriginalUrl() const;
   const Referrer& OriginalReferrer() const;
 
-  ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
+  MHTMLArchive* Archive() const { return archive_.Get(); }
 
   void SetSubresourceFilter(SubresourceFilter*);
   SubresourceFilter* GetSubresourceFilter() const {
@@ -176,6 +181,10 @@ class CORE_EXPORT DocumentLoader
 
   void SetItemForHistoryNavigation(HistoryItem* item) { history_item_ = item; }
   HistoryItem* GetHistoryItem() const { return history_item_; }
+
+  // Returns whether the load can proceed. If not, the loader will be detached
+  // already.
+  bool PrepareForLoad();
 
   void StartLoading();
   void StopLoading();
@@ -252,14 +261,20 @@ class CORE_EXPORT DocumentLoader
   UseCounter& GetUseCounter() { return use_counter_; }
   Dactyloscoper& GetDactyloscoper() { return dactyloscoper_; }
 
-  void ProvideDocumentToResourceFetcherProperties(Document&);
-
   int ErrorCode() const { return error_code_; }
 
  protected:
   bool had_transient_activation() const { return had_transient_activation_; }
 
   Vector<KURL> redirect_chain_;
+
+  // Archive used to load document and/or subresources. If one of the ancestor
+  // frames was loaded as an archive, we'll load the document resource from it.
+  // Otherwise, if the document resource is an archive itself (based on mime
+  // type), we'll create one and use it for subresources.
+  Member<MHTMLArchive> archive_;
+  mojom::MHTMLLoadResult archive_load_result_ =
+      mojom::MHTMLLoadResult::kSuccess;
 
  private:
   // installNewDocument() does the work of creating a Document and
@@ -271,7 +286,7 @@ class CORE_EXPORT DocumentLoader
       const KURL&,
       const scoped_refptr<const SecurityOrigin> initiator_origin,
       Document* owner_document,
-      WebGlobalObjectReusePolicy,
+      GlobalObjectReusePolicy,
       const AtomicString& mime_type,
       const AtomicString& encoding,
       InstallNewDocumentReason,
@@ -279,7 +294,7 @@ class CORE_EXPORT DocumentLoader
       const KURL& overriding_url);
   void DidInstallNewDocument(Document*);
   void WillCommitNavigation();
-  void DidCommitNavigation(WebGlobalObjectReusePolicy);
+  void DidCommitNavigation(GlobalObjectReusePolicy);
 
   void CommitNavigation(const AtomicString& mime_type,
                         const KURL& overriding_url = KURL());
@@ -307,13 +322,11 @@ class CORE_EXPORT DocumentLoader
                                     HistoryNavigationType);
 
   void HandleRedirect(const KURL& current_request_url);
-  // Returns true if we should proceed with navigation.
-  bool HandleResponse(const ResourceResponse&);
+  void HandleResponse();
   void HandleData(const char* data, size_t length);
 
   void LoadEmpty();
 
-  bool ShouldContinueForResponse() const;
   bool ShouldReportTimingInfoToParent();
 
   // Processes the data stored in the data_buffer_, used to avoid appending data
@@ -356,11 +369,6 @@ class CORE_EXPORT DocumentLoader
   std::unique_ptr<WebNavigationParams> params_;
 
   Member<LocalFrame> frame_;
-  // This member is held so that we can update the document later. Do not use
-  // this member outside ProvideDocumentToResourceFetcherProperties.
-  // TODO(yhirano): Remove this once https://crbug.com/855189 is done.
-  const Member<FrameResourceFetcherProperties> resource_fetcher_properties_;
-  Member<ResourceFetcher> fetcher_;
 
   Member<HistoryItem> history_item_;
 
@@ -419,7 +427,6 @@ class CORE_EXPORT DocumentLoader
   base::UnguessableToken devtools_navigation_token_;
 
   bool defers_loading_ = false;
-  bool has_substitute_data_ = false;
 
   // Whether this load request comes with a sitcky user activation.
   bool had_sticky_activation_ = false;
@@ -433,7 +440,7 @@ class CORE_EXPORT DocumentLoader
   bool loading_mhtml_archive_ = false;
   bool loading_srcdoc_ = false;
   bool loading_url_as_empty_document_ = false;
-  unsigned long main_resource_identifier_ = 0;
+  uint64_t main_resource_identifier_ = 0;
   scoped_refptr<ResourceTimingInfo> navigation_timing_info_;
   bool report_timing_info_to_parent_ = false;
   WebScopedVirtualTimePauser virtual_time_pauser_;

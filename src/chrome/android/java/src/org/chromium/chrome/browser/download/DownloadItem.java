@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.components.download.DownloadState;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
@@ -153,6 +154,7 @@ public class DownloadItem {
         offlineItem.creationTimeMs = item.getStartTime();
         offlineItem.completionTimeMs = item.getEndTime();
         offlineItem.externallyRemoved = item.hasBeenExternallyRemoved();
+        offlineItem.canRename = item.getDownloadInfo().state() == DownloadState.COMPLETE;
         return offlineItem;
     }
 

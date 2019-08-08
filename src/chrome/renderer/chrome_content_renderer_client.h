@@ -16,6 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "chrome/common/plugin.mojom.h"
 #include "chrome/renderer/media/chrome_key_systems_provider.h"
 #include "components/nacl/common/buildflags.h"
@@ -36,8 +37,7 @@
 #include "v8/include/v8.h"
 
 #if defined(OS_WIN)
-#include "chrome/common/conflicts/module_event_sink_win.mojom.h"
-#include "chrome/common/conflicts/module_watcher_win.h"
+#include "chrome/common/conflicts/remote_module_watcher_win.h"
 #endif
 
 class ChromeRenderThreadObserver;
@@ -145,9 +145,8 @@ class ChromeContentRendererClient
                        bool* attach_same_site_cookies) override;
   bool IsPrefetchOnly(content::RenderFrame* render_frame,
                       const blink::WebURLRequest& request) override;
-  unsigned long long VisitedLinkHash(const char* canonical_url,
-                                     size_t length) override;
-  bool IsLinkVisited(unsigned long long link_hash) override;
+  uint64_t VisitedLinkHash(const char* canonical_url, size_t length) override;
+  bool IsLinkVisited(uint64_t link_hash) override;
   blink::WebPrescientNetworking* GetPrescientNetworking() override;
   bool IsPrerenderingFrame(const content::RenderFrame* render_frame) override;
   bool IsExternalPepperPlugin(const std::string& module_name) override;
@@ -201,7 +200,7 @@ class ChromeContentRendererClient
       const std::string& header_name) override;
   bool ShouldEnforceWebRTCRoutingPreferences() override;
   GURL OverrideFlashEmbedWithHTML(const GURL& url) override;
-  std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams()
+  std::unique_ptr<base::ThreadPool::InitParams> GetThreadPoolInitParams()
       override;
   void CreateRendererService(
       service_manager::mojom::ServiceRequest service_request) override;
@@ -270,6 +269,13 @@ class ChromeContentRendererClient
 
   service_manager::Connector* GetConnector();
 
+#if defined(OS_WIN)
+  // Observes module load events and notifies the ModuleDatabase in the browser
+  // process. This instance is created on the main thread but then lives on the
+  // IO task runner.
+  RemoteModuleWatcher::UniquePtr remote_module_watcher_;
+#endif
+
   // Used to profile main thread.
   std::unique_ptr<ThreadProfiler> main_thread_profiler_;
 
@@ -295,13 +301,6 @@ class ChromeContentRendererClient
 #endif
 #if BUILDFLAG(ENABLE_PLUGINS)
   std::set<std::string> allowed_camera_device_origins_;
-#endif
-
-#if defined(OS_WIN)
-  // Observes module load and unload events and notifies the ModuleDatabase in
-  // the browser process.
-  std::unique_ptr<ModuleWatcher> module_watcher_;
-  mojom::ModuleEventSinkPtr module_event_sink_;
 #endif
 
   service_manager::ServiceBinding service_binding_{this};

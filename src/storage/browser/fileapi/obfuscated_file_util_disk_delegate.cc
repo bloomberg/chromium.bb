@@ -18,6 +18,11 @@ bool ObfuscatedFileUtilDiskDelegate::DirectoryExists(
   return base::DirectoryExists(path);
 }
 
+size_t ObfuscatedFileUtilDiskDelegate::ComputeDirectorySize(
+    const base::FilePath& path) {
+  return base::ComputeDirectorySize(path);
+}
+
 bool ObfuscatedFileUtilDiskDelegate::DeleteFileOrDirectory(
     const base::FilePath& path,
     bool recursive) {

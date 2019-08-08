@@ -108,7 +108,7 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
       GURL("http://www.example.com"), net::DEFAULT_PRIORITY, nullptr,
       TRAFFIC_ANNOTATION_FOR_TESTS));
   content::ResourceRequestInfo::AllocateForTesting(
-      url_request_ok.get(), content::RESOURCE_TYPE_SUB_FRAME,
+      url_request_ok.get(), content::ResourceType::kSubFrame,
       NULL,   // context
       -1,     // render_process_id
       -1,     // render_view_id
@@ -126,7 +126,7 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
       GURL("http://www.example.com"), net::DEFAULT_PRIORITY, nullptr,
       TRAFFIC_ANNOTATION_FOR_TESTS));
   content::ResourceRequestInfo::AllocateForTesting(
-      url_request_fail.get(), content::RESOURCE_TYPE_MAIN_FRAME,
+      url_request_fail.get(), content::ResourceType::kMainFrame,
       NULL,  // context
       -1,    // render_process_id
       -1,    // render_view_id

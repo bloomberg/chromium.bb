@@ -9,9 +9,10 @@ import("//chrome/android/features/module_names_to_package_ids.gni")
 import("//device/vr/buildflags/buildflags.gni")
 
 assert(enable_vr)
-assert(modularize_vr)
 
 template("vr_module_tmpl") {
+  assert(defined(invoker.version_code))
+  assert(defined(invoker.version_name))
   assert(defined(invoker.manifest_package))
   assert(defined(invoker.module_name))
   assert(defined(invoker.base_module_target))
@@ -32,6 +33,7 @@ template("vr_module_tmpl") {
                            [
                              "base_module_target",
                              "module_name",
+                             "native_switches",
                              "uncompress_shared_libraries",
                              "version_code",
                              "version_name",
@@ -40,7 +42,26 @@ template("vr_module_tmpl") {
     android_manifest_dep = ":${_manifest_target}"
     deps = [
       "//chrome/android/features/vr:java",
+      "//chrome/browser/android/vr:vr_ui_dummy_lib",
     ]
+
+    # TODO(crbug.com/943210): Remove this condition once downstream passes in
+    # native_switches.
+    if (defined(invoker.native_switches)) {
+      if (android_64bit_target_cpu) {
+        _32_bit_toolchain_root_dir =
+            get_label_info(":foo($android_secondary_abi_toolchain)",
+                           "root_out_dir")
+        loadable_modules_if_64_bit = [ "$root_out_dir/libvr_ui_dummy_lib.so" ]
+        loadable_modules_if_32_bit =
+            [ "$_32_bit_toolchain_root_dir/libvr_ui_dummy_lib.so" ]
+        deps += [ "//chrome/browser/android/vr:vr_ui_dummy_lib" +
+                  "($android_secondary_abi_toolchain)" ]
+      } else {
+        loadable_modules_if_32_bit = [ "$root_out_dir/libvr_ui_dummy_lib.so" ]
+      }
+    }
+
     proguard_enabled = !is_java_debug
     if (!defined(invoker.uncompress_shared_libraries)) {
       uncompress_shared_libraries = chromium_linker_supported

@@ -12,6 +12,7 @@
 #include "chrome/browser/signin/scoped_account_consistency.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/signin_buildflags.h"
+#include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/http/http_response_headers.h"
@@ -27,28 +28,34 @@
 
 namespace {
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-
+const char kChromeManageAccountsHeader[] = "X-Chrome-Manage-Accounts";
+const char kMirrorAction[] = "action=ADDSESSION";
 const GURL kGaiaUrl("https://accounts.google.com");
-const char kDiceResponseHeader[] = "X-Chrome-ID-Consistency-Response";
 
-// URLRequestInterceptor adding a Dice response header to Gaia responses.
+// URLRequestInterceptor adding a account consistency response header to Gaia
+// responses.
 class TestRequestInterceptor : public net::URLRequestInterceptor {
  public:
-  ~TestRequestInterceptor() override {}
+  explicit TestRequestInterceptor(const std::string& header_name,
+                                  const std::string& header_value)
+      : header_name_(header_name), header_value_(header_value) {}
+  ~TestRequestInterceptor() override = default;
 
  private:
   net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     std::string response_headers =
-        base::StringPrintf("HTTP/1.1 200 OK\n\n%s: Foo\n", kDiceResponseHeader);
+        base::StringPrintf("HTTP/1.1 200 OK\n\n%s: %s\n", header_name_.c_str(),
+                           header_value_.c_str());
     return new net::URLRequestTestJob(request, network_delegate,
                                       response_headers, "", true);
   }
+
+  const std::string header_name_;
+  const std::string header_value_;
 };
 
-#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 }  // namespace
 
@@ -58,6 +65,32 @@ class ChromeSigninHelperTest : public testing::Test {
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   ~ChromeSigninHelperTest() override {}
+
+  void SetupRequest(const std::string& header_name,
+                    const std::string& header_value,
+                    bool is_main_frame) {
+    test_request_delegate_ = std::make_unique<net::TestDelegate>();
+    request_ = url_request_context_.CreateRequest(
+        kGaiaUrl, net::DEFAULT_PRIORITY, test_request_delegate_.get(),
+        TRAFFIC_ANNOTATION_FOR_TESTS);
+    content::ResourceRequestInfo::AllocateForTesting(
+        request_.get(),
+        is_main_frame ? content::ResourceType::kMainFrame
+                      : content::ResourceType::kSubFrame,
+        nullptr, -1, -1, -1, true, content::ResourceInterceptPolicy::kAllowNone,
+        true, content::PREVIEWS_OFF, nullptr);
+    net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
+        kGaiaUrl,
+        std::make_unique<TestRequestInterceptor>(header_name, header_value));
+    request_->Start();
+    base::RunLoop().RunUntilIdle();
+    net::URLRequestFilter::GetInstance()->RemoveUrlHandler(kGaiaUrl);
+
+    // Check that the response header is correctly set.
+    net::HttpResponseHeaders* response_headers = request_->response_headers();
+    ASSERT_TRUE(response_headers);
+    ASSERT_TRUE(request_->response_headers()->HasHeader(header_name));
+  }
 
   content::TestBrowserThreadBundle thread_bundle_;
   net::TestURLRequestContext url_request_context_;
@@ -71,24 +104,7 @@ TEST_F(ChromeSigninHelperTest, RemoveDiceSigninHeader) {
   ScopedAccountConsistencyDiceMigration scoped_dice_migration;
 
   // Create a response with the Dice header.
-  test_request_delegate_ = std::make_unique<net::TestDelegate>();
-  request_ = url_request_context_.CreateRequest(kGaiaUrl, net::DEFAULT_PRIORITY,
-                                                test_request_delegate_.get(),
-                                                TRAFFIC_ANNOTATION_FOR_TESTS);
-  content::ResourceRequestInfo::AllocateForTesting(
-      request_.get(), content::RESOURCE_TYPE_MAIN_FRAME, nullptr, -1, -1, -1,
-      true, content::ResourceInterceptPolicy::kAllowNone, true,
-      content::PREVIEWS_OFF, nullptr);
-  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      kGaiaUrl, std::make_unique<TestRequestInterceptor>());
-  request_->Start();
-  base::RunLoop().RunUntilIdle();
-  net::URLRequestFilter::GetInstance()->RemoveUrlHandler(kGaiaUrl);
-
-  // Check that the Dice response header is correctly set.
-  net::HttpResponseHeaders* response_headers = request_->response_headers();
-  ASSERT_TRUE(response_headers);
-  ASSERT_TRUE(request_->response_headers()->HasHeader(kDiceResponseHeader));
+  SetupRequest(signin::kDiceResponseHeader, "Foo", /*is_main_frame=*/false);
 
   // Process the header.
   signin::ResponseAdapter response_adapter(request_.get());
@@ -96,6 +112,44 @@ TEST_F(ChromeSigninHelperTest, RemoveDiceSigninHeader) {
                                                    false /* is_incognito */);
 
   // Check that the header has been removed.
-  EXPECT_FALSE(request_->response_headers()->HasHeader(kDiceResponseHeader));
+  EXPECT_FALSE(
+      request_->response_headers()->HasHeader(signin::kDiceResponseHeader));
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+// Tests that user data is set on Mirror requests.
+TEST_F(ChromeSigninHelperTest, MirrorMainFrame) {
+  ScopedAccountConsistencyMirror scoped_mirror;
+
+  // Create a response with the Mirror header.
+  SetupRequest(kChromeManageAccountsHeader, kMirrorAction,
+               /*is_main_frame=*/true);
+
+  // Process the header.
+  signin::ResponseAdapter response_adapter(request_.get());
+  signin::ProcessAccountConsistencyResponseHeaders(&response_adapter, GURL(),
+                                                   false /* is_incognito */);
+  // Check that the header has not been removed.
+  EXPECT_TRUE(
+      request_->response_headers()->HasHeader(kChromeManageAccountsHeader));
+  // Request was flagged with the user data.
+  EXPECT_TRUE(
+      request_->GetUserData(signin::kManageAccountsHeaderReceivedUserDataKey));
+}
+
+// Tests that user data is not set on Mirror requests for sub frames.
+TEST_F(ChromeSigninHelperTest, MirrorSubFrame) {
+  ScopedAccountConsistencyMirror scoped_mirror;
+
+  // Create a response with the Mirror header.
+  SetupRequest(kChromeManageAccountsHeader, kMirrorAction,
+               /*is_main_frame=*/false);
+
+  // Process the header.
+  signin::ResponseAdapter response_adapter(request_.get());
+  signin::ProcessAccountConsistencyResponseHeaders(&response_adapter, GURL(),
+                                                   false /* is_incognito */);
+  // Request was not flagged with the user data.
+  EXPECT_FALSE(
+      request_->GetUserData(signin::kManageAccountsHeaderReceivedUserDataKey));
+}

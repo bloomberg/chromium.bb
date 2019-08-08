@@ -71,8 +71,6 @@ class PasswordStoreDefault : public PasswordStore {
       base::Time delete_end) override;
   std::vector<std::unique_ptr<autofill::PasswordForm>> FillMatchingLogins(
       const FormDigest& form) override;
-  std::vector<std::unique_ptr<autofill::PasswordForm>>
-  FillLoginsForSameOrganizationName(const std::string& signon_realm) override;
   bool FillAutofillableLogins(
       std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) override;
   bool FillBlacklistLogins(
@@ -86,6 +84,7 @@ class PasswordStoreDefault : public PasswordStore {
 
   // Implements PasswordStoreSync interface.
   bool BeginTransaction() override;
+  void RollbackTransaction() override;
   bool CommitTransaction() override;
   FormRetrievalResult ReadAllLogins(
       PrimaryKeyToFormMap* key_to_form_map) override;

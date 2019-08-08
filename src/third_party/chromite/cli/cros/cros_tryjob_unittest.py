@@ -656,8 +656,6 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--committer-email', 'foo@bar',
         '--branch', 'source_branch',
         '--version', '1.2.3', '--channel', 'chan',
-        '--branch-name', 'test_branch', '--rename-to', 'new_branch',
-        '--delete-branch', '--force-create', '--skip-remote-push',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
         'eve-pre-cq', 'eve-release',
     ]
@@ -672,8 +670,6 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--timeout', '5', '--sanity-check-build',
         '--chrome_version', 'chrome_git_hash',
         '--version', '1.2.3', '--channel', 'chan',
-        '--branch-name', 'test_branch', '--rename-to', 'new_branch',
-        '--delete-branch', '--force-create', '--skip-remote-push',
         '--cbuild-arg', 'bar'
     ])
 
@@ -689,8 +685,6 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--committer-email', 'foo@bar',
         '--branch', 'source_branch',
         '--version', '1.2.3', '--channel', 'chan',
-        '--branch-name', 'test_branch', '--rename-to', 'new_branch',
-        '--delete-branch', '--force-create', '--skip-remote-push',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
         'eve-pre-cq', 'eve-release',
     ]
@@ -708,8 +702,6 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--timeout', '5', '--sanity-check-build',
         '--chrome_version', 'chrome_git_hash',
         '--version', '1.2.3', '--channel', 'chan',
-        '--branch-name', 'test_branch', '--rename-to', 'new_branch',
-        '--delete-branch', '--force-create', '--skip-remote-push',
         '--cbuild-arg', 'bar'
     ])
 
@@ -724,8 +716,6 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--committer-email', 'foo@bar',
         '--branch', 'source_branch',
         '--version', '1.2.3', '--channel', 'chan',
-        '--branch-name', 'test_branch', '--rename-to', 'new_branch',
-        '--delete-branch', '--force-create', '--skip-remote-push',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
         'eve-paladin', 'eve-release',
     ]
@@ -744,8 +734,6 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--hwtest', '--notests', '--novmtests', '--noimagetests',
         '--timeout', '5', '--sanity-check-build',
         '--version', '1.2.3', '--channel', 'chan',
-        '--branch-name', 'test_branch', '--rename-to', 'new_branch',
-        '--delete-branch', '--force-create', '--skip-remote-push',
         '--cbuild-arg', 'bar'
     ])
 

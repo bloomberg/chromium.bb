@@ -55,23 +55,30 @@ bool SetGaiaCookieForProfile(Profile* profile) {
   GURL google_url = GaiaUrls::GetInstance()->google_url();
   net::CanonicalCookie cookie("APISID", std::string(), "." + google_url.host(),
                               "/", base::Time(), base::Time(), base::Time(),
-                              false, false, net::CookieSameSite::DEFAULT_MODE,
+                              false, false, net::CookieSameSite::NO_RESTRICTION,
                               net::COOKIE_PRIORITY_DEFAULT);
 
   bool success = false;
   base::RunLoop loop;
   base::OnceClosure loop_quit = loop.QuitClosure();
-  base::OnceCallback<void(bool)> callback =
-      base::BindLambdaForTesting([&success, &loop_quit](bool s) {
-        success = s;
-        std::move(loop_quit).Run();
-      });
+  base::OnceCallback<void(net::CanonicalCookie::CookieInclusionStatus)>
+      callback = base::BindLambdaForTesting(
+          [&success,
+           &loop_quit](net::CanonicalCookie::CookieInclusionStatus s) {
+            success =
+                (s == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+            std::move(loop_quit).Run();
+          });
   network::mojom::CookieManager* cookie_manager =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetCookieManagerForBrowserProcess();
+  net::CookieOptions options;
+  options.set_include_httponly();
   cookie_manager->SetCanonicalCookie(
-      cookie, google_url.scheme(), true,
-      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false));
+      cookie, google_url.scheme(), options,
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          std::move(callback),
+          net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR));
   loop.Run();
   return success;
 }
@@ -99,6 +106,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, Syncing) {
   // Sync is running.
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
+  sync_service->GetUserSettings()->SetSyncRequested(true);
   sync_service->GetUserSettings()->SetFirstSetupComplete();
 
   ASSERT_EQ(sync_ui_util::SYNCED, sync_ui_util::GetStatus(profile));

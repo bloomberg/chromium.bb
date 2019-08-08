@@ -48,14 +48,6 @@ class WebMouseEvent;
 class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
                               public DisplayItemClient {
  public:
-  static Scrollbar* Create(ScrollableArea* scrollable_area,
-                           ScrollbarOrientation orientation,
-                           ScrollbarControlSize size,
-                           ChromeClient* chrome_client) {
-    return MakeGarbageCollected<Scrollbar>(scrollable_area, orientation, size,
-                                           chrome_client);
-  }
-
   // Theme object ownership remains with the caller and it must outlive the
   // scrollbar.
   static Scrollbar* CreateForTesting(ScrollableArea* scrollable_area,
@@ -178,9 +170,9 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
     return orientation_ == kHorizontalScrollbar ? "HorizontalScrollbar"
                                                 : "VerticalScrollbar";
   }
-  LayoutRect VisualRect() const final { return visual_rect_; }
+  IntRect VisualRect() const final { return visual_rect_; }
 
-  virtual void SetVisualRect(const LayoutRect& r) { visual_rect_ = r; }
+  virtual void SetVisualRect(const IntRect& r) { visual_rect_ = r; }
 
   // Marks the scrollbar as needing to be redrawn.
   //
@@ -243,7 +235,7 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   int theme_scrollbar_thickness_;
   bool track_needs_repaint_;
   bool thumb_needs_repaint_;
-  LayoutRect visual_rect_;
+  IntRect visual_rect_;
   IntRect frame_rect_;
 };
 

@@ -26,6 +26,9 @@
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_metrics.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_store.h"
+#include "components/policy/core/common/configuration_policy_provider.h"
+#include "components/policy/core/common/policy_types.h"
+#include "components/policy/policy_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_switches.h"
@@ -65,14 +68,24 @@ bool IsMachineLevelUserCloudPolicyEnabled() {
 #endif
 }
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-void CleanupUnusedPolicyDirectory() {
-  std::string enrollment_token =
-      BrowserDMTokenStorage::Get()->RetrieveEnrollmentToken();
-  if (enrollment_token.empty())
-    BrowserDMTokenStorage::Get()->ScheduleUnusedPolicyDirectoryDeletion();
+// Read the kCloudPolicyOverridesPlatformPolicy from platform provider directly
+// because the local_state is not ready when the
+// MachineLevelUserCloudPolicyManager is created.
+bool DoesCloudPolicyHasPriority(
+    ConfigurationPolicyProvider* platform_provider) {
+  if (!platform_provider)
+    return false;
+  const auto* entry =
+      platform_provider->policies()
+          .Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+          .Get(key::kCloudPolicyOverridesPlatformPolicy);
+  if (!entry || entry->scope == POLICY_SCOPE_USER ||
+      entry->level == POLICY_LEVEL_RECOMMENDED)
+    return false;
+
+  return entry->value->is_bool() && entry->value->GetBool();
 }
-#endif
+
 }  // namespace
 
 const base::FilePath::CharType
@@ -86,7 +99,8 @@ MachineLevelUserCloudPolicyController::
 
 // static
 std::unique_ptr<MachineLevelUserCloudPolicyManager>
-MachineLevelUserCloudPolicyController::CreatePolicyManager() {
+MachineLevelUserCloudPolicyController::CreatePolicyManager(
+    ConfigurationPolicyProvider* platform_provider) {
   if (!IsMachineLevelUserCloudPolicyEnabled())
     return nullptr;
 
@@ -108,11 +122,18 @@ MachineLevelUserCloudPolicyController::CreatePolicyManager() {
 
   DVLOG(1) << "Creating machine level cloud policy manager";
 
+  bool cloud_policy_has_priority =
+      DoesCloudPolicyHasPriority(platform_provider);
+  if (cloud_policy_has_priority) {
+    DVLOG(1) << "Cloud policies are now overriding platform policies with "
+                "machine scope.";
+  }
+
   base::FilePath policy_dir =
       user_data_dir.Append(MachineLevelUserCloudPolicyController::kPolicyDir);
   std::unique_ptr<MachineLevelUserCloudPolicyStore> policy_store =
       MachineLevelUserCloudPolicyStore::Create(
-          dm_token, client_id, policy_dir,
+          dm_token, client_id, policy_dir, cloud_policy_has_priority,
           base::CreateSequencedTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
   return std::make_unique<MachineLevelUserCloudPolicyManager>(
@@ -124,15 +145,6 @@ MachineLevelUserCloudPolicyController::CreatePolicyManager() {
 void MachineLevelUserCloudPolicyController::Init(
     PrefService* local_state,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-  // This is a function that removes the directory we accidentally create due to
-  // crbug.com/880870. The directory is only removed when it's empty and
-  // enrollment token doesn't exist. This function is expected to be removed
-  // after few milestones.
-  // Also, this function is put before policy enable check on purpose so it
-  // could cover all users.
-  CleanupUnusedPolicyDirectory();
-#endif
 
   if (!IsMachineLevelUserCloudPolicyEnabled())
     return;

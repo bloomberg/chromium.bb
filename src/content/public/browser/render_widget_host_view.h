@@ -61,7 +61,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual void InitAsChild(gfx::NativeView parent_view) = 0;
 
   // Returns the associated RenderWidgetHost.
-  virtual RenderWidgetHost* GetRenderWidgetHost() const = 0;
+  virtual RenderWidgetHost* GetRenderWidgetHost() = 0;
 
   // Tells the View to size itself to the specified size.
   virtual void SetSize(const gfx::Size& size) = 0;
@@ -79,7 +79,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual void SetBounds(const gfx::Rect& rect) = 0;
 
   // Indicates whether the scroll offset of the view is at top.
-  virtual bool IsScrollOffsetAtTop() const = 0;
+  virtual bool IsScrollOffsetAtTop() = 0;
 
   // Sets a flag that indicates if it is in virtual reality mode.
   virtual void SetIsInVR(bool is_in_vr) = 0;
@@ -106,7 +106,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
 
   // Retrieves the native view used to contain plugins and identify the
   // renderer in IPC messages.
-  virtual gfx::NativeView GetNativeView() const = 0;
+  virtual gfx::NativeView GetNativeView() = 0;
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() = 0;
 
   // Returns a ui::TextInputClient to support text input or nullptr if this RWHV
@@ -119,7 +119,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Set focus to the associated View component.
   virtual void Focus() = 0;
   // Returns true if the View currently has the focus.
-  virtual bool HasFocus() const = 0;
+  virtual bool HasFocus() = 0;
 
   // Shows/hides the view.  These must always be called together in pairs.
   // It is not legal to call Hide() multiple times in a row.
@@ -136,7 +136,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual void WasOccluded() = 0;
 
   // Retrieve the bounds of the View, in screen coordinates.
-  virtual gfx::Rect GetViewBounds() const = 0;
+  virtual gfx::Rect GetViewBounds() = 0;
 
   // Returns the currently selected text in both of editable text fields and
   // non-editable texts.
@@ -155,7 +155,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // which is shown if the background color of the renderer is not available.
   virtual void SetBackgroundColor(SkColor color) = 0;
   // GetBackgroundColor returns the current background color of the view.
-  virtual base::Optional<SkColor> GetBackgroundColor() const = 0;
+  virtual base::Optional<SkColor> GetBackgroundColor() = 0;
 
   // Return value indicates whether the mouse is locked successfully or not.
   virtual bool LockMouse() = 0;
@@ -178,14 +178,14 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Retrives the size of the viewport for the visible region. May be smaller
   // than the view size if a portion of the view is obstructed (e.g. by a
   // virtual keyboard).
-  virtual gfx::Size GetVisibleViewportSize() const = 0;
+  virtual gfx::Size GetVisibleViewportSize() = 0;
 
   // Set insets for the visible region of the root window. Used to compute the
   // visible viewport.
   virtual void SetInsets(const gfx::Insets& insets) = 0;
 
   // Returns true if the current display surface is available.
-  virtual bool IsSurfaceAvailableForCopy() const = 0;
+  virtual bool IsSurfaceAvailableForCopy() = 0;
 
   // Copies the given subset of the view's surface, optionally scales it, and
   // returns the result as a bitmap via the provided callback. This is meant for
@@ -241,10 +241,10 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // This method returns the ScreenInfo used by the view to render. If the
   // information is not knowable (e.g, because the view is not attached to a
   // screen yet), then a default best-guess will be used.
-  virtual void GetScreenInfo(ScreenInfo* screen_info) const = 0;
+  virtual void GetScreenInfo(ScreenInfo* screen_info) = 0;
 
   // This must always return the same device scale factor as GetScreenInfo.
-  virtual float GetDeviceScaleFactor() const = 0;
+  virtual float GetDeviceScaleFactor() = 0;
 
 #if defined(OS_MACOSX)
   // Set the view's active state (i.e., tint state of controls).
@@ -260,6 +260,10 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Indicates that this view should show the contents of |view| if it doesn't
   // have anything to show.
   virtual void TakeFallbackContentFrom(RenderWidgetHostView* view) = 0;
+
+  // Set the last time a tab change starts to be processed for this
+  // RenderWidgetHostView. Will overwrite any previously stored value.
+  virtual void SetLastTabChangeStartTime(base::TimeTicks start_time) = 0;
 };
 
 }  // namespace content

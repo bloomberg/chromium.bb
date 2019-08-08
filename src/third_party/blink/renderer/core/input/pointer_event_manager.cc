@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/input/pointer_event_manager.h"
 
 #include "base/auto_reset.h"
+#include "base/metrics/field_trial_params.h"
 #include "third_party/blink/public/platform/web_touch_event.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event_path.h"
@@ -21,13 +22,21 @@
 #include "third_party/blink/renderer/core/input/mouse_event_manager.h"
 #include "third_party/blink/renderer/core/input/touch_action_util.h"
 #include "third_party/blink/renderer/core/layout/hit_test_canvas_result.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
 namespace {
+
+// Field trial name for skipping touch filtering
+const char kSkipTouchEventFilterTrial[] = "SkipTouchEventFilter";
+const char kSkipTouchEventFilterTrialProcessParamName[] =
+    "skip_filtering_process";
+const char kSkipTouchEventFilterTrialTypeParamName[] = "type";
 
 size_t ToPointerTypeIndex(WebPointerProperties::PointerType t) {
   return static_cast<size_t>(t);
@@ -68,6 +77,18 @@ PointerEventManager::PointerEventManager(LocalFrame& frame,
       touch_event_manager_(MakeGarbageCollected<TouchEventManager>(frame)),
       mouse_event_manager_(mouse_event_manager) {
   Clear();
+  if (RuntimeEnabledFeatures::SkipTouchEventFilterEnabled() &&
+      base::GetFieldTrialParamValue(
+          kSkipTouchEventFilterTrial,
+          kSkipTouchEventFilterTrialProcessParamName) ==
+          "browser_and_renderer") {
+    skip_touch_filter_discrete_ = true;
+    if (base::GetFieldTrialParamValue(
+            kSkipTouchEventFilterTrial,
+            kSkipTouchEventFilterTrialTypeParamName) == "all") {
+      skip_touch_filter_all_ = true;
+    }
+  }
 }
 
 void PointerEventManager::Clear() {
@@ -159,8 +180,10 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
 
   const PointerId pointer_id = pointer_event->pointerId();
   const AtomicString& event_type = pointer_event->type();
+  bool should_filter = ShouldFilterEvent(pointer_event);
 
-  if (!frame_ || !HasPointerEventListener(frame_->GetEventHandlerRegistry()))
+  if (should_filter &&
+      !HasPointerEventListener(frame_->GetEventHandlerRegistry()))
     return WebInputEventResult::kNotHandled;
 
   if (event_type == event_type_names::kPointerdown) {
@@ -171,13 +194,17 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
     }
   }
 
-  if (!check_for_listener || target->HasEventListeners(event_type)) {
+  bool listeners_exist =
+      !check_for_listener || target->HasEventListeners(event_type);
+  if (listeners_exist) {
     UseCounter::Count(frame_->GetDocument(), WebFeature::kPointerEventDispatch);
     if (event_type == event_type_names::kPointerdown) {
       UseCounter::Count(frame_->GetDocument(),
                         WebFeature::kPointerEventDispatchPointerDown);
     }
+  }
 
+  if (!should_filter || listeners_exist) {
     DCHECK(!dispatching_pointer_id_);
     base::AutoReset<PointerId> dispatch_holder(&dispatching_pointer_id_,
                                                pointer_id);
@@ -354,6 +381,27 @@ void PointerEventManager::AdjustTouchPointerEvent(
 
   frame_->GetEventHandler().CacheTouchAdjustmentResult(
       pointer_event.unique_touch_event_id, pointer_event.PositionInWidget());
+}
+
+bool PointerEventManager::ShouldFilterEvent(PointerEvent* pointer_event) {
+  // Filter as normal if the experiment is disabled.
+  if (!skip_touch_filter_discrete_)
+    return true;
+
+  // If the experiment is enabled and the event is pointer up/down, do not
+  // filter.
+  if (pointer_event->type() == event_type_names::kPointerdown ||
+      pointer_event->type() == event_type_names::kPointerup) {
+    return false;
+  }
+  // If the experiment is "all", do not filter pointermove.
+  if (skip_touch_filter_all_ &&
+      pointer_event->type() == event_type_names::kPointermove)
+    return false;
+
+  // Continue filtering other types of events, even thought the experiment is
+  // enabled.
+  return true;
 }
 
 event_handling_util::PointerEventTarget
@@ -745,9 +793,20 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
     // Send got/lostpointercapture rightaway if necessary.
     if (pointer_event->type() == event_type_names::kPointerup) {
       // If pointerup releases the capture we also send boundary events
-      // rightaway when the pointer that supports hover. The following function
-      // does nothing when there was no capture to begin with in the first
-      // place.
+      // rightaway when the pointer that supports hover. Perform a hit
+      // test to find the new target.
+      if (RuntimeEnabledFeatures::UnifiedPointerCaptureInBlinkEnabled()) {
+        if (pointer_capture_target_.find(pointer_event->pointerId()) !=
+            pointer_capture_target_.end()) {
+          HitTestRequest::HitTestRequestType hit_type =
+              HitTestRequest::kRelease;
+          HitTestRequest request(hit_type);
+          MouseEventWithHitTestResults mev =
+              event_handling_util::PerformMouseEventHitTest(frame_, request,
+                                                            mouse_event);
+          target = mev.InnerElement();
+        }
+      }
       ProcessCaptureAndPositionOfPointerEvent(pointer_event, target,
                                               canvas_region_id, &mouse_event);
     } else {
@@ -933,6 +992,12 @@ bool PointerEventManager::HasPointerCapture(PointerId pointer_id,
 
 void PointerEventManager::ReleasePointerCapture(PointerId pointer_id) {
   pending_pointer_capture_target_.erase(pointer_id);
+}
+
+Element* PointerEventManager::GetMouseCaptureTarget() {
+  if (pending_pointer_capture_target_.Contains(PointerEventFactory::kMouseId))
+    return pending_pointer_capture_target_.at(PointerEventFactory::kMouseId);
+  return nullptr;
 }
 
 bool PointerEventManager::IsActive(const PointerId pointer_id) const {

@@ -43,44 +43,47 @@ using namespace media_feature_names;
 
 static inline bool FeatureWithValidIdent(const String& media_feature,
                                          CSSValueID ident) {
-  if (media_feature == kDisplayModeMediaFeature)
-    return ident == CSSValueFullscreen || ident == CSSValueStandalone ||
-           ident == CSSValueMinimalUi || ident == CSSValueBrowser;
+  if (media_feature == kDisplayModeMediaFeature) {
+    return ident == CSSValueID::kFullscreen ||
+           ident == CSSValueID::kStandalone ||
+           ident == CSSValueID::kMinimalUi || ident == CSSValueID::kBrowser;
+  }
 
   if (media_feature == kOrientationMediaFeature)
-    return ident == CSSValuePortrait || ident == CSSValueLandscape;
+    return ident == CSSValueID::kPortrait || ident == CSSValueID::kLandscape;
 
   if (media_feature == kPointerMediaFeature ||
-      media_feature == kAnyPointerMediaFeature)
-    return ident == CSSValueNone || ident == CSSValueCoarse ||
-           ident == CSSValueFine;
+      media_feature == kAnyPointerMediaFeature) {
+    return ident == CSSValueID::kNone || ident == CSSValueID::kCoarse ||
+           ident == CSSValueID::kFine;
+  }
 
   if (media_feature == kHoverMediaFeature ||
       media_feature == kAnyHoverMediaFeature)
-    return ident == CSSValueNone || ident == CSSValueHover;
+    return ident == CSSValueID::kNone || ident == CSSValueID::kHover;
 
   if (media_feature == kScanMediaFeature)
-    return ident == CSSValueInterlace || ident == CSSValueProgressive;
+    return ident == CSSValueID::kInterlace || ident == CSSValueID::kProgressive;
 
   if (RuntimeEnabledFeatures::MediaQueryShapeEnabled()) {
     if (media_feature == kShapeMediaFeature)
-      return ident == CSSValueRect || ident == CSSValueRound;
+      return ident == CSSValueID::kRect || ident == CSSValueID::kRound;
   }
 
   if (media_feature == kColorGamutMediaFeature) {
-    return ident == CSSValueSRGB || ident == CSSValueP3 ||
-           ident == CSSValueRec2020;
+    return ident == CSSValueID::kSRGB || ident == CSSValueID::kP3 ||
+           ident == CSSValueID::kRec2020;
   }
 
   if (RuntimeEnabledFeatures::MediaQueryPrefersColorSchemeEnabled()) {
     if (media_feature == kPrefersColorSchemeMediaFeature) {
-      return ident == CSSValueNoPreference || ident == CSSValueDark ||
-             ident == CSSValueLight;
+      return ident == CSSValueID::kNoPreference || ident == CSSValueID::kDark ||
+             ident == CSSValueID::kLight;
     }
   }
 
   if (media_feature == kPrefersReducedMotionMediaFeature)
-    return ident == CSSValueNoPreference || ident == CSSValueReduce;
+    return ident == CSSValueID::kNoPreference || ident == CSSValueID::kReduce;
 
   return false;
 }

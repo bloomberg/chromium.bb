@@ -31,6 +31,7 @@
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 
 namespace autofill {
@@ -133,6 +134,11 @@ void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
       ImportedCreditCardRecordType::NO_CARD) {
     return;
   }
+  // Do not offer upload save for google domain.
+  if (net::HasGoogleHost(submitted_form.main_frame_origin().GetURL()) &&
+      is_credit_card_upstream_enabled) {
+    return;
+  }
   // A credit card was successfully imported, but it's possible it is already a
   // local or server card. First, check to see if we should offer local card
   // migration in this case, as local cards could go either way.
@@ -177,7 +183,8 @@ void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
            imported_credit_card_record_type_ ==
                ImportedCreditCardRecordType::NEW_CARD);
     credit_card_save_manager_->AttemptToOfferCardUploadSave(
-        submitted_form, has_non_focusable_field_, *imported_credit_card,
+        submitted_form, from_dynamic_change_form_, has_non_focusable_field_,
+        *imported_credit_card,
         /*uploading_local_card=*/imported_credit_card_record_type_ ==
             ImportedCreditCardRecordType::LOCAL_CARD);
   } else {
@@ -185,7 +192,8 @@ void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
     DCHECK(imported_credit_card_record_type_ ==
            ImportedCreditCardRecordType::NEW_CARD);
     credit_card_save_manager_->AttemptToOfferCardLocalSave(
-        has_non_focusable_field_, *imported_credit_card);
+        from_dynamic_change_form_, has_non_focusable_field_,
+        *imported_credit_card);
   }
 }
 
@@ -508,6 +516,8 @@ CreditCard FormDataImporter::ExtractCreditCardFromForm(
     if (field_type.group() != CREDIT_CARD)
       continue;
 
+    if (form.value_from_dynamic_change_form())
+      from_dynamic_change_form_ = true;
     if (!field->is_focusable)
       has_non_focusable_field_ = true;
 

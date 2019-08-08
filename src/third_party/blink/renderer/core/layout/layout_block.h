@@ -27,6 +27,7 @@
 #include <memory>
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/list_hash_set.h"
 
 namespace blink {
@@ -137,8 +138,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   LayoutUnit MinLineHeightForReplacedObject(bool is_first_line,
                                             LayoutUnit replaced_height) const;
-
-  virtual bool CreatesNewFormattingContext() const { return true; }
 
   const char* GetName() const override;
 
@@ -588,14 +587,14 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   // This is necessary for now for interoperability between the old and new
   // layout code. Primarily for calling layoutPositionedObjects at the moment.
   friend class NGBlockNode;
-
- public:
-  // TODO(loonybear): Temporary in order to ensure compatibility with existing
-  // web test results.
-  virtual void AdjustChildDebugRect(LayoutRect&) const {}
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBlock, IsLayoutBlock());
+template <>
+struct DowncastTraits<LayoutBlock> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsLayoutBlock();
+  }
+};
 
 }  // namespace blink
 

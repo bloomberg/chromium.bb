@@ -82,21 +82,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       function initXR() {
         xrButton = new XRDeviceButton({
           onRequestSession: onRequestSession,
-          onEndSession: onEndSession
+          onEndSession: onEndSession,
+          supportedSessionTypes: ['immersive-vr']
         });
         document.querySelector('header').appendChild(xrButton.domElement);
-
-        if (navigator.xr) {
-          navigator.xr.supportsSessionMode('immersive-vr').then(() => {
-            xrButton.enabled = true;
-          });
-        }
       }
 
       function onRequestSession() {
-        navigator.xr.requestSession({
-          mode: 'immersive-vr'
-        }).then((session) => {
+        navigator.xr.requestSession('immersive-vr').then((session) => {
           // In order to mirror an exclusive session, we must provide
           // an XRPresentationContext, which indicates the canvas that will
           // contain results of the session's rendering.
@@ -108,7 +101,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           // Providing an outputContext to an exclusive session indicates that
           // it should be used as the mirror destination.
           session.updateRenderState({ outputContext: outputCanvas.getContext('xrpresent') });
-          onSessionStarted(session).
+          onSessionStarted(session);
         });
       }
 
@@ -128,12 +121,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
 
         session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
-
-        // Set the mirroring context to be the same size as one eye on the
-        // layer context.
-        let outputCanvas = document.querySelector('#mirror-canvas');
-        outputCanvas.width = session.renderState.baseLayer.framebufferWidth / 2;
-        outputCanvas.height = session.renderState.baseLayer.framebufferHeight;
 
         session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' }).then((refSpace) => {
           xrRefSpace = refSpace;
@@ -175,7 +162,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             gl.viewport(viewport.x, viewport.y,
                         viewport.width, viewport.height);
 
-            scene.draw(view.projectionMatrix, view.viewMatrix);
+            scene.draw(view.projectionMatrix, view.transform.inverse.matrix);
           }
         }
 

@@ -45,10 +45,6 @@ class SVGSVGElement;
 
 class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
  public:
-  static SMILTimeContainer* Create(SVGSVGElement& owner) {
-    return MakeGarbageCollected<SMILTimeContainer>(owner);
-  }
-
   explicit SMILTimeContainer(SVGSVGElement& owner);
   ~SMILTimeContainer();
 

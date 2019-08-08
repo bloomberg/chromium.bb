@@ -2441,7 +2441,9 @@ void main() {
                                GL_INVALID_OPERATION);
     drawBuffersEXTFeedbackLoop(program.get(), {{GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1}},
                                GL_INVALID_OPERATION);
-    drawBuffersEXTFeedbackLoop(program.get(), {{GL_COLOR_ATTACHMENT0, GL_NONE}}, GL_NO_ERROR);
+    // A feedback loop is formed regardless of drawBuffers settings.
+    drawBuffersEXTFeedbackLoop(program.get(), {{GL_COLOR_ATTACHMENT0, GL_NONE}},
+                               GL_INVALID_OPERATION);
 }
 
 // Test tests that texture copying feedback loops are properly rejected in WebGL.
@@ -3382,10 +3384,12 @@ TEST_P(WebGLCompatibilityTest, SizedRGBA32FFormats)
     glBindTexture(GL_TEXTURE_2D, texture);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 1, 1, 0, GL_RGBA, GL_FLOAT, nullptr);
-    EXPECT_GL_ERROR(GL_INVALID_OPERATION);
+    // dEQP implicitly defines error code ordering
+    EXPECT_GL_ERROR(GL_INVALID_ENUM);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, 1, 1, 0, GL_RGB, GL_FLOAT, nullptr);
-    EXPECT_GL_ERROR(GL_INVALID_OPERATION);
+    // dEQP implicitly defines error code ordering
+    EXPECT_GL_ERROR(GL_INVALID_ENUM);
 
     if (extensionRequestable("GL_CHROMIUM_color_buffer_float_rgba"))
     {
@@ -3539,7 +3543,8 @@ void main() {
     drawBuffersFeedbackLoop(program.get(), {{GL_NONE, GL_COLOR_ATTACHMENT1}}, GL_INVALID_OPERATION);
     drawBuffersFeedbackLoop(program.get(), {{GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1}},
                             GL_INVALID_OPERATION);
-    drawBuffersFeedbackLoop(program.get(), {{GL_COLOR_ATTACHMENT0, GL_NONE}}, GL_NO_ERROR);
+    // A feedback loop is formed regardless of drawBuffers settings.
+    drawBuffersFeedbackLoop(program.get(), {{GL_COLOR_ATTACHMENT0, GL_NONE}}, GL_INVALID_OPERATION);
 }
 
 // This test covers detection of rendering feedback loops between the FBO and a depth Texture.

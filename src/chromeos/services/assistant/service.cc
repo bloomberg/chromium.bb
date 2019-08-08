@@ -94,6 +94,26 @@ void Service::RequestAccessToken() {
       &Service::GetPrimaryAccountInfoCallback, base::Unretained(this)));
 }
 
+bool Service::ShouldEnableHotword() {
+  bool dsp_available = false;
+  chromeos::AudioDeviceList devices;
+  chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
+  for (const chromeos::AudioDevice& device : devices) {
+    if (device.type == chromeos::AUDIO_TYPE_HOTWORD) {
+      dsp_available = true;
+    }
+  }
+
+  // Disable hotword if hotword is not set to always on and power source is not
+  // connected.
+  if (!dsp_available && !assistant_state_.hotword_always_on().value() &&
+      !power_source_connected_) {
+    return false;
+  }
+
+  return assistant_state_.hotword_enabled().value();
+}
+
 void Service::SetIdentityAccessorForTesting(
     identity::mojom::IdentityAccessorPtr identity_accessor) {
   identity_accessor_ = std::move(identity_accessor);
@@ -182,6 +202,10 @@ void Service::OnLocaleChanged(const std::string& locale) {
   UpdateAssistantManagerState();
 }
 
+void Service::OnArcPlayStoreEnabledChanged(bool enabled) {
+  UpdateAssistantManagerState();
+}
+
 void Service::OnVoiceInteractionHotwordAlwaysOn(bool always_on) {
   // No need to update hotword status if power source is connected.
   if (power_source_connected_)
@@ -195,7 +219,8 @@ void Service::UpdateAssistantManagerState() {
       !assistant_state_.settings_enabled().has_value() ||
       !assistant_state_.hotword_always_on().has_value() ||
       !assistant_state_.locale().has_value() ||
-      (!access_token_.has_value() && !is_signed_out_mode_)) {
+      (!access_token_.has_value() && !is_signed_out_mode_) ||
+      !assistant_state_.arc_play_store_enabled().has_value()) {
     // Assistant state has not finished initialization, let's wait.
     return;
   }
@@ -226,6 +251,8 @@ void Service::UpdateAssistantManagerState() {
         if (!is_signed_out_mode_)
           assistant_manager_service_->SetAccessToken(access_token_.value());
         assistant_manager_service_->EnableHotword(ShouldEnableHotword());
+        assistant_manager_service_->SetArcPlayStoreEnabled(
+            assistant_state_.arc_play_store_enabled().value());
       } else {
         StopAssistantManagerService();
       }
@@ -392,26 +419,6 @@ void Service::UpdateListeningState() {
   bool should_listen = !locked_ && session_active_;
   DVLOG(1) << "Update assistant listening state: " << should_listen;
   assistant_manager_service_->EnableListening(should_listen);
-}
-
-bool Service::ShouldEnableHotword() {
-  bool dsp_available = false;
-  chromeos::AudioDeviceList devices;
-  chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
-  for (const chromeos::AudioDevice& device : devices) {
-    if (device.type == chromeos::AUDIO_TYPE_HOTWORD) {
-      dsp_available = true;
-    }
-  }
-
-  // Disable hotword if hotword is not set to always on and power source is not
-  // connected.
-  if (!dsp_available && !assistant_state_.hotword_always_on().value() &&
-      !power_source_connected_) {
-    return false;
-  }
-
-  return assistant_state_.hotword_enabled().value();
 }
 
 }  // namespace assistant

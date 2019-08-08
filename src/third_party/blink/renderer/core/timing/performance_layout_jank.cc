@@ -10,11 +10,6 @@
 
 namespace blink {
 
-// static
-PerformanceLayoutJank* PerformanceLayoutJank::Create(double fraction) {
-  return MakeGarbageCollected<PerformanceLayoutJank>(fraction);
-}
-
 PerformanceLayoutJank::PerformanceLayoutJank(double fraction)
     : PerformanceEntry(g_empty_atom, 0.0, 0.0), fraction_(fraction) {}
 

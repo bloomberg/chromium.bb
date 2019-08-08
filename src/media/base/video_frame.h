@@ -14,9 +14,9 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/hash/md5.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/md5.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory.h"
@@ -24,6 +24,7 @@
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/video_frame_layout.h"
@@ -117,6 +118,15 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
                                                const gfx::Rect& visible_rect,
                                                const gfx::Size& natural_size,
                                                base::TimeDelta timestamp);
+
+  // Used by Chromecast only.
+  // Create a new frame that doesn't contain any valid video content. This frame
+  // is meant to be sent to compositor to inform that the compositor should
+  // punch a transparent hole so the video underlay will be visible.
+  static scoped_refptr<VideoFrame> CreateVideoHoleFrame(
+      const base::UnguessableToken& overlay_plane_id,
+      const gfx::Size& natural_size,
+      base::TimeDelta timestamp);
 
   // Offers the same functionality as CreateFrame, and additionally zeroes out
   // the initial allocated buffers.
@@ -223,6 +233,17 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       int32_t y_stride,
       int32_t u_stride,
       int32_t v_stride,
+      uint8_t* y_data,
+      uint8_t* u_data,
+      uint8_t* v_data,
+      base::TimeDelta timestamp);
+
+  // Wraps external YUV data with VideoFrameLayout. The returned VideoFrame does
+  // not own the data passed in.
+  static scoped_refptr<VideoFrame> WrapExternalYuvDataWithLayout(
+      const VideoFrameLayout& layout,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
       uint8_t* y_data,
       uint8_t* u_data,
       uint8_t* v_data,

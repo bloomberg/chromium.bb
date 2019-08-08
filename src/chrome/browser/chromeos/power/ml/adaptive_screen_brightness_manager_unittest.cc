@@ -22,10 +22,10 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/test_browser_window_aura.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
-#include "chromeos/dbus/power_manager_client.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/test/web_contents_tester.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -90,7 +90,7 @@ class AdaptiveScreenBrightnessManagerTest
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    PowerManagerClient::Initialize();
+    PowerManagerClient::InitializeFake();
     auto logger = std::make_unique<TestingAdaptiveScreenBrightnessUkmLogger>();
     ukm_logger_ = logger.get();
 
@@ -640,7 +640,9 @@ TEST_F(AdaptiveScreenBrightnessManagerTest, DISABLED_SingleBrowser) {
   tab_strip_model->CloseAllTabs();
 }
 
-TEST_F(AdaptiveScreenBrightnessManagerTest, MultipleBrowsersWithActive) {
+// Test is flaky. See https://crbug.com/944325.
+TEST_F(AdaptiveScreenBrightnessManagerTest,
+       DISABLED_MultipleBrowsersWithActive) {
   // Simulates three browsers:
   //  - browser1 is the last active but minimized, so not visible.
   //  - browser2 and browser3 are both visible but browser2 is the topmost.

@@ -12,7 +12,6 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/accelerated_widget_mac/ca_transaction_observer.h"
 #include "ui/accelerated_widget_mac/display_ca_layer_tree.h"
@@ -20,10 +19,10 @@
 #include "ui/base/cocoa/ns_view_ids.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/display/display_observer.h"
-#include "ui/views/views_export.h"
 #import "ui/views_bridge_mac/cocoa_mouse_capture_delegate.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
 #include "ui/views_bridge_mac/mojo/text_input_host.mojom.h"
+#include "ui/views_bridge_mac/views_bridge_mac_export.h"
 
 @class BridgedContentView;
 @class ModalShowAnimationWithLayer;
@@ -58,7 +57,7 @@ using views_bridge_mac::CocoaMouseCaptureDelegate;
 // A bridge to an NSWindow managed by an instance of NativeWidgetMac or
 // DesktopNativeWidgetMac. Serves as a helper class to bridge requests from the
 // NativeWidgetMac to the Cocoa window. Behaves a bit like an aura::Window.
-class VIEWS_EXPORT BridgedNativeWidgetImpl
+class VIEWS_BRIDGE_MAC_EXPORT BridgedNativeWidgetImpl
     : public views_bridge_mac::mojom::BridgedNativeWidget,
       public display::DisplayObserver,
       public ui::CATransactionCoordinator::PreCommitObserver,
@@ -204,6 +203,8 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   void CreateWindow(
       views_bridge_mac::mojom::CreateWindowParamsPtr params) override;
   void SetParent(uint64_t parent_id) override;
+  void StackAbove(uint64_t sibling_id) override;
+  void StackAtTop() override;
   void ShowEmojiPanel() override;
   void InitWindow(views_bridge_mac::mojom::BridgedNativeWidgetInitParamsPtr
                       params) override;

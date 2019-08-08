@@ -40,13 +40,13 @@ if(SHADERC_ENABLE_NV_EXTENSIONS)
 endif(SHADERC_ENABLE_NV_EXTENSIONS)
 
 add_custom_target(check-copyright ALL
-  ${PYTHON_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/utils/add_copyright.py
+  ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/utils/add_copyright.py
   --check
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   COMMENT "Check copyright")
 
 add_custom_target(add-copyright
-  ${PYTHON_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/utils/add_copyright.py
+  ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/utils/add_copyright.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   COMMENT "Add copyright")
 
@@ -72,6 +72,7 @@ add_subdirectory(third_party)
 
 if(SHADERC_ENABLE_SPVC)
 add_subdirectory(libshaderc_spvc)
+add_subdirectory(spvc)
 endif()
 add_subdirectory(libshaderc_util)
 add_subdirectory(libshaderc)
@@ -79,7 +80,36 @@ add_subdirectory(glslc)
 add_subdirectory(examples)
 
 add_custom_target(build-version
-  ${PYTHON_EXE}
+  ${PYTHON_EXECUTABLE}
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/update_build_version.py
   ${shaderc_SOURCE_DIR} ${spirv-tools_SOURCE_DIR} ${glslang_SOURCE_DIR}
   COMMENT "Update build-version.inc in the Shaderc build directory (if necessary).")
+
+function(define_pkg_config_file NAME LIBS)
+  add_custom_target(${NAME}-pkg-config ALL
+    COMMAND ${CMAKE_COMMAND}
+      -DCHANGES_FILE=${CMAKE_CURRENT_SOURCE_DIR}/CHANGES
+      -DTEMPLATE_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/${NAME}.pc.in
+      -DOUT_FILE=${CMAKE_CURRENT_BINARY_DIR}/${NAME}.pc
+      -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+      -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
+      -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
+      -DLIBS=${LIBS}
+      -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/write_pkg_config.cmake
+  DEPENDS "CHANGES" "cmake/${NAME}.pc.in" "cmake/write_pkg_config.cmake")
+
+  if (SHADERC_ENABLE_INSTALL)
+    install(
+      FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/${NAME}.pc
+      DESTINATION
+        ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+  endif()
+endfunction()
+
+if(SHADERC_ENABLE_SPVC)
+  set(EXTRA_STATIC_PKGCONFIG_LIBS -lshaderc_spvc)
+endif()
+define_pkg_config_file(shaderc -lshaderc_shared)
+define_pkg_config_file(shaderc_static "-lshaderc ${EXTRA_STATIC_PKGCONFIG_LIBS} -lshaderc_util")
+define_pkg_config_file(shaderc_combined -lshaderc_combined)

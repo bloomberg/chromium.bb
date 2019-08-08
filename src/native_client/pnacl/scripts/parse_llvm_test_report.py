@@ -10,6 +10,8 @@ pnacl/scripts/parse_llvm_test_report.py [options]+ reportfile
 
 """
 
+from __future__ import print_function
+
 import csv
 import logging
 import optparse
@@ -45,7 +47,7 @@ def ParseCommandLine(argv):
   return options, args
 
 def Fatal(text):
-  print >> sys.stderr, text
+  print(text, file=sys.stderr)
   sys.exit(1)
 
 def IsFullname(name):

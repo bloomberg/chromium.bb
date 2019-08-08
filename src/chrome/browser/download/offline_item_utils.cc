@@ -107,6 +107,7 @@ OfflineItem OfflineItemUtils::CreateOfflineItem(const std::string& name_space,
                                                 : kUnknownRemainingTime;
   item.fail_state =
       ConvertDownloadInterruptReasonToFailState(download_item->GetLastReason());
+  item.can_rename = download_item->GetState() == DownloadItem::COMPLETE;
   switch (download_item->GetState()) {
     case DownloadItem::IN_PROGRESS:
       item.state = download_item->IsPaused() ? OfflineItemState::PAUSED
@@ -284,4 +285,25 @@ base::string16 OfflineItemUtils::GetFailStateMessage(FailState fail_state) {
   }
 
   return l10n_util::GetStringUTF16(string_id);
+}
+
+// static
+RenameResult OfflineItemUtils::ConvertDownloadRenameResultToRenameResult(
+    DownloadRenameResult download_rename_result) {
+  assert(static_cast<int>(DownloadRenameResult::RESULT_MAX) ==
+         static_cast<int>(RenameResult::kMaxValue));
+  switch (download_rename_result) {
+    case DownloadRenameResult::SUCCESS:
+      return RenameResult::SUCCESS;
+    case DownloadRenameResult::FAILURE_NAME_CONFLICT:
+      return RenameResult::FAILURE_NAME_CONFLICT;
+    case DownloadRenameResult::FAILURE_NAME_TOO_LONG:
+      return RenameResult::FAILURE_NAME_TOO_LONG;
+    case DownloadRenameResult::FAILURE_NAME_INVALID:
+      return RenameResult::FAILURE_NAME_INVALID;
+    case DownloadRenameResult::FAILURE_UNAVAILABLE:
+      return RenameResult::FAILURE_UNAVAILABLE;
+    case DownloadRenameResult::FAILURE_UNKNOWN:
+      return RenameResult::FAILURE_UNKNOWN;
+  }
 }

@@ -14,17 +14,18 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
+#include "components/image_fetcher/core/fake_image_decoder.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/account_consistency_method.h"
+#include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/device_id_helper.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
-#include "components/signin/core/browser/test_image_decoder.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
@@ -37,23 +38,14 @@ namespace {
 
 class TestSigninManagerObserver : public SigninManagerBase::Observer {
  public:
-  TestSigninManagerObserver()
-      : num_failed_signins_(0),
-        num_successful_signins_(0),
-        num_signouts_(0) {}
+  TestSigninManagerObserver() : num_successful_signins_(0), num_signouts_(0) {}
 
   ~TestSigninManagerObserver() override {}
 
-  int num_failed_signins_;
   int num_successful_signins_;
   int num_signouts_;
 
  private:
-  // SigninManagerBase::Observer:
-  void GoogleSigninFailed(const GoogleServiceAuthError& error) override {
-    num_failed_signins_++;
-  }
-
   void GoogleSigninSucceeded(const AccountInfo& account_info) override {
     num_successful_signins_++;
   }
@@ -79,20 +71,19 @@ class SigninManagerTest : public testing::Test {
     SigninManagerBase::RegisterProfilePrefs(user_prefs_.registry());
     SigninManagerBase::RegisterPrefs(local_state_.registry());
     account_tracker_.Initialize(&user_prefs_, base::FilePath());
-    account_fetcher_.Initialize(&test_signin_client_, &token_service_,
-                                &account_tracker_,
-                                std::make_unique<TestImageDecoder>());
+    account_fetcher_.Initialize(
+        &test_signin_client_, &token_service_, &account_tracker_,
+        std::make_unique<image_fetcher::FakeImageDecoder>());
   }
 
   ~SigninManagerTest() override {
     if (manager_) {
-      manager_->RemoveObserver(&test_observer_);
-      manager_->Shutdown();
+      ShutDownManager();
     }
     token_service_.Shutdown();
     test_signin_client_.Shutdown();
-    account_tracker_.Shutdown();
     cookie_manager_service_.Shutdown();
+    account_tracker_.Shutdown();
     account_fetcher_.Shutdown();
   }
 
@@ -118,14 +109,13 @@ class SigninManagerTest : public testing::Test {
         &test_signin_client_, &token_service_, &account_tracker_,
         &cookie_manager_service_, account_consistency_);
     manager_->Initialize(&local_state_);
-    manager_->AddObserver(&test_observer_);
+    manager_->SetObserver(&test_observer_);
   }
 
   // Shuts down |manager_|.
   void ShutDownManager() {
     DCHECK(manager_);
-    manager_->RemoveObserver(&test_observer_);
-    manager_->Shutdown();
+    manager_->ClearObserver();
     manager_.reset();
   }
 
@@ -139,7 +129,6 @@ class SigninManagerTest : public testing::Test {
 
     // Should go into token service and stop.
     EXPECT_EQ(1, test_observer_.num_successful_signins_);
-    EXPECT_EQ(0, test_observer_.num_failed_signins_);
   }
 
   base::test::ScopedTaskEnvironment task_environment_;
@@ -161,7 +150,7 @@ TEST_F(SigninManagerTest, SignOut) {
   CreateSigninManager();
   std::string main_account_id =
       AddToAccountTracker("account_id", "user@gmail.com");
-  manager_->OnExternalSigninCompleted("user@gmail.com");
+  manager_->SignIn("user@gmail.com");
   manager_->SignOut(signin_metrics::SIGNOUT_TEST,
                     signin_metrics::SignoutDelete::IGNORE_METRIC);
   EXPECT_FALSE(manager_->IsAuthenticated());
@@ -183,7 +172,7 @@ TEST_F(SigninManagerTest, SignOutRevoke) {
       AddToAccountTracker("other_id", "other@gmail.com");
   token_service_.UpdateCredentials(main_account_id, "token");
   token_service_.UpdateCredentials(other_account_id, "token");
-  manager_->OnExternalSigninCompleted("user@gmail.com");
+  manager_->SignIn("user@gmail.com");
   EXPECT_TRUE(manager_->IsAuthenticated());
   EXPECT_EQ(main_account_id, manager_->GetAuthenticatedAccountId());
 
@@ -204,7 +193,7 @@ TEST_F(SigninManagerTest, SignOutDiceNoRevoke) {
       AddToAccountTracker("other_id", "other@gmail.com");
   token_service_.UpdateCredentials(main_account_id, "token");
   token_service_.UpdateCredentials(other_account_id, "token");
-  manager_->OnExternalSigninCompleted("user@gmail.com");
+  manager_->SignIn("user@gmail.com");
   EXPECT_TRUE(manager_->IsAuthenticated());
   EXPECT_EQ(main_account_id, manager_->GetAuthenticatedAccountId());
 
@@ -227,7 +216,7 @@ TEST_F(SigninManagerTest, SignOutDiceWithError) {
       AddToAccountTracker("other_id", "other@gmail.com");
   token_service_.UpdateCredentials(main_account_id, "token");
   token_service_.UpdateCredentials(other_account_id, "token");
-  manager_->OnExternalSigninCompleted("user@gmail.com");
+  manager_->SignIn("user@gmail.com");
 
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
@@ -319,9 +308,8 @@ TEST_F(SigninManagerTest, ExternalSignIn) {
   EXPECT_EQ(0, test_observer_.num_successful_signins_);
 
   std::string account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
-  manager_->OnExternalSigninCompleted("user@gmail.com");
+  manager_->SignIn("user@gmail.com");
   EXPECT_EQ(1, test_observer_.num_successful_signins_);
-  EXPECT_EQ(0, test_observer_.num_failed_signins_);
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
 }
@@ -333,15 +321,13 @@ TEST_F(SigninManagerTest, ExternalSignIn_ReauthShouldNotSendNotification) {
   EXPECT_EQ(0, test_observer_.num_successful_signins_);
 
   std::string account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
-  manager_->OnExternalSigninCompleted("user@gmail.com");
+  manager_->SignIn("user@gmail.com");
   EXPECT_EQ(1, test_observer_.num_successful_signins_);
-  EXPECT_EQ(0, test_observer_.num_failed_signins_);
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
 
-  manager_->OnExternalSigninCompleted("user@gmail.com");
+  manager_->SignIn("user@gmail.com");
   EXPECT_EQ(1, test_observer_.num_successful_signins_);
-  EXPECT_EQ(0, test_observer_.num_failed_signins_);
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
 }

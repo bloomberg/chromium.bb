@@ -49,19 +49,6 @@ FEConvolveMatrix::FEConvolveMatrix(Filter* filter,
       preserve_alpha_(preserve_alpha),
       kernel_matrix_(kernel_matrix) {}
 
-FEConvolveMatrix* FEConvolveMatrix::Create(Filter* filter,
-                                           const IntSize& kernel_size,
-                                           float divisor,
-                                           float bias,
-                                           const IntPoint& target_offset,
-                                           EdgeModeType edge_mode,
-                                           bool preserve_alpha,
-                                           const Vector<float>& kernel_matrix) {
-  return MakeGarbageCollected<FEConvolveMatrix>(filter, kernel_size, divisor,
-                                                bias, target_offset, edge_mode,
-                                                preserve_alpha, kernel_matrix);
-}
-
 FloatRect FEConvolveMatrix::MapEffect(const FloatRect& rect) const {
   if (!ParametersValid())
     return rect;

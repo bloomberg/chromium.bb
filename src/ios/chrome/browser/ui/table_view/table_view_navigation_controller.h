@@ -21,7 +21,7 @@
 - (instancetype)init NS_UNAVAILABLE;
 
 // The ChromeTableViewController owned by this ViewController.
-@property(nonatomic, readonly, strong)
+@property(nonatomic, readonly, weak)
     ChromeTableViewController* tableViewController;
 
 @end

@@ -113,13 +113,15 @@ struct ScopedDav1dPictureFree {
   }
 };
 
-Dav1dVideoDecoder::Dav1dVideoDecoder(MediaLog* media_log)
-    : media_log_(media_log) {
-  DETACH_FROM_THREAD(thread_checker_);
+Dav1dVideoDecoder::Dav1dVideoDecoder(MediaLog* media_log,
+                                     OffloadState offload_state)
+    : media_log_(media_log),
+      bind_callbacks_(offload_state == OffloadState::kNormal) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 Dav1dVideoDecoder::~Dav1dVideoDecoder() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CloseDecoder();
 }
 
@@ -133,10 +135,10 @@ void Dav1dVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                    const InitCB& init_cb,
                                    const OutputCB& output_cb,
                                    const WaitingCB& /* waiting_cb */) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(config.IsValidConfig());
 
-  InitCB bound_init_cb = BindToCurrentLoop(init_cb);
+  InitCB bound_init_cb = bind_callbacks_ ? BindToCurrentLoop(init_cb) : init_cb;
   if (config.is_encrypted() || config.codec() != kCodecAV1) {
     bound_init_cb.Run(false);
     return;
@@ -163,19 +165,20 @@ void Dav1dVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   config_ = config;
   state_ = DecoderState::kNormal;
-  output_cb_ = BindToCurrentLoop(output_cb);
+  output_cb_ = output_cb;
   bound_init_cb.Run(true);
 }
 
 void Dav1dVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                                const DecodeCB& decode_cb) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(buffer);
   DCHECK(decode_cb);
   DCHECK_NE(state_, DecoderState::kUninitialized)
       << "Called Decode() before successful Initialize()";
 
-  DecodeCB bound_decode_cb = BindToCurrentLoop(decode_cb);
+  DecodeCB bound_decode_cb =
+      bind_callbacks_ ? BindToCurrentLoop(decode_cb) : decode_cb;
 
   if (state_ == DecoderState::kError) {
     bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
@@ -193,14 +196,30 @@ void Dav1dVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 }
 
 void Dav1dVideoDecoder::Reset(const base::RepeatingClosure& reset_cb) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   state_ = DecoderState::kNormal;
   dav1d_flush(dav1d_decoder_);
-  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE, reset_cb);
+
+  if (bind_callbacks_)
+    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE, reset_cb);
+  else
+    reset_cb.Run();
+}
+
+void Dav1dVideoDecoder::Detach() {
+  // Even though we offload all resolutions of AV1, this may be called in a
+  // transition from clear to encrypted content. Which will subsequently fail
+  // Initialize() since encrypted content isn't supported by this decoder.
+
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!bind_callbacks_);
+
+  CloseDecoder();
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 void Dav1dVideoDecoder::CloseDecoder() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!dav1d_decoder_)
     return;
   dav1d_close(&dav1d_decoder_);
@@ -208,7 +227,7 @@ void Dav1dVideoDecoder::CloseDecoder() {
 }
 
 bool Dav1dVideoDecoder::DecodeBuffer(scoped_refptr<DecoderBuffer> buffer) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   using ScopedPtrDav1dData = std::unique_ptr<Dav1dData, ScopedDav1dDataFree>;
   ScopedPtrDav1dData input_buffer;
@@ -296,7 +315,7 @@ bool Dav1dVideoDecoder::DecodeBuffer(scoped_refptr<DecoderBuffer> buffer) {
 
 scoped_refptr<VideoFrame> Dav1dVideoDecoder::CopyImageToVideoFrame(
     const Dav1dPicture* pic) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   VideoPixelFormat pixel_format = Dav1dImgFmtToVideoPixelFormat(&pic->p);
   if (pixel_format == PIXEL_FORMAT_UNKNOWN)

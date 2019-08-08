@@ -26,10 +26,25 @@ import org.chromium.webapk.shell_apk.WebApkUtils;
 
 /** Displays splash screen. */
 public class SplashActivity extends Activity {
+    private static final String SAVED_INSTANCE_STATE_WAS_BROWSER_LAUNCHED = "wasBrowserLaunched";
+
+    private boolean mWasBrowserLaunched;
+    private boolean mFinishOnResume;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         final long activityStartTimeMs = SystemClock.elapsedRealtime();
         super.onCreate(savedInstanceState);
+
+        if (savedInstanceState != null) {
+            // The activity was killed by the Android OOM killer. If the activity was recreated as a
+            // result of getting a deep link intent, onNewIntent() will be called prior to
+            // onResume(). Otherwise, assume that the activity was recreated as a result of the
+            // browser activity finishing.
+            mFinishOnResume = true;
+            mWasBrowserLaunched =
+                    savedInstanceState.getBoolean(SAVED_INSTANCE_STATE_WAS_BROWSER_LAUNCHED);
+        }
 
         showSplashScreen();
         selectHostBrowser(activityStartTimeMs);
@@ -39,7 +54,26 @@ public class SplashActivity extends Activity {
     public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
+
+        mFinishOnResume = false;
+
         selectHostBrowser(-1);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (mFinishOnResume && mWasBrowserLaunched) {
+            WebApkUtils.finishAndRemoveTask(this);
+            return;
+        }
+        mFinishOnResume = true;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putBoolean(SAVED_INSTANCE_STATE_WAS_BROWSER_LAUNCHED, mWasBrowserLaunched);
     }
 
     private void selectHostBrowser(final long activityStartTimeMs) {
@@ -101,6 +135,7 @@ public class SplashActivity extends Activity {
             return;
         }
 
+        mWasBrowserLaunched = true;
         H2OLauncher.launch(this, params);
     }
 }

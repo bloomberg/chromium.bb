@@ -7,7 +7,10 @@
 
 #include <stddef.h>
 
+#include <vector>
+
 #include "build/build_config.h"
+#include "components/viz/common/display/overlay_strategy.h"
 #include "components/viz/common/viz_common_export.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
@@ -49,6 +52,12 @@ class VIZ_COMMON_EXPORT RendererSettings {
 
   gfx::ColorSpace color_space;
   bool backed_by_surface_texture = false;
+#endif
+
+#if defined(USE_OZONE)
+  // A list of overlay strategies that should be tried. If the list is empty
+  // then overlays aren't supported.
+  std::vector<OverlayStrategy> overlay_strategies;
 #endif
 };
 

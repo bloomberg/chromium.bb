@@ -87,11 +87,6 @@ static_library("vr_android") {
       "arcore_device/arcore_shim.cc",
       "arcore_device/arcore_shim.h",
     ]
-
-    # TODO(https://crbug.com/936004): Remove this once arcore_c_api.h is
-    # -Wextra-semi clean.
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [ "//build/config/compiler:no_chromium_code" ]
   }
 
   deps = [
@@ -179,6 +174,29 @@ source_set("ui_module_factory") {
   ]
 }
 
+# Similar to the ui_default_factory but also tries to open a dummy lib for the
+# purpose of exercising the library loading mechanism.
+source_set("ui_module_dummy_factory") {
+  sources = [
+    "ui_module_dummy_factory.cc",
+    "ui_module_dummy_factory.h",
+  ]
+  deps = [
+    ":ui_factory",
+    "//chrome/browser/vr:vr_base",
+    "//chrome/browser/vr:vr_ui",
+  ]
+}
+
+# A dummy lib used to test the library loading mechanism.
+loadable_module("vr_ui_dummy_lib") {
+  sources = [
+    "ui_dummy.cc",
+    "ui_dummy.h",
+  ]
+  no_default_deps = true
+}
+
 android_library("ar_java") {
   deps = [
     "//third_party/android_deps:com_google_ar_core_java",
@@ -190,6 +208,14 @@ android_library("ar_java") {
     "//base:base_java",
     "//chrome/android:chrome_java",
   ]
+
+  # TODO(crbug.com/938909): chromium_code.flags is not used as a proguard
+  # config when proguarding asynchronously. This results in AR crashing
+  # chrome when AR is an async DFM. Should implement a more scalable
+  # solution to including chromium_code.flags with all async DFMs.
+  if (async_ar) {
+    proguard_configs = [ "//base/android/proguard/chromium_code.flags" ]
+  }
 }
 
 if (enable_arcore) {

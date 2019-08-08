@@ -14,7 +14,7 @@ js_type_check("closure_compile") {
 js_library("kiosk_next_shell_page") {
   deps = [
     "../prefs:prefs_behavior",
-    "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js:load_time_data",
   ]
 }
 
@@ -22,6 +22,6 @@ js_library("kiosk_next_shell_confirmation_dialog") {
   deps = [
     "..:lifetime_browser_proxy",
     "../prefs:prefs_behavior",
-    "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js:load_time_data",
   ]
 }

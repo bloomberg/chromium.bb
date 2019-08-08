@@ -11,6 +11,7 @@
 #include "content/browser/devtools/protocol/security_handler.h"
 #include "content/browser/devtools/protocol/target_handler.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
+#include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
@@ -196,7 +197,8 @@ namespace {
 template <typename HandlerType>
 bool MaybeCreateProxyForInterception(
     DevToolsAgentHostImpl* agent_host,
-    RenderFrameHostImpl* rfh,
+    RenderProcessHost* rph,
+    const base::UnguessableToken& frame_token,
     bool is_navigation,
     bool is_download,
     network::mojom::URLLoaderFactoryRequest* target_factory_request) {
@@ -205,10 +207,10 @@ bool MaybeCreateProxyForInterception(
   bool had_interceptors = false;
   const auto& handlers = HandlerType::ForAgentHost(agent_host);
   for (auto it = handlers.rbegin(); it != handlers.rend(); ++it) {
-    had_interceptors =
-        (*it)->MaybeCreateProxyForInterception(rfh, is_navigation, is_download,
-                                               target_factory_request) ||
-        had_interceptors;
+    had_interceptors = (*it)->MaybeCreateProxyForInterception(
+                           rph, frame_token, is_navigation, is_download,
+                           target_factory_request) ||
+                       had_interceptors;
   }
   return had_interceptors;
 }
@@ -229,22 +231,53 @@ bool WillCreateURLLoaderFactory(
 
   DevToolsAgentHostImpl* frame_agent_host =
       RenderFrameDevToolsAgentHost::GetFor(rfh->frame_tree_node());
+  RenderProcessHost* rph = rfh->GetProcess();
+  const base::UnguessableToken& frame_token = rfh->GetDevToolsFrameToken();
 
   bool had_interceptors =
       MaybeCreateProxyForInterception<protocol::NetworkHandler>(
-          frame_agent_host, rfh, is_navigation, is_download,
+          frame_agent_host, rph, frame_token, is_navigation, is_download,
           target_factory_request);
 
   had_interceptors = MaybeCreateProxyForInterception<protocol::FetchHandler>(
-                         frame_agent_host, rfh, is_navigation, is_download,
-                         target_factory_request) ||
+                         frame_agent_host, rph, frame_token, is_navigation,
+                         is_download, target_factory_request) ||
                      had_interceptors;
 
   // TODO(caseq): assure deterministic order of browser agents (or sessions).
   for (auto* browser_agent_host : BrowserDevToolsAgentHost::Instances()) {
     had_interceptors = MaybeCreateProxyForInterception<protocol::FetchHandler>(
-                           browser_agent_host, rfh, is_navigation, is_download,
-                           target_factory_request) ||
+                           browser_agent_host, rph, frame_token, is_navigation,
+                           is_download, target_factory_request) ||
+                       had_interceptors;
+  }
+  return had_interceptors;
+}
+
+bool WillCreateURLLoaderFactoryForServiceWorker(
+    RenderProcessHost* rph,
+    int routing_id,
+    network::mojom::URLLoaderFactoryRequest* loader_factory_request) {
+  ServiceWorkerDevToolsAgentHost* worker_agent_host =
+      ServiceWorkerDevToolsManager::GetInstance()
+          ->GetDevToolsAgentHostForWorker(rph->GetID(), routing_id);
+  if (!worker_agent_host) {
+    NOTREACHED();
+    return false;
+  }
+  const base::UnguessableToken& worker_token =
+      worker_agent_host->devtools_worker_token();
+
+  bool had_interceptors =
+      MaybeCreateProxyForInterception<protocol::FetchHandler>(
+          worker_agent_host, rph, worker_token, false, false,
+          loader_factory_request);
+
+  // TODO(caseq): assure deterministic order of browser agents (or sessions).
+  for (auto* browser_agent_host : BrowserDevToolsAgentHost::Instances()) {
+    had_interceptors = MaybeCreateProxyForInterception<protocol::FetchHandler>(
+                           browser_agent_host, rph, worker_token, false, false,
+                           loader_factory_request) ||
                        had_interceptors;
   }
   return had_interceptors;

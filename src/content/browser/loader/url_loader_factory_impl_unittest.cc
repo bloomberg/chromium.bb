@@ -77,7 +77,6 @@ class URLLoaderFactoryImplTest : public ::testing::TestWithParam<size_t> {
             nullptr,
             nullptr,
             nullptr,
-            browser_context_->GetSharedCorsOriginAccessList(),
             base::Bind(&URLLoaderFactoryImplTest::GetContexts,
                        base::Unretained(this)),
             base::CreateSingleThreadTaskRunnerWithTraits(
@@ -150,7 +149,7 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
   // |resource_type| can't be a frame type. It is because when PlzNavigate is
   // enabled, the url scheme of frame type requests from the renderer process
   // must be blob scheme.
-  request.resource_type = RESOURCE_TYPE_XHR;
+  request.resource_type = static_cast<int>(ResourceType::kXhr);
   // Need to set same-site |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin::Create(request.url);
   factory_->CreateLoaderAndStart(
@@ -227,7 +226,7 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse) {
   // |resource_type| can't be a frame type. It is because when PlzNavigate is
   // enabled, the url scheme of frame type requests from the renderer process
   // must be blob scheme.
-  request.resource_type = RESOURCE_TYPE_XHR;
+  request.resource_type = static_cast<int>(ResourceType::kXhr);
   // Need to set same-site |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin::Create(request.url);
   factory_->CreateLoaderAndStart(
@@ -257,7 +256,7 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse2) {
   // |resource_type| can't be a frame type. It is because when PlzNavigate is
   // enabled, the url scheme of frame type requests from the renderer process
   // must be blob scheme.
-  request.resource_type = RESOURCE_TYPE_XHR;
+  request.resource_type = static_cast<int>(ResourceType::kXhr);
   // Need to set same-site |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin::Create(request.url);
   factory_->CreateLoaderAndStart(
@@ -285,7 +284,7 @@ TEST_P(URLLoaderFactoryImplTest, InvalidURL) {
   // |resource_type| can't be a frame type. It is because when PlzNavigate is
   // enabled, the url scheme of frame type requests from the renderer process
   // must be blob scheme.
-  request.resource_type = RESOURCE_TYPE_XHR;
+  request.resource_type = static_cast<int>(ResourceType::kXhr);
   // Need to set same-site |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin::Create(request.url);
   ASSERT_FALSE(request.url.is_valid());
@@ -316,7 +315,7 @@ TEST_P(URLLoaderFactoryImplTest, ShouldNotRequestURL) {
   // |resource_type| can't be a frame type. It is because when PlzNavigate is
   // enabled, the url scheme of frame type requests from the renderer process
   // must be blob scheme.
-  request.resource_type = RESOURCE_TYPE_XHR;
+  request.resource_type = static_cast<int>(ResourceType::kXhr);
   // Need to set same-site |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin::Create(request.url);
   factory_->CreateLoaderAndStart(
@@ -348,7 +347,7 @@ TEST_P(URLLoaderFactoryImplTest, OnTransferSizeUpdated) {
   // |resource_type| can't be a frame type. It is because when PlzNavigate is
   // enabled, the url scheme of frame type requests from the renderer process
   // must be blob scheme.
-  request.resource_type = RESOURCE_TYPE_XHR;
+  request.resource_type = static_cast<int>(ResourceType::kXhr);
   // Need to set same-site |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin::Create(request.url);
   request.report_raw_headers = true;
@@ -410,7 +409,7 @@ TEST_P(URLLoaderFactoryImplTest, CancelFromRenderer) {
   // |resource_type| can't be a frame type. It is because when PlzNavigate is
   // enabled, the url scheme of frame type requests from the renderer process
   // must be blob scheme.
-  request.resource_type = RESOURCE_TYPE_XHR;
+  request.resource_type = static_cast<int>(ResourceType::kXhr);
   // Need to set same-site |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin::Create(request.url);
   factory_->CreateLoaderAndStart(

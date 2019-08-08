@@ -42,6 +42,7 @@
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
@@ -56,7 +57,9 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_position.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_range.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_selection.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -96,19 +99,20 @@ class WebAXSparseAttributeClientAdapter : public AXSparseAttributeClient {
   }
 };
 
-#if DCHECK_IS_ON()
-// It's not safe to call some WebAXObject APIs if a layout is pending.
-// Clients should call updateLayoutAndCheckValidity first.
 static bool IsLayoutClean(Document* document) {
   if (!document || !document->View())
     return false;
-  return document->Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean ||
-         ((document->Lifecycle().GetState() == DocumentLifecycle::kStyleClean ||
-           document->Lifecycle().GetState() ==
-               DocumentLifecycle::kLayoutSubtreeChangeClean) &&
-          !document->View()->NeedsLayout());
+  if (document->View()->NeedsLayout())
+    return false;
+  DocumentLifecycle::LifecycleState state = document->Lifecycle().GetState();
+  if (state >= DocumentLifecycle::kLayoutClean ||
+      state == DocumentLifecycle::kStyleClean ||
+      state == DocumentLifecycle::kLayoutSubtreeChangeClean) {
+    return true;
+  }
+
+  return false;
 }
-#endif
 
 void WebAXObject::Reset() {
   private_.Reset();
@@ -146,8 +150,11 @@ int WebAXObject::GenerateAXID() const {
 bool WebAXObject::UpdateLayoutAndCheckValidity() {
   if (!IsDetached()) {
     Document* document = private_->GetDocument();
-    if (!document || !document->View() ||
-        !document->View()->UpdateLifecycleToCompositingCleanPlusScrolling())
+    if (!document || !document->View())
+      return false;
+    if (IsLayoutClean(document))
+      return true;
+    if (!document->View()->UpdateLifecycleToCompositingCleanPlusScrolling())
       return false;
   }
 
@@ -573,6 +580,13 @@ float WebAXObject::FontSize() const {
   return private_->FontSize();
 }
 
+float WebAXObject::FontWeight() const {
+  if (IsDetached())
+    return 0.0f;
+
+  return private_->FontWeight();
+}
+
 bool WebAXObject::CanvasHasFallbackContent() const {
   if (IsDetached())
     return false;
@@ -755,12 +769,64 @@ static ax::mojom::TextAffinity ToAXAffinity(TextAffinity affinity) {
   }
 }
 
-void WebAXObject::Selection(WebAXObject& anchor_object,
+void WebAXObject::Selection(bool& is_selection_backward,
+                            WebAXObject& anchor_object,
                             int& anchor_offset,
                             ax::mojom::TextAffinity& anchor_affinity,
                             WebAXObject& focus_object,
                             int& focus_offset,
                             ax::mojom::TextAffinity& focus_affinity) const {
+  is_selection_backward = false;
+  anchor_object = WebAXObject();
+  anchor_offset = -1;
+  anchor_affinity = ax::mojom::TextAffinity::kDownstream;
+  focus_object = WebAXObject();
+  focus_offset = -1;
+  focus_affinity = ax::mojom::TextAffinity::kDownstream;
+
+  if (IsDetached() || GetDocument().IsNull())
+    return;
+
+  WebAXObject focus = FromWebDocumentFocused(GetDocument());
+  if (focus.IsDetached())
+    return;
+
+  const auto ax_selection =
+      focus.private_->IsNativeTextControl()
+          ? AXSelection::FromCurrentSelection(
+                ToTextControl(*focus.private_->GetNode()))
+          : AXSelection::FromCurrentSelection(*focus.private_->GetDocument());
+  if (!ax_selection)
+    return;
+
+  const AXPosition base = ax_selection.Base();
+  anchor_object = WebAXObject(const_cast<AXObject*>(base.ContainerObject()));
+  const AXPosition extent = ax_selection.Extent();
+  focus_object = WebAXObject(const_cast<AXObject*>(extent.ContainerObject()));
+
+  is_selection_backward = base > extent;
+  if (base.IsTextPosition()) {
+    anchor_offset = base.TextOffset();
+    anchor_affinity = ToAXAffinity(base.Affinity());
+  } else {
+    anchor_offset = base.ChildIndex();
+  }
+
+  if (extent.IsTextPosition()) {
+    focus_offset = extent.TextOffset();
+    focus_affinity = ToAXAffinity(extent.Affinity());
+  } else {
+    focus_offset = extent.ChildIndex();
+  }
+}
+
+void WebAXObject::SelectionDeprecated(
+    WebAXObject& anchor_object,
+    int& anchor_offset,
+    ax::mojom::TextAffinity& anchor_affinity,
+    WebAXObject& focus_object,
+    int& focus_offset,
+    ax::mojom::TextAffinity& focus_affinity) const {
   if (IsDetached()) {
     anchor_object = WebAXObject();
     anchor_offset = -1;
@@ -799,6 +865,90 @@ bool WebAXObject::SetSelection(const WebAXObject& anchor_object,
                                int anchor_offset,
                                const WebAXObject& focus_object,
                                int focus_offset) const {
+  if (IsDetached() || anchor_object.IsDetached() || focus_object.IsDetached())
+    return false;
+
+  AXPosition ax_base, ax_extent;
+  if (static_cast<const AXObject*>(anchor_object)->IsTextObject() ||
+      static_cast<const AXObject*>(anchor_object)->IsNativeTextControl()) {
+    ax_base =
+        AXPosition::CreatePositionInTextObject(*anchor_object, anchor_offset);
+  } else if (anchor_offset <= 0) {
+    ax_base = AXPosition::CreateFirstPositionInObject(*anchor_object);
+  } else if (anchor_offset >= static_cast<int>(anchor_object.ChildCount())) {
+    ax_base = AXPosition::CreateLastPositionInObject(*anchor_object);
+  } else {
+    DCHECK_GE(anchor_offset, 0);
+    ax_base = AXPosition::CreatePositionBeforeObject(
+        *anchor_object.ChildAt(static_cast<unsigned int>(anchor_offset)));
+  }
+
+  if (static_cast<const AXObject*>(focus_object)->IsTextObject() ||
+      static_cast<const AXObject*>(focus_object)->IsNativeTextControl()) {
+    ax_extent =
+        AXPosition::CreatePositionInTextObject(*focus_object, focus_offset);
+  } else if (focus_offset <= 0) {
+    ax_extent = AXPosition::CreateFirstPositionInObject(*focus_object);
+  } else if (focus_offset >= static_cast<int>(focus_object.ChildCount())) {
+    ax_extent = AXPosition::CreateLastPositionInObject(*focus_object);
+  } else {
+    DCHECK_GE(focus_offset, 0);
+    ax_extent = AXPosition::CreatePositionBeforeObject(
+        *focus_object.ChildAt(static_cast<unsigned int>(focus_offset)));
+  }
+
+  AXSelection::Builder builder;
+  AXSelection ax_selection =
+      builder.SetBase(ax_base).SetExtent(ax_extent).Build();
+  return ax_selection.Select();
+}
+
+unsigned WebAXObject::SelectionEnd() const {
+  if (IsDetached() || GetDocument().IsNull())
+    return 0;
+
+  WebAXObject focus = FromWebDocumentFocused(GetDocument());
+  if (focus.IsDetached())
+    return 0;
+
+  const auto ax_selection =
+      focus.private_->IsNativeTextControl()
+          ? AXSelection::FromCurrentSelection(
+                ToTextControl(*focus.private_->GetNode()))
+          : AXSelection::FromCurrentSelection(*focus.private_->GetDocument());
+  if (!ax_selection)
+    return 0;
+
+  if (ax_selection.Extent().IsTextPosition())
+    return ax_selection.Extent().TextOffset();
+  return ax_selection.Extent().ChildIndex();
+}
+
+unsigned WebAXObject::SelectionStart() const {
+  if (IsDetached() || GetDocument().IsNull())
+    return 0;
+
+  WebAXObject focus = FromWebDocumentFocused(GetDocument());
+  if (focus.IsDetached())
+    return 0;
+
+  const auto ax_selection =
+      focus.private_->IsNativeTextControl()
+          ? AXSelection::FromCurrentSelection(
+                ToTextControl(*focus.private_->GetNode()))
+          : AXSelection::FromCurrentSelection(*focus.private_->GetDocument());
+  if (!ax_selection)
+    return 0;
+
+  if (ax_selection.Base().IsTextPosition())
+    return ax_selection.Base().TextOffset();
+  return ax_selection.Base().ChildIndex();
+}
+
+bool WebAXObject::SetSelectionDeprecated(const WebAXObject& anchor_object,
+                                         int anchor_offset,
+                                         const WebAXObject& focus_object,
+                                         int focus_offset) const {
   if (IsDetached())
     return false;
 
@@ -808,7 +958,7 @@ bool WebAXObject::SetSelection(const WebAXObject& anchor_object,
   return private_->RequestSetSelectionAction(ax_selection);
 }
 
-unsigned WebAXObject::SelectionEnd() const {
+unsigned WebAXObject::SelectionEndDeprecated() const {
   if (IsDetached())
     return 0;
 
@@ -819,7 +969,7 @@ unsigned WebAXObject::SelectionEnd() const {
   return ax_selection.focus_offset;
 }
 
-unsigned WebAXObject::SelectionStart() const {
+unsigned WebAXObject::SelectionStartDeprecated() const {
   if (IsDetached())
     return 0;
 
@@ -828,31 +978,6 @@ unsigned WebAXObject::SelectionStart() const {
     return 0;
 
   return ax_selection.anchor_offset;
-}
-
-unsigned WebAXObject::SelectionEndLineNumber() const {
-  if (IsDetached())
-    return 0;
-
-  VisiblePosition position = private_->VisiblePositionForIndex(SelectionEnd());
-  int line_number = private_->LineForPosition(position);
-  if (line_number < 0)
-    return 0;
-
-  return line_number;
-}
-
-unsigned WebAXObject::SelectionStartLineNumber() const {
-  if (IsDetached())
-    return 0;
-
-  VisiblePosition position =
-      private_->VisiblePositionForIndex(SelectionStart());
-  int line_number = private_->LineForPosition(position);
-  if (line_number < 0)
-    return 0;
-
-  return line_number;
 }
 
 bool WebAXObject::Focus() const {
@@ -890,6 +1015,13 @@ WebString WebAXObject::StringValue() const {
   return private_->StringValue();
 }
 
+ax::mojom::ListStyle WebAXObject::GetListStyle() const {
+  if (IsDetached())
+    return ax::mojom::ListStyle::kNone;
+
+  return private_->GetListStyle();
+}
+
 ax::mojom::TextDirection WebAXObject::GetTextDirection() const {
   if (IsDetached())
     return ax::mojom::TextDirection::kLtr;
@@ -904,11 +1036,21 @@ ax::mojom::TextPosition WebAXObject::GetTextPosition() const {
   return private_->GetTextPosition();
 }
 
-int WebAXObject::TextStyle() const {
-  if (IsDetached())
-    return 0;
-
-  return private_->GetTextStyle();
+void WebAXObject::GetTextStyleAndTextDecorationStyle(
+    int32_t* text_style,
+    ax::mojom::TextDecorationStyle* text_overline_style,
+    ax::mojom::TextDecorationStyle* text_strikethrough_style,
+    ax::mojom::TextDecorationStyle* text_underline_style) const {
+  if (IsDetached()) {
+    *text_style = 0;
+    *text_overline_style = ax::mojom::TextDecorationStyle::kNone;
+    *text_strikethrough_style = ax::mojom::TextDecorationStyle::kNone;
+    *text_underline_style = ax::mojom::TextDecorationStyle::kNone;
+    return;
+  }
+  private_->GetTextStyleAndTextDecorationStyle(text_style, text_overline_style,
+                                               text_strikethrough_style,
+                                               text_underline_style);
 }
 
 WebURL WebAXObject::Url() const {
@@ -971,6 +1113,13 @@ WebString WebAXObject::Placeholder(ax::mojom::NameFrom name_from) const {
     return WebString();
 
   return private_->Placeholder(name_from);
+}
+
+WebString WebAXObject::Title(ax::mojom::NameFrom name_from) const {
+  if (IsDetached())
+    return WebString();
+
+  return private_->Title(name_from);
 }
 
 bool WebAXObject::SupportsRangeValue() const {
@@ -1046,10 +1195,10 @@ bool WebAXObject::HasComputedStyle() const {
     document->UpdateStyleAndLayoutTree();
 
   Node* node = private_->GetNode();
-  if (!node)
+  if (!node || node->IsDocumentNode())
     return false;
 
-  return node->EnsureComputedStyle();
+  return node->GetComputedStyle();
 }
 
 WebString WebAXObject::ComputedStyleDisplay() const {
@@ -1061,14 +1210,14 @@ WebString WebAXObject::ComputedStyleDisplay() const {
     document->UpdateStyleAndLayoutTree();
 
   Node* node = private_->GetNode();
-  if (!node)
+  if (!node || node->IsDocumentNode())
     return WebString();
 
-  const ComputedStyle* computed_style = node->EnsureComputedStyle();
+  const ComputedStyle* computed_style = node->GetComputedStyle();
   if (!computed_style)
     return WebString();
 
-  return WebString(CSSProperty::Get(CSSPropertyDisplay)
+  return WebString(CSSProperty::Get(CSSPropertyID::kDisplay)
                        .CSSValueFromComputedStyle(
                            *computed_style, /* layout_object */ nullptr, node,
                            /* allow_visited_style */ false)
@@ -1080,16 +1229,6 @@ bool WebAXObject::AccessibilityIsIgnored() const {
     return false;
 
   return private_->AccessibilityIsIgnored();
-}
-
-bool WebAXObject::LineBreaks(WebVector<int>& result) const {
-  if (IsDetached())
-    return false;
-
-  Vector<int> line_breaks_vector;
-  private_->LineBreaks(line_breaks_vector);
-  result = line_breaks_vector;
-  return true;
 }
 
 int WebAXObject::AriaColumnCount() const {
@@ -1423,11 +1562,64 @@ bool WebAXObject::ScrollToGlobalPoint(const WebPoint& point) const {
   return private_->RequestScrollToGlobalPointAction(point);
 }
 
+void WebAXObject::Swap(WebAXObject& other) {
+  if (IsDetached() || other.IsDetached())
+    return;
+
+  AXObject* temp = private_.Get();
+  DCHECK(temp) << "|private_| should not be null.";
+  this->Assign(other);
+  other = temp;
+}
+
+WebString WebAXObject::ToString() const {
+  if (IsDetached())
+    return WebString();
+
+  return private_->ToString();
+}
+
 WebAXObject::WebAXObject(AXObject* object) : private_(object) {}
 
 WebAXObject& WebAXObject::operator=(AXObject* object) {
   private_ = object;
   return *this;
+}
+
+bool WebAXObject::operator==(const WebAXObject& other) const {
+  if (IsDetached() || other.IsDetached())
+    return false;
+  return *private_ == *other.private_;
+}
+
+bool WebAXObject::operator!=(const WebAXObject& other) const {
+  if (IsDetached() || other.IsDetached())
+    return false;
+  return *private_ != *other.private_;
+}
+
+bool WebAXObject::operator<(const WebAXObject& other) const {
+  if (IsDetached() || other.IsDetached())
+    return false;
+  return *private_ < *other.private_;
+}
+
+bool WebAXObject::operator<=(const WebAXObject& other) const {
+  if (IsDetached() || other.IsDetached())
+    return false;
+  return *private_ <= *other.private_;
+}
+
+bool WebAXObject::operator>(const WebAXObject& other) const {
+  if (IsDetached() || other.IsDetached())
+    return false;
+  return *private_ > *other.private_;
+}
+
+bool WebAXObject::operator>=(const WebAXObject& other) const {
+  if (IsDetached() || other.IsDetached())
+    return false;
+  return *private_ >= *other.private_;
 }
 
 WebAXObject::operator AXObject*() const {

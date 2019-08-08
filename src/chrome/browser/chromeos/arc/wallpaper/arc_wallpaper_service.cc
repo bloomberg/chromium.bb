@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -14,8 +15,8 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "components/account_id/account_id.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"

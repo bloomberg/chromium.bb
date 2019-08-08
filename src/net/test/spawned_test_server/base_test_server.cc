@@ -202,6 +202,12 @@ base::FilePath BaseTestServer::SSLOptions::GetCertificateFile() const {
       return base::FilePath(FILE_PATH_LITERAL("redundant-server-chain.pem"));
     case CERT_BAD_VALIDITY:
       return base::FilePath(FILE_PATH_LITERAL("bad_validity.pem"));
+    case CERT_KEY_USAGE_RSA_ENCIPHERMENT:
+      return base::FilePath(
+          FILE_PATH_LITERAL("key_usage_rsa_keyencipherment.pem"));
+    case CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE:
+      return base::FilePath(
+          FILE_PATH_LITERAL("key_usage_rsa_digitalsignature.pem"));
     case CERT_AUTO:
     case CERT_AUTO_WITH_INTERMEDIATE:
     case CERT_AUTO_AIA_INTERMEDIATE:
@@ -354,7 +360,7 @@ bool BaseTestServer::GetAddressList(AddressList* address_list) const {
   DCHECK(address_list);
 
   std::unique_ptr<HostResolver> resolver(
-      HostResolver::CreateDefaultResolver(NULL));
+      HostResolver::CreateStandaloneResolver(nullptr));
 
   // Limit the lookup to IPv4 (DnsQueryType::A). When started with the default
   // address of kLocalhost, testserver.py only supports IPv4.

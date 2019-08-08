@@ -170,6 +170,28 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
 }
 
 // static
+AutocompleteMatch BaseSearchProvider::CreateOnDeviceSearchSuggestion(
+    AutocompleteProvider* autocomplete_provider,
+    const AutocompleteInput& input,
+    const base::string16& suggestion,
+    int relevance,
+    const TemplateURL* template_url,
+    const SearchTermsData& search_terms_data,
+    int accepted_suggestion) {
+  SearchSuggestionParser::SuggestResult suggest_result(
+      suggestion, AutocompleteMatchType::SEARCH_SUGGEST,
+      /*subtype_identifier=*/271, /*from_keyword_provider=*/false, relevance,
+      /*relevance_from_server=*/false,
+      base::CollapseWhitespace(input.text(), false));
+  // On device providers are synchronous.
+  suggest_result.set_received_after_last_keystroke(false);
+  return CreateSearchSuggestion(
+      autocomplete_provider, input, /*in_keyword_mode=*/false, suggest_result,
+      template_url, search_terms_data, accepted_suggestion,
+      /*append_extra_query_params_from_command_line=*/true);
+}
+
+// static
 void BaseSearchProvider::AppendSuggestClientToAdditionalQueryParams(
     const TemplateURL* template_url,
     const SearchTermsData& search_terms_data,
@@ -191,8 +213,8 @@ void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
   if (!match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey).empty()) {
     deletion_handlers_.push_back(std::make_unique<SuggestionDeletionHandler>(
         client(), match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey),
-        base::Bind(&BaseSearchProvider::OnDeletionComplete,
-                   base::Unretained(this))));
+        base::BindRepeating(&BaseSearchProvider::OnDeletionComplete,
+                            base::Unretained(this))));
   }
 
   const TemplateURL* template_url =
@@ -473,9 +495,8 @@ void BaseSearchProvider::AddMatchToMap(
                                      i.first->second.duplicate_matches.end());
       i.first->second.duplicate_matches.clear();
       match.duplicate_matches.push_back(i.first->second);
-      i.first->second = match;
+      i.first->second = std::move(match);
     } else {
-      i.first->second.duplicate_matches.push_back(match);
       if (match.keyword == i.first->second.keyword) {
         // Old and new matches are from the same search provider. It is okay to
         // record one match's prefetch data onto a different match (for the same
@@ -495,6 +516,7 @@ void BaseSearchProvider::AddMatchToMap(
         if (should_prefetch)
           i.first->second.RecordAdditionalInfo(kSuggestMetadataKey, metadata);
       }
+      i.first->second.duplicate_matches.push_back(std::move(match));
     }
     // Copy over answer data from lower-ranking item, if necessary.
     // This depends on the lower-ranking item always being added last - see

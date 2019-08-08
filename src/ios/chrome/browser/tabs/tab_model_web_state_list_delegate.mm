@@ -21,5 +21,4 @@ void TabModelWebStateListDelegate::WillAddWebState(web::WebState* web_state) {
   AttachTabHelpers(web_state, /*for_prerender=*/false);
 }
 
-void TabModelWebStateListDelegate::WebStateDetached(web::WebState* web_state) {
-}
+void TabModelWebStateListDelegate::WebStateDetached(web::WebState* web_state) {}

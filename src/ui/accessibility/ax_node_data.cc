@@ -144,9 +144,13 @@ bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr) {
     case ax::mojom::IntAttribute::kInvalidState:
     case ax::mojom::IntAttribute::kCheckedState:
     case ax::mojom::IntAttribute::kRestriction:
+    case ax::mojom::IntAttribute::kListStyle:
     case ax::mojom::IntAttribute::kTextDirection:
     case ax::mojom::IntAttribute::kTextPosition:
     case ax::mojom::IntAttribute::kTextStyle:
+    case ax::mojom::IntAttribute::kTextOverlineStyle:
+    case ax::mojom::IntAttribute::kTextStrikethroughStyle:
+    case ax::mojom::IntAttribute::kTextUnderlineStyle:
     case ax::mojom::IntAttribute::kAriaColumnCount:
     case ax::mojom::IntAttribute::kAriaCellColumnIndex:
     case ax::mojom::IntAttribute::kAriaRowCount:
@@ -633,6 +637,7 @@ ax::mojom::Action AXNodeData::AddAction(ax::mojom::Action action_enum) {
     case ax::mojom::Action::kGetImageData:
     case ax::mojom::Action::kHitTest:
     case ax::mojom::Action::kIncrement:
+    case ax::mojom::Action::kInternalInvalidateTree:
     case ax::mojom::Action::kLoadInlineTextBoxes:
     case ax::mojom::Action::kReplaceSelectedText:
     case ax::mojom::Action::kScrollToMakeVisible:
@@ -651,6 +656,9 @@ ax::mojom::Action AXNodeData::AddAction(ax::mojom::Action action_enum) {
     case ax::mojom::Action::kScrollRight:
     case ax::mojom::Action::kGetTextLocation:
     case ax::mojom::Action::kAnnotatePageImages:
+    case ax::mojom::Action::kSignalEndOfTest:
+    case ax::mojom::Action::kHideTooltip:
+    case ax::mojom::Action::kShowTooltip:
       break;
   }
 
@@ -740,6 +748,21 @@ void AXNodeData::SetNameFrom(ax::mojom::NameFrom name_from) {
   }
 }
 
+ax::mojom::DescriptionFrom AXNodeData::GetDescriptionFrom() const {
+  return static_cast<ax::mojom::DescriptionFrom>(
+      GetIntAttribute(ax::mojom::IntAttribute::kDescriptionFrom));
+}
+
+void AXNodeData::SetDescriptionFrom(
+    ax::mojom::DescriptionFrom description_from) {
+  if (HasIntAttribute(ax::mojom::IntAttribute::kDescriptionFrom))
+    RemoveIntAttribute(ax::mojom::IntAttribute::kDescriptionFrom);
+  if (description_from != ax::mojom::DescriptionFrom::kNone) {
+    AddIntAttribute(ax::mojom::IntAttribute::kDescriptionFrom,
+                    static_cast<int32_t>(description_from));
+  }
+}
+
 ax::mojom::TextPosition AXNodeData::GetTextPosition() const {
   return static_cast<ax::mojom::TextPosition>(
       GetIntAttribute(ax::mojom::IntAttribute::kTextPosition));
@@ -783,6 +806,20 @@ void AXNodeData::SetRestriction(ax::mojom::Restriction restriction) {
   }
 }
 
+ax::mojom::ListStyle AXNodeData::GetListStyle() const {
+  return static_cast<ax::mojom::ListStyle>(
+      GetIntAttribute(ax::mojom::IntAttribute::kListStyle));
+}
+
+void AXNodeData::SetListStyle(ax::mojom::ListStyle list_style) {
+  if (HasIntAttribute(ax::mojom::IntAttribute::kListStyle))
+    RemoveIntAttribute(ax::mojom::IntAttribute::kListStyle);
+  if (list_style != ax::mojom::ListStyle::kNone) {
+    AddIntAttribute(ax::mojom::IntAttribute::kListStyle,
+                    static_cast<int32_t>(list_style));
+  }
+}
+
 ax::mojom::TextDirection AXNodeData::GetTextDirection() const {
   return static_cast<ax::mojom::TextDirection>(
       GetIntAttribute(ax::mojom::IntAttribute::kTextDirection));
@@ -795,6 +832,17 @@ void AXNodeData::SetTextDirection(ax::mojom::TextDirection text_direction) {
     AddIntAttribute(ax::mojom::IntAttribute::kTextDirection,
                     static_cast<int32_t>(text_direction));
   }
+}
+
+bool AXNodeData::IsReadOnlyOrDisabled() const {
+  switch (GetRestriction()) {
+    case ax::mojom::Restriction::kReadOnly:
+    case ax::mojom::Restriction::kDisabled:
+      return true;
+    case ax::mojom::Restriction::kNone:
+      return false;
+  }
+  return false;
 }
 
 std::string AXNodeData::ToString() const {
@@ -986,6 +1034,30 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::IntAttribute::kColor:
         result += base::StringPrintf(" color=&%X", int_attribute.second);
         break;
+      case ax::mojom::IntAttribute::kListStyle:
+        switch (static_cast<ax::mojom::ListStyle>(int_attribute.second)) {
+          case ax::mojom::ListStyle::kCircle:
+            result += " list_style=circle";
+            break;
+          case ax::mojom::ListStyle::kDisc:
+            result += " list_style=disc";
+            break;
+          case ax::mojom::ListStyle::kImage:
+            result += " list_style=image";
+            break;
+          case ax::mojom::ListStyle::kNumeric:
+            result += " list_style=numeric";
+            break;
+          case ax::mojom::ListStyle::kOther:
+            result += " list_style=other";
+            break;
+          case ax::mojom::ListStyle::kSquare:
+            result += " list_style=square";
+            break;
+          default:
+            break;
+        }
+        break;
       case ax::mojom::IntAttribute::kTextDirection:
         switch (static_cast<ax::mojom::TextDirection>(int_attribute.second)) {
           case ax::mojom::TextDirection::kLtr:
@@ -1029,9 +1101,26 @@ std::string AXNodeData::ToString() const {
           text_style_value += "underline,";
         if (HasTextStyle(ax::mojom::TextStyle::kLineThrough))
           text_style_value += "line-through,";
+        if (HasTextStyle(ax::mojom::TextStyle::kOverline))
+          text_style_value += "overline,";
         result += text_style_value.substr(0, text_style_value.size() - 1);
         break;
       }
+      case ax::mojom::IntAttribute::kTextOverlineStyle:
+        result += std::string(" text_overline_style=") +
+                  ui::ToString(static_cast<ax::mojom::TextDecorationStyle>(
+                      int_attribute.second));
+        break;
+      case ax::mojom::IntAttribute::kTextStrikethroughStyle:
+        result += std::string(" text_strikethrough_style=") +
+                  ui::ToString(static_cast<ax::mojom::TextDecorationStyle>(
+                      int_attribute.second));
+        break;
+      case ax::mojom::IntAttribute::kTextUnderlineStyle:
+        result += std::string(" text_underline_style=") +
+                  ui::ToString(static_cast<ax::mojom::TextDecorationStyle>(
+                      int_attribute.second));
+        break;
       case ax::mojom::IntAttribute::kSetSize:
         result += " setsize=" + value;
         break;
@@ -1196,6 +1285,9 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::StringAttribute::kRoleDescription:
         result += " role_description=" + value;
         break;
+      case ax::mojom::StringAttribute::kTooltip:
+        result += " tooltip=" + value;
+        break;
       case ax::mojom::StringAttribute::kUrl:
         result += " url=" + value;
         break;
@@ -1228,6 +1320,9 @@ std::string AXNodeData::ToString() const {
         break;
       case ax::mojom::FloatAttribute::kFontSize:
         result += " font_size=" + value;
+        break;
+      case ax::mojom::FloatAttribute::kFontWeight:
+        result += " font_weight=" + value;
         break;
       case ax::mojom::FloatAttribute::kNone:
         break;

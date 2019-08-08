@@ -106,8 +106,7 @@ void WidgetsWindow::Layout() {
   const int kVerticalPad = 5;
   int left = 5;
   int top = kVerticalPad;
-  for (int i = 0; i < child_count(); ++i) {
-    views::View* view = child_at(i);
+  for (auto* view : children()) {
     gfx::Size preferred = view->GetPreferredSize();
     view->SetBounds(left, top, preferred.width(), preferred.height());
     top += preferred.height() + kVerticalPad;

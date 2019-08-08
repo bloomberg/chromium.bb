@@ -35,14 +35,17 @@ GrVkGetProc make_unified_getter(const PFN_vkGetInstanceProcAddr& iproc,
 
 bool VulkanInProcessContextProvider::Initialize() {
   DCHECK(!device_queue_);
+  const gfx::ExtensionSet& extensions =
+      vulkan_implementation_->GetVulkanInstance()->enabled_extensions();
+  bool support_surface =
+      gfx::HasExtension(extensions, VK_KHR_SURFACE_EXTENSION_NAME);
+  uint32_t flags = gpu::VulkanDeviceQueue::GRAPHICS_QUEUE_FLAG;
+  if (support_surface)
+    flags |= gpu::VulkanDeviceQueue::PRESENTATION_SUPPORT_QUEUE_FLAG;
   std::unique_ptr<gpu::VulkanDeviceQueue> device_queue =
-      gpu::CreateVulkanDeviceQueue(
-          vulkan_implementation_,
-          gpu::VulkanDeviceQueue::GRAPHICS_QUEUE_FLAG |
-              gpu::VulkanDeviceQueue::PRESENTATION_SUPPORT_QUEUE_FLAG);
-  if (!device_queue) {
+      gpu::CreateVulkanDeviceQueue(vulkan_implementation_, flags);
+  if (!device_queue)
     return false;
-  }
 
   device_queue_ = std::move(device_queue);
   GrVkBackendContext backend_context;
@@ -57,8 +60,6 @@ bool VulkanInProcessContextProvider::Initialize() {
   backend_context.fExtensions = 0;
 
   // Instance extensions.
-  const gfx::ExtensionSet& extensions =
-      vulkan_implementation_->GetVulkanInstance()->enabled_extensions();
   if (gfx::HasExtension(extensions, VK_EXT_DEBUG_REPORT_EXTENSION_NAME))
     backend_context.fExtensions |= kEXT_debug_report_GrVkExtensionFlag;
   if (gfx::HasExtension(extensions, VK_KHR_SURFACE_EXTENSION_NAME))
@@ -95,10 +96,6 @@ void VulkanInProcessContextProvider::Destroy() {
   }
 }
 
-GrContext* VulkanInProcessContextProvider::GetGrContext() {
-  return gr_context_.get();
-}
-
 gpu::VulkanImplementation*
 VulkanInProcessContextProvider::GetVulkanImplementation() {
   return vulkan_implementation_;
@@ -106,6 +103,15 @@ VulkanInProcessContextProvider::GetVulkanImplementation() {
 
 gpu::VulkanDeviceQueue* VulkanInProcessContextProvider::GetDeviceQueue() {
   return device_queue_.get();
+}
+
+GrContext* VulkanInProcessContextProvider::GetGrContext() {
+  return gr_context_.get();
+}
+
+GrVkSecondaryCBDrawContext*
+VulkanInProcessContextProvider::GetGrSecondaryCBDrawContext() {
+  return nullptr;
 }
 
 VulkanInProcessContextProvider::VulkanInProcessContextProvider(

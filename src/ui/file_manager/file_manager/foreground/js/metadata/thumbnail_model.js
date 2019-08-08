@@ -60,8 +60,7 @@ ThumbnailModel.prototype.get = function(entries) {
             thumbnail: {},
             media: {}
           };
-          const canUseContentThumbnail =
-              metadataList[i].present &&
+          const canUseContentThumbnail = metadataList[i].present &&
               (FileType.isImage(entries[i], metadataList[i].contentMimeType) ||
                FileType.isAudio(entries[i], metadataList[i].contentMimeType));
           if (canUseContentThumbnail) {
@@ -69,13 +68,15 @@ ThumbnailModel.prototype.get = function(entries) {
           }
         }
         if (contentRequestEntries.length) {
-          return this.metadataModel_.get(
-              contentRequestEntries,
-              [
-                'contentThumbnailUrl',
-                'contentThumbnailTransform',
-                'contentImageTransform'
-              ]).then(contentMetadataList => {
+          return this.metadataModel_
+              .get(
+                  contentRequestEntries,
+                  [
+                    'contentThumbnailUrl',
+                    'contentThumbnailTransform',
+                    'contentImageTransform',
+                  ])
+              .then(contentMetadataList => {
                 for (let i = 0; i < contentRequestEntries.length; i++) {
                   const url = contentRequestEntries[i].toURL();
                   results[url].thumbnail.url =

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/debug/alias.h"
+#include "base/trace_event/trace_event.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/windows_version.h"
 #include "content/child/dwrite_font_proxy/dwrite_font_proxy_win.h"
@@ -48,6 +49,7 @@ void CreateDirectWriteFactory(IDWriteFactory** factory) {
 }  // namespace
 
 void InitializeDWriteFontProxy(service_manager::Connector* connector) {
+  TRACE_EVENT0("dwrite,fonts", "InitializeDWriteFontProxy");
   mswr::ComPtr<IDWriteFactory> factory;
 
   CreateDirectWriteFactory(&factory);

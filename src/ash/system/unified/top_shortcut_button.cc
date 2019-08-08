@@ -32,8 +32,6 @@ TopShortcutButton::TopShortcutButton(views::ButtonListener* listener,
 TopShortcutButton::TopShortcutButton(views::ButtonListener* listener,
                                      int accessible_name_id)
     : views::ImageButton(listener) {
-  const gfx::Size size(kTrayItemSize, kTrayItemSize);
-  SetPreferredSize(size);
   SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
   SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
 
@@ -41,11 +39,15 @@ TopShortcutButton::TopShortcutButton(views::ButtonListener* listener,
   set_ink_drop_base_color(kUnifiedMenuIconColor);
 
   auto path = std::make_unique<SkPath>();
-  path->addOval(gfx::RectToSkRect(gfx::Rect(size)));
+  path->addOval(gfx::RectToSkRect(gfx::Rect(CalculatePreferredSize())));
   SetProperty(views::kHighlightPathKey, path.release());
 }
 
 TopShortcutButton::~TopShortcutButton() = default;
+
+gfx::Size TopShortcutButton::CalculatePreferredSize() const {
+  return gfx::Size(kTrayItemSize, kTrayItemSize);
+}
 
 void TopShortcutButton::PaintButtonContents(gfx::Canvas* canvas) {
   cc::PaintFlags flags;

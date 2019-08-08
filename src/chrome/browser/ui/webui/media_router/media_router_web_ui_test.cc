@@ -62,6 +62,6 @@ TestingProfile::TestingFactories MediaRouterWebUITest::GetTestingFactories() {
   return factories;
 }
 
-BrowserWindow* MediaRouterWebUITest::CreateBrowserWindow() {
-  return new DialogTestBrowserWindow;
+std::unique_ptr<BrowserWindow> MediaRouterWebUITest::CreateBrowserWindow() {
+  return std::make_unique<DialogTestBrowserWindow>();
 }

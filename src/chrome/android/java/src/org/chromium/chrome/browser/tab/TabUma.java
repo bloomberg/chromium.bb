@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.net.NetError;
@@ -242,7 +243,7 @@ public class TabUma extends EmptyTabObserver implements UserData {
 
     @Override
     public void onShown(Tab tab, @TabSelectionType int selectionType) {
-        int rank = computeMRURank(tab, tab.getTabModelSelector().getModel(tab.isIncognito()));
+        int rank = computeMRURank(tab, TabModelSelector.from(tab).getModel(tab.isIncognito()));
         long previousTimestampMillis = tab.getTimestampMillis();
         long now = SystemClock.elapsedRealtime();
 
@@ -323,7 +324,7 @@ public class TabUma extends EmptyTabObserver implements UserData {
                     }
                 }
             };
-            tab.getTabModelSelector().addObserver(mNewTabObserver);
+            TabModelSelector.from(tab).addObserver(mNewTabObserver);
         }
 
         // Record "tab age upon first display" metrics. previousTimestampMillis is persisted through
@@ -371,7 +372,7 @@ public class TabUma extends EmptyTabObserver implements UserData {
     }
 
     private void removeObservers(Tab tab) {
-        if (mNewTabObserver != null) tab.getTabModelSelector().removeObserver(mNewTabObserver);
+        if (mNewTabObserver != null) TabModelSelector.from(tab).removeObserver(mNewTabObserver);
         tab.removeObserver(this);
     }
 

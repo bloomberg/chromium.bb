@@ -98,7 +98,7 @@ class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
 
   // The task to delay configuring outputs.  We delay updating the
   // display so we can coalesce events.
-  base::CancelableCallback<void()> delayed_configuration_task_;
+  base::CancelableOnceCallback<void()> delayed_configuration_task_;
 
   display::DisplayChangeNotifier change_notifier_;
 

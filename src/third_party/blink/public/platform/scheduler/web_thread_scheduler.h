@@ -84,6 +84,12 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   // Returns the cleanup task runner, which is for cleaning up.
   virtual scoped_refptr<base::SingleThreadTaskRunner> CleanupTaskRunner();
 
+  // Returns a default task runner. This is basically same as the default task
+  // runner, but is explicitly allowed to run JavaScript. For the detail, see
+  // the comment at blink::ThreadScheduler::DeprecatedDefaultTaskRunner.
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+  DeprecatedDefaultTaskRunner();
+
   // Creates a WebThread implementation for the renderer main thread.
   virtual std::unique_ptr<Thread> CreateMainThread();
 
@@ -211,13 +217,6 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   // attributed in this renderer. |blame_context| must outlive this scheduler.
   virtual void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context);
-
-  // The renderer scheduler maintains an estimated RAIL mode[1]. This observer
-  // can be used to get notified when the mode changes. The observer will be
-  // called on the main thread and must outlive this class.
-  // [1]
-  // https://developers.google.com/web/tools/chrome-devtools/profile/evaluate-performance/rail
-  virtual void AddRAILModeObserver(WebRAILModeObserver* observer);
 
   // Sets the kind of renderer process. Should be called on the main thread
   // once.

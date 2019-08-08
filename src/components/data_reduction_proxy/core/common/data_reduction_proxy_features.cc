@@ -27,19 +27,15 @@ const base::Feature kDataReductionProxyLowMemoryDevicePromo{
     "DataReductionProxyLowMemoryDevicePromo",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables experiment that makes connection to the data saver proxy more robust.
-const base::Feature kDataReductionProxyRobustConnection{
-    "DataReductionProxyRobustConnection", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enabled for Chrome dogfooders.
 const base::Feature kDogfood{"DataReductionProxyDogfood",
                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables recording of the site-breakdown metrics using the page load metrics
-// harness, and disables the observer for data use ascriber.
-const base::Feature kDataSaverSiteBreakdownUsingPageLoadMetrics{
-    "DataSaverSiteBreakdownUsingPageLoadMetrics",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+// If enabled, the usage of data reduction proxy is disabled for HTTP URLs.
+// Does not affect the state of save-data header or other
+// features that may depend on data saver being enabled.
+const base::Feature kDataReductionProxyHoldback{
+    "DataReductionProxyHoldback", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables data reduction proxy when network service is enabled.
 const base::Feature kDataReductionProxyEnabledWithNetworkService{
@@ -57,6 +53,18 @@ const base::Feature kDataReductionProxyBlockOnBadGatewayResponse{
 // pingbacks.
 const base::Feature kDataReductionProxyPopulatePreviewsPageIDToPingback{
     "DataReductionProxyPopulatePreviewsPageIDToPingback",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables not allowing proxies that fail warmup url fetch, to custom proxy
+// config updates when network service is enabled.
+const base::Feature kDataReductionProxyDisableProxyFailedWarmup{
+    "DataReductionProxyDisableProxyFailedWarmup",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables fetching the client config aggressively by tuning the backoff params
+// and by not deferring fetches while Chrome is in background.
+const base::Feature kDataReductionProxyAggressiveConfigFetch{
+    "DataReductionProxyAggressiveConfigFetch",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features

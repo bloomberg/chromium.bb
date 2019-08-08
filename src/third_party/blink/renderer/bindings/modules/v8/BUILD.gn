@@ -50,9 +50,8 @@ idl_compiler("generate_bindings_modules_v8_partial_interfaces_for_testing") {
 }
 
 generate_origin_trial_features("bindings_modules_origin_trial_features") {
-  sources =
-      modules_idl_files + modules_global_constructors_generated_idl_files +
-      modules_dependency_idl_files
+  sources = modules_idl_files + modules_generated_dependency_idl_files +
+            modules_dependency_idl_files
   component = "modules"
   output_dir = bindings_modules_output_dir + "/v8"
   deps = [
@@ -124,6 +123,7 @@ blink_modules_sources("bindings_modules_impl") {
     ":bindings_modules_origin_trial_features",
     ":bindings_modules_v8_generated",
     ":generate_mojo_bindings",
+    "//third_party/dawn/src/dawn:dawn_headers",
   ]
 
   if (!is_component_build && is_win) {

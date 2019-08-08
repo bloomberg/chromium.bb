@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/previews/previews_infobar_delegate.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
@@ -85,20 +86,22 @@ void OnLoFiResponseReceivedOnUI(content::WebContents* web_contents) {
 
 std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
 CreateDataReductionProxyChromeIOData(
-    PrefService* prefs,
+    Profile* profile,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner) {
-  DCHECK(prefs);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(profile);
+  DCHECK(profile->GetPrefs());
 
-  bool enabled =
-      prefs->GetBoolean(prefs::kDataSaverEnabled) ||
-      data_reduction_proxy::params::ShouldForceEnableDataReductionProxy();
+  bool enabled = data_reduction_proxy::DataReductionProxySettings::
+      IsDataSaverEnabledByUser(profile->GetPrefs());
+
   std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
       data_reduction_proxy_io_data(
           new data_reduction_proxy::DataReductionProxyIOData(
-              DataReductionProxyChromeSettings::GetClient(), prefs,
-              content::GetNetworkConnectionTracker(), io_task_runner,
-              ui_task_runner, enabled, GetUserAgent(),
+              DataReductionProxyChromeSettings::GetClient(),
+              profile->GetPrefs(), content::GetNetworkConnectionTracker(),
+              io_task_runner, ui_task_runner, enabled, GetUserAgent(),
               version_info::GetChannelString(chrome::GetChannel())));
 
   data_reduction_proxy_io_data->set_lofi_decider(

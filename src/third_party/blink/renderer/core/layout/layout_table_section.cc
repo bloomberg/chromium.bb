@@ -905,7 +905,7 @@ int LayoutTableSection::CalcRowLogicalHeight() {
         if (cell->HasOverrideLogicalHeight()) {
           cell->ClearIntrinsicPadding();
           cell->ClearOverrideSize();
-          cell->ForceChildLayout();
+          cell->ForceLayout();
         }
 
         if (cell->ResolvedRowSpan() == 1)
@@ -1394,19 +1394,6 @@ void LayoutTableSection::ComputeVisualOverflowFromDescendants() {
     for (auto* cell = row->FirstCell(); cell; cell = cell->NextCell()) {
       if (cell->HasSelfPaintingLayer())
         continue;
-      // Let the section's self visual overflow cover the cell's whole collapsed
-      // borders. This ensures correct raster invalidation on section border
-      // style change.
-      // TODO(wangxianzhu): When implementing row as DisplayItemClient of
-      // collapsed borders, the following logic should be replaced by
-      // invalidation of rows on section border style change. crbug.com/663208.
-      if (const auto* collapsed_borders = cell->GetCollapsedBorderValues()) {
-        LayoutRect rect = cell->RectForOverflowPropagation(
-            collapsed_borders->LocalVisualRect());
-        rect.MoveBy(cell->Location());
-        AddSelfVisualOverflow(rect);
-      }
-
       if (force_full_paint_ || !cell->HasVisualOverflow())
         continue;
 
@@ -1755,6 +1742,7 @@ unsigned LayoutTableSection::NumEffectiveColumns() const {
 LayoutTableCell* LayoutTableSection::OriginatingCellAt(
     unsigned row,
     unsigned effective_column) {
+  SECURITY_CHECK(!needs_cell_recalc_);
   if (effective_column >= NumCols(row))
     return nullptr;
   auto& grid_cell = GridCellAt(row, effective_column);
@@ -1965,7 +1953,7 @@ void LayoutTableSection::RelayoutCellIfFlexed(LayoutTableCell& cell,
   // Alignment within a cell is based off the calculated height, which becomes
   // irrelevant once the cell has been resized based off its percentage.
   cell.SetOverrideLogicalHeightFromRowHeight(LayoutUnit(row_height));
-  cell.ForceChildLayout();
+  cell.ForceLayout();
 
   // If the baseline moved, we may have to update the data for our row. Find
   // out the new baseline.

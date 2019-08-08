@@ -164,6 +164,7 @@ source_set("tests") {
     sources += [ "fingerprint/fingerprint_chromeos_unittest.cc" ]
     deps += [
       "//chromeos/dbus:test_support",
+      "//chromeos/dbus/biod:test_support",
       "//chromeos/network:test_support",
       "//services/device/bluetooth:bluetooth_system_tests",
       "//services/device/fingerprint",
@@ -196,6 +197,7 @@ source_set("tests") {
 
     if (!is_linux_without_udev && !is_android) {
       sources += [
+        "hid/hid_connection_impl_unittest.cc",
         "hid/hid_service_unittest.cc",
         "hid/input_service_linux_unittest.cc",
         "hid/test_report_descriptors.cc",

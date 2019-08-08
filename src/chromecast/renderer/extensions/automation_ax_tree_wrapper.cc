@@ -44,6 +44,8 @@ api::automation::EventType ToAutomationEvent(ax::mojom::Event event_type) {
       return api::automation::EVENT_TYPE_DOCUMENTSELECTIONCHANGED;
     case ax::mojom::Event::kDocumentTitleChanged:
       return api::automation::EVENT_TYPE_DOCUMENTTITLECHANGED;
+    case ax::mojom::Event::kEndOfTest:
+      return api::automation::EVENT_TYPE_ENDOFTEST;
     case ax::mojom::Event::kExpandedChanged:
       return api::automation::EVENT_TYPE_EXPANDEDCHANGED;
     case ax::mojom::Event::kFocus:
@@ -171,7 +173,8 @@ api::automation::EventType ToAutomationEvent(
       return api::automation::EVENT_TYPE_ARIAATTRIBUTECHANGED;
     case ui::AXEventGenerator::Event::ROW_COUNT_CHANGED:
       return api::automation::EVENT_TYPE_ROWCOUNTCHANGED;
-    case ui::AXEventGenerator::Event::SCROLL_POSITION_CHANGED:
+    case ui::AXEventGenerator::Event::SCROLL_HORIZONTAL_POSITION_CHANGED:
+    case ui::AXEventGenerator::Event::SCROLL_VERTICAL_POSITION_CHANGED:
       return api::automation::EVENT_TYPE_SCROLLPOSITIONCHANGED;
     case ui::AXEventGenerator::Event::SELECTED_CHILDREN_CHANGED:
       return api::automation::EVENT_TYPE_SELECTEDCHILDRENCHANGED;
@@ -191,8 +194,30 @@ api::automation::EventType ToAutomationEvent(
     case ui::AXEventGenerator::Event::STATE_CHANGED:
       return api::automation::EVENT_TYPE_ARIAATTRIBUTECHANGED;
 
+    case ui::AXEventGenerator::Event::ACCESS_KEY_CHANGED:
+    case ui::AXEventGenerator::Event::CLASS_NAME_CHANGED:
+    case ui::AXEventGenerator::Event::CONTROLS_CHANGED:
+    case ui::AXEventGenerator::Event::DESCRIBED_BY_CHANGED:
     case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:
+    case ui::AXEventGenerator::Event::ENABLED_CHANGED:
+    case ui::AXEventGenerator::Event::FLOW_FROM_CHANGED:
+    case ui::AXEventGenerator::Event::FLOW_TO_CHANGED:
+    case ui::AXEventGenerator::Event::HIERARCHICAL_LEVEL_CHANGED:
+    case ui::AXEventGenerator::Event::KEY_SHORTCUTS_CHANGED:
+    case ui::AXEventGenerator::Event::LABELED_BY_CHANGED:
+    case ui::AXEventGenerator::Event::LANGUAGE_CHANGED:
+    case ui::AXEventGenerator::Event::LAYOUT_INVALIDATED:
+    case ui::AXEventGenerator::Event::MULTISELECTABLE_STATE_CHANGED:
     case ui::AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
+    case ui::AXEventGenerator::Event::PLACEHOLDER_CHANGED:
+    case ui::AXEventGenerator::Event::POSITION_IN_SET_CHANGED:
+    case ui::AXEventGenerator::Event::READONLY_CHANGED:
+    case ui::AXEventGenerator::Event::REQUIRED_STATE_CHANGED:
+    case ui::AXEventGenerator::Event::SET_SIZE_CHANGED:
+    case ui::AXEventGenerator::Event::SUBTREE_CREATED:
+    case ui::AXEventGenerator::Event::VALUE_MAX_CHANGED:
+    case ui::AXEventGenerator::Event::VALUE_MIN_CHANGED:
+    case ui::AXEventGenerator::Event::VALUE_STEP_CHANGED:
       return api::automation::EVENT_TYPE_NONE;
   }
 
@@ -419,6 +444,7 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     case api::automation::EVENT_TYPE_NONE:
     case api::automation::EVENT_TYPE_AUTOCORRECTIONOCCURED:
     case api::automation::EVENT_TYPE_CLICKED:
+    case api::automation::EVENT_TYPE_ENDOFTEST:
     case api::automation::EVENT_TYPE_FOCUSCONTEXT:
     case api::automation::EVENT_TYPE_HITTESTRESULT:
     case api::automation::EVENT_TYPE_HOVER:

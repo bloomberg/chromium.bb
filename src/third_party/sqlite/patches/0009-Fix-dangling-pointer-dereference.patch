@@ -1,0 +1,66 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Darwin Huang <huangdarwin@chromium.org>
+Date: Thu, 21 Mar 2019 13:19:11 -0700
+Subject: [PATCH 09/15] Fix dangling pointer dereference
+
+This backports https://www.sqlite.org/src/info/b9e2393cf201e3fc
+
+Bug: 940205
+---
+ third_party/sqlite/patched/src/build.c        |  3 ++-
+ .../sqlite/patched/test/altertab3.test        | 24 +++++++++++++++++++
+ 2 files changed, 26 insertions(+), 1 deletion(-)
+
+diff --git a/third_party/sqlite/patched/src/build.c b/third_party/sqlite/patched/src/build.c
+index e9371afd2b7d..3bf037258ce9 100644
+--- a/third_party/sqlite/patched/src/build.c
++++ b/third_party/sqlite/patched/src/build.c
+@@ -1400,7 +1400,8 @@ void sqlite3AddPrimaryKey(
+    && sortOrder!=SQLITE_SO_DESC
+   ){
+     if( IN_RENAME_OBJECT && pList ){
+-      sqlite3RenameTokenRemap(pParse, &pTab->iPKey, pList->a[0].pExpr);
++      Expr *pCExpr = sqlite3ExprSkipCollate(pList->a[0].pExpr);
++      sqlite3RenameTokenRemap(pParse, &pTab->iPKey, pCExpr);
+     }
+     pTab->iPKey = iCol;
+     pTab->keyConf = (u8)onError;
+diff --git a/third_party/sqlite/patched/test/altertab3.test b/third_party/sqlite/patched/test/altertab3.test
+index de41637a9ec7..5db7bf843382 100644
+--- a/third_party/sqlite/patched/test/altertab3.test
++++ b/third_party/sqlite/patched/test/altertab3.test
+@@ -79,7 +79,31 @@ do_execsql_test 3.2 {
+   SELECT sql FROM sqlite_master WHERE name = 'v1'
+ } {{CREATE VIEW v1 AS SELECT * FROM t1 WHERE a=1 OR (bbb IN ())}}
+ 
++#-------------------------------------------------------------------------
++reset_db
++do_execsql_test 5.0 {
++  CREATE TABLE t1 (
++      c1 integer, c2, PRIMARY KEY(c1 collate rtrim),
++      UNIQUE(c2)
++  )
++}
++do_execsql_test 5.1 {
++  ALTER TABLE t1 RENAME c1 TO c3;
++}
+ 
++#-------------------------------------------------------------------------
++reset_db
++do_execsql_test 6.0 {
++  CREATE TEMPORARY TABLE Table0 (
++    Col0 INTEGER,
++    PRIMARY KEY(Col0 COLLATE RTRIM),
++    FOREIGN KEY (Col0) REFERENCES Table0
++  );
++}
++
++do_execsql_test 6.1 {
++  ALTER TABLE Table0 RENAME Col0 TO Col0;
++}
+ 
+ finish_test
+ 
+-- 
+2.21.0.392.gf8f6787159e-goog
+

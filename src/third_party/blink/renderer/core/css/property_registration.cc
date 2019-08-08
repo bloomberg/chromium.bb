@@ -55,27 +55,27 @@ PropertyRegistration::PropertyRegistration(
 static bool ComputationallyIndependent(const CSSValue& value) {
   DCHECK(!value.IsCSSWideKeyword());
 
-  if (value.IsVariableReferenceValue())
-    return !ToCSSVariableReferenceValue(value)
-                .VariableDataValue()
+  if (auto* variable_reference_value =
+          DynamicTo<CSSVariableReferenceValue>(value)) {
+    return !variable_reference_value->VariableDataValue()
                 ->NeedsVariableResolution();
+  }
 
-  if (value.IsValueList()) {
-    for (const CSSValue* inner_value : ToCSSValueList(value)) {
+  if (auto* value_list = DynamicTo<CSSValueList>(value)) {
+    for (const CSSValue* inner_value : *value_list) {
       if (!ComputationallyIndependent(*inner_value))
         return false;
     }
     return true;
   }
 
-  if (value.IsPrimitiveValue()) {
-    const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(value);
-    if (!primitive_value.IsLength() &&
-        !primitive_value.IsCalculatedPercentageWithLength())
+  if (const auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value)) {
+    if (!primitive_value->IsLength() &&
+        !primitive_value->IsCalculatedPercentageWithLength())
       return true;
 
     CSSPrimitiveValue::CSSLengthArray length_array;
-    primitive_value.AccumulateLengthArray(length_array);
+    primitive_value->AccumulateLengthArray(length_array);
     for (size_t i = 0; i < length_array.values.size(); i++) {
       if (length_array.type_flags.Get(i) &&
           i != CSSPrimitiveValue::kUnitTypePixels &&
@@ -150,9 +150,9 @@ void PropertyRegistration::registerProperty(
     }
     initial = &StyleBuilderConverter::ConvertRegisteredPropertyInitialValue(
         *document, *initial);
-    initial_variable_data = CSSVariableData::Create(
-        CSSParserTokenRange(tokens), is_animation_tainted, false,
-        parser_context->BaseURL(), parser_context->Charset());
+    initial_variable_data =
+        StyleBuilderConverter::ConvertRegisteredPropertyVariableData(
+            *initial, is_animation_tainted);
   } else {
     if (!syntax_descriptor->IsTokenStream()) {
       exception_state.ThrowDOMException(

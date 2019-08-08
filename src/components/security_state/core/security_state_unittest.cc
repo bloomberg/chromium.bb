@@ -120,10 +120,10 @@ class TestSecurityStateHelper {
     return state;
   }
 
-  void GetSecurityInfo(SecurityInfo* security_info) const {
-    security_state::GetSecurityInfo(GetVisibleSecurityState(),
-                                    has_policy_certificate_,
-                                    base::Bind(&IsOriginSecure), security_info);
+  security_state::SecurityLevel GetSecurityLevel() const {
+    return security_state::GetSecurityLevel(
+        *GetVisibleSecurityState(), has_policy_certificate_,
+        base::BindRepeating(&IsOriginSecure));
   }
 
  private:
@@ -149,34 +149,26 @@ TEST(SecurityStateTest, SHA1Blocked) {
   TestSecurityStateHelper helper;
   helper.AddCertStatus(net::CERT_STATUS_WEAK_SIGNATURE_ALGORITHM);
   helper.AddCertStatus(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT);
-  SecurityInfo security_info;
-  helper.GetSecurityInfo(&security_info);
-  EXPECT_TRUE(security_info.sha1_in_chain);
-  EXPECT_EQ(DANGEROUS, security_info.security_level);
+  EXPECT_TRUE(security_state::IsSHA1InChain(*helper.GetVisibleSecurityState()));
+  EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
 
   // Ensure that policy-installed certificates do not interfere.
   helper.set_has_policy_certificate(true);
-  SecurityInfo policy_cert_security_info;
-  helper.GetSecurityInfo(&policy_cert_security_info);
-  EXPECT_TRUE(policy_cert_security_info.sha1_in_chain);
-  EXPECT_EQ(DANGEROUS, policy_cert_security_info.security_level);
+  EXPECT_TRUE(security_state::IsSHA1InChain(*helper.GetVisibleSecurityState()));
+  EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
 }
 
 // Tests that SHA1-signed certificates, when allowed by policy, downgrade the
 // security state of the page to NONE.
 TEST(SecurityStateTest, SHA1Warning) {
   TestSecurityStateHelper helper;
-  SecurityInfo security_info;
-  helper.GetSecurityInfo(&security_info);
-  EXPECT_TRUE(security_info.sha1_in_chain);
-  EXPECT_EQ(NONE, security_info.security_level);
+  EXPECT_TRUE(security_state::IsSHA1InChain(*helper.GetVisibleSecurityState()));
+  EXPECT_EQ(NONE, helper.GetSecurityLevel());
 
   // Ensure that policy-installed certificates do not interfere.
   helper.set_has_policy_certificate(true);
-  SecurityInfo policy_cert_security_info;
-  helper.GetSecurityInfo(&policy_cert_security_info);
-  EXPECT_TRUE(policy_cert_security_info.sha1_in_chain);
-  EXPECT_EQ(NONE, policy_cert_security_info.security_level);
+  EXPECT_TRUE(security_state::IsSHA1InChain(*helper.GetVisibleSecurityState()));
+  EXPECT_EQ(NONE, helper.GetSecurityLevel());
 }
 
 // Tests that SHA1-signed certificates, when allowed by policy, don't interfere
@@ -184,19 +176,13 @@ TEST(SecurityStateTest, SHA1Warning) {
 TEST(SecurityStateTest, SHA1WarningMixedContent) {
   TestSecurityStateHelper helper;
   helper.set_displayed_mixed_content(true);
-  SecurityInfo security_info1;
-  helper.GetSecurityInfo(&security_info1);
-  EXPECT_TRUE(security_info1.sha1_in_chain);
-  EXPECT_EQ(CONTENT_STATUS_DISPLAYED, security_info1.mixed_content_status);
-  EXPECT_EQ(NONE, security_info1.security_level);
+  EXPECT_TRUE(security_state::IsSHA1InChain(*helper.GetVisibleSecurityState()));
+  EXPECT_EQ(NONE, helper.GetSecurityLevel());
 
   helper.set_displayed_mixed_content(false);
   helper.set_ran_mixed_content(true);
-  SecurityInfo security_info2;
-  helper.GetSecurityInfo(&security_info2);
-  EXPECT_TRUE(security_info2.sha1_in_chain);
-  EXPECT_EQ(CONTENT_STATUS_RAN, security_info2.mixed_content_status);
-  EXPECT_EQ(DANGEROUS, security_info2.security_level);
+  EXPECT_TRUE(security_state::IsSHA1InChain(*helper.GetVisibleSecurityState()));
+  EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
 }
 
 // Tests that SHA1-signed certificates, when allowed by policy,
@@ -204,55 +190,11 @@ TEST(SecurityStateTest, SHA1WarningMixedContent) {
 TEST(SecurityStateTest, SHA1WarningBrokenHTTPS) {
   TestSecurityStateHelper helper;
   helper.AddCertStatus(net::CERT_STATUS_DATE_INVALID);
-  SecurityInfo security_info;
-  helper.GetSecurityInfo(&security_info);
-  EXPECT_TRUE(security_info.sha1_in_chain);
-  EXPECT_EQ(DANGEROUS, security_info.security_level);
+  EXPECT_TRUE(security_state::IsSHA1InChain(*helper.GetVisibleSecurityState()));
+  EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
 }
 
-// Tests that |security_info.is_secure_protocol_and_ciphersuite| is
-// computed correctly.
-TEST(SecurityStateTest, SecureProtocolAndCiphersuite) {
-  TestSecurityStateHelper helper;
-  // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 from
-  // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-4
-  const uint16_t ciphersuite = 0xc02f;
-  helper.set_connection_status(net::SSL_CONNECTION_VERSION_TLS1_2
-                               << net::SSL_CONNECTION_VERSION_SHIFT);
-  helper.SetCipherSuite(ciphersuite);
-  SecurityInfo security_info;
-  helper.GetSecurityInfo(&security_info);
-  EXPECT_EQ(net::OBSOLETE_SSL_NONE, security_info.obsolete_ssl_status);
-}
-
-TEST(SecurityStateTest, NonsecureProtocol) {
-  TestSecurityStateHelper helper;
-  // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 from
-  // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-4
-  const uint16_t ciphersuite = 0xc02f;
-  helper.set_connection_status(net::SSL_CONNECTION_VERSION_TLS1_1
-                               << net::SSL_CONNECTION_VERSION_SHIFT);
-  helper.SetCipherSuite(ciphersuite);
-  SecurityInfo security_info;
-  helper.GetSecurityInfo(&security_info);
-  EXPECT_EQ(net::OBSOLETE_SSL_MASK_PROTOCOL, security_info.obsolete_ssl_status);
-}
-
-TEST(SecurityStateTest, NonsecureCiphersuite) {
-  TestSecurityStateHelper helper;
-  // TLS_RSA_WITH_AES_128_CCM_8 from
-  // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-4
-  const uint16_t ciphersuite = 0xc0a0;
-  helper.set_connection_status(net::SSL_CONNECTION_VERSION_TLS1_2
-                               << net::SSL_CONNECTION_VERSION_SHIFT);
-  helper.SetCipherSuite(ciphersuite);
-  SecurityInfo security_info;
-  helper.GetSecurityInfo(&security_info);
-  EXPECT_EQ(net::OBSOLETE_SSL_MASK_KEY_EXCHANGE | net::OBSOLETE_SSL_MASK_CIPHER,
-            security_info.obsolete_ssl_status);
-}
-
-// Tests that the malware/phishing status is set, and it overrides valid HTTPS.
+// Tests that the malware/phishing status overrides valid HTTPS.
 TEST(SecurityStateTest, MalwareOverride) {
   TestSecurityStateHelper helper;
   // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 from
@@ -262,17 +204,9 @@ TEST(SecurityStateTest, MalwareOverride) {
                                << net::SSL_CONNECTION_VERSION_SHIFT);
   helper.SetCipherSuite(ciphersuite);
 
-  SecurityInfo security_info;
-  helper.GetSecurityInfo(&security_info);
-  EXPECT_EQ(MALICIOUS_CONTENT_STATUS_NONE,
-            security_info.malicious_content_status);
-
   helper.set_malicious_content_status(MALICIOUS_CONTENT_STATUS_MALWARE);
-  helper.GetSecurityInfo(&security_info);
 
-  EXPECT_EQ(MALICIOUS_CONTENT_STATUS_MALWARE,
-            security_info.malicious_content_status);
-  EXPECT_EQ(DANGEROUS, security_info.security_level);
+  EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
 }
 
 // Tests that the malware/phishing status is set, even if other connection info
@@ -281,29 +215,21 @@ TEST(SecurityStateTest, MalwareWithoutConnectionState) {
   TestSecurityStateHelper helper;
   helper.set_malicious_content_status(
       MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING);
-  SecurityInfo security_info;
-  helper.GetSecurityInfo(&security_info);
-  EXPECT_EQ(MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING,
-            security_info.malicious_content_status);
-  EXPECT_EQ(DANGEROUS, security_info.security_level);
+  EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
 }
 
 // Tests that pseudo URLs always cause an HTTP_SHOW_WARNING to be shown.
 TEST(SecurityStateTest, AlwaysWarnOnDataUrls) {
   TestSecurityStateHelper helper;
   helper.SetUrl(GURL("data:text/html,<html>test</html>"));
-  SecurityInfo security_info;
-  helper.GetSecurityInfo(&security_info);
-  EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
+  EXPECT_EQ(HTTP_SHOW_WARNING, helper.GetSecurityLevel());
 }
 
 // Tests that FTP URLs always cause an HTTP_SHOW_WARNING to be shown.
 TEST(SecurityStateTest, AlwaysWarnOnFtpUrls) {
   TestSecurityStateHelper helper;
   helper.SetUrl(GURL("ftp://example.test/"));
-  SecurityInfo security_info;
-  helper.GetSecurityInfo(&security_info);
-  EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
+  EXPECT_EQ(HTTP_SHOW_WARNING, helper.GetSecurityLevel());
 }
 
 // Tests that the security level is downgraded to HTTP_SHOW_WARNING on pseudo
@@ -312,83 +238,40 @@ TEST(SecurityStateTest, WarningOnPseudoUrls) {
   for (const char* const url : kPseudoUrls) {
     TestSecurityStateHelper helper;
     helper.SetUrl(GURL(url));
-    SecurityInfo security_info;
-    helper.GetSecurityInfo(&security_info);
-    EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
+    EXPECT_EQ(HTTP_SHOW_WARNING, helper.GetSecurityLevel());
   }
 }
 
-// Tests that if |is_view_source| NONE is returned for a secure site.
+// Tests that if |is_view_source| is set, NONE is returned for a secure site.
 TEST(SecurityStateTest, ViewSourceRemovesSecure) {
   TestSecurityStateHelper helper;
-  SecurityInfo security_info;
   helper.set_cert_status(0);
-  helper.GetSecurityInfo(&security_info);
-  EXPECT_EQ(SECURE, security_info.security_level);
+  EXPECT_EQ(SECURE, helper.GetSecurityLevel());
   helper.set_is_view_source(true);
-  helper.GetSecurityInfo(&security_info);
-  EXPECT_EQ(NONE, security_info.security_level);
+  EXPECT_EQ(NONE, helper.GetSecurityLevel());
 }
 
-// Tests that if |is_view_source|, DANGEROUS is still returned for a site
+// Tests that if |is_view_source| is set, DANGEROUS is still returned for a site
 // flagged by SafeBrowsing.
 TEST(SecurityStateTest, ViewSourceKeepsWarning) {
   TestSecurityStateHelper helper;
   helper.set_malicious_content_status(
       MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING);
   helper.set_is_view_source(true);
-  SecurityInfo security_info;
-  helper.GetSecurityInfo(&security_info);
-  EXPECT_EQ(MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING,
-            security_info.malicious_content_status);
-  EXPECT_EQ(DANGEROUS, security_info.security_level);
+  EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
 }
 
-TEST(SecurityStateTest, DetectSubjectAltName) {
-  TestSecurityStateHelper helper;
-
-  // Ensure subjectAltName is detected as present when the cert includes it.
-  SecurityInfo san_security_info;
-  helper.GetSecurityInfo(&san_security_info);
-  EXPECT_FALSE(san_security_info.cert_missing_subject_alt_name);
-
-  // Ensure subjectAltName is detected as missing when the cert doesn't
-  // include it.
-  scoped_refptr<net::X509Certificate> cert = net::ImportCertFromFile(
-      net::GetTestCertsDirectory(), "salesforce_com_test.pem");
-  ASSERT_TRUE(cert);
-  helper.SetCertificate(std::move(cert));
-
-  SecurityInfo no_san_security_info;
-  helper.GetSecurityInfo(&no_san_security_info);
-  EXPECT_TRUE(no_san_security_info.cert_missing_subject_alt_name);
-}
-
-// Tests that a mixed form is reflected in the SecurityInfo.
+// Tests that a mixed form is reflected in the security level.
 TEST(SecurityStateTest, MixedForm) {
   TestSecurityStateHelper helper;
-
-  SecurityInfo no_mixed_form_security_info;
-  helper.GetSecurityInfo(&no_mixed_form_security_info);
-  EXPECT_FALSE(no_mixed_form_security_info.contained_mixed_form);
-
   helper.set_contained_mixed_form(true);
 
   // Verify that a mixed form downgrades the security level.
-  SecurityInfo mixed_form_security_info;
-  helper.GetSecurityInfo(&mixed_form_security_info);
-  EXPECT_TRUE(mixed_form_security_info.contained_mixed_form);
-  EXPECT_EQ(CONTENT_STATUS_NONE, mixed_form_security_info.mixed_content_status);
-  EXPECT_EQ(NONE, mixed_form_security_info.security_level);
+  EXPECT_EQ(NONE, helper.GetSecurityLevel());
 
   // Ensure that active mixed content trumps the mixed form warning.
   helper.set_ran_mixed_content(true);
-  SecurityInfo mixed_form_and_active_security_info;
-  helper.GetSecurityInfo(&mixed_form_and_active_security_info);
-  EXPECT_TRUE(mixed_form_and_active_security_info.contained_mixed_form);
-  EXPECT_EQ(CONTENT_STATUS_RAN,
-            mixed_form_and_active_security_info.mixed_content_status);
-  EXPECT_EQ(DANGEROUS, mixed_form_and_active_security_info.security_level);
+  EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
 }
 
 // Tests that policy-installed-certificates do not interfere with mixed content
@@ -399,51 +282,24 @@ TEST(SecurityStateTest, MixedContentWithPolicyCertificate) {
   helper.set_has_policy_certificate(true);
   helper.set_cert_status(0);
 
-  {
-    // Verify that if no mixed content is present, the policy-installed
-    // certificate is recorded.
-    SecurityInfo no_mixed_content_security_info;
-    helper.GetSecurityInfo(&no_mixed_content_security_info);
-    EXPECT_FALSE(no_mixed_content_security_info.contained_mixed_form);
-    EXPECT_EQ(CONTENT_STATUS_NONE,
-              no_mixed_content_security_info.mixed_content_status);
-    EXPECT_EQ(SECURE_WITH_POLICY_INSTALLED_CERT,
-              no_mixed_content_security_info.security_level);
-  }
+  // Verify that if no mixed content is present, the policy-installed
+  // certificate is recorded.
+  EXPECT_EQ(SECURE_WITH_POLICY_INSTALLED_CERT, helper.GetSecurityLevel());
 
-  {
-    // Verify that a mixed form downgrades the security level.
-    SecurityInfo mixed_form_security_info;
-    helper.set_contained_mixed_form(true);
-    helper.GetSecurityInfo(&mixed_form_security_info);
-    EXPECT_TRUE(mixed_form_security_info.contained_mixed_form);
-    EXPECT_EQ(CONTENT_STATUS_NONE,
-              mixed_form_security_info.mixed_content_status);
-    EXPECT_EQ(NONE, mixed_form_security_info.security_level);
-  }
+  // Verify that a mixed form downgrades the security level.
+  helper.set_contained_mixed_form(true);
+  EXPECT_EQ(NONE, helper.GetSecurityLevel());
 
-  {
-    // Verify that passive mixed content downgrades the security level.
-    helper.set_contained_mixed_form(false);
-    helper.set_displayed_mixed_content(true);
-    SecurityInfo passive_mixed_security_info;
-    helper.GetSecurityInfo(&passive_mixed_security_info);
-    EXPECT_EQ(CONTENT_STATUS_DISPLAYED,
-              passive_mixed_security_info.mixed_content_status);
-    EXPECT_EQ(NONE, passive_mixed_security_info.security_level);
-  }
+  // Verify that passive mixed content downgrades the security level.
+  helper.set_contained_mixed_form(false);
+  helper.set_displayed_mixed_content(true);
+  EXPECT_EQ(NONE, helper.GetSecurityLevel());
 
-  {
-    // Ensure that active mixed content downgrades the security level.
-    helper.set_contained_mixed_form(false);
-    helper.set_displayed_mixed_content(false);
-    helper.set_ran_mixed_content(true);
-    SecurityInfo active_mixed_security_info;
-    helper.GetSecurityInfo(&active_mixed_security_info);
-    EXPECT_EQ(CONTENT_STATUS_RAN,
-              active_mixed_security_info.mixed_content_status);
-    EXPECT_EQ(DANGEROUS, active_mixed_security_info.security_level);
-  }
+  // Ensure that active mixed content downgrades the security level.
+  helper.set_contained_mixed_form(false);
+  helper.set_displayed_mixed_content(false);
+  helper.set_ran_mixed_content(true);
+  EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
 }
 
 // Tests that HTTP_SHOW_WARNING is set on normal http pages but DANGEROUS on
@@ -455,21 +311,10 @@ TEST(SecurityStateTest, WarningAndDangerousOnFormEditsWhenFeatureEnabled) {
   scoped_feature_list.InitAndEnableFeature(
       security_state::features::kMarkHttpAsFeature);
 
-  {
-    SecurityInfo security_info;
-    helper.GetSecurityInfo(&security_info);
-    EXPECT_FALSE(security_info.insecure_input_events.insecure_field_edited);
-    EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
-  }
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper.GetSecurityLevel());
 
   helper.set_insecure_field_edit(true);
-
-  {
-    SecurityInfo security_info;
-    helper.GetSecurityInfo(&security_info);
-    EXPECT_TRUE(security_info.insecure_input_events.insecure_field_edited);
-    EXPECT_EQ(DANGEROUS, security_info.security_level);
-  }
+  EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
 }
 
 // Tests that HTTP_SHOW_WARNING is set on normal http pages but DANGEROUS on
@@ -481,21 +326,10 @@ TEST(SecurityStateTest, WarningAndDangerousOnFormEditsWhenFeatureDisabled) {
   scoped_feature_list.InitAndDisableFeature(
       security_state::features::kMarkHttpAsFeature);
 
-  {
-    SecurityInfo security_info;
-    helper.GetSecurityInfo(&security_info);
-    EXPECT_FALSE(security_info.insecure_input_events.insecure_field_edited);
-    EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
-  }
+  EXPECT_EQ(HTTP_SHOW_WARNING, helper.GetSecurityLevel());
 
   helper.set_insecure_field_edit(true);
-
-  {
-    SecurityInfo security_info;
-    helper.GetSecurityInfo(&security_info);
-    EXPECT_TRUE(security_info.insecure_input_events.insecure_field_edited);
-    EXPECT_EQ(DANGEROUS, security_info.security_level);
-  }
+  EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
 }
 
 // Tests that DANGEROUS is set on normal http pages regardless of form edits
@@ -509,21 +343,10 @@ TEST(SecurityStateTest, AlwaysDangerousWhenFeatureMarksAllAsDangerous) {
       {{security_state::features::kMarkHttpAsFeatureParameterName,
         security_state::features::kMarkHttpAsParameterDangerous}});
 
-  {
-    SecurityInfo security_info;
-    helper.GetSecurityInfo(&security_info);
-    EXPECT_FALSE(security_info.insecure_input_events.insecure_field_edited);
-    EXPECT_EQ(DANGEROUS, security_info.security_level);
-  }
+  EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
 
   helper.set_insecure_field_edit(true);
-
-  {
-    SecurityInfo security_info;
-    helper.GetSecurityInfo(&security_info);
-    EXPECT_TRUE(security_info.insecure_input_events.insecure_field_edited);
-    EXPECT_EQ(DANGEROUS, security_info.security_level);
-  }
+  EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
 }
 
 // Tests IsSchemeCryptographic function.
@@ -560,17 +383,14 @@ TEST(SecurityStateTest, SslCertificateValid) {
 // Tests that HTTP_SHOW_WARNING is not set for error pages.
 TEST(SecurityStateTest, ErrorPage) {
   TestSecurityStateHelper helper;
-  SecurityInfo security_info;
   helper.SetUrl(GURL("http://nonexistent.test"));
   helper.set_is_error_page(true);
-  helper.GetSecurityInfo(&security_info);
-  EXPECT_EQ(SecurityLevel::NONE, security_info.security_level);
+  EXPECT_EQ(SecurityLevel::NONE, helper.GetSecurityLevel());
 
   // Sanity-check that if it's not an error page, the security level is
   // downgraded.
   helper.set_is_error_page(false);
-  helper.GetSecurityInfo(&security_info);
-  EXPECT_EQ(SecurityLevel::HTTP_SHOW_WARNING, security_info.security_level);
+  EXPECT_EQ(SecurityLevel::HTTP_SHOW_WARNING, helper.GetSecurityLevel());
 }
 
 // Tests that the billing status is set, and it overrides valid HTTPS.
@@ -583,36 +403,23 @@ TEST(SecurityStateTest, BillingOverridesValidHTTPS) {
                                << net::SSL_CONNECTION_VERSION_SHIFT);
   helper.SetCipherSuite(ciphersuite);
 
-  SecurityInfo security_info;
-  helper.GetSecurityInfo(&security_info);
-  EXPECT_EQ(MALICIOUS_CONTENT_STATUS_NONE,
-            security_info.malicious_content_status);
-
   helper.set_malicious_content_status(MALICIOUS_CONTENT_STATUS_BILLING);
-  helper.GetSecurityInfo(&security_info);
 
-  EXPECT_EQ(MALICIOUS_CONTENT_STATUS_BILLING,
-            security_info.malicious_content_status);
-  EXPECT_EQ(DANGEROUS, security_info.security_level);
+  EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
 }
 
-// Tests that the billing status is set, and it overrides invalid HTTPS.
+// Tests that the billing status overrides HTTP warnings.
 TEST(SecurityStateTest, BillingOverridesHTTPWarning) {
   TestSecurityStateHelper helper;
   helper.SetUrl(GURL(kHttpUrl));
 
-  SecurityInfo security_info;
-  helper.GetSecurityInfo(&security_info);
   // Expect to see a warning for HTTP first.
-  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper.GetSecurityLevel());
 
   // Now mark the URL as matching the billing list.
   helper.set_malicious_content_status(MALICIOUS_CONTENT_STATUS_BILLING);
-  helper.GetSecurityInfo(&security_info);
   // Expect to see a warning for billing now.
-  EXPECT_EQ(MALICIOUS_CONTENT_STATUS_BILLING,
-            security_info.malicious_content_status);
-  EXPECT_EQ(DANGEROUS, security_info.security_level);
+  EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
 }
 
 }  // namespace security_state

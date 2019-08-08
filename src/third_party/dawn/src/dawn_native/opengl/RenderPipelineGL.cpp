@@ -16,13 +16,13 @@
 
 #include "dawn_native/opengl/DeviceGL.h"
 #include "dawn_native/opengl/Forward.h"
-#include "dawn_native/opengl/InputStateGL.h"
 #include "dawn_native/opengl/PersistentPipelineStateGL.h"
 #include "dawn_native/opengl/UtilsGL.h"
 
 namespace dawn_native { namespace opengl {
 
     namespace {
+
         GLenum GLPrimitiveTopology(dawn::PrimitiveTopology primitiveTopology) {
             switch (primitiveTopology) {
                 case dawn::PrimitiveTopology::PointList:
@@ -103,10 +103,10 @@ namespace dawn_native { namespace opengl {
             } else {
                 glDisablei(GL_BLEND, attachment);
             }
-            glColorMaski(attachment, descriptor->colorWriteMask & dawn::ColorWriteMask::Red,
-                         descriptor->colorWriteMask & dawn::ColorWriteMask::Green,
-                         descriptor->colorWriteMask & dawn::ColorWriteMask::Blue,
-                         descriptor->colorWriteMask & dawn::ColorWriteMask::Alpha);
+            glColorMaski(attachment, descriptor->writeMask & dawn::ColorWriteMask::Red,
+                         descriptor->writeMask & dawn::ColorWriteMask::Green,
+                         descriptor->writeMask & dawn::ColorWriteMask::Blue,
+                         descriptor->writeMask & dawn::ColorWriteMask::Alpha);
         }
 
         GLuint OpenGLStencilOperation(dawn::StencilOperation stencilOperation) {
@@ -175,23 +175,58 @@ namespace dawn_native { namespace opengl {
 
     RenderPipeline::RenderPipeline(Device* device, const RenderPipelineDescriptor* descriptor)
         : RenderPipelineBase(device, descriptor),
+          mVertexArrayObject(0),
           mGlPrimitiveTopology(GLPrimitiveTopology(GetPrimitiveTopology())) {
         PerStage<const ShaderModule*> modules(nullptr);
         modules[dawn::ShaderStage::Vertex] = ToBackend(descriptor->vertexStage->module);
         modules[dawn::ShaderStage::Fragment] = ToBackend(descriptor->fragmentStage->module);
 
         PipelineGL::Initialize(ToBackend(GetLayout()), modules);
+        CreateVAOForInputState(descriptor->inputState);
+    }
+
+    RenderPipeline::~RenderPipeline() {
+        glDeleteVertexArrays(1, &mVertexArrayObject);
+        glBindVertexArray(0);
     }
 
     GLenum RenderPipeline::GetGLPrimitiveTopology() const {
         return mGlPrimitiveTopology;
     }
 
+    void RenderPipeline::CreateVAOForInputState(const InputStateDescriptor* inputState) {
+        glGenVertexArrays(1, &mVertexArrayObject);
+        glBindVertexArray(mVertexArrayObject);
+        for (uint32_t location : IterateBitSet(GetAttributesSetMask())) {
+            const auto& attribute = GetAttribute(location);
+            glEnableVertexAttribArray(location);
+
+            attributesUsingInput[attribute.inputSlot][location] = true;
+            auto input = GetInput(attribute.inputSlot);
+
+            if (input.stride == 0) {
+                // Emulate a stride of zero (constant vertex attribute) by
+                // setting the attribute instance divisor to a huge number.
+                glVertexAttribDivisor(location, 0xffffffff);
+            } else {
+                switch (input.stepMode) {
+                    case dawn::InputStepMode::Vertex:
+                        break;
+                    case dawn::InputStepMode::Instance:
+                        glVertexAttribDivisor(location, 1);
+                        break;
+                    default:
+                        UNREACHABLE();
+                }
+            }
+        }
+    }
+
     void RenderPipeline::ApplyNow(PersistentPipelineState& persistentPipelineState) {
         PipelineGL::ApplyNow();
 
-        auto inputState = ToBackend(GetInputState());
-        glBindVertexArray(inputState->GetVAO());
+        ASSERT(mVertexArrayObject);
+        glBindVertexArray(mVertexArrayObject);
 
         ApplyDepthStencilState(GetDepthStencilStateDescriptor(), &persistentPipelineState);
 

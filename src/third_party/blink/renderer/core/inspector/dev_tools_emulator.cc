@@ -109,10 +109,6 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* web_view)
 
 DevToolsEmulator::~DevToolsEmulator() = default;
 
-DevToolsEmulator* DevToolsEmulator::Create(WebViewImpl* web_view_base) {
-  return MakeGarbageCollected<DevToolsEmulator>(web_view_base);
-}
-
 void DevToolsEmulator::Trace(blink::Visitor* visitor) {}
 
 void DevToolsEmulator::SetTextAutosizingEnabled(bool enabled) {

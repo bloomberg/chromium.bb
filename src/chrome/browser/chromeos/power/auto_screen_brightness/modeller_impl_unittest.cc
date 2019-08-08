@@ -186,7 +186,7 @@ class ModellerImplTest : public testing::Test {
   }
 
   ~ModellerImplTest() override {
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
   }
 
   // Sets up |modeller_| with a FakeTrainer.
@@ -468,16 +468,19 @@ TEST_F(ModellerImplTest, PersonalCurveError) {
 // calculated from the recent samples only.
 TEST_F(ModellerImplTest, OnAmbientLightUpdated) {
   const ModelConfig model_config = GetTestModelConfig();
+  // Set a horizon different from model_config.
+  const int horizon_in_seconds = 4;
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
        model_config, true /* is_trainer_configured */,
-       true /* is_personal_curve_valid */);
+       true /* is_personal_curve_valid */,
+       {{"model_als_horizon_seconds",
+         base::NumberToString(horizon_in_seconds)}});
 
   test_observer_->CheckStatus(true /* is_model_initialized */,
                               modeller_->GetGlobalCurveForTesting(),
                               base::nullopt /* personal_curve */);
 
   EXPECT_EQ(modeller_->GetModelConfigForTesting(), model_config);
-  const int horizon_in_seconds = model_config.model_als_horizon_seconds;
 
   const int first_lux = 1000;
   double running_sum = 0.0;
@@ -485,17 +488,19 @@ TEST_F(ModellerImplTest, OnAmbientLightUpdated) {
     thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
     const int lux = i == 0 ? first_lux : i;
     fake_als_reader_.ReportAmbientLightUpdate(lux);
-    running_sum += lux;
-    EXPECT_EQ(modeller_->AverageAmbientForTesting(thread_bundle_.NowTicks()),
-              running_sum / (i + 1));
+    running_sum += ConvertToLog(lux);
+    EXPECT_DOUBLE_EQ(
+        modeller_->AverageAmbientForTesting(thread_bundle_.NowTicks()).value(),
+        running_sum / (i + 1));
   }
 
   // Add another one should push the oldest |first_lux| out of the horizon.
   thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   fake_als_reader_.ReportAmbientLightUpdate(100);
-  running_sum = running_sum + 100 - first_lux;
-  EXPECT_EQ(modeller_->AverageAmbientForTesting(thread_bundle_.NowTicks()),
-            running_sum / horizon_in_seconds);
+  running_sum = running_sum + ConvertToLog(100) - ConvertToLog(first_lux);
+  EXPECT_DOUBLE_EQ(
+      modeller_->AverageAmbientForTesting(thread_bundle_.NowTicks()).value(),
+      running_sum / horizon_in_seconds);
 }
 
 // User brightness changes are received, training example cache reaches
@@ -503,7 +508,9 @@ TEST_F(ModellerImplTest, OnAmbientLightUpdated) {
 // within a small window shorter than |training_delay_|.
 TEST_F(ModellerImplTest, OnUserBrightnessChanged) {
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
-       GetTestModelConfig());
+       GetTestModelConfig(), true /* is_trainer_configured */,
+       true /* is_personal_curve_valid */,
+       {{"training_delay_in_seconds", base::NumberToString(60)}});
 
   test_observer_->CheckStatus(true /* is_model_initialized */,
                               modeller_->GetGlobalCurveForTesting(),
@@ -521,9 +528,9 @@ TEST_F(ModellerImplTest, OnUserBrightnessChanged) {
     const double brightness_old = 10.0 + i;
     const double brightness_new = 20.0 + i;
     modeller_->OnUserBrightnessChanged(brightness_old, brightness_new);
-    expected_data.push_back(
-        {brightness_old, brightness_new,
-         ConvertToLog(modeller_->AverageAmbientForTesting(now).value()), now});
+    expected_data.push_back({brightness_old, brightness_new,
+                             modeller_->AverageAmbientForTesting(now).value(),
+                             now});
   }
 
   // Training should not have started.
@@ -536,9 +543,9 @@ TEST_F(ModellerImplTest, OnUserBrightnessChanged) {
   const double brightness_old = 85;
   const double brightness_new = 95;
   modeller_->OnUserBrightnessChanged(brightness_old, brightness_new);
-  expected_data.push_back(
-      {brightness_old, brightness_new,
-       ConvertToLog(modeller_->AverageAmbientForTesting(now).value()), now});
+  expected_data.push_back({brightness_old, brightness_new,
+                           modeller_->AverageAmbientForTesting(now).value(),
+                           now});
   thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(0u, modeller_->NumberTrainingDataPointsForTesting());
@@ -555,7 +562,9 @@ TEST_F(ModellerImplTest, OnUserBrightnessChanged) {
 // User activities resets timer used to start training.
 TEST_F(ModellerImplTest, MultipleUserActivities) {
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
-       GetTestModelConfig());
+       GetTestModelConfig(), true /* is_trainer_configured */,
+       true /* is_personal_curve_valid */,
+       {{"training_delay_in_seconds", base::NumberToString(60)}});
 
   test_observer_->CheckStatus(true /* is_model_initialized */,
                               modeller_->GetGlobalCurveForTesting(),
@@ -573,9 +582,9 @@ TEST_F(ModellerImplTest, MultipleUserActivities) {
     const double brightness_old = 10.0 + i;
     const double brightness_new = 20.0 + i;
     modeller_->OnUserBrightnessChanged(brightness_old, brightness_new);
-    expected_data.push_back(
-        {brightness_old, brightness_new,
-         ConvertToLog(modeller_->AverageAmbientForTesting(now).value()), now});
+    expected_data.push_back({brightness_old, brightness_new,
+                             modeller_->AverageAmbientForTesting(now).value(),
+                             now});
   }
 
   EXPECT_EQ(modeller_->NumberTrainingDataPointsForTesting(), 10u);

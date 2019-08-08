@@ -12,7 +12,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/autofill/core/browser/autofill_manager.h"
@@ -279,7 +279,7 @@ void AutofillControllerTest::SetUp() {
                                              passwordStore:NULL];
 
   [accessory_mediator_ injectWebState:web_state()];
-  [accessory_mediator_ injectProviders:@[ suggestion_controller_ ]];
+  [accessory_mediator_ injectProvider:suggestion_controller_];
   auto suggestionManager = base::mac::ObjCCastStrict<JsSuggestionManager>(
       [web_state()->GetJSInjectionReceiver()
           instanceOfClass:[JsSuggestionManager class]]);
@@ -527,7 +527,7 @@ TEST_F(AutofillControllerTest, KeyValueImport) {
                       CreateAutofillEntry(base::ASCIIToUTF16("overwritten"))};
   web_data_service->GetFormValuesForElementName(
       base::UTF8ToUTF16("greeting"), base::string16(), limit, &consumer);
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
   WaitForBackgroundTasks();
   // No value should be returned before anything is loaded via form submission.
   ASSERT_EQ(0U, consumer.result_.size());
@@ -537,7 +537,7 @@ TEST_F(AutofillControllerTest, KeyValueImport) {
         base::UTF8ToUTF16("greeting"), base::string16(), limit, &consumer);
     return consumer.result_.size();
   });
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
   WaitForBackgroundTasks();
   // One result should be returned, matching the filled value.
   ASSERT_EQ(1U, consumer.result_.size());

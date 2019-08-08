@@ -297,15 +297,6 @@ void PaymentRequestBrowserTestBase::ExpectBodyContains(
   }
 }
 
-void PaymentRequestBrowserTestBase::ExpectBodyContains(
-    const std::vector<base::string16>& expected_strings) {
-  std::vector<std::string> converted(expected_strings.size());
-  std::transform(expected_strings.begin(), expected_strings.end(),
-                 converted.begin(),
-                 [](const base::string16& s) { return base::UTF16ToUTF8(s); });
-  ExpectBodyContains(converted);
-}
-
 void PaymentRequestBrowserTestBase::OpenOrderSummaryScreen() {
   ResetEventWaiter(DialogEvent::ORDER_SUMMARY_OPENED);
 
@@ -563,15 +554,15 @@ void PaymentRequestBrowserTestBase::ClickOnDialogViewAndWait(
 }
 
 void PaymentRequestBrowserTestBase::ClickOnChildInListViewAndWait(
-    int child_index,
-    int total_num_children,
+    size_t child_index,
+    size_t total_num_children,
     DialogViewID list_view_id,
     bool wait_for_animation) {
   views::View* list_view =
       dialog_view()->GetViewByID(static_cast<int>(list_view_id));
   EXPECT_TRUE(list_view);
-  EXPECT_EQ(total_num_children, list_view->child_count());
-  ClickOnDialogViewAndWait(list_view->child_at(child_index),
+  EXPECT_EQ(total_num_children, list_view->children().size());
+  ClickOnDialogViewAndWait(list_view->children()[child_index],
                            wait_for_animation);
 }
 

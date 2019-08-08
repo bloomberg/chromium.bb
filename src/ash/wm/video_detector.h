@@ -79,7 +79,7 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
 
   // ShellObserver overrides.
   void OnFullscreenStateChanged(bool is_fullscreen,
-                                aura::Window* root_window) override;
+                                aura::Window* container) override;
 
   // viz::mojom::VideoDetectorObserver implementation.
   void OnVideoActivityStarted() override;
@@ -102,8 +102,8 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
   // True if video has been observed in the last |kVideoTimeoutMs|.
   bool video_is_playing_;
 
-  // Currently-fullscreen root windows.
-  std::set<aura::Window*> fullscreen_root_windows_;
+  // Currently-fullscreen desks containers windows.
+  std::set<aura::Window*> fullscreen_desks_containers_;
 
   base::ObserverList<Observer>::Unchecked observers_;
 

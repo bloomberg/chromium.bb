@@ -202,12 +202,12 @@ class PLATFORM_EXPORT ResourceResponse final {
   void SetHttpStatusCode(int);
 
   const AtomicString& HttpStatusText() const;
-  void SetHTTPStatusText(const AtomicString&);
+  void SetHttpStatusText(const AtomicString&);
 
   const AtomicString& HttpHeaderField(const AtomicString& name) const;
-  void SetHTTPHeaderField(const AtomicString& name, const AtomicString& value);
-  void AddHTTPHeaderField(const AtomicString& name, const AtomicString& value);
-  void ClearHTTPHeaderField(const AtomicString& name);
+  void SetHttpHeaderField(const AtomicString& name, const AtomicString& value);
+  void AddHttpHeaderField(const AtomicString& name, const AtomicString& value);
+  void ClearHttpHeaderField(const AtomicString& name);
   const HTTPHeaderMap& HttpHeaderFields() const;
 
   bool IsAttachment() const;
@@ -244,7 +244,7 @@ class PLATFORM_EXPORT ResourceResponse final {
   void SetResourceLoadInfo(scoped_refptr<ResourceLoadInfo>);
 
   HTTPVersion HttpVersion() const { return http_version_; }
-  void SetHTTPVersion(HTTPVersion version) { http_version_ = version; }
+  void SetHttpVersion(HTTPVersion version) { http_version_ = version; }
 
   int RequestId() const { return request_id_; }
   void SetRequestId(int request_id) { request_id_ = request_id; }
@@ -296,7 +296,7 @@ class PLATFORM_EXPORT ResourceResponse final {
   bool WasFetchedViaSPDY() const { return was_fetched_via_spdy_; }
   void SetWasFetchedViaSPDY(bool value) { was_fetched_via_spdy_ = value; }
 
-  // See ServiceWorkerResponseInfo::was_fetched_via_service_worker.
+  // See network::ResourceResponseInfo::was_fetched_via_service_worker.
   bool WasFetchedViaServiceWorker() const {
     return was_fetched_via_service_worker_;
   }
@@ -304,7 +304,7 @@ class PLATFORM_EXPORT ResourceResponse final {
     was_fetched_via_service_worker_ = value;
   }
 
-  // See ServiceWorkerResponseInfo::was_fallback_required.
+  // See network::ResourceResponseInfo::was_fallback_required_by_service_worker.
   bool WasFallbackRequiredByServiceWorker() const {
     return was_fallback_required_by_service_worker_;
   }
@@ -325,11 +325,11 @@ class PLATFORM_EXPORT ResourceResponse final {
     return network::cors::IsCorsCrossOriginResponseType(response_type_);
   }
 
-  // See ServiceWorkerResponseInfo::url_list_via_service_worker.
+  // See network::ResourceResponseInfo::url_list_via_service_worker.
   const Vector<KURL>& UrlListViaServiceWorker() const {
     return url_list_via_service_worker_;
   }
-  void SetURLListViaServiceWorker(const Vector<KURL>& url_list) {
+  void SetUrlListViaServiceWorker(const Vector<KURL>& url_list) {
     url_list_via_service_worker_ = url_list;
   }
 
@@ -423,7 +423,7 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   KURL current_request_url_;
   AtomicString mime_type_;
-  long long expected_content_length_ = 0;
+  int64_t expected_content_length_ = 0;
   AtomicString text_encoding_name_;
 
   unsigned connection_id_ = 0;

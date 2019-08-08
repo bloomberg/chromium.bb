@@ -32,7 +32,7 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
                      WebFrameTestProxy* web_frame_test_proxy);
 
   ~WebFrameTestClient() override;
-  bool ShouldContinueNavigation(const blink::WebNavigationInfo& info);
+  bool ShouldContinueNavigation(blink::WebNavigationInfo* info);
 
   static void PrintFrameDescription(WebTestDelegate* delegate,
                                     blink::WebLocalFrame* frame);
@@ -73,7 +73,7 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
   void DidReceiveResponse(const blink::WebURLResponse& response) override;
   void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
-      std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callbacks) override;
+      blink::WebSetSinkIdCompleteCallback completion_callback) override;
   void DidClearWindowObject() override;
   blink::WebEffectiveConnectionType GetEffectiveConnectionType() override;
 

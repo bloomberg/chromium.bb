@@ -21,12 +21,13 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics.SparseHistogramSample;
 import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
  * Utility class for external authentication tools.
@@ -199,7 +200,7 @@ public class ExternalAuthUtils {
                     errorHandler.handleError(context, resultCode);
                 }
             };
-            ThreadUtils.runOnUiThread(errorHandlerTask);
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, errorHandlerTask);
         }
         return false;
     }

@@ -54,7 +54,8 @@ class WarmupURLFetcher {
       CreateCustomProxyConfigCallback create_custom_proxy_config_callback,
       WarmupURLFetcherCallback callback,
       GetHttpRttCallback get_http_rtt_callback,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      const std::string& user_agent);
 
   virtual ~WarmupURLFetcher();
 
@@ -142,6 +143,8 @@ class WarmupURLFetcher {
 
   // Callback to obtain the current HTTP RTT estimate.
   GetHttpRttCallback get_http_rtt_callback_;
+
+  const std::string user_agent_;
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 

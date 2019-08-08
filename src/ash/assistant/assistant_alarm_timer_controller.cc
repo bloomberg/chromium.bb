@@ -22,13 +22,21 @@ namespace ash {
 
 namespace {
 
-// Grouping key for timer notifications.
+// Grouping key and ID prefix for timer notifications.
 constexpr char kTimerNotificationGroupingKey[] = "assistant/timer";
+constexpr char kTimerNotificationIdPrefix[] = "assistant/timer";
 
 // Interval at which alarms/timers are ticked.
 constexpr base::TimeDelta kTickInterval = base::TimeDelta::FromSeconds(1);
 
 // Helpers ---------------------------------------------------------------------
+
+// Creates a notification ID for the given |alarm_timer_id|. It is guaranteed
+// that this method will always return the same notification ID given the same
+// alarm/timer ID.
+std::string CreateTimerNotificationId(const std::string& alarm_timer_id) {
+  return std::string(kTimerNotificationIdPrefix) + alarm_timer_id;
+}
 
 std::string CreateTimerNotificationMessage(const AlarmTimer& alarm_timer,
                                            base::TimeDelta time_remaining) {
@@ -71,7 +79,7 @@ chromeos::assistant::mojom::AssistantNotificationPtr CreateTimerNotification(
   notification->title = title;
   notification->message = message;
   notification->action_url = action_url;
-  notification->client_id = alarm_timer.id;
+  notification->client_id = CreateTimerNotificationId(alarm_timer.id);
   notification->grouping_key = kTimerNotificationGroupingKey;
 
   // This notification should be able to wake up the display if it was off.
@@ -126,10 +134,8 @@ void AssistantAlarmTimerController::RemoveModelObserver(
 
 // TODO(dmblack): Remove method when the LibAssistant Alarm/Timer API is ready.
 void AssistantAlarmTimerController::OnTimerSoundingStarted() {
-  static constexpr char kIdPrefix[] = "assistant/timer";
-
   AlarmTimer timer;
-  timer.id = kIdPrefix + std::to_string(next_timer_id_++);
+  timer.id = std::to_string(next_timer_id_++);
   timer.type = AlarmTimerType::kTimer;
   timer.end_time = base::TimeTicks::Now();
   model_.AddAlarmTimer(timer);
@@ -138,6 +144,34 @@ void AssistantAlarmTimerController::OnTimerSoundingStarted() {
 // TODO(dmblack): Remove method when the LibAssistant Alarm/Timer API is ready.
 void AssistantAlarmTimerController::OnTimerSoundingFinished() {
   model_.RemoveAllAlarmsTimers();
+}
+
+void AssistantAlarmTimerController::OnAlarmTimerStateChanged(
+    mojom::AssistantAlarmTimerEventPtr event) {
+  if (!event) {
+    // Nothing is ringing. Remove all alarms and timers.
+    model_.RemoveAllAlarmsTimers();
+    return;
+  }
+
+  switch (event->type) {
+    case mojom::AssistantAlarmTimerEventType::kTimer:
+      if (event->data->get_timer_data()->state ==
+          mojom::AssistantTimerState::kFired) {
+        // Remove all timers/alarms since there will be only one timer/alarm
+        // firing.
+        // TODO(llin): Handle multiple timers firing when the API is supported.
+        model_.RemoveAllAlarmsTimers();
+
+        AlarmTimer timer;
+        timer.id = event->data->get_timer_data()->timer_id;
+        timer.type = AlarmTimerType::kTimer;
+        timer.end_time = base::TimeTicks::Now();
+        model_.AddAlarmTimer(timer);
+      }
+      break;
+      // TODO(llin): Handle alarm event.
+  }
 }
 
 void AssistantAlarmTimerController::OnAlarmTimerAdded(
@@ -168,7 +202,8 @@ void AssistantAlarmTimerController::OnAlarmsTimersTicked(
   for (auto& pair : times_remaining) {
     auto* notification_controller =
         assistant_controller_->notification_controller();
-    if (notification_controller->model()->HasNotificationForId(pair.first)) {
+    if (notification_controller->model()->HasNotificationForId(
+            CreateTimerNotificationId(/*alarm_timer_id=*/pair.first))) {
       notification_controller->AddOrUpdateNotification(CreateTimerNotification(
           *model_.GetAlarmTimerById(pair.first), pair.second));
     }

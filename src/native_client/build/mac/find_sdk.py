@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import os
 import re
 import subprocess
@@ -42,8 +44,8 @@ def main():
                          stderr=subprocess.STDOUT)
   out, err = job.communicate()
   if job.returncode != 0:
-    print >>sys.stderr, out
-    print >>sys.stderr, err
+    print(out, file=sys.stderr)
+    print(err, file=sys.stderr)
     raise Exception(('Error %d running xcode-select, you might have to run '
       '|sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer| '
       'if you are using Xcode 4.') % job.returncode)
@@ -63,22 +65,25 @@ def main():
   best_sdk = sorted(sdks, key=parse_version)[0]
 
   if options.verify and best_sdk != min_sdk_version and not options.sdk_path:
-    print >>sys.stderr, ''
-    print >>sys.stderr, '                                           vvvvvvv'
-    print >>sys.stderr, ''
-    print >>sys.stderr, \
-        'This build requires the %s SDK, but it was not found on your system.' \
-        % min_sdk_version
-    print >>sys.stderr, \
-        'Either install it, or explicitly set mac_sdk in your GYP_DEFINES.'
-    print >>sys.stderr, ''
-    print >>sys.stderr, '                                           ^^^^^^^'
-    print >>sys.stderr, ''
+    print('', file=sys.stderr)
+    print('                                           vvvvvvv', file=sys.stderr)
+    print('', file=sys.stderr)
+    print(
+        'This build requires the %s SDK, but it was not found on your system.' %
+        min_sdk_version,
+        file=sys.stderr)
+    print(
+        'Either install it, or explicitly set mac_sdk in your GYP_DEFINES.',
+        file=sys.stderr)
+    print('', file=sys.stderr)
+    print('                                           ^^^^^^^', file=sys.stderr)
+    print('', file=sys.stderr)
     return min_sdk_version
 
   if options.print_sdk_path:
-    print subprocess.check_output(['xcodebuild', '-version', '-sdk',
-                                   'macosx' + best_sdk, 'Path']).strip()
+    print(subprocess.check_output(
+        ['xcodebuild', '-version', '-sdk', 'macosx' + best_sdk,
+         'Path']).strip())
 
   return best_sdk
 
@@ -86,4 +91,4 @@ def main():
 if __name__ == '__main__':
   if sys.platform != 'darwin':
     raise Exception("This script only runs on Mac")
-  print main()
+  print(main())

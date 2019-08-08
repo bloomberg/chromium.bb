@@ -18,6 +18,10 @@ namespace internal {
 extern const char kHistogramFirstLayout[];
 extern const char kHistogramFirstInputDelay[];
 extern const char kHistogramFirstInputTimestamp[];
+extern const char kHistogramFirstInputDelaySkipFilteringComparison[];
+extern const char kHistogramFirstInputTimestampSkipFilteringComparison[];
+extern const char kHistogramFirstInputDelay4[];
+extern const char kHistogramFirstInputTimestamp4[];
 extern const char kHistogramLongestInputDelay[];
 extern const char kHistogramLongestInputTimestamp[];
 extern const char kHistogramFirstPaint[];
@@ -27,9 +31,7 @@ extern const char kHistogramLoad[];
 extern const char kHistogramFirstContentfulPaint[];
 extern const char kHistogramFirstMeaningfulPaint[];
 extern const char kHistogramLargestImagePaint[];
-extern const char kHistogramLastImagePaint[];
 extern const char kHistogramLargestTextPaint[];
-extern const char kHistogramLastTextPaint[];
 extern const char kHistogramLargestContentPaint[];
 extern const char kHistogramLargestContentPaintContentType[];
 extern const char kHistogramLargestContentPaintAllFrames[];
@@ -73,6 +75,7 @@ extern const char kHistogramPageLoadTotalBytes[];
 extern const char kHistogramPageLoadNetworkBytes[];
 extern const char kHistogramPageLoadCacheBytes[];
 extern const char kHistogramPageLoadNetworkBytesIncludingHeaders[];
+extern const char kHistogramPageLoadUnfinishedBytes[];
 
 extern const char kHistogramLoadTypeTotalBytesForwardBack[];
 extern const char kHistogramLoadTypeNetworkBytesForwardBack[];
@@ -219,7 +222,7 @@ class CorePageLoadMetricsObserver
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void OnResourceDataUseObserved(
-      FrameTreeNodeId frame_tree_node_id,
+      content::RenderFrameHost* rfh,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources) override;
 

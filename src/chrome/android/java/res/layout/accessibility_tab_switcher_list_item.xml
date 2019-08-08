@@ -24,8 +24,7 @@
             style="@style/ListItemEndIconSmall"
             android:paddingStart="23dp"
             android:paddingEnd="13dp"
-            android:src="@drawable/btn_delete_24dp"
-            app:tint="@color/standard_mode_tint" />
+            android:src="@drawable/btn_delete_24dp" />
     </LinearLayout>
 
     <LinearLayout

@@ -43,7 +43,9 @@ class ChromeResourceDispatcherHostDelegate;
 class DevToolsAutoOpener;
 class RemoteDebuggingServer;
 class PrefRegistrySimple;
+class SiteIsolationPrefsObserver;
 class SystemNotificationHelper;
+class StartupData;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 class PluginsResourceService;
@@ -78,11 +80,10 @@ class WebRtcEventLogManager;
 class BrowserProcessImpl : public BrowserProcess,
                            public KeepAliveStateObserver {
  public:
-  // |chrome_feature_list_creator| should not be null. The BrowserProcessImpl
+  // |startup_data| should not be null. The BrowserProcessImpl
   // will take the PrefService owned by the creator as the Local State instead
   // of loading the JSON file from disk.
-  explicit BrowserProcessImpl(
-      ChromeFeatureListCreator* chrome_feature_list_creator);
+  explicit BrowserProcessImpl(StartupData* startup_data);
   ~BrowserProcessImpl() override;
 
   // Called to complete initialization.
@@ -413,6 +414,8 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<resource_coordinator::ResourceCoordinatorParts>
       resource_coordinator_parts_;
   std::unique_ptr<prefs::InProcessPrefServiceFactory> pref_service_factory_;
+
+  std::unique_ptr<SiteIsolationPrefsObserver> site_isolation_prefs_observer_;
 
 #if !defined(OS_ANDROID)
   // Called to signal the process' main message loop to exit.

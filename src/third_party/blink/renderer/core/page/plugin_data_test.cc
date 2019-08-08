@@ -61,7 +61,7 @@ TEST(PluginDataTest, NonStandardUrlSchemeRequestsPluginsWithUniqueOrigin) {
   scoped_refptr<SecurityOrigin> non_standard_origin =
       SecurityOrigin::CreateFromString("nonstandard-862282:foo/bar");
   EXPECT_FALSE(non_standard_origin->IsOpaque());
-  auto* plugin_data = PluginData::Create();
+  auto* plugin_data = MakeGarbageCollected<PluginData>();
   plugin_data->UpdatePluginList(non_standard_origin.get());
 }
 

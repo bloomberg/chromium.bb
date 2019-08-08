@@ -53,7 +53,7 @@
     <dimen name="tab_title_favicon_end_padding">7dp</dimen>
 
     <!-- Card dimensions -->
-    <dimen name="default_card_corner_radius">8dp</dimen>
+    <dimen name="default_rounded_corner_radius">8dp</dimen>
 
     <!-- Custom Menu dimensions -->
     <dimen name="menu_width">258dp</dimen>
@@ -149,7 +149,6 @@
     <dimen name="keyboard_accessory_tab_size">@dimen/keyboard_accessory_height</dimen>
 
     <!-- Password generation popup dimensions -->
-    <dimen name="password_generation_divider_height">1dp</dimen>
     <dimen name="password_generation_text_size">14sp</dimen>
     <dimen name="password_generation_horizontal_margin">10dp</dimen>
     <dimen name="password_generation_text_vertical_margin">12dp</dimen>
@@ -277,6 +276,8 @@
     <dimen name="location_bar_status_separator_spacer">8dp</dimen>
     <dimen name="location_bar_min_url_width">68dp</dimen>
     <dimen name="location_bar_min_verbose_status_text_width">48dp</dimen>
+    <dimen name="location_bar_incognito_badge_end_padding_with_status_icon">2dp</dimen>
+    <dimen name="location_bar_incognito_badge_end_padding_without_status_icon">8dp</dimen>
 
     <dimen name="tablet_toolbar_start_padding">4dp</dimen>
     <dimen name="tablet_toolbar_end_padding">6dp</dimen>
@@ -285,8 +286,9 @@
     <!-- Bottom toolbar dimensions -->
     <dimen name="bottom_toolbar_height">@dimen/min_touch_target_size</dimen>
     <dimen name="bottom_toolbar_height_with_shadow">56dp</dimen>
-    <dimen name="bottom_toolbar_start_padding">12dp</dimen>
-    <dimen name="bottom_toolbar_end_padding">8dp</dimen>
+    <dimen name="labeled_bottom_toolbar_height">68dp</dimen>
+    <dimen name="labeled_bottom_toolbar_height_with_shadow">76dp</dimen>
+    <dimen name="bottom_toolbar_padding">12dp</dimen>
     <dimen name="search_accelerator_width">64dp</dimen>
     <dimen name="search_accelerator_height">36dp</dimen>
     <dimen name="search_accelerator_height_padding">6dp</dimen>
@@ -308,7 +310,11 @@
     <!-- omnibox_suggestion_answer_line2_vertical_spacing + 2dp -->
     <dimen name="omnibox_suggestion_answer_image_vertical_spacing">5dp</dimen>
     <dimen name="omnibox_suggestion_answer_image_horizontal_spacing">4dp</dimen>
-    <dimen name="omnibox_suggestion_start_offset">18dp</dimen>
+    <dimen name="omnibox_suggestion_start_offset_without_icon">18dp</dimen>
+    <dimen name="omnibox_suggestion_start_offset_with_icon">56dp</dimen>
+
+    <dimen name="omnibox_suggestion_favicon_size">24dp</dimen>
+
     <dimen name="omnibox_suggestion_refine_width">48dp</dimen>
     <dimen name="omnibox_suggestion_text_vertical_padding">5dp</dimen>
     <dimen name="omnibox_suggestion_multiline_text_vertical_padding">10dp</dimen>
@@ -377,7 +383,8 @@
     <dimen name="md_incognito_ntp_padding_left">16dp</dimen>
 
     <!-- Explore sites page -->
-    <dimen name="explore_sites_category_padding">20dp</dimen>
+    <dimen name="explore_sites_category_padding_vertical">20dp</dimen>
+    <dimen name="explore_sites_category_padding_horizontal">12dp</dimen>
     <dimen name="explore_sites_category_title_height">24dp</dimen>
     <dimen name="explore_sites_page_padding">12dp</dimen>
     <dimen name="explore_sites_category_title_spacing">16dp</dimen>
@@ -426,7 +433,9 @@
     <dimen name="default_favicon_size">16dp</dimen>
     <dimen name="default_favicon_corner_radius">3dp</dimen>
     <dimen name="default_favicon_icon_text_size">10dp</dimen>
-    <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
+    <!-- We intentionally use 16px since most websites have a favicon that's 16px. If we use 16dp
+         and scale then we'll start showing fewer favicons in some UIs on higher density devices.
+         -->
     <dimen tools:ignore="PxUsage" name="default_favicon_min_size">16px</dimen>
     <dimen name="circular_monogram_size">20dp</dimen>
     <dimen name="circular_monogram_text_size">14dp</dimen>
@@ -496,7 +505,6 @@
          https://www.google.com/design/spec/components/dialogs.html#dialogs-simple-dialogs -->
     <dimen name="dialog_width_unit">56dp</dimen>  <!-- MD dialog widths are multiples of this. -->
     <dimen name="dialog_header_margin">14dp</dimen>
-    <dimen name="dialog_text_size">14sp</dimen>
     <dimen name="separator_height">1dp</dimen>
 
     <!-- Modern List Item dimensions -->
@@ -549,6 +557,9 @@
     <dimen name="context_menu_image_vertical_margin">30dp</dimen>
     <dimen name="context_menu_selectable_items_min_size">120dp</dimen>
 
+    <!-- Revamped Context Menu Dimensions -->
+    <dimen name="revamped_context_menu_header_image_max_size">64dp</dimen>
+
     <!-- Reader Mode dimensions -->
     <!-- Padding surrounding the message. -->
     <dimen name="reader_mode_infobar_text_padding">8dp</dimen>
@@ -571,8 +582,8 @@
     <dimen name="download_manager_ideal_image_width">150dp</dimen>
     <dimen name="download_manager_recycler_view_min_padding_wide_screen">16dp</dimen>
     <dimen name="download_manager_max_image_item_width_wide_screen">300dp</dimen>
-    <dimen name="download_manager_image_padding">2dp</dimen>
-    <dimen name="download_manager_prefetch_horizontal_margin">16dp</dimen>
+    <dimen name="download_manager_image_padding">5dp</dimen>
+    <dimen name="download_manager_horizontal_margin">16dp</dimen>
     <dimen name="download_manager_prefetch_vertical_margin">12dp</dimen>
     <dimen name="download_manager_section_title_padding_top">16dp</dimen>
     <dimen name="download_manager_section_title_padding_bottom">0dp</dimen>
@@ -601,5 +612,9 @@
     <dimen name="tab_list_mini_card_text_size">12sp</dimen>
     <dimen name="tab_grid_thumbnail_card_default_size">152dp</dimen>
     <dimen name="swipe_to_dismiss_threshold">72dp</dimen>
+
+    <!-- RadioButtonWithDescription dimensions -->
+    <dimen name="radio_button_with_description_lateral_padding">16dp</dimen>
+    <dimen name="radio_button_with_description_vertical_padding">10dp</dimen>
 
 </resources>

@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 
-namespace arc {
+namespace apps {
 class IntentPickerController;
-}  // namespace arc
+}  // namespace apps
 
 class Browser;
 
@@ -35,7 +35,7 @@ class IntentPickerView : public PageActionIconView {
  private:
   bool IsIncognitoMode();
 
-  std::unique_ptr<arc::IntentPickerController> intent_picker_controller_;
+  std::unique_ptr<apps::IntentPickerController> intent_picker_controller_;
 
   Browser* const browser_;
 

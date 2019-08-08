@@ -15,10 +15,8 @@
 #include "Renderer.hpp"
 
 #include "Clipper.hpp"
-#include "Surface.hpp"
 #include "Primitive.hpp"
 #include "Polygon.hpp"
-#include "WSI/FrameBuffer.hpp"
 #include "Device/SwiftConfig.hpp"
 #include "Reactor/Reactor.hpp"
 #include "Pipeline/Constants.hpp"
@@ -32,6 +30,7 @@
 #include "Vulkan/VkConfig.h"
 #include "Vulkan/VkDebug.hpp"
 #include "Vulkan/VkImageView.hpp"
+#include "Vulkan/VkQueryPool.hpp"
 #include "Pipeline/SpirvShader.hpp"
 #include "Vertex.hpp"
 
@@ -48,12 +47,9 @@ namespace sw
 {
 	extern bool booleanFaceRegister;
 	extern bool fullPixelPositionRegister;
-	extern bool leadingVertexFirst;         // Flat shading uses first vertex, else last
-	extern bool secondaryColor;             // Specular lighting is applied after texturing
 	extern bool colorsDefaultToZero;
 
 	extern bool forceWindowed;
-	extern bool complementaryDepthBuffer;
 	extern bool postBlendSRGB;
 	extern bool exactColorRounding;
 	extern TransparencyAntialiasing transparencyAntialiasing;
@@ -82,12 +78,101 @@ namespace sw
 		{
 			sw::booleanFaceRegister = conventions.booleanFaceRegister;
 			sw::fullPixelPositionRegister = conventions.fullPixelPositionRegister;
-			sw::leadingVertexFirst = conventions.leadingVertexFirst;
-			sw::secondaryColor = conventions.secondaryColor;
 			sw::colorsDefaultToZero = conventions.colorsDefaultToZero;
 			sw::exactColorRounding = exactColorRounding;
 			initialized = true;
 		}
+	}
+
+	template<typename T>
+	inline bool setBatchIndices(unsigned int batch[128][3], VkPrimitiveTopology topology, T indices, unsigned int start, unsigned int triangleCount)
+	{
+		switch(topology)
+		{
+		case VK_PRIMITIVE_TOPOLOGY_POINT_LIST:
+		{
+			auto index = start;
+			for(unsigned int i = 0; i < triangleCount; i++)
+			{
+				batch[i][0] = indices[index];
+				batch[i][1] = indices[index];
+				batch[i][2] = indices[index];
+
+				index += 1;
+			}
+			break;
+		}
+		case VK_PRIMITIVE_TOPOLOGY_LINE_LIST:
+		{
+			auto index = 2 * start;
+			for(unsigned int i = 0; i < triangleCount; i++)
+			{
+				batch[i][0] = indices[index + 0];
+				batch[i][1] = indices[index + 1];
+				batch[i][2] = indices[index + 1];
+
+				index += 2;
+			}
+			break;
+		}
+		case VK_PRIMITIVE_TOPOLOGY_LINE_STRIP:
+		{
+			auto index = start;
+			for(unsigned int i = 0; i < triangleCount; i++)
+			{
+				batch[i][0] = indices[index + 0];
+				batch[i][1] = indices[index + 1];
+				batch[i][2] = indices[index + 1];
+
+				index += 1;
+			}
+			break;
+		}
+		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST:
+		{
+			auto index = 3 * start;
+			for(unsigned int i = 0; i < triangleCount; i++)
+			{
+				batch[i][0] = indices[index + 0];
+				batch[i][1] = indices[index + 1];
+				batch[i][2] = indices[index + 2];
+
+				index += 3;
+			}
+			break;
+		}
+		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP:
+		{
+			auto index = start;
+			for(unsigned int i = 0; i < triangleCount; i++)
+			{
+				batch[i][0] = indices[index + 0];
+				batch[i][1] = indices[index + ((start + i) & 1) + 1];
+				batch[i][2] = indices[index + (~(start + i) & 1) + 1];
+
+				index += 1;
+			}
+			break;
+		}
+		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN:
+		{
+			auto index = start + 1;
+			for(unsigned int i = 0; i < triangleCount; i++)
+			{
+				batch[i][0] = indices[index + 0];
+				batch[i][1] = indices[index + 1];
+				batch[i][2] = indices[0];
+
+				index += 1;
+			}
+			break;
+		}
+		default:
+			ASSERT(false);
+			return false;
+		}
+
+		return true;
 	}
 
 	struct Parameters
@@ -211,7 +296,7 @@ namespace sw
 		sw::deallocate(mem);
 	}
 
-	void Renderer::draw(DrawType drawType, unsigned int count, bool update)
+	void Renderer::draw(VkPrimitiveTopology topology, VkIndexType indexType, unsigned int count, int baseVertex, bool update)
 	{
 		#ifndef NDEBUG
 			if(count < minPrimitives || count > maxPrimitives)
@@ -220,7 +305,7 @@ namespace sw
 			}
 		#endif
 
-		context->drawType = drawType;
+		context->topology = topology;
 
 		updateConfiguration();
 
@@ -233,11 +318,21 @@ namespace sw
 			return;
 		}
 
+		context->occlusionEnabled = false;
+		for(auto query : queries)
+		{
+			if(query->type == VK_QUERY_TYPE_OCCLUSION)
+			{
+				context->occlusionEnabled = true;
+				break;
+			}
+		}
+
 		sync->lock(sw::PRIVATE);
 
 		if(update || oldMultiSampleMask != context->multiSampleMask)
 		{
-			vertexState = VertexProcessor::update(drawType);
+			vertexState = VertexProcessor::update(topology);
 			setupState = SetupProcessor::update();
 			pixelState = PixelProcessor::update();
 
@@ -289,7 +384,7 @@ namespace sw
 
 		if(queries.size() != 0)
 		{
-			draw->queries = new std::list<Query*>();
+			draw->queries = new std::list<vk::Query*>();
 			for(auto &query : queries)
 			{
 				++query->reference; // Atomic
@@ -297,7 +392,8 @@ namespace sw
 			}
 		}
 
-		draw->drawType = drawType;
+		draw->topology = topology;
+		draw->indexType = indexType;
 		draw->batchSize = batch;
 
 		vertexRoutine->bind();
@@ -313,26 +409,28 @@ namespace sw
 		draw->setupPrimitives = setupPrimitives;
 		draw->setupState = setupState;
 
+		data->descriptorSets = context->descriptorSets;
+		data->descriptorDynamicOffsets = context->descriptorDynamicOffsets;
+
 		for(int i = 0; i < MAX_VERTEX_INPUTS; i++)
 		{
 			data->input[i] = context->input[i].buffer;
-			data->stride[i] = context->input[i].stride;
+			data->stride[i] = context->input[i].vertexStride;
 		}
 
-		if(context->indexBuffer)
-		{
-			data->indices = context->indexBuffer;
-		}
+		data->indices = context->indexBuffer;
 
-		if(context->vertexShader->hasBuiltinInput(spv::BuiltInInstanceId))
+		if(context->vertexShader->hasBuiltinInput(spv::BuiltInInstanceIndex))
 		{
 			data->instanceID = context->instanceID;
 		}
 
+		data->baseVertex = baseVertex;
+
 		if(pixelState.stencilActive)
 		{
-			data->stencil[0] = stencil;
-			data->stencil[1] = stencilCCW;
+			data->stencil[0].set(context->frontStencil.reference, context->frontStencil.compareMask, context->frontStencil.writeMask);
+			data->stencil[1].set(context->backStencil.reference, context->backStencil.compareMask, context->backStencil.writeMask);
 		}
 
 		data->lineWidth = context->lineWidth;
@@ -392,12 +490,6 @@ namespace sw
 				N += context->depthBias;
 			}
 
-			if(complementaryDepthBuffer)
-			{
-				Z = -Z;
-				N = 1 - N;
-			}
-
 			data->Wx16 = replicate(W * 16);
 			data->Hx16 = replicate(H * 16);
 			data->X0x16 = replicate(X0 * 16 - 8);
@@ -420,8 +512,8 @@ namespace sw
 				{
 					VkOffset3D offset = { 0, 0, static_cast<int32_t>(context->renderTargetLayer[index]) };
 					data->colorBuffer[index] = (unsigned int*)context->renderTarget[index]->getOffsetPointer(offset, VK_IMAGE_ASPECT_COLOR_BIT);
-					data->colorPitchB[index] = context->renderTarget[index]->rowPitchBytes(VK_IMAGE_ASPECT_COLOR_BIT);
-					data->colorSliceB[index] = context->renderTarget[index]->slicePitchBytes(VK_IMAGE_ASPECT_COLOR_BIT);
+					data->colorPitchB[index] = context->renderTarget[index]->rowPitchBytes(VK_IMAGE_ASPECT_COLOR_BIT, 0);
+					data->colorSliceB[index] = context->renderTarget[index]->slicePitchBytes(VK_IMAGE_ASPECT_COLOR_BIT, 0);
 				}
 			}
 
@@ -432,25 +524,30 @@ namespace sw
 			{
 				VkOffset3D offset = { 0, 0, static_cast<int32_t>(context->depthBufferLayer) };
 				data->depthBuffer = (float*)context->depthBuffer->getOffsetPointer(offset, VK_IMAGE_ASPECT_DEPTH_BIT);
-				data->depthPitchB = context->depthBuffer->rowPitchBytes(VK_IMAGE_ASPECT_DEPTH_BIT);
-				data->depthSliceB = context->depthBuffer->slicePitchBytes(VK_IMAGE_ASPECT_DEPTH_BIT);
+				data->depthPitchB = context->depthBuffer->rowPitchBytes(VK_IMAGE_ASPECT_DEPTH_BIT, 0);
+				data->depthSliceB = context->depthBuffer->slicePitchBytes(VK_IMAGE_ASPECT_DEPTH_BIT, 0);
 			}
 
 			if(draw->stencilBuffer)
 			{
 				VkOffset3D offset = { 0, 0, static_cast<int32_t>(context->stencilBufferLayer) };
 				data->stencilBuffer = (unsigned char*)context->stencilBuffer->getOffsetPointer(offset, VK_IMAGE_ASPECT_STENCIL_BIT);
-				data->stencilPitchB = context->stencilBuffer->rowPitchBytes(VK_IMAGE_ASPECT_STENCIL_BIT);
-				data->stencilSliceB = context->stencilBuffer->slicePitchBytes(VK_IMAGE_ASPECT_STENCIL_BIT);
+				data->stencilPitchB = context->stencilBuffer->rowPitchBytes(VK_IMAGE_ASPECT_STENCIL_BIT, 0);
+				data->stencilSliceB = context->stencilBuffer->slicePitchBytes(VK_IMAGE_ASPECT_STENCIL_BIT, 0);
 			}
 		}
 
 		// Scissor
 		{
-			data->scissorX0 = scissor.x0;
-			data->scissorX1 = scissor.x1;
-			data->scissorY0 = scissor.y0;
-			data->scissorY1 = scissor.y1;
+			data->scissorX0 = scissor.offset.x;
+			data->scissorX1 = scissor.offset.x + scissor.extent.width;
+			data->scissorY0 = scissor.offset.y;
+			data->scissorY1 = scissor.offset.y + scissor.extent.height;
+		}
+
+		// Push constants
+		{
+			data->pushConstants = context->pushConstants;
 		}
 
 		draw->primitive = 0;
@@ -483,21 +580,6 @@ namespace sw
 				resume[0]->signal();
 			}
 		}
-	}
-
-	void Renderer::clear(void *value, VkFormat format, Surface *dest, const Rect &clearRect, unsigned int rgbaMask)
-	{
-		blitter->clear(value, format, dest, clearRect, rgbaMask);
-	}
-
-	void Renderer::blit(Surface *source, const SliceRectF &sRect, Surface *dest, const SliceRect &dRect, bool filter, bool isStencil, bool sRGBconversion)
-	{
-		blitter->blit(source, sRect, dest, dRect, {filter, isStencil, sRGBconversion});
-	}
-
-	void Renderer::blit3D(Surface *source, Surface *dest)
-	{
-		blitter->blit3D(source, dest);
 	}
 
 	void Renderer::threadFunction(void *parameters)
@@ -781,22 +863,30 @@ namespace sw
 				{
 					for(auto &query : *(draw.queries))
 					{
+						std::unique_lock<std::mutex> mutexLock(query->mutex);
+
 						switch(query->type)
 						{
-						case Query::FRAGMENTS_PASSED:
+						case VK_QUERY_TYPE_OCCLUSION:
 							for(int cluster = 0; cluster < clusterCount; cluster++)
 							{
 								query->data += data.occlusion[cluster];
 							}
 							break;
-						case Query::TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN:
-							query->data += processedPrimitives;
-							break;
 						default:
 							break;
 						}
 
-						--query->reference; // Atomic
+						int queryRef = --query->reference; // Atomic
+						if(queryRef == 0)
+						{
+							query->state = vk::Query::FINISHED;
+						}
+
+						// Manual unlocking is done before notifying, to avoid
+						// waking up the waiting thread only to block again
+						mutexLock.unlock();
+						query->condition.notify_one();
 					}
 
 					delete draw.queries;
@@ -835,278 +925,41 @@ namespace sw
 		}
 
 		unsigned int batch[128][3];   // FIXME: Adjust to dynamic batch size
+		VkPrimitiveTopology topology = static_cast<VkPrimitiveTopology>(static_cast<int>(draw->topology));
 
-		switch(draw->drawType)
+		if(!indices)
 		{
-		case DRAW_POINTLIST:
+			struct LinearIndex
 			{
-				unsigned int index = start;
+				unsigned int operator[](unsigned int i) { return i; }
+			};
 
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index;
-					batch[i][1] = index;
-					batch[i][2] = index;
-
-					index += 1;
-				}
-			}
-			break;
-		case DRAW_LINELIST:
+			if(!setBatchIndices(batch, topology, LinearIndex(), start, triangleCount))
 			{
-				unsigned int index = 2 * start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index + 0;
-					batch[i][1] = index + 1;
-					batch[i][2] = index + 1;
-
-					index += 2;
-				}
+				return;
 			}
-			break;
-		case DRAW_LINESTRIP:
+		}
+		else
+		{
+			switch(draw->indexType)
 			{
-				unsigned int index = start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
+			case VK_INDEX_TYPE_UINT16:
+				if(!setBatchIndices(batch, topology, static_cast<const uint16_t*>(indices), start, triangleCount))
 				{
-					batch[i][0] = index + 0;
-					batch[i][1] = index + 1;
-					batch[i][2] = index + 1;
-
-					index += 1;
+					return;
 				}
-			}
-			break;
-		case DRAW_TRIANGLELIST:
-			{
-				unsigned int index = 3 * start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
+				break;
+			case VK_INDEX_TYPE_UINT32:
+				if(!setBatchIndices(batch, topology, static_cast<const uint32_t*>(indices), start, triangleCount))
 				{
-					batch[i][0] = index + 0;
-					batch[i][1] = index + 1;
-					batch[i][2] = index + 2;
-
-					index += 3;
+					return;
 				}
-			}
+				break;
 			break;
-		case DRAW_TRIANGLESTRIP:
-			{
-				unsigned int index = start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					if(leadingVertexFirst)
-					{
-						batch[i][0] = index + 0;
-						batch[i][1] = index + (index & 1) + 1;
-						batch[i][2] = index + (~index & 1) + 1;
-					}
-					else
-					{
-						batch[i][0] = index + (index & 1);
-						batch[i][1] = index + (~index & 1);
-						batch[i][2] = index + 2;
-					}
-
-					index += 1;
-				}
+			default:
+				ASSERT(false);
+				return;
 			}
-			break;
-		case DRAW_TRIANGLEFAN:
-			{
-				unsigned int index = start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					if(leadingVertexFirst)
-					{
-						batch[i][0] = index + 1;
-						batch[i][1] = index + 2;
-						batch[i][2] = 0;
-					}
-					else
-					{
-						batch[i][0] = 0;
-						batch[i][1] = index + 1;
-						batch[i][2] = index + 2;
-					}
-
-					index += 1;
-				}
-			}
-			break;
-		case DRAW_INDEXEDPOINTLIST16:
-			{
-				const unsigned short *index = (const unsigned short*)indices + start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = *index;
-					batch[i][1] = *index;
-					batch[i][2] = *index;
-
-					index += 1;
-				}
-			}
-			break;
-		case DRAW_INDEXEDPOINTLIST32:
-			{
-				const unsigned int *index = (const unsigned int*)indices + start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = *index;
-					batch[i][1] = *index;
-					batch[i][2] = *index;
-
-					index += 1;
-				}
-			}
-			break;
-		case DRAW_INDEXEDLINELIST16:
-			{
-				const unsigned short *index = (const unsigned short*)indices + 2 * start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index[0];
-					batch[i][1] = index[1];
-					batch[i][2] = index[1];
-
-					index += 2;
-				}
-			}
-			break;
-		case DRAW_INDEXEDLINELIST32:
-			{
-				const unsigned int *index = (const unsigned int*)indices + 2 * start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index[0];
-					batch[i][1] = index[1];
-					batch[i][2] = index[1];
-
-					index += 2;
-				}
-			}
-			break;
-		case DRAW_INDEXEDLINESTRIP16:
-			{
-				const unsigned short *index = (const unsigned short*)indices + start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index[0];
-					batch[i][1] = index[1];
-					batch[i][2] = index[1];
-
-					index += 1;
-				}
-			}
-			break;
-		case DRAW_INDEXEDLINESTRIP32:
-			{
-				const unsigned int *index = (const unsigned int*)indices + start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index[0];
-					batch[i][1] = index[1];
-					batch[i][2] = index[1];
-
-					index += 1;
-				}
-			}
-			break;
-		case DRAW_INDEXEDTRIANGLELIST16:
-			{
-				const unsigned short *index = (const unsigned short*)indices + 3 * start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index[0];
-					batch[i][1] = index[1];
-					batch[i][2] = index[2];
-
-					index += 3;
-				}
-			}
-			break;
-		case DRAW_INDEXEDTRIANGLELIST32:
-			{
-				const unsigned int *index = (const unsigned int*)indices + 3 * start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index[0];
-					batch[i][1] = index[1];
-					batch[i][2] = index[2];
-
-					index += 3;
-				}
-			}
-			break;
-		case DRAW_INDEXEDTRIANGLESTRIP16:
-			{
-				const unsigned short *index = (const unsigned short*)indices + start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index[0];
-					batch[i][1] = index[((start + i) & 1) + 1];
-					batch[i][2] = index[(~(start + i) & 1) + 1];
-
-					index += 1;
-				}
-			}
-			break;
-		case DRAW_INDEXEDTRIANGLESTRIP32:
-			{
-				const unsigned int *index = (const unsigned int*)indices + start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index[0];
-					batch[i][1] = index[((start + i) & 1) + 1];
-					batch[i][2] = index[(~(start + i) & 1) + 1];
-
-					index += 1;
-				}
-			}
-			break;
-		case DRAW_INDEXEDTRIANGLEFAN16:
-			{
-				const unsigned short *index = (const unsigned short*)indices;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index[start + i + 1];
-					batch[i][1] = index[start + i + 2];
-					batch[i][2] = index[0];
-				}
-			}
-			break;
-		case DRAW_INDEXEDTRIANGLEFAN32:
-			{
-				const unsigned int *index = (const unsigned int*)indices;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index[start + i + 1];
-					batch[i][1] = index[start + i + 2];
-					batch[i][2] = index[0];
-				}
-			}
-			break;
-		default:
-			ASSERT(false);
-			return;
 		}
 
 		task->primitiveStart = start;
@@ -1576,14 +1429,27 @@ namespace sw
 		context->vertexShader = shader;
 	}
 
-	void Renderer::addQuery(Query *query)
+	void Renderer::addQuery(vk::Query *query)
 	{
 		queries.push_back(query);
 	}
 
-	void Renderer::removeQuery(Query *query)
+	void Renderer::removeQuery(vk::Query *query)
 	{
 		queries.remove(query);
+	}
+
+	void Renderer::advanceInstanceAttributes()
+	{
+		for(uint32_t i = 0; i < vk::MAX_VERTEX_INPUT_BINDINGS; i++)
+		{
+			auto &attrib = context->input[i];
+			if (attrib.count && attrib.instanceStride)
+			{
+				// Under the casts: attrib.buffer += attrib.instanceStride
+				attrib.buffer = (void const *)((uintptr_t)attrib.buffer + attrib.instanceStride);
+			}
+		}
 	}
 
 	#if PERF_HUD
@@ -1628,7 +1494,7 @@ namespace sw
 		this->viewport = viewport;
 	}
 
-	void Renderer::setScissor(const Rect &scissor)
+	void Renderer::setScissor(const VkRect2D &scissor)
 	{
 		this->scissor = scissor;
 	}
@@ -1735,7 +1601,6 @@ namespace sw
 			}
 
 			forceWindowed = configuration.forceWindowed;
-			complementaryDepthBuffer = configuration.complementaryDepthBuffer;
 			postBlendSRGB = configuration.postBlendSRGB;
 			exactColorRounding = configuration.exactColorRounding;
 			forceClearRegisters = configuration.forceClearRegisters;

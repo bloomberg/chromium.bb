@@ -54,7 +54,7 @@ public class DownloadProgressInfoBar extends InfoBar {
 
     private DownloadProgressInfoBar(
             Client client, DownloadInfoBarController.DownloadProgressInfoBarData info) {
-        super(info.icon, null, null);
+        super(info.icon, 0, null, null);
         mInfo = info;
         mClient = client;
     }
@@ -132,7 +132,7 @@ public class DownloadProgressInfoBar extends InfoBar {
             return;
         }
 
-        mAnimatedDrawable = AnimatedVectorDrawableCompat.create(getContext(), mInfo.icon);
+        mAnimatedDrawable = AnimatedVectorDrawableCompat.create(layout.getContext(), mInfo.icon);
         mAnimatedDrawable.registerAnimationCallback(new Animatable2Compat.AnimationCallback() {
             @Override
             public void onAnimationEnd(Drawable drawable) {
@@ -188,6 +188,7 @@ public class DownloadProgressInfoBar extends InfoBar {
      */
     public void closeInfoBar() {
         mClient.onInfoBarClosed(false);
+        if (mAnimatedDrawable != null) mAnimatedDrawable.clearAnimationCallbacks();
         super.onCloseButtonClicked();
     }
 

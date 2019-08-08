@@ -29,6 +29,10 @@ class MockMprisService : public MprisService {
   MOCK_METHOD1(SetCanGoPrevious, void(bool value));
   MOCK_METHOD1(SetCanPlay, void(bool value));
   MOCK_METHOD1(SetCanPause, void(bool value));
+  MOCK_METHOD1(SetPlaybackStatus, void(PlaybackStatus value));
+  MOCK_METHOD1(SetTitle, void(const base::string16& value));
+  MOCK_METHOD1(SetArtist, void(const base::string16& value));
+  MOCK_METHOD1(SetAlbum, void(const base::string16& value));
   MOCK_CONST_METHOD0(GetServiceName, std::string());
 
  private:

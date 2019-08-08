@@ -12,6 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/tracing_controller.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
@@ -62,7 +63,7 @@ class TracingControllerImpl : public TracingController,
   bool StopTracing(const scoped_refptr<TraceDataEndpoint>& endpoint,
                    const std::string& agent_label) override;
   bool GetTraceBufferUsage(GetTraceBufferUsageCallback callback) override;
-  bool IsTracing() const override;
+  bool IsTracing() override;
 
   void RegisterTracingUI(TracingUI* tracing_ui);
   void UnregisterTracingUI(TracingUI* tracing_ui);
@@ -71,6 +72,18 @@ class TracingControllerImpl : public TracingController,
   CONTENT_EXPORT void SetTracingDelegateForTesting(
       std::unique_ptr<TracingDelegate> delegate);
 
+  // If command line flags specify startup tracing options, adopts the startup
+  // tracing session and relays it to all tracing agents. Note that the local
+  // TraceLog has already been enabled at this point by
+  // tracing::EnableStartupTracingIfNeeded(), before threads were available.
+  // Requires browser threads to have started and a started main message loop.
+  void StartStartupTracingIfNeeded();
+
+  // Should be called before browser main loop shutdown. If startup tracing is
+  // tracing to a file and is still active, this stops the duration timer if it
+  // exists.
+  void FinalizeStartupTracingIfNeeded();
+
  private:
   friend std::default_delete<TracingControllerImpl>;
 
@@ -78,7 +91,7 @@ class TracingControllerImpl : public TracingController,
   void AddAgents();
   void ConnectToServiceIfNeeded();
   void DisconnectFromService();
-  std::unique_ptr<base::DictionaryValue> GenerateMetadataDict() const;
+  std::unique_ptr<base::DictionaryValue> GenerateMetadataDict();
 
   // mojo::DataPipeDrainer::Client
   void OnDataAvailable(const void* data, size_t num_bytes) override;
@@ -87,6 +100,10 @@ class TracingControllerImpl : public TracingController,
   void OnMetadataAvailable(base::Value metadata);
 
   void CompleteFlush();
+
+  void InitStartupTracingForDuration();
+  void EndStartupTracing();
+  base::FilePath GetStartupTraceFileName() const;
 
   std::unique_ptr<PerfettoFileTracer> perfetto_file_tracer_;
   tracing::mojom::CoordinatorPtr coordinator_;
@@ -99,6 +116,10 @@ class TracingControllerImpl : public TracingController,
   std::set<TracingUI*> tracing_uis_;
   bool is_data_complete_ = false;
   bool is_metadata_available_ = false;
+
+  base::FilePath startup_trace_file_;
+  // This timer initiates trace file saving.
+  base::OneShotTimer startup_trace_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingControllerImpl);
 };

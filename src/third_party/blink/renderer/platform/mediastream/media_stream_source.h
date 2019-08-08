@@ -68,19 +68,12 @@ class PLATFORM_EXPORT MediaStreamSource final
 
   enum class EchoCancellationMode { kDisabled, kBrowser, kAec3, kSystem };
 
-  static MediaStreamSource* Create(const String& id,
-                                   StreamType,
-                                   const String& name,
-                                   bool remote,
-                                   ReadyState = kReadyStateLive,
-                                   bool requires_consumer = false);
-
   MediaStreamSource(const String& id,
                     StreamType,
                     const String& name,
                     bool remote,
-                    ReadyState,
-                    bool requires_consumer);
+                    ReadyState = kReadyStateLive,
+                    bool requires_consumer = false);
 
   const String& Id() const { return id_; }
   StreamType GetType() const { return type_; }

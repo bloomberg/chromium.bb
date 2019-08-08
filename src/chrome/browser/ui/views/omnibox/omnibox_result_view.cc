@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_tab_switch_button.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_text_view.h"
+#include "chrome/browser/ui/views/omnibox/remove_suggestion_bubble.h"
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -63,7 +64,7 @@ OmniboxResultView::OmniboxResultView(
   keyword_view_->icon()->SizeToPreferredSize();
 
   if (base::FeatureList::IsEnabled(
-          omnibox::kOmniboxContextMenuForSuggestions)) {
+          omnibox::kOmniboxSuggestionTransparencyOptions)) {
     // TODO(tommycli): Replace this with the real translated string from UX.
     context_menu_contents_.AddItem(COMMAND_REMOVE_SUGGESTION,
                                    base::ASCIIToUTF16("Remove suggestion..."));
@@ -271,7 +272,7 @@ void OmniboxResultView::OnMatchIconUpdated() {
 }
 
 void OmniboxResultView::SetRichSuggestionImage(const gfx::ImageSkia& image) {
-  suggestion_view_->answer_image()->SetImage(image);
+  suggestion_view_->SetImage(image);
   Layout();
   SchedulePaint();
 }
@@ -401,7 +402,7 @@ void OmniboxResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,
                              model_index_ + 1);
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kSetSize,
-                             popup_contents_view_->child_count());
+                             int{popup_contents_view_->children().size()});
 
   node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
                               IsSelected());
@@ -435,9 +436,9 @@ void OmniboxResultView::ShowContextMenuForViewImpl(
       &context_menu_contents_,
       views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU,
       set_hovered_false);
-  context_menu_runner_->RunMenuAt(GetWidget(), nullptr,
-                                  gfx::Rect(point, gfx::Size()),
-                                  views::MENU_ANCHOR_TOPLEFT, source_type);
+  context_menu_runner_->RunMenuAt(
+      GetWidget(), nullptr, gfx::Rect(point, gfx::Size()),
+      views::MenuAnchorPosition::kTopLeft, source_type);
 
   // Opening the context menu unsets the hover state, but we still want the
   // result 'hovered' as long as the context menu is open.
@@ -453,11 +454,28 @@ bool OmniboxResultView::IsCommandIdEnabled(int command_id) const {
 void OmniboxResultView::ExecuteCommand(int command_id, int event_flags) {
   DCHECK_EQ(COMMAND_REMOVE_SUGGESTION, command_id);
 
-  // TODO(tommycli): Launch modal bubble to confirm removing the suggestion.
+  // Temporarily inhibit the popup closing on blur while we open the remove
+  // suggestion confirmation bubble.
+  popup_contents_view_->model()->set_popup_closes_on_blur(false);
+
+  // TODO(tommycli): We re-fetch the original match from the popup model,
+  // because |match_| already has its contents and description swapped by this
+  // class, and we don't want that for the bubble. We should improve this.
+  AutocompleteMatch raw_match =
+      popup_contents_view_->model()->result().match_at(model_index_);
+  ShowRemoveSuggestion(this, raw_match,
+                       base::BindOnce(&OmniboxResultView::RemoveSuggestion,
+                                      weak_factory_.GetWeakPtr()));
+
+  popup_contents_view_->model()->set_popup_closes_on_blur(true);
 }
 
 void OmniboxResultView::ProvideButtonFocusHint() {
   suggestion_tab_switch_button_->ProvideFocusHint();
+}
+
+void OmniboxResultView::RemoveSuggestion() const {
+  popup_contents_view_->model()->TryDeletingLine(model_index_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

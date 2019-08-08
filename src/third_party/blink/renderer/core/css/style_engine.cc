@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_environment_variables.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
@@ -78,19 +79,21 @@ StyleEngine::StyleEngine(Document& document)
     : document_(&document),
       is_master_(!document.IsHTMLImport()),
       document_style_sheet_collection_(
-          DocumentStyleSheetCollection::Create(document)) {
+          MakeGarbageCollected<DocumentStyleSheetCollection>(document)) {
   if (document.GetFrame()) {
     // We don't need to create CSSFontSelector for imported document or
     // HTMLTemplateElement's document, because those documents have no frame.
-    font_selector_ = CSSFontSelector::Create(&document);
+    font_selector_ = MakeGarbageCollected<CSSFontSelector>(&document);
     font_selector_->RegisterForInvalidationCallbacks(this);
   }
   if (document.IsInMainFrame())
-    viewport_resolver_ = ViewportStyleResolver::Create(document);
+    viewport_resolver_ = MakeGarbageCollected<ViewportStyleResolver>(document);
   if (IsMaster())
-    global_rule_set_ = CSSGlobalRuleSet::Create();
+    global_rule_set_ = MakeGarbageCollected<CSSGlobalRuleSet>();
   // Document is initially style dirty.
   style_recalc_root_.Update(nullptr, &document);
+  if (auto* settings = GetDocument().GetSettings())
+    preferred_color_scheme_ = settings->GetPreferredColorScheme();
 }
 
 StyleEngine::~StyleEngine() = default;
@@ -133,8 +136,8 @@ TreeScopeStyleSheetCollection* StyleEngine::StyleSheetCollectionFor(
   return it->value.Get();
 }
 
-const HeapVector<TraceWrapperMember<StyleSheet>>&
-StyleEngine::StyleSheetsForStyleSheetList(TreeScope& tree_scope) {
+const HeapVector<Member<StyleSheet>>& StyleEngine::StyleSheetsForStyleSheetList(
+    TreeScope& tree_scope) {
   DCHECK(Master());
   TreeScopeStyleSheetCollection& collection =
       EnsureStyleSheetCollectionFor(tree_scope);
@@ -156,10 +159,10 @@ StyleEngine::StyleSheetsForStyleSheetList(TreeScope& tree_scope) {
 void StyleEngine::InjectSheet(const StyleSheetKey& key,
                               StyleSheetContents* sheet,
                               WebDocument::CSSOrigin origin) {
-  HeapVector<std::pair<StyleSheetKey, TraceWrapperMember<CSSStyleSheet>>>&
-      injected_style_sheets = origin == WebDocument::kUserOrigin
-                                  ? injected_user_style_sheets_
-                                  : injected_author_style_sheets_;
+  HeapVector<std::pair<StyleSheetKey, Member<CSSStyleSheet>>>&
+      injected_style_sheets =
+          origin == WebDocument::kUserOrigin ? injected_user_style_sheets_
+                                             : injected_author_style_sheets_;
   injected_style_sheets.push_back(
       std::make_pair(key, CSSStyleSheet::Create(sheet, *document_)));
   if (origin == WebDocument::kUserOrigin)
@@ -170,10 +173,10 @@ void StyleEngine::InjectSheet(const StyleSheetKey& key,
 
 void StyleEngine::RemoveInjectedSheet(const StyleSheetKey& key,
                                       WebDocument::CSSOrigin origin) {
-  HeapVector<std::pair<StyleSheetKey, TraceWrapperMember<CSSStyleSheet>>>&
-      injected_style_sheets = origin == WebDocument::kUserOrigin
-                                  ? injected_user_style_sheets_
-                                  : injected_author_style_sheets_;
+  HeapVector<std::pair<StyleSheetKey, Member<CSSStyleSheet>>>&
+      injected_style_sheets =
+          origin == WebDocument::kUserOrigin ? injected_user_style_sheets_
+                                             : injected_author_style_sheets_;
   // Remove the last sheet that matches.
   const auto& it = std::find_if(injected_style_sheets.rbegin(),
                                 injected_style_sheets.rend(),
@@ -575,7 +578,7 @@ RuleSet* StyleEngine::RuleSetForSheet(CSSStyleSheet& sheet) {
 }
 
 void StyleEngine::CreateResolver() {
-  resolver_ = StyleResolver::Create(*document_);
+  resolver_ = MakeGarbageCollected<StyleResolver>(*document_);
   resolver_->SetRuleUsageTracker(tracker_);
 }
 
@@ -639,10 +642,10 @@ void StyleEngine::AddDefaultFontDisplay(
   if (!rule->FontDisplay())
     return;
   for (const auto& family_value : rule->FontFamily()) {
-    if (family_value->IsFontFamilyValue()) {
-      default_font_display_map_.Set(
-          AtomicString(ToCSSFontFamilyValue(family_value)->Value()),
-          CSSValueToFontDisplay(rule->FontDisplay()));
+    if (auto* font_family_value =
+            DynamicTo<CSSFontFamilyValue>(family_value.Get())) {
+      default_font_display_map_.Set(AtomicString(font_family_value->Value()),
+                                    CSSValueToFontDisplay(rule->FontDisplay()));
     }
   }
 }
@@ -1225,7 +1228,7 @@ void StyleEngine::SetStatsEnabled(bool enabled) {
     return;
   }
   if (!style_resolver_stats_)
-    style_resolver_stats_ = StyleResolverStats::Create();
+    style_resolver_stats_ = std::make_unique<StyleResolverStats>();
   else
     style_resolver_stats_->Reset();
 }
@@ -1364,8 +1367,7 @@ void StyleEngine::InvalidateForRuleSetChanges(
   if (tree_scope.GetDocument().HasPendingForcedStyleRecalc())
     return;
 
-  if (!tree_scope.GetDocument().body() ||
-      tree_scope.GetDocument().HasNodesWithPlaceholderStyle()) {
+  if (!tree_scope.GetDocument().body()) {
     tree_scope.GetDocument().SetNeedsStyleRecalc(
         kSubtreeStyleChange,
         StyleChangeReasonForTracing::Create(
@@ -1580,30 +1582,16 @@ void StyleEngine::MarkForWhitespaceReattachment() {
   for (auto element : whitespace_reattach_set_) {
     if (element->NeedsReattachLayoutTree() || !element->GetLayoutObject())
       continue;
-    if (RuntimeEnabledFeatures::DisplayLockingEnabled() &&
-        GetDocument().LockedDisplayLockCount() > 0) {
       // This element might be located inside a display locked subtree, so we
       // might mark it for ReattachLayoutTree later on instead.
-      // TODO(crbug.com/924550): Once we figure out a more efficient way to
-      // determine whether we're inside a locked subtree or not, change this.
-      bool is_in_locked_subtree = false;
-      for (const Node& ancestor :
-           FlatTreeTraversal::InclusiveAncestorsOf(*element)) {
-        if (!ancestor.IsElementNode())
-          continue;
-        if (auto* context = ToElement(ancestor).GetDisplayLockContext()) {
-          if (!context->IsLocked())
-            continue;
-          is_in_locked_subtree = true;
-          context->AddToWhitespaceReattachSet(*element);
-          break;
-        }
-      }
-      if (is_in_locked_subtree)
-        continue;
+    if (Element* locked_ancestor =
+            DisplayLockUtilities::NearestLockedInclusiveAncestor(*element)) {
+      locked_ancestor->GetDisplayLockContext()->AddToWhitespaceReattachSet(
+          *element);
+      continue;
+    }
       DCHECK(!element->NeedsStyleRecalc());
       DCHECK(!element->ChildNeedsStyleRecalc());
-    }
     if (Node* first_child = LayoutTreeBuilderTraversal::FirstChild(*element))
       first_child->MarkAncestorsWithChildNeedsReattachLayoutTree();
   }
@@ -1786,22 +1774,53 @@ void StyleEngine::UpdateStyleInvalidationRoot(ContainerNode* ancestor,
 
 void StyleEngine::UpdateStyleRecalcRoot(ContainerNode* ancestor,
                                         Node* dirty_node) {
-  if (!GetDocument().IsActive())
-    return;
-  if (in_layout_tree_rebuild_) {
-    // TODO(futhark@chromium.org): This happens because we call
-    // LazyReattachIfAttached() from HTMLSlotElement::DetachLayoutTree(). We
-    // probably want to get rid of LazyReattachIfAttached() altogether and call
-    // DetachLayoutTree on assigned nodes instead.
-    return;
+  if (GetDocument().IsActive()) {
+    DCHECK(!in_layout_tree_rebuild_);
+    style_recalc_root_.Update(ancestor, dirty_node);
   }
-  style_recalc_root_.Update(ancestor, dirty_node);
 }
 
 void StyleEngine::UpdateLayoutTreeRebuildRoot(ContainerNode* ancestor,
                                               Node* dirty_node) {
   if (GetDocument().IsActive())
     layout_tree_rebuild_root_.Update(ancestor, dirty_node);
+}
+
+void StyleEngine::UpdateColorScheme() {
+  auto* settings = GetDocument().GetSettings();
+  DCHECK(settings);
+  PreferredColorScheme old_preferred_scheme = preferred_color_scheme_;
+  ColorScheme old_color_scheme = color_scheme_;
+
+  preferred_color_scheme_ = settings->GetPreferredColorScheme();
+  color_scheme_ = ColorScheme::kLight;
+
+  if (preferred_color_scheme_ == PreferredColorScheme::kDark) {
+    if (supported_color_schemes_.Contains(ColorScheme::kDark)) {
+      color_scheme_ = ColorScheme::kDark;
+    } else if (settings->ForceDarkModeEnabled()) {
+      // Make sure we don't match (prefers-color-scheme: dark) when forced
+      // darkening is enabled.
+      preferred_color_scheme_ = PreferredColorScheme::kNoPreference;
+    }
+  }
+
+  if (color_scheme_ != old_color_scheme) {
+    PlatformColorsChanged();
+    if (LocalFrameView* view = GetDocument().View()) {
+      if (color_scheme_ == ColorScheme::kDark) {
+        view->SetBaseBackgroundColor(color_scheme_ == ColorScheme::kDark
+                                         ? Color::kBlack
+                                         : Color::kWhite);
+      }
+    }
+  }
+  if (preferred_color_scheme_ != old_preferred_scheme)
+    MediaQueryAffectingValueChanged();
+}
+
+void StyleEngine::ColorSchemeChanged() {
+  UpdateColorScheme();
 }
 
 void StyleEngine::Trace(blink::Visitor* visitor) {

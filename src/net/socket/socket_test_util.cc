@@ -37,6 +37,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
+#include "net/socket/connect_job.h"
 #include "net/socket/socket.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
@@ -155,6 +156,12 @@ MockConnect::MockConnect(IoMode io_mode, int r, IPEndPoint addr) :
 }
 
 MockConnect::~MockConnect() = default;
+
+MockConfirm::MockConfirm() : mode(SYNCHRONOUS), result(OK) {}
+
+MockConfirm::MockConfirm(IoMode io_mode, int r) : mode(io_mode), result(r) {}
+
+MockConfirm::~MockConfirm() = default;
 
 bool SocketDataProvider::IsIdle() const {
   return true;
@@ -321,8 +328,7 @@ ProxyClientSocketDataProvider::~ProxyClientSocketDataProvider() = default;
 SSLSocketDataProvider::SSLSocketDataProvider(IoMode mode, int result)
     : connect(mode, result),
       next_proto(kProtoUnknown),
-      cert_request_info(NULL),
-      channel_id_service(NULL),
+      cert_request_info(nullptr),
       expected_ssl_version_min(kDefaultSSLVersionMin),
       expected_ssl_version_max(kDefaultSSLVersionMax) {
   SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_TLS1_3,
@@ -792,6 +798,18 @@ std::unique_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
   }
   EXPECT_EQ(next_ssl_data->expected_ssl_version_min, ssl_config.version_min);
   EXPECT_EQ(next_ssl_data->expected_ssl_version_max, ssl_config.version_max);
+  if (next_ssl_data->expected_send_client_cert) {
+    EXPECT_EQ(*next_ssl_data->expected_send_client_cert,
+              ssl_config.send_client_cert);
+    DCHECK_EQ(*next_ssl_data->expected_send_client_cert,
+              next_ssl_data->expected_client_cert != nullptr);
+    if (next_ssl_data->expected_client_cert) {
+      EXPECT_TRUE(next_ssl_data->expected_client_cert->EqualsIncludingChain(
+          ssl_config.client_cert.get()));
+    } else {
+      EXPECT_FALSE(ssl_config.client_cert);
+    }
+  }
   return std::unique_ptr<SSLClientSocket>(new MockSSLClientSocket(
       std::move(stream_socket), host_and_port, ssl_config, next_ssl_data));
 }
@@ -913,7 +931,7 @@ MockTCPClientSocket::MockTCPClientSocket(const AddressList& addresses,
       read_data_(SYNCHRONOUS, ERR_UNEXPECTED),
       need_read_data_(true),
       peer_closed_connection_(false),
-      pending_read_buf_(NULL),
+      pending_read_buf_(nullptr),
       pending_read_buf_len_(0),
       was_used_to_convey_data_(false),
       enable_read_if_ready_(false) {
@@ -1461,6 +1479,8 @@ int MockSSLClientSocket::Write(
     int buf_len,
     CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
+  if (!data_->is_confirm_data_consumed)
+    data_->write_called_before_confirm = true;
   return stream_socket_->Write(buf, buf_len, std::move(callback),
                                traffic_annotation);
 }
@@ -1482,8 +1502,30 @@ int MockSSLClientSocket::Connect(CompletionOnceCallback callback) {
 }
 
 void MockSSLClientSocket::Disconnect() {
-  if (stream_socket_ != NULL)
+  if (stream_socket_ != nullptr)
     stream_socket_->Disconnect();
+}
+
+void MockSSLClientSocket::RunConfirmHandshakeCallback(
+    CompletionOnceCallback callback,
+    int result) {
+  data_->is_confirm_data_consumed = true;
+  std::move(callback).Run(result);
+}
+
+int MockSSLClientSocket::ConfirmHandshake(CompletionOnceCallback callback) {
+  DCHECK(stream_socket_->IsConnected());
+  if (data_->is_confirm_data_consumed)
+    return data_->confirm.result;
+  if (data_->confirm.mode == ASYNC) {
+    RunCallbackAsync(
+        base::BindOnce(&MockSSLClientSocket::RunConfirmHandshakeCallback,
+                       base::Unretained(this), std::move(callback)),
+        data_->confirm.result);
+    return ERR_IO_PENDING;
+  }
+  data_->is_confirm_data_consumed = true;
+  return data_->confirm.result;
 }
 
 bool MockSSLClientSocket::IsConnected() const {
@@ -1567,10 +1609,6 @@ void MockSSLClientSocket::GetSSLCertRequestInfo(
   }
 }
 
-ChannelIDService* MockSSLClientSocket::GetChannelIDService() const {
-  return data_->channel_id_service;
-}
-
 int MockSSLClientSocket::ExportKeyingMaterial(const base::StringPiece& label,
                                               bool has_context,
                                               const base::StringPiece& context,
@@ -1578,11 +1616,6 @@ int MockSSLClientSocket::ExportKeyingMaterial(const base::StringPiece& label,
                                               unsigned int outlen) {
   memset(out, 'A', outlen);
   return OK;
-}
-
-crypto::ECPrivateKey* MockSSLClientSocket::GetChannelIDKey() const {
-  NOTREACHED();
-  return NULL;
 }
 
 void MockSSLClientSocket::RunCallbackAsync(CompletionOnceCallback callback,
@@ -1619,7 +1652,7 @@ MockUDPClientSocket::MockUDPClientSocket(SocketDataProvider* data,
       need_read_data_(true),
       source_port_(123),
       network_(NetworkChangeNotifier::kInvalidNetworkHandle),
-      pending_read_buf_(NULL),
+      pending_read_buf_(nullptr),
       pending_read_buf_len_(0),
       net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::NONE)),
       weak_factory_(this) {
@@ -1903,7 +1936,7 @@ int MockUDPClientSocket::CompleteRead() {
   scoped_refptr<IOBuffer> buf = pending_read_buf_;
   int buf_len = pending_read_buf_len_;
   CompletionOnceCallback callback = std::move(pending_read_callback_);
-  pending_read_buf_ = NULL;
+  pending_read_buf_ = nullptr;
   pending_read_buf_len_ = 0;
 
   int result = read_data_.result;
@@ -2031,7 +2064,7 @@ bool MockTransportClientSocketPool::MockConnectJob::CancelHandle(
   if (handle != handle_)
     return false;
   socket_.reset();
-  handle_ = NULL;
+  handle_ = nullptr;
   user_callback_.Reset();
   return true;
 }
@@ -2060,7 +2093,7 @@ void MockTransportClientSocketPool::MockConnectJob::OnConnect(int rv) {
     handle_->set_connection_attempts(attempts);
   }
 
-  handle_ = NULL;
+  handle_ = nullptr;
 
   if (!user_callback_.is_null()) {
     std::move(user_callback_).Run(rv);
@@ -2070,26 +2103,14 @@ void MockTransportClientSocketPool::MockConnectJob::OnConnect(int rv) {
 MockTransportClientSocketPool::MockTransportClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
-    ClientSocketFactory* socket_factory)
+    const CommonConnectJobParams* common_connect_job_params)
     : TransportClientSocketPool(
           max_sockets,
           max_sockets_per_group,
           base::TimeDelta::FromSeconds(10) /* unused_idle_socket_timeout */,
-          socket_factory,
-          nullptr /* host_resolver */,
-          nullptr /* proxy_delegate */,
-          nullptr /* cert_verifier */,
-          nullptr /* channel_id_server */,
-          nullptr /* transport_security_state */,
-          nullptr /* cert_transparency_verifier */,
-          nullptr /* ct_policy_enforcer */,
-          nullptr /* ssl_client_session_cache */,
-          nullptr /* ssl_client_session_cache_privacy_mode */,
-          nullptr /* ssl_config_service */,
-          nullptr /* socket_performance_watcher_factory */,
-          nullptr /* network_quality_estimator */,
-          nullptr /* netlog */),
-      client_socket_factory_(socket_factory),
+          common_connect_job_params,
+          nullptr /* ssl_config_service */),
+      client_socket_factory_(common_connect_job_params->client_socket_factory),
       last_request_priority_(DEFAULT_PRIORITY),
       release_count_(0),
       cancel_count_(0) {}
@@ -2097,8 +2118,8 @@ MockTransportClientSocketPool::MockTransportClientSocketPool(
 MockTransportClientSocketPool::~MockTransportClientSocketPool() = default;
 
 int MockTransportClientSocketPool::RequestSocket(
-    const std::string& group_name,
-    const void* socket_params,
+    const ClientSocketPool::GroupId& group_id,
+    scoped_refptr<ClientSocketPool::SocketParams> socket_params,
     RequestPriority priority,
     const SocketTag& socket_tag,
     RespectLimits respect_limits,
@@ -2109,17 +2130,18 @@ int MockTransportClientSocketPool::RequestSocket(
   last_request_priority_ = priority;
   std::unique_ptr<StreamSocket> socket =
       client_socket_factory_->CreateTransportClientSocket(
-          AddressList(), NULL, net_log.net_log(), NetLogSource());
+          AddressList(), nullptr, net_log.net_log(), NetLogSource());
   MockConnectJob* job = new MockConnectJob(
       std::move(socket), handle, socket_tag, std::move(callback), priority);
   job_list_.push_back(base::WrapUnique(job));
-  handle->set_pool_id(1);
+  handle->set_group_generation(1);
   return job->Connect();
 }
 
-void MockTransportClientSocketPool::SetPriority(const std::string& group_name,
-                                                ClientSocketHandle* handle,
-                                                RequestPriority priority) {
+void MockTransportClientSocketPool::SetPriority(
+    const ClientSocketPool::GroupId& group_id,
+    ClientSocketHandle* handle,
+    RequestPriority priority) {
   for (auto& job : job_list_) {
     if (job->handle() == handle) {
       job->set_priority(priority);
@@ -2129,8 +2151,9 @@ void MockTransportClientSocketPool::SetPriority(const std::string& group_name,
   NOTREACHED();
 }
 
-void MockTransportClientSocketPool::CancelRequest(const std::string& group_name,
-                                                  ClientSocketHandle* handle) {
+void MockTransportClientSocketPool::CancelRequest(
+    const ClientSocketPool::GroupId& group_id,
+    ClientSocketHandle* handle) {
   for (std::unique_ptr<MockConnectJob>& it : job_list_) {
     if (it->CancelHandle(handle)) {
       cancel_count_++;
@@ -2140,10 +2163,10 @@ void MockTransportClientSocketPool::CancelRequest(const std::string& group_name,
 }
 
 void MockTransportClientSocketPool::ReleaseSocket(
-    const std::string& group_name,
+    const ClientSocketPool::GroupId& group_id,
     std::unique_ptr<StreamSocket> socket,
-    int id) {
-  EXPECT_EQ(1, id);
+    int64_t generation) {
+  EXPECT_EQ(1, generation);
   release_count_++;
 }
 

@@ -16,13 +16,22 @@ message DrawQuad {
   required SharedQuadState sqs = 1;
   required Rect rect = 2;
   required Rect visible_rect = 3;
-  required SolidColorDrawQuad quad = 4;
+
+  // |oneof| means "at most one of", so be aware that this message could
+  // have none of the following (consider it invalid and skip if so):
+  oneof quad {
+    SolidColorDrawQuad solid_color_quad = 4;
+    TileDrawQuad tile_quad = 5;
+  }
 }
 
 message SharedQuadState {
   required Transform transform = 1;
   required Rect layer_rect = 2;
   required Rect visible_rect = 3;
+
+  // TODO(malaykeshav): add fuzzable rounded corner bounds.
+
   required Rect clip_rect = 4;
   required bool is_clipped = 5;
   required bool are_contents_opaque = 6;
@@ -40,6 +49,23 @@ message SolidColorDrawQuad {
   required bool force_anti_aliasing_off = 2;
 }
 
+message TileDrawQuad {
+  required bool needs_blending = 1;
+
+  // Allocate an SkBitmap from these values and pass the ResourceId
+  // to the TileDrawQuad.
+  required fixed32 texture_color = 2;
+  required Size texture_size = 3;
+
+  // TODO (celineo): enable fuzzing gfx::RectF
+  required Rect tex_coord_rect = 4;
+
+  required bool swizzle_contents = 5;
+  required bool is_premultiplied = 6;
+  required bool nearest_neighbor = 7;
+  required bool force_anti_aliasing_off = 8;
+}
+
 // Spec to initialize a gfx::Rect.
 // Defaults to the size of the renderer frame as defined in
 // fuzzer_browser_process.cc, in the hopes that this generally yields more
@@ -49,6 +75,12 @@ message Rect {
   required sint32 y = 2 [default = 0];
   required sint32 width = 3 [default = 620];
   required sint32 height = 4 [default = 400];
+}
+
+// maps to a gfx::Size, same defaults as gfx::Rect
+message Size {
+  required sint32 width = 1 [default = 620];
+  required sint32 height = 2 [default = 400];
 }
 
 message Transform {

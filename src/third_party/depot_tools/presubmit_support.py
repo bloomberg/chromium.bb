@@ -44,7 +44,8 @@ from warnings import warn
 
 # Local imports.
 import fix_encoding
-import gclient_utils  # Exposed through the API
+import gclient_paths  # Exposed through the API
+import gclient_utils
 import git_footers
 import gerrit_util
 import owners
@@ -516,7 +517,10 @@ class InputApi(object):
     self.cpplint = cpplint
     self.cStringIO = cStringIO
     self.fnmatch = fnmatch
-    self.gclient_utils = gclient_utils
+    self.gclient_paths = gclient_paths
+    # TODO(yyanagisawa): stop exposing this when python3 become default.
+    # Since python3's tempfile has TemporaryDirectory, we do not need this.
+    self.temporary_directory = gclient_utils.temporary_directory
     self.glob = glob.glob
     self.json = json
     self.logging = logging.getLogger('PRESUBMIT')

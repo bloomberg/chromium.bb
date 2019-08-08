@@ -4,6 +4,8 @@
 
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/trees/effect_node.h"
+#include "cc/trees/transform_node.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_script_source.h"
@@ -260,11 +262,16 @@ class WebLayerListSimTest : public PaintTestConfigurations, public SimTest {
         WebWidget::LifecycleUpdateReason::kTest);
   }
 
+  void UpdateAllLifecyclePhasesExceptPaint() {
+    WebView().MainFrameWidget()->UpdateLifecycle(
+        WebWidget::LifecycleUpdate::kPrePaint,
+        WebWidget::LifecycleUpdateReason::kTest);
+  }
+
   cc::PropertyTrees* GetPropertyTrees() {
     return Compositor().layer_tree_view().layer_tree_host()->property_trees();
   }
 
- private:
   PaintArtifactCompositor* paint_artifact_compositor() {
     return MainFrame().GetFrameView()->GetPaintArtifactCompositorForTesting();
   }
@@ -415,11 +422,11 @@ TEST_P(WebLayerListSimTest,
   EXPECT_EQ(sequence_number, GetPropertyTrees()->sequence_number);
 }
 
-// When a property tree change occurs that affects layer position, all layers
-// associated with the changed property tree node, and all layers associated
-// with a descendant of the changed property tree node need to have
-// |subtree_property_changed| set for damage tracking. In non-layer-list mode,
-// this occurs in BuildPropertyTreesInternal (see:
+// When a property tree change occurs that affects layer transform in the
+// general case, all layers associated with the changed property tree node, and
+// all layers associated with a descendant of the changed property tree node
+// need to have |subtree_property_changed| set for damage tracking. In
+// non-layer-list mode, this occurs in BuildPropertyTreesInternal (see:
 // SetLayerPropertyChangedForChild).
 TEST_P(WebLayerListSimTest, LayerSubtreeTransformPropertyChanged) {
   // TODO(crbug.com/765003): CAP may make different layerization decisions and
@@ -472,7 +479,7 @@ TEST_P(WebLayerListSimTest, LayerSubtreeTransformPropertyChanged) {
   // Modifying the transform style should set |subtree_property_changed| on
   // both layers.
   outer_element->setAttribute(html_names::kStyleAttr,
-                              "transform: translate(20px, 20px)");
+                              "transform: rotate(10deg)");
   UpdateAllLifecyclePhases();
   EXPECT_TRUE(outer_element_layer->subtree_property_changed());
   EXPECT_TRUE(inner_element_layer->subtree_property_changed());
@@ -481,6 +488,187 @@ TEST_P(WebLayerListSimTest, LayerSubtreeTransformPropertyChanged) {
   Compositor().BeginFrame();
   EXPECT_FALSE(outer_element_layer->subtree_property_changed());
   EXPECT_FALSE(inner_element_layer->subtree_property_changed());
+}
+
+// When a property tree change occurs that affects layer transform in a simple
+// case (ie before and after transforms both preserve axis alignment), the
+// transforms can be directly updated without explicitly marking layers as
+// damaged. The ensure damage occurs, the transform node should have
+// |transform_changed| set. In non-layer-list mode, this occurs in
+// cc::TransformTree::OnTransformAnimated and cc::Layer::SetTransform.
+TEST_P(WebLayerListSimTest, DirectTransformPropertyUpdate) {
+  // TODO(crbug.com/765003): CAP may make different layerization decisions and
+  // we cannot guarantee that both divs will be composited in this test. When
+  // CAP gets closer to launch, this test should be updated to pass.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        html { overflow: hidden; }
+        #outer {
+          width: 100px;
+          height: 100px;
+          will-change: transform;
+          transform: translate(10px, 10px) scale(1, 2);
+        }
+        #inner {
+          width: 100px;
+          height: 100px;
+          will-change: transform;
+          background: lightblue;
+        }
+      </style>
+      <div id='outer'>
+        <div id='inner'></div>
+      </div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  auto* outer_element = GetElementById("outer");
+  auto* outer_element_layer = ContentLayerAt(ContentLayerCount() - 2);
+  DCHECK_EQ(outer_element_layer->element_id(),
+            CompositorElementIdFromUniqueObjectId(
+                outer_element->GetLayoutObject()->UniqueId(),
+                CompositorElementIdNamespace::kPrimary));
+  auto transform_tree_index = outer_element_layer->transform_tree_index();
+  auto* transform_node =
+      GetPropertyTrees()->transform_tree.Node(transform_tree_index);
+
+  // Initially, transform should be unchanged.
+  EXPECT_FALSE(transform_node->transform_changed);
+  EXPECT_FALSE(paint_artifact_compositor()->NeedsUpdate());
+
+  // Modifying the transform in a simple way allowed for a direct update.
+  outer_element->setAttribute(html_names::kStyleAttr,
+                              "transform: translate(30px, 20px) scale(5, 5)");
+  UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(transform_node->transform_changed);
+  EXPECT_FALSE(paint_artifact_compositor()->NeedsUpdate());
+
+  // After a frame the |transform_changed| value should be reset.
+  Compositor().BeginFrame();
+  EXPECT_FALSE(transform_node->transform_changed);
+}
+
+// This test ensures that the correct transform nodes are created and bits set
+// so that the browser controls movement adjustments needed by bottom-fixed
+// elements will work.
+TEST_P(WebLayerListSimTest, AffectedByOuterViewportBoundsDelta) {
+  // TODO(bokan): This test will have to be reevaluated for CAP. It looks like
+  // the fixed layer isn't composited in CAP.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        body { height: 2000px; }
+        #fixed {
+          width: 100px;
+          height: 100px;
+          position: fixed;
+          left: 0;
+          background-color: red;
+        }
+      </style>
+      <div id='fixed'></div>
+  )HTML");
+
+  auto* fixed_element = GetElementById("fixed");
+  auto* fixed_element_layer = ContentLayerAt(ContentLayerCount() - 2);
+  DCHECK_EQ(fixed_element_layer->element_id(),
+            CompositorElementIdFromUniqueObjectId(
+                fixed_element->GetLayoutObject()->UniqueId(),
+                CompositorElementIdNamespace::kPrimary));
+
+  // Fix the DIV to the bottom of the viewport. Since the viewport height will
+  // expand/contract, the fixed element will need to be moved as the bounds
+  // delta changes.
+  {
+    fixed_element->setAttribute(html_names::kStyleAttr, "bottom: 0");
+    Compositor().BeginFrame();
+
+    auto transform_tree_index = fixed_element_layer->transform_tree_index();
+    auto* transform_node =
+        GetPropertyTrees()->transform_tree.Node(transform_tree_index);
+
+    DCHECK(transform_node);
+    EXPECT_FALSE(transform_node->moved_by_outer_viewport_bounds_delta_x);
+    EXPECT_TRUE(transform_node->moved_by_outer_viewport_bounds_delta_y);
+  }
+
+  // Fix it to the top now. Since the top edge doesn't change (relative to the
+  // renderer origin), we no longer need to move it as the bounds delta
+  // changes.
+  {
+    fixed_element->setAttribute(html_names::kStyleAttr, "top: 0");
+    Compositor().BeginFrame();
+
+    auto transform_tree_index = fixed_element_layer->transform_tree_index();
+    auto* transform_node =
+        GetPropertyTrees()->transform_tree.Node(transform_tree_index);
+
+    DCHECK(transform_node);
+    EXPECT_FALSE(transform_node->moved_by_outer_viewport_bounds_delta_x);
+    EXPECT_FALSE(transform_node->moved_by_outer_viewport_bounds_delta_y);
+  }
+}
+
+// When a property tree change occurs that affects layer transform-origin, the
+// transform can be directly updated without explicitly marking the layer as
+// damaged. The ensure damage occurs, the transform node should have
+// |transform_changed| set. In non-layer-list mode, this occurs in
+// cc::Layer::SetTransformOrigin.
+TEST_P(WebLayerListSimTest, DirectTransformOriginPropertyUpdate) {
+  // TODO(crbug.com/765003): CAP may make different layerization decisions and
+  // we cannot guarantee that both divs will be composited in this test. When
+  // CAP gets closer to launch, this test should be updated to pass.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        html { overflow: hidden; }
+        #box {
+          width: 100px;
+          height: 100px;
+          transform: rotate3d(3, 2, 1, 45deg);
+          transform-origin: 10px 10px 100px;
+        }
+      </style>
+      <div id='box'></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  auto* box_element = GetElementById("box");
+  auto* box_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  DCHECK_EQ(box_element_layer->element_id(),
+            CompositorElementIdFromUniqueObjectId(
+                box_element->GetLayoutObject()->UniqueId(),
+                CompositorElementIdNamespace::kPrimary));
+  auto transform_tree_index = box_element_layer->transform_tree_index();
+  auto* transform_node =
+      GetPropertyTrees()->transform_tree.Node(transform_tree_index);
+
+  // Initially, transform should be unchanged.
+  EXPECT_FALSE(transform_node->transform_changed);
+  EXPECT_FALSE(paint_artifact_compositor()->NeedsUpdate());
+
+  // Modifying the transform-origin in a simple way allowed for a direct update.
+  box_element->setAttribute(html_names::kStyleAttr,
+                            "transform-origin: -10px -10px -100px");
+  UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(transform_node->transform_changed);
+  EXPECT_FALSE(paint_artifact_compositor()->NeedsUpdate());
+
+  // After a frame the |transform_changed| value should be reset.
+  Compositor().BeginFrame();
+  EXPECT_FALSE(transform_node->transform_changed);
 }
 
 // This test is similar to |LayerSubtreeTransformPropertyChanged| but for
@@ -739,6 +927,48 @@ TEST_P(WebLayerListSimTest, SafeOpaqueBackgroundColorGetsSet) {
   // #bottomright is cyan, which is SK_ColorCYAN
   EXPECT_TRUE((squashed_bg_color == SK_ColorGREEN) ||
               (squashed_bg_color == SK_ColorCYAN));
+}
+
+TEST_P(WebLayerListSimTest, NonDrawableLayersIgnoredForRenderSurfaces) {
+  // TODO(crbug.com/765003): CAP may make different layerization decisions. When
+  // CAP gets closer to launch, this test should be updated to pass.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        #outer {
+          width: 100px;
+          height: 100px;
+          opacity: 0.5;
+          background: blue;
+        }
+        #inner {
+          width: 10px;
+          height: 10px;
+          will-change: transform;
+        }
+      </style>
+      <div id='outer'>
+        <div id='inner'></div>
+      </div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  ASSERT_GE(ContentLayerCount(), 2u);
+  auto* inner_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  EXPECT_FALSE(inner_element_layer->DrawsContent());
+  auto* outer_element_layer = ContentLayerAt(ContentLayerCount() - 2);
+  EXPECT_TRUE(outer_element_layer->DrawsContent());
+
+  // The inner element layer is only needed for hit testing and does not draw
+  // content, so it should not cause a render surface.
+  auto effect_tree_index = outer_element_layer->effect_tree_index();
+  auto* effect_node = GetPropertyTrees()->effect_tree.Node(effect_tree_index);
+  EXPECT_EQ(effect_node->opacity, 0.5f);
+  EXPECT_FALSE(effect_node->has_render_surface);
 }
 
 }  // namespace blink

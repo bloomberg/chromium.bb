@@ -21,7 +21,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags.Add;
 import org.chromium.base.test.util.Feature;
@@ -37,6 +36,7 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
 
@@ -180,7 +180,7 @@ public class JavascriptAppModalDialogTest {
         tapViewAndWait();
         executeJavaScriptAndWaitForDialog("history.back();");
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             ChromeActivity activity = mActivityTestRule.getActivity();
             activity.getCurrentTabModel().closeTab(activity.getActivityTab());
         });
@@ -229,7 +229,7 @@ public class JavascriptAppModalDialogTest {
      * showing.
      */
     private JavascriptAppModalDialog getCurrentDialog() throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(
+        return TestThreadUtils.runOnUiThreadBlocking(
                 () -> JavascriptAppModalDialog.getCurrentDialogForTest());
     }
 
@@ -261,7 +261,7 @@ public class JavascriptAppModalDialogTest {
         @Override
         public boolean isSatisfied() {
             try {
-                return ThreadUtils.runOnUiThreadBlocking(() -> {
+                return TestThreadUtils.runOnUiThreadBlocking(() -> {
                     final boolean isShown =
                             JavascriptAppModalDialog.getCurrentDialogForTest() != null;
                     return mShouldBeShown == isShown;

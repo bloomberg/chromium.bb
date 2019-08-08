@@ -72,6 +72,12 @@ void AccessibilityControllerClient::TriggerAccessibilityAlert(
     case ash::mojom::AccessibilityAlert::WINDOW_OVERVIEW_MODE_ENTERED:
       msg = IDS_A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED;
       break;
+    case ash::mojom::AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_ENTERED:
+      msg = IDS_A11Y_ALERT_WORKSPACE_FULLSCREEN_STATE_ENTERED;
+      break;
+    case ash::mojom::AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_EXITED:
+      msg = IDS_A11Y_ALERT_WORKSPACE_FULLSCREEN_STATE_EXITED;
+      break;
     case ash::mojom::AccessibilityAlert::NONE:
       msg = 0;
       break;

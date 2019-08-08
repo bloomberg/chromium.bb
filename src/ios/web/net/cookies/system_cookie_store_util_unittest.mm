@@ -12,8 +12,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "ios/net/cookies/cookie_store_ios_test_util.h"
 #include "ios/net/cookies/system_cookie_store.h"
+#include "ios/web/common/features.h"
 #import "ios/web/net/cookies/wk_cookie_util.h"
-#include "ios/web/public/features.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web/public/test/web_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,21 +56,6 @@ bool IsCookieSetInWKCookieStore(NSHTTPCookie* system_cookie,
   return is_set;
 }
 
-// Checks if |system_cookie| was set for NSHTTPCookieStorage |cookie_store|.
-bool IsCookieSetInNSHTTPCookieStore(NSHTTPCookie* system_cookie,
-                                    NSURL* url,
-                                    NSHTTPCookieStorage* cookie_store) {
-  NSHTTPCookie* result_cookie = nil;
-
-  for (NSHTTPCookie* cookie in [cookie_store cookiesForURL:url]) {
-    if ([cookie.name isEqualToString:system_cookie.name]) {
-      result_cookie = cookie;
-      break;
-    }
-  }
-  return [result_cookie.value isEqualToString:system_cookie.value];
-}
-
 // Sets |cookie| in SystemCookieStore |store| , and wait until set callback
 // is finished.
 bool SetCookieInCookieStore(NSHTTPCookie* cookie,
@@ -109,27 +94,14 @@ TEST_F(SystemCookieStoreUtilTest, CreateSystemCookieStore) {
   }];
   auto system_cookie_store = web::CreateSystemCookieStore(&browser_state);
 
-  if (@available(iOS 11, *)) {
-    // In iOS 11 the cookieStore should be backed by browser state's
-    // wkhttpcookiestore.
-    WKHTTPCookieStore* wk_cookie_store =
-        web::WKCookieStoreForBrowserState(&browser_state);
-    EXPECT_FALSE(IsCookieSetInWKCookieStore(test_cookie, test_cookie_url,
-                                            wk_cookie_store));
-    EXPECT_TRUE(SetCookieInCookieStore(test_cookie, system_cookie_store.get()));
-    EXPECT_TRUE(IsCookieSetInWKCookieStore(test_cookie, test_cookie_url,
-                                           wk_cookie_store));
-  } else {
-    // Before iOS 11, cookies set in SystemCookieStore are backed by
-    // nshttpsharedcookieStorage.
-    NSHTTPCookieStorage* ns_cookie_store =
-        [NSHTTPCookieStorage sharedHTTPCookieStorage];
-    EXPECT_FALSE(IsCookieSetInNSHTTPCookieStore(test_cookie, test_cookie_url,
-                                                ns_cookie_store));
-    EXPECT_TRUE(SetCookieInCookieStore(test_cookie, system_cookie_store.get()));
-    EXPECT_TRUE(IsCookieSetInNSHTTPCookieStore(test_cookie, test_cookie_url,
-                                               ns_cookie_store));
-  }
+  WKHTTPCookieStore* wk_cookie_store =
+      web::WKCookieStoreForBrowserState(&browser_state);
+  EXPECT_FALSE(IsCookieSetInWKCookieStore(test_cookie, test_cookie_url,
+                                          wk_cookie_store));
+  EXPECT_TRUE(SetCookieInCookieStore(test_cookie, system_cookie_store.get()));
+  EXPECT_TRUE(IsCookieSetInWKCookieStore(test_cookie, test_cookie_url,
+                                         wk_cookie_store));
+
   // Clear cookies that was set in the test.
   __block bool cookies_cleared = false;
   system_cookie_store->ClearStoreAsync(base::BindOnce(^{

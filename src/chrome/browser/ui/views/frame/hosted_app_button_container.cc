@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/views/frame/hosted_app_menu_button.h"
 #include "chrome/browser/ui/views/frame/hosted_app_origin_text.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
-#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer_animation_element.h"
@@ -184,8 +184,8 @@ HostedAppButtonContainer::HostedAppButtonContainer(
       inactive_color_(inactive_color) {
   DCHECK(browser_view_);
   DCHECK(browser_view_->browser()
-             ->hosted_app_controller()
-             ->IsForExperimentalHostedAppBrowser());
+             ->web_app_controller()
+             ->IsForExperimentalWebAppBrowser());
 
   set_id(VIEW_ID_HOSTED_APP_BUTTON_CONTAINER);
 
@@ -208,20 +208,20 @@ HostedAppButtonContainer::HostedAppButtonContainer(
   views::SetHitTestComponent(content_settings_container_,
                              static_cast<int>(HTCLIENT));
 
-  PageActionIconContainerView::Params params;
+  OmniboxPageActionIconContainerView::Params params;
   params.types_enabled.push_back(PageActionIconType::kFind);
   params.types_enabled.push_back(PageActionIconType::kManagePasswords);
   params.types_enabled.push_back(PageActionIconType::kTranslate);
   params.types_enabled.push_back(PageActionIconType::kZoom);
   params.icon_size = GetLayoutConstant(HOSTED_APP_PAGE_ACTION_ICON_SIZE);
-  params.icon_color = GetIconColor();
+  params.icon_color = GetCaptionColor();
   params.between_icon_spacing = HorizontalPaddingBetweenItems();
   params.browser = browser_view_->browser();
   params.command_updater = browser_view_->browser()->command_controller();
   params.page_action_icon_delegate = this;
-  page_action_icon_container_view_ =
-      AddChildView(std::make_unique<PageActionIconContainerView>(params));
-  views::SetHitTestComponent(page_action_icon_container_view_,
+  omnibox_page_action_icon_container_view_ = AddChildView(
+      std::make_unique<OmniboxPageActionIconContainerView>(params));
+  views::SetHitTestComponent(omnibox_page_action_icon_container_view_,
                              static_cast<int>(HTCLIENT));
 
   browser_actions_container_ =
@@ -256,7 +256,17 @@ HostedAppButtonContainer::~HostedAppButtonContainer() {
 
 void HostedAppButtonContainer::UpdateStatusIconsVisibility() {
   content_settings_container_->UpdateContentSettingViewsVisibility();
-  page_action_icon_container_view_->UpdateAll();
+  omnibox_page_action_icon_container_view_->UpdateAll();
+}
+
+void HostedAppButtonContainer::UpdateCaptionColors() {
+  const BrowserNonClientFrameView* frame_view =
+      browser_view_->frame()->GetFrameView();
+  active_color_ = frame_view->GetCaptionColor(
+      BrowserNonClientFrameView::ActiveState::kActive);
+  inactive_color_ = frame_view->GetCaptionColor(
+      BrowserNonClientFrameView::ActiveState::kInactive);
+  UpdateChildrenColor();
 }
 
 void HostedAppButtonContainer::SetPaintAsActive(bool active) {
@@ -311,7 +321,7 @@ HostedAppButtonContainer::CreateToolbarActionsBar(
 }
 
 SkColor HostedAppButtonContainer::GetContentSettingInkDropColor() const {
-  return GetIconColor();
+  return GetCaptionColor();
 }
 
 content::WebContents* HostedAppButtonContainer::GetContentSettingWebContents() {
@@ -337,7 +347,7 @@ void HostedAppButtonContainer::OnImmersiveRevealStarted() {
 }
 
 SkColor HostedAppButtonContainer::GetPageActionInkDropColor() const {
-  return GetIconColor();
+  return GetCaptionColor();
 }
 
 content::WebContents*
@@ -350,9 +360,9 @@ HostedAppButtonContainer::GetBrowserActionsContainer() {
   return browser_actions_container_;
 }
 
-PageActionIconContainerView*
-HostedAppButtonContainer::GetPageActionIconContainerView() {
-  return page_action_icon_container_view_;
+OmniboxPageActionIconContainerView*
+HostedAppButtonContainer::GetOmniboxPageActionIconContainerView() {
+  return omnibox_page_action_icon_container_view_;
 }
 
 AppMenuButton* HostedAppButtonContainer::GetAppMenuButton() {
@@ -454,14 +464,14 @@ HostedAppButtonContainer::GetContentSettingViewsForTesting() const {
   return content_settings_container_->GetContentSettingViewsForTesting();
 }
 
-SkColor HostedAppButtonContainer::GetIconColor() const {
+SkColor HostedAppButtonContainer::GetCaptionColor() const {
   return paint_as_active_ ? active_color_ : inactive_color_;
 }
 
 void HostedAppButtonContainer::UpdateChildrenColor() {
-  SkColor icon_color = GetIconColor();
+  SkColor icon_color = GetCaptionColor();
   hosted_app_origin_text_->SetTextColor(icon_color);
   content_settings_container_->SetIconColor(icon_color);
-  page_action_icon_container_view_->SetIconColor(icon_color);
+  omnibox_page_action_icon_container_view_->SetIconColor(icon_color);
   app_menu_button_->SetColor(icon_color);
 }

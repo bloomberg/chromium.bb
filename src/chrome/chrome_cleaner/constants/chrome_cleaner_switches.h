@@ -18,7 +18,6 @@ extern const char kFileSizeLimitSwitch[];
 extern const char kForceLogsUploadFailureSwitch[];
 extern const char kForceRecoveryComponentSwitch[];
 extern const char kForceSelfDeleteSwitch[];
-extern const char kForceUwsDetectionSwitch[];
 extern const char kInitDoneNotifierSwitch[];
 extern const char kIntegrationTestTimeoutMinutesSwitch[];
 extern const char kLoadEmptyDLLSwitch[];
@@ -50,6 +49,7 @@ extern const char kWithCleanupModeLogsSwitch[];
 // Unoffical build only switches.
 #if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
 extern const char kAllowUnsecureDLLsSwitch[];
+extern const char kRunWithoutSandboxForTestingSwitch[];
 #endif  // CHROME_CLEANER_OFFICIAL_BUILD
 
 }  // namespace chrome_cleaner

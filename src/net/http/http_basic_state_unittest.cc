@@ -46,7 +46,7 @@ TEST(HttpBasicStateTest, ReleaseConnectionWorks) {
 TEST(HttpBasicStateTest, InitializeWorks) {
   HttpBasicState state(std::make_unique<ClientSocketHandle>(), false, false);
   const HttpRequestInfo request_info;
-  state.Initialize(&request_info, false, LOW, NetLogWithSource());
+  state.Initialize(&request_info, LOW, NetLogWithSource());
   EXPECT_TRUE(state.parser());
 }
 
@@ -55,7 +55,7 @@ TEST(HttpBasicStateTest, TrafficAnnotationStored) {
   HttpRequestInfo request_info;
   request_info.traffic_annotation =
       MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
-  state.Initialize(&request_info, false, LOW, NetLogWithSource());
+  state.Initialize(&request_info, LOW, NetLogWithSource());
   EXPECT_EQ(TRAFFIC_ANNOTATION_FOR_TESTS,
             NetworkTrafficAnnotationTag(state.traffic_annotation()));
 }
@@ -63,7 +63,7 @@ TEST(HttpBasicStateTest, TrafficAnnotationStored) {
 TEST(HttpBasicStateTest, DeleteParser) {
   HttpBasicState state(std::make_unique<ClientSocketHandle>(), false, false);
   const HttpRequestInfo request_info;
-  state.Initialize(&request_info, false, LOW, NetLogWithSource());
+  state.Initialize(&request_info, LOW, NetLogWithSource());
   EXPECT_TRUE(state.parser());
   state.DeleteParser();
   EXPECT_EQ(NULL, state.parser());
@@ -76,7 +76,7 @@ TEST(HttpBasicStateTest, GenerateRequestLineNoProxy) {
   HttpRequestInfo request_info;
   request_info.url = GURL("http://www.example.com/path?foo=bar#hoge");
   request_info.method = "PUT";
-  state.Initialize(&request_info, false, LOW, NetLogWithSource());
+  state.Initialize(&request_info, LOW, NetLogWithSource());
   EXPECT_EQ("PUT /path?foo=bar HTTP/1.1\r\n", state.GenerateRequestLine());
 }
 
@@ -87,7 +87,7 @@ TEST(HttpBasicStateTest, GenerateRequestLineWithProxy) {
   HttpRequestInfo request_info;
   request_info.url = GURL("http://www.example.com/path?foo=bar#hoge");
   request_info.method = "PUT";
-  state.Initialize(&request_info, false, LOW, NetLogWithSource());
+  state.Initialize(&request_info, LOW, NetLogWithSource());
   EXPECT_EQ("PUT http://www.example.com/path?foo=bar HTTP/1.1\r\n",
             state.GenerateRequestLine());
 }

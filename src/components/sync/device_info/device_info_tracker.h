@@ -41,6 +41,9 @@ class DeviceInfoTracker {
   // to prevent double counting for devices that disable sync and reenable it,
   // but callers should nevertheless consider this an upper bound.
   virtual int CountActiveDevices() const = 0;
+  // A temporary function to to allow tests to ensure active devices.
+  // TODO(crbug/948784) remove this function after architecture work.
+  virtual void ForcePulseForTest() = 0;
 };
 
 }  // namespace syncer

@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -60,6 +61,10 @@ class Cronet_EngineImpl : public Cronet_Engine {
     return context_.get();
   }
 
+  // Returns true if there is a listener currently registered (using
+  // AddRequestFinishedListener()), and false otherwise.
+  bool HasRequestFinishedListener();
+
  private:
   class StreamEngineImpl;
   class Callback;
@@ -87,6 +92,11 @@ class Cronet_EngineImpl : public Cronet_Engine {
 
   // Mock CertVerifier for testing. Only valid until StartWithParams.
   std::unique_ptr<net::CertVerifier> mock_cert_verifier_;
+
+  // Stores registered RequestFinishedInfoListeners with their associated
+  // Executors.
+  base::flat_map<Cronet_RequestFinishedInfoListenerPtr, Cronet_ExecutorPtr>
+      request_finished_registrations_ GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(Cronet_EngineImpl);
 };

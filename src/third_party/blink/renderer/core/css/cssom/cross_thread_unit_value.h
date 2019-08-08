@@ -23,6 +23,7 @@ class CORE_EXPORT CrossThreadUnitValue final : public CrossThreadStyleValue {
 
   StyleValueType GetType() const override { return StyleValueType::kUnitType; }
   CSSStyleValue* ToCSSStyleValue() override;
+  std::unique_ptr<CrossThreadStyleValue> IsolatedCopy() const override;
 
   bool operator==(const CrossThreadStyleValue&) const override;
 

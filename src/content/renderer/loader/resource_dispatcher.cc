@@ -27,7 +27,6 @@
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_utils.h"
-#include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/public/renderer/resource_dispatcher_delegate.h"
 #include "content/renderer/loader/request_extra_data.h"
@@ -45,7 +44,6 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -172,9 +170,9 @@ void ResourceDispatcher::OnReceivedResponse(
   if (!GetPendingRequestInfo(request_id))
     return;
 
-  NotifyResourceResponseReceived(request_info->render_frame_id,
-                                 request_info->resource_load_info.get(),
-                                 response_head_copy);
+  NotifyResourceResponseReceived(
+      request_info->render_frame_id, request_info->resource_load_info.get(),
+      response_head_copy, request_info->previews_state);
 }
 
 void ResourceDispatcher::OnReceivedCachedMetadata(
@@ -283,11 +281,7 @@ void ResourceDispatcher::OnRequestComplete(
   RequestPeer* peer = request_info->peer.get();
 
   if (delegate_) {
-    std::unique_ptr<RequestPeer> new_peer = delegate_->OnRequestComplete(
-        std::move(request_info->peer), request_info->resource_type,
-        status.error_code);
-    DCHECK(new_peer);
-    request_info->peer = std::move(new_peer);
+    delegate_->OnRequestComplete();
   }
 
   network::URLLoaderCompletionStatus renderer_status(status);
@@ -509,7 +503,7 @@ int ResourceDispatcher::StartAsync(
   CheckSchemeForReferrerPolicy(*request);
 
 #if defined(OS_ANDROID)
-  if (request->resource_type != RESOURCE_TYPE_MAIN_FRAME &&
+  if (request->resource_type != static_cast<int>(ResourceType::kMainFrame) &&
       request->has_user_gesture) {
     NotifyUpdateUserGestureCarryoverInfo(request->render_frame_id);
   }
@@ -531,9 +525,12 @@ int ResourceDispatcher::StartAsync(
       request->render_frame_id, request_id, request->url, request->method,
       request->referrer, pending_request->resource_type);
 
+  pending_request->previews_state = request->previews_state;
+
   if (override_url_loader) {
-    DCHECK(request->resource_type == RESOURCE_TYPE_WORKER ||
-           request->resource_type == RESOURCE_TYPE_SHARED_WORKER)
+    DCHECK(request->resource_type == static_cast<int>(ResourceType::kWorker) ||
+           request->resource_type ==
+               static_cast<int>(ResourceType::kSharedWorker))
         << request->resource_type;
 
     // Redirect checks are handled by NavigationURLLoaderImpl, so it's safe to
@@ -562,9 +559,8 @@ int ResourceDispatcher::StartAsync(
       static_cast<int>(blink::mojom::RequestContextType::FETCH)) {
     // MIME sniffing should be disabled for a request initiated by fetch().
     options |= network::mojom::kURLLoadOptionSniffMimeType;
-    if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-      throttles.push_back(
-          std::make_unique<MimeSniffingThrottle>(loading_task_runner));
+    throttles.push_back(
+        std::make_unique<MimeSniffingThrottle>(loading_task_runner));
   }
   if (is_sync) {
     options |= network::mojom::kURLLoadOptionSynchronous;

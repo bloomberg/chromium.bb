@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/feature_list.h"
 #include "base/macros.h"
@@ -38,10 +39,33 @@ extern const base::Feature NET_EXPORT kNetworkErrorLogging;
 
 namespace net {
 
-class NetworkErrorLoggingDelegate;
-
 class NET_EXPORT NetworkErrorLoggingService {
  public:
+  class PersistentNELStore;
+
+  // NEL policy set by an origin.
+  struct NET_EXPORT NELPolicy {
+    NELPolicy();
+    NELPolicy(const NELPolicy& other);
+    ~NELPolicy();
+
+    url::Origin origin;
+    IPAddress received_ip_address = IPAddress();
+
+    // Reporting API endpoint group to which reports should be sent.
+    std::string report_to;
+
+    base::Time expires;
+
+    double success_fraction = 0.0;
+    double failure_fraction = 1.0;
+    bool include_subdomains = false;
+
+    // Last time the policy was accessed to create a report, even if no report
+    // ends up being queued. Also updated when the policy is first set.
+    mutable base::Time last_used;
+  };
+
   // The details of a network error that are included in an NEL report.
   //
   // See http://wicg.github.io/network-error-logging/#dfn-network-error-object
@@ -174,8 +198,10 @@ class NET_EXPORT NetworkErrorLoggingService {
   static void RecordRequestDiscardedForNoNetworkErrorLoggingService();
   static void RecordRequestDiscardedForInsecureOrigin();
 
+  // NEL policies are persisted to disk if |store| is not null.
+  // The store, if given, should outlive |*this|.
   static std::unique_ptr<NetworkErrorLoggingService> Create(
-      std::unique_ptr<NetworkErrorLoggingDelegate> delegate);
+      PersistentNELStore* store);
 
   virtual ~NetworkErrorLoggingService();
 
@@ -243,6 +269,35 @@ class NET_EXPORT NetworkErrorLoggingService {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkErrorLoggingService);
+};
+
+// Persistent storage for NEL policies.
+class NET_EXPORT NetworkErrorLoggingService::PersistentNELStore {
+ public:
+  using NELPoliciesLoadedCallback =
+      base::OnceCallback<void(std::vector<NELPolicy>)>;
+
+  PersistentNELStore() = default;
+  virtual ~PersistentNELStore() = default;
+
+  // Initializes the store and retrieves stored NEL policies. This will be
+  // called only once at startup.
+  virtual void LoadNELPolicies(NELPoliciesLoadedCallback loaded_callback) = 0;
+
+  // Adds a NEL policy to the store.
+  virtual void AddNELPolicy(const NELPolicy& policy) = 0;
+
+  // Updates the access time of the NEL policy in the store.
+  virtual void UpdateNELPolicyAccessTime(const NELPolicy& policy) = 0;
+
+  // Deletes a NEL policy from the store.
+  virtual void DeleteNELPolicy(const NELPolicy& policy) = 0;
+
+  // Flushes the store.
+  virtual void Flush() = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PersistentNELStore);
 };
 
 }  // namespace net

@@ -757,7 +757,7 @@ void TraceLog::SetDisabledWhileLocked(uint8_t modes_to_disable) {
 
 int TraceLog::GetNumTracesRecorded() {
   AutoLock lock(lock_);
-  return IsEnabled() ? num_traces_recorded_ : -1;
+  return (enabled_modes_ & RECORDING_MODE) ? num_traces_recorded_ : -1;
 }
 
 void TraceLog::AddEnabledStateObserver(EnabledStateObserver* listener) {
@@ -1530,7 +1530,7 @@ void TraceLog::AddMetadataEventsWhileLocked() {
       base::debug::ReadElfBuildId(&__executable_start, true, build_id);
   if (build_id_length > 0) {
     AddMetadataEventWhileLocked(current_thread_id, "chrome_library_module",
-                                "id", build_id);
+                                "id", std::string(build_id));
   }
 #endif
 

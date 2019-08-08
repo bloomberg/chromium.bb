@@ -269,9 +269,15 @@ Polymer({
         element = subPage.$$('#networkList');
       }
     } else if (this.detailType_) {
-      element = this.$$('network-summary')
-                    .$$(`#${this.detailType_}`)
-                    .$$('.subpage-arrow button');
+      const rowForDetailType =
+          this.$$('network-summary').$$(`#${this.detailType_}`);
+
+      // Note: It is possible that the row is no longer present in the DOM
+      // (e.g., when a Cellular dongle is unplugged or when Instant Tethering
+      // becomes unavailable due to the Bluetooth controller disconnecting).
+      if (rowForDetailType) {
+        element = rowForDetailType.$$('.subpage-arrow');
+      }
     }
     if (element) {
       this.focusConfig_.set(oldRoute.path, element);
@@ -320,6 +326,7 @@ Polymer({
    * @private
    */
   showConfig_: function(configAndConnect, type, guid, name) {
+    assert(type != CrOnc.Type.CELLULAR && type != CrOnc.Type.TETHER);
     const configDialog =
         /** @type {!InternetConfigElement} */ (this.$.configDialog);
     configDialog.type =
@@ -400,6 +407,17 @@ Polymer({
 
     if (this.managedNetworkAvailable != managedNetworkAvailable) {
       this.managedNetworkAvailable = managedNetworkAvailable;
+    }
+
+    if (this.detailType_ && !this.deviceStates[this.detailType_]) {
+      // If the device type associated with the current network has been
+      // removed (e.g., due to unplugging a Cellular dongle), the details page,
+      // if visible, displays controls which are no longer functional. If this
+      // case occurs, close the details page.
+      const detailPage = this.$$('settings-internet-detail-page');
+      if (detailPage) {
+        detailPage.close();
+      }
     }
   },
 
@@ -594,11 +612,12 @@ Polymer({
   onNetworkConnect_: function(event) {
     const properties = event.detail.networkProperties;
     const name = CrOnc.getNetworkName(properties);
+    const networkType = properties.Type;
     if (!event.detail.bypassConnectionDialog &&
         CrOnc.shouldShowTetherDialogBeforeConnection(properties)) {
       const params = new URLSearchParams;
       params.append('guid', properties.GUID);
-      params.append('type', properties.Type);
+      params.append('type', networkType);
       params.append('name', name);
       params.append('showConfigure', true.toString());
 
@@ -606,9 +625,10 @@ Polymer({
       return;
     }
 
-    if (properties.Connectable === false || properties.ErrorState) {
+    if (!CrOnc.isMobileNetwork(properties) &&
+        (properties.Connectable === false || properties.ErrorState)) {
       this.showConfig_(
-          true /* configAndConnect */, properties.Type, properties.GUID, name);
+          true /* configAndConnect */, networkType, properties.GUID, name);
       return;
     }
 
@@ -623,11 +643,10 @@ Polymer({
             'networkingPrivate.startConnect error: ' + message +
             ' For: ' + properties.GUID);
 
-        // There is no configuration flow for Instant Tethering networks.
-        if (properties.Type != CrOnc.Type.TETHER) {
+        // There is no configuration flow for Mobile Networks.
+        if (!CrOnc.isMobileNetwork(properties)) {
           this.showConfig_(
-              true /* configAndConnect */, properties.Type, properties.GUID,
-              name);
+              true /* configAndConnect */, networkType, properties.GUID, name);
         }
       }
     });

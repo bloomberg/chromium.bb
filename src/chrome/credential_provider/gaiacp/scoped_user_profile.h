@@ -29,7 +29,7 @@ class ScopedUserProfile {
   virtual ~ScopedUserProfile();
 
   // Saves Gaia information to the account's KHCU registry hive.
-  virtual HRESULT SaveAccountInfo(const base::DictionaryValue& properties);
+  virtual HRESULT SaveAccountInfo(const base::Value& properties);
 
  protected:
   // This constructor is used by the derived fake class to bypass the
@@ -37,7 +37,7 @@ class ScopedUserProfile {
   // tests are not running elevated.
   ScopedUserProfile();
 
-  HRESULT ExtractAssociationInformation(const base::DictionaryValue& properties,
+  HRESULT ExtractAssociationInformation(const base::Value& properties,
                                         base::string16* sid,
                                         base::string16* id,
                                         base::string16* email,

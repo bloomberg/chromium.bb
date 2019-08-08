@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -41,9 +42,11 @@ class PageActionIconView : public IconLabelBubbleView {
     virtual SkColor GetPageActionInkDropColor() const = 0;
 
     virtual content::WebContents* GetWebContentsForPageActionIconView() = 0;
-  };
 
-  void Init();
+    // Delegate should override and return true when the user is editing the
+    // location bar contents.
+    virtual bool IsLocationBarUserInputInProgress() const;
+  };
 
   // Updates the color of the icon, this must be set before the icon is drawn.
   void SetIconColor(SkColor icon_color);
@@ -59,6 +62,8 @@ class PageActionIconView : public IconLabelBubbleView {
 
   // Retrieve the text to be used for a tooltip or accessible name.
   virtual base::string16 GetTextForTooltipAndAccessibleName() const = 0;
+
+  SkColor GetLabelColorForTesting() const;
 
  protected:
   enum ExecuteSource {
@@ -92,24 +97,17 @@ class PageActionIconView : public IconLabelBubbleView {
   // views::IconLabelBubbleView:
   SkColor GetTextColor() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
+  base::string16 GetTooltipText(const gfx::Point& p) const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnKeyReleased(const ui::KeyEvent& event) override;
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
+      const views::ViewHierarchyChangedDetails& details) override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   void OnThemeChanged() override;
-  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
-  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override;
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   SkColor GetInkDropBaseColor() const override;
+  bool ShouldShowSeparator() const final;
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -141,18 +139,21 @@ class PageActionIconView : public IconLabelBubbleView {
 
   bool active() const { return active_; }
 
+  // Delegate accessor for subclasses.
+  Delegate* delegate() const { return delegate_; }
+
  private:
   // The size of the icon image (excluding the ink drop).
-  int icon_size_;
+  int icon_size_ = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
 
   // What color to paint the icon with.
   SkColor icon_color_ = gfx::kPlaceholderColor;
 
   // The CommandUpdater for the Browser object that owns the location bar.
-  CommandUpdater* command_updater_;
+  CommandUpdater* const command_updater_;
 
   // Delegate for access to associated state.
-  Delegate* delegate_;
+  Delegate* const delegate_;
 
   // The command ID executed when the user clicks this icon.
   const int command_id_;
@@ -160,12 +161,12 @@ class PageActionIconView : public IconLabelBubbleView {
   // The active node_data. The precise definition of "active" is unique to each
   // subclass, but generally indicates that the associated feature is acting on
   // the web page.
-  bool active_;
+  bool active_ = false;
 
   // This is used to check if the bookmark bubble was showing during the mouse
   // pressed event. If this is true then the mouse released event is ignored to
   // prevent the bubble from reshowing.
-  bool suppress_mouse_released_action_;
+  bool suppress_mouse_released_action_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PageActionIconView);
 };

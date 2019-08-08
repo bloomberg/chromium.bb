@@ -23,9 +23,9 @@ namespace blink {
 class ParkableString;
 
 const base::Feature kCompressParkableStringsInBackground{
-    "CompressParkableStringsInBackground", base::FEATURE_ENABLED_BY_DEFAULT};
+    "CompressParkableStringsInBackground", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kCompressParkableStringsInForeground{
-    "CompressParkableStringsInForeground", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CompressParkableStringsInForeground", base::FEATURE_ENABLED_BY_DEFAULT};
 
 class PLATFORM_EXPORT ParkableStringManagerDumpProvider
     : public base::trace_event::MemoryDumpProvider {
@@ -51,6 +51,8 @@ class PLATFORM_EXPORT ParkableStringManager {
   USING_FAST_MALLOC(ParkableStringManager);
 
  public:
+  struct Statistics;
+
   static ParkableStringManager& Instance();
   ~ParkableStringManager();
 
@@ -73,12 +75,14 @@ class PLATFORM_EXPORT ParkableStringManager {
  private:
   friend class ParkableString;
   friend class ParkableStringImpl;
+  struct ParkableStringImplHash;
+  struct ParkableStringImplTranslator;
 
   scoped_refptr<ParkableStringImpl> Add(scoped_refptr<StringImpl>&&);
-  void Remove(ParkableStringImpl*, StringImpl*);
+  void Remove(ParkableStringImpl*);
 
-  void OnParked(ParkableStringImpl*, StringImpl*);
-  void OnUnparked(ParkableStringImpl*, StringImpl*, base::TimeDelta);
+  void OnParked(ParkableStringImpl*);
+  void OnUnparked(ParkableStringImpl*);
 
   void ParkAll(ParkableStringImpl::ParkingMode mode);
   void ParkAllIfRendererBackgrounded(ParkableStringImpl::ParkingMode mode);
@@ -86,6 +90,12 @@ class PLATFORM_EXPORT ParkableStringManager {
   void RecordStatisticsAfter5Minutes() const;
   void AgeStringsAndPark();
   void ScheduleAgingTaskIfNeeded();
+  void RecordUnparkingTime(base::TimeDelta);
+  void RecordParkingThreadTime(base::TimeDelta parking_thread_time) {
+    total_parking_thread_time_ += parking_thread_time;
+  }
+  Vector<ParkableStringImpl*> GetUnparkedStrings() const;
+  Statistics ComputeStatistics() const;
 
   void ResetForTesting();
 
@@ -98,9 +108,9 @@ class PLATFORM_EXPORT ParkableStringManager {
   bool has_posted_unparking_time_accounting_task_;
   bool did_register_memory_pressure_listener_;
   base::TimeDelta total_unparking_time_;
-  HashMap<StringImpl*, ParkableStringImpl*, PtrHash<StringImpl>>
-      unparked_strings_;
-  HashSet<ParkableStringImpl*, PtrHash<ParkableStringImpl>> parked_strings_;
+  base::TimeDelta total_parking_thread_time_;
+  WTF::HashSet<ParkableStringImpl*, ParkableStringImplHash> unparked_strings_;
+  WTF::HashSet<ParkableStringImpl*, ParkableStringImplHash> parked_strings_;
 
   friend class ParkableStringTestBase;
   FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, SynchronousCompression);

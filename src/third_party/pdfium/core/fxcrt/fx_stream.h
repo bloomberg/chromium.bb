@@ -11,26 +11,17 @@
 #include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
 
-#if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+struct FX_FolderHandle;
 
-struct CFindFileDataA;
-typedef CFindFileDataA FX_FileHandle;
-
-#else  // _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
-
-#include <dirent.h>
-#include <sys/types.h>
-typedef DIR FX_FileHandle;
-
-#endif  // _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
-
-FX_FileHandle* FX_OpenFolder(const char* path);
-bool FX_GetNextFile(FX_FileHandle* handle, ByteString* filename, bool* bFolder);
-void FX_CloseFolder(FX_FileHandle* handle);
+FX_FolderHandle* FX_OpenFolder(const char* path);
+bool FX_GetNextFile(FX_FolderHandle* handle,
+                    ByteString* filename,
+                    bool* bFolder);
+void FX_CloseFolder(FX_FolderHandle* handle);
 
 // Used with std::unique_ptr to automatically call FX_CloseFolder().
 struct FxFolderHandleCloser {
-  inline void operator()(FX_FileHandle* h) const { FX_CloseFolder(h); }
+  inline void operator()(FX_FolderHandle* h) const { FX_CloseFolder(h); }
 };
 
 #define FX_FILEMODE_ReadOnly 1

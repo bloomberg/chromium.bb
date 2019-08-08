@@ -9,6 +9,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -104,6 +106,20 @@ PrefService::PrefService(
 
 PrefService::~PrefService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // TODO(crbug.com/942491, 946668, 945772) The following code collects
+  // augments stack dumps created by ~PrefNotifierImpl() with information
+  // whether the profile owning the PrefService is an incognito profile.
+  // Delete this, once the bugs are closed.
+  const bool is_incognito_profile = user_pref_store_->IsInMemoryPrefStore();
+  base::debug::Alias(&is_incognito_profile);
+  // Export value of is_incognito_profile to a string so that `grep`
+  // is a sufficient tool to analyze crashdumps.
+  char is_incognito_profile_string[32];
+  strncpy(is_incognito_profile_string,
+          is_incognito_profile ? "is_incognito: yes" : "is_incognito: no",
+          sizeof(is_incognito_profile_string));
+  base::debug::Alias(&is_incognito_profile_string);
 }
 
 void PrefService::InitFromStorage(bool async) {
@@ -566,16 +582,28 @@ base::Value* PrefService::GetMutableUserPref(const std::string& path,
     return nullptr;
   }
 
-  // Look for an existing preference in the user store. If it doesn't
-  // exist, create a new user preference.
+  // Look for an existing preference in the user store. Return it in case it
+  // exists and has the correct type.
   base::Value* value = nullptr;
-  if (user_pref_store_->GetMutableValue(path, &value))
+  if (user_pref_store_->GetMutableValue(path, &value) &&
+      value->type() == type) {
     return value;
+  }
 
-  // If no user preference exists, clone default value.
+  // TODO(crbug.com/859477): Remove once root cause has been found.
+  if (value && value->type() != type) {
+    DEBUG_ALIAS_FOR_CSTR(path_copy, path.c_str(), 1024);
+    base::debug::DumpWithoutCrashing();
+  }
+
+  // If no user preference of the correct type exists, clone default value.
   const base::Value* default_value = nullptr;
   pref_registry_->defaults()->GetValue(path, &default_value);
-  DCHECK_EQ(default_value->type(), type);
+  // TODO(crbug.com/859477): Revert to DCHECK once root cause has been found.
+  if (default_value->type() != type) {
+    DEBUG_ALIAS_FOR_CSTR(path_copy, path.c_str(), 1024);
+    base::debug::DumpWithoutCrashing();
+  }
   user_pref_store_->SetValueSilently(path, default_value->CreateDeepCopy(),
                                      GetWriteFlags(pref));
   user_pref_store_->GetMutableValue(path, &value);

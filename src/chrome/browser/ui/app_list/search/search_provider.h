@@ -28,6 +28,9 @@ class SearchProvider {
 
   // Invoked to start a query.
   virtual void Start(const base::string16& query) = 0;
+  // Invoked when the UI view closes. In response, the |SearchProvider| may
+  // clear its caches.
+  virtual void ViewClosing() {}
   // Handles training signals if necessary. A given |SearchProvider| may receive
   // training signals for results of any |RankingItemType|, so it is the
   // |SearchProvider|'s responsibility to check |type| and ignore if necessary.
@@ -48,7 +51,11 @@ class SearchProvider {
   // desired to be done only once when all results are added.
   void SwapResults(Results* new_results);
 
+  // Clear results and call the |result_changed_callback_|.
   void ClearResults();
+
+  // Clear the results without calling the |result_changed_callback_|.
+  void ClearResultsSilently();
 
  private:
   void FireResultChanged();

@@ -9,10 +9,8 @@ if (is_android) {
 }
 
 group("scheduler") {
-  # TODO(xingliu): Change this to a source set when we have code to be used by
-  # NotificationScheduleServiceFactory.
   deps = [
-    ":lib",
+    ":factory",
   ]
 
   public_deps = [
@@ -28,6 +26,7 @@ source_set("public") {
     "notification_params.cc",
     "notification_params.h",
     "notification_schedule_service.h",
+    "notification_scheduler_types.h",
     "schedule_params.cc",
     "schedule_params.h",
   ]
@@ -38,19 +37,73 @@ source_set("public") {
   ]
 }
 
-# Internal library that embedders should not directly depend on.
-source_set("lib") {
+# The embedder can depend on this target to get the internal library.
+source_set("factory") {
   sources = [
-    "collection_store.h",
-    "notification_schedule_service_impl.cc",
-    "notification_schedule_service_impl.h",
-    "proto_db_collection_store.cc",
-    "proto_db_collection_store.h",
+    "schedule_service_factory_helper.cc",
+    "schedule_service_factory_helper.h",
   ]
 
   deps = [
+    ":lib",
     ":public",
     "//base",
+    "//components/keyed_service/core",
+    "//components/leveldb_proto",
+  ]
+}
+
+# Internal library that embedders should not directly depend on.
+source_set("lib") {
+  visibility = [
+    ":factory",
+    ":scheduler",
+    ":unit_tests",
+    "//chrome/browser/notifications/scheduler/test:test_lib",
+  ]
+
+  sources = [
+    "collection_store.h",
+    "display_decider.cc",
+    "display_decider.h",
+    "distribution_policy.cc",
+    "distribution_policy.h",
+    "icon_entry.cc",
+    "icon_entry.h",
+    "icon_store.cc",
+    "icon_store.h",
+    "impression_history_tracker.cc",
+    "impression_history_tracker.h",
+    "impression_store.cc",
+    "impression_store.h",
+    "impression_types.cc",
+    "impression_types.h",
+    "init_aware_scheduler.cc",
+    "init_aware_scheduler.h",
+    "internal_types.h",
+    "notification_entry.cc",
+    "notification_entry.h",
+    "notification_schedule_service_impl.cc",
+    "notification_schedule_service_impl.h",
+    "notification_scheduler.cc",
+    "notification_scheduler.h",
+    "notification_scheduler_context.cc",
+    "notification_scheduler_context.h",
+    "proto_conversion.cc",
+    "proto_conversion.h",
+    "scheduled_notification_manager.cc",
+    "scheduled_notification_manager.h",
+    "scheduler_config.cc",
+    "scheduler_config.h",
+    "scheduler_utils.cc",
+    "scheduler_utils.h",
+  ]
+
+  # This target should not depend on anything in //chrome/* except the proto library.
+  deps = [
+    ":public",
+    "//base",
+    "//chrome/browser/notifications/proto",
     "//components/keyed_service/core",
     "//components/leveldb_proto",
   ]
@@ -59,12 +112,22 @@ source_set("lib") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "proto_db_collection_store_unittest.cc",
+    "display_decider_unittest.cc",
+    "distribution_policy_unittest.cc",
+    "icon_store_unittest.cc",
+    "impression_history_tracker_unittest.cc",
+    "impression_store_unittest.cc",
+    "init_aware_scheduler_unittest.cc",
+    "proto_conversion_unittest.cc",
+    "scheduled_notification_manager_unittest.cc",
+    "scheduler_utils_unittest.cc",
   ]
 
   deps = [
     ":lib",
     ":public",
+    "//chrome/browser/notifications/proto",
+    "//chrome/browser/notifications/scheduler/test:test_lib",
     "//components/leveldb_proto:test_support",
     "//testing/gmock",
     "//testing/gtest",

@@ -34,7 +34,7 @@ class SVGSwitchElement final : public SVGGraphicsElement {
   explicit SVGSwitchElement(Document&);
 
  private:
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 };
 
 }  // namespace blink

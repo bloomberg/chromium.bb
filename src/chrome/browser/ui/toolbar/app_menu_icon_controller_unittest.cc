@@ -28,6 +28,8 @@ class MockAppMenuIconControllerDelegate
  public:
   MOCK_METHOD1(UpdateTypeAndSeverity,
                void(AppMenuIconController::TypeAndSeverity type_and_severity));
+  MOCK_CONST_METHOD0(GetViewThemeProvider, const ui::ThemeProvider*());
+  MOCK_METHOD0(GetViewNativeTheme, ui::NativeTheme*());
 };
 
 // A fake upgrade detector that can broadcast an annoyance level change to its

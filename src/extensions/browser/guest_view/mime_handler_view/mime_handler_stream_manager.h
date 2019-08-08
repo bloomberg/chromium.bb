@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -17,6 +18,8 @@
 namespace content {
 class BrowserContext;
 }
+
+FORWARD_DECLARE_TEST(MimeHandlerViewCrossProcessTest, Basic);
 
 namespace extensions {
 class Extension;
@@ -53,6 +56,8 @@ class MimeHandlerStreamManager : public KeyedService,
                            UnloadedExtensionReason reason) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(::MimeHandlerViewCrossProcessTest, Basic);
+
   class EmbedderObserver;
 
   // Maps view id->StreamContainer to maintain their lifetime until they are

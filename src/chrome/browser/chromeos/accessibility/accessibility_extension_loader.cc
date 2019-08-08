@@ -29,10 +29,15 @@ AccessibilityExtensionLoader::~AccessibilityExtensionLoader() {}
 void AccessibilityExtensionLoader::SetProfile(
     Profile* profile,
     const base::Closure& done_callback) {
+  Profile* prev_profile = profile_;
   profile_ = profile;
 
   if (!loaded_)
     return;
+
+  // If the extension was loaded on the previous profile, unload it there.
+  if (prev_profile)
+    UnloadExtensionFromProfile(prev_profile);
 
   // If the extension was already enabled, but not for this profile, add it
   // to this profile.

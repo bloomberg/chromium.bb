@@ -36,7 +36,9 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
-    uint32_t usage) {
+    uint32_t usage,
+    bool is_thread_safe) {
+  DCHECK(!is_thread_safe);
   VkDevice device = context_state_->vk_context_provider()
                         ->GetDeviceQueue()
                         ->GetVulkanDevice();
@@ -72,7 +74,9 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
   VkExportMemoryAllocateInfoKHR external_info;
   external_info.sType = VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO_KHR;
   external_info.pNext = nullptr;
-  external_info.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
+  external_info.handleTypes = context_state_->vk_context_provider()
+                                  ->GetVulkanImplementation()
+                                  ->GetExternalImageHandleType();
 
   VkMemoryAllocateInfo mem_alloc_info;
   mem_alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -113,8 +117,101 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
     const gfx::ColorSpace& color_space,
     uint32_t usage,
     base::span<const uint8_t> pixel_data) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  switch (format) {
+    case viz::ETC1:
+    case viz::RED_8:
+    case viz::LUMINANCE_F16:
+    case viz::R16_EXT:
+    case viz::BGR_565:
+    case viz::RG_88:
+    case viz::BGRX_8888:
+    case viz::RGBX_1010102:
+    case viz::BGRX_1010102:
+    case viz::YVU_420:
+    case viz::YUV_420_BIPLANAR:
+    case viz::UYVY_422:
+      // TODO(https://crbug.com/945513): support all formats.
+      LOG(ERROR) << "format " << format << " is not supported.";
+      return nullptr;
+    default:
+      break;
+  }
+  auto sk_color_type = viz::ResourceFormatToClosestSkColorType(
+      true /* gpu_compositing */, format);
+  auto ii = SkImageInfo::Make(size.width(), size.height(), sk_color_type,
+                              kOpaque_SkAlphaType);
+  // rows in pixel data are aligned with 4.
+  size_t row_bytes = (ii.minRowBytes() + 3) & ~3;
+  if (pixel_data.size() != ii.computeByteSize(row_bytes)) {
+    LOG(ERROR) << "Initial data does not have expected size.";
+    return nullptr;
+  }
+
+  auto backing = CreateSharedImage(mailbox, format, size, color_space, usage,
+                                   false /* is_thread_safe */);
+
+  if (!backing)
+    return nullptr;
+
+  ExternalVkImageBacking* vk_backing =
+      static_cast<ExternalVkImageBacking*>(backing.get());
+
+  std::vector<SemaphoreHandle> handles;
+  if (!vk_backing->BeginAccess(false /* readonly */, &handles)) {
+    LOG(ERROR) << "Failed to request write access of backing.";
+    return nullptr;
+  }
+
+  DCHECK(handles.empty());
+
+  // Create backend render target from the VkImage.
+  GrVkAlloc alloc(vk_backing->memory(), 0 /* offset */,
+                  vk_backing->memory_size(), 0 /* flags */);
+  GrVkImageInfo vk_image_info(vk_backing->image(), alloc,
+                              VK_IMAGE_TILING_OPTIMAL,
+                              VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                              vk_backing->vk_format(), 1 /* levelCount */);
+  GrBackendRenderTarget render_target(size.width(), size.height(),
+                                      1 /* sampleCnt */, vk_image_info);
+  SkSurfaceProps surface_props(0, SkSurfaceProps::kLegacyFontHost_InitType);
+  auto surface = SkSurface::MakeFromBackendRenderTarget(
+      context_state_->gr_context(), render_target, kTopLeft_GrSurfaceOrigin,
+      sk_color_type, nullptr, &surface_props);
+  SkPixmap pixmap(ii, pixel_data.data(), row_bytes);
+  surface->writePixels(pixmap, 0, 0);
+
+  auto* vk_implementation =
+      context_state_->vk_context_provider()->GetVulkanImplementation();
+
+  VkSemaphore semaphore =
+      vk_implementation->CreateExternalSemaphore(vk_backing->device());
+  VkDevice device = context_state_->vk_context_provider()
+                        ->GetDeviceQueue()
+                        ->GetVulkanDevice();
+  SemaphoreHandle semaphore_handle =
+      vk_implementation->GetSemaphoreHandle(device, semaphore);
+  if (!semaphore_handle.is_valid()) {
+    LOG(ERROR) << "GetSemaphoreHandle() failed.";
+    vkDestroySemaphore(device, semaphore, nullptr /* pAllocator */);
+    return nullptr;
+  }
+
+  GrBackendSemaphore gr_semaphore;
+  gr_semaphore.initVulkan(semaphore);
+  if (surface->flushAndSignalSemaphores(1, &gr_semaphore) !=
+      GrSemaphoresSubmitted::kYes) {
+    LOG(ERROR) << "Failed to flush the surface.";
+    vkDestroySemaphore(device, semaphore, nullptr /* pAllocator */);
+    return nullptr;
+  }
+  vk_backing->EndAccess(false /* readonly */, std::move(semaphore_handle));
+  VkQueue queue =
+      context_state_->vk_context_provider()->GetDeviceQueue()->GetVulkanQueue();
+  // TODO(https://crbug.com/932260): avoid blocking CPU thread.
+  vkQueueWaitIdle(queue);
+  vkDestroySemaphore(device, semaphore, nullptr /* pAllocator */);
+
+  return backing;
 }
 
 std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
@@ -126,8 +223,8 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage) {
-  // GpuMemoryBuffers are not supported on Linux.
-  NOTREACHED();
+  // GpuMemoryBuffers supported is not implemented yet.
+  NOTIMPLEMENTED();
   return nullptr;
 }
 
@@ -141,7 +238,9 @@ VkResult ExternalVkImageFactory::CreateExternalVkImage(VkFormat format,
   VkExternalMemoryImageCreateInfoKHR external_info;
   external_info.sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR;
   external_info.pNext = nullptr;
-  external_info.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
+  external_info.handleTypes = context_state_->vk_context_provider()
+                                  ->GetVulkanImplementation()
+                                  ->GetExternalImageHandleType();
 
   VkImageCreateInfo create_info;
   create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;

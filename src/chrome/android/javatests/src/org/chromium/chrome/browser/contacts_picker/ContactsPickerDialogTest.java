@@ -22,7 +22,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
@@ -33,6 +32,7 @@ import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionO
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.ui.ContactsPickerListener;
 
@@ -99,8 +99,8 @@ public class ContactsPickerDialogTest
     // ContactsPickerDialog.ContactsPickerListener:
 
     @Override
-    public void onContactsPickerUserAction(@ContactsPickerAction int action, String contactsJson,
-            List<ContactsPickerListener.Contact> contacts) {
+    public void onContactsPickerUserAction(
+            @ContactsPickerAction int action, List<ContactsPickerListener.Contact> contacts) {
         mLastActionRecorded = action;
         mLastSelectedContacts = (contacts != null) ? new ArrayList<>(contacts) : null;
         onActionCallback.notifyCalled();
@@ -121,7 +121,7 @@ public class ContactsPickerDialogTest
     private ContactsPickerDialog createDialog(final boolean multiselect, final boolean includeNames,
             final boolean includeEmails, final boolean includeTel) throws Exception {
         final ContactsPickerDialog dialog =
-                ThreadUtils.runOnUiThreadBlocking(new Callable<ContactsPickerDialog>() {
+                TestThreadUtils.runOnUiThreadBlocking(new Callable<ContactsPickerDialog>() {
                     @Override
                     public ContactsPickerDialog call() {
                         final ContactsPickerDialog dialog =
@@ -215,12 +215,7 @@ public class ContactsPickerDialogTest
     }
 
     private void dismissDialog() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mDialog.dismiss();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> mDialog.dismiss());
     }
 
     @Test

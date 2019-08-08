@@ -41,4 +41,11 @@ message Crash {
 
   // The invalid address that was free()d, if present.
   optional uint64 free_invalid_address = 8;
+
+  // Set to true if metadata (allocation address and size, stack traces) was
+  // missing for the allocation involving this crash. This can occur when a
+  // use-after-free occurs after the metadata for the allocation has been
+  // deleted or a wild memory access occurs for a page that has no associated
+  // metadata.
+  optional bool missing_metadata = 9;
 }

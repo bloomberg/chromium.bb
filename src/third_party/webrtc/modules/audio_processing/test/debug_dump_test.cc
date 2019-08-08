@@ -19,7 +19,7 @@
 #include "modules/audio_processing/aec_dump/aec_dump_factory.h"
 #include "modules/audio_processing/test/debug_dump_replayer.h"
 #include "modules/audio_processing/test/test_utils.h"
-#include "rtc_base/task_queue.h"
+#include "rtc_base/task_queue_for_test.h"
 #include "test/gtest.h"
 #include "test/testsupport/file_utils.h"
 
@@ -110,7 +110,7 @@ class DebugDumpGenerator {
 
   bool enable_pre_amplifier_;
 
-  rtc::TaskQueue worker_queue_;
+  TaskQueueForTest worker_queue_;
   std::unique_ptr<AudioProcessing> apm_;
 
   const std::string dump_file_name_;
@@ -375,9 +375,9 @@ TEST_F(DebugDumpTest, VerifyRefinedAdaptiveFilterExperimentalString) {
     if (event->type() == audioproc::Event::CONFIG) {
       const audioproc::Config* msg = &event->config();
       ASSERT_TRUE(msg->has_experiments_description());
-      EXPECT_PRED_FORMAT2(testing::IsSubstring, "RefinedAdaptiveFilter",
+      EXPECT_PRED_FORMAT2(::testing::IsSubstring, "RefinedAdaptiveFilter",
                           msg->experiments_description().c_str());
-      EXPECT_PRED_FORMAT2(testing::IsSubstring, "Legacy AEC",
+      EXPECT_PRED_FORMAT2(::testing::IsSubstring, "Legacy AEC",
                           msg->experiments_description().c_str());
     }
   }
@@ -404,11 +404,11 @@ TEST_F(DebugDumpTest, VerifyCombinedExperimentalStringInclusive) {
     if (event->type() == audioproc::Event::CONFIG) {
       const audioproc::Config* msg = &event->config();
       ASSERT_TRUE(msg->has_experiments_description());
-      EXPECT_PRED_FORMAT2(testing::IsSubstring, "EchoController",
+      EXPECT_PRED_FORMAT2(::testing::IsSubstring, "EchoController",
                           msg->experiments_description().c_str());
-      EXPECT_PRED_FORMAT2(testing::IsNotSubstring, "Legacy AEC",
+      EXPECT_PRED_FORMAT2(::testing::IsNotSubstring, "Legacy AEC",
                           msg->experiments_description().c_str());
-      EXPECT_PRED_FORMAT2(testing::IsSubstring, "AgcClippingLevelExperiment",
+      EXPECT_PRED_FORMAT2(::testing::IsSubstring, "AgcClippingLevelExperiment",
                           msg->experiments_description().c_str());
     }
   }
@@ -434,9 +434,10 @@ TEST_F(DebugDumpTest, VerifyCombinedExperimentalStringExclusive) {
     if (event->type() == audioproc::Event::CONFIG) {
       const audioproc::Config* msg = &event->config();
       ASSERT_TRUE(msg->has_experiments_description());
-      EXPECT_PRED_FORMAT2(testing::IsNotSubstring, "EchoController",
+      EXPECT_PRED_FORMAT2(::testing::IsNotSubstring, "EchoController",
                           msg->experiments_description().c_str());
-      EXPECT_PRED_FORMAT2(testing::IsNotSubstring, "AgcClippingLevelExperiment",
+      EXPECT_PRED_FORMAT2(::testing::IsNotSubstring,
+                          "AgcClippingLevelExperiment",
                           msg->experiments_description().c_str());
     }
   }
@@ -461,9 +462,9 @@ TEST_F(DebugDumpTest, VerifyAec3ExperimentalString) {
     if (event->type() == audioproc::Event::CONFIG) {
       const audioproc::Config* msg = &event->config();
       ASSERT_TRUE(msg->has_experiments_description());
-      EXPECT_PRED_FORMAT2(testing::IsNotSubstring, "Legacy AEC",
+      EXPECT_PRED_FORMAT2(::testing::IsNotSubstring, "Legacy AEC",
                           msg->experiments_description().c_str());
-      EXPECT_PRED_FORMAT2(testing::IsSubstring, "EchoController",
+      EXPECT_PRED_FORMAT2(::testing::IsSubstring, "EchoController",
                           msg->experiments_description().c_str());
     }
   }
@@ -488,7 +489,7 @@ TEST_F(DebugDumpTest, VerifyAgcClippingLevelExperimentalString) {
     if (event->type() == audioproc::Event::CONFIG) {
       const audioproc::Config* msg = &event->config();
       ASSERT_TRUE(msg->has_experiments_description());
-      EXPECT_PRED_FORMAT2(testing::IsSubstring, "AgcClippingLevelExperiment",
+      EXPECT_PRED_FORMAT2(::testing::IsSubstring, "AgcClippingLevelExperiment",
                           msg->experiments_description().c_str());
     }
   }

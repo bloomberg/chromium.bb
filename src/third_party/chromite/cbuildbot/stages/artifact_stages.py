@@ -122,6 +122,10 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
         basename = os.path.basename(image_file)
         info = {'input': [basename], 'archive': 'tar', 'compress': 'xz'}
         artifacts.append(info)
+      # We add the dlc folder (if exists) as artifact so we can copy all DLC
+      # artifacts as is.
+      if os.path.isdir(os.path.join(image_dir, 'dlc')):
+        artifacts.append({'input': ['dlc']})
 
     for artifact in artifacts:
       # Resolve the (possible) globs in the input list, and store
@@ -196,13 +200,16 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       # Build factory install image and create a symlink to it.
       factory_install_symlink = None
       if 'factory_install' in config['images']:
+        logging.info('Running commands.BuildFactoryInstallImage')
         alias = commands.BuildFactoryInstallImage(buildroot, board, extra_env)
         factory_install_symlink = self.GetImageDirSymlink(alias)
         if config['factory_install_netboot']:
+          logging.info('Running commands.MakeNetboot')
           commands.MakeNetboot(buildroot, board, factory_install_symlink)
 
       # Build and upload factory zip if needed.
       if factory_install_symlink or config['factory_toolkit']:
+        logging.info('Running commands.BuildFactoryZip')
         filename = commands.BuildFactoryZip(buildroot, board, archive_path,
                                             factory_install_symlink,
                                             self._run.attrs.release_tag)
@@ -211,6 +218,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
     def ArchiveStandaloneArtifact(artifact_info):
       """Build and upload a single archive."""
       if artifact_info['paths']:
+        logging.info('Running commands.BuildStandaloneArchive')
         for path in commands.BuildStandaloneArchive(archive_path, image_dir,
                                                     artifact_info):
           self._release_upload_queue.put([path])
@@ -226,6 +234,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
 
       This includes all the files in /build/$BOARD/tmp/portage/logs.
       """
+      logging.info('Running commands.BuildEbuildLogsTarball')
       tarpath = commands.BuildEbuildLogsTarball(
           self._build_root, self._current_board, self.archive_path)
       if tarpath is not None:
@@ -238,6 +247,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
         - image.zip (all images in one big zip file)
       """
       # Zip up everything in the image directory.
+      logging.info('Running commands.BuildImageZip')
       image_zip = commands.BuildImageZip(archive_path, image_dir)
       self._release_upload_queue.put([image_zip])
 
@@ -253,13 +263,16 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
         # Build the full autotest tarball for hwqual image. We don't upload it,
         # as it's fairly large and only needed by the hwqual tarball.
         logging.info('Archiving full autotest tarball locally ...')
+        logging.info('Running commands.BuildFullAutotestTarball')
         tarball = commands.BuildFullAutotestTarball(
             self._build_root, self._current_board, image_dir)
         self.board_runattrs.SetParallel('autotest_tarball_generated', True)
+        logging.info('Running commands.ArchiveFile')
         commands.ArchiveFile(tarball, archive_path)
 
         # Build hwqual image and upload to Google Storage.
         hwqual_name = 'chromeos-hwqual-%s-%s' % (board, self.version)
+        logging.info('Running commands.ArchiveHWQual')
         filename = commands.ArchiveHWQual(buildroot, hwqual_name, archive_path,
                                           image_dir)
         self._release_upload_queue.put([filename])
@@ -276,6 +289,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
 
     def ArchiveFirmwareImages():
       """Archive firmware images built from source if available."""
+      logging.info('Running commands.BuildFirmwareArchive')
       archive = commands.BuildFirmwareArchive(buildroot, board, archive_path)
       if archive:
         self._release_upload_queue.put([archive])
@@ -294,6 +308,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       # run before BuildAndArchiveFactoryImages.
       if 'recovery' in config.images:
         assert os.path.isfile(os.path.join(image_dir, constants.BASE_IMAGE_BIN))
+        logging.info('Running commands.BuildRecoveryImage')
         commands.BuildRecoveryImage(buildroot, board, image_dir, extra_env)
         self._recovery_image_status_queue.put(True)
         recovery_image = constants.RECOVERY_IMAGE_BIN
@@ -343,6 +358,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       sign_types = []
       if config['sign_types']:
         sign_types = config['sign_types']
+      logging.info('Running commands.PushImages')
       urls = commands.PushImages(
           board=board,
           archive_url=upload_url,
@@ -710,6 +726,7 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
             os.path.join(self._build_root, 'chroot', 'build',
                          self._current_board, constants.AUTOTEST_BUILD_PATH,
                          '..'))
+        logging.info('Running commands.BuildAutotestTarballsForHWTest')
         for tarball in commands.BuildAutotestTarballsForHWTest(
             self._build_root, cwd, tempdir):
           queue.put([tarball])
@@ -720,8 +737,18 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
       cwd = os.path.abspath(
           os.path.join(self._build_root, 'chroot', 'build',
                        self._current_board, 'build'))
+      logging.info('Running commands.BuildTastBundleTarball')
       tarball = commands.BuildTastBundleTarball(
           self._build_root, cwd, tempdir)
+      if tarball:
+        self.UploadArtifact(tarball)
+
+  def BuildGuestImagesTarball(self):
+    """Build the tarball containing guest images test bundles."""
+    with osutils.TempDir(prefix='cbuildbot-guest-images') as tempdir:
+      logging.info('Running commands.BuildPinnedGuestImagesTarball')
+      tarball = commands.BuildPinnedGuestImagesTarball(
+          self._build_root, self._current_board, tempdir)
       if tarball:
         self.UploadArtifact(tarball)
 
@@ -735,8 +762,10 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
     with osutils.TempDir(prefix='cbuildbot-payloads') as tempdir:
       with self.ArtifactUploader() as queue:
         image_path = os.path.join(self.GetImageDirSymlink(), image_name)
-        commands.GeneratePayloads(self._build_root, image_path, tempdir,
-                                  **kwargs)
+        logging.info('Running commands.GeneratePayloads')
+        commands.GeneratePayloads(image_path, tempdir, **kwargs)
+        logging.info('Running commands.GenerateQuickProvisionPayloads')
+        commands.GenerateQuickProvisionPayloads(image_path, tempdir)
         for payload in os.listdir(tempdir):
           queue.put([os.path.join(tempdir, payload)])
 
@@ -774,6 +803,7 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
         self._run.config.upload_hw_test_artifacts):
       steps.append(self.BuildAutotestTarballs)
       steps.append(self.BuildTastTarball)
+      steps.append(self.BuildGuestImagesTarball)
 
     parallel.RunParallelSteps(steps)
     # If we encountered any exceptions with any of the steps, they should have
@@ -906,3 +936,103 @@ class GenerateTidyWarningsStage(generic_stages.BoardSpecificBuilderStage,
   def PerformStage(self):
     with self.ArtifactUploader(self._upload_queue, archive=False):
       self._GenerateTidyWarnings()
+
+
+# This stage collects and uploads the LLVM PGO profile files for the build.
+class CollectPGOProfilesStage(generic_stages.BoardSpecificBuilderStage,
+                              generic_stages.ArchivingStageMixin):
+  """Collect and upload PGO profile files for the board."""
+
+  category = constants.CI_INFRA_STAGE
+  PROFDATA_TAR = 'llvm_profdata.tar.xz'
+  PROFDATA = 'llvm.profdata'
+  SYS_DEVEL_DIR = 'var/tmp/portage/sys-devel'
+
+  def __init__(self, *args, **kwargs):
+    super(CollectPGOProfilesStage, self).__init__(*args, **kwargs)
+    self._upload_queue = multiprocessing.Queue()
+    self._merge_cmd = ''
+
+  def _CollectPGOProfiles(self):
+    """Collect and upload PGO profiles for the board."""
+    assert self.archive_path.startswith(self._build_root)
+
+    # Look for profiles generated by instrumented LLVM
+    out_chroot = os.path.abspath(
+        os.path.join(self._build_root, 'chroot'))
+    out_chroot_sys_devel = os.path.join(out_chroot, self.SYS_DEVEL_DIR)
+    try:
+      profiles_dirs = [root for root, _, _ in os.walk(out_chroot_sys_devel)
+                       if os.path.basename(root) == 'profiles']
+      if not profiles_dirs:
+        raise Exception('No profile directories found.')
+      if len(profiles_dirs) != 1:
+        raise Exception('More than one profile directories are found: %s'
+                        % ' '.join(sorted(profiles_dirs)))
+      profiles_dir = profiles_dirs[0]
+      # Get out of chroot profile paths, and convert to in chroot paths
+      profraws = [path_util.ToChrootPath(os.path.join(profiles_dir, f))
+                  for f in os.listdir(profiles_dir)]
+      if not profraws:
+        raise Exception('No profraw files found in profiles directory.')
+    except:
+      logging.info('Error: Not able to collect correct profiles.')
+      raise
+
+    # Create profdata file and make tarball
+    in_chroot_path = path_util.ToChrootPath(self.archive_path)
+    profdata_loc = os.path.join(in_chroot_path, self.PROFDATA)
+
+    self._merge_cmd = ['llvm-profdata', 'merge', '-output', profdata_loc] + \
+                      profraws
+    cros_build_lib.RunCommand(self._merge_cmd, cwd=self._build_root,
+                              enter_chroot=True)
+
+    out_chroot_path = os.path.join(out_chroot, self.archive_path)
+    out_profdata_loc = os.path.join(out_chroot_path, self.PROFDATA)
+    cros_build_lib.CreateTarball(self.PROFDATA_TAR, cwd=out_chroot_path,
+                                 inputs=[out_profdata_loc])
+
+    # Upload profdata tarball
+    self._upload_queue.put([self.PROFDATA_TAR])
+
+  def PerformStage(self):
+    with self.ArtifactUploader(self._upload_queue, archive=False):
+      self._CollectPGOProfiles()
+
+
+# This stage generates and uploads the orderfile files for Chrome build.
+class GenerateOrderfileStage(generic_stages.BoardSpecificBuilderStage,
+                             generic_stages.ArchivingStageMixin):
+  """Generate and upload the orderfile for the board."""
+
+  category = constants.CI_INFRA_STAGE
+
+  ORDERFILE_TAR = 'chrome.orderfile.tar.xz'
+  ORDERFILE_NAME = 'chrome.orderfile.txt'
+
+  def __init__(self, *args, **kwargs):
+    super(GenerateOrderfileStage, self).__init__(*args, **kwargs)
+    self._upload_queue = multiprocessing.Queue()
+
+  def _GenerateOrderfile(self):
+    """Generate and upload the orderfile for the board."""
+    assert self.archive_path.startswith(self._build_root)
+    chroot_path = os.path.join(self._build_root, 'chroot')
+    orderfile_path = os.path.join(chroot_path, 'build',
+                                  self._current_board, 'opt/google/chrome')
+    orderfile = os.path.join(orderfile_path, self.ORDERFILE_NAME)
+    if not os.path.exists(orderfile):
+      raise Exception('No orderfile generated in the builder.')
+
+    output_path = os.path.join(self._build_root, 'chroot/tmp')
+    target = os.path.join(output_path, self.ORDERFILE_TAR)
+    cros_build_lib.CreateTarball(os.path.relpath(target, orderfile_path),
+                                 cwd=orderfile_path,
+                                 input=[self.ORDERFILE_NAME])
+    orderfile_tarball = os.path.abspath(target)
+    self._upload_queue.put([orderfile_tarball])
+
+  def PerformStage(self):
+    with self.ArtifactUploader(self._upload_queue, archive=False):
+      self._GenerateOrderfile()

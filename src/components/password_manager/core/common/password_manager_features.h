@@ -17,11 +17,8 @@ namespace features {
 // All features in alphabetical order. The features should be documented
 // alongside the definition of their values in the .cc file.
 
-extern const base::Feature kAffiliationBasedMatching;
 extern const base::Feature kEditPasswordsInDesktopSettings;
 extern const base::Feature kDeleteCorruptedPasswords;
-extern const base::Feature kHtmlBasedUsernameDetector;
-extern const base::Feature kPasswordGenerationRequirementsDomainOverrides;
 extern const base::Feature kFillOnAccountSelect;
 extern const base::Feature kFillOnAccountSelectHttp;
 extern const base::Feature kGooglePasswordManager;

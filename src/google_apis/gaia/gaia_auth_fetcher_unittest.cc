@@ -394,7 +394,7 @@ TEST_F(GaiaAuthFetcherTest, MultiloginSuccess) {
 
   TestGaiaAuthFetcher auth(&consumer, GetURLLoaderFactory());
   auth.StartOAuthMultilogin(
-      std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>());
+      std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>(), std::string());
 
   EXPECT_TRUE(auth.HasPendingFetch());
   auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, {},
@@ -429,7 +429,7 @@ TEST_F(GaiaAuthFetcherTest, MultiloginFailureNetError) {
 
   TestGaiaAuthFetcher auth(&consumer, GetURLLoaderFactory());
   auth.StartOAuthMultilogin(
-      std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>());
+      std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>(), std::string());
 
   EXPECT_TRUE(auth.HasPendingFetch());
   auth.TestOnURLLoadCompleteInternal(net::ERR_ABORTED, net::HTTP_OK, {},
@@ -464,7 +464,7 @@ TEST_F(GaiaAuthFetcherTest, MultiloginFailureServerError) {
 
   TestGaiaAuthFetcher auth(&consumer, GetURLLoaderFactory());
   auth.StartOAuthMultilogin(
-      std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>());
+      std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>(), std::string());
 
   EXPECT_TRUE(auth.HasPendingFetch());
   auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, {},

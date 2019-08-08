@@ -74,6 +74,7 @@ class ASH_EXPORT AppListPresenterDelegateImpl
   // ui::EventHandler overrides:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
 
   // Snaps the app list window bounds to fit the screen size. (See
   // https://crbug.com/884889).

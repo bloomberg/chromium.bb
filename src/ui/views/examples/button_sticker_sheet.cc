@@ -85,7 +85,7 @@ void MakeButtonsInState(MdTextButton** primary,
 ButtonStickerSheet::ButtonStickerSheet()
     : ExampleBase("Button (Sticker Sheet)") {}
 
-ButtonStickerSheet::~ButtonStickerSheet() {}
+ButtonStickerSheet::~ButtonStickerSheet() = default;
 
 void ButtonStickerSheet::CreateExampleView(View* container) {
   GridLayout* layout = MakeStretchyGridLayout(container, 3);

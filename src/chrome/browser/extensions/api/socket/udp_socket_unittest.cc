@@ -79,9 +79,9 @@ TEST_F(UDPSocketUnitTest, TestUDPSocketRecvFrom) {
   // Confirm that we can call two RecvFroms in quick succession without
   // triggering crbug.com/146606.
   socket->Connect(CreateAddressList("127.0.0.1", 40000),
-                  base::BindRepeating(&OnConnected));
-  socket->RecvFrom(4096, base::BindRepeating(&OnCompleted));
-  socket->RecvFrom(4096, base::BindRepeating(&OnCompleted));
+                  base::BindOnce(&OnConnected));
+  socket->RecvFrom(4096, base::BindOnce(&OnCompleted));
+  socket->RecvFrom(4096, base::BindOnce(&OnCompleted));
 }
 
 TEST_F(UDPSocketUnitTest, TestUDPMulticastJoinGroup) {
@@ -123,7 +123,7 @@ TEST_F(UDPSocketUnitTest, TestUDPMulticastTimeToLive) {
   EXPECT_NE(0, socket->SetMulticastTimeToLive(-1));  // Negative TTL shall fail.
   EXPECT_EQ(0, socket->SetMulticastTimeToLive(3));
   socket->Connect(CreateAddressList(kGroup, 13333),
-                  base::BindRepeating(&OnConnected));
+                  base::BindOnce(&OnConnected));
 }
 
 TEST_F(UDPSocketUnitTest, TestUDPMulticastLoopbackMode) {
@@ -132,7 +132,7 @@ TEST_F(UDPSocketUnitTest, TestUDPMulticastLoopbackMode) {
 
   EXPECT_EQ(0, socket->SetMulticastLoopbackMode(false));
   socket->Connect(CreateAddressList(kGroup, 13333),
-                  base::BindRepeating(&OnConnected));
+                  base::BindOnce(&OnConnected));
 }
 
 // Send a test multicast packet every second.
@@ -143,7 +143,7 @@ static void SendMulticastPacket(const base::Closure& quit_run_loop,
   if (result == 0) {
     scoped_refptr<net::IOBuffer> data =
         base::MakeRefCounted<net::WrappedIOBuffer>(kTestMessage);
-    src->Write(data, kTestMessageLength, base::BindRepeating(&OnSendCompleted));
+    src->Write(data, kTestMessageLength, base::BindOnce(&OnSendCompleted));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&SendMulticastPacket, quit_run_loop, src, result),
@@ -187,15 +187,15 @@ TEST_F(UDPSocketUnitTest, TestUDPMulticastRecv) {
   }
   base::RunLoop run_loop;
   // |dest| is used with Bind(), so use RecvFrom() instead of Read().
-  dest->RecvFrom(1024,
-                 base::BindRepeating(&OnMulticastReadCompleted,
-                                     run_loop.QuitClosure(), &packet_received));
+  dest->RecvFrom(
+      1024, base::BindOnce(&OnMulticastReadCompleted, run_loop.QuitClosure(),
+                           &packet_received));
 
   // Sender
   EXPECT_EQ(0, src->SetMulticastTimeToLive(0));
-  src->Connect(CreateAddressList(kGroup, kPort),
-               base::BindRepeating(&SendMulticastPacket, run_loop.QuitClosure(),
-                                   src.get()));
+  src->Connect(
+      CreateAddressList(kGroup, kPort),
+      base::BindOnce(&SendMulticastPacket, run_loop.QuitClosure(), src.get()));
 
   // If not received within the test action timeout, quit the message loop.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

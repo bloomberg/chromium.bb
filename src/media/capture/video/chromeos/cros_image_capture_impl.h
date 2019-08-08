@@ -5,6 +5,8 @@
 #ifndef MEDIA_CAPTURE_VIDEO_CHROMEOS_CROS_IMAGE_CAPTURE_IMPL_H_
 #define MEDIA_CAPTURE_VIDEO_CHROMEOS_CROS_IMAGE_CAPTURE_IMPL_H_
 
+#include <string>
+
 #include "base/containers/flat_set.h"
 #include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
 #include "media/capture/video/chromeos/reprocess_manager.h"
@@ -21,8 +23,10 @@ class CrosImageCaptureImpl : public cros::mojom::CrosImageCapture {
 
   // cros::mojom::CrosImageCapture implementations.
 
-  void GetSupportedEffects(GetSupportedEffectsCallback callback) override;
-  void SetReprocessOption(cros::mojom::Effect effect,
+  void GetSupportedEffects(const std::string& device_id,
+                           GetSupportedEffectsCallback callback) override;
+  void SetReprocessOption(const std::string& device_id,
+                          cros::mojom::Effect effect,
                           SetReprocessOptionCallback callback) override;
 
  private:

@@ -41,7 +41,8 @@ class GpuBrowserCompositorOutputSurface
  public:
   GpuBrowserCompositorOutputSurface(
       scoped_refptr<ws::ContextProviderCommandBuffer> context,
-      const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
+      const viz::UpdateVSyncParametersCallback&
+          update_vsync_parameters_callback,
       std::unique_ptr<viz::CompositorOverlayCandidateValidator>
           overlay_candidate_validator);
 

@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -170,10 +171,15 @@ constexpr SkColor kUnifiedNotificationSeparatorColor =
     SkColorSetRGB(0xdf, 0xe0, 0xe0);
 constexpr SkColor kUnifiedFeaturePodHoverColor =
     SkColorSetRGB(0xff, 0xff, 0xff);
+constexpr SkColor kUnifiedRecordingIconColor = gfx::kGoogleRedDark600;
 
 constexpr gfx::Insets kUnifiedMenuItemPadding(0, 16, 16, 16);
+constexpr gfx::Insets kUnifiedSystemInfoViewPadding(4, 16, 16, 16);
+constexpr gfx::Insets kUnifiedSliderRowPadding(0, 12, 8, 16);
+constexpr gfx::Insets kUnifiedSliderBubblePadding(12, 0, 4, 0);
 constexpr gfx::Insets kUnifiedSliderPadding(0, 16);
 
+constexpr int kUnifiedSliderViewSpacing = 12;
 constexpr int kUnifiedMenuPadding = 8;
 constexpr int kUnifiedNotificationCenterSpacing = 16;
 constexpr int kUnifiedTrayIconSize = 20;
@@ -183,9 +189,11 @@ constexpr int kUnifiedTrayCornerRadius = 20;
 constexpr int kUnifiedTrayContentPadding = 8;
 constexpr int kUnifiedTopShortcutSpacing = 16;
 constexpr int kUnifiedNotificationHiddenLineHeight = 20;
+constexpr int kUnifiedTopShortcutContainerTopPadding = 12;
+constexpr int kUnifiedNotificationMinimumHeight = 40;
 constexpr gfx::Insets kUnifiedTopShortcutPadding(0, 16);
 constexpr gfx::Insets kUnifiedNotificationHiddenPadding(6, 16);
-
+constexpr gfx::Insets kUnifiedCircularButtonFocusPadding(4);
 constexpr int kStackingNotificationCounterMax = 8;
 constexpr int kStackingNotificationCounterRadius = 2;
 constexpr int kStackingNotificationCounterStartX = 18;
@@ -206,6 +214,8 @@ constexpr int kTrayTopShortcutButtonIconSize = 20;
 
 constexpr int kUnifiedSystemInfoHeight = 16;
 constexpr int kUnifiedSystemInfoSpacing = 8;
+constexpr int kUnifiedSystemInfoSeparatorColor =
+    SkColorSetA(SK_ColorWHITE, 0x24);
 constexpr gfx::Insets kUnifiedSystemInfoDateViewPadding(3);
 
 // Constants used in FeaturePodsView of UnifiedSystemTray.
@@ -219,6 +229,8 @@ constexpr int kUnifiedFeaturePodLabelWidth = 80;
 constexpr int kUnifiedFeaturePodSpacing = 6;
 constexpr int kUnifiedFeaturePodHoverRadius = 4;
 constexpr int kUnifiedFeaturePodVerticalPadding = 28;
+constexpr int kUnifiedFeaturePodTopPadding = 24;
+constexpr int kUnifiedFeaturePodBottomPadding = 20;
 constexpr int kUnifiedFeaturePodHorizontalSidePadding = 12;
 constexpr int kUnifiedFeaturePodHorizontalMiddlePadding = 0;
 constexpr int kUnifiedFeaturePodCollapsedVerticalPadding = 16;

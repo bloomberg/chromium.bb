@@ -66,12 +66,6 @@ class MODULES_EXPORT AudioBuffer final : public ScriptWrappable {
                                           uint32_t number_of_frames,
                                           float sample_rate);
 
-  // Returns 0 if data is not a valid audio file.
-  static AudioBuffer* CreateFromAudioFileData(const void* data,
-                                              size_t data_size,
-                                              bool mix_to_mono,
-                                              float sample_rate);
-
   static AudioBuffer* CreateFromAudioBus(AudioBus*);
 
   explicit AudioBuffer(AudioBus*);

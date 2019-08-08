@@ -72,8 +72,6 @@ UsbService::CreateBlockingTaskRunner() {
 
 UsbService::~UsbService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto& observer : observer_list_)
-    observer.WillDestroyUsbService();
 }
 
 UsbService::UsbService() {}
@@ -124,7 +122,7 @@ void UsbService::RemoveDeviceForTesting(const std::string& device_guid) {
     scoped_refptr<UsbDevice> device = devices_it->second;
     devices_.erase(devices_it);
     testing_devices_.erase(testing_devices_it);
-    UsbService::NotifyDeviceRemoved(device);
+    NotifyDeviceRemoved(device);
   }
 }
 
@@ -154,6 +152,12 @@ void UsbService::NotifyDeviceRemoved(scoped_refptr<UsbDevice> device) {
   device->NotifyDeviceRemoved();
   for (auto& observer : observer_list_)
     observer.OnDeviceRemovedCleanup(device);
+}
+
+void UsbService::NotifyWillDestroyUsbService() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (auto& observer : observer_list_)
+    observer.WillDestroyUsbService();
 }
 
 }  // namespace device

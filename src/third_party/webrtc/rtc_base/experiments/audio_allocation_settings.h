@@ -34,12 +34,6 @@ class AudioAllocationSettings {
   // configured.
   bool ShouldSendTransportSequenceNumber(
       int transport_seq_num_extension_header_id) const;
-  // Returns true if target bitrate for audio streams should be updated.
-  // |transport_seq_num_extension_header_id| the extension header id for
-  // transport sequence numbers. Set to 0 if not the extension is not
-  // configured.
-  bool UpdateAudioTargetBitrate(
-      int transport_seq_num_extension_header_id) const;
   // Returns true if audio should be added to rate allocation when the audio
   // stream is started.
   // |min_bitrate_bps| the configured min bitrate, set to -1 if unset.
@@ -66,14 +60,13 @@ class AudioAllocationSettings {
       int max_bitrate_bps,
       bool has_dscp,
       int transport_seq_num_extension_header_id) const;
+  // Returns true if we should include packet overhead in audio allocation.
+  bool IncludeOverheadInAudioAllocation() const;
 
-  // Returns the min bitrate for audio rate allocation, potentially including
-  // overhead.
-  int MinBitrateBps() const;
-  // Returns the max bitrate for audio rate allocation, potentially including
-  // overhead. |rtp_parameter_max_bitrate_bps| max bitrate as configured in rtp
-  // parameters, excluding overhead.
-  int MaxBitrateBps(absl::optional<int> rtp_parameter_max_bitrate_bps) const;
+  // Returns the min bitrate for audio rate allocation.
+  absl::optional<DataRate> MinBitrate() const;
+  // Returns the max bitrate for audio rate allocation.
+  absl::optional<DataRate> MaxBitrate() const;
   // Indicates the default priority bitrate for audio streams. The bitrate
   // allocator will prioritize audio until it reaches this bitrate and will
   // divide bitrate evently between audio and video above this bitrate.
@@ -83,13 +76,12 @@ class AudioAllocationSettings {
   FieldTrialFlag audio_send_side_bwe_;
   FieldTrialFlag allocate_audio_without_feedback_;
   FieldTrialFlag force_no_audio_feedback_;
-  FieldTrialFlag audio_feedback_to_improve_video_bwe_;
   FieldTrialFlag send_side_bwe_with_overhead_;
   int min_overhead_bps_ = 0;
-  // Default bitrates to use as range if there's no user configured
-  // bitrate range but audio bitrate allocation is enabled.
-  FieldTrialParameter<DataRate> default_min_bitrate_;
-  FieldTrialParameter<DataRate> default_max_bitrate_;
+  // Field Trial configured bitrates to use as overrides over default/user
+  // configured bitrate range when audio bitrate allocation is enabled.
+  FieldTrialOptional<DataRate> min_bitrate_;
+  FieldTrialOptional<DataRate> max_bitrate_;
   FieldTrialParameter<DataRate> priority_bitrate_;
 };
 }  // namespace webrtc

@@ -7,6 +7,7 @@
 
 #include <dwrite.h>
 #include <dwrite_2.h>
+#include <dwrite_3.h>
 #include <wrl.h>
 #include <set>
 #include <utility>
@@ -58,6 +59,13 @@ class CONTENT_EXPORT DWriteFontProxyImpl
                      uint32_t reading_direction,
                      const base::string16& base_family_name,
                      MapCharactersCallback callback) override;
+  void MatchUniqueFont(const base::string16& unique_font_name,
+                       MatchUniqueFontCallback callback) override;
+  void GetUniqueFontLookupMode(
+      GetUniqueFontLookupModeCallback callback) override;
+
+  void GetUniqueNameLookupTableIfAvailable(
+      GetUniqueNameLookupTableIfAvailableCallback callback) override;
 
   void GetUniqueNameLookupTable(
       GetUniqueNameLookupTableCallback callback) override;
@@ -71,6 +79,7 @@ class CONTENT_EXPORT DWriteFontProxyImpl
   bool direct_write_initialized_ = false;
   Microsoft::WRL::ComPtr<IDWriteFontCollection> collection_;
   Microsoft::WRL::ComPtr<IDWriteFactory2> factory2_;
+  Microsoft::WRL::ComPtr<IDWriteFactory3> factory3_;
   Microsoft::WRL::ComPtr<IDWriteFontFallback> font_fallback_;
   base::string16 windows_fonts_path_;
   base::MappedReadOnlyRegion font_unique_name_table_memory_;

@@ -7,7 +7,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_save_card_infobar_delegate_mobile.h"
+#include "components/autofill/core/browser/payments/autofill_save_card_infobar_delegate_mobile.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/infobars/infobar_controller+protected.h"
 #include "ios/chrome/browser/infobars/infobar_controller_delegate.h"

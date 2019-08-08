@@ -94,9 +94,13 @@ AppSearchResultRanker::AppSearchResultRanker(const base::FilePath& profile_path,
     : predictor_filename_(
           profile_path.AppendASCII(kAppLaunchPredictorFilename)),
       weak_factory_(this) {
-  if (!app_list_features::IsAppSearchResultRankerEnabled())
+  if (!app_list_features::IsZeroStateAppsRankerEnabled()) {
+    LOG(ERROR) << "AppSearchResultRanker: ZeroStateAppsRanker is not enabled.";
     return;
-
+  }
+  // TODO(charleszhao): remove these logs once the test review is done.
+  LOG(ERROR) << "AppSearchResultRanker::AppSearchResultRankerPredictorName "
+             << app_list_features::AppSearchResultRankerPredictorName();
   predictor_ =
       CreatePredictor(app_list_features::AppSearchResultRankerPredictorName());
 
@@ -156,6 +160,8 @@ void AppSearchResultRanker::OnLoadFromDiskComplete(
     predictor_.swap(predictor);
   }
   load_from_disk_completed_ = true;
+  LOG(ERROR) << "AppSearchResultRanker::OnLoadFromDiskComplete "
+             << predictor_->GetPredictorName();
 }
 
 }  // namespace app_list

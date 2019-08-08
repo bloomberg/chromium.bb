@@ -15,8 +15,8 @@ namespace {
 using ApplyDarkModeCheckTest = RenderingTest;
 
 TEST_F(ApplyDarkModeCheckTest, LightSolidBackgroundAlwaysFiltered) {
-  GetDocument().body()->SetInlineStyleProperty(CSSPropertyBackgroundColor,
-                                               CSSValueWhite);
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyID::kBackgroundColor,
+                                               CSSValueID::kWhite);
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_TRUE(ShouldApplyDarkModeFilterToPage(
@@ -26,8 +26,8 @@ TEST_F(ApplyDarkModeCheckTest, LightSolidBackgroundAlwaysFiltered) {
 }
 
 TEST_F(ApplyDarkModeCheckTest, DarkSolidBackgroundFilteredIfPolicyIsFilterAll) {
-  GetDocument().body()->SetInlineStyleProperty(CSSPropertyBackgroundColor,
-                                               CSSValueBlack);
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyID::kBackgroundColor,
+                                               CSSValueID::kBlack);
   // TODO(https://crbug.com/925949): Set opacity the same way as the other CSS
   // properties.
   GetLayoutView().MutableStyle()->SetOpacity(0.9);
@@ -40,8 +40,8 @@ TEST_F(ApplyDarkModeCheckTest, DarkSolidBackgroundFilteredIfPolicyIsFilterAll) {
 }
 
 TEST_F(ApplyDarkModeCheckTest, DarkLowOpacityBackgroundAlwaysFiltered) {
-  GetDocument().body()->SetInlineStyleProperty(CSSPropertyBackgroundColor,
-                                               CSSValueBlack);
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyID::kBackgroundColor,
+                                               CSSValueID::kBlack);
   // TODO(https://crbug.com/925949): Set opacity the same way as the other CSS
   // properties.
   GetLayoutView().MutableStyle()->SetOpacity(0.1);
@@ -54,8 +54,8 @@ TEST_F(ApplyDarkModeCheckTest, DarkLowOpacityBackgroundAlwaysFiltered) {
 }
 
 TEST_F(ApplyDarkModeCheckTest, DarkTransparentBackgroundAlwaysFiltered) {
-  GetDocument().body()->SetInlineStyleProperty(CSSPropertyBackgroundColor,
-                                               CSSValueTransparent);
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyID::kBackgroundColor,
+                                               CSSValueID::kTransparent);
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_TRUE(ShouldApplyDarkModeFilterToPage(
@@ -65,13 +65,32 @@ TEST_F(ApplyDarkModeCheckTest, DarkTransparentBackgroundAlwaysFiltered) {
 }
 
 TEST_F(ApplyDarkModeCheckTest, BackgroundColorNotDefinedAlwaysFiltered) {
-  GetDocument().body()->RemoveInlineStyleProperty(CSSPropertyBackgroundColor);
+  GetDocument().body()->RemoveInlineStyleProperty(
+      CSSPropertyID::kBackgroundColor);
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_TRUE(ShouldApplyDarkModeFilterToPage(
       DarkModePagePolicy::kFilterByBackground, GetLayoutView()));
   EXPECT_TRUE(ShouldApplyDarkModeFilterToPage(DarkModePagePolicy::kFilterAll,
                                               GetLayoutView()));
+}
+
+TEST_F(ApplyDarkModeCheckTest, SupportedColorSchemesDark) {
+  RuntimeEnabledFeatures::SetMetaSupportedColorSchemesEnabled(true);
+  GetDocument().GetSettings()->SetForceDarkModeEnabled(true);
+  GetDocument().GetSettings()->SetPreferredColorScheme(
+      PreferredColorScheme::kDark);
+  ColorSchemeSet schemes;
+  schemes.Set(ColorScheme::kDark);
+  GetDocument().GetStyleEngine().SetSupportedColorSchemes(schemes);
+  UpdateAllLifecyclePhasesForTest();
+
+  // Opting out of forced darkening when dark is among the supported color
+  // schemes for the page.
+  EXPECT_FALSE(ShouldApplyDarkModeFilterToPage(
+      DarkModePagePolicy::kFilterByBackground, GetLayoutView()));
+  EXPECT_FALSE(ShouldApplyDarkModeFilterToPage(DarkModePagePolicy::kFilterAll,
+                                               GetLayoutView()));
 }
 
 }  // namespace

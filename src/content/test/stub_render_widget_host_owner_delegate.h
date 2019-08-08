@@ -13,7 +13,6 @@ class StubRenderWidgetHostOwnerDelegate : public RenderWidgetHostOwnerDelegate {
  public:
   void RenderWidgetDidInit() override {}
   void RenderWidgetDidClose() override {}
-  void RenderWidgetNeedsToRouteCloseEvent() override {}
   void RenderWidgetDidFirstVisuallyNonEmptyPaint() override {}
   void RenderWidgetDidCommitAndDrawCompositorFrame() override {}
   void RenderWidgetGotFocus() override {}

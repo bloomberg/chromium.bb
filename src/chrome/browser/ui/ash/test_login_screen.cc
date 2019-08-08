@@ -78,10 +78,11 @@ void TestLoginScreen::NotifyFingerprintAuthResult(const AccountId& account_id,
 void TestLoginScreen::SetAvatarForUser(const AccountId& account_id,
                                        ::ash::mojom::UserAvatarPtr avatar) {}
 
-void TestLoginScreen::SetAuthEnabledForUser(
+void TestLoginScreen::EnableAuthForUser(const AccountId& account_id) {}
+
+void TestLoginScreen::DisableAuthForUser(
     const AccountId& account_id,
-    bool is_enabled,
-    base::Optional<base::Time> auth_reenabled_time) {}
+    ash::mojom::AuthDisabledDataPtr auth_disabled_data) {}
 
 void TestLoginScreen::HandleFocusLeavingLockScreenApps(bool reverse) {}
 
@@ -113,7 +114,8 @@ void TestLoginScreen::SetPublicSessionShowFullManagementDisclosure(
     bool show_full_management_disclosure) {}
 
 void TestLoginScreen::SetKioskApps(
-    std::vector<::ash::mojom::KioskAppInfoPtr> kiosk_apps) {}
+    std::vector<::ash::mojom::KioskAppInfoPtr> kiosk_apps,
+    SetKioskAppsCallback callback) {}
 
 void TestLoginScreen::ShowKioskAppError(const std::string& message) {}
 

@@ -207,18 +207,6 @@ public class SnippetsBridge implements SuggestionsSource {
     }
 
     @CalledByNative
-    private static void setAssetDownloadDataForSuggestion(
-            SnippetArticle suggestion, String downloadGuid, String filePath, String mimeType) {
-        suggestion.setAssetDownloadData(downloadGuid, filePath, mimeType);
-    }
-
-    @CalledByNative
-    private static void setOfflinePageDownloadDataForSuggestion(
-            SnippetArticle suggestion, long offlinePageId) {
-        suggestion.setOfflinePageDownloadData(offlinePageId);
-    }
-
-    @CalledByNative
     private static SuggestionsCategoryInfo createSuggestionsCategoryInfo(int category, String title,
             @ContentSuggestionsCardLayout int cardLayout,
             @ContentSuggestionsAdditionalAction int additionalAction, boolean showIfEmpty,

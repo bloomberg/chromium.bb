@@ -7,7 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gin/v8_initializer.h"
 #include "mojo/core/embedder/embedder.h"
@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
 
   // Set up environment to make Blink and V8 workable.
   base::MessageLoop message_loop;
-  base::TaskScheduler::CreateAndStartWithDefaultParams("TakeSnapshot");
+  base::ThreadPool::CreateAndStartWithDefaultParams("TakeSnapshot");
   mojo::core::Init();
 
   // Set predictable flag in V8 to generate identical snapshot file.

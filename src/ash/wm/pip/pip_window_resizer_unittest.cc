@@ -13,6 +13,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/pip/pip_test_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
@@ -92,6 +93,7 @@ class PipWindowResizerTest : public AshTestBase,
     ASSERT_LT(root_window_index, Shell::GetAllRootWindows().size());
     scoped_root_.reset(new ScopedRootWindowForNewWindows(
         Shell::GetAllRootWindows()[root_window_index]));
+    ForceHideShelvesForTest();
   }
 
   void TearDown() override {

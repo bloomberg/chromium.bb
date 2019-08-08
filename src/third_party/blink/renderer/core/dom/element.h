@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/css/style_recalc.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/dom/element_data.h"
@@ -41,7 +42,6 @@
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -59,7 +59,6 @@ class DOMRectList;
 class DOMStringMap;
 class DOMTokenList;
 class Document;
-class DisplayLockContext;
 class ElementAnimations;
 class ElementInternals;
 class ElementIntersectionObserverData;
@@ -150,7 +149,7 @@ struct FocusParams {
   Member<const FocusOptions> options;
 };
 
-typedef HeapVector<TraceWrapperMember<Attr>> AttrNodeList;
+typedef HeapVector<Member<Attr>> AttrNodeList;
 
 typedef HashMap<AtomicString, SpecificTrustedType> AttrNameToTrustedType;
 
@@ -332,8 +331,6 @@ class CORE_EXPORT Element : public ContainerNode {
   DOMRectList* getClientRects();
   DOMRect* getBoundingClientRect();
 
-  bool HasNonEmptyLayoutSize() const;
-
   const AtomicString& computedRole();
   String computedName();
 
@@ -513,7 +510,7 @@ class CORE_EXPORT Element : public ContainerNode {
   void AttachLayoutTree(AttachContext&) override;
   void DetachLayoutTree(const AttachContext& = AttachContext()) override;
 
-  virtual LayoutObject* CreateLayoutObject(const ComputedStyle&);
+  virtual LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout);
   virtual bool LayoutObjectIsNeeded(const ComputedStyle&) const;
   void RecalcStyle(const StyleRecalcChange);
   void RecalcStyleForTraversalRootAncestor();
@@ -793,7 +790,18 @@ class CORE_EXPORT Element : public ContainerNode {
   // sent at all.
   virtual bool IsDisabledFormControl() const { return false; }
 
-  virtual bool ShouldForceLegacyLayout() const { return false; }
+  // Return true if we should force legacy layout on this element and all
+  // descendants. Note that even if this element returns true, it's not implied
+  // that all descendants will return the same. Once an element needs to force
+  // legacy layout, though, the layout engine knows that it will have to perform
+  // legacy layout on the entire subtree.
+  bool ShouldForceLegacyLayout() const {
+    if (TypeShouldForceLegacyLayout())
+      return true;
+    if (!HasRareData())
+      return false;
+    return StyleShouldForceLegacyLayout() || ShouldForceLegacyLayoutForChild();
+  }
 
   virtual void BuildPendingResource() {}
 
@@ -890,16 +898,17 @@ class CORE_EXPORT Element : public ContainerNode {
   // for which trackVisibility() is true.
   bool NeedsOcclusionTracking() const;
 
-  HeapHashMap<TraceWrapperMember<ResizeObserver>, Member<ResizeObservation>>*
+  HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>*
   ResizeObserverData() const;
-  HeapHashMap<TraceWrapperMember<ResizeObserver>, Member<ResizeObservation>>&
+  HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>&
   EnsureResizeObserverData();
   void SetNeedsResizeObserverUpdate();
 
   DisplayLockContext* getDisplayLockForBindings();
   DisplayLockContext* GetDisplayLockContext() const;
 
-  bool StyleRecalcBlockedByDisplayLock() const;
+  bool StyleRecalcBlockedByDisplayLock(
+      DisplayLockContext::LifecycleTarget) const;
 
   void ActivateDisplayLockIfNeeded();
 
@@ -949,6 +958,8 @@ class CORE_EXPORT Element : public ContainerNode {
   // parseAttribute (called via setAttribute()) and
   // svgAttributeChanged (called when element.className.baseValue is set)
   void ClassAttributeChanged(const AtomicString& new_class_string);
+
+  void PictureInPicturePseudoStateChanged();
 
   static bool AttributeValueIsJavaScriptURL(const Attribute&);
 
@@ -1105,11 +1116,54 @@ class CORE_EXPORT Element : public ContainerNode {
   void DetachAttrNodeFromElementWithValue(Attr*, const AtomicString& value);
   void DetachAttrNodeAtIndex(Attr*, wtf_size_t index);
 
-  void NotifyDisplayLockDidRecalcStyle();
-
   bool DisplayLockPreventsActivation() const;
   FRIEND_TEST_ALL_PREFIXES(DisplayLockContextTest,
                            DisplayLockPreventsActivation);
+
+  // Return whether this element type requires legacy layout.
+  virtual bool TypeShouldForceLegacyLayout() const { return false; }
+
+  // Return whether the computed style of this element causes need for legacy
+  // layout.
+  bool StyleShouldForceLegacyLayout() const {
+    if (!HasRareData())
+      return false;
+    return StyleShouldForceLegacyLayoutInternal();
+  }
+  bool StyleShouldForceLegacyLayoutInternal() const;
+  void SetStyleShouldForceLegacyLayout(bool force) {
+    if (!force && !HasRareData())
+      return;
+    SetStyleShouldForceLegacyLayoutInternal(force);
+  }
+  void SetStyleShouldForceLegacyLayoutInternal(bool);
+
+  // Return whether this element needs legacy layout because of a child.
+  bool ShouldForceLegacyLayoutForChild() const {
+    if (!HasRareData())
+      return false;
+    return ShouldForceLegacyLayoutForChildInternal();
+  }
+  bool ShouldForceLegacyLayoutForChildInternal() const;
+  void SetShouldForceLegacyLayoutForChild(bool force) {
+    if (!force && !HasRareData())
+      return;
+    SetShouldForceLegacyLayoutForChildInternal(force);
+  }
+  void SetShouldForceLegacyLayoutForChildInternal(bool);
+
+  // Update ForceLegacyLayout flags for this element, and for ancestors, if
+  // necessary. We cannot establish a ForceLegacyLayout subtree at an arbitrary
+  // element; it needs to be a block formatting context root.
+  void UpdateForceLegacyLayout(const ComputedStyle& new_style,
+                               const ComputedStyle* old_style);
+
+  // If this element requires legacy layout, and we can't tell for sure that it
+  // is going to establish a new formatting context, we need to force legacy
+  // layout on ancestors until we reach one that we're sure that will establish
+  // a new formatting context. LayoutNG and legacy layout cannot cooperate
+  // within a formatting context.
+  void ForceLegacyLayoutInFormattingContext(const ComputedStyle& new_style);
 
   Member<ElementData> element_data_;
 };

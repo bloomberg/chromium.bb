@@ -36,7 +36,7 @@
 #include "services/shape_detection/public/mojom/textdetection.mojom.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom.h"
-#include "third_party/blink/public/platform/modules/notifications/notification_service.mojom.h"
+#include "third_party/blink/public/mojom/notifications/notification_service.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -218,6 +218,7 @@ void RendererInterfaceBinders::CreateWebSocket(
   // TODO(jam): is it ok to not send extraHeaders for sockets created from
   // shared and service workers?
   WebSocketManager::CreateWebSocket(host->GetID(), MSG_ROUTING_NONE, origin,
+                                    network::mojom::kWebSocketOptionNone,
                                     nullptr, nullptr, std::move(request));
 }
 

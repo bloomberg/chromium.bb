@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.preferences.website;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
-import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Vibrator;
@@ -41,6 +40,10 @@ public class AddExceptionPreference extends Preference implements OnPreferenceCl
     // The custom message to show in the dialog.
     private String mDialogMessage;
 
+    // The colors for the site URL EditText
+    private int mErrorColor;
+    private int mDefaultColor;
+
     /**
      * An interface to implement to get a callback when a site needs to be added.
      * @param hostname The hostname to add.
@@ -66,6 +69,8 @@ public class AddExceptionPreference extends Preference implements OnPreferenceCl
         setKey(key);
         Resources resources = getContext().getResources();
         mPrefAccentColor = ApiCompatibilityUtils.getColor(resources, R.color.pref_accent_color);
+        mErrorColor = resources.getColor(R.color.default_red);
+        mDefaultColor = resources.getColor(R.color.default_text_color);
 
         Drawable plusIcon = ApiCompatibilityUtils.getDrawable(resources, R.drawable.plus);
         plusIcon.mutate();
@@ -159,7 +164,7 @@ public class AddExceptionPreference extends Preference implements OnPreferenceCl
                 }
 
                 okButton.setEnabled(!hasError && hostname.length() > 0);
-                input.setTextColor(hasError ? Color.RED : Color.BLACK);
+                input.setTextColor(hasError ? mErrorColor : mDefaultColor);
             }
         });
     }

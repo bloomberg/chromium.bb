@@ -28,6 +28,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/crx_file/crx_verifier.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -85,7 +86,8 @@ ExtensionServiceTestBase::ExtensionServiceTestBase()
     : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
       service_(nullptr),
       testing_local_state_(TestingBrowserProcess::GetGlobal()),
-      registry_(nullptr) {
+      registry_(nullptr),
+      verifier_format_override_(crx_file::VerifierFormat::CRX3) {
   base::FilePath test_data_dir;
   if (!base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir)) {
     ADD_FAILURE();

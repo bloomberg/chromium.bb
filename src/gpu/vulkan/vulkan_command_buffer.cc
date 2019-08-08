@@ -21,8 +21,8 @@ VulkanCommandBuffer::VulkanCommandBuffer(VulkanDeviceQueue* device_queue,
 }
 
 VulkanCommandBuffer::~VulkanCommandBuffer() {
+  DCHECK(!submission_fence_.is_valid());
   DCHECK_EQ(static_cast<VkCommandBuffer>(VK_NULL_HANDLE), command_buffer_);
-  DCHECK_EQ(static_cast<VkFence>(VK_NULL_HANDLE), submission_fence_);
   DCHECK(!recording_);
   command_pool_->DecrementCommandBufferCount();
 }
@@ -45,27 +45,15 @@ bool VulkanCommandBuffer::Initialize() {
     return false;
   }
 
-  VkFenceCreateInfo fence_create_info = {};
-  fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-  fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-  result =
-      vkCreateFence(device, &fence_create_info, nullptr, &submission_fence_);
-  if (VK_SUCCESS != result) {
-    DLOG(ERROR) << "vkCreateFence(submission) failed: " << result;
-    return false;
-  }
-
   record_type_ = RECORD_TYPE_EMPTY;
   return true;
 }
 
 void VulkanCommandBuffer::Destroy() {
   VkDevice device = device_queue_->GetVulkanDevice();
-  if (VK_NULL_HANDLE != submission_fence_) {
-    DCHECK(SubmissionFinished());
-    vkDestroyFence(device, submission_fence_, nullptr);
-    submission_fence_ = VK_NULL_HANDLE;
+  if (submission_fence_.is_valid()) {
+    DCHECK(device_queue_->GetFenceHelper()->HasPassed(submission_fence_));
+    submission_fence_ = VulkanFenceHelper::FenceHandle();
   }
 
   if (VK_NULL_HANDLE != command_buffer_) {
@@ -94,15 +82,22 @@ bool VulkanCommandBuffer::Submit(uint32_t num_wait_semaphores,
 
   VkResult result = VK_SUCCESS;
 
-  result =
-      vkResetFences(device_queue_->GetVulkanDevice(), 1, &submission_fence_);
+  VkFence fence;
+  result = device_queue_->GetFenceHelper()->GetFence(&fence);
   if (VK_SUCCESS != result) {
-    DLOG(ERROR) << "vkResetFences() failed: " << result;
+    DLOG(ERROR) << "Failed to create fence: " << result;
     return false;
   }
 
-  result = vkQueueSubmit(device_queue_->GetVulkanQueue(), 1, &submit_info,
-                         submission_fence_);
+  result =
+      vkQueueSubmit(device_queue_->GetVulkanQueue(), 1, &submit_info, fence);
+
+  if (VK_SUCCESS != result) {
+    vkDestroyFence(device_queue_->GetVulkanDevice(), fence, nullptr);
+    submission_fence_ = VulkanFenceHelper::FenceHandle();
+  } else {
+    submission_fence_ = device_queue_->GetFenceHelper()->EnqueueFence(fence);
+  }
 
   PostExecution();
   if (VK_SUCCESS != result) {
@@ -127,13 +122,17 @@ void VulkanCommandBuffer::Clear() {
 }
 
 void VulkanCommandBuffer::Wait(uint64_t timeout) {
-  VkDevice device = device_queue_->GetVulkanDevice();
-  vkWaitForFences(device, 1, &submission_fence_, true, timeout);
+  if (!submission_fence_.is_valid())
+    return;
+
+  device_queue_->GetFenceHelper()->Wait(submission_fence_, timeout);
 }
 
 bool VulkanCommandBuffer::SubmissionFinished() {
-  VkDevice device = device_queue_->GetVulkanDevice();
-  return VK_SUCCESS == vkGetFenceStatus(device, submission_fence_);
+  if (!submission_fence_.is_valid())
+    return true;
+
+  return device_queue_->GetFenceHelper()->HasPassed(submission_fence_);
 }
 
 void VulkanCommandBuffer::PostExecution() {
@@ -151,8 +150,7 @@ void VulkanCommandBuffer::ResetIfDirty() {
   if (record_type_ == RECORD_TYPE_DIRTY) {
     // Block if command buffer is still in use. This can be externally avoided
     // using the asynchronous SubmissionFinished() function.
-    VkDevice device = device_queue_->GetVulkanDevice();
-    vkWaitForFences(device, 1, &submission_fence_, true, UINT64_MAX);
+    Wait(UINT64_MAX);
     VkResult result = vkResetCommandBuffer(command_buffer_, 0);
     if (VK_SUCCESS != result) {
       DLOG(ERROR) << "vkResetCommandBuffer() failed: " << result;

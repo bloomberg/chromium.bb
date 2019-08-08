@@ -128,11 +128,12 @@ class BluetoothProfileServiceProviderImpl
       }
     }
 
-    Delegate::ConfirmationCallback callback = base::Bind(
+    Delegate::ConfirmationCallback callback = base::BindOnce(
         &BluetoothProfileServiceProviderImpl::OnConfirmation,
         weak_ptr_factory_.GetWeakPtr(), method_call, response_sender);
 
-    delegate_->NewConnection(device_path, std::move(fd), options, callback);
+    delegate_->NewConnection(device_path, std::move(fd), options,
+                             std::move(callback));
   }
 
   // Called by dbus:: when the Bluetooth daemon is about to disconnect the
@@ -151,11 +152,11 @@ class BluetoothProfileServiceProviderImpl
       return;
     }
 
-    Delegate::ConfirmationCallback callback = base::Bind(
+    Delegate::ConfirmationCallback callback = base::BindOnce(
         &BluetoothProfileServiceProviderImpl::OnConfirmation,
         weak_ptr_factory_.GetWeakPtr(), method_call, response_sender);
 
-    delegate_->RequestDisconnection(device_path, callback);
+    delegate_->RequestDisconnection(device_path, std::move(callback));
   }
 
   // Called by dbus:: when the request failed before a reply was returned

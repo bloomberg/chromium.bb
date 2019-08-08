@@ -49,10 +49,10 @@
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
-#include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/viz/public/interfaces/constants.mojom.h"
 #include "services/ws/public/cpp/manifest.h"
 #include "services/ws/public/mojom/constants.mojom.h"
+#include "ui/base/ime/mojo/ime_engine_factory_registry.mojom.h"
 
 namespace ash {
 
@@ -72,9 +72,6 @@ const service_manager::Manifest& GetManifest() {
                                service_manager::Manifest::
                                    InstanceSharingPolicy::kSingleton)
                            .Build())
-          .ExposeCapability("service_manager:service_factory",
-                            service_manager::Manifest::InterfaceList<
-                                service_manager::mojom::ServiceFactory>())
           .ExposeCapability(
               "system_ui",
               service_manager::Manifest::InterfaceList<
@@ -93,6 +90,7 @@ const service_manager::Manifest& GetManifest() {
                   mojom::DockedMagnifierController,
                   mojom::EventRewriterController, mojom::FirstRunHelper,
                   mojom::HighlighterController, mojom::ImeController,
+                  ime::mojom::ImeEngineFactoryRegistry,
                   mojom::KeyboardController, mojom::LocaleUpdateController,
                   mojom::LoginScreen, mojom::MediaController,
                   mojom::NewWindowController, mojom::NightLightController,

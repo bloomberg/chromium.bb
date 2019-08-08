@@ -3,7 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Compile the Build API's proto."""
+"""Compile the Build API's proto.
+
+Install proto using CIPD to ensure a consistent protoc version.
+"""
 
 from __future__ import print_function
 
@@ -12,11 +15,140 @@ import os
 from chromite.lib import commandline
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_logging as logging
+from chromite.lib import osutils
+
+_API_DIR = os.path.join(constants.CHROMITE_DIR, 'api')
+_CIPD_ROOT = os.path.join(constants.CHROMITE_DIR, '.cipd_bin')
+_PROTOC = os.path.join(_CIPD_ROOT, 'protoc')
+_PROTO_DIR = os.path.join(constants.CHROMITE_DIR, 'infra', 'proto')
+
+PROTOC_VERSION = '3.6.1'
+
+
+def _InstallProtoc():
+  """Install protoc from CIPD."""
+  cmd = ['cipd', 'ensure']
+  # Clean up the output.
+  cmd.extend(['-log-level', 'warning'])
+  # Set the install location.
+  cmd.extend(['-root', _CIPD_ROOT])
+
+  ensure_content = ('infra/tools/protoc/${platform} '
+                    'protobuf_version:v%s' % PROTOC_VERSION)
+  with osutils.TempDir() as tempdir:
+    ensure_file = os.path.join(tempdir, 'cipd_ensure_file')
+    osutils.WriteFile(ensure_file, ensure_content)
+
+    cmd.extend(['-ensure-file', ensure_file])
+
+    cros_build_lib.RunCommand(cmd, cwd=constants.CHROMITE_DIR)
+
+def _CleanTargetDirectory(directory):
+  """Remove any existing generated files in the directory.
+
+  This clean only removes the generated files to avoid accidentally destroying
+  __init__.py customizations down the line. That will leave otherwise empty
+  directories in place if things get moved. Neither case is relevant at the
+  time of writing, but lingering empty directories seemed better than
+  diagnosing accidental __init__.py changes.
+
+  Args:
+    directory (str): Path to be cleaned up.
+  """
+  for dirpath, _dirnames, filenames in os.walk(directory):
+    old = [os.path.join(dirpath, f) for f in filenames if f.endswith('_pb2.py')]
+    for current in old:
+      osutils.SafeUnlink(current)
+
+def _GenerateFiles(source, output):
+  """Generate the proto files from the |source| tree into |output|.
+
+  Args:
+    source (str): Path to the proto source root directory.
+    output (str): Path to the output root directory.
+  """
+  targets = []
+
+  # Only compile the subset we need for the API.
+  subdirs = [os.path.join(source, 'chromite'),
+             os.path.join(source, 'chromiumos')]
+  for basedir in subdirs:
+    for dirpath, _dirnames, filenames in os.walk(basedir):
+      for filename in filenames:
+        if filename.endswith('.proto'):
+          # We have a match, add the file.
+          targets.append(os.path.join(dirpath, filename))
+
+  template = ('%(protoc)s --python_out %(output)s '
+              '--proto_path %(src)s  %(targets)s')
+  cmd = template % {'protoc': _PROTOC, 'output': output, 'src': source,
+                    'targets': ' '.join(targets)}
+  cros_build_lib.RunCommand(cmd, shell=True, cwd=source)
+
+
+def _InstallMissingInits(directory):
+  """Add any __init__.py files not present in the generated protobuf folders."""
+  for dirpath, _dirnames, filenames in os.walk(directory):
+    if '__init__.py' not in filenames:
+      osutils.Touch(os.path.join(dirpath, '__init__.py'))
+
+
+def _PostprocessFiles(directory):
+  """Do postprocessing on the generated files.
+
+  Args:
+    directory (str): The root directory containing the generated files that are
+      to be processed.
+  """
+  # We are using a negative address here (the /address/! portion of the sed
+  # command) to make sure we don't change any imports from protobuf itself.
+  address = '^from google.protobuf'
+  # Find: 'from x import y_pb2 as x_dot_y_pb2'.
+  # "\(^google.protobuf[^ ]*\)" matches the module we're importing from.
+  #   - \( and \) are for groups in sed.
+  #   - ^google.protobuf prevents changing the import for protobuf's files.
+  #   - [^ ] = Not a space. The [:space:] character set is too broad, but would
+  #       technically work too.
+  find = r'^from \([^ ]*\) import \([^ ]*\)_pb2 as \([^ ]*\)$'
+  # Substitute: 'from chromite.api.gen.x import y_pb2 as x_dot_y_pb2'.
+  sub = 'from chromite.api.gen.\\1 import \\2_pb2 as \\3'
+  from_sed = ['sed', '-i', '/%(address)s/!s/%(find)s/%(sub)s/g' %
+              {'address': address, 'find': find, 'sub': sub}]
+
+  for dirpath, _dirnames, filenames in os.walk(directory):
+    # Update the
+    pb2 = [os.path.join(dirpath, f) for f in filenames if f.endswith('_pb2.py')]
+    if pb2:
+      cmd = from_sed + pb2
+      cros_build_lib.RunCommand(cmd)
+
+
+def CompileProto(output=None):
+  """Compile the Build API protobuf files.
+
+  By default this will compile from infra/proto/src to api/gen. The output
+  directory may be changed, but the imports will always be treated as if it is
+  in the default location.
+
+  Args:
+    output (str|None): The output directory.
+  """
+  source = os.path.join(_PROTO_DIR, 'src')
+  output = output or os.path.join(_API_DIR, 'gen')
+
+  _InstallProtoc()
+  _CleanTargetDirectory(output)
+  _GenerateFiles(source, output)
+  _InstallMissingInits(output)
+  _PostprocessFiles(output)
 
 
 def GetParser():
+  """Build the argument parser."""
   parser = commandline.ArgumentParser(description=__doc__)
+  parser.add_argument('--destination', type='path',
+                      help='The directory where the proto should be generated.'
+                           'Defaults to the correct directory for the API.')
   return parser
 
 
@@ -30,33 +162,6 @@ def _ParseArguments(argv):
 
 
 def main(argv):
-  _opts = _ParseArguments(argv)
+  opts = _ParseArguments(argv)
 
-  base_dir = os.path.join(constants.CHROOT_SOURCE_ROOT, 'chromite', 'api')
-  output = os.path.join(base_dir, 'gen')
-  source = os.path.join(base_dir, 'proto')
-  targets = os.path.join(source, '*.proto')
-
-  version = cros_build_lib.RunCommand(['protoc', '--version'], print_cmd=False,
-                                      enter_chroot=True, capture_output=True,
-                                      error_code_ok=True)
-  if version.returncode != 0:
-    cros_build_lib.Die('protoc not found in your chroot.')
-  elif '3.3.0' in version.output:
-    # This is the old chroot version, just needs to have update_chroot run.
-    cros_build_lib.Die('Old protoc version detected. Please update your chroot'
-                       'and try again: `cros_sdk -- ./update_chroot`')
-  elif '3.6.1' not in version.output:
-    # Note: We know some lower versions have some compiling backwards
-    # compatibility problems. One would hope new versions would be ok,
-    # but we would have said that with earlier versions too.
-    logging.warning('Unsupported protoc version found in your chroot.\n'
-                    "libprotoc 3.6.1 is supported. Found '%s'.\n"
-                    'protoc will still be run, but be cautious.',
-                    version.output.strip())
-
-  cmd = ('protoc --python_out %(output)s --proto_path %(source)s %(targets)s'
-         % {'output': output, 'source': source, 'targets': targets})
-  result = cros_build_lib.RunCommand(cmd, enter_chroot=True, shell=True,
-                                     error_code_ok=True)
-  return result.returncode
+  CompileProto(output=opts.destination)

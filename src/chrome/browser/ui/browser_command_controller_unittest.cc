@@ -161,8 +161,7 @@ TEST_F(BrowserCommandControllerTest, IncognitoCommands) {
   testprofile->SetGuestSession(true);
   chrome::BrowserCommandController ::
       UpdateSharedCommandsForIncognitoAvailability(
-          browser()->command_controller(),
-          testprofile);
+          browser()->command_controller(), testprofile);
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_SHOW_SIGNIN));
@@ -172,8 +171,7 @@ TEST_F(BrowserCommandControllerTest, IncognitoCommands) {
                                       IncognitoModePrefs::FORCED);
   chrome::BrowserCommandController ::
       UpdateSharedCommandsForIncognitoAvailability(
-          browser()->command_controller(),
-          testprofile);
+          browser()->command_controller(), testprofile);
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_SHOW_SIGNIN));
@@ -221,10 +219,7 @@ TEST_F(BrowserCommandControllerTest, AvatarAcceleratorEnabledOnDesktop) {
   EXPECT_EQ(enabled, command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
 }
 
-TEST_F(BrowserCommandControllerTest, AvatarMenuAlwaysDisabledInIncognitoMode) {
-  if (!profiles::IsMultipleProfilesEnabled())
-    return;
-
+TEST_F(BrowserCommandControllerTest, AvatarMenuAlwaysEnabledInIncognitoMode) {
   // Set up a profile with an off the record profile.
   TestingProfile::Builder normal_builder;
   std::unique_ptr<TestingProfile> original_profile = normal_builder.Build();
@@ -238,8 +233,8 @@ TEST_F(BrowserCommandControllerTest, AvatarMenuAlwaysDisabledInIncognitoMode) {
   chrome::BrowserCommandController command_controller(otr_browser.get());
   const CommandUpdater* command_updater = &command_controller;
 
-  // The avatar menu should be disabled.
-  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
+  // The avatar menu should be enabled.
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
   // The command line is reset at the end of every test by the test suite.
 }
 
@@ -303,8 +298,8 @@ class BrowserCommandControllerFullscreenTest
   Browser* GetBrowser() { return BrowserWithTestWindowTest::browser(); }
 
   // BrowserWithTestWindowTest overrides:
-  BrowserWindow* CreateBrowserWindow() override {
-    return new FullscreenTestBrowserWindow(this);
+  std::unique_ptr<BrowserWindow> CreateBrowserWindow() override {
+    return std::make_unique<FullscreenTestBrowserWindow>(this);
   }
 
  private:
@@ -358,6 +353,7 @@ TEST_F(BrowserCommandControllerFullscreenTest,
     { IDC_VIEW_PASSWORDS,          true,     false,     false,     false    },
     { IDC_ABOUT,                   true,     false,     false,     false    },
     { IDC_SHOW_APP_MENU,           true,     false,     false,     false    },
+    { IDC_SEND_TAB_TO_SELF,        true,     false,     false,     false    },
     { IDC_FULLSCREEN,              true,     false,     true,      true     },
     { IDC_CLOSE_TAB,               true,     true,      true,      false    },
     { IDC_CLOSE_WINDOW,            true,     true,      true,      false    },

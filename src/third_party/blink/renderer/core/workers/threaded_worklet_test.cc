@@ -228,7 +228,7 @@ class ThreadedWorkletMessagingProxyForTest
 class ThreadedWorkletTest : public testing::Test {
  public:
   void SetUp() override {
-    page_ = DummyPageHolder::Create();
+    page_ = std::make_unique<DummyPageHolder>();
     Document* document = page_->GetFrame().GetDocument();
     document->SetURL(KURL("https://example.com/"));
     document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
@@ -275,7 +275,7 @@ TEST_F(ThreadedWorkletTest, SecurityOrigin) {
 TEST_F(ThreadedWorkletTest, ContentSecurityPolicy) {
   // Set up the CSP for Document before starting ThreadedWorklet because
   // ThreadedWorklet inherits the owner Document's CSP.
-  ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
+  auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
   csp->DidReceiveHeader("script-src 'self' https://allowed.example.com",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
@@ -291,7 +291,7 @@ TEST_F(ThreadedWorkletTest, ContentSecurityPolicy) {
 }
 
 TEST_F(ThreadedWorkletTest, InvalidContentSecurityPolicy) {
-  ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
+  auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
   csp->DidReceiveHeader("invalid-csp", kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
   GetDocument().InitContentSecurityPolicy(csp);

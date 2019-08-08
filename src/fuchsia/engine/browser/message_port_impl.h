@@ -5,13 +5,13 @@
 #ifndef FUCHSIA_ENGINE_BROWSER_MESSAGE_PORT_IMPL_H_
 #define FUCHSIA_ENGINE_BROWSER_MESSAGE_PORT_IMPL_H_
 
+#include <fuchsia/web/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
-#include <deque>
 #include <memory>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "mojo/public/cpp/bindings/connector.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -22,32 +22,27 @@
 //
 // MessagePortImpl instances are self-managed; they destroy themselves when
 // the connection is terminated from either the Mojo or FIDL side.
-class MessagePortImpl : public chromium::web::MessagePort,
+class MessagePortImpl : public fuchsia::web::MessagePort,
                         public mojo::MessageReceiver {
  public:
   // Creates a connected MessagePort from a FIDL MessagePort request and
   // returns a handle to its peer Mojo pipe.
   static mojo::ScopedMessagePipeHandle FromFidl(
-      fidl::InterfaceRequest<chromium::web::MessagePort> client_fidl_port);
+      fidl::InterfaceRequest<fuchsia::web::MessagePort> port);
 
   // Creates a connected MessagePort from a transferred Mojo MessagePort and
   // returns a handle to its FIDL interface peer.
-  static fidl::InterfaceHandle<chromium::web::MessagePort> FromMojo(
+  static fidl::InterfaceHandle<fuchsia::web::MessagePort> FromMojo(
       mojo::ScopedMessagePipeHandle port);
 
- protected:
-  friend class base::DeleteHelper<MessagePortImpl>;
-
+ private:
   explicit MessagePortImpl(mojo::ScopedMessagePipeHandle mojo_port);
 
   // Non-public to ensure that only this object may destroy itself.
   ~MessagePortImpl() override;
 
-  fidl::Binding<chromium::web::MessagePort> binding_;
-
- private:
-  // chromium::web::MessagePortImpl implementation.
-  void PostMessage(chromium::web::WebMessage message,
+  // fuchsia::web::MessagePort implementation.
+  void PostMessage(fuchsia::web::WebMessage message,
                    PostMessageCallback callback) override;
   void ReceiveMessage(ReceiveMessageCallback callback) override;
 
@@ -61,7 +56,8 @@ class MessagePortImpl : public chromium::web::MessagePort,
   // mojo::MessageReceiver implementation.
   bool Accept(mojo::Message* message) override;
 
-  std::deque<chromium::web::WebMessage> message_queue_;
+  fidl::Binding<fuchsia::web::MessagePort> binding_;
+  base::circular_deque<fuchsia::web::WebMessage> message_queue_;
   ReceiveMessageCallback pending_client_read_cb_;
   std::unique_ptr<mojo::Connector> connector_;
 

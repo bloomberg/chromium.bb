@@ -71,7 +71,7 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
   void SetUpOnMainThread() override {
     https_server_.reset(
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
-    https_server_->ServeFilesFromSourceDirectory("content/test/data");
+    https_server_->ServeFilesFromSourceDirectory(GetTestDataFilePath());
     ASSERT_TRUE(https_server_->Start());
     ASSERT_TRUE(NavigateToURL(
         shell(),

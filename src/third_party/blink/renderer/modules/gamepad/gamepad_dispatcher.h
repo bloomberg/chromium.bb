@@ -5,11 +5,17 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_GAMEPAD_DISPATCHER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_GAMEPAD_DISPATCHER_H_
 
-#include "device/gamepad/public/cpp/gamepads.h"
+#include <memory>
+
+#include "base/memory/scoped_refptr.h"
 #include "device/gamepad/public/mojom/gamepad.mojom-blink.h"
 #include "third_party/blink/public/platform/web_gamepad_listener.h"
 #include "third_party/blink/renderer/core/frame/platform_event_dispatcher.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+
+namespace device {
+class Gamepad;
+class Gamepads;
+}  // namespace device
 
 namespace blink {
 

@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
 #include "third_party/blink/renderer/platform/graphics/filters/fe_diffuse_lighting.h"
 #include "third_party/blink/renderer/platform/graphics/filters/filter.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -31,15 +32,19 @@ inline SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(
     Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEDiffuseLightingTag,
                                            document),
-      diffuse_constant_(
-          SVGAnimatedNumber::Create(this, svg_names::kDiffuseConstantAttr, 1)),
+      diffuse_constant_(MakeGarbageCollected<SVGAnimatedNumber>(
+          this,
+          svg_names::kDiffuseConstantAttr,
+          1)),
       surface_scale_(
-          SVGAnimatedNumber::Create(this, svg_names::kSurfaceScaleAttr, 1)),
-      kernel_unit_length_(SVGAnimatedNumberOptionalNumber::Create(
+          MakeGarbageCollected<SVGAnimatedNumber>(this,
+                                                  svg_names::kSurfaceScaleAttr,
+                                                  1)),
+      kernel_unit_length_(MakeGarbageCollected<SVGAnimatedNumberOptionalNumber>(
           this,
           svg_names::kKernelUnitLengthAttr,
           0.0f)),
-      in1_(SVGAnimatedString::Create(this, svg_names::kInAttr)) {
+      in1_(MakeGarbageCollected<SVGAnimatedString>(this, svg_names::kInAttr)) {
   AddToPropertyMap(diffuse_constant_);
   AddToPropertyMap(surface_scale_);
   AddToPropertyMap(kernel_unit_length_);
@@ -154,7 +159,7 @@ FilterEffect* SVGFEDiffuseLightingElement::Build(
   scoped_refptr<LightSource> light_source =
       light_node ? light_node->GetLightSource(filter) : nullptr;
 
-  FilterEffect* effect = FEDiffuseLighting::Create(
+  auto* effect = MakeGarbageCollected<FEDiffuseLighting>(
       filter, color, surface_scale_->CurrentValue()->Value(),
       diffuse_constant_->CurrentValue()->Value(), std::move(light_source));
   effect->InputEffects().push_back(input1);

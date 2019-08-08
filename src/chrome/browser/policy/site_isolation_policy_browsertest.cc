@@ -17,6 +17,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/common/content_client.h"
@@ -38,7 +39,23 @@ class SiteIsolationPolicyBrowserTest : public InProcessBrowserTest {
     for (size_t i = 0; i < count; ++i) {
       const GURL url(expectations[i].url);
       auto instance = content::SiteInstance::CreateForURL(context, url);
-      EXPECT_EQ(expectations[i].isolated, instance->RequiresDedicatedProcess());
+      EXPECT_EQ(expectations[i].isolated, instance->RequiresDedicatedProcess())
+          << "; url = " << url;
+    }
+  }
+
+  void CheckIsolatedOriginExpectations(Expectations* expectations,
+                                       size_t count) {
+    if (!content::AreAllSitesIsolatedForTesting())
+      CheckExpectations(expectations, count);
+
+    auto* policy = content::ChildProcessSecurityPolicy::GetInstance();
+    for (size_t i = 0; i < count; ++i) {
+      const GURL url(expectations[i].url);
+      const url::Origin origin = url::Origin::Create(url);
+      EXPECT_EQ(expectations[i].isolated,
+                policy->IsGloballyIsolatedOriginForTesting(origin))
+          << "; origin = " << origin;
     }
   }
 
@@ -105,7 +122,7 @@ class IsolateOriginsPolicyBrowserTest : public SiteIsolationPolicyBrowserTest {
     values.Set(policy::key::kIsolateOrigins, policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
                std::make_unique<base::Value>(
-                   "https://example.org/,http://example.com"),
+                   "https://policy1.example.org/,http://policy2.example.com"),
                nullptr);
     provider_.UpdateChromePolicy(values);
   }
@@ -164,17 +181,38 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPolicyBrowserTestEnabled, Simple) {
 }
 
 IN_PROC_BROWSER_TEST_F(IsolateOriginsPolicyBrowserTest, Simple) {
-  // Skip this test if all sites are isolated.
-  if (content::AreAllSitesIsolatedForTesting())
-    return;
-
+  // Verify that the policy present at browser startup is correctly applied.
   Expectations expectations[] = {
       {"https://foo.com/noodles.html", false},
       {"http://foo.com/", false},
-      {"https://example.org/pumpkins.html", true},
-      {"http://example.com/index.php", true},
+      {"https://policy1.example.org/pumpkins.html", true},
+      {"http://policy2.example.com/index.php", true},
   };
-  CheckExpectations(expectations, base::size(expectations));
+  CheckIsolatedOriginExpectations(expectations, base::size(expectations));
+
+  // Simulate updating the policy at "browser runtime".
+  policy::PolicyMap values;
+  values.Set(policy::key::kIsolateOrigins, policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+             std::make_unique<base::Value>(
+                 "https://policy3.example.org/,http://policy4.example.com"),
+             nullptr);
+  provider_.UpdateChromePolicy(values);
+
+  // Verify that the policy update above has taken effect:
+  // - policy3 and policy4 origins should become isolated
+  // - policy1 and policy2 origins will remain isolated, even though they were
+  //   removed from the policy (this is an artifact caused by limitations of
+  //   the current implementation, not something that is a hard requirement).
+  Expectations expectations2[] = {
+      {"https://foo.com/noodles.html", false},
+      {"http://foo.com/", false},
+      {"https://policy1.example.org/pumpkins.html", true},
+      {"http://policy2.example.com/index.php", true},
+      {"https://policy3.example.org/pumpkins.html", true},
+      {"http://policy4.example.com/index.php", true},
+  };
+  CheckIsolatedOriginExpectations(expectations2, base::size(expectations2));
 }
 
 IN_PROC_BROWSER_TEST_F(WebDriverSitePerProcessPolicyBrowserTest, Simple) {

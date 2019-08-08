@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker.h"
+#include "chrome/browser/local_discovery/endpoint_resolver.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/printing/ppd_provider.h"
 #include "chromeos/printing/printer_configuration.h"
@@ -38,7 +39,14 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
                             public ui::SelectFileDialog::Listener,
                             public CupsPrintersManager::Observer {
  public:
-  explicit CupsPrintersHandler(content::WebUI* webui);
+  static std::unique_ptr<CupsPrintersHandler> Create(content::WebUI* webui);
+
+  static std::unique_ptr<CupsPrintersHandler> CreateForTesting(
+      Profile* profile,
+      scoped_refptr<PpdProvider> ppd_provider,
+      std::unique_ptr<PrinterConfigurer> printer_configurer,
+      CupsPrintersManager* printers_manager);
+
   ~CupsPrintersHandler() override;
 
   // SettingsPageUIHandler overrides:
@@ -46,7 +54,14 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
 
+  void SetWebUIForTest(content::WebUI* web_ui);
+
  private:
+  CupsPrintersHandler(Profile* profile,
+                      scoped_refptr<PpdProvider> ppd_provider,
+                      std::unique_ptr<PrinterConfigurer> printer_configurer,
+                      CupsPrintersManager* printers_manager);
+
   // Gets all CUPS printers and return it to WebUI.
   void HandleGetCupsPrintersList(const base::ListValue* args);
   void HandleUpdateCupsPrinter(const base::ListValue* args);
@@ -73,7 +88,7 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
 
   // Handles the callback for HandleGetPrinterInfo for a discovered printer.
   void OnAutoconfQueriedDiscovered(
-      std::unique_ptr<Printer> printer,
+      Printer printer,
       bool success,
       const std::string& make,
       const std::string& model,
@@ -89,14 +104,20 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
 
   void HandleAddCupsPrinter(const base::ListValue* args);
 
+  void HandleReconfigureCupsPrinter(const base::ListValue* args);
+
+  void AddOrReconfigurePrinter(const base::ListValue* args,
+                               bool is_printer_edit);
+
   // Handles the result of adding a printer which the user specified the
   // location of (i.e. a printer that was not 'discovered' automatically).
-  void OnAddedSpecifiedPrinter(const Printer& printer,
-                               PrinterSetupResult result);
+  void OnAddedOrEditedSpecifiedPrinter(const Printer& printer,
+                                       bool is_printer_edit,
+                                       PrinterSetupResult result);
 
   // Handles the result of failure to add a printer. |result_code| is used to
   // determine the reason for the failure.
-  void OnAddPrinterError(PrinterSetupResult result_code);
+  void OnAddOrEditPrinterError(PrinterSetupResult result_code);
 
   // Get a list of all manufacturers for which we have at least one model of
   // printer supported.  Takes one argument, the callback id for the result.
@@ -146,9 +167,9 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
                                 PrinterSetupResult result_code);
 
   // Code common between the discovered and manual add printer code paths.
-  void OnAddedPrinterCommon(const Printer& printer,
-                            PrinterSetupResult result_code,
-                            bool is_automatic);
+  void OnAddedOrEditedPrinterCommon(const Printer& printer,
+                                    PrinterSetupResult result_code,
+                                    bool is_automatic);
 
   // CupsPrintersManager::Observer override:
   void OnPrintersChanged(CupsPrintersManager::PrinterClass printer_class,
@@ -169,6 +190,8 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   // Fires the on-manually-add-discovered-printer event with the appropriate
   // parameters.  See https://crbug.com/835476
   void FireManuallyAddDiscoveredPrinter(const Printer& printer);
+
+  void OnIpResolved(const Printer& printer, const net::IPEndPoint& endpoint);
 
   Profile* profile_;
 
@@ -193,6 +216,7 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   std::string webui_callback_id_;
   CupsPrintersManager* printers_manager_;
+  std::unique_ptr<local_discovery::EndpointResolver> endpoint_resolver_;
 
   ScopedObserver<CupsPrintersManager, CupsPrintersManager::Observer>
       printers_manager_observer_;

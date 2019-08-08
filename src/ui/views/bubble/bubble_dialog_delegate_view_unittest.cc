@@ -9,6 +9,7 @@
 #include "base/i18n/rtl.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
@@ -23,6 +24,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
+#if defined(OS_WIN)
+#include "ui/base/win/shell.h"
+#endif
+
 namespace views {
 
 using test::TestInkDrop;
@@ -34,12 +39,12 @@ constexpr int kContentWidth = 200;
 
 class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
  public:
-  TestBubbleDialogDelegateView(View* anchor_view)
+  explicit TestBubbleDialogDelegateView(View* anchor_view)
       : BubbleDialogDelegateView(anchor_view, BubbleBorder::TOP_LEFT) {
     view_->SetFocusBehavior(FocusBehavior::ALWAYS);
     AddChildView(view_);
   }
-  ~TestBubbleDialogDelegateView() override {}
+  ~TestBubbleDialogDelegateView() override = default;
 
   using BubbleDialogDelegateView::SetAnchorView;
 
@@ -93,8 +98,8 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
 
 class BubbleDialogDelegateViewTest : public ViewsTestBase {
  public:
-  BubbleDialogDelegateViewTest() {}
-  ~BubbleDialogDelegateViewTest() override {}
+  BubbleDialogDelegateViewTest() = default;
+  ~BubbleDialogDelegateViewTest() override = default;
 
   // Creates and shows a test widget that owns its native widget.
   Widget* CreateTestWidget() {
@@ -192,7 +197,7 @@ TEST_F(BubbleDialogDelegateViewTest, CloseAnchorViewTest) {
   // is still kept, so that the bubble does not jump when the view gets deleted.
   anchor_widget->GetContentsView()->RemoveChildView(anchor_view.get());
   anchor_view.reset();
-  EXPECT_EQ(NULL, bubble_delegate->GetAnchorView());
+  EXPECT_EQ(nullptr, bubble_delegate->GetAnchorView());
   EXPECT_EQ(view_rect.ToString(), bubble_delegate->GetAnchorRect().ToString());
 }
 
@@ -272,17 +277,27 @@ TEST_F(BubbleDialogDelegateViewTest, NonClientHitTest) {
   BubbleDialogDelegateView::CreateBubble(bubble_delegate);
   BubbleFrameView* frame = bubble_delegate->GetBubbleFrameView();
 
+#if defined(OS_WIN)
+  bool is_aero_glass_enabled = ui::win::IsAeroGlassEnabled();
+#endif
+
   struct {
     const int point;
     const int hit;
-  } cases[] = {
-      {0, HTNOWHERE}, {60, HTCLIENT}, {1000, HTNOWHERE},
+  } kTestCases[] = {
+#if defined(OS_WIN)
+    {0, is_aero_glass_enabled ? HTTRANSPARENT : HTNOWHERE},
+#else
+    {0, HTTRANSPARENT},
+#endif
+    {60, HTCLIENT},
+    {1000, HTNOWHERE},
   };
 
-  for (size_t i = 0; i < base::size(cases); ++i) {
-    gfx::Point point(cases[i].point, cases[i].point);
-    EXPECT_EQ(cases[i].hit, frame->NonClientHitTest(point))
-        << " at point " << cases[i].point;
+  for (const auto& test_case : kTestCases) {
+    gfx::Point point(test_case.point, test_case.point);
+    EXPECT_EQ(test_case.hit, frame->NonClientHitTest(point))
+        << " at point " << test_case.point;
   }
 }
 
@@ -534,6 +549,23 @@ TEST_F(BubbleDialogDelegateViewTest, VisibleAnchorChanges) {
   EXPECT_TRUE(anchor_widget->IsAlwaysRenderAsActive());
 
   bubble_widget->Hide();
+}
+
+TEST_F(BubbleDialogDelegateViewTest, GetThemeProvider_FromAnchorWidget) {
+  std::unique_ptr<Widget> anchor_widget(CreateTestWidget());
+  TestBubbleDialogDelegateView* bubble_delegate =
+      new TestBubbleDialogDelegateView(nullptr);
+  bubble_delegate->set_parent_window(anchor_widget->GetNativeView());
+
+  Widget* bubble_widget =
+      BubbleDialogDelegateView::CreateBubble(bubble_delegate);
+  bubble_widget->Show();
+  EXPECT_NE(bubble_widget->GetThemeProvider(),
+            anchor_widget->GetThemeProvider());
+
+  bubble_delegate->SetAnchorView(anchor_widget->GetRootView());
+  EXPECT_EQ(bubble_widget->GetThemeProvider(),
+            anchor_widget->GetThemeProvider());
 }
 
 }  // namespace views

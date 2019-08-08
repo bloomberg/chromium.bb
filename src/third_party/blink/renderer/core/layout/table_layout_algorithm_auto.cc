@@ -85,9 +85,17 @@ void TableLayoutAlgorithmAuto::RecalcColumn(unsigned eff_col) {
           const int kCCellMaxWidth = 32760;
           Length cell_logical_width = cell->StyleOrColLogicalWidth();
           // FIXME: calc() on tables should be handled consistently with other
-          // lengths. See bug: https://crbug.com/382725
-          if (cell_logical_width.IsCalculated())
-            cell_logical_width = Length();  // Make it Auto
+          // lengths.
+          // Currently, only calc(% + 0px) case is handled as calc(%).
+          // See bug: https://crbug.com/382725
+          if (cell_logical_width.IsCalculated()) {
+            if (!cell_logical_width.GetPixelsAndPercent().pixels) {
+              cell_logical_width = Length::Percent(
+                  cell_logical_width.GetPixelsAndPercent().percent);
+            } else {
+              cell_logical_width = Length();  // Make it Auto
+            }
+          }
           if (cell_logical_width.Value() > kCCellMaxWidth)
             cell_logical_width = Length::Fixed(kCCellMaxWidth);
           if (cell_logical_width.IsNegative())

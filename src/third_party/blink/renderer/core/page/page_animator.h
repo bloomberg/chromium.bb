@@ -17,8 +17,6 @@ class Page;
 
 class CORE_EXPORT PageAnimator final : public GarbageCollected<PageAnimator> {
  public:
-  static PageAnimator* Create(Page&);
-
   explicit PageAnimator(Page&);
 
   void Trace(blink::Visitor*);

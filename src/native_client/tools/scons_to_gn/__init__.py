@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 from collections import defaultdict
 import hashlib
 import json
@@ -48,7 +50,7 @@ class ObjectTracker(object):
     self.cond_obj.WriteImports(fileobj)
     self.top.Dump(fileobj, 0)
     for ins in self.installs:
-      print "Install " + ins
+      print("Install " + ins)
 
   def ExecCondition(self, name):
     env = Environment(self, self.cond_obj)
@@ -133,7 +135,8 @@ def Action(*args):
 
 def Import(name):
   if name != 'env':
-    print 'Warning: Tried to IMPORT: ' + name
+    print('Warning: Tried to IMPORT: ' + name)
+
 
 def ParseSource(name):
   tracker = ObjectTracker(name);

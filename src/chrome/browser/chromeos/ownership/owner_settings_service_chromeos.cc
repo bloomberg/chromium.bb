@@ -27,7 +27,6 @@
 #include "chrome/browser/chromeos/settings/device_settings_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "chromeos/tpm/tpm_token_loader.h"
 #include "components/ownership/owner_key_util.h"
@@ -204,10 +203,8 @@ OwnerSettingsServiceChromeOS::OwnerSettingsServiceChromeOS(
         tpm_token_status == TPMTokenLoader::TPM_TOKEN_STATUS_UNDETERMINED;
   }
 
-  if (DBusThreadManager::IsInitialized() &&
-      DBusThreadManager::Get()->GetSessionManagerClient()) {
-    DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
-  }
+  if (SessionManagerClient::Get())
+    SessionManagerClient::Get()->AddObserver(this);
 
   if (device_settings_service_)
     device_settings_service_->AddObserver(this);
@@ -233,10 +230,8 @@ OwnerSettingsServiceChromeOS::~OwnerSettingsServiceChromeOS() {
   if (device_settings_service_)
     device_settings_service_->RemoveObserver(this);
 
-  if (DBusThreadManager::IsInitialized() &&
-      DBusThreadManager::Get()->GetSessionManagerClient()) {
-    DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
-  }
+  if (SessionManagerClient::Get())
+    SessionManagerClient::Get()->RemoveObserver(this);
 }
 
 OwnerSettingsServiceChromeOS* OwnerSettingsServiceChromeOS::FromWebUI(

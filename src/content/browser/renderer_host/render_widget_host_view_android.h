@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/presentation_feedback_map.h"
 #include "components/viz/common/quads/selection.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
@@ -102,17 +103,17 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void InitAsFullscreen(RenderWidgetHostView* reference_host_view) override;
   void SetSize(const gfx::Size& size) override;
   void SetBounds(const gfx::Rect& rect) override;
-  gfx::NativeView GetNativeView() const override;
+  gfx::NativeView GetNativeView() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   void Focus() override;
-  bool HasFocus() const override;
+  bool HasFocus() override;
   void Show() override;
   void Hide() override;
   bool IsShowing() override;
-  gfx::Rect GetViewBounds() const override;
-  gfx::Size GetVisibleViewportSize() const override;
-  gfx::Size GetCompositorViewportPixelSize() const override;
-  bool IsSurfaceAvailableForCopy() const override;
+  gfx::Rect GetViewBounds() override;
+  gfx::Size GetVisibleViewportSize() override;
+  gfx::Size GetCompositorViewportPixelSize() override;
+  bool IsSurfaceAvailableForCopy() override;
   void CopyFromSurface(
       const gfx::Rect& src_rect,
       const gfx::Size& output_size,
@@ -138,6 +139,13 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       const blink::WebGestureEvent& gesture_event) override;
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result) override;
+  bool OnUnconsumedKeyboardEventAck(
+      const NativeWebKeyboardEventWithLatencyInfo& event) override;
+  void FallbackCursorModeLockCursor(bool left,
+                                    bool right,
+                                    bool up,
+                                    bool down) override;
+  void FallbackCursorModeSetCursorVisibility(bool visible) override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
   bool LockMouse() override;
@@ -182,11 +190,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnRenderWidgetInit() override;
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
   void OnSynchronizedDisplayPropertiesChanged() override;
-  base::Optional<SkColor> GetBackgroundColor() const override;
+  base::Optional<SkColor> GetBackgroundColor() override;
   void DidNavigate() override;
   viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
-  void GetScreenInfo(ScreenInfo* screen_info) const override;
+  void GetScreenInfo(ScreenInfo* screen_info) override;
 
   // ui::EventHandlerAndroid implementation.
   bool OnTouchEvent(const ui::MotionEventAndroid& m) override;
@@ -212,6 +220,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnAnimate(base::TimeTicks begin_frame_time) override;
   void OnActivityStopped() override;
   void OnActivityStarted() override;
+  void OnCursorVisibilityChanged(bool visible) override;
+  void OnFallbackCursorModeToggled(bool is_on) override;
 
   // StylusTextSelectorClient implementation.
   void OnStylusSelectBegin(float x0, float y0, float x1, float y1) override;
@@ -234,7 +244,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // Used by DelegatedFrameHostClientAndroid.
   void SetBeginFrameSource(viz::BeginFrameSource* begin_frame_source);
   void DidPresentCompositorFrames(
-      const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks);
+      const viz::PresentationFeedbackMap& feedbacks);
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources);
   void ReclaimResources(const std::vector<viz::ReturnedResource>& resources);
@@ -250,7 +260,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   // Returns the temporary background color of the underlaying document, for
   // example, returns black during screen rotation.
-  base::Optional<SkColor> GetCachedBackgroundColor() const;
+  base::Optional<SkColor> GetCachedBackgroundColor();
   void SendKeyEvent(const NativeWebKeyboardEvent& event);
   void SendMouseEvent(const ui::MotionEventAndroid&, int action_button);
   void SendMouseWheelEvent(const blink::WebMouseWheelEvent& event);
@@ -344,6 +354,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool HasFallbackSurface() const override;
 
  private:
+  friend class RenderWidgetHostViewAndroidTest;
+
   MouseWheelPhaseHandler* GetMouseWheelPhaseHandler() override;
 
   void EvictDelegatedFrame();
@@ -486,6 +498,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool observing_root_window_;
 
   bool controls_initialized_ = false;
+
+  bool fallback_cursor_mode_enabled_;
+
   float prev_top_shown_pix_;
   float prev_top_controls_translate_;
   float prev_bottom_shown_pix_;
@@ -511,7 +526,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // If true, then the next allocated surface should be embedded.
   bool navigation_while_hidden_ = false;
 
-  base::flat_map<uint32_t, gfx::PresentationFeedback> presentation_feedbacks_;
+  viz::PresentationFeedbackMap presentation_feedbacks_;
 
   base::WeakPtrFactory<RenderWidgetHostViewAndroid> weak_ptr_factory_;
 

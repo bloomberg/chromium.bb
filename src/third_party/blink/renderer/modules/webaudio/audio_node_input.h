@@ -50,7 +50,7 @@ class MODULES_EXPORT AudioNodeInput final : public AudioSummingJunction {
   USING_FAST_MALLOC(AudioNodeInput);
 
  public:
-  static std::unique_ptr<AudioNodeInput> Create(AudioHandler&);
+  explicit AudioNodeInput(AudioHandler&);
   ~AudioNodeInput() override;
 
   // AudioSummingJunction
@@ -82,8 +82,6 @@ class MODULES_EXPORT AudioNodeInput final : public AudioSummingJunction {
   unsigned NumberOfChannels() const;
 
  private:
-  explicit AudioNodeInput(AudioHandler&);
-
   // This reference is safe because the AudioHandler owns this AudioNodeInput
   // object.
   AudioHandler& handler_;

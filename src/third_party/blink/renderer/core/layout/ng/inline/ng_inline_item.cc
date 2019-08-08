@@ -60,11 +60,9 @@ bool IsInlineBoxEndEmpty(const ComputedStyle& style,
 NGInlineItem::NGInlineItem(NGInlineItemType type,
                            unsigned start,
                            unsigned end,
-                           const ComputedStyle* style,
                            LayoutObject* layout_object)
     : start_offset_(start),
       end_offset_(end),
-      style_(style),
       layout_object_(layout_object),
       type_(type),
       segment_data_(0),
@@ -87,7 +85,6 @@ NGInlineItem::NGInlineItem(const NGInlineItem& other,
     : start_offset_(start),
       end_offset_(end),
       shape_result_(shape_result),
-      style_(other.style_),
       layout_object_(other.layout_object_),
       type_(other.type_),
       segment_data_(other.segment_data_),
@@ -104,18 +101,6 @@ NGInlineItem::NGInlineItem(const NGInlineItem& other,
 
 NGInlineItem::~NGInlineItem() = default;
 
-bool NGInlineItem::ShouldCreateBoxFragment() const {
-  if (Type() == kOpenTag || Type() == kCloseTag)
-    return ToLayoutInline(layout_object_)->ShouldCreateBoxFragment();
-  DCHECK_EQ(Type(), kAtomicInline);
-  return false;
-}
-
-void NGInlineItem::SetShouldCreateBoxFragment() {
-  DCHECK(Type() == kOpenTag || Type() == kCloseTag);
-  ToLayoutInline(layout_object_)->SetShouldCreateBoxFragment();
-}
-
 void NGInlineItem::ComputeBoxProperties() {
   DCHECK(!is_empty_item_);
 
@@ -124,14 +109,14 @@ void NGInlineItem::ComputeBoxProperties() {
     return;
 
   if (type_ == NGInlineItem::kOpenTag) {
-    DCHECK(style_ && layout_object_ && layout_object_->IsLayoutInline());
-    is_empty_item_ = IsInlineBoxStartEmpty(*style_, *layout_object_);
+    DCHECK(layout_object_ && layout_object_->IsLayoutInline());
+    is_empty_item_ = IsInlineBoxStartEmpty(*Style(), *layout_object_);
     return;
   }
 
   if (type_ == NGInlineItem::kCloseTag) {
-    DCHECK(style_ && layout_object_ && layout_object_->IsLayoutInline());
-    is_empty_item_ = IsInlineBoxEndEmpty(*style_, *layout_object_);
+    DCHECK(layout_object_ && layout_object_->IsLayoutInline());
+    is_empty_item_ = IsInlineBoxEndEmpty(*Style(), *layout_object_);
     return;
   }
 
@@ -147,20 +132,6 @@ const char* NGInlineItem::NGInlineItemTypeToString(int val) const {
   return kNGInlineItemTypeStrings[val];
 }
 
-RunSegmenter::RunSegmenterRange NGInlineItem::CreateRunSegmenterRange() const {
-  return NGInlineItemSegment::UnpackSegmentData(start_offset_, end_offset_,
-                                                segment_data_);
-}
-
-bool NGInlineItem::EqualsRunSegment(const NGInlineItem& other) const {
-  return segment_data_ == other.segment_data_;
-}
-
-void NGInlineItem::SetSegmentData(unsigned segment_data) {
-  DCHECK_EQ(Type(), NGInlineItem::kText);
-  segment_data_ = segment_data;
-}
-
 void NGInlineItem::SetSegmentData(const RunSegmenter::RunSegmenterRange& range,
                                   Vector<NGInlineItem>* items) {
   unsigned segment_data = NGInlineItemSegment::PackSegmentData(range);
@@ -168,13 +139,6 @@ void NGInlineItem::SetSegmentData(const RunSegmenter::RunSegmenterRange& range,
     if (item.Type() == NGInlineItem::kText)
       item.segment_data_ = segment_data;
   }
-}
-
-void NGInlineItem::SetBidiLevel(UBiDiLevel level) {
-  // Invalidate ShapeResult because it depends on the resolved direction.
-  if (DirectionFromLevel(level) != DirectionFromLevel(bidi_level_))
-    shape_result_ = nullptr;
-  bidi_level_ = level;
 }
 
 // Set bidi level to a list of NGInlineItem from |index| to the item that ends
@@ -207,12 +171,6 @@ unsigned NGInlineItem::SetBidiLevel(Vector<NGInlineItem>& items,
   return index + 1;
 }
 
-UBiDiLevel NGInlineItem::BidiLevelForReorder() const {
-  // List markers should not be reordered to protect it from being included into
-  // unclosed inline boxes.
-  return Type() != NGInlineItem::kListMarker ? BidiLevel() : 0;
-}
-
 String NGInlineItem::ToString() const {
   return String::Format("NGInlineItem. Type: '%s'. LayoutObject: '%s'",
                         NGInlineItemTypeToString(Type()),
@@ -234,45 +192,6 @@ void NGInlineItem::Split(Vector<NGInlineItem>& items,
   items.insert(index + 1, items[index]);
   items[index].end_offset_ = offset;
   items[index + 1].start_offset_ = offset;
-}
-
-void NGInlineItem::SetOffset(unsigned start, unsigned end) {
-  DCHECK_GE(end, start);
-  start_offset_ = start;
-  end_offset_ = end;
-  // Any modification to the offset will invalidate the shape result.
-  shape_result_ = nullptr;
-}
-
-void NGInlineItem::SetEndOffset(unsigned end_offset) {
-  DCHECK_GE(end_offset, start_offset_);
-  end_offset_ = end_offset;
-  // Any modification to the offset will invalidate the shape result.
-  shape_result_ = nullptr;
-}
-
-bool NGInlineItem::HasStartEdge() const {
-  DCHECK(Type() == kOpenTag || Type() == kCloseTag);
-  // TODO(kojii): Should use break token when NG has its own tree building.
-  return !GetLayoutObject()->IsInlineElementContinuation();
-}
-
-bool NGInlineItem::HasEndEdge() const {
-  DCHECK(Type() == kOpenTag || Type() == kCloseTag);
-  // TODO(kojii): Should use break token when NG has its own tree building.
-  return !GetLayoutObject()->IsLayoutInline() ||
-         !ToLayoutInline(GetLayoutObject())->Continuation();
-}
-
-void NGInlineItem::SetEndCollapseType(NGCollapseType type) {
-  DCHECK(Type() == NGInlineItem::kText || type == kOpaqueToCollapsing ||
-         (Type() == NGInlineItem::kControl && type == kCollapsible));
-  end_collapse_type_ = type;
-}
-
-void NGInlineItem::SetEndCollapseType(NGCollapseType type, bool is_newline) {
-  SetEndCollapseType(type);
-  is_end_collapsible_newline_ = is_newline;
 }
 
 const NGInlineItem& NGInlineItemsData::FindItemForTextOffset(

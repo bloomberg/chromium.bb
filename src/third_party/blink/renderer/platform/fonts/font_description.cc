@@ -34,9 +34,9 @@
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
-#include "third_party/blink/renderer/platform/wtf/string_hasher.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hasher.h"
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
@@ -365,8 +365,8 @@ SkFontStyle FontDescription::SkiaFontStyle() const {
   }
 
   int skia_weight = SkFontStyle::kNormal_Weight;
-  if (Weight() >= 100 && Weight() <= 1000)
-    skia_weight = static_cast<int>(roundf(Weight() / 100) * 100);
+  if (Weight() >= MinWeightValue() && Weight() <= MaxWeightValue())
+    skia_weight = static_cast<int>(Weight());
 
   return SkFontStyle(skia_weight, skia_width, slant);
 }

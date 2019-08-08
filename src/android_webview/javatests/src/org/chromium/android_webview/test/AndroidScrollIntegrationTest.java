@@ -26,12 +26,12 @@ import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.UseZoomForDSFPolicy;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -211,7 +211,7 @@ public class AndroidScrollIntegrationTest {
 
     private boolean checkScrollOnMainSync(final ScrollTestContainerView testContainerView,
             final int scrollXPix, final int scrollYPix) {
-        return ThreadUtils.runOnUiThreadBlockingNoException(
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> scrollXPix == testContainerView.getScrollX()
                         && scrollYPix == testContainerView.getScrollY());
     }
@@ -666,10 +666,9 @@ public class AndroidScrollIntegrationTest {
 
         assertScrollOnMainSync(testContainerView, 0, 0);
 
-        final int maxScrollYPix = ThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> (testContainerView.getAwContents().computeVerticalScrollRange()
-                                - testContainerView.getHeight()));
+        final int maxScrollYPix = TestThreadUtils.runOnUiThreadBlocking(
+                () -> (testContainerView.getAwContents().computeVerticalScrollRange()
+                          - testContainerView.getHeight()));
 
         final CallbackHelper onScrollToCallbackHelper =
                 testContainerView.getOnScrollToCallbackHelper();
@@ -768,8 +767,7 @@ public class AndroidScrollIntegrationTest {
                 + "</div>");
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                ()
-                        -> GestureListenerManager
+                () -> GestureListenerManager
                                    .fromWebContents(testContainerView.getWebContents())
                                    .addListener(testGestureStateListener));
         final CallbackHelper onScrollUpdateGestureConsumedHelper =
@@ -870,7 +868,7 @@ public class AndroidScrollIntegrationTest {
         scrollToOnMainSync(testContainerView, 0, targetScrollYPix);
 
         final int scrolledYPix =
-                ThreadUtils.runOnUiThreadBlocking(() -> testContainerView.getScrollY());
+                TestThreadUtils.runOnUiThreadBlocking(() -> testContainerView.getScrollY());
 
         Assert.assertTrue(scrolledYPix > 0);
 

@@ -210,10 +210,6 @@ bool StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::Read(
                 gesture_data->scroll_data->update_details->velocity_x;
             gesture_event->data.scroll_update.velocity_y =
                 gesture_data->scroll_data->update_details->velocity_y;
-            gesture_event->data.scroll_update
-                .previous_update_in_sequence_prevented =
-                gesture_data->scroll_data->update_details
-                    ->previous_update_in_sequence_prevented;
           }
           break;
       }
@@ -468,9 +464,7 @@ StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::gesture_data(
           gesture_event->data.scroll_update.inertial_phase, false, 0,
           content::mojom::ScrollUpdate::New(
               gesture_event->data.scroll_update.velocity_x,
-              gesture_event->data.scroll_update.velocity_y,
-              gesture_event->data.scroll_update
-                  .previous_update_in_sequence_prevented));
+              gesture_event->data.scroll_update.velocity_y));
       break;
     case blink::WebInputEvent::Type::kGestureFlingStart:
       gesture_data->fling_data = content::mojom::FlingData::New(

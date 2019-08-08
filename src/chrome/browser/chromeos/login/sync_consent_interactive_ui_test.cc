@@ -94,6 +94,11 @@ class SyncConsentTest : public OobeBaseTest {
   SyncConsentTest() = default;
   ~SyncConsentTest() override = default;
 
+  void SetUpOnMainThread() override {
+    OobeBaseTest::SetUpOnMainThread();
+    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
+  }
+
   void TearDownOnMainThread() override {
     // If the login display is still showing, exit gracefully.
     if (LoginDisplayHost::default_host()) {
@@ -115,7 +120,7 @@ class SyncConsentTest : public OobeBaseTest {
   void SwitchLanguage(const std::string& language) {
     const char get_num_reloads[] = "Oobe.getInstance().reloadContentNumEvents_";
     const int prev_reloads = test::OobeJS().GetInt(get_num_reloads);
-    test::OobeJS().Evaluate("$('connect').onLanguageSelected_('" + language +
+    test::OobeJS().Evaluate("$('connect').applySelectedLanguage_('" + language +
                             "');");
     const std::string condition =
         base::StringPrintf("%s > %d", get_num_reloads, prev_reloads);
@@ -133,9 +138,7 @@ class SyncConsentTest : public OobeBaseTest {
                                   FakeGaiaMixin::kFakeUserPassword,
                                   FakeGaiaMixin::kEmptyUserServices);
 
-    test::OobeJS()
-        .CreateWaiter("Oobe.getInstance().currentScreen.id == 'sync-consent'")
-        ->Wait();
+    test::CreateOobeScreenWaiter("sync-consent")->Wait();
   }
 
  protected:
@@ -151,12 +154,12 @@ class SyncConsentTest : public OobeBaseTest {
     screen->SetProfileSyncDisabledByPolicyForTesting(false);
     screen->SetProfileSyncEngineInitializedForTesting(true);
     screen->OnStateChanged(nullptr);
+    test::OobeJS().CreateVisibilityWaiter(true, {"sync-consent-impl"})->Wait();
 
-    test::OobeJS().CreateWaiter("!$('sync-consent-impl').hidden")->Wait();
-    test::OobeJS().ExpectTrue(
-        "!$('sync-consent-impl').$.syncConsentOverviewDialog.hidden");
-    test::OobeJS().Evaluate(
-        "$('sync-consent-impl').$. settingsSaveAndContinueButton.click()");
+    test::OobeJS().ExpectVisiblePath(
+        {"sync-consent-impl", "syncConsentOverviewDialog"});
+    test::OobeJS().TapOnPath(
+        {"sync-consent-impl", "settingsSaveAndContinueButton"});
     consent_recorded_waiter.Wait();
     screen->SetDelegateForTesting(nullptr);  // cleanup
 
@@ -190,6 +193,9 @@ class SyncConsentTest : public OobeBaseTest {
       IDS_LOGIN_SYNC_CONSENT_SCREEN_REVIEW_SYNC_OPTIONS_LATER,
       IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE,
   };
+
+  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
+  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncConsentTest);
@@ -253,32 +259,31 @@ INSTANTIATE_TEST_SUITE_P(SyncConsentTestWithParamsImpl,
 // independently from sync engine statis. So we run test twice, both for "sync
 // engine not yet initialized" and "sync engine initialized" cases. Therefore
 // we use WithParamInterface<bool> here.
-class SyncConsenPolicyDisabledTest : public SyncConsentTest,
-                                     public testing::WithParamInterface<bool> {
+class SyncConsentPolicyDisabledTest : public SyncConsentTest,
+                                      public testing::WithParamInterface<bool> {
 };
 
-IN_PROC_BROWSER_TEST_P(SyncConsenPolicyDisabledTest,
+IN_PROC_BROWSER_TEST_P(SyncConsentPolicyDisabledTest,
                        SyncConsentPolicyDisabled) {
   LoginToSyncConsentScreen();
 
   SyncConsentScreen* screen = static_cast<SyncConsentScreen*>(
       WizardController::default_controller()->GetScreen(
           OobeScreen::SCREEN_SYNC_CONSENT));
-  ConsentRecordedWaiter consent_recorded_waiter;
-  screen->SetDelegateForTesting(&consent_recorded_waiter);
 
   screen->SetProfileSyncDisabledByPolicyForTesting(true);
   screen->SetProfileSyncEngineInitializedForTesting(GetParam());
   screen->OnStateChanged(nullptr);
 
-  // Expect to see "user image selection" or some other screen here.
-  test::OobeJS()
-      .CreateWaiter("Oobe.getInstance().currentScreen.id != 'sync-consent'")
-      ->Wait();
+  // Expect for other screens to be skipped and begin user session.
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_SESSION_STARTED,
+      content::NotificationService::AllSources());
+  observer.Wait();
 }
 
 INSTANTIATE_TEST_SUITE_P(/* no prefix */,
-                         SyncConsenPolicyDisabledTest,
+                         SyncConsentPolicyDisabledTest,
                          testing::Bool());
 
 }  // namespace chromeos

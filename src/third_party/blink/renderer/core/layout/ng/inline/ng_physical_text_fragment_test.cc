@@ -23,15 +23,16 @@ class NGPhysicalTextFragmentTest : public NGLayoutTest {
     const LayoutObject* layout_object = container->GetLayoutObject();
     DCHECK(layout_object) << container;
     DCHECK(layout_object->IsLayoutBlockFlow()) << container;
-    const NGPhysicalBoxFragment* root_fragment =
-        ToLayoutBlockFlow(layout_object)->CurrentFragment();
+    const auto* root_fragment =
+        To<LayoutBlockFlow>(layout_object)->CurrentFragment();
     DCHECK(root_fragment) << container;
 
     Vector<scoped_refptr<const NGPhysicalTextFragment>> result;
     for (const auto& child :
          NGInlineFragmentTraversal::DescendantsOf(*root_fragment)) {
-      if (child.fragment->IsText())
-        result.push_back(ToNGPhysicalTextFragment(child.fragment.get()));
+      if (auto* text_child_fragment =
+              DynamicTo<NGPhysicalTextFragment>(child.fragment.get()))
+        result.push_back(text_child_fragment);
     }
     return result;
   }

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.night_mode;
 
-import static org.chromium.chrome.browser.preferences.ChromePreferenceManager.NIGHT_MODE_SETTINGS_ENABLED_KEY;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceManager.UI_THEME_SETTING_KEY;
 
 import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
@@ -24,13 +24,15 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.themes.ThemePreferences;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 
 /**
  * Maintains and provides the night mode state for the entire application.
  */
-public class GlobalNightModeStateController
-        implements NightModeStateProvider, ApplicationStatus.ApplicationStateListener {
+public class GlobalNightModeStateController implements NightModeStateProvider,
+                                                       SystemNightModeMonitor.Observer,
+                                                       ApplicationStatus.ApplicationStateListener {
     private static GlobalNightModeStateController sInstance;
 
     private final ObserverList<Observer> mObservers = new ObserverList<>();
@@ -64,14 +66,14 @@ public class GlobalNightModeStateController
     }
 
     private GlobalNightModeStateController() {
-        if (!FeatureUtilities.isNightModeAvailable()) {
+        if (!NightModeUtils.isNightModeSupported() || !FeatureUtilities.isNightModeAvailable()) {
             // Always stay in light mode if night mode is not available.
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
             return;
         }
 
         mPreferenceObserver = key -> {
-            if (TextUtils.equals(key, NIGHT_MODE_SETTINGS_ENABLED_KEY)) updateNightMode();
+            if (TextUtils.equals(key, UI_THEME_SETTING_KEY)) updateNightMode();
         };
 
         initializeForPowerSaveMode();
@@ -103,6 +105,12 @@ public class GlobalNightModeStateController
         mObservers.removeObserver(observer);
     }
 
+    // SystemNightModeMonitor.Observer implementation.
+    @Override
+    public void onSystemNightModeChanged() {
+        updateNightMode();
+    }
+
     // ApplicationStatus.ApplicationStateListener implementation.
     @Override
     public void onApplicationStateChange(int newState) {
@@ -123,6 +131,7 @@ public class GlobalNightModeStateController
             ContextUtils.getApplicationContext().registerReceiver(mPowerModeReceiver,
                     new IntentFilter(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED));
         }
+        SystemNightModeMonitor.getInstance().addObserver(this);
         ChromePreferenceManager.getInstance().addObserver(mPreferenceObserver);
         updateNightMode();
     }
@@ -135,20 +144,29 @@ public class GlobalNightModeStateController
         if (mPowerModeReceiver != null) {
             ContextUtils.getApplicationContext().unregisterReceiver(mPowerModeReceiver);
         }
+        SystemNightModeMonitor.getInstance().removeObserver(this);
         ChromePreferenceManager.getInstance().removeObserver(mPreferenceObserver);
     }
 
     private void updateNightMode() {
-        // TODO(huayinz): Listen to system ui mode change.
-        boolean newMode = mPowerSaveModeOn
-                || ChromePreferenceManager.getInstance().readBoolean(
-                        NIGHT_MODE_SETTINGS_ENABLED_KEY, false);
-        if (mNightModeOn != null && newMode == mNightModeOn) return;
+        final int themeSetting =
+                ChromePreferenceManager.getInstance().readInt(UI_THEME_SETTING_KEY);
+        final boolean newNightModeOn = themeSetting == ThemePreferences.ThemeSetting.SYSTEM_DEFAULT
+                        && (mPowerSaveModeOn
+                                || SystemNightModeMonitor.getInstance().isSystemNightModeOn())
+                || themeSetting == ThemePreferences.ThemeSetting.DARK;
+        if (mNightModeOn != null && newNightModeOn == mNightModeOn) return;
 
-        mNightModeOn = newMode;
+        mNightModeOn = newNightModeOn;
         AppCompatDelegate.setDefaultNightMode(
                 mNightModeOn ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
         for (Observer observer : mObservers) observer.onNightModeStateChanged();
+
+        NightModeMetrics.recordNightModeState(mNightModeOn);
+        NightModeMetrics.recordThemePreferencesState(themeSetting);
+        if (mNightModeOn) {
+            NightModeMetrics.recordNightModeEnabledReason(themeSetting, mPowerSaveModeOn);
+        }
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)

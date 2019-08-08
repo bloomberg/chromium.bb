@@ -9,10 +9,19 @@
 import("../../../webrtc.gni")
 
 rtc_source_set("emulated_network") {
+  visibility = [
+    "../../../api:create_network_emulation_manager",
+    ":*",
+  ]
+  if (rtc_include_tests) {
+    visibility += [ "../:scenario" ]
+  }
   testonly = true
   sources = [
     "cross_traffic.cc",
     "cross_traffic.h",
+    "emulated_network_manager.cc",
+    "emulated_network_manager.h",
     "fake_network_socket.cc",
     "fake_network_socket.h",
     "fake_network_socket_server.cc",
@@ -26,18 +35,22 @@ rtc_source_set("emulated_network") {
   ]
   deps = [
     "../:column_printer",
+    "../../../api:network_emulation_manager_api",
     "../../../api:simulated_network_api",
     "../../../api/units:data_rate",
     "../../../api/units:data_size",
     "../../../api/units:time_delta",
     "../../../api/units:timestamp",
-    "../../../rtc_base:rtc_base",
+    "../../../rtc_base",
+    "../../../rtc_base:rtc_base_tests_utils",
     "../../../rtc_base:rtc_task_queue",
     "../../../rtc_base:safe_minmax",
+    "../../../rtc_base:task_queue_for_test",
     "../../../rtc_base/task_utils:repeating_task",
-    "../../../rtc_base/third_party/sigslot:sigslot",
-    "../../../system_wrappers:system_wrappers",
-    "//third_party/abseil-cpp/absl/memory:memory",
+    "../../../rtc_base/third_party/sigslot",
+    "../../../system_wrappers",
+    "../../time_controller",
+    "//third_party/abseil-cpp/absl/memory",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
 }
@@ -51,10 +64,12 @@ rtc_source_set("network_emulation_unittest") {
     ":emulated_network",
     "../../../api:simulated_network_api",
     "../../../call:simulated_network",
+    "../../../rtc_base:gunit_helpers",
     "../../../rtc_base:logging",
     "../../../rtc_base:rtc_event",
+    "../../../system_wrappers:system_wrappers",
     "../../../test:test_support",
-    "//third_party/abseil-cpp/absl/memory:memory",
+    "//third_party/abseil-cpp/absl/memory",
   ]
 }
 
@@ -80,13 +95,12 @@ rtc_source_set("network_emulation_pc_unittest") {
     "../../../p2p:rtc_p2p",
     "../../../pc:pc_test_utils",
     "../../../pc:peerconnection_wrapper",
+    "../../../rtc_base",
     "../../../rtc_base:gunit_helpers",
     "../../../rtc_base:logging",
-    "../../../rtc_base:rtc_base",
-    "../../../rtc_base:rtc_base_tests_utils",
     "../../../rtc_base:rtc_event",
     "../../../test:test_support",
-    "//third_party/abseil-cpp/absl/memory:memory",
+    "//third_party/abseil-cpp/absl/memory",
   ]
 }
 
@@ -102,7 +116,7 @@ rtc_source_set("cross_traffic_unittest") {
     "../../../rtc_base:logging",
     "../../../rtc_base:rtc_event",
     "../../../test:test_support",
-    "//third_party/abseil-cpp/absl/memory:memory",
+    "//third_party/abseil-cpp/absl/memory",
   ]
 }
 

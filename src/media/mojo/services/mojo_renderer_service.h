@@ -35,21 +35,17 @@ class Renderer;
 class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
                                               public RendererClient {
  public:
-  using InitiateSurfaceRequestCB = base::Callback<base::UnguessableToken()>;
-
   // Helper function to bind MojoRendererService with a StrongBinding,
   // which is safely accessible via the returned StrongBindingPtr.
   static mojo::StrongBindingPtr<mojom::Renderer> Create(
       MojoCdmServiceContext* mojo_cdm_service_context,
       std::unique_ptr<media::Renderer> renderer,
-      const InitiateSurfaceRequestCB& initiate_surface_request_cb,
       mojo::InterfaceRequest<mojom::Renderer> request);
 
   // |mojo_cdm_service_context| can be used to find the CDM to support
   // encrypted media. If null, encrypted media is not supported.
   MojoRendererService(MojoCdmServiceContext* mojo_cdm_service_context,
-                      std::unique_ptr<media::Renderer> renderer,
-                      InitiateSurfaceRequestCB initiate_surface_request_cb);
+                      std::unique_ptr<media::Renderer> renderer);
 
   ~MojoRendererService() final;
 
@@ -59,15 +55,16 @@ class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
       base::Optional<std::vector<mojom::DemuxerStreamPtrInfo>> streams,
       const base::Optional<GURL>& media_url,
       const base::Optional<GURL>& site_for_cookies,
+      bool allow_credentials,
       InitializeCallback callback) final;
   void Flush(FlushCallback callback) final;
   void StartPlayingFrom(base::TimeDelta time_delta) final;
   void SetPlaybackRate(double playback_rate) final;
   void SetVolume(float volume) final;
   void SetCdm(int32_t cdm_id, SetCdmCallback callback) final;
-  void InitiateScopedSurfaceRequest(
-      InitiateScopedSurfaceRequestCallback callback) final;
 
+  // TODO(tguilbert): Get rid of |bad_message_cb_|, now that it's no longer
+  // needed.
   void set_bad_message_cb(base::Closure bad_message_cb) {
     bad_message_cb_ = bad_message_cb;
   }
@@ -91,7 +88,6 @@ class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
   void OnVideoConfigChange(const VideoDecoderConfig& config) final;
   void OnVideoNaturalSizeChange(const gfx::Size& size) final;
   void OnVideoOpacityChange(bool opaque) final;
-  void OnDurationChange(base::TimeDelta duration) final;
   void OnRemotePlayStateChange(MediaStatus::State state) final;
 
   // Called when the MediaResourceShim is ready to go (has a config,
@@ -136,10 +132,6 @@ class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
   // members, e.g. |media_resource_| and |cdm_|.
   // Must use "media::" because "Renderer" is ambiguous.
   std::unique_ptr<media::Renderer> renderer_;
-
-  // Registers a new request in the ScopedSurfaceRequestManager.
-  // Returns the token to be used to fulfill the request.
-  InitiateSurfaceRequestCB initiate_surface_request_cb_;
 
   // Callback to be called when an invalid or unexpected message is received.
   // TODO(tguilbert): Revisit how to do InitiateScopedSurfaceRequest() so that

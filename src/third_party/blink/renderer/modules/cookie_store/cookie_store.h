@@ -40,14 +40,6 @@ class CookieStore final : public EventTargetWithInlineData,
   // Needed because of the network::mojom::blink::RestrictedCookieManagerPtr
   ~CookieStore() override;
 
-  static CookieStore* Create(
-      ExecutionContext* execution_context,
-      network::mojom::blink::RestrictedCookieManagerPtr backend,
-      blink::mojom::blink::CookieStorePtr subscription_backend) {
-    return MakeGarbageCollected<CookieStore>(
-        execution_context, std::move(backend), std::move(subscription_backend));
-  }
-
   ScriptPromise getAll(ScriptState*, const String& name, ExceptionState&);
   ScriptPromise getAll(ScriptState*,
                        const CookieStoreGetOptions*,

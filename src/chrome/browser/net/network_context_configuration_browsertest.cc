@@ -135,11 +135,6 @@ struct TestCase {
   NetworkContextType network_context_type;
 };
 
-network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams() {
-  return g_browser_process->system_network_context_manager()
-      ->CreateDefaultNetworkContextParams();
-}
-
 // Tests the system, profile, and incognito profile NetworkContexts.
 class NetworkContextConfigurationBrowserTest
     : public InProcessBrowserTest,
@@ -556,7 +551,8 @@ class NetworkContextConfigurationBrowserTest
         url, net::CookieOptions(),
         base::BindOnce(
             [](std::string* cookies_out, base::RunLoop* run_loop,
-               const std::vector<net::CanonicalCookie>& cookies) {
+               const std::vector<net::CanonicalCookie>& cookies,
+               const net::CookieStatusList& excluded_cookies) {
               *cookies_out = net::CanonicalCookie::BuildCookieLine(cookies);
               run_loop->Quit();
             },
@@ -742,29 +738,6 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, BasicRequest) {
   EXPECT_EQ(200, simple_loader->ResponseInfo()->headers->response_code());
   ASSERT_TRUE(simple_loader_helper.response_body());
   EXPECT_EQ("Echo", *simple_loader_helper.response_body());
-}
-
-IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DataURL) {
-  if (IsRestartStateWithInProcessNetworkService())
-    return;
-  std::unique_ptr<network::ResourceRequest> request =
-      std::make_unique<network::ResourceRequest>();
-  request->url = GURL("data:text/plain,foo");
-  content::SimpleURLLoaderTestHelper simple_loader_helper;
-  std::unique_ptr<network::SimpleURLLoader> simple_loader =
-      network::SimpleURLLoader::Create(std::move(request),
-                                       TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      loader_factory(), simple_loader_helper.GetCallback());
-  simple_loader_helper.WaitForCallback();
-
-  ASSERT_TRUE(simple_loader->ResponseInfo());
-  // Data URLs don't have headers.
-  EXPECT_FALSE(simple_loader->ResponseInfo()->headers);
-  EXPECT_EQ("text/plain", simple_loader->ResponseInfo()->mime_type);
-  ASSERT_TRUE(simple_loader_helper.response_body());
-  EXPECT_EQ("foo", *simple_loader_helper.response_body());
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, FileURL) {
@@ -1005,8 +978,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_Hsts) {
       net::test_server::EmbeddedTestServer::TYPE_HTTPS);
   ssl_server.SetSSLConfig(
       net::test_server::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
-  ssl_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ssl_server.AddDefaultHandlers(GetChromeTestDataDir());
   ASSERT_TRUE(ssl_server.Start());
 
   // Make a request whose response has an STS header.
@@ -1130,8 +1102,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_SSLConfig) {
   ssl_config.version_min = net::SSL_PROTOCOL_VERSION_TLS1;
   ssl_config.version_max = net::SSL_PROTOCOL_VERSION_TLS1;
   ssl_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
-  ssl_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ssl_server.AddDefaultHandlers(GetChromeTestDataDir());
   ASSERT_TRUE(ssl_server.Start());
 
   std::unique_ptr<network::ResourceRequest> request =
@@ -1737,8 +1708,7 @@ class NetworkContextConfigurationFtpPacBrowserTest
     : public NetworkContextConfigurationBrowserTest {
  public:
   NetworkContextConfigurationFtpPacBrowserTest()
-      : ftp_server_(net::SpawnedTestServer::TYPE_FTP,
-                    base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
+      : ftp_server_(net::SpawnedTestServer::TYPE_FTP, GetChromeTestDataDir()) {
     EXPECT_TRUE(ftp_server_.Start());
   }
   ~NetworkContextConfigurationFtpPacBrowserTest() override {}
@@ -1822,70 +1792,6 @@ class NetworkContextConfigurationHttpsStrippingPacBrowserTest
                                     "data:," + pac_script);
   }
 };
-
-// Start Chrome and check that PAC HTTPS path stripping is enabled.
-IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
-                       PRE_PacHttpsUrlStripping) {
-  if (IsRestartStateWithInProcessNetworkService())
-    return;
-  ASSERT_FALSE(CreateDefaultNetworkContextParams()
-                   ->dangerously_allow_pac_access_to_secure_urls);
-
-  std::unique_ptr<network::ResourceRequest> request =
-      std::make_unique<network::ResourceRequest>();
-  // This URL should be directed to the proxy that fails with
-  // ERR_TUNNEL_CONNECTION_FAILED.
-  request->url = GURL("https://does.not.resolve.test:1872/foo");
-
-  content::SimpleURLLoaderTestHelper simple_loader_helper;
-  std::unique_ptr<network::SimpleURLLoader> simple_loader =
-      network::SimpleURLLoader::Create(std::move(request),
-                                       TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      loader_factory(), simple_loader_helper.GetCallback());
-  simple_loader_helper.WaitForCallback();
-  EXPECT_FALSE(simple_loader_helper.response_body());
-  EXPECT_EQ(net::ERR_TUNNEL_CONNECTION_FAILED, simple_loader->NetError());
-
-  // Disable stripping paths from HTTPS PAC URLs for the next test.
-  g_browser_process->local_state()->SetBoolean(
-      prefs::kPacHttpsUrlStrippingEnabled, false);
-  // Check that the changed setting is reflected in the network context params.
-  // The changes aren't applied to existing URLRequestContexts, however, so have
-  // to restart to see the setting change respected.
-  EXPECT_TRUE(CreateDefaultNetworkContextParams()
-                  ->dangerously_allow_pac_access_to_secure_urls);
-}
-
-// Restart Chrome and check the case where PAC HTTPS path stripping is disabled.
-// Have to restart Chrome because the setting is only checked on NetworkContext
-// creation.
-// Flaky. See https://crbug.com/840127.
-IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
-                       DISABLED_PacHttpsUrlStripping) {
-  if (IsRestartStateWithInProcessNetworkService())
-    return;
-  ASSERT_TRUE(CreateDefaultNetworkContextParams()
-                  ->dangerously_allow_pac_access_to_secure_urls);
-
-  std::unique_ptr<network::ResourceRequest> request =
-      std::make_unique<network::ResourceRequest>();
-  // This URL should be directed to the proxy that fails with
-  // ERR_PROXY_CONNECTION_FAILED.
-  request->url = GURL("https://does.not.resolve.test:1872/foo");
-
-  content::SimpleURLLoaderTestHelper simple_loader_helper;
-  std::unique_ptr<network::SimpleURLLoader> simple_loader =
-      network::SimpleURLLoader::Create(std::move(request),
-                                       TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      loader_factory(), simple_loader_helper.GetCallback());
-  simple_loader_helper.WaitForCallback();
-  EXPECT_FALSE(simple_loader_helper.response_body());
-  EXPECT_EQ(net::ERR_PROXY_CONNECTION_FAILED, simple_loader->NetError());
-}
 
 // Instiates tests with a prefix indicating which NetworkContext is being
 // tested, and a suffix of "/0" if the network service is disabled, "/1" if it's

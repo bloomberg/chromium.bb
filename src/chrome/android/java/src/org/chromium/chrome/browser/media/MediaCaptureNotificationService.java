@@ -408,13 +408,14 @@ public class MediaCaptureNotificationService extends Service {
     /**
      * Clear any previous media notifications.
      */
-    public static void clearMediaNotifications(Context context) {
+    public static void clearMediaNotifications() {
         SharedPreferences sharedPreferences =
                 ContextUtils.getAppSharedPreferences();
         Set<String> notificationIds =
                 sharedPreferences.getStringSet(WEBRTC_NOTIFICATION_IDS, null);
         if (notificationIds == null || notificationIds.isEmpty()) return;
 
+        Context context = ContextUtils.getApplicationContext();
         context.startService(new Intent(context, MediaCaptureNotificationService.class));
     }
 

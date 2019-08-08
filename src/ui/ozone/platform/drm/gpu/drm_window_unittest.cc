@@ -6,7 +6,6 @@
 
 #include <drm_fourcc.h>
 #include <stdint.h>
-
 #include <memory>
 #include <utility>
 #include <vector>

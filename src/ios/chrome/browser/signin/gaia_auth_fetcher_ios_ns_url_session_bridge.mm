@@ -12,8 +12,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/signin/feature_flags.h"
 #include "ios/net/cookies/system_cookie_util.h"
+#include "ios/web/common/features.h"
 #include "ios/web/public/browser_state.h"
-#include "ios/web/public/features.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -116,15 +116,21 @@ void GaiaAuthFetcherIOSNSURLSessionBridge::SetCanonicalCookiesFromResponse(
   network::mojom::CookieManager* cookie_manager =
       GetBrowserState()->GetCookieManager();
   for (NSHTTPCookie* cookie : cookies) {
+    net::CookieOptions options;
+    options.set_include_httponly();
+    // Permit it to set a SameSite cookie if it wants to.
+    options.set_same_site_cookie_context(
+        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
     cookie_manager->SetCanonicalCookie(
         net::CanonicalCookieFromSystemCookie(cookie, base::Time::Now()),
-        base::SysNSStringToUTF8(response.URL.scheme), /*modify_http_only=*/true,
+        base::SysNSStringToUTF8(response.URL.scheme), options,
         base::DoNothing());
   }
 }
 
 void GaiaAuthFetcherIOSNSURLSessionBridge::FetchPendingRequestWithCookies(
-    const std::vector<net::CanonicalCookie>& cookies) {
+    const std::vector<net::CanonicalCookie>& cookies,
+    const net::CookieStatusList& excluded_cookies) {
   DCHECK(!url_session_);
   url_session_ = CreateNSURLSession(url_session_delegate_);
   url_session_delegate_.requestSession = url_session_;

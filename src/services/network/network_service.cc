@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/environment.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -30,7 +31,7 @@
 #include "net/cert/signed_tree_head.h"
 #include "net/dns/dns_config_overrides.h"
 #include "net/dns/host_resolver.h"
-#include "net/dns/mapped_host_resolver.h"
+#include "net/dns/host_resolver_manager.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log.h"
@@ -74,6 +75,7 @@ namespace network {
 
 namespace {
 
+bool g_disable_network_change_notifier = false;
 NetworkService* g_network_service = nullptr;
 
 net::NetLog* GetNetLog() {
@@ -90,7 +92,8 @@ std::unique_ptr<net::NetworkChangeNotifier> CreateNetworkChangeNotifierIfNeeded(
     net::NetworkChangeNotifier::ConnectionSubtype initial_connection_subtype) {
   // There is a global singleton net::NetworkChangeNotifier if NetworkService
   // is running inside of the browser process.
-  if (!net::NetworkChangeNotifier::HasNetworkChangeNotifier()) {
+  if (!g_disable_network_change_notifier &&
+      !net::NetworkChangeNotifier::HasNetworkChangeNotifier()) {
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
     // On Android and ChromeOS, network change events are synced from the
     // browser process.
@@ -101,25 +104,11 @@ std::unique_ptr<net::NetworkChangeNotifier> CreateNetworkChangeNotifierIfNeeded(
     // TODO(xunjieli): Figure out what to do for iOS.
     NOTIMPLEMENTED();
     return nullptr;
-#endif
+#else
     return base::WrapUnique(net::NetworkChangeNotifier::Create());
+#endif
   }
   return nullptr;
-}
-
-std::unique_ptr<net::HostResolver> CreateHostResolver(net::NetLog* net_log) {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  std::unique_ptr<net::HostResolver> host_resolver(
-      net::HostResolver::CreateDefaultResolver(net_log));
-  if (!command_line.HasSwitch(switches::kHostResolverRules))
-    return host_resolver;
-
-  std::unique_ptr<net::MappedHostResolver> remapped_host_resolver(
-      new net::MappedHostResolver(std::move(host_resolver)));
-  remapped_host_resolver->SetRulesFromString(
-      command_line.GetSwitchValueASCII(switches::kHostResolverRules));
-  return std::move(remapped_host_resolver);
 }
 
 // This is duplicated in content/browser/loader/resource_dispatcher_host_impl.cc
@@ -230,6 +219,9 @@ NetworkService::NetworkService(
   DCHECK(!g_network_service);
   g_network_service = this;
 
+  metrics_trigger_timer_.Start(FROM_HERE, base::TimeDelta::FromMinutes(5), this,
+                               &NetworkService::ReportMetrics);
+
   // In testing environments, |service_request| may not be provided.
   if (service_request.is_pending())
     service_binding_.Bind(std::move(service_request));
@@ -312,7 +304,9 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params) {
 
   dns_config_change_manager_ = std::make_unique<DnsConfigChangeManager>();
 
-  host_resolver_ = CreateHostResolver(net_log_);
+  host_resolver_manager_ = std::make_unique<net::HostResolverManager>(
+      net::HostResolver::Options(), net_log_);
+  host_resolver_factory_ = std::make_unique<net::HostResolver::Factory>();
 
   network_usage_accumulator_ = std::make_unique<NetworkUsageAccumulator>();
 
@@ -362,17 +356,12 @@ NetworkService::CreateNetworkContextWithBuilder(
     mojom::NetworkContextParamsPtr params,
     std::unique_ptr<URLRequestContextBuilderMojo> builder,
     net::URLRequestContext** url_request_context) {
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
   std::unique_ptr<NetworkContext> network_context =
       std::make_unique<NetworkContext>(this, std::move(request),
                                        std::move(params), std::move(builder));
   *url_request_context = network_context->url_request_context();
   return network_context;
-}
-
-void NetworkService::SetHostResolver(
-    std::unique_ptr<net::HostResolver> host_resolver) {
-  DCHECK(network_contexts_.empty());
-  host_resolver_ = std::move(host_resolver);
 }
 
 std::unique_ptr<NetworkService> NetworkService::CreateForTesting() {
@@ -464,34 +453,21 @@ void NetworkService::ConfigureStubHostResolver(
 
   // Enable or disable the stub resolver, as needed. "DnsClient" is class that
   // implements the stub resolver.
-  host_resolver_->SetDnsClientEnabled(stub_resolver_enabled);
+  host_resolver_manager_->SetDnsClientEnabled(stub_resolver_enabled);
 
   // Configure DNS over HTTPS.
   if (!dns_over_https_servers || dns_over_https_servers.value().empty()) {
-    host_resolver_->SetDnsConfigOverrides(net::DnsConfigOverrides());
+    host_resolver_manager_->SetDnsConfigOverrides(net::DnsConfigOverrides());
     return;
   }
 
-  for (auto* network_context : network_contexts_) {
-    if (!network_context->IsPrimaryNetworkContext())
-      continue;
-
-    host_resolver_->SetRequestContext(network_context->url_request_context());
-
-    net::DnsConfigOverrides overrides;
-    overrides.dns_over_https_servers.emplace();
-    for (const auto& doh_server : *dns_over_https_servers) {
-      overrides.dns_over_https_servers.value().emplace_back(
-          doh_server->server_template, doh_server->use_post);
-    }
-    host_resolver_->SetDnsConfigOverrides(overrides);
-
-    return;
+  net::DnsConfigOverrides overrides;
+  overrides.dns_over_https_servers.emplace();
+  for (const auto& doh_server : *dns_over_https_servers) {
+    overrides.dns_over_https_servers.value().emplace_back(
+        doh_server->server_template, doh_server->use_post);
   }
-
-  // Execution should generally not reach this line, but could run into races
-  // with teardown, or restarting a crashed network process, that could
-  // theoretically result in reaching it.
+  host_resolver_manager_->SetDnsConfigOverrides(overrides);
 }
 
 void NetworkService::DisableQuic() {
@@ -704,6 +680,16 @@ void NetworkService::OnBindInterface(
 }
 
 void NetworkService::DestroyNetworkContexts() {
+  // If DNS over HTTPS is enabled, the HostResolver is currently using
+  // NetworkContexts to do DNS lookups, so need to tell the HostResolver
+  // to stop using DNS over HTTPS before destroying any NetworkContexts.
+  // The SetDnsConfigOverrides() call will will fail any in-progress DNS
+  // lookups, but only if there are current config overrides (which there will
+  // be if DNS over HTTPS is currently enabled).
+  if (host_resolver_manager_) {
+    host_resolver_manager_->SetDnsConfigOverrides(net::DnsConfigOverrides());
+  }
+
   // Delete NetworkContexts. If there's a primary NetworkContext, it must be
   // deleted after all other NetworkContexts, to avoid use-after-frees.
   for (auto it = owned_network_contexts_.begin();
@@ -712,17 +698,6 @@ void NetworkService::DestroyNetworkContexts() {
     ++it;
     if (!(*last)->IsPrimaryNetworkContext())
       owned_network_contexts_.erase(last);
-  }
-
-  // If DNS over HTTPS is enabled, the HostResolver is currently using the
-  // primary NetworkContext to do DNS lookups, so need to tell the HostResolver
-  // to stop using DNS over HTTPS before destroying the primary NetworkContext.
-  // The SetDnsConfigOverrides() call will will fail any in-progress DNS
-  // lookups, but only if there are current config overrides (which there will
-  // be if DNS over HTTPS is currently enabled).
-  if (host_resolver_) {
-    host_resolver_->SetDnsConfigOverrides(net::DnsConfigOverrides());
-    host_resolver_->SetRequestContext(nullptr);
   }
 
   DCHECK_LE(owned_network_contexts_.size(), 1u);
@@ -827,13 +802,31 @@ void NetworkService::AckUpdateLoadInfo() {
   MaybeStartUpdateLoadInfoTimer();
 }
 
+void NetworkService::ReportMetrics() {
+  size_t cache_size = 0;
+  size_t loader_count = 0;
+  for (auto* context : network_contexts_) {
+    cache_size += context->ReportAndGatherCorsPreflightCacheSizeMetric();
+    loader_count += context->GatherActiveLoaderCount();
+  }
+  UMA_HISTOGRAM_COUNTS_10000("Net.Cors.PreflightCacheTotalEntries", cache_size);
+  UMA_HISTOGRAM_COUNTS_1000("Net.Cors.ActiveLoaderCount", loader_count);
+}
+
 void NetworkService::Bind(mojom::NetworkServiceRequest request) {
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(request));
 }
 
+// static
 NetworkService* NetworkService::GetNetworkServiceForTesting() {
   return g_network_service;
+}
+
+// static
+void NetworkService::DisableNetworkChangeNotifierForTesting() {
+  DCHECK(!g_network_service);
+  g_disable_network_change_notifier = true;
 }
 
 }  // namespace network

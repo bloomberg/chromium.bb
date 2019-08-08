@@ -33,7 +33,9 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A custom AndroidJUnitRunner that supports multidex installer and list out test information.
@@ -77,26 +79,22 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
     @Override
     public Application newApplication(ClassLoader cl, String className, Context context)
             throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-        // The multidex support library doesn't currently support having the test apk be multidex
-        // as well as the under-test apk being multidex. If MultiDex.install() is called for both,
-        // then re-extraction is triggered every time due to the support library caching only a
-        // single timestamp & crc.
-        //
-        // Attempt to install test apk multidex only if the apk-under-test is not multidex.
-        // It will likely continue to be true that the two are mutually exclusive because:
-        // * ProGuard enabled =>
-        //      Under-test apk is single dex.
-        //      Test apk duplicates under-test classes, so may need multidex.
-        // * ProGuard disabled =>
-        //      Under-test apk might be multidex
-        //      Test apk does not duplicate classes, so does not need multidex.
-        // When there is no under-test apk, then Application.onCreate() should trigger multidex
-        // installation.
-        // https://crbug.com/824523
-        if (!BuildConfig.IS_MULTIDEX_ENABLED) {
-            ChromiumMultiDexInstaller.install(new BaseChromiumRunnerCommon.MultiDexContextWrapper(
-                    getContext(), getTargetContext()));
-            BaseChromiumRunnerCommon.reorderDexPathElements(cl, getContext(), getTargetContext());
+        boolean hasUnderTestApk =
+                !getContext().getPackageName().equals(getTargetContext().getPackageName());
+        // When there is an under-test APK, BuildConfig belongs to it and does not indicate whether
+        // the test apk is multidex. In this case, just assume it is.
+        boolean isTestMultidex = hasUnderTestApk || BuildConfig.IS_MULTIDEX_ENABLED;
+        if (isTestMultidex) {
+            if (hasUnderTestApk) {
+                // Need hacks to have multidex work when there is an under-test apk :(.
+                ChromiumMultiDexInstaller.install(
+                        new BaseChromiumRunnerCommon.MultiDexContextWrapper(
+                                getContext(), getTargetContext()));
+                BaseChromiumRunnerCommon.reorderDexPathElements(
+                        cl, getContext(), getTargetContext());
+            } else {
+                ChromiumMultiDexInstaller.install(getContext());
+            }
         }
         return super.newApplication(cl, className, context);
     }
@@ -233,6 +231,7 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
      */
     private static class DexFileTestRequestBuilder extends TestRequestBuilder {
         final List<String> mExcludedPrefixes = new ArrayList<String>();
+        final List<String> mIncludedPrefixes = new ArrayList<String>();
         final List<DexFile> mDexFiles;
         boolean mHasClassList;
 
@@ -252,9 +251,11 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
         @Override
         public TestRequestBuilder addFromRunnerArgs(RunnerArgs runnerArgs) {
             mExcludedPrefixes.addAll(runnerArgs.notTestPackages);
+            mIncludedPrefixes.addAll(runnerArgs.testPackages);
             // Without clearing, You get IllegalArgumentException:
             // Ambiguous arguments: cannot provide both test package and test class(es) to run
             runnerArgs.notTestPackages.clear();
+            runnerArgs.testPackages.clear();
             return super.addFromRunnerArgs(runnerArgs);
         }
 
@@ -300,8 +301,14 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
                 Enumeration<String> classNames = dexFile.entries();
                 while (classNames.hasMoreElements()) {
                     String className = classNames.nextElement();
-                    if (!className.contains("$") && !startsWithAny(className, mExcludedPrefixes)
-                            && loader.loadIfTest(className) != null) {
+                    if (!mIncludedPrefixes.isEmpty()
+                            && !startsWithAny(className, mIncludedPrefixes)) {
+                        continue;
+                    }
+                    if (startsWithAny(className, mExcludedPrefixes)) {
+                        continue;
+                    }
+                    if (!className.contains("$") && loader.loadIfTest(className) != null) {
                         addTestClass(className);
                     }
                 }
@@ -317,12 +324,22 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
     }
 
     private static void addClassloaderDexFiles(List<DexFile> dexFiles, ClassLoader cl) {
+        // The main apk appears in the classpath twice sometimes, so check for apk path rather
+        // than comparing DexFile instances (e.g. on kitkat without an apk-under-test).
+        Set<String> apkPaths = new HashSet<>();
         try {
             Object pathList = getField(cl.getClass().getSuperclass(), cl, "pathList");
             Object[] dexElements =
                     (Object[]) getField(pathList.getClass(), pathList, "dexElements");
             for (Object dexElement : dexElements) {
-                dexFiles.add((DexFile) getField(dexElement.getClass(), dexElement, "dexFile"));
+                DexFile dexFile = (DexFile) getField(dexElement.getClass(), dexElement, "dexFile");
+                // Prevent adding the main apk twice, and also skip any system libraries added due
+                // to <uses-library> manifest entries.
+                String apkPath = dexFile.getName();
+                if (!apkPaths.contains(apkPath) && !apkPath.startsWith("/system")) {
+                    dexFiles.add(dexFile);
+                    apkPaths.add(apkPath);
+                }
             }
         } catch (Exception e) {
             // No way to recover and test listing will fail.

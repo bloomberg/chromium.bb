@@ -26,7 +26,6 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_model.h"
-#include "components/offline_pages/core/offline_pages_ukm_reporter.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 
@@ -269,7 +268,6 @@ RequestCoordinator::RequestCoordinator(
     std::unique_ptr<RequestQueue> queue,
     std::unique_ptr<Scheduler> scheduler,
     network::NetworkQualityTracker* network_quality_tracker,
-    std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter,
     std::unique_ptr<ActiveTabInfo> active_tab_info)
     : is_low_end_device_(base::SysInfo::IsLowEndDevice()),
       state_(RequestCoordinatorState::IDLE),
@@ -280,7 +278,6 @@ RequestCoordinator::RequestCoordinator(
       scheduler_(std::move(scheduler)),
       policy_controller_(new ClientPolicyController()),
       network_quality_tracker_(network_quality_tracker),
-      ukm_reporter_(std::move(ukm_reporter)),
       network_quality_at_request_start_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       last_offlining_status_(Offliner::RequestStatus::UNKNOWN),
       scheduler_callback_(base::DoNothing()),
@@ -349,18 +346,9 @@ int64_t RequestCoordinator::SavePageLater(
                      save_page_later_params.availability));
 
   // Record the network quality when this request is made.
-
   RecordSavePageLaterNetworkQuality(
       save_page_later_params.client_id,
       network_quality_tracker_->GetEffectiveConnectionType());
-
-  // Record UKM for this page offlining attempt.
-  if (ukm_reporter_) {
-    ukm_reporter_->ReportUrlOfflineRequest(
-        save_page_later_params.url,
-        save_page_later_params.availability ==
-            RequestAvailability::DISABLED_FOR_OFFLINER);
-  }
 
   return id;
 }
@@ -700,8 +688,7 @@ RequestCoordinator::TryImmediateStart(
     return OfflinerImmediateStartStatus::BUSY;
 
   // Make sure we are not on svelte device to start immediately.
-  if (is_low_end_device_ &&
-      !offline_pages::IsOfflinePagesSvelteConcurrentLoadingEnabled()) {
+  if (is_low_end_device_) {
     DVLOG(2) << "low end device, returning";
     // Let the scheduler know we are done processing and failed due to svelte.
     callback.Run(false);

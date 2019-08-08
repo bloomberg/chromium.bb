@@ -40,7 +40,6 @@
 #include "content/shell/browser/web_test/web_test_bluetooth_chooser_factory.h"
 #include "content/shell/browser/web_test/web_test_devtools_bindings.h"
 #include "content/shell/browser/web_test/web_test_javascript_dialog_manager.h"
-#include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "media/media_buildflags.h"
@@ -92,10 +91,12 @@ Shell::Shell(std::unique_ptr<WebContents> web_contents,
     web_contents_->SetDelegate(this);
 
   if (switches::IsRunWebTestsSwitchPresent()) {
-    headless_ = true;
-    // In a headless shell, disable occlusion tracking. Otherwise, WebContents
-    // would always behave as if they were occluded, i.e. would not render
-    // frames and would not receive input events.
+    headless_ = !base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisableHeadlessMode);
+    // Disable occlusion tracking. In a headless shell WebContents would always
+    // behave as if they were occluded, i.e. would not render frames and would
+    // not receive input events. For non-headless mode we do not want tests
+    // running in parallel to trigger occlusion tracking.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kDisableBackgroundingOccludedWindowsForTesting);
   }
@@ -201,11 +202,10 @@ void Shell::SetShellCreatedCallback(
   shell_created_callback_ = std::move(shell_created_callback);
 }
 
-Shell* Shell::FromRenderViewHost(RenderViewHost* rvh) {
-  for (size_t i = 0; i < windows_.size(); ++i) {
-    if (windows_[i]->web_contents() &&
-        windows_[i]->web_contents()->GetRenderViewHost() == rvh) {
-      return windows_[i];
+Shell* Shell::FromWebContents(WebContents* web_contents) {
+  for (Shell* window : windows_) {
+    if (window->web_contents() && window->web_contents() == web_contents) {
+      return window;
     }
   }
   return nullptr;

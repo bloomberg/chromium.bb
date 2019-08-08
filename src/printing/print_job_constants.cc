@@ -63,6 +63,9 @@ const char kSettingFitToPageScaling[] = "fitToPageScaling";
 // Print job duplex mode. Value is an int from DuplexMode enum.
 const char kSettingDuplexMode[] = "duplex";
 
+// Job title to be sent to printer.
+const char kSettingJobTitle[] = "jobTitle";
+
 // Option to fit source page contents to printer paper size: true if
 // selected else false.
 const char kSettingFitToPageEnabled[] = "fitToPageEnabled";
@@ -138,6 +141,9 @@ const char kSettingPageRangeTo[] = "to";
 // Page size of document to print.
 const char kSettingPageWidth[] = "pageWidth";
 const char kSettingPageHeight[] = "pageHeight";
+
+// PIN code entered by the user.
+const char kSettingPinValue[] = "pinValue";
 
 // Policies affecting printing destination.
 const char kSettingPolicies[] = "policies";

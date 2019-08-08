@@ -19,7 +19,12 @@ public class VariationsSession {
     /**
      * Triggers to the native VariationsService that the application has entered the foreground.
      */
-    public void start(Context context) {
+    public void start() {
+        start(null);
+    }
+
+    // TODO(agrieve): Delete after updating downstream.
+    public void start(Context unused) {
         // If |mRestrictModeFetchStarted| is true and |mRestrictMode| is null, then async
         // initializationn is in progress and nativeStartVariationsSession() will be called
         // when it completes.
@@ -28,7 +33,7 @@ public class VariationsSession {
         }
 
         mRestrictModeFetchStarted = true;
-        getRestrictModeValue(context, new Callback<String>() {
+        getRestrictModeValue(new Callback<String>() {
             @Override
             public void onResult(String restrictMode) {
                 nativeStartVariationsSession(mRestrictMode);
@@ -43,14 +48,14 @@ public class VariationsSession {
      * value and also sets that value internally when retrieved.
      * @param callback Callback that will be called with the param value when available.
      */
-    public final void getRestrictModeValue(Context context, final Callback<String> callback) {
+    public final void getRestrictModeValue(final Callback<String> callback) {
         // If |mRestrictMode| is not null, the value has already been fetched and so it can
         // simply be provided to the callback.
         if (mRestrictMode != null) {
             callback.onResult(mRestrictMode);
             return;
         }
-        getRestrictMode(context, new Callback<String>() {
+        getRestrictMode(new Callback<String>() {
             @Override
             public void onResult(String restrictMode) {
                 assert restrictMode != null;
@@ -65,7 +70,12 @@ public class VariationsSession {
      * should use for variation seed requests. This can be overriden by subclass to provide actual
      * restrict values, which must not be null.
      */
-    protected void getRestrictMode(Context context, Callback<String> callback) {
+    protected void getRestrictMode(Callback<String> callback) {
+        // TODO(agrieve): Refactor downstream.
+        getRestrictMode(null, callback);
+    }
+
+    protected void getRestrictMode(Context unused, Callback<String> callback) {
         callback.onResult("");
     }
 

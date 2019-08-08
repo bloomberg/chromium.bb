@@ -421,19 +421,20 @@ class CORE_EXPORT NGConstraintSpace final {
   // to verify that any constraint space size (available size, percentage size,
   // and so on) and BFC offset changes won't require re-layout, before skipping.
   bool MaySkipLayout(const NGConstraintSpace& other) const {
-    if (HasRareData() && other.HasRareData()) {
-      if (!rare_data_->MaySkipLayout(*other.rare_data_))
-        return false;
-    } else if (!HasRareData() && !other.HasRareData()) {
-      if (bfc_offset_.line_offset != other.bfc_offset_.line_offset)
-        return false;
-    } else {
-      // We have a bfc_offset_, and a rare_data_ (or vice-versa).
+    if (!bitfields_.MaySkipLayout(other.bitfields_))
       return false;
-    }
 
-    return exclusion_space_ == other.exclusion_space_ &&
-           bitfields_.MaySkipLayout(other.bitfields_);
+    if (!HasRareData() && !other.HasRareData())
+      return true;
+
+    if (HasRareData() && other.HasRareData())
+      return rare_data_->MaySkipLayout(*other.rare_data_);
+
+    if (HasRareData())
+      return rare_data_->IsInitialForMaySkipLayout();
+
+    DCHECK(other.HasRareData());
+    return other.rare_data_->IsInitialForMaySkipLayout();
   }
 
   bool AreSizesEqual(const NGConstraintSpace& other) const {
@@ -446,10 +447,6 @@ class CORE_EXPORT NGConstraintSpace final {
 
     if (bitfields_.percentage_block_storage !=
         other.bitfields_.percentage_block_storage)
-      return false;
-
-    if (bitfields_.replaced_percentage_inline_storage !=
-        other.bitfields_.replaced_percentage_inline_storage)
       return false;
 
     if (bitfields_.replaced_percentage_block_storage !=
@@ -481,10 +478,6 @@ class CORE_EXPORT NGConstraintSpace final {
       return false;
 
     return true;
-  }
-  bool operator==(const NGConstraintSpace&) const;
-  bool operator!=(const NGConstraintSpace& other) const {
-    return !(*this == other);
   }
 
   String ToString() const;
@@ -532,14 +525,21 @@ class CORE_EXPORT NGConstraintSpace final {
 
     bool MaySkipLayout(const RareData& other) const {
       return margin_strut == other.margin_strut &&
-             bfc_offset.line_offset == other.bfc_offset.line_offset &&
              floats_bfc_block_offset == other.floats_bfc_block_offset &&
-             clearance_offset == other.clearance_offset &&
              fragmentainer_block_size == other.fragmentainer_block_size &&
              fragmentainer_space_at_bfc_start ==
                  other.fragmentainer_space_at_bfc_start &&
              block_direction_fragmentation_type ==
                  other.block_direction_fragmentation_type;
+    }
+
+    // Must be kept in sync with members checked within |MaySkipLayout|.
+    bool IsInitialForMaySkipLayout() const {
+      return margin_strut == NGMarginStrut() &&
+             floats_bfc_block_offset == base::nullopt &&
+             fragmentainer_block_size == NGSizeIndefinite &&
+             fragmentainer_space_at_bfc_start == NGSizeIndefinite &&
+             block_direction_fragmentation_type == kFragmentNone;
     }
   };
 
@@ -563,7 +563,6 @@ class CORE_EXPORT NGConstraintSpace final {
           flags(kFixedSizeBlockIsDefinite),
           percentage_inline_storage(kSameAsAvailable),
           percentage_block_storage(kSameAsAvailable),
-          replaced_percentage_inline_storage(kSameAsAvailable),
           replaced_percentage_block_storage(kSameAsAvailable) {}
 
     bool MaySkipLayout(const Bitfields& other) const {
@@ -583,7 +582,6 @@ class CORE_EXPORT NGConstraintSpace final {
 
     unsigned percentage_inline_storage : 2;           // NGPercentageStorage
     unsigned percentage_block_storage : 2;            // NGPercentageStorage
-    unsigned replaced_percentage_inline_storage : 2;  // NGPercentageStorage
     unsigned replaced_percentage_block_storage : 2;   // NGPercentageStorage
   };
 

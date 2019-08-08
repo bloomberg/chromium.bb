@@ -10,76 +10,104 @@
 
 #include "base/bind_helpers.h"
 #include "base/stl_util.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 
 namespace web_app {
 
-PendingAppManager::AppInfo::AppInfo(const GURL& url,
-                                    LaunchContainer launch_container,
-                                    InstallSource install_source)
-    : url(url),
-      launch_container(launch_container),
-      install_source(install_source) {}
+PendingAppManager::SynchronizeRequest::SynchronizeRequest(
+    SynchronizeCallback callback,
+    int remaining_requests)
+    : callback(std::move(callback)), remaining_requests(remaining_requests) {}
 
-PendingAppManager::AppInfo::~AppInfo() = default;
+PendingAppManager::SynchronizeRequest::~SynchronizeRequest() = default;
 
-PendingAppManager::AppInfo::AppInfo(const AppInfo& other) = default;
+PendingAppManager::SynchronizeRequest& PendingAppManager::SynchronizeRequest::
+operator=(PendingAppManager::SynchronizeRequest&&) = default;
 
-PendingAppManager::AppInfo::AppInfo(AppInfo&& other) = default;
-
-PendingAppManager::AppInfo& PendingAppManager::AppInfo::operator=(
-    const AppInfo& other) = default;
-
-bool PendingAppManager::AppInfo::operator==(
-    const PendingAppManager::AppInfo& other) const {
-  return std::tie(url, launch_container, install_source, create_shortcuts,
-                  override_previous_user_uninstall, bypass_service_worker_check,
-                  require_manifest, always_update) ==
-         std::tie(other.url, other.launch_container, other.install_source,
-                  other.create_shortcuts,
-                  other.override_previous_user_uninstall,
-                  other.bypass_service_worker_check, other.require_manifest,
-                  other.always_update);
-}
+PendingAppManager::SynchronizeRequest::SynchronizeRequest(
+    SynchronizeRequest&& other) = default;
 
 PendingAppManager::PendingAppManager() = default;
 
 PendingAppManager::~PendingAppManager() = default;
 
 void PendingAppManager::SynchronizeInstalledApps(
-    std::vector<AppInfo> desired_apps,
-    InstallSource install_source) {
-  DCHECK(std::all_of(desired_apps.begin(), desired_apps.end(),
-                     [&install_source](const AppInfo& app_info) {
-                       return app_info.install_source == install_source;
+    std::vector<InstallOptions> desired_apps_install_options,
+    InstallSource install_source,
+    SynchronizeCallback callback) {
+  DCHECK(std::all_of(desired_apps_install_options.begin(),
+                     desired_apps_install_options.end(),
+                     [&install_source](const InstallOptions& install_options) {
+                       return install_options.install_source == install_source;
                      }));
+  // Only one concurrent SynchronizeInstalledApps() expected per InstallSource.
+  DCHECK(!base::ContainsKey(synchronize_requests_, install_source));
 
   std::vector<GURL> current_urls = GetInstalledAppUrls(install_source);
   std::sort(current_urls.begin(), current_urls.end());
 
   std::vector<GURL> desired_urls;
-  for (const auto& info : desired_apps) {
+  for (const auto& info : desired_apps_install_options) {
     desired_urls.emplace_back(info.url);
   }
   std::sort(desired_urls.begin(), desired_urls.end());
 
+  auto urls_to_remove =
+      base::STLSetDifference<std::vector<GURL>>(current_urls, desired_urls);
+
+  // Run callback immediately if there's no work to be done.
+  if (urls_to_remove.empty() && desired_apps_install_options.empty()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), SynchronizeResult::kSuccess));
+    return;
+  }
+
+  // Add the callback to a map and call once all installs/uninstalls finish.
+  synchronize_requests_.insert_or_assign(
+      install_source,
+      SynchronizeRequest(std::move(callback),
+                         urls_to_remove.size() + desired_urls.size()));
+
   UninstallApps(
-      base::STLSetDifference<std::vector<GURL>>(current_urls, desired_urls),
-      base::DoNothing());
-  InstallApps(std::move(desired_apps), base::DoNothing());
+      urls_to_remove,
+      base::BindRepeating(&PendingAppManager::UninstallForSynchronizeCallback,
+                          base::Unretained(this), install_source));
+  InstallApps(
+      std::move(desired_apps_install_options),
+      base::BindRepeating(&PendingAppManager::InstallForSynchronizeCallback,
+                          base::Unretained(this), install_source));
 }
 
-std::ostream& operator<<(std::ostream& out,
-                         const PendingAppManager::AppInfo& app_info) {
-  return out << "url: " << app_info.url << "\n launch_container: "
-             << static_cast<int32_t>(app_info.launch_container)
-             << "\n install_source: "
-             << static_cast<int32_t>(app_info.install_source)
-             << "\n create_shortcuts: " << app_info.create_shortcuts
-             << "\n override_previous_user_uninstall: "
-             << app_info.override_previous_user_uninstall
-             << "\n bypass_service_worker_check: "
-             << app_info.bypass_service_worker_check
-             << "\n require_manifest: " << app_info.require_manifest;
+void PendingAppManager::InstallForSynchronizeCallback(InstallSource source,
+                                                      const GURL& app_url,
+                                                      InstallResultCode code) {
+  OnAppSynchronized(source, code == InstallResultCode::kSuccess ||
+                                code == InstallResultCode::kAlreadyInstalled);
+}
+
+void PendingAppManager::UninstallForSynchronizeCallback(InstallSource source,
+                                                        const GURL& app_url,
+                                                        bool succeeded) {
+  OnAppSynchronized(source, succeeded);
+}
+
+void PendingAppManager::OnAppSynchronized(InstallSource source,
+                                          bool succeeded) {
+  auto it = synchronize_requests_.find(source);
+  DCHECK(it != synchronize_requests_.end());
+
+  SynchronizeRequest& request = it->second;
+  if (!succeeded)
+    request.result = SynchronizeResult::kFailed;
+
+  DCHECK_GT(request.remaining_requests, 0);
+  if (--request.remaining_requests == 0) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(request.callback), request.result));
+    synchronize_requests_.erase(source);
+  }
 }
 
 }  // namespace web_app

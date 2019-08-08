@@ -18,7 +18,7 @@ namespace views {
 
 class RadioButtonTest : public ViewsTestBase {
  public:
-  RadioButtonTest() : button_container_(nullptr) {}
+  RadioButtonTest() = default;
 
   void SetUp() override {
     ViewsTestBase::SetUp();
@@ -45,7 +45,7 @@ class RadioButtonTest : public ViewsTestBase {
   View& button_container() { return *button_container_; }
 
  private:
-  View* button_container_;
+  View* button_container_ = nullptr;
   std::unique_ptr<Widget> widget_;
 
   DISALLOW_COPY_AND_ASSIGN(RadioButtonTest);

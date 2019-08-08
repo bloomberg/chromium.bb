@@ -99,6 +99,11 @@ Polymer({
         assert(this.$$('.sign-in')), 'click', this.onSignInClick_.bind(this));
   },
 
+  /** @override */
+  detached: function() {
+    this.tracker_.removeAll();
+  },
+
   /**
    * @param {!KeyboardEvent} e Event containing the key
    * @private
@@ -177,7 +182,7 @@ Polymer({
                         .DESTINATION_CLOSED_UNCHANGED :
                     print_preview.Metrics.DestinationSearchBucket
                         .DESTINATION_CLOSED_CHANGED);
-    if (cancelled && this.currentDestinationAccount &&
+    if (this.currentDestinationAccount &&
         this.currentDestinationAccount !== this.activeUser) {
       this.fire('account-change', this.currentDestinationAccount);
     }
@@ -406,6 +411,14 @@ Polymer({
     return this.cloudPrintState ===
         print_preview.CloudPrintState.NOT_SIGNED_IN &&
         !this.cloudPrintPromoDismissed_;
+  },
+
+  /**
+   * @return {boolean} Whether to show the footer.
+   * @private
+   */
+  shouldShowFooter_: function() {
+    return this.shouldShowCloudPrintPromo_() || !!this.invitation_;
   },
 
   /** @private */

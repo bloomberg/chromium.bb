@@ -353,6 +353,7 @@ RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForWidget(
 
     view->MigrateNSViewBridge(factory_host, ns_view_id_);
     view->SetParentUiLayer(views_host_->GetUiLayer());
+    view->SetParentAccessibilityElement(views_host_accessibility_element_);
   }
 
   // Fancy layout comes later; for now just make it our size and resize it
@@ -620,13 +621,6 @@ void WebContentsViewMac::DragPromisedFileTo(
 
 void WebContentsViewMac::ViewsHostableAttach(ViewsHostableView::Host* host) {
   views_host_ = host;
-  // TODO(https://crbug.com/924955): Using the remote accessibility to set
-  // the parent accessibility element here causes crashes, so just set it
-  // directly on the in-process WebContentsViewCocoa only.
-  std::vector<uint8_t> token;
-  [cocoa_view()
-      setAccessibilityParentElement:views_host_->GetAccessibilityElement()];
-
   // Create an NSView in the target process, if one exists.
   uint64_t factory_host_id = views_host_->GetViewsFactoryHostId();
   NSViewBridgeFactoryHost* factory_host =
@@ -639,8 +633,7 @@ void WebContentsViewMac::ViewsHostableAttach(ViewsHostableView::Host* host) {
 
     factory_host->GetFactory()->CreateWebContentsNSViewBridge(
         ns_view_id_, client.PassInterface(), std::move(bridge_request));
-
-    ns_view_bridge_remote_->SetParentNSView(views_host_->GetNSViewId(), token);
+    ns_view_bridge_remote_->SetParentNSView(views_host_->GetNSViewId());
 
     // Because this view is being displayed from a remote process, reset the
     // in-process NSView's client pointer, so that the in-process NSView will
@@ -654,7 +647,7 @@ void WebContentsViewMac::ViewsHostableAttach(ViewsHostableView::Host* host) {
   // will look up the parent NSView by its id, but this has been observed to
   // fail in the field, so assume that the caller handles updating the NSView
   // hierarchy.
-  // ns_view_bridge_local_->SetParentNSView(views_host_->GetNSViewId(), token);
+  // ns_view_bridge_local_->SetParentNSView(views_host_->GetNSViewId());
 
   for (auto* rwhv_mac : GetChildViews()) {
     rwhv_mac->MigrateNSViewBridge(factory_host, ns_view_id_);
@@ -674,7 +667,6 @@ void WebContentsViewMac::ViewsHostableDetach() {
     // Permit the in-process NSView to call back into |this| again.
     [cocoa_view() setClient:this];
   }
-  [cocoa_view() setAccessibilityParentElement:nil];
   ns_view_bridge_local_->SetVisible(false);
   ns_view_bridge_local_->ResetParentNSView();
   views_host_ = nullptr;
@@ -682,6 +674,7 @@ void WebContentsViewMac::ViewsHostableDetach() {
   for (auto* rwhv_mac : GetChildViews()) {
     rwhv_mac->MigrateNSViewBridge(nullptr, 0);
     rwhv_mac->SetParentUiLayer(nullptr);
+    rwhv_mac->SetParentAccessibilityElement(nil);
   }
 }
 
@@ -706,6 +699,21 @@ void WebContentsViewMac::ViewsHostableMakeFirstResponder() {
     ns_view_bridge_remote_->MakeFirstResponder();
   else
     ns_view_bridge_local_->MakeFirstResponder();
+}
+
+void WebContentsViewMac::ViewsHostableSetParentAccessible(
+    gfx::NativeViewAccessible parent_accessibility_element) {
+  views_host_accessibility_element_ = parent_accessibility_element;
+  for (auto* rwhv_mac : GetChildViews())
+    rwhv_mac->SetParentAccessibilityElement(views_host_accessibility_element_);
+}
+
+gfx::NativeViewAccessible
+WebContentsViewMac::ViewsHostableGetAccessibilityElement() {
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
+  if (!rwhv)
+    return nil;
+  return rwhv->GetNativeViewAccessible();
 }
 
 }  // namespace content

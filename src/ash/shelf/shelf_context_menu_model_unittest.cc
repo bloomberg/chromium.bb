@@ -177,14 +177,14 @@ TEST_F(ShelfContextMenuModelTest, CustomItems) {
   MenuItemList items;
   mojom::MenuItemPtr item(mojom::MenuItem::New());
   item->type = ui::MenuModel::TYPE_COMMAND;
-  item->command_id = 123;
+  item->command_id = 203;
   item->label = base::ASCIIToUTF16("item");
   item->enabled = true;
   items.push_back(std::move(item));
 
   mojom::MenuItemPtr check(mojom::MenuItem::New());
   check->type = ui::MenuModel::TYPE_CHECK;
-  check->command_id = 999;
+  check->command_id = 107;
   check->label = base::ASCIIToUTF16("check");
   check->enabled = true;
   check->checked = false;
@@ -192,7 +192,7 @@ TEST_F(ShelfContextMenuModelTest, CustomItems) {
 
   mojom::MenuItemPtr radio(mojom::MenuItem::New());
   radio->type = ui::MenuModel::TYPE_RADIO;
-  radio->command_id = 1337;
+  radio->command_id = 101;
   radio->label = base::ASCIIToUTF16("radio");
   radio->enabled = false;
   radio->checked = true;
@@ -209,25 +209,25 @@ TEST_F(ShelfContextMenuModelTest, CustomItems) {
   ASSERT_EQ(3, menu.GetItemCount());
 
   EXPECT_EQ(ui::MenuModel::TYPE_COMMAND, menu.GetTypeAt(0));
-  EXPECT_EQ(123, menu.GetCommandIdAt(0));
+  EXPECT_EQ(203, menu.GetCommandIdAt(0));
   EXPECT_EQ(base::ASCIIToUTF16("item"), menu.GetLabelAt(0));
   EXPECT_TRUE(menu.IsEnabledAt(0));
 
   EXPECT_EQ(ui::MenuModel::TYPE_CHECK, menu.GetTypeAt(1));
-  EXPECT_EQ(999, menu.GetCommandIdAt(1));
+  EXPECT_EQ(107, menu.GetCommandIdAt(1));
   EXPECT_EQ(base::ASCIIToUTF16("check"), menu.GetLabelAt(1));
   EXPECT_TRUE(menu.IsEnabledAt(1));
   EXPECT_FALSE(menu.IsItemCheckedAt(1));
 
   EXPECT_EQ(ui::MenuModel::TYPE_RADIO, menu.GetTypeAt(2));
-  EXPECT_EQ(1337, menu.GetCommandIdAt(2));
+  EXPECT_EQ(101, menu.GetCommandIdAt(2));
   EXPECT_EQ(base::ASCIIToUTF16("radio"), menu.GetLabelAt(2));
   EXPECT_FALSE(menu.IsEnabledAt(2));
   EXPECT_TRUE(menu.IsItemCheckedAt(2));
 
   // Invoking a custom item should execute the command id on the delegate.
   menu.ActivatedAt(1);
-  EXPECT_EQ(999, delegate.last_executed_command());
+  EXPECT_EQ(107, delegate.last_executed_command());
 }
 
 // Tests the prepending of a custom submenu in a shelf context menu.

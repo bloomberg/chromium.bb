@@ -35,6 +35,7 @@ struct AccessibilityHostMsg_LocationChangeParams;
 
 namespace content {
 class BrowserAccessibility;
+class BrowserAccessibilityDelegate;
 class BrowserAccessibilityManager;
 #if defined(OS_ANDROID)
 class BrowserAccessibilityManagerAndroid;
@@ -45,6 +46,12 @@ class BrowserAccessibilityManagerAuraLinux;
 #elif defined(OS_MACOSX)
 class BrowserAccessibilityManagerMac;
 #endif
+
+// To be called when a BrowserAccessibilityManager fires a generated event.
+// Provides the host, the event fired, and which node id the event was for.
+typedef base::RepeatingCallback<
+    void(BrowserAccessibilityDelegate*, ui::AXEventGenerator::Event, int)>
+    GeneratedEventCallbackForTesting;
 
 // For testing.
 CONTENT_EXPORT ui::AXTreeUpdate MakeAXTreeUpdate(
@@ -81,6 +88,10 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() = 0;
   virtual gfx::NativeViewAccessible
   AccessibilityGetNativeViewAccessibleForWindow() = 0;
+
+  // Returns true if this delegate represents the main (topmost) frame in a
+  // tree of frames.
+  virtual bool AccessibilityIsMainFrame() = 0;
 };
 
 class CONTENT_EXPORT BrowserAccessibilityFactory {
@@ -142,12 +153,15 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   virtual void FireBlinkEvent(ax::mojom::Event event_type,
                               BrowserAccessibility* node) {}
   virtual void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
-                                  BrowserAccessibility* node) {}
+                                  BrowserAccessibility* node);
 
   // Checks whether focus has changed since the last time it was checked,
   // taking into account whether the window has focus and which frame within
   // the frame tree has focus. If focus has changed, calls FireFocusEvent.
   void FireFocusEventsIfNeeded();
+
+  // Send the events triggered when a node lose focus.
+  virtual void OnFocusLost(BrowserAccessibility* node) {}
 
   // Return whether or not we are currently able to fire events.
   virtual bool CanFireEvents();
@@ -200,6 +214,11 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // in any BrowserAccessibilityManager.
   static void SetFocusChangeCallbackForTesting(const base::Closure& callback);
 
+  // For testing only, register a function to be called when
+  // a generated event is fired from this BrowserAccessibilityManager.
+  void SetGeneratedEventCallbackForTesting(
+      const GeneratedEventCallbackForTesting& callback);
+
   // Normally we avoid firing accessibility focus events when the containing
   // native window isn't focused, and we also delay some other events like
   // live region events to improve screen reader compatibility.
@@ -230,6 +249,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   void SetSelection(const ui::AXActionData& action_data);
   void SetSelection(const BrowserAccessibilityRange& range);
   void ShowContextMenu(const BrowserAccessibility& node);
+  void SignalEndOfTest();
 
   // Retrieve the bounds of the parent View in screen coordinates.
   virtual gfx::Rect GetViewBounds();
@@ -341,7 +361,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
       const BrowserAccessibility& end_object,
       int end_offset);
 
-  static gfx::Rect GetPageBoundsForRange(
+  static gfx::Rect GetRootFrameRangeBoundsRect(
       const BrowserAccessibility& start_object,
       int start_offset,
       const BrowserAccessibility& end_object,
@@ -365,6 +385,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
 
   // AXTreeManager implementation.
   ui::AXNode* GetNodeFromTree(ui::AXTreeID tree_id, int32_t node_id) override;
+  ui::AXPlatformNodeDelegate* GetDelegate(ui::AXTreeID tree_id,
+                                          int32_t node_id) override;
 
   BrowserAccessibilityDelegate* delegate() const { return delegate_; }
 
@@ -409,6 +431,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   virtual void SendLocationChangeEvents(
       const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
 
+  static void SetLastFocusedNode(BrowserAccessibility* node);
+  static BrowserAccessibility* GetLastFocusedNode();
+
  protected:
   // The object that can perform actions on our behalf.
   BrowserAccessibilityDelegate* delegate_;
@@ -430,16 +455,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   bool hidden_by_interstitial_page_ = false;
 
   BrowserAccessibilityFindInPageInfo find_in_page_info_;
-
-  // These are only used by the root BrowserAccessibilityManager of a
-  // frame tree. Stores the last focused node and last focused manager so
-  // that when focus might have changed we can figure out whether we need
-  // to fire a focus event.
-  //
-  // NOTE: these pointers are not cleared, so they should never be
-  // dereferenced, only used for comparison.
-  BrowserAccessibility* last_focused_node_;
-  BrowserAccessibilityManager* last_focused_manager_;
 
   // These cache the AX tree ID, node ID, and global screen bounds of the
   // last object found by an asynchronous hit test. Subsequent hit test
@@ -465,11 +480,23 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // used and it won't be updated from the delegate.
   bool use_custom_device_scale_factor_for_testing_;
 
+  // For testing only: A function to call when a generated event is fired.
+  GeneratedEventCallbackForTesting generated_event_callback_for_testing_;
+
   ui::AXEventGenerator event_generator_;
 
   // Fire all events regardless of focus and with no delay, to avoid test
   // flakiness. See NeverSuppressOrDelayEventsForTesting() for details.
   static bool never_suppress_or_delay_events_for_testing_;
+
+  // Stores the id of the last focused node across all frames, as well as the id
+  // of the tree that contains it, so that when focus might have changed we can
+  // figure out whether we need to fire a focus event.
+  //
+  // NOTE: Don't use or modify these properties directly, use the
+  // SetLastFocusedNode and GetLastFocusedNode methods instead.
+  static base::Optional<int32_t> last_focused_node_id_;
+  static base::Optional<ui::AXTreeID> last_focused_node_tree_id_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManager);

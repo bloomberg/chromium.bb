@@ -49,7 +49,7 @@ class CORE_EXPORT FrameOverlay : public GraphicsLayerClient,
    public:
     virtual ~Delegate() = default;
 
-    // Paints page overlay contents.
+    // Paints frame overlay contents.
     virtual void PaintFrameOverlay(const FrameOverlay&,
                                    GraphicsContext&,
                                    const IntSize& view_size) const = 0;
@@ -58,16 +58,12 @@ class CORE_EXPORT FrameOverlay : public GraphicsLayerClient,
     virtual void Invalidate() {}
   };
 
-  static std::unique_ptr<FrameOverlay> Create(
-      LocalFrame*,
-      std::unique_ptr<FrameOverlay::Delegate>);
+  FrameOverlay(LocalFrame*, std::unique_ptr<FrameOverlay::Delegate>);
 
-  ~FrameOverlay() override;
-
-  void Update();
+  void UpdatePrePaint();
 
   // For CompositeAfterPaint.
-  void Paint(GraphicsContext&);
+  void Paint(GraphicsContext&) const;
 
   GraphicsLayer* GetGraphicsLayer() const {
     DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
@@ -77,17 +73,12 @@ class CORE_EXPORT FrameOverlay : public GraphicsLayerClient,
   // FrameOverlay is always the same size as the viewport.
   IntSize Size() const;
 
-  // Ensure that |layer_| is attached to the root graphics layer. Updates
-  // to the frames compositing may remove the graphics layer at any
-  // point. This should be called before calling PaintContents.
-  void EnsureOverlayAttached() const;
-
   const Delegate* GetDelegate() const { return delegate_.get(); }
   const LocalFrame& Frame() const { return *frame_; }
 
   // DisplayItemClient methods.
   String DebugName() const final { return "FrameOverlay"; }
-  LayoutRect VisualRect() const override;
+  IntRect VisualRect() const override;
 
   // GraphicsLayerClient implementation. Not needed for CompositeAfterPaint.
   bool NeedsRepaint(const GraphicsLayer&) const override { return true; }
@@ -99,9 +90,9 @@ class CORE_EXPORT FrameOverlay : public GraphicsLayerClient,
                      const IntRect& interest_rect) const override;
   String DebugName(const GraphicsLayer*) const override;
 
- private:
-  FrameOverlay(LocalFrame*, std::unique_ptr<FrameOverlay::Delegate>);
+  PropertyTreeState DefaultPropertyTreeState() const;
 
+ private:
   Persistent<LocalFrame> frame_;
   std::unique_ptr<FrameOverlay::Delegate> delegate_;
   std::unique_ptr<GraphicsLayer> layer_;

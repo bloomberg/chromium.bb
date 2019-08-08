@@ -10,6 +10,7 @@
 #define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_USAGE_TIME_LIMIT_PROCESSOR_H_
 
 #include <memory>
+#include <set>
 #include <unordered_map>
 
 #include "base/macros.h"
@@ -44,6 +45,10 @@ struct TimeWindowLimitBoundaries {
 
 struct TimeWindowLimitEntry {
   TimeWindowLimitEntry();
+  bool operator==(const TimeWindowLimitEntry&) const;
+  bool operator!=(const TimeWindowLimitEntry& rhs) const {
+    return !(*this == rhs);
+  }
 
   // Whether the time window limit entry ends on the following day from its
   // start.
@@ -67,6 +72,8 @@ class TimeWindowLimit {
   ~TimeWindowLimit();
   TimeWindowLimit(TimeWindowLimit&&);
   TimeWindowLimit& operator=(TimeWindowLimit&&);
+  bool operator==(const TimeWindowLimit&) const;
+  bool operator!=(const TimeWindowLimit& rhs) const { return !(*this == rhs); }
 
   std::unordered_map<Weekday, base::Optional<TimeWindowLimitEntry>> entries;
 
@@ -76,6 +83,10 @@ class TimeWindowLimit {
 
 struct TimeUsageLimitEntry {
   TimeUsageLimitEntry();
+  bool operator==(const TimeUsageLimitEntry&) const;
+  bool operator!=(const TimeUsageLimitEntry& rhs) const {
+    return !(*this == rhs);
+  }
 
   base::TimeDelta usage_quota;
   base::Time last_updated;
@@ -87,6 +98,8 @@ class TimeUsageLimit {
   ~TimeUsageLimit();
   TimeUsageLimit(TimeUsageLimit&&);
   TimeUsageLimit& operator=(TimeUsageLimit&&);
+  bool operator==(const TimeUsageLimit&) const;
+  bool operator!=(const TimeUsageLimit& rhs) const { return !(*this == rhs); }
 
   std::unordered_map<Weekday, base::Optional<TimeUsageLimitEntry>> entries;
   base::TimeDelta resets_at;
@@ -96,8 +109,8 @@ class TimeUsageLimit {
 };
 }  // namespace internal
 
-enum class ActivePolicies {
-  kNoActivePolicy,
+enum class PolicyType {
+  kNoPolicy,
   kOverride,
   kFixedLimit,  // Past bed time (ie, 9pm)
   kUsageLimit   // Too much time on screen (ie, 30 minutes per day)
@@ -109,8 +122,8 @@ struct State {
 
   // Which policy is responsible for the current state.
   // If it is locked, one of [ kOverride, kFixedLimit, kUsageLimit ]
-  // If it is not locked, one of [ kNoActivePolicy, kOverride ]
-  ActivePolicies active_policy;
+  // If it is not locked, one of [ kNoPolicy, kOverride ]
+  PolicyType active_policy;
 
   // Whether time_usage_limit is currently active.
   bool is_time_usage_limit_enabled = false;
@@ -132,7 +145,7 @@ struct State {
   base::Time next_state_change_time;
 
   // The policy that will be active in the next state.
-  ActivePolicies next_state_active_policy;
+  PolicyType next_state_active_policy;
 
   // This is the next time that the user's session will be unlocked. This is
   // only set when is_locked=true;
@@ -184,6 +197,17 @@ base::Optional<base::TimeDelta> GetRemainingTimeUsage(
 // the distance from midnight.
 base::TimeDelta GetTimeUsageLimitResetTime(
     const std::unique_ptr<base::DictionaryValue>& time_limit);
+
+// Compares two Usage Time Limit policy dictionaries and returns which
+// PolicyTypes changed between the two versions. Changes on simple overrides are
+// not reported, but changes on override with durations are, the reason is that
+// this method is intended for notifications, and the former does not trigger
+// those while the latter does.
+//
+// TODO(crbug.com/956036): Remove const ref to unique_ptr.
+std::set<PolicyType> UpdatedPolicyTypes(
+    const std::unique_ptr<base::DictionaryValue>& old_policy,
+    const std::unique_ptr<base::DictionaryValue>& new_policy);
 
 }  // namespace usage_time_limit
 }  // namespace chromeos

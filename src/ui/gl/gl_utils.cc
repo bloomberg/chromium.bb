@@ -7,7 +7,6 @@
 #include "ui/gl/gl_utils.h"
 
 #include "base/logging.h"
-#include "ui/gfx/color_space.h"
 #include "ui/gl/gl_bindings.h"
 
 #if defined(OS_ANDROID)
@@ -16,12 +15,6 @@
 #endif
 
 namespace gl {
-
-int GetGLColorSpace(const gfx::ColorSpace& color_space) {
-  if (color_space.IsHDR())
-    return GL_COLOR_SPACE_SCRGB_LINEAR_CHROMIUM;
-  return GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM;
-}
 
 // Used by chrome://gpucrash and gpu_benchmarking_extension's
 // CrashForTesting.

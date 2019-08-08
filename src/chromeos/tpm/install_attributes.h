@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
 namespace chromeos {
@@ -45,10 +45,6 @@ class COMPONENT_EXPORT(CHROMEOS_TPM) InstallAttributes {
 
   // A callback to handle responses of methods returning a LockResult value.
   typedef base::Callback<void(LockResult lock_result)> LockResultCallback;
-
-  // Return serialized InstallAttributes of an enterprise-owned configuration.
-  static std::string GetEnterpriseOwnedInstallAttributesBlobForTesting(
-      const std::string& user_name);
 
   // Manage singleton instance.
   static void Initialize();

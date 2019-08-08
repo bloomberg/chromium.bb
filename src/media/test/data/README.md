@@ -785,8 +785,18 @@ First frame of bear\_320x192\_40frames.nv12.yuv for image\_processor_test.
 #### bear\_320x192.nv12.yuv.json
 Metadata describing bear\_320x192.nv12.yuv.
 
-#### bear\_320x192.yv21.yuv
-First frame of bear\_320x192\_40frames.yv21.yuv for image\_processor_test.
+#### bear\_320x192.yv12.yuv
+First frame of bear\_320x192\_40frames.yv12.yuv for image\_processor_test.
+
+#### bear\_320x192.rgba
+RAW RGBA format data. This data is created from bear\_320x192.i420.yuv by the
+following command. Alpha channel is always 0xFF because of that.
+`ffmpeg -s 320x192 -pix_fmt yuv420p -i bear_320x192.i420.yuv -vcodec rawvideo -f image2 -pix_fmt rgba bear_320x192.rgba`
+
+#### bear\_320x192.bgra
+RAW BGRA format data. This data is created from bear\_320x192.i420.yuv by the
+following command. Alpha channel is always 0xFF because of that.
+`ffmpeg -s 320x192 -pix_fmt yuv420p -i bear_320x192.i420.yuv -vcodec rawvideo -f image2 -pix_fmt rgba bear_320x192.bgra`
 
 ###  VP9 parser test files:
 
@@ -820,19 +830,39 @@ ffmpeg -i red.webm -i a500hz.webm -map 0 -map 1 red-a500hz.webm
 ### JPEG Test Files
 
 #### pixel-1280x720.jpg
-Single MJEPG encoded frame of 1280x720, captured on Chromebook Pixel. This image
+Single MJPEG encoded frame of 1280x720, captured on Chromebook Pixel. This image
 does not have Huffman table.
+
+#### pixel-1280x720-trailing-zeros.jpg
+A version of pixel-1280x720.jpg with five trailing zero bytes after the EOI
+marker. The command used to generated it was:
+```
+echo -e "`xxd -g1 -p -c1 pixel-1280x720.jpg`" "\n00\n00\n00\n00\n00" | xxd -r -g1 -p -c1 > pixel-1280x720-trailing-zeros.jpg
+```
 
 #### pixel-1280x720-grayscale.jpg
 A version of pixel-1280x720.jpg converted to grayscale using:
 ```
 jpegtran -grayscale pixel-1280x720.jpg > pixel-1280x720-grayscale.jpg
 ```
+Then, using a hex editor, the Huffman table sections were removed from the
+resulting file.
+
 #### pixel-1280x720-yuv420.jpg
 A version of pixel-1280x720.jpg converted to 4:2:0 subsampling using:
 ```
-convert pixel-1280x720.jpg -sampling-factor 4:2:0 pixel-1280x720-yuv420.jpg
+convert pixel-1280x720.jpg -sampling-factor 4:2:0 -define jpeg:optimize-coding=false pixel-1280x720-yuv420.jpg
 ```
+Then, using a hex editor, the Huffman table sections were removed from the
+resulting file.
+
+#### pixel-1280x720-yuv444.jpg
+A version of pixel-1280x720.jpg converted to 4:4:4 subsampling using:
+```
+convert pixel-1280x720.jpg -sampling-factor 4:4:4 -define jpeg:optimize-coding=false pixel-1280x720-yuv444.jpg
+```
+Then, using a hex editor, the Huffman table sections were removed from the
+resulting file.
 
 #### peach_pi-1280x720.jpg
 Single MJPEG encoded frame of 1280x720, captured on Samsung Chromebook 2(13").

@@ -43,6 +43,11 @@ class [[clang::lto_visibility_public]] OSUserManager {
       const wchar_t* domain, const wchar_t* username,
       const wchar_t* old_password, const wchar_t* new_password);
 
+  // Force changes the password of the given OS user. This will cause them to
+  // lose all encrypted data.
+  virtual HRESULT SetUserPassword(
+      const wchar_t* domain, const wchar_t* username, const wchar_t* password);
+
   // Checks if the given user's password matches |password|. Returns S_OK if it
   // matches, S_FALSE if not. Otherwise will return the windows error code.
   virtual HRESULT IsWindowsPasswordValid(
@@ -58,6 +63,9 @@ class [[clang::lto_visibility_public]] OSUserManager {
   // should free it with a call to LocalFree().
   virtual HRESULT GetUserSID(const wchar_t* domain, const wchar_t* username,
                              PSID* sid);
+  // Gets the SID in string format of the given OS user.
+  HRESULT GetUserSID(const wchar_t* domain, const wchar_t* username,
+                     base::string16* sid_string);
 
   // Finds a user created from a gaia account by its SID.  Returns S_OK if a
   // user with the given SID exists, HRESULT_FROM_WIN32(ERROR_NONE_MAPPED)
@@ -76,6 +84,12 @@ class [[clang::lto_visibility_public]] OSUserManager {
   virtual HRESULT GetUserFullname(
       const wchar_t* domain, const wchar_t* username, base::string16* fullname);
 
+  // Changes the user's valid access hours to effectively allow or disallow them
+  // from signing in to the system. If |allow| is false then the user is not
+  // allowed to sign on at any hour of the day. If |allow| is true, then the
+  // user is allowed to sign on at any time of day.
+  virtual HRESULT ModifyUserAccessWithLogonHours(
+      const wchar_t* domain, const wchar_t* username, bool allow);
   static base::string16 GetLocalDomain();
 
   // This method is called from dllmain.cc when setting fakes from one modul

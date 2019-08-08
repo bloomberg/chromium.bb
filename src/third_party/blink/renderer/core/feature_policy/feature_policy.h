@@ -8,8 +8,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/feature_policy/feature_policy_helper.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -21,10 +21,9 @@ namespace blink {
 class Document;
 class ExecutionContext;
 
-// Returns a map between feature name (string) and mojom::FeaturePolicyFeature
-// (enum).
-typedef HashMap<String, mojom::FeaturePolicyFeature> FeatureNameMap;
-CORE_EXPORT const FeatureNameMap& GetDefaultFeatureNameMap();
+// Returns the list of features which are currently available in this context,
+// including any features which have been made available by an origin trial.
+CORE_EXPORT const Vector<String> GetAvailableFeatures(ExecutionContext*);
 
 // Converts a header policy string into a vector of allowlists, one for each
 // feature specified. Unrecognized features are filtered out. If |messages| is

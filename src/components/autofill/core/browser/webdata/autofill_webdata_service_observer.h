@@ -25,7 +25,10 @@ class AutofillWebDataServiceObserverOnDBSequence {
 
   // Called on DB sequence when multiple Autofill entries have been modified by
   // Sync.
-  virtual void AutofillMultipleChanged() {}
+  // TODO(crbug.com/900607): Remove AutofillMultipleChangedBySync() from
+  // AutofillWebDataServiceObserverOnDBSequence once USS for wallet_metadata
+  // launches.
+  virtual void AutofillMultipleChangedBySync() {}
 
  protected:
   virtual ~AutofillWebDataServiceObserverOnDBSequence() {}
@@ -35,7 +38,9 @@ class AutofillWebDataServiceObserverOnUISequence {
  public:
   // Called on UI sequence when multiple Autofill entries have been modified by
   // Sync.
-  virtual void AutofillMultipleChanged() {}
+  virtual void AutofillMultipleChangedBySync() {}
+
+  virtual void AutofillAddressConversionCompleted() {}
 
   virtual void AutofillProfileChanged(const AutofillProfileChange& change) {}
 

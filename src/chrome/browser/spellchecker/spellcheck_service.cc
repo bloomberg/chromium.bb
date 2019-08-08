@@ -98,6 +98,10 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
       base::BindRepeating(&SpellcheckService::OnSpellCheckDictionariesChanged,
                           base::Unretained(this)));
   pref_change_registrar_.Add(
+      spellcheck::prefs::kSpellCheckBlacklistedDictionaries,
+      base::BindRepeating(&SpellcheckService::OnSpellCheckDictionariesChanged,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
       spellcheck::prefs::kSpellCheckUseSpellingService,
       base::BindRepeating(&SpellcheckService::OnUseSpellingServiceChanged,
                           base::Unretained(this)));
@@ -235,12 +239,24 @@ void SpellcheckService::LoadHunspellDictionaries() {
   const base::ListValue* forced_dictionaries =
       prefs->GetList(spellcheck::prefs::kSpellCheckForcedDictionaries);
 
+  // Build a lookup of blacklisted dictionaries to skip loading them.
+  const base::ListValue* blacklisted_dictionaries =
+      prefs->GetList(spellcheck::prefs::kSpellCheckBlacklistedDictionaries);
+  std::unordered_set<std::string> blacklisted_dictionaries_lookup;
+  for (const auto& blacklisted_dict : blacklisted_dictionaries->GetList()) {
+    blacklisted_dictionaries_lookup.insert(blacklisted_dict.GetString());
+  }
+
   // Merge both lists of dictionaries. Use a set to avoid duplicates.
   std::set<std::string> dictionaries;
-  for (const auto& dictionary_value : user_dictionaries->GetList())
+  for (const auto& dictionary_value : user_dictionaries->GetList()) {
+    if (blacklisted_dictionaries_lookup.find(dictionary_value.GetString()) ==
+        blacklisted_dictionaries_lookup.end())
+      dictionaries.insert(dictionary_value.GetString());
+  }
+  for (const auto& dictionary_value : forced_dictionaries->GetList()) {
     dictionaries.insert(dictionary_value.GetString());
-  for (const auto& dictionary_value : forced_dictionaries->GetList())
-    dictionaries.insert(dictionary_value.GetString());
+  }
 
   for (const auto& dictionary : dictionaries) {
     hunspell_dictionaries_.push_back(

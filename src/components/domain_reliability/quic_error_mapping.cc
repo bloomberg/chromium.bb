@@ -265,9 +265,6 @@ const struct QuicErrorMapping {
     {quic::QUIC_DECOMPRESSION_FAILURE, "quic.decompression_failure"},
     // Receive a RST_STREAM with offset larger than kMaxStreamLength.
     {quic::QUIC_STREAM_LENGTH_OVERFLOW, "quic.stream_length_overflow"},
-    // APPLICATION_CLOSE frame data is malformed.
-    {quic::QUIC_INVALID_APPLICATION_CLOSE_DATA,
-     "quic.invalid.application_close_data"},
     // Received a MAX DATA frame with errors.
     {quic::QUIC_INVALID_MAX_DATA_FRAME_DATA,
      "quic.invalid.max_data_frame_data"},
@@ -305,12 +302,18 @@ const struct QuicErrorMapping {
     {quic::QUIC_MAX_STREAM_ID_ERROR, "quic.stream.id.in.max_stream_id.frame"},
     {quic::QUIC_HTTP_DECODER_ERROR, "quic.http.decoder.error"},
     {quic::QUIC_STALE_CONNECTION_CANCELLED, "quic.stale.connection.cancelled"},
+    {quic::QUIC_IETF_GQUIC_ERROR_MISSING, "quic.ietf.gquic.error_missing"},
+    // QUIC_INVALID_APPLICATION_CLOSE_DATA was code 101. The code has been
+    // deprecated, but to keep the assert below happy, there needs to be
+    // an entry for it, but the symbol is gone.
+    {static_cast<quic::QuicErrorCode>(101),
+     "quic.invalid.application_close_data"},
 
     // No error. Used as bound while iterating.
     {quic::QUIC_LAST_ERROR, "quic.last_error"}};
 
 // Must be updated any time a quic::QuicErrorCode is deprecated in
-// net/third_party/quic/core/quic_error_codes.h.
+// net/third_party/quiche/src/quic/core/quic_error_codes.h.
 const int kDeprecatedQuicErrorCount = 5;
 const int kActiveQuicErrorCount =
     quic::QUIC_LAST_ERROR - kDeprecatedQuicErrorCount;

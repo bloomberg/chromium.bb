@@ -21,6 +21,8 @@ UsbInternalsUI::UsbInternalsUI(content::WebUI* web_ui)
   source->AddResourcePath("usb_internals.js", IDR_USB_INTERNALS_JS);
   source->AddResourcePath("usb_internals.mojom-lite.js",
                           IDR_USB_INTERNALS_MOJOM_LITE_JS);
+  source->AddResourcePath("descriptor_panel.js",
+                          IDR_USB_INTERNALS_DESCRIPTOR_PANEL_JS);
   source->AddResourcePath("devices_page.js", IDR_USB_INTERNALS_DEVICES_PAGE_JS);
   source->AddResourcePath("device.mojom-lite.js", IDR_USB_DEVICE_MOJOM_LITE_JS);
   source->AddResourcePath("device_enumeration_options.mojom-lite.js",

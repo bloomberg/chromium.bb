@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/scoped_observer.h"
+#include "base/sequence_checker.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -56,8 +57,6 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
  public:
   explicit UsbPrinterDetectorImpl(device::UsbService* usb_service)
       : usb_observer_(this),
-        observer_list_(
-            new base::ObserverListThreadSafe<UsbPrinterDetector::Observer>),
         weak_ptr_factory_(this) {
     if (usb_service) {
       usb_observer_.Add(usb_service);
@@ -65,20 +64,20 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
                                          weak_ptr_factory_.GetWeakPtr()));
     }
   }
-  ~UsbPrinterDetectorImpl() override = default;
-
-  // PrinterDetector interface function.
-  void AddObserver(UsbPrinterDetector::Observer* observer) override {
-    observer_list_->AddObserver(observer);
+  ~UsbPrinterDetectorImpl() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
   }
 
-  // PrinterDetector interface function.
-  void RemoveObserver(UsbPrinterDetector::Observer* observer) override {
-    observer_list_->RemoveObserver(observer);
+  // PrinterDetector override.
+  void RegisterPrintersFoundCallback(OnPrintersFoundCallback cb) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
+    DCHECK(!on_printers_found_callback_);
+    on_printers_found_callback_ = std::move(cb);
   }
 
-  // PrinterDetector interface function.
+  // PrinterDetector override.
   std::vector<DetectedPrinter> GetPrinters() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     base::AutoLock auto_lock(printers_lock_);
     return GetPrintersLocked();
   }
@@ -126,9 +125,9 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
 
     base::AutoLock auto_lock(printers_lock_);
     printers_[device->guid()] = entry;
-    observer_list_->Notify(FROM_HERE,
-                           &PrinterDetector::Observer::OnPrintersFound,
-                           GetPrintersLocked());
+    if (on_printers_found_callback_) {
+      on_printers_found_callback_.Run(GetPrintersLocked());
+    }
   }
 
   // UsbService::observer override.
@@ -139,10 +138,12 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
     }
     base::AutoLock auto_lock(printers_lock_);
     printers_.erase(device->guid());
-    observer_list_->Notify(FROM_HERE,
-                           &PrinterDetector::Observer::OnPrintersFound,
-                           GetPrintersLocked());
+    if (on_printers_found_callback_) {
+      on_printers_found_callback_.Run(GetPrintersLocked());
+    }
   }
+
+  SEQUENCE_CHECKER(sequence_);
 
   // Map from USB GUID to DetectedPrinter for all detected printers, and
   // associated lock, since we don't require all access to be from the same
@@ -150,10 +151,10 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
   std::map<std::string, DetectedPrinter> printers_;
   base::Lock printers_lock_;
 
+  OnPrintersFoundCallback on_printers_found_callback_;
+
   ScopedObserver<device::UsbService, device::UsbService::Observer>
       usb_observer_;
-  scoped_refptr<base::ObserverListThreadSafe<UsbPrinterDetector::Observer>>
-      observer_list_;
   base::WeakPtrFactory<UsbPrinterDetectorImpl> weak_ptr_factory_;
 };
 

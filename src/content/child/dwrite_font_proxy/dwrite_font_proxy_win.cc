@@ -513,6 +513,7 @@ bool DWriteFontFamilyProxy::LoadFamily() {
     return true;
 
   SCOPED_UMA_HISTOGRAM_TIMER("DirectWrite.Fonts.Proxy.LoadFamilyTime");
+  TRACE_EVENT0("dwrite,fonts", "DWriteFontFamilyProxy::LoadFamily");
 
   auto* font_key_name = base::debug::AllocateCrashKeyString(
       "font_key_name", base::debug::CrashKeySize::Size32);

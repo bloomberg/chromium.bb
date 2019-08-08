@@ -46,23 +46,6 @@ void LogTimeout(bool timed_out) {
   UMA_HISTOGRAM_BOOLEAN("Sync.URLFetchTimedOut", timed_out);
 }
 
-void RecordSyncRequestContentLengthHistograms(int64_t compressed_content_length,
-                                              int64_t original_content_length) {
-  UMA_HISTOGRAM_COUNTS_1M("Sync.RequestContentLength.Compressed",
-                          compressed_content_length);
-  UMA_HISTOGRAM_COUNTS_1M("Sync.RequestContentLength.Original",
-                          original_content_length);
-}
-
-void RecordSyncResponseContentLengthHistograms(
-    int64_t compressed_content_length,
-    int64_t original_content_length) {
-  UMA_HISTOGRAM_COUNTS_1M("Sync.ResponseContentLength.Compressed",
-                          compressed_content_length);
-  UMA_HISTOGRAM_COUNTS_1M("Sync.ResponseContentLength.Original",
-                          original_content_length);
-}
-
 base::LazyInstance<scoped_refptr<base::SequencedTaskRunner>>::Leaky
     g_io_capable_task_runner_for_tests = LAZY_INSTANCE_INITIALIZER;
 
@@ -308,7 +291,7 @@ void HttpBridge::MakeAsynchronousPost() {
   // SimpleURLLoader supports it.
   //
   // This calls |BindFetcherToDataTracker| in
-  // components/sync/driver/glue/sync_backend_host_core.cc which used to
+  // components/sync/driver/glue/sync_engine_backend.cc which used to
   // data_use_measurement::DataUseUserData::AttachToFetcher.
   // if (!bind_to_tracker_callback_.is_null())
   //  bind_to_tracker_callback_.Run(fetch_state_.url_poster);
@@ -316,8 +299,6 @@ void HttpBridge::MakeAsynchronousPost() {
   std::string request_to_send;
   compression::GzipCompress(request_content_, &request_to_send);
   url_loader->AttachStringForUpload(request_to_send, content_type_);
-  RecordSyncRequestContentLengthHistograms(request_to_send.size(),
-                                           request_content_.size());
 
   // Sync relies on HTTP errors being detectable (and distinct from
   // net/connection errors).
@@ -407,15 +388,14 @@ void HttpBridge::OnURLLoadComplete(std::unique_ptr<std::string> response_body) {
     fetch_state_.response_headers = url_loader->ResponseInfo()->headers;
   }
 
-  OnURLLoadCompleteInternal(
-      http_status_code, url_loader->NetError(), url_loader->GetContentSize(),
-      url_loader->GetFinalURL(), std::move(response_body));
+  OnURLLoadCompleteInternal(http_status_code, url_loader->NetError(),
+                            url_loader->GetFinalURL(),
+                            std::move(response_body));
 }
 
 void HttpBridge::OnURLLoadCompleteInternal(
     int http_status_code,
     int net_error_code,
-    int64_t compressed_content_length,
     const GURL& final_url,
     std::unique_ptr<std::string> response_body) {
   DCHECK(network_task_runner_->RunsTasksInCurrentSequence());
@@ -455,10 +435,6 @@ void HttpBridge::OnURLLoadCompleteInternal(
     fetch_state_.response_content = std::move(*response_body);
 
   UpdateNetworkTime();
-
-  int64_t original_content_length = fetch_state_.response_content.size();
-  RecordSyncResponseContentLengthHistograms(compressed_content_length,
-                                            original_content_length);
 
   fetch_state_.url_loader.reset();
   url_loader_factory_ = nullptr;

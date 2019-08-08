@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsService;
@@ -23,11 +24,13 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.BrowserStartupController;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -70,6 +73,7 @@ public class OriginVerifier {
     private long mNativeOriginVerifier;
     @Nullable private OriginVerificationListener mListener;
     private Origin mOrigin;
+    private long mVerificationStartTime;
 
     /**
      * A collection of Relationships (stored as Strings, with the signature set to an empty String)
@@ -225,7 +229,7 @@ public class OriginVerifier {
         if (!TextUtils.isEmpty(disableDalUrl)
                 && mOrigin.equals(new Origin(disableDalUrl))) {
             Log.i(TAG, "Verification skipped for %s due to command line flag.", origin);
-            ThreadUtils.runOnUiThread(new VerifiedCallback(true, null));
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, new VerifiedCallback(true, null));
             return;
         }
 
@@ -235,13 +239,13 @@ public class OriginVerifier {
             Log.i(TAG, "Verification failed for %s as not https.", origin);
             BrowserServicesMetrics.recordVerificationResult(
                     BrowserServicesMetrics.VerificationResult.HTTPS_FAILURE);
-            ThreadUtils.runOnUiThread(new VerifiedCallback(false, null));
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, new VerifiedCallback(false, null));
             return;
         }
 
         if (shouldOverrideVerification(mPackageName, mOrigin, mRelation)) {
             Log.i(TAG, "Verification succeeded for %s, it was overridden.", origin);
-            ThreadUtils.runOnUiThread(new VerifiedCallback(true, null));
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, new VerifiedCallback(true, null));
             return;
         }
 
@@ -266,12 +270,13 @@ public class OriginVerifier {
                 break;
         }
 
+        mVerificationStartTime = SystemClock.uptimeMillis();
         boolean requestSent = nativeVerifyOrigin(mNativeOriginVerifier, mPackageName,
                 mSignatureFingerprint, mOrigin.toString(), relationship);
         if (!requestSent) {
             BrowserServicesMetrics.recordVerificationResult(
                     BrowserServicesMetrics.VerificationResult.REQUEST_FAILURE);
-            ThreadUtils.runOnUiThread(new VerifiedCallback(false, false));
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, new VerifiedCallback(false, false));
         }
     }
 
@@ -384,9 +389,6 @@ public class OriginVerifier {
             Log.d(TAG, "Adding: %s for %s", mPackageName, mOrigin);
             VerificationResultStore.addRelationship(new Relationship(mPackageName,
                     mSignatureFingerprint, mOrigin, mRelation));
-
-            TrustedWebActivityClient.registerClient(ContextUtils.getApplicationContext(),
-                    mOrigin, mPackageName);
         }
 
         // We save the result even if there is a failure as a way of overwriting a previously
@@ -396,6 +398,12 @@ public class OriginVerifier {
         if (mListener != null) {
             mListener.onOriginVerified(mPackageName, mOrigin, originVerified, online);
         }
+
+        if (online != null) {
+            long duration = SystemClock.uptimeMillis() - mVerificationStartTime;
+            BrowserServicesMetrics.recordVerificationTime(duration, online);
+        }
+
         cleanUp();
     }
 

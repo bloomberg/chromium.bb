@@ -30,14 +30,14 @@ void NGBaseLayoutAlgorithmTest::AdvanceToLayoutPhase() {
 
 std::pair<scoped_refptr<const NGPhysicalBoxFragment>, NGConstraintSpace>
 NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithmForElement(Element* element) {
-  LayoutBlockFlow* block_flow = ToLayoutBlockFlow(element->GetLayoutObject());
+  auto* block_flow = To<LayoutBlockFlow>(element->GetLayoutObject());
   NGBlockNode node(block_flow);
   NGConstraintSpace space =
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
 
   scoped_refptr<const NGLayoutResult> result =
       NGBlockLayoutAlgorithm(node, space).Layout();
-  return std::make_pair(ToNGPhysicalBoxFragment(result->PhysicalFragment()),
+  return std::make_pair(To<NGPhysicalBoxFragment>(result->PhysicalFragment()),
                         std::move(space));
 }
 
@@ -46,7 +46,7 @@ NGBaseLayoutAlgorithmTest::GetBoxFragmentByElementId(const char* id) {
   LayoutObject* layout_object = GetLayoutObjectByElementId(id);
   CHECK(layout_object && layout_object->IsLayoutNGMixin());
   scoped_refptr<const NGPhysicalBoxFragment> fragment =
-      ToLayoutBlockFlow(layout_object)->CurrentFragment();
+      To<LayoutBlockFlow>(layout_object)->CurrentFragment();
   CHECK(fragment);
   return fragment;
 }
@@ -71,7 +71,7 @@ const NGPhysicalBoxFragment* FragmentChildIterator::NextChild(
   auto& child = parent_->Children()[index_++];
   if (fragment_offset)
     *fragment_offset = child.Offset();
-  return ToNGPhysicalBoxFragment(child.get());
+  return To<NGPhysicalBoxFragment>(child.get());
 }
 
 NGConstraintSpace ConstructBlockLayoutTestConstraintSpace(
@@ -94,10 +94,6 @@ NGConstraintSpace ConstructBlockLayoutTestConstraintSpace(
       .SetIsShrinkToFit(shrink_to_fit)
       .SetFragmentainerSpaceAtBfcStart(fragmentainer_space_available)
       .SetFragmentationType(block_fragmentation)
-      .AddBaselineRequest({NGBaselineAlgorithmType::kAtomicInline,
-                           FontBaseline::kAlphabeticBaseline})
-      .AddBaselineRequest({NGBaselineAlgorithmType::kFirstLine,
-                           FontBaseline::kAlphabeticBaseline})
       .ToConstraintSpace();
 }
 

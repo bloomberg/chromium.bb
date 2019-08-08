@@ -11,14 +11,10 @@
 #ifndef RTC_BASE_NUMERICS_MATH_UTILS_H_
 #define RTC_BASE_NUMERICS_MATH_UTILS_H_
 
-#include <math.h>
+#include <limits>
 #include <type_traits>
 
 #include "rtc_base/checks.h"
-
-#ifndef M_PI
-#define M_PI 3.14159265359f
-#endif
 
 // Given two numbers |x| and |y| such that x >= y, computes the difference
 // x - y without causing undefined behavior due to signed overflow.
@@ -34,6 +30,41 @@ typename std::make_unsigned<T>::type unsigned_difference(T x, T y) {
   // difference x - y can be represented as an unsigned, it is sufficient to
   // compute the difference modulo UINT_MAX + 1, i.e using unsigned arithmetic.
   return static_cast<unsigned_type>(x) - static_cast<unsigned_type>(y);
+}
+
+// Provide neutral element with respect to min().
+// Typically used as an initial value for running minimum.
+template <typename T,
+          typename std::enable_if<std::numeric_limits<T>::has_infinity>::type* =
+              nullptr>
+constexpr T infinity_or_max() {
+  return std::numeric_limits<T>::infinity();
+}
+
+template <typename T,
+          typename std::enable_if<
+              !std::numeric_limits<T>::has_infinity>::type* = nullptr>
+constexpr T infinity_or_max() {
+  // Fallback to max().
+  return std::numeric_limits<T>::max();
+}
+
+// Provide neutral element with respect to max().
+// Typically used as an initial value for running maximum.
+template <typename T,
+          typename std::enable_if<std::numeric_limits<T>::has_infinity>::type* =
+              nullptr>
+constexpr T minus_infinity_or_min() {
+  static_assert(std::is_signed<T>::value, "Unsupported. Please open a bug.");
+  return -std::numeric_limits<T>::infinity();
+}
+
+template <typename T,
+          typename std::enable_if<
+              !std::numeric_limits<T>::has_infinity>::type* = nullptr>
+constexpr T minus_infinity_or_min() {
+  // Fallback to min().
+  return std::numeric_limits<T>::min();
 }
 
 #endif  // RTC_BASE_NUMERICS_MATH_UTILS_H_

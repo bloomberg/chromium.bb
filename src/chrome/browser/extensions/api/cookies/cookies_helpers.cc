@@ -82,15 +82,19 @@ Cookie CreateCookie(const net::CanonicalCookie& canonical_cookie,
   cookie.http_only = canonical_cookie.IsHttpOnly();
 
   switch (canonical_cookie.SameSite()) {
-  case net::CookieSameSite::DEFAULT_MODE:
-    cookie.same_site = api::cookies::SAME_SITE_STATUS_NO_RESTRICTION;
-    break;
-  case net::CookieSameSite::LAX_MODE:
-    cookie.same_site = api::cookies::SAME_SITE_STATUS_LAX;
-    break;
-  case net::CookieSameSite::STRICT_MODE:
-    cookie.same_site = api::cookies::SAME_SITE_STATUS_STRICT;
-    break;
+    // TODO(chlily): UNSPECIFIED should map to SAME_SITE_STATUS_NONE and vice
+    // versa.
+    case net::CookieSameSite::NO_RESTRICTION:
+    case net::CookieSameSite::UNSPECIFIED:
+      cookie.same_site = api::cookies::SAME_SITE_STATUS_NO_RESTRICTION;
+      break;
+    case net::CookieSameSite::LAX_MODE:
+    case net::CookieSameSite::EXTENDED_MODE:
+      cookie.same_site = api::cookies::SAME_SITE_STATUS_LAX;
+      break;
+    case net::CookieSameSite::STRICT_MODE:
+      cookie.same_site = api::cookies::SAME_SITE_STATUS_STRICT;
+      break;
   }
 
   cookie.session = !canonical_cookie.IsPersistent();
@@ -126,7 +130,12 @@ void GetCookieListFromManager(
     const GURL& url,
     network::mojom::CookieManager::GetCookieListCallback callback) {
   if (url.is_empty()) {
-    manager->GetAllCookies(std::move(callback));
+    // GetAllCookies has a different callback signature than GetCookieList, but
+    // can be treated as the same, just returning no excluded cookies.
+    // |AddCookieStatusList| takes a |GetCookieListCallback| and returns a
+    // callback that calls the input callback with an empty excluded list.
+    manager->GetAllCookies(
+        net::cookie_util::AddCookieStatusList(std::move(callback)));
   } else {
     net::CookieOptions options;
     options.set_include_httponly();

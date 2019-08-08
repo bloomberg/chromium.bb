@@ -184,6 +184,13 @@ struct VRStageParameters {
   array<float, 16> standingTransform;
   float sizeX;
   float sizeZ;
+
+  // If present, indicates that the device supports a bounded reference space.
+  // The points are expected to be in the "standing" space (i.e. there should be
+  // no need to transform them by the accompanying standing transform) and
+  // in a clockwise winding order.
+  // This should supersede sizeX/sizeZ if they are set.
+  array<gfx.mojom.Point3F>? bounds;
 };
 
 struct VRDisplayInfo {
@@ -264,6 +271,14 @@ struct XRFrameData {
   // rendering.
   VREyeParameters? left_eye;
   VREyeParameters? right_eye;
+
+  // Stage parameters may be provided per-frame, or only re-computed
+  // periodically.  However, setting the stage parameters to null is perfectly
+  // valid in some cases (e.g. we've lost tracking), so we can't just use
+  // whether they are present or not to indicate that they have been updated
+  // so we have an extra flag to indicate to us that they have been updated.
+  bool stage_parameters_updated;
+  VRStageParameters? stage_parameters;
 };
 
 enum VRDisplayEventReason {

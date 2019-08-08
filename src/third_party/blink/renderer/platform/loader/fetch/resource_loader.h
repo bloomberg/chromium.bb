@@ -46,11 +46,11 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/response_body_loader_client.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
-class ConsoleLogger;
 class FetchContext;
 class ResourceError;
 class ResourceFetcher;
@@ -70,16 +70,11 @@ class PLATFORM_EXPORT ResourceLoader final
   USING_PRE_FINALIZER(ResourceLoader, Dispose);
 
  public:
-  static ResourceLoader* Create(ResourceFetcher*,
-                                ResourceLoadScheduler*,
-                                Resource*,
-                                uint32_t inflight_keepalive_bytes = 0);
-
   // Assumes ResourceFetcher and Resource are non-null.
   ResourceLoader(ResourceFetcher*,
                  ResourceLoadScheduler*,
                  Resource*,
-                 uint32_t inflight_keepalive_bytes);
+                 uint32_t inflight_keepalive_bytes = 0);
   ~ResourceLoader() override;
   void Trace(blink::Visitor*) override;
 
@@ -102,6 +97,8 @@ class PLATFORM_EXPORT ResourceLoader final
 
   ResourceFetcher* Fetcher() { return fetcher_; }
   bool ShouldBeKeptAliveWhenDetached() const;
+
+  void AbortResponseBodyLoading();
 
   // WebURLLoaderClient
   //
@@ -165,7 +162,6 @@ class PLATFORM_EXPORT ResourceLoader final
 
   // ResourceLoadSchedulerClient.
   void Run() override;
-  ConsoleLogger* GetConsoleLogger() override;
 
   // ResponseBodyLoaderClient implementation.
   void DidReceiveData(base::span<const char> data) override;
@@ -249,6 +245,7 @@ class PLATFORM_EXPORT ResourceLoader final
     std::vector<network::cors::PreflightTimingInfo> cors_preflight_timing_info;
   };
   base::Optional<DeferredFinishLoadingInfo> deferred_finish_loading_info_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_body_loader_;
 
   // True if loading is deferred.
   bool defers_ = false;
@@ -257,6 +254,9 @@ class PLATFORM_EXPORT ResourceLoader final
   bool defers_handling_data_url_ = false;
 
   TaskRunnerTimer<ResourceLoader> cancel_timer_;
+
+  FrameScheduler::SchedulingAffectingFeatureHandle
+      feature_handle_for_scheduler_;
 };
 
 }  // namespace blink

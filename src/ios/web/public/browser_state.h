@@ -105,6 +105,12 @@ class BrowserState : public base::SupportsUserData {
       const std::string& service_name,
       service_manager::mojom::ServiceRequest request);
 
+  // Updates |cors_exempt_header_list| field of the given |param| to register
+  // headers that are used in content for special purpose and should not be
+  // blocked by CORS checks.
+  virtual void UpdateCorsExemptHeader(
+      network::mojom::NetworkContextParams* params) {}
+
  protected:
   BrowserState();
 

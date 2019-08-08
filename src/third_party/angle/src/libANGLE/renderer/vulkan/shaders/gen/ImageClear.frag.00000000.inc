@@ -1,4 +1,4 @@
-	// 7.11.3009
+	// 7.11.3188
 	 #pragma once
 const uint32_t kImageClear_frag_00000000[] = {
 	0x07230203,0x00010000,0x00080007,0x00000012,0x00000000,0x00020011,0x00000001,0x0006000b,
@@ -24,7 +24,7 @@ const uint32_t kImageClear_frag_00000000[] = {
 #version 450 core
 
 layout(push_constant)uniform PushConstants {
-    vec4 clearColor;
+       vec4 clearColor;
 } params;
 
 layout(location = 0)out vec4 colorOut;

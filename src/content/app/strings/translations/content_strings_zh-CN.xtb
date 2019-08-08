@@ -176,7 +176,9 @@
 <translation id="6941933287844615239">下载媒体</translation>
 <translation id="6981594929165378967">插入</translation>
 <translation id="6989848892321993519">请将该内容增加到 <ph name="MIN_CHARACTERS" /> 个或更多字符（目前您使用了 1 个字符）。</translation>
+<translation id="7033340931668032222">上下键用于更改音量</translation>
 <translation id="709897737746224366">请与所请求的格式保持一致。</translation>
+<translation id="7118469954320184356">尚无说明。</translation>
 <translation id="7139483182332611405">序言</translation>
 <translation id="7263440858009898357">请在列表中选择一项。</translation>
 <translation id="727747134524199931">列标题</translation>
@@ -226,6 +228,7 @@
 <translation id="8550857728288566671">图形符号</translation>
 <translation id="8583702881314752957">定义列表</translation>
 <translation id="8597182159515967513">标题</translation>
+<translation id="8603553056539299761">左右键用于快进/快退</translation>
 <translation id="860475260694818407">目录</translation>
 <translation id="8613126697340063924">控制远程播放</translation>
 <translation id="862370744433916922">副标题</translation>

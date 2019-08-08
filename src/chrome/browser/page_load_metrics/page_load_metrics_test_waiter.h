@@ -73,11 +73,11 @@ class PageLoadMetricsTestWaiter
 
  protected:
   virtual bool ExpectationsSatisfied() const;
-  // Map of all resources loaded by the page, keyed by resource request id.
-  // Contains ongoing and completed resources. Contains only the most recent
-  // update (version) of the resource.
-  std::map<int, page_load_metrics::mojom::ResourceDataUpdatePtr>
-      page_resources_;
+
+  // Intended to be overridden in tests to allow tests to wait on other resource
+  // conditions.
+  virtual void HandleResourceUpdate(
+      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {}
 
  private:
   // PageLoadMetricsObserver used by the PageLoadMetricsTestWaiter to observe
@@ -102,7 +102,7 @@ class PageLoadMetricsTestWaiter
                               extra_request_complete_info) override;
 
     void OnResourceDataUseObserved(
-        FrameTreeNodeId frame_tree_node_id,
+        content::RenderFrameHost* rfh,
         const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
             resources) override;
 
@@ -169,11 +169,10 @@ class PageLoadMetricsTestWaiter
   void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
                             extra_request_complete_info);
 
-  // Updates resource map and associated data counters as updates are received
-  // from a resource load. Stops waiting if expectations are satisfied after
-  // update.
+  // Updates counters as updates are received from a resource load. Stops
+  // waiting if expectations are satisfied after update.
   void OnResourceDataUseObserved(
-      FrameTreeNodeId frame_tree_node_id,
+      content::RenderFrameHost* rfh,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources);
 

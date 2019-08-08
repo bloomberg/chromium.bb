@@ -30,13 +30,16 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_OBJECT_CACHE_IMPL_H_
 
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/blink/public/platform/modules/permissions/permission.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache_base.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -53,7 +56,8 @@ class LocalFrameView;
 // This class should only be used from inside the accessibility directory.
 class MODULES_EXPORT AXObjectCacheImpl
     : public AXObjectCacheBase,
-      public mojom::blink::PermissionObserver {
+      public mojom::blink::PermissionObserver,
+      public LocalFrameView::LifecycleNotificationObserver {
  public:
   static AXObjectCache* Create(Document&);
 
@@ -65,6 +69,10 @@ class MODULES_EXPORT AXObjectCacheImpl
   AXObject* FocusedObject();
 
   void Dispose() override;
+
+  // Register/remove popups
+  void InitializePopup(Document* document) override;
+  void DisposePopup(Document* document) override;
 
   //
   // Iterators.
@@ -98,14 +106,14 @@ class MODULES_EXPORT AXObjectCacheImpl
   // changed.
   void TextChanged(LayoutObject*) override;
   void TextChanged(AXObject*, Node* optional_node = nullptr);
-  void FocusableChanged(Element* element);
+  void FocusableChangedWithCleanLayout(Element* element);
   void DocumentTitleChanged() override;
   // Called when a node has just been attached, so we can make sure we have the
   // right subclass of AXObject.
   void UpdateCacheAfterNodeIsAttached(Node*) override;
   void DidInsertChildrenOfNode(Node*) override;
 
-  void HandleAttributeChanged(const QualifiedName& attr_name,
+  bool HandleAttributeChanged(const QualifiedName& attr_name,
                               Element*) override;
   void HandleAutofillStateChanged(Element*, bool) override;
   void HandleValidationMessageVisibilityChanged(
@@ -179,11 +187,11 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   void MaybeNewRelationTarget(Node* node, AXObject* obj);
 
-  void HandleActiveDescendantChanged(Node*);
-  void HandleRoleChange(Node*);
-  void HandleRoleChangeIfNotEditable(Node*);
-  void HandleAriaExpandedChange(Node*);
-  void HandleAriaSelectedChanged(Node*);
+  void HandleActiveDescendantChangedWithCleanLayout(Node*);
+  void HandleRoleChangeWithCleanLayout(Node*);
+  void HandleRoleChangeIfNotEditableWithCleanLayout(Node*);
+  void HandleAriaExpandedChangeWithCleanLayout(Node*);
+  void HandleAriaSelectedChangedWithCleanLayout(Node*);
 
   bool AccessibilityEnabled();
   bool InlineTextBoxAccessibilityEnabled();
@@ -239,9 +247,13 @@ class MODULES_EXPORT AXObjectCacheImpl
   // For built-in HTML form validation messages.
   AXObject* ValidationMessageObjectIfInvalid();
 
+  // LifecycleNotificationObserver overrides.
+  void WillStartLifecycleUpdate(const LocalFrameView&) override;
+  void DidFinishLifecycleUpdate(const LocalFrameView&) override;
+
  protected:
   void PostPlatformNotification(AXObject*, ax::mojom::Event);
-  void LabelChanged(Element*);
+  void LabelChangedWithCleanLayout(Element*);
 
   AXObject* CreateFromRenderer(LayoutObject*);
   AXObject* CreateFromNode(Node*);
@@ -273,10 +285,9 @@ class MODULES_EXPORT AXObjectCacheImpl
   bool has_been_disposed_ = false;
 #endif
 
-  TaskRunnerTimer<AXObjectCacheImpl> notification_post_timer_;
-  HeapVector<std::pair<Member<AXObject>, ax::mojom::Event>>
-      notifications_to_post_;
-  void NotificationPostTimerFired(TimerBase*);
+  typedef VectorOfPairs<AXObject, ax::mojom::Event> NotificationVector;
+  NotificationVector notifications_to_post_;
+  void PostNotificationsAfterLayout(Document*);
 
   // ContextLifecycleObserver overrides.
   void ContextDestroyed(ExecutionContext*) override;
@@ -310,6 +321,25 @@ class MODULES_EXPORT AXObjectCacheImpl
   AXObject* GetOrCreateValidationMessageObject();
   void RemoveValidationMessageObject();
 
+  // Enqueue a callback to the given method to be run after layout is
+  // complete.
+  void DeferTreeUpdate(void (AXObjectCacheImpl::*method)(Node*), Node* node);
+  void DeferTreeUpdate(void (AXObjectCacheImpl::*method)(const QualifiedName&,
+                                                         Element* element),
+                       const QualifiedName& attr_name,
+                       Element* element);
+  void DeferTreeUpdate(void (AXObjectCacheImpl::*method)(Node*, AXObject*),
+                       Node* node,
+                       AXObject* obj);
+
+  void DeferTreeUpdateInternal(Node* node, base::OnceClosure callback);
+
+  void SelectionChangedWithCleanLayout(Node* node);
+  void TextChangedWithCleanLayout(Node* node);
+  void ChildrenChangedWithCleanLayout(Node* node);
+  void HandleAttributeChangedWithCleanLayout(const QualifiedName& attr_name,
+                                             Element* element);
+
   // Whether the user has granted permission for the user to install event
   // listeners for accessibility events using the AOM.
   mojom::PermissionStatus accessibility_event_permission_;
@@ -318,9 +348,11 @@ class MODULES_EXPORT AXObjectCacheImpl
   mojom::blink::PermissionServicePtr permission_service_;
   mojo::Binding<mojom::blink::PermissionObserver> permission_observer_binding_;
 
-  VectorOf<Node> nodes_changed_during_layout_;
-  typedef VectorOfPairs<QualifiedName, Element> AttributesChangedVector;
-  AttributesChangedVector attributes_changed_during_layout_;
+  // The main document, plus any page popups.
+  HeapHashSet<WeakMember<Document>> documents_;
+  typedef std::vector<std::pair<WeakPersistent<Node>, base::OnceClosure>>
+      TreeUpdateCallbackQueue;
+  TreeUpdateCallbackQueue tree_update_callback_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(AXObjectCacheImpl);
 };

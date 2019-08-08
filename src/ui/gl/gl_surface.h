@@ -73,6 +73,7 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
     SRGB,
     DISPLAY_P3,
     SCRGB_LINEAR,
+    HDR10,
   };
 
   virtual bool Resize(const gfx::Size& size,

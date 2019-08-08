@@ -36,7 +36,7 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
-#include "ios/web/public/features.h"
+#import "ios/web/common/features.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/reload_type.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
@@ -640,6 +640,13 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
       web::ReloadType::NORMAL, false);
   AssertIsShowingDistillablePage(false, distillableURL);
 
+  // TODO(crbug.com/954248) This DCHECK's (but works) with slimnav disabled.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager)) {
+    [ChromeEarlGrey goBack];
+    [ChromeEarlGrey goForward];
+    AssertIsShowingDistillablePage(false, distillableURL);
+  }
+
   // Start server to reload online error.
   self.serverRespondsWithContent = YES;
   base::test::ios::SpinRunLoopWithMinDelay(
@@ -677,6 +684,10 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   // Open the entry.
   TapEntry(pageTitle);
 
+  AssertIsShowingDistillablePage(false, distillableURL);
+
+  [ChromeEarlGrey goBack];
+  [ChromeEarlGrey goForward];
   AssertIsShowingDistillablePage(false, distillableURL);
 
   // Reload should load online page.

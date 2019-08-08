@@ -34,10 +34,10 @@ class CupsPrintersManager : public KeyedService {
   // Classes of printers tracked.  See doc/cups_printer_management.md for
   // details on what these mean.
   enum PrinterClass {
-    kConfigured,
     kEnterprise,
     kAutomatic,
     kDiscovered,
+    kSaved,
     kNumPrinterClasses
   };
 
@@ -45,9 +45,13 @@ class CupsPrintersManager : public KeyedService {
    public:
     // The list of printers in this class has changed to the given printers.
     virtual void OnPrintersChanged(PrinterClass printer_class,
-                                   const std::vector<Printer>& printers) = 0;
+                                   const std::vector<Printer>& printers) {}
+    // It is called exactly once for each observer. It means that the
+    // subsystem for enterprise printers is initialized. When an observer is
+    // being registered after the subsystem's initialization, this call is
+    // scheduled immediately in AddObserver method.
+    virtual void OnEnterprisePrintersInitialized() {}
 
-   protected:
     virtual ~Observer() = default;
   };
 
@@ -80,27 +84,27 @@ class CupsPrintersManager : public KeyedService {
   virtual void RemoveUnavailablePrinters(
       std::vector<Printer>* printers) const = 0;
 
-  // Update or save a printer as a configured printer.  If this is the same as
-  // an existing configured printer, the entry will be updated.  If the printer
-  // appears in a class other than configured, it will be moved to the
-  // configured class.
-  virtual void UpdateConfiguredPrinter(const Printer& printer) = 0;
+  // Update or save a printer as a saved printer.  If this is the same as
+  // an existing saved printer, the entry will be updated.  If the printer
+  // appears in a class other than saved, it will be moved to the
+  // saved class.
+  virtual void UpdateSavedPrinter(const Printer& printer) = 0;
 
-  // Remove the configured printer with the given id.  This is a NOP if
-  // the printer_id is not that of a configured printer.
-  virtual void RemoveConfiguredPrinter(const std::string& printer_id) = 0;
+  // Remove the saved printer with the given id.  This is a NOP if
+  // the printer_id is not that of a saved printer.
+  virtual void RemoveSavedPrinter(const std::string& printer_id) = 0;
 
-  // Add or remove observers.  Observers do not need to be on the same
+  // Add or remove observers.  Observers must be on the same
   // sequence as the CupsPrintersManager.  Callbacks for a given observer
-  // will be on the same sequence as was used to call AddObserver().
+  // will be on the same sequence as the CupsPrintersManager.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
   // Record that the given printers has been installed in CUPS for usage.  If
-  // |printer| is not a configured or enterprise printer, this will have the
-  // side effect of moving |printer| into the configured class.
+  // |printer| is not a saved or enterprise printer, this will have the
+  // side effect of moving |printer| into the saved class.
   // Parameter |is_automatic| should be set to true if the printer was
-  // configured automatically (without requesting additional information
+  // saved automatically (without requesting additional information
   // from the user).
   virtual void PrinterInstalled(const Printer& printer, bool is_automatic) = 0;
 
@@ -109,8 +113,8 @@ class CupsPrintersManager : public KeyedService {
   virtual bool IsPrinterInstalled(const Printer& printer) const = 0;
 
   // Look for a printer with the given id in any class.  Returns a copy of the
-  // printer if found, null if not found.
-  virtual std::unique_ptr<Printer> GetPrinter(const std::string& id) const = 0;
+  // printer if found, base::nullopt if not found.
+  virtual base::Optional<Printer> GetPrinter(const std::string& id) const = 0;
 
   // Log an event that the user started trying to set up the given printer,
   // but setup was not completed for some reason.

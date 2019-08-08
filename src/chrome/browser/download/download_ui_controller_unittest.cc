@@ -254,6 +254,9 @@ DownloadUIControllerTest::CreateMockInProgressDownload() {
   EXPECT_CALL(*item, IsTemporary()).WillRepeatedly(Return(false));
   EXPECT_CALL(*item, GetDownloadCreationType())
       .WillRepeatedly(Return(download::DownloadItem::TYPE_ACTIVE_DOWNLOAD));
+  EXPECT_CALL(*item, IsSavePackageDownload()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*item, GetOriginalMimeType())
+      .WillRepeatedly(Return(std::string()));
   content::DownloadItemUtils::AttachInfo(item.get(), browser_context(),
                                          nullptr);
 
@@ -384,7 +387,6 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_HistoryDownload) {
   EXPECT_FALSE(notified_item());
 
   // Resume the download, and it should update the UI.
-  EXPECT_CALL(*item, GetOriginalMimeType());
   EXPECT_CALL(*item, GetState())
       .WillRepeatedly(Return(download::DownloadItem::IN_PROGRESS));
   item->NotifyObserversDownloadUpdated();

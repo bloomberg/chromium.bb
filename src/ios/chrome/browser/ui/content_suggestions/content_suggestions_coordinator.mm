@@ -9,6 +9,7 @@
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
 #include "components/ntp_tiles/most_visited_sites.h"
+#include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
@@ -123,8 +124,7 @@
                                self.browserState)
          urlLoadingService:urlLoadingService
                 logoVendor:ios::GetChromeBrowserProvider()->CreateLogoVendor(
-                               self.browserState,
-                               urlLoadingService->GetUrlLoader())];
+                               self.browserState)];
 
   BOOL voiceSearchEnabled = ios::GetChromeBrowserProvider()
                                 ->GetVoiceSearchProvider()

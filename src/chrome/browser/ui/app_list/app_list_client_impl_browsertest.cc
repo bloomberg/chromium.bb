@@ -234,8 +234,7 @@ IN_PROC_BROWSER_TEST_F(AppListClientSearchResultsBrowserTest,
 
   AppListModelUpdater* model_updater = test::GetModelUpdater(client);
   ASSERT_TRUE(model_updater);
-  app_list::SearchController* search_controller =
-      client->GetSearchControllerForTest();
+  app_list::SearchController* search_controller = client->search_controller();
   ASSERT_TRUE(search_controller);
 
   // Install the extension.

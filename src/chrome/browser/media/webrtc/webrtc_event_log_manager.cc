@@ -393,12 +393,15 @@ void WebRtcEventLogManager::StartRemoteLogging(
 
   if (!browser_context) {
     // RPH died before processing of this notification.
-    error = kStartRemoteLoggingFailureGeneric;
+    UmaRecordWebRtcEventLoggingApi(WebRtcEventLoggingApiUma::kDeadRph);
+    error = kStartRemoteLoggingFailureDeadRenderProcessHost;
   } else if (!IsRemoteLoggingAllowedForBrowserContext(browser_context)) {
+    UmaRecordWebRtcEventLoggingApi(WebRtcEventLoggingApiUma::kFeatureDisabled);
     error = kStartRemoteLoggingFailureFeatureDisabled;
   } else if (browser_context->IsOffTheRecord()) {
     // Feature disable in incognito. Since the feature can be disabled for
     // non-incognito sessions, this should not expose incognito mode.
+    UmaRecordWebRtcEventLoggingApi(WebRtcEventLoggingApiUma::kIncognito);
     error = kStartRemoteLoggingFailureFeatureDisabled;
   }
 

@@ -56,6 +56,10 @@
         color: inherit;
       }
 
+      #slotted-content {
+        @apply --cr-radio-button-slot;
+      }
+
       .disc-border,
       .disc,
       .disc-wrapper,
@@ -84,6 +88,10 @@
 
       :host([checked]) .disc-border {
         border-color: var(--cr-radio-button-checked-color);
+      }
+
+      #button:focus {
+        outline: none;
       }
 
       .disc {

@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.top.ActionModeController.ActionBarDelegate;
@@ -321,6 +322,34 @@ public class BottomSheet
         }
 
         /**
+         * @return Whether this content owns the scrim lifecycle. If false, a default scrim will
+         *         be displayed behind the sheet when this content is shown.
+         */
+        default boolean hasCustomScrimLifecycle() {
+            return false;
+        }
+
+        /**
+         * Set a {@link ContentSizeListener} that should be notified when the size of the content
+         * has changed. This will be called only if {@link #wrapContentEnabled()} returns {@code
+         * true}. Note that you need to implement this method only if the content view height
+         * changes are animated.
+         *
+         * @return Whether the listener was correctly set.
+         */
+        default boolean setContentSizeListener(@Nullable ContentSizeListener listener) {
+            return false;
+        }
+
+        /**
+         * @return Whether the sheet should be hidden when it is in the PEEK state and the user
+         *         scrolls down the page.
+         */
+        default boolean hideOnScroll() {
+            return true;
+        }
+
+        /**
          * @return The resource id of the content description for the bottom sheet. This is
          *         generally the name of the feature/content that is showing. 'Swipe down to close.'
          *         will be automatically appended after the content description.
@@ -344,6 +373,12 @@ public class BottomSheet
          *         typically the name of your feature followed by 'closed'.
          */
         int getSheetClosedAccessibilityStringId();
+    }
+
+    /** Interface to listen when the size of a BottomSheetContent changes. */
+    public interface ContentSizeListener {
+        /** Called when the size of the view has changed. */
+        void onSizeChanged(int width, int height, int oldWidth, int oldHeight);
     }
 
     /**
@@ -464,6 +499,13 @@ public class BottomSheet
         return mActionBarDelegate;
     }
 
+    /**
+     * @return Whether the sheet is in the process of closing.
+     */
+    public boolean isClosing() {
+        return mSettleAnimator != null && mTargetState == SheetState.HIDDEN;
+    }
+
     @Override
     public boolean onInterceptTouchEvent(MotionEvent e) {
         // If touch is disabled, act like a black hole and consume touch events without doing
@@ -502,7 +544,10 @@ public class BottomSheet
         int heightSize = MeasureSpec.getSize(heightMeasureSpec);
         assert heightSize != 0;
         int height = heightSize + mToolbarShadowHeight;
-        super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
+        int mode = mSheetContent != null && mSheetContent.wrapContentEnabled()
+                ? MeasureSpec.AT_MOST
+                : MeasureSpec.EXACTLY;
+        super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(height, mode));
     }
 
     /**
@@ -529,7 +574,7 @@ public class BottomSheet
                 (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_content);
         mBottomSheetContentContainer.setBottomSheet(this);
         mBottomSheetContentContainer.setBackgroundColor(
-                ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color));
+                ApiCompatibilityUtils.getColor(getResources(), R.color.sheet_bg_color));
 
         mDpToPx = mActivity.getResources().getDisplayMetrics().density;
 
@@ -753,7 +798,13 @@ public class BottomSheet
 
     @Override
     public float getMaxOffsetPx() {
-        return getFullRatio() * mContainerHeight;
+        float maxOffset = getFullRatio() * mContainerHeight;
+        if (mSheetContent != null && mSheetContent.wrapContentEnabled()) {
+            ensureContentDesiredHeightIsComputed();
+            return Math.min(maxOffset, mContentDesiredHeight + mToolbarShadowHeight);
+        }
+
+        return maxOffset;
     }
 
     /**
@@ -767,8 +818,9 @@ public class BottomSheet
         // If the desired content is already showing, do nothing.
         if (mSheetContent == content) return;
 
-        // Remove this as listener from previous content layout changes.
+        // Remove this as listener from previous content layout and size changes.
         if (mSheetContent != null) {
+            mSheetContent.setContentSizeListener(null);
             mSheetContent.getContentView().removeOnLayoutChangeListener(this);
         }
 
@@ -806,7 +858,7 @@ public class BottomSheet
 
         // Temporarily make the background of the toolbar holder a solid color so the transition
         // doesn't appear to show a hole in the toolbar.
-        int colorId = R.color.modern_primary_color;
+        int colorId = R.color.sheet_bg_color;
         if (!mIsSheetOpen) {
             // If the sheet is closed, the bottom sheet content container is invisible, so
             // background color is needed on the toolbar holder to prevent a blank rectangle from
@@ -933,9 +985,8 @@ public class BottomSheet
         mIsSheetOpen = true;
 
         // Make sure the toolbar is visible before expanding the sheet.
-        Tab tab = getActiveTab();
-        if (isToolbarAndroidViewHidden() && tab != null) {
-            tab.updateBrowserControlsState(BrowserControlsState.SHOWN, false);
+        if (isToolbarAndroidViewHidden()) {
+            TabBrowserControlsState.update(getActiveTab(), BrowserControlsState.SHOWN, false);
         }
 
         mBottomSheetContentContainer.setVisibility(View.VISIBLE);
@@ -1028,6 +1079,8 @@ public class BottomSheet
      * @return Get the height in px that the peeking bar is offset due to the browser controls.
      */
     private float getOffsetFromBrowserControls() {
+        if (mSheetContent != null && !mSheetContent.hideOnScroll()) return 0;
+
         float peekHeight = getPeekRatio() * mContainerHeight;
         return peekHeight * mFullscreenManager.getBrowserControlHiddenRatio();
     }
@@ -1359,17 +1412,22 @@ public class BottomSheet
     public float getSheetHeightForState(@SheetState int state) {
         if (mSheetContent != null && mSheetContent.wrapContentEnabled()
                 && state == SheetState.FULL) {
-            if (mContentDesiredHeight == HEIGHT_UNSPECIFIED) {
-                mSheetContent.getContentView().measure(
-                        MeasureSpec.makeMeasureSpec((int) mContainerWidth, MeasureSpec.EXACTLY),
-                        MeasureSpec.makeMeasureSpec((int) mContainerHeight, MeasureSpec.AT_MOST));
-                mContentDesiredHeight =
-                        mSheetContent.getContentView().getMeasuredHeight() + mToolbarShadowHeight;
-            }
-            return mContentDesiredHeight;
+            ensureContentDesiredHeightIsComputed();
+            return mContentDesiredHeight + mToolbarShadowHeight;
         }
 
         return getRatioForState(state) * mContainerHeight;
+    }
+
+    private void ensureContentDesiredHeightIsComputed() {
+        if (mContentDesiredHeight != HEIGHT_UNSPECIFIED) {
+            return;
+        }
+
+        mSheetContent.getContentView().measure(
+                MeasureSpec.makeMeasureSpec((int) mContainerWidth, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec((int) mContainerHeight, MeasureSpec.AT_MOST));
+        mContentDesiredHeight = mSheetContent.getContentView().getMeasuredHeight();
     }
 
     private float getRatioForState(int state) {
@@ -1495,14 +1553,16 @@ public class BottomSheet
 
     /**
      * Checks whether the sheet can be moved. It cannot be moved when the activity is in overview
-     * mode, when "find in page" is visible, or when the toolbar is hidden.
+     * mode, when "find in page" is visible, when the toolbar is in the animation to hide, or when
+     * the toolbar is hidden.
      */
     protected boolean canMoveSheet() {
         if (mFindInPageView == null) mFindInPageView = findViewById(R.id.find_toolbar);
         boolean isFindInPageVisible =
                 mFindInPageView != null && mFindInPageView.getVisibility() == View.VISIBLE;
 
-        return !isToolbarAndroidViewHidden() && !isFindInPageVisible;
+        return !isToolbarAndroidViewHidden() && !isFindInPageVisible
+                && mTargetState != SheetState.HIDDEN;
     }
 
     /**
@@ -1513,8 +1573,13 @@ public class BottomSheet
         mSheetContent = content;
 
         if (content != null && content.wrapContentEnabled()) {
-            content.getContentView().addOnLayoutChangeListener(this);
-            ensureContentIsWrapped();
+            // Listen for layout/size changes.
+            if (!content.setContentSizeListener(this::onContentSizeChanged)) {
+                content.getContentView().addOnLayoutChangeListener(this);
+            }
+
+            invalidateContentDesiredHeight();
+            ensureContentIsWrapped(/* animate= */ true);
 
             // HALF state is forbidden when wrapping the content.
             if (mCurrentState == SheetState.HALF) {
@@ -1534,12 +1599,19 @@ public class BottomSheet
     @Override
     public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
             int oldTop, int oldRight, int oldBottom) {
-        ensureContentIsWrapped();
+        invalidateContentDesiredHeight();
+        ensureContentIsWrapped(/* animate= */ true);
     }
 
-    private void ensureContentIsWrapped() {
-        invalidateContentDesiredHeight();
+    /**
+     * Called when the sheet content size changed.
+     */
+    private void onContentSizeChanged(int width, int height, int oldWidth, int oldHeight) {
+        mContentDesiredHeight = height;
+        ensureContentIsWrapped(/* animate= */ false);
+    }
 
+    private void ensureContentIsWrapped(boolean animate) {
         if (mCurrentState == SheetState.HIDDEN || mCurrentState == SheetState.PEEK) return;
 
         // The SCROLLING state is used when animating the sheet height or when the user is swiping
@@ -1547,7 +1619,7 @@ public class BottomSheet
         cancelAnimation();
         if (mCurrentState == SheetState.SCROLLING) return;
 
-        createSettleAnimation(mCurrentState, StateChangeReason.NONE);
+        setSheetState(mCurrentState, animate);
     }
 
     private void invalidateContentDesiredHeight() {

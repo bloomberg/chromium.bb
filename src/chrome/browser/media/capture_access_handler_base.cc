@@ -13,7 +13,7 @@
 #include "extensions/common/extension.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/sha1.h"
+#include "base/hash/sha1.h"
 #endif  // defined(OS_CHROMEOS)
 
 using content::BrowserThread;

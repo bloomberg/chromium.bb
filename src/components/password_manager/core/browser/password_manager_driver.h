@@ -27,7 +27,7 @@ struct PasswordFormFillData;
 namespace password_manager {
 
 class PasswordAutofillManager;
-class PasswordGenerationManager;
+class PasswordGenerationFrameHelper;
 class PasswordManager;
 
 // Interface that allows PasswordManager core code to interact with its driver
@@ -94,8 +94,8 @@ class PasswordManagerDriver
   // Tells the driver to clear previewed password and username fields.
   virtual void ClearPreviewedForm() = 0;
 
-  // Returns the PasswordGenerationManager associated with this instance.
-  virtual PasswordGenerationManager* GetPasswordGenerationManager() = 0;
+  // Returns the PasswordGenerationFrameHelper associated with this instance.
+  virtual PasswordGenerationFrameHelper* GetPasswordGenerationHelper() = 0;
 
   // Returns the PasswordManager associated with this instance.
   virtual PasswordManager* GetPasswordManager() = 0;

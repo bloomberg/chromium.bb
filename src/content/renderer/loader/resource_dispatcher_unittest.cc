@@ -18,11 +18,9 @@
 #include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/public/common/content_features.h"
-#include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/public/renderer/resource_dispatcher_delegate.h"
 #include "content/renderer/loader/navigation_response_override_parameters.h"
@@ -68,8 +66,7 @@ std::string ReadOneChunk(mojo::ScopedDataPipeConsumerHandle* handle) {
 }
 
 std::string GetRequestPeerContextBody(TestRequestPeer::Context* context) {
-  if (base::FeatureList::IsEnabled(blink::features::kResourceLoadViaDataPipe) &&
-      context->body_handle) {
+  if (context->body_handle) {
     context->data += ReadOneChunk(&context->body_handle);
   }
   return context->data;
@@ -78,13 +75,10 @@ std::string GetRequestPeerContextBody(TestRequestPeer::Context* context) {
 }  // namespace
 
 // Sets up the message sender override for the unit test.
-class ResourceDispatcherTest : public testing::TestWithParam<bool>,
+class ResourceDispatcherTest : public testing::Test,
                                public network::mojom::URLLoaderFactory {
  public:
-  ResourceDispatcherTest() : dispatcher_(new ResourceDispatcher()) {
-    scoped_feature_list_.InitWithFeatureState(
-        blink::features::kResourceLoadViaDataPipe, IsResourceLoadViaDataPipe());
-  }
+  ResourceDispatcherTest() : dispatcher_(new ResourceDispatcher()) {}
 
   ~ResourceDispatcherTest() override {
     dispatcher_.reset();
@@ -124,7 +118,7 @@ class ResourceDispatcherTest : public testing::TestWithParam<bool>,
     request->url = GURL(kTestPageUrl);
     request->site_for_cookies = GURL(kTestPageUrl);
     request->referrer_policy = Referrer::GetDefaultReferrerPolicy();
-    request->resource_type = RESOURCE_TYPE_SUB_RESOURCE;
+    request->resource_type = static_cast<int>(ResourceType::kSubResource);
     request->priority = net::LOW;
     request->fetch_request_mode = network::mojom::FetchRequestMode::kNoCors;
     request->fetch_frame_type = network::mojom::RequestContextFrameType::kNone;
@@ -162,10 +156,7 @@ class ResourceDispatcherTest : public testing::TestWithParam<bool>,
     return options;
   }
 
-  static bool IsResourceLoadViaDataPipe() { return GetParam(); }
-
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
   std::vector<std::pair<network::mojom::URLLoaderRequest,
                         network::mojom::URLLoaderClientPtr>>
       loader_and_clients_;
@@ -173,12 +164,8 @@ class ResourceDispatcherTest : public testing::TestWithParam<bool>,
   std::unique_ptr<ResourceDispatcher> dispatcher_;
 };
 
-INSTANTIATE_TEST_SUITE_P(ResourceDispatcherTestP,
-                         ResourceDispatcherTest,
-                         ::testing::Bool());
-
 // Tests the generation of unique request ids.
-TEST_P(ResourceDispatcherTest, MakeRequestID) {
+TEST_F(ResourceDispatcherTest, MakeRequestID) {
   int first_id = ResourceDispatcher::MakeRequestID();
   int second_id = ResourceDispatcher::MakeRequestID();
 
@@ -192,12 +179,7 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
   TestResourceDispatcherDelegate() {}
   ~TestResourceDispatcherDelegate() override {}
 
-  std::unique_ptr<RequestPeer> OnRequestComplete(
-      std::unique_ptr<RequestPeer> current_peer,
-      ResourceType resource_type,
-      int error_code) override {
-    return current_peer;
-  }
+  void OnRequestComplete() override {}
 
   std::unique_ptr<RequestPeer> OnReceivedResponse(
       std::unique_ptr<RequestPeer> current_peer,
@@ -229,23 +211,12 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
       body_handle_ = std::move(body);
     }
 
-    void OnReceivedData(std::unique_ptr<ReceivedData> data) override {
-      data_.append(data->payload(), data->length());
-    }
     void OnTransferSizeUpdated(int transfer_size_diff) override {}
 
     void OnCompletedRequest(
         const network::URLLoaderCompletionStatus& status) override {
       original_peer_->OnReceivedResponse(response_info_);
-      if (!data_.empty()) {
-        DCHECK(!body_handle_);
-        original_peer_->OnReceivedData(
-            std::make_unique<FixedReceivedData>(data_.data(), data_.size()));
-      }
-      if (body_handle_) {
-        DCHECK(data_.empty());
-        original_peer_->OnStartLoadingResponseBody(std::move(body_handle_));
-      }
+      original_peer_->OnStartLoadingResponseBody(std::move(body_handle_));
       original_peer_->OnCompletedRequest(status);
     }
     scoped_refptr<base::TaskRunner> GetTaskRunner() override {
@@ -255,7 +226,6 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
    private:
     std::unique_ptr<RequestPeer> original_peer_;
     network::ResourceResponseInfo response_info_;
-    std::string data_;
     mojo::ScopedDataPipeConsumerHandle body_handle_;
 
     DISALLOW_COPY_AND_ASSIGN(WrapperPeer);
@@ -265,7 +235,7 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestResourceDispatcherDelegate);
 };
 
-TEST_P(ResourceDispatcherTest, DelegateTest) {
+TEST_F(ResourceDispatcherTest, DelegateTest) {
   std::unique_ptr<network::ResourceRequest> request(CreateResourceRequest());
   TestRequestPeer::Context peer_context;
   StartAsync(std::move(request), nullptr, &peer_context);
@@ -312,7 +282,7 @@ TEST_P(ResourceDispatcherTest, DelegateTest) {
   EXPECT_TRUE(peer_context.complete);
 }
 
-TEST_P(ResourceDispatcherTest, CancelDuringCallbackWithWrapperPeer) {
+TEST_F(ResourceDispatcherTest, CancelDuringCallbackWithWrapperPeer) {
   std::unique_ptr<network::ResourceRequest> request(CreateResourceRequest());
   TestRequestPeer::Context peer_context;
   StartAsync(std::move(request), nullptr, &peer_context);
@@ -359,11 +329,11 @@ TEST_P(ResourceDispatcherTest, CancelDuringCallbackWithWrapperPeer) {
   EXPECT_FALSE(peer_context.complete);
 }
 
-TEST_P(ResourceDispatcherTest, Cookies) {
+TEST_F(ResourceDispatcherTest, Cookies) {
   // FIXME
 }
 
-TEST_P(ResourceDispatcherTest, SerializedPostData) {
+TEST_F(ResourceDispatcherTest, SerializedPostData) {
   // FIXME
 }
 
@@ -389,7 +359,7 @@ class TimeConversionTest : public ResourceDispatcherTest {
 };
 
 // TODO(simonjam): Enable this when 10829031 lands.
-TEST_P(TimeConversionTest, DISABLED_ProperlyInitialized) {
+TEST_F(TimeConversionTest, DISABLED_ProperlyInitialized) {
   network::ResourceResponseHead response_head;
   response_head.request_start = base::TimeTicks::FromInternalValue(5);
   response_head.response_start = base::TimeTicks::FromInternalValue(15);
@@ -408,7 +378,7 @@ TEST_P(TimeConversionTest, DISABLED_ProperlyInitialized) {
             response_info().load_timing.connect_timing.connect_start);
 }
 
-TEST_P(TimeConversionTest, PartiallyInitialized) {
+TEST_F(TimeConversionTest, PartiallyInitialized) {
   network::ResourceResponseHead response_head;
   response_head.request_start = base::TimeTicks::FromInternalValue(5);
   response_head.response_start = base::TimeTicks::FromInternalValue(15);
@@ -420,7 +390,7 @@ TEST_P(TimeConversionTest, PartiallyInitialized) {
             response_info().load_timing.connect_timing.dns_start);
 }
 
-TEST_P(TimeConversionTest, NotInitialized) {
+TEST_F(TimeConversionTest, NotInitialized) {
   network::ResourceResponseHead response_head;
 
   PerformTest(response_head);
@@ -479,7 +449,7 @@ class CompletionTimeConversionTest : public ResourceDispatcherTest {
   TestRequestPeer::Context peer_context_;
 };
 
-TEST_P(CompletionTimeConversionTest, NullCompletionTimestamp) {
+TEST_F(CompletionTimeConversionTest, NullCompletionTimestamp) {
   const auto remote_request_start =
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(4);
 
@@ -488,7 +458,7 @@ TEST_P(CompletionTimeConversionTest, NullCompletionTimestamp) {
   EXPECT_EQ(base::TimeTicks(), completion_time());
 }
 
-TEST_P(CompletionTimeConversionTest, RemoteRequestStartIsUnavailable) {
+TEST_F(CompletionTimeConversionTest, RemoteRequestStartIsUnavailable) {
   base::TimeTicks begin = base::TimeTicks::Now();
 
   const auto remote_completion_time =
@@ -501,7 +471,7 @@ TEST_P(CompletionTimeConversionTest, RemoteRequestStartIsUnavailable) {
   EXPECT_LE(completion_time(), end);
 }
 
-TEST_P(CompletionTimeConversionTest, Convert) {
+TEST_F(CompletionTimeConversionTest, Convert) {
   const auto remote_request_start =
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(4);
 

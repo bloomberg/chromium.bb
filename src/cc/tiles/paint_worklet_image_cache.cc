@@ -5,6 +5,7 @@
 #include "cc/tiles/paint_worklet_image_cache.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "cc/paint/paint_worklet_layer_painter.h"
 
 namespace cc {
@@ -14,6 +15,9 @@ class PaintWorkletTaskImpl : public TileTask {
   PaintWorkletTaskImpl(PaintWorkletImageCache* cache,
                        const PaintImage& paint_image)
       : TileTask(true), cache_(cache), paint_image_(paint_image) {}
+  PaintWorkletTaskImpl(const PaintWorkletTaskImpl&) = delete;
+
+  PaintWorkletTaskImpl& operator=(const PaintWorkletTaskImpl&) = delete;
 
   // Overridden from Task:
   void RunOnWorkerThread() override { cache_->PaintImageInTask(paint_image_); }
@@ -27,8 +31,6 @@ class PaintWorkletTaskImpl : public TileTask {
  private:
   PaintWorkletImageCache* cache_;
   PaintImage paint_image_;
-
-  DISALLOW_COPY_AND_ASSIGN(PaintWorkletTaskImpl);
 };
 
 PaintWorkletImageCache::PaintWorkletImageCache() {}
@@ -40,27 +42,57 @@ PaintWorkletImageCache::~PaintWorkletImageCache() {
 
 void PaintWorkletImageCache::SetPaintWorkletLayerPainter(
     std::unique_ptr<PaintWorkletLayerPainter> painter) {
+  DCHECK(!painter_);
   painter_ = std::move(painter);
 }
 
 scoped_refptr<TileTask> PaintWorkletImageCache::GetTaskForPaintWorkletImage(
     const DrawImage& image) {
+  // As described in crbug.com/939192, the |painter_| could be null, and we
+  // should not create any raster task.
+  if (!painter_)
+    return nullptr;
+  DCHECK(image.paint_image().IsPaintWorklet());
   return base::MakeRefCounted<PaintWorkletTaskImpl>(this, image.paint_image());
 }
 
-// TODO(xidachen): dispatch the work to a worklet thread, invoke JS callback.
-// Do check the cache first. If there is already a cache entry for this input,
-// then there is no need to call the Paint() function.
+// TODO(xidachen): we might need to consider the animated property value and the
+// PaintWorkletInput to decide whether we need to call Paint() function or not.
 void PaintWorkletImageCache::PaintImageInTask(const PaintImage& paint_image) {
+  // TODO(crbug.com/939009): When creating a TileTask for a given PaintImage at
+  // GetTaskForPaintWorkletImage, we should not create a new TileTask if there
+  // is already a TileTask for this PaintImage.
+  {
+    base::AutoLock hold(records_lock_);
+    if (records_.find(paint_image.paint_worklet_input()) != records_.end())
+      return;
+  }
+  // Because the compositor could be waiting on the lock in NotifyPrepareTiles,
+  // we unlock here such that the compositor won't be blocked on potentially
+  // slow Paint function.
   // TODO(xidachen): ensure that the canvas operations in the PaintRecord
   // matches the PaintGeneratedImage::Draw.
-  sk_sp<PaintRecord> record = painter_->Paint();
-  records_[paint_image.paint_worklet_input()] =
-      PaintWorkletImageCacheValue(std::move(record), 0);
+  sk_sp<PaintRecord> record =
+      painter_->Paint(paint_image.paint_worklet_input());
+  {
+    base::AutoLock hold(records_lock_);
+    // It is possible for two or more threads to both pass through the first
+    // lock and arrive here. To avoid ref-count issues caused by potential
+    // racing among threads, we use insert such that if an entry already exists
+    // for a particular key, the value won't be overridden.
+    records_.insert(
+        std::make_pair(paint_image.paint_worklet_input(),
+                       PaintWorkletImageCacheValue(std::move(record), 0)));
+  }
 }
 
-std::pair<PaintRecord*, base::OnceCallback<void()>>
+std::pair<sk_sp<PaintRecord>, base::OnceCallback<void()>>
 PaintWorkletImageCache::GetPaintRecordAndRef(PaintWorkletInput* input) {
+  base::AutoLock hold(records_lock_);
+  // If the |painter_| was null when GetTaskForPaintWorkletImage was called
+  // there will be no cache entry for this input.
+  if (records_.find(input) == records_.end())
+    return std::make_pair(sk_make_sp<PaintOpBuffer>(), base::DoNothing::Once());
   records_[input].used_ref_count++;
   records_[input].num_of_frames_not_accessed = 0u;
   // The PaintWorkletImageCache object lives as long as the LayerTreeHostImpl,
@@ -69,7 +101,7 @@ PaintWorkletImageCache::GetPaintRecordAndRef(PaintWorkletInput* input) {
   auto callback =
       base::BindOnce(&PaintWorkletImageCache::DecrementCacheRefCount,
                      base::Unretained(this), base::Unretained(input));
-  return std::make_pair(records_[input].record.get(), std::move(callback));
+  return std::make_pair(records_[input].record, std::move(callback));
 }
 
 void PaintWorkletImageCache::SetNumOfFramesToPurgeCacheEntryForTest(
@@ -78,6 +110,7 @@ void PaintWorkletImageCache::SetNumOfFramesToPurgeCacheEntryForTest(
 }
 
 void PaintWorkletImageCache::DecrementCacheRefCount(PaintWorkletInput* input) {
+  base::AutoLock hold(records_lock_);
   auto it = records_.find(input);
   DCHECK(it != records_.end());
 
@@ -87,12 +120,14 @@ void PaintWorkletImageCache::DecrementCacheRefCount(PaintWorkletInput* input) {
 }
 
 void PaintWorkletImageCache::NotifyDidPrepareTiles() {
+  base::AutoLock hold(records_lock_);
   base::EraseIf(
       records_,
       [this](
           const std::pair<PaintWorkletInput*, PaintWorkletImageCacheValue>& t) {
         return t.second.num_of_frames_not_accessed >=
-               num_of_frames_to_purge_cache_entry_;
+                   num_of_frames_to_purge_cache_entry_ &&
+               t.second.used_ref_count == 0;
       });
   for (auto& pair : records_)
     pair.second.num_of_frames_not_accessed++;

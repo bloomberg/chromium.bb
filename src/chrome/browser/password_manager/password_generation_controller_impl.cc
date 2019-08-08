@@ -15,7 +15,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/signatures_util.h"
-#include "components/password_manager/core/browser/password_generation_manager.h"
+#include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 
@@ -73,31 +73,32 @@ struct PasswordGenerationControllerImpl::GenerationElementData {
   uint32_t max_password_length;
 };
 
-void PasswordGenerationControllerImpl::OnAutomaticGenerationStatusChanged(
-    bool available,
-    const base::Optional<
-        autofill::password_generation::PasswordGenerationUIData>& ui_data,
+void PasswordGenerationControllerImpl::OnAutomaticGenerationAvailable(
+    const autofill::password_generation::PasswordGenerationUIData& ui_data,
     const base::WeakPtr<password_manager::PasswordManagerDriver>& driver) {
   target_frame_driver_ = driver;
-  if (available) {
-    DCHECK(ui_data.has_value());
-    generation_element_data_ = std::make_unique<GenerationElementData>(
-        ui_data.value().password_form,
-        autofill::CalculateFormSignature(
-            ui_data.value().password_form.form_data),
-        autofill::CalculateFieldSignatureByNameAndType(
-            ui_data.value().generation_element, "password"),
-        ui_data.value().max_length);
-  } else {
-    generation_element_data_.reset();
-  }
+  generation_element_data_ = std::make_unique<GenerationElementData>(
+      ui_data.password_form,
+      autofill::CalculateFormSignature(ui_data.password_form.form_data),
+      autofill::CalculateFieldSignatureByNameAndType(ui_data.generation_element,
+                                                     "password"),
+      ui_data.max_length);
+
   if (!manual_filling_controller_) {
     manual_filling_controller_ =
         ManualFillingController::GetOrCreate(web_contents_);
   }
 
   DCHECK(manual_filling_controller_);
-  manual_filling_controller_->OnAutomaticGenerationStatusChanged(available);
+  manual_filling_controller_->OnAutomaticGenerationStatusChanged(true);
+}
+
+void PasswordGenerationControllerImpl::OnGenerationElementLostFocus() {
+  if (manual_filling_controller_ && generation_element_data_) {
+    manual_filling_controller_->OnAutomaticGenerationStatusChanged(false);
+  }
+  target_frame_driver_ = nullptr;
+  generation_element_data_.reset();
 }
 
 void PasswordGenerationControllerImpl::OnGenerationRequested() {
@@ -106,7 +107,7 @@ void PasswordGenerationControllerImpl::OnGenerationRequested() {
   dialog_view_ = create_dialog_factory_.Run(this);
   uint32_t spec_priority = 0;
   base::string16 password =
-      target_frame_driver_->GetPasswordGenerationManager()->GeneratePassword(
+      target_frame_driver_->GetPasswordGenerationHelper()->GeneratePassword(
           web_contents_->GetLastCommittedURL().GetOrigin(),
           generation_element_data_->form_signature,
           generation_element_data_->field_signature,
@@ -116,15 +117,17 @@ void PasswordGenerationControllerImpl::OnGenerationRequested() {
         ->ReportSpecPriorityForGeneratedPassword(generation_element_data_->form,
                                                  spec_priority);
   }
-  dialog_view_->Show(password);
+  dialog_view_->Show(password, std::move(target_frame_driver_));
+  target_frame_driver_ = nullptr;
 }
 
 void PasswordGenerationControllerImpl::GeneratedPasswordAccepted(
-    const base::string16& password) {
-  if (!target_frame_driver_)
+    const base::string16& password,
+    base::WeakPtr<password_manager::PasswordManagerDriver> driver) {
+  if (!driver)
     return;
   RecordGenerationDialogDismissal(true);
-  target_frame_driver_->GeneratedPasswordAccepted(password);
+  driver->GeneratedPasswordAccepted(password);
   dialog_view_.reset();
 }
 

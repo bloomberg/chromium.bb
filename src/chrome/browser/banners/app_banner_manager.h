@@ -18,25 +18,27 @@
 #include "chrome/browser/installable/installable_ambient_badge_infobar_delegate.h"
 #include "chrome/browser/installable/installable_logging.h"
 #include "chrome/browser/installable/installable_manager.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "content/public/browser/media_player_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
+#include "url/gurl.h"
 
 enum class WebappInstallSource;
 class InstallableManager;
 class SkBitmap;
-struct WebApplicationInfo;
 
 namespace content {
 class RenderFrameHost;
 class WebContents;
 }  // namespace content
 
-// This forward declaration exists solely for the DidFinishCreatingBookmarkApp
+// This forward declaration exists solely for the DidFinishCreatingWebApp
 // callback, implemented and called on desktop platforms only.
-namespace extensions {
-class Extension;
+namespace web_app {
+enum class InstallResultCode;
 }
 
 namespace banners {
@@ -145,16 +147,16 @@ class AppBannerManager : public content::WebContentsObserver,
       content::WebContents* web_contents);
 
   // Returns whether installability checks have passed (e.g. having a service
-  // worker fetch event).
-  bool IsInstallable() const;
+  // worker fetch event) or have passed previously within the current manifest
+  // scope.
+  bool IsProbablyInstallable() const;
 
   // Each successful installability check gets to show one animation prompt,
   // this returns and consumes the animation prompt if it is available.
   bool MaybeConsumeInstallAnimation();
 
-  // Requests an app banner. If |is_debug_mode| is true, any failure in the
-  // pipeline will be reported to the devtools console.
-  virtual void RequestAppBanner(const GURL& validated_url, bool is_debug_mode);
+  // Requests an app banner.
+  virtual void RequestAppBanner(const GURL& validated_url);
 
   // Informs the page that it has been installed with appinstalled event and
   // performs logging related to the app installation. Appinstalled event is
@@ -175,16 +177,15 @@ class AppBannerManager : public content::WebContentsObserver,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Overridden on desktop platforms. Called to initiate the bookmark app
+  // Overridden on desktop platforms. Called to initiate the web app
   // install. Not used on Android.
-  virtual void CreateBookmarkApp(WebappInstallSource install_source) {}
+  virtual void CreateWebApp(WebappInstallSource install_source) {}
 
   // Overridden and passed through base::Bind on desktop platforms. Called when
-  // the bookmark app install initiated by a banner has completed. Not used on
+  // the web app install initiated by a banner has completed. Not used on
   // Android.
-  virtual void DidFinishCreatingBookmarkApp(
-      const extensions::Extension* extension,
-      const WebApplicationInfo& web_app_info) {}
+  virtual void DidFinishCreatingWebApp(const web_app::AppId& app_id,
+                                       web_app::InstallResultCode code) {}
 
   // Overridden and passed through base::Bind on Android. Called when the
   // download of a native app's icon is complete, as native banners use an icon
@@ -224,13 +225,12 @@ class AppBannerManager : public content::WebContentsObserver,
   // alerting websites that a banner is about to be created.
   virtual std::string GetBannerType();
 
-  // Returns true if |has_sufficient_engagement_| is true or IsDebugMode()
-  // returns true.
+  // Returns true if |has_sufficient_engagement_| is true or
+  // ShouldBypassEngagementChecks() returns true.
   bool HasSufficientEngagement() const;
 
-  // Returns true if |triggered_by_devtools_| is true or the
-  // kBypassAppBannerEngagementChecks flag is set.
-  bool IsDebugMode() const;
+  // Returns true if the kBypassAppBannerEngagementChecks flag is set.
+  bool ShouldBypassEngagementChecks() const;
 
   // Returns true if the webapp at |start_url| has already been installed, or
   // should be considered installed. On Android, we rely on a heuristic that
@@ -294,10 +294,10 @@ class AppBannerManager : public content::WebContentsObserver,
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
   void MediaStartedPlaying(const MediaPlayerInfo& media_info,
-                           const MediaPlayerId& id) override;
+                           const content::MediaPlayerId& id) override;
   void MediaStoppedPlaying(
       const MediaPlayerInfo& media_info,
-      const MediaPlayerId& id,
+      const content::MediaPlayerId& id,
       WebContentsObserver::MediaStoppedReason reason) override;
   void WebContentsDestroyed() override;
 
@@ -369,6 +369,7 @@ class AppBannerManager : public content::WebContentsObserver,
   // Returns a status code based on the current state, to log when terminating.
   InstallableStatusCode TerminationCode() const;
 
+  bool IsInstallable() const;
   void SetInstallable(Installable installable);
 
   // Fetches the data required to display a banner for the current page.
@@ -377,7 +378,7 @@ class AppBannerManager : public content::WebContentsObserver,
   // We do not want to trigger a banner when the manager is attached to
   // a WebContents that is playing video. Banners triggering on a site in the
   // background will appear when the tab is reactivated.
-  std::vector<MediaPlayerId> active_media_players_;
+  std::vector<content::MediaPlayerId> active_media_players_;
 
   // Mojo bindings and interface pointers.
   mojo::Binding<blink::mojom::AppBannerService> binding_;
@@ -388,12 +389,13 @@ class AppBannerManager : public content::WebContentsObserver,
   bool has_sufficient_engagement_;
   bool load_finished_;
 
-  // Whether the current flow was begun via devtools.
-  bool triggered_by_devtools_;
-
   std::unique_ptr<StatusReporter> status_reporter_;
   bool install_animation_pending_;
   Installable installable_;
+
+  // The scope of the most recent installability check if successful otherwise
+  // invalid.
+  GURL last_installable_scope_;
 
   base::ObserverList<Observer, true> observer_list_;
 

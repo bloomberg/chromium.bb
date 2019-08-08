@@ -24,12 +24,17 @@ void RegisterLocalState(PrefRegistrySimple* registry);
 void RegisterScreenshotPrefs(PrefRegistrySimple* registry);
 
 // Register all prefs that will be used via a PrefService attached to a user
-// Profile.
+// Profile using the locale of |g_browser_process|.
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+// Register all prefs that will be used via a PrefService attached to a user
+// Profile with the given |locale|.
+void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
+                              const std::string& locale);
 
 #if defined(OS_CHROMEOS)
 // Register all prefs that will be used via a PrefService attached to the login
-// Profile.
+// Profile using the locale of |g_browser_process|.
 void RegisterLoginProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 #endif
 

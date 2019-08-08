@@ -30,7 +30,7 @@
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/platform/modules/installation/installation.mojom.h"
+#include "third_party/blink/public/mojom/installation/installation.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if defined(OS_ANDROID)
@@ -165,22 +165,11 @@ class NullStatusReporter : public banners::AppBannerManager::StatusReporter {
 
 namespace banners {
 
-void AppBannerManager::RequestAppBanner(const GURL& validated_url,
-                                        bool is_debug_mode) {
-  // The only time we should start the pipeline while it is already running is
-  // if it's been triggered from devtools.
-  if (state_ != State::INACTIVE) {
-    DCHECK(is_debug_mode);
-    weak_factory_.InvalidateWeakPtrs();
-    ResetBindings();
-  }
+void AppBannerManager::RequestAppBanner(const GURL& validated_url) {
+  DCHECK_EQ(State::INACTIVE, state_);
 
   UpdateState(State::ACTIVE);
-  triggered_by_devtools_ = is_debug_mode;
-
-  // We only need to use TrackingStatusReporter if we aren't in debug mode
-  // (this avoids skew from testing).
-  if (IsDebugMode())
+  if (ShouldBypassEngagementChecks())
     status_reporter_ = std::make_unique<ConsoleStatusReporter>(web_contents());
   else
     status_reporter_ = std::make_unique<TrackingStatusReporter>();
@@ -191,7 +180,7 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url,
   UpdateState(State::FETCHING_MANIFEST);
   manager_->GetData(
       ParamsToGetManifest(),
-      base::Bind(&AppBannerManager::OnDidGetManifest, GetWeakPtr()));
+      base::BindOnce(&AppBannerManager::OnDidGetManifest, GetWeakPtr()));
 }
 
 void AppBannerManager::OnInstall(bool is_native,
@@ -243,7 +232,6 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
       binding_(this),
       has_sufficient_engagement_(false),
       load_finished_(false),
-      triggered_by_devtools_(false),
       status_reporter_(std::make_unique<NullStatusReporter>()),
       install_animation_pending_(false),
       installable_(Installable::UNKNOWN),
@@ -256,7 +244,7 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
 AppBannerManager::~AppBannerManager() { }
 
 bool AppBannerManager::CheckIfShouldShowBanner() {
-  if (IsDebugMode())
+  if (ShouldBypassEngagementChecks())
     return true;
 
   InstallableStatusCode code = ShouldShowBannerCode();
@@ -298,13 +286,12 @@ std::string AppBannerManager::GetBannerType() {
 
 
 bool AppBannerManager::HasSufficientEngagement() const {
-  return has_sufficient_engagement_ || IsDebugMode();
+  return has_sufficient_engagement_ || ShouldBypassEngagementChecks();
 }
 
-bool AppBannerManager::IsDebugMode() const {
-  return triggered_by_devtools_ ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kBypassAppBannerEngagementChecks);
+bool AppBannerManager::ShouldBypassEngagementChecks() const {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kBypassAppBannerEngagementChecks);
 }
 
 bool AppBannerManager::IsWebAppConsideredInstalled(
@@ -317,8 +304,8 @@ bool AppBannerManager::IsWebAppConsideredInstalled(
 
 void AppBannerManager::OnDidGetManifest(const InstallableData& data) {
   UpdateState(State::ACTIVE);
-  if (data.error_code != NO_ERROR_DETECTED) {
-    Stop(data.error_code);
+  if (!data.errors.empty()) {
+    Stop(data.errors[0]);
     return;
   }
 
@@ -336,8 +323,7 @@ InstallableParams AppBannerManager::ParamsToPerformInstallableCheck() {
   params.valid_primary_icon = true;
   params.valid_manifest = true;
   params.has_worker = true;
-  // Don't wait for the service worker if this was triggered from devtools.
-  params.wait_for_worker = !triggered_by_devtools_;
+  params.wait_for_worker = true;
 
   return params;
 }
@@ -348,9 +334,10 @@ void AppBannerManager::PerformInstallableCheck() {
 
   // Fetch and verify the other required information.
   UpdateState(State::PENDING_INSTALLABLE_CHECK);
-  manager_->GetData(ParamsToPerformInstallableCheck(),
-                    base::Bind(&AppBannerManager::OnDidPerformInstallableCheck,
-                               GetWeakPtr()));
+  manager_->GetData(
+      ParamsToPerformInstallableCheck(),
+      base::BindOnce(&AppBannerManager::OnDidPerformInstallableCheck,
+                     GetWeakPtr()));
 }
 
 void AppBannerManager::OnDidPerformInstallableCheck(
@@ -359,15 +346,15 @@ void AppBannerManager::OnDidPerformInstallableCheck(
   if (data.has_worker && data.valid_manifest)
     TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_REQUESTED);
 
-  SetInstallable(data.error_code == NO_ERROR_DETECTED
-                     ? Installable::INSTALLABLE_YES
-                     : Installable::INSTALLABLE_NO);
+  auto error = data.errors.empty() ? NO_ERROR_DETECTED : data.errors[0];
+  SetInstallable(error == NO_ERROR_DETECTED ? Installable::INSTALLABLE_YES
+                                            : Installable::INSTALLABLE_NO);
 
-  if (data.error_code != NO_ERROR_DETECTED) {
-    if (data.error_code == NO_MATCHING_SERVICE_WORKER)
+  if (error != NO_ERROR_DETECTED) {
+    if (error == NO_MATCHING_SERVICE_WORKER)
       TrackDisplayEvent(DISPLAY_EVENT_LACKS_SERVICE_WORKER);
 
-    Stop(data.error_code);
+    Stop(error);
     return;
   }
 
@@ -428,9 +415,10 @@ void AppBannerManager::ResetCurrentPageData() {
 }
 
 void AppBannerManager::Terminate() {
-  if (state_ == State::PENDING_PROMPT)
+  if (state_ == State::PENDING_PROMPT) {
     TrackBeforeInstallEvent(
         BEFORE_INSTALL_EVENT_PROMPT_NOT_CALLED_AFTER_PREVENT_DEFAULT);
+  }
 
   if (state_ == State::PENDING_ENGAGEMENT && !has_sufficient_engagement_)
     TrackDisplayEvent(DISPLAY_EVENT_NOT_VISITED_ENOUGH);
@@ -461,12 +449,31 @@ InstallableStatusCode AppBannerManager::TerminationCode() const {
   return NO_ERROR_DETECTED;
 }
 
+bool AppBannerManager::IsInstallable() const {
+  return installable_ == Installable::INSTALLABLE_YES;
+}
+
 void AppBannerManager::SetInstallable(Installable installable) {
   if (installable_ == installable)
     return;
 
   installable_ = installable;
-  install_animation_pending_ = IsInstallable();
+
+  switch (installable) {
+    case Installable::UNKNOWN:
+      break;
+    case Installable::INSTALLABLE_YES:
+      last_installable_scope_ = manifest_.scope;
+      DCHECK(!last_installable_scope_.is_empty());
+      install_animation_pending_ =
+          AppBannerSettingsHelper::CanShowInstallTextAnimation(
+              web_contents(), last_installable_scope_);
+      break;
+    case Installable::INSTALLABLE_NO:
+      last_installable_scope_ = GURL();
+      install_animation_pending_ = false;
+      break;
+  }
 
   for (Observer& observer : observer_list_)
     observer.OnInstallabilityUpdated();
@@ -485,6 +492,8 @@ void AppBannerManager::MigrateObserverListForTesting(
 void AppBannerManager::Stop(InstallableStatusCode code) {
   ReportStatus(code);
 
+  if (installable_ == Installable::UNKNOWN)
+    SetInstallable(Installable::INSTALLABLE_NO);
   weak_factory_.InvalidateWeakPtrs();
   ResetBindings();
   UpdateState(State::COMPLETE);
@@ -563,18 +572,18 @@ void AppBannerManager::DidFinishLoad(
   // or if the experimental app banners feature is active.
   if (state_ == State::INACTIVE &&
       (has_sufficient_engagement_ || IsExperimentalAppBannersEnabled())) {
-    RequestAppBanner(validated_url, false /* is_debug_mode */);
+    RequestAppBanner(validated_url);
   }
 }
 
 void AppBannerManager::MediaStartedPlaying(const MediaPlayerInfo& media_info,
-                                           const MediaPlayerId& id) {
+                                           const content::MediaPlayerId& id) {
   active_media_players_.push_back(id);
 }
 
 void AppBannerManager::MediaStoppedPlaying(
     const MediaPlayerInfo& media_info,
-    const MediaPlayerId& id,
+    const content::MediaPlayerId& id,
     WebContentsObserver::MediaStoppedReason reason) {
   base::Erase(active_media_players_, id);
 }
@@ -605,7 +614,7 @@ void AppBannerManager::OnEngagementEvent(
       // This performs some simple tests and starts async checks to test
       // installability. It should be safe to start in response to user input.
       // Don't call if we're already working on processing a banner request.
-      RequestAppBanner(url, false /* is_debug_mode */);
+      RequestAppBanner(url);
     }
   }
 }
@@ -643,14 +652,22 @@ base::string16 AppBannerManager::GetInstallableAppName(
   return manager->GetAppName();
 }
 
-bool AppBannerManager::IsInstallable() const {
-  return installable_ == Installable::INSTALLABLE_YES;
+bool AppBannerManager::IsProbablyInstallable() const {
+  if (IsInstallable())
+    return true;
+  return installable_ == Installable::UNKNOWN &&
+         last_installable_scope_.is_valid() &&
+         base::StartsWith(web_contents()->GetLastCommittedURL().spec(),
+                          last_installable_scope_.spec(),
+                          base::CompareCase::SENSITIVE);
 }
 
 bool AppBannerManager::MaybeConsumeInstallAnimation() {
-  DCHECK(IsInstallable());
+  DCHECK(IsProbablyInstallable());
   if (!install_animation_pending_)
     return false;
+  AppBannerSettingsHelper::RecordInstallTextAnimationShown(
+      web_contents(), last_installable_scope_);
   install_animation_pending_ = false;
   return true;
 }
@@ -704,9 +721,9 @@ void AppBannerManager::OnBannerPromptReply(
   // the banner immediately.
   if (reply == blink::mojom::AppBannerPromptReply::CANCEL) {
     TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_PREVENT_DEFAULT_CALLED);
-    if (IsDebugMode()) {
+    if (ShouldBypassEngagementChecks()) {
       web_contents()->GetMainFrame()->AddMessageToConsole(
-          content::CONSOLE_MESSAGE_LEVEL_INFO,
+          blink::mojom::ConsoleMessageLevel::kInfo,
           "Banner not shown: beforeinstallpromptevent.preventDefault() called. "
           "The page must call beforeinstallpromptevent.prompt() to show the "
           "banner.");

@@ -64,20 +64,20 @@ int NumberOfThreads(int width, int height, int number_of_cores) {
   return 1;
 }
 
-FrameType ConvertToVideoFrameType(EVideoFrameType type) {
+VideoFrameType ConvertToVideoFrameType(EVideoFrameType type) {
   switch (type) {
     case videoFrameTypeIDR:
-      return kVideoFrameKey;
+      return VideoFrameType::kVideoFrameKey;
     case videoFrameTypeSkip:
     case videoFrameTypeI:
     case videoFrameTypeP:
     case videoFrameTypeIPMixed:
-      return kVideoFrameDelta;
+      return VideoFrameType::kVideoFrameDelta;
     case videoFrameTypeInvalid:
       break;
   }
   RTC_NOTREACHED() << "Unexpected/invalid frame type: " << type;
-  return kEmptyFrame;
+  return VideoFrameType::kEmptyFrame;
 }
 
 }  // namespace
@@ -306,7 +306,8 @@ int32_t H264EncoderImpl::InitEncode(const VideoCodec* inst,
   SimulcastRateAllocator init_allocator(codec_);
   VideoBitrateAllocation allocation = init_allocator.GetAllocation(
       codec_.startBitrate * 1000, codec_.maxFramerate);
-  return SetRateAllocation(allocation, codec_.maxFramerate);
+  SetRates(RateControlParameters(allocation, codec_.maxFramerate));
+  return WEBRTC_VIDEO_CODEC_OK;
 }
 
 int32_t H264EncoderImpl::Release() {
@@ -331,36 +332,40 @@ int32_t H264EncoderImpl::RegisterEncodeCompleteCallback(
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
-int32_t H264EncoderImpl::SetRateAllocation(
-    const VideoBitrateAllocation& bitrate,
-    uint32_t new_framerate) {
-  if (encoders_.empty())
-    return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
+void H264EncoderImpl::SetRates(const RateControlParameters& parameters) {
+  if (encoders_.empty()) {
+    RTC_LOG(LS_WARNING) << "SetRates() while uninitialized.";
+    return;
+  }
 
-  if (new_framerate < 1)
-    return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;
+  if (parameters.framerate_fps < 1.0) {
+    RTC_LOG(LS_WARNING) << "Invalid frame rate: " << parameters.framerate_fps;
+    return;
+  }
 
-  if (bitrate.get_sum_bps() == 0) {
+  if (parameters.bitrate.get_sum_bps() == 0) {
     // Encoder paused, turn off all encoding.
     for (size_t i = 0; i < configurations_.size(); ++i)
       configurations_[i].SetStreamState(false);
-    return WEBRTC_VIDEO_CODEC_OK;
+    return;
   }
 
   // At this point, bitrate allocation should already match codec settings.
   if (codec_.maxBitrate > 0)
-    RTC_DCHECK_LE(bitrate.get_sum_kbps(), codec_.maxBitrate);
-  RTC_DCHECK_GE(bitrate.get_sum_kbps(), codec_.minBitrate);
+    RTC_DCHECK_LE(parameters.bitrate.get_sum_kbps(), codec_.maxBitrate);
+  RTC_DCHECK_GE(parameters.bitrate.get_sum_kbps(), codec_.minBitrate);
   if (codec_.numberOfSimulcastStreams > 0)
-    RTC_DCHECK_GE(bitrate.get_sum_kbps(), codec_.simulcastStream[0].minBitrate);
+    RTC_DCHECK_GE(parameters.bitrate.get_sum_kbps(),
+                  codec_.simulcastStream[0].minBitrate);
 
-  codec_.maxFramerate = new_framerate;
+  codec_.maxFramerate = static_cast<uint32_t>(parameters.framerate_fps);
 
   size_t stream_idx = encoders_.size() - 1;
   for (size_t i = 0; i < encoders_.size(); ++i, --stream_idx) {
     // Update layer config.
-    configurations_[i].target_bps = bitrate.GetSpatialLayerSum(stream_idx);
-    configurations_[i].max_frame_rate = static_cast<float>(new_framerate);
+    configurations_[i].target_bps =
+        parameters.bitrate.GetSpatialLayerSum(stream_idx);
+    configurations_[i].max_frame_rate = parameters.framerate_fps;
 
     if (configurations_[i].target_bps) {
       configurations_[i].SetStreamState(true);
@@ -377,13 +382,11 @@ int32_t H264EncoderImpl::SetRateAllocation(
       configurations_[i].SetStreamState(false);
     }
   }
-
-  return WEBRTC_VIDEO_CODEC_OK;
 }
 
-int32_t H264EncoderImpl::Encode(const VideoFrame& input_frame,
-                                const CodecSpecificInfo* codec_specific_info,
-                                const std::vector<FrameType>* frame_types) {
+int32_t H264EncoderImpl::Encode(
+    const VideoFrame& input_frame,
+    const std::vector<VideoFrameType>* frame_types) {
   if (encoders_.empty()) {
     ReportError();
     return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
@@ -409,7 +412,8 @@ int32_t H264EncoderImpl::Encode(const VideoFrame& input_frame,
   if (!send_key_frame && frame_types) {
     for (size_t i = 0; i < frame_types->size() && i < configurations_.size();
          ++i) {
-      if ((*frame_types)[i] == kVideoFrameKey && configurations_[i].sending) {
+      if ((*frame_types)[i] == VideoFrameType::kVideoFrameKey &&
+          configurations_[i].sending) {
         send_key_frame = true;
         break;
       }
@@ -462,7 +466,7 @@ int32_t H264EncoderImpl::Encode(const VideoFrame& input_frame,
     }
     if (frame_types != nullptr) {
       // Skip frame?
-      if ((*frame_types)[i] == kEmptyFrame) {
+      if ((*frame_types)[i] == VideoFrameType::kEmptyFrame) {
         continue;
       }
     }

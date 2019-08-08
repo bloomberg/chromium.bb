@@ -9,9 +9,9 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_throttle.h"
-#include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
-#include "chrome/browser/chromeos/apps/intent_helper/page_transition_util.h"
+#include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
+#include "chrome/browser/apps/intent_helper/page_transition_util.h"
+#include "chrome/browser/chromeos/apps/intent_helper/chromeos_apps_navigation_throttle.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_intent_picker_app_fetcher.h"
 #include "chrome/browser/chromeos/external_protocol_dialog.h"
@@ -19,8 +19,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/page_navigator.h"
@@ -357,7 +357,7 @@ void OnIntentPickerClosed(int render_process_host_id,
                           std::vector<mojom::IntentHandlerInfoPtr> handlers,
                           const std::string& selected_app_package,
                           apps::mojom::AppType app_type,
-                          chromeos::IntentPickerCloseReason reason,
+                          apps::IntentPickerCloseReason reason,
                           bool should_persist) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -388,17 +388,17 @@ void OnIntentPickerClosed(int render_process_host_id,
   }
 
   if (!instance)
-    reason = chromeos::IntentPickerCloseReason::ERROR;
+    reason = apps::IntentPickerCloseReason::PICKER_ERROR;
 
-  if (reason == chromeos::IntentPickerCloseReason::OPEN_APP ||
-      reason == chromeos::IntentPickerCloseReason::STAY_IN_CHROME) {
+  if (reason == apps::IntentPickerCloseReason::OPEN_APP ||
+      reason == apps::IntentPickerCloseReason::STAY_IN_CHROME) {
     if (selected_app_index == handlers.size()) {
-      reason = chromeos::IntentPickerCloseReason::ERROR;
+      reason = apps::IntentPickerCloseReason::PICKER_ERROR;
     }
   }
 
   switch (reason) {
-    case chromeos::IntentPickerCloseReason::OPEN_APP:
+    case apps::IntentPickerCloseReason::OPEN_APP:
       // Only ARC apps are offered in the external protocol intent picker, so if
       // the user decided to open in app the type must be ARC.
       DCHECK_EQ(apps::mojom::AppType::kArc, app_type);
@@ -417,29 +417,29 @@ void OnIntentPickerClosed(int render_process_host_id,
       HandleUrl(render_process_host_id, routing_id, url, handlers,
                 selected_app_index, /*out_result=*/nullptr, safe_to_bypass_ui);
       break;
-    case chromeos::IntentPickerCloseReason::PREFERRED_APP_FOUND:
+    case apps::IntentPickerCloseReason::PREFERRED_APP_FOUND:
       // We shouldn't be here if a preferred app was found.
       NOTREACHED();
       return;  // no UMA recording.
-    case chromeos::IntentPickerCloseReason::STAY_IN_CHROME:
+    case apps::IntentPickerCloseReason::STAY_IN_CHROME:
       LOG(ERROR) << "Chrome is not a valid option for external protocol URLs";
       NOTREACHED();
       return;  // no UMA recording.
-    case chromeos::IntentPickerCloseReason::ERROR:
+    case apps::IntentPickerCloseReason::PICKER_ERROR:
       LOG(ERROR) << "IntentPickerBubbleView returned CloseReason::ERROR: "
                  << "instance=" << instance
                  << ", selected_app_index=" << selected_app_index
                  << ", handlers.size=" << handlers.size();
       FALLTHROUGH;
-    case chromeos::IntentPickerCloseReason::DIALOG_DEACTIVATED:
+    case apps::IntentPickerCloseReason::DIALOG_DEACTIVATED:
       // The user didn't select any ARC activity.
       OnIntentPickerDialogDeactivated(render_process_host_id, routing_id,
                                       safe_to_bypass_ui, handlers);
       break;
   }
 
-  chromeos::AppsNavigationThrottle::RecordUma(selected_app_package, app_type,
-                                              reason, should_persist);
+  chromeos::ChromeOsAppsNavigationThrottle::RecordUma(
+      selected_app_package, app_type, reason, should_persist);
 }
 
 // Called when ARC returned activity icons for the |handlers|.
@@ -452,7 +452,7 @@ void OnAppIconsReceived(
     std::unique_ptr<ArcIntentHelperBridge::ActivityToIconsMap> icons) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  using AppInfo = chromeos::IntentPickerAppInfo;
+  using AppInfo = apps::IntentPickerAppInfo;
   std::vector<AppInfo> app_info;
 
   for (const auto& handler : handlers) {
@@ -475,7 +475,8 @@ void OnAppIconsReceived(
 
   browser->window()->SetIntentPickerViewVisibility(/*visible=*/true);
   browser->window()->ShowIntentPickerBubble(
-      std::move(app_info), !IsChromeAnAppCandidate(handlers),
+      std::move(app_info), IsChromeAnAppCandidate(handlers),
+      /*show_remember_selection=*/true,
       base::Bind(OnIntentPickerClosed, render_process_host_id, routing_id, url,
                  safe_to_bypass_ui, base::Passed(&handlers)));
 }
@@ -519,9 +520,9 @@ void OnUrlHandlerList(int render_process_host_id,
   if (HandleUrl(render_process_host_id, routing_id, url, handlers,
                 handlers.size(), &result, safe_to_bypass_ui)) {
     if (result == GetActionResult::HANDLE_URL_IN_ARC) {
-      chromeos::AppsNavigationThrottle::RecordUma(
+      chromeos::ChromeOsAppsNavigationThrottle::RecordUma(
           std::string(), apps::mojom::AppType::kArc,
-          chromeos::IntentPickerCloseReason::PREFERRED_APP_FOUND,
+          apps::IntentPickerCloseReason::PREFERRED_APP_FOUND,
           /*should_persist=*/false);
     }
     return;  // the |url| has been handled.
@@ -551,13 +552,12 @@ bool RunArcExternalProtocolDialog(const GURL& url,
   DCHECK(!url.SchemeIsHTTPOrHTTPS()) << url;
 
   // For external protocol navigation, always ignore the FROM_API qualifier.
-  const ui::PageTransition masked_page_transition =
-      chromeos::MaskOutPageTransition(page_transition,
-                                      ui::PAGE_TRANSITION_FROM_API);
+  const ui::PageTransition masked_page_transition = apps::MaskOutPageTransition(
+      page_transition, ui::PAGE_TRANSITION_FROM_API);
 
-  if (chromeos::ShouldIgnoreNavigation(masked_page_transition,
-                                       /*allow_form_submit=*/true,
-                                       /*allow_client_redirect=*/true)) {
+  if (apps::ShouldIgnoreNavigation(masked_page_transition,
+                                   /*allow_form_submit=*/true,
+                                   /*allow_client_redirect=*/true)) {
     LOG(WARNING) << "RunArcExternalProtocolDialog: ignoring " << url
                  << " with PageTransition=" << masked_page_transition;
     return false;

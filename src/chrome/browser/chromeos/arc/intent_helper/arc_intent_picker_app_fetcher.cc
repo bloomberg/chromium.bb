@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_throttle.h"
+#include "chrome/browser/chromeos/apps/intent_helper/chromeos_apps_navigation_throttle.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -52,7 +52,7 @@ size_t FindPreferredApp(
 void ArcIntentPickerAppFetcher::GetArcAppsForPicker(
     content::WebContents* web_contents,
     const GURL& url,
-    chromeos::GetAppsCallback callback) {
+    apps::GetAppsCallback callback) {
   arc::ArcServiceManager* arc_service_manager = arc::ArcServiceManager::Get();
   if (!arc_service_manager) {
     DVLOG(1) << "Cannot get an instance of ArcServiceManager";
@@ -78,7 +78,8 @@ void ArcIntentPickerAppFetcher::GetArcAppsForPicker(
 // static
 bool ArcIntentPickerAppFetcher::WillGetArcAppsForNavigation(
     content::NavigationHandle* handle,
-    chromeos::AppsNavigationCallback callback) {
+    apps::AppsNavigationCallback callback,
+    bool should_launch_preferred_app) {
   ArcServiceManager* arc_service_manager = ArcServiceManager::Get();
   if (!arc_service_manager)
     return false;
@@ -112,8 +113,10 @@ bool ArcIntentPickerAppFetcher::WillGetArcAppsForNavigation(
   // navigation as soon as the callback is run. If the WebContents is destroyed
   // prior to this asynchronous method finishing, it is safe to not run
   // |callback| since it will not matter what we do with the deferred navigation
-  // for a now-closed tab.
-  app_fetcher->GetArcAppsForNavigation(instance, url, std::move(callback));
+  // for a now-closed tab. If |should_launch_preferred_app| flag is set to be
+  // true, preferred app (if exists) will be automatically launched.
+  app_fetcher->GetArcAppsForNavigation(instance, url, std::move(callback),
+                                       should_launch_preferred_app);
   return true;
 }
 
@@ -193,20 +196,22 @@ ArcIntentPickerAppFetcher::ArcIntentPickerAppFetcher(
 void ArcIntentPickerAppFetcher::GetArcAppsForNavigation(
     mojom::IntentHelperInstance* instance,
     const GURL& url,
-    chromeos::AppsNavigationCallback callback) {
+    apps::AppsNavigationCallback callback,
+    bool should_launch_preferred_app) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   instance->RequestUrlHandlerList(
       url.spec(),
       base::BindOnce(
           &ArcIntentPickerAppFetcher::OnAppCandidatesReceivedForNavigation,
-          weak_ptr_factory_.GetWeakPtr(), url, std::move(callback)));
+          weak_ptr_factory_.GetWeakPtr(), url, std::move(callback),
+          should_launch_preferred_app));
 }
 
 void ArcIntentPickerAppFetcher::GetArcAppsForPicker(
     mojom::IntentHelperInstance* instance,
     const GURL& url,
-    chromeos::GetAppsCallback callback) {
+    apps::GetAppsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   instance->RequestUrlHandlerList(
@@ -218,7 +223,8 @@ void ArcIntentPickerAppFetcher::GetArcAppsForPicker(
 
 void ArcIntentPickerAppFetcher::OnAppCandidatesReceivedForNavigation(
     const GURL& url,
-    chromeos::AppsNavigationCallback callback,
+    apps::AppsNavigationCallback callback,
+    bool should_launch_preferred_app,
     std::vector<mojom::IntentHandlerInfoPtr> app_candidates) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -227,43 +233,45 @@ void ArcIntentPickerAppFetcher::OnAppCandidatesReceivedForNavigation(
     // This scenario shouldn't be accessed as ArcIntentPickerAppFetcher is
     // created iff there are ARC apps which can actually handle the given URL.
     DVLOG(1) << "There are no app candidates for this URL: " << url;
-    chromeos::AppsNavigationThrottle::RecordUma(
+    chromeos::ChromeOsAppsNavigationThrottle::RecordUma(
         std::string(), apps::mojom::AppType::kUnknown,
-        chromeos::IntentPickerCloseReason::ERROR, /*should_persist=*/false);
-    std::move(callback).Run(chromeos::AppsNavigationAction::RESUME, {});
+        apps::IntentPickerCloseReason::PICKER_ERROR,
+        /*should_persist=*/false);
+    std::move(callback).Run(apps::AppsNavigationAction::RESUME, {});
     return;
   }
 
-  // If one of the apps is marked as preferred, launch it immediately.
-  chromeos::PreferredPlatform pref_platform =
-      DidLaunchPreferredArcApp(url, app_candidates);
+  if (should_launch_preferred_app) {
+    // If one of the apps is marked as preferred, launch it immediately.
+    apps::PreferredPlatform pref_platform =
+        DidLaunchPreferredArcApp(url, app_candidates);
 
-  switch (pref_platform) {
-    case chromeos::PreferredPlatform::ARC:
-      std::move(callback).Run(chromeos::AppsNavigationAction::CANCEL, {});
-      return;
-    case chromeos::PreferredPlatform::NATIVE_CHROME:
-      std::move(callback).Run(chromeos::AppsNavigationAction::RESUME, {});
-      return;
-    case chromeos::PreferredPlatform::PWA:
-      NOTREACHED();
-      break;
-    case chromeos::PreferredPlatform::NONE:
-      break;  // Do nothing.
+    switch (pref_platform) {
+      case apps::PreferredPlatform::ARC:
+        std::move(callback).Run(apps::AppsNavigationAction::CANCEL, {});
+        return;
+      case apps::PreferredPlatform::NATIVE_CHROME:
+        std::move(callback).Run(apps::AppsNavigationAction::RESUME, {});
+        return;
+      case apps::PreferredPlatform::PWA:
+        NOTREACHED();
+        break;
+      case apps::PreferredPlatform::NONE:
+        break;  // Do nothing.
+    }
   }
-
   // We are always going to resume navigation at this point, and possibly show
   // the intent picker bubble to prompt the user to choose if they would like to
   // use an ARC app to open the URL.
   deleter.release();
-  GetArcAppIcons(url, std::move(app_candidates),
-                 base::BindOnce(std::move(callback),
-                                chromeos::AppsNavigationAction::RESUME));
+  GetArcAppIcons(
+      url, std::move(app_candidates),
+      base::BindOnce(std::move(callback), apps::AppsNavigationAction::RESUME));
 }
 
 void ArcIntentPickerAppFetcher::OnAppCandidatesReceivedForPicker(
     const GURL& url,
-    chromeos::GetAppsCallback callback,
+    apps::GetAppsCallback callback,
     std::vector<arc::mojom::IntentHandlerInfoPtr> app_candidates) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -278,18 +286,17 @@ void ArcIntentPickerAppFetcher::OnAppCandidatesReceivedForPicker(
   GetArcAppIcons(url, std::move(app_candidates), std::move(callback));
 }
 
-chromeos::PreferredPlatform ArcIntentPickerAppFetcher::DidLaunchPreferredArcApp(
+apps::PreferredPlatform ArcIntentPickerAppFetcher::DidLaunchPreferredArcApp(
     const GURL& url,
     const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  chromeos::PreferredPlatform preferred_platform =
-      chromeos::PreferredPlatform::NONE;
+  apps::PreferredPlatform preferred_platform = apps::PreferredPlatform::NONE;
   apps::mojom::AppType app_type = apps::mojom::AppType::kUnknown;
   const size_t index = FindPreferredApp(app_candidates, url);
 
   if (index != app_candidates.size()) {
-    auto close_reason = chromeos::IntentPickerCloseReason::PREFERRED_APP_FOUND;
+    auto close_reason = apps::IntentPickerCloseReason::PREFERRED_APP_FOUND;
     const std::string& package_name = app_candidates[index]->package_name;
 
     // Make sure that the instance at least supports HandleUrl.
@@ -302,18 +309,18 @@ chromeos::PreferredPlatform ArcIntentPickerAppFetcher::DidLaunchPreferredArcApp(
     }
 
     if (!instance) {
-      close_reason = chromeos::IntentPickerCloseReason::ERROR;
+      close_reason = apps::IntentPickerCloseReason::PICKER_ERROR;
     } else if (ArcIntentHelperBridge::IsIntentHelperPackage(package_name)) {
       Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
       if (browser)
         browser->window()->SetIntentPickerViewVisibility(/*visible=*/true);
-      preferred_platform = chromeos::PreferredPlatform::NATIVE_CHROME;
+      preferred_platform = apps::PreferredPlatform::NATIVE_CHROME;
     } else {
       instance->HandleUrl(url.spec(), package_name);
-      preferred_platform = chromeos::PreferredPlatform::ARC;
+      preferred_platform = apps::PreferredPlatform::ARC;
       app_type = apps::mojom::AppType::kArc;
     }
-    chromeos::AppsNavigationThrottle::RecordUma(
+    chromeos::ChromeOsAppsNavigationThrottle::RecordUma(
         package_name, app_type, close_reason, /*should_persist=*/false);
   }
 
@@ -323,7 +330,7 @@ chromeos::PreferredPlatform ArcIntentPickerAppFetcher::DidLaunchPreferredArcApp(
 void ArcIntentPickerAppFetcher::GetArcAppIcons(
     const GURL& url,
     std::vector<mojom::IntentHandlerInfoPtr> app_candidates,
-    chromeos::GetAppsCallback callback) {
+    apps::GetAppsCallback callback) {
   std::unique_ptr<ArcIntentPickerAppFetcher> deleter(this);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -331,9 +338,10 @@ void ArcIntentPickerAppFetcher::GetArcAppIcons(
       web_contents()->GetBrowserContext());
   if (!intent_helper_bridge) {
     LOG(ERROR) << "Cannot get an instance of ArcIntentHelperBridge";
-    chromeos::AppsNavigationThrottle::RecordUma(
+    chromeos::ChromeOsAppsNavigationThrottle::RecordUma(
         std::string(), apps::mojom::AppType::kUnknown,
-        chromeos::IntentPickerCloseReason::ERROR, /*should_persist=*/false);
+        apps::IntentPickerCloseReason::PICKER_ERROR,
+        /*should_persist=*/false);
     std::move(callback).Run({});
     return;
   }
@@ -352,12 +360,12 @@ void ArcIntentPickerAppFetcher::GetArcAppIcons(
 void ArcIntentPickerAppFetcher::OnAppIconsReceived(
     const GURL& url,
     std::vector<arc::mojom::IntentHandlerInfoPtr> app_candidates,
-    chromeos::GetAppsCallback callback,
+    apps::GetAppsCallback callback,
     std::unique_ptr<arc::ArcIntentHelperBridge::ActivityToIconsMap> icons) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   std::unique_ptr<ArcIntentPickerAppFetcher> deleter(this);
-  std::vector<chromeos::IntentPickerAppInfo> app_info;
+  std::vector<apps::IntentPickerAppInfo> app_info;
 
   for (const auto& candidate : app_candidates) {
     gfx::Image icon;

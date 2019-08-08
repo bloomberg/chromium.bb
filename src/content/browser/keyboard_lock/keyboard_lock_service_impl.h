@@ -11,7 +11,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/frame_service_base.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "third_party/blink/public/platform/modules/keyboard_lock/keyboard_lock.mojom.h"
+#include "third_party/blink/public/mojom/keyboard_lock/keyboard_lock.mojom.h"
 
 namespace content {
 

@@ -161,8 +161,9 @@ TEST_F(ShadowDOMV0Test, ReattachNonDistributedElements) {
 
   host->CreateV0ShadowRootForTesting();
   inner_host->CreateV0ShadowRootForTesting();
-  inner_host->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueInlineBlock);
-  span->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueBlock);
+  inner_host->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                     CSSValueID::kInlineBlock);
+  span->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kBlock);
 
   GetDocument().View()->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);

@@ -14,7 +14,7 @@
 #include <utility>
 
 #include "base/feature_list.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
@@ -221,9 +221,6 @@ class ChromeDataUseAscriber : public DataUseAscriber {
   // |data_use_recorders_| that the navigation ascribes data use to.
   std::map<content::GlobalRequestID, DataUseRecorderEntry>
       pending_navigation_data_use_map_;
-
-  // Detects heavy pages. Can be null when the feature is disabled.
-  std::unique_ptr<DataUseAscriber::PageLoadObserver> page_capping_observer_;
 
   // True if the data use ascriber should be disabled. The ascriber is disabled
   // by default.

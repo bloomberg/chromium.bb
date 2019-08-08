@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/hash/md5.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
@@ -21,6 +22,7 @@
 #include "chrome/common/mac/app_mode_common.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "mojo/public/cpp/platform/features.h"
 
 namespace {
 
@@ -35,7 +37,8 @@ base::FilePath GetDirectoryInTmpTemplate(const base::FilePath& user_data_dir) {
 
 void DeleteSocketFiles(const base::FilePath& directory_in_tmp,
                        const base::FilePath& symlink_path,
-                       const base::FilePath& version_path) {
+                       const base::FilePath& version_path,
+                       const base::FilePath& mojo_channel_mac_signal_file) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
@@ -46,6 +49,8 @@ void DeleteSocketFiles(const base::FilePath& directory_in_tmp,
     base::DeleteFile(symlink_path, false);
   if (!directory_in_tmp.empty())
     base::DeleteFile(directory_in_tmp, true);
+  if (!mojo_channel_mac_signal_file.empty())
+    base::DeleteFile(mojo_channel_mac_signal_file, false);
 }
 
 }  // namespace
@@ -69,6 +74,8 @@ void AppShimHostManager::Init() {
 AppShimHostManager::~AppShimHostManager() {
   base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
       ->DeleteSoon(FROM_HERE, std::move(acceptor_));
+  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
+      ->DeleteSoon(FROM_HERE, std::move(mach_acceptor_));
 
   // The AppShimHostManager is only initialized if the Chrome process
   // successfully took the singleton lock. If it was not initialized, do not
@@ -80,16 +87,20 @@ AppShimHostManager::~AppShimHostManager() {
   base::FilePath user_data_dir;
   base::FilePath symlink_path;
   base::FilePath version_path;
+  base::FilePath mojo_channel_mac_signal_file;
   if (base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
     symlink_path = user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
     version_path =
         user_data_dir.Append(app_mode::kRunningChromeVersionSymlinkName);
+    mojo_channel_mac_signal_file =
+        user_data_dir.Append(app_mode::kMojoChannelMacSignalFile);
   }
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-                            base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-                           base::BindOnce(&DeleteSocketFiles, directory_in_tmp_,
-                                          symlink_path, version_path));
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+      base::BindOnce(&DeleteSocketFiles, directory_in_tmp_, symlink_path,
+                     version_path, mojo_channel_mac_signal_file));
 }
 
 void AppShimHostManager::InitOnBackgroundThread() {
@@ -98,6 +109,29 @@ void AppShimHostManager::InitOnBackgroundThread() {
   base::FilePath user_data_dir;
   if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
     return;
+
+  base::FilePath mojo_channel_mac_signal_file =
+      user_data_dir.Append(app_mode::kMojoChannelMacSignalFile);
+  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
+    std::string name_fragment =
+        std::string(app_mode::kAppShimBootstrapNameFragment) + "." +
+        base::MD5String(user_data_dir.value());
+    mach_acceptor_ =
+        std::make_unique<apps::MachBootstrapAcceptor>(name_fragment, this);
+    mach_acceptor_->Start();
+
+    // App shims do not have Finch initialized and so cannot test for the
+    // kMojoChannelMac feature. Instead, put a file in the profile directory.
+    // The presence of this file will indicate that app shims should connect
+    // over a Mach channel instead.
+    char data = 1;
+    if (base::WriteFile(mojo_channel_mac_signal_file, &data, 1) != 1) {
+      LOG(ERROR) << "Failed to write MojoChannelMac signal file.";
+    }
+    return;
+  } else {
+    base::DeleteFile(mojo_channel_mac_signal_file, false);
+  }
 
   // The socket path must be shorter than 104 chars (IPC::kMaxSocketNameLength).
   // To accommodate this, we use a short path in /tmp/ that is generated from a
@@ -163,6 +197,16 @@ void AppShimHostManager::OnClientConnected(
       ->PostTask(FROM_HERE,
                  base::BindOnce(&AppShimHostBootstrap::CreateForChannel,
                                 std::move(endpoint)));
+}
+
+void AppShimHostManager::OnClientConnected(
+    mojo::PlatformChannelEndpoint endpoint,
+    base::ProcessId peer_pid) {
+  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(&AppShimHostBootstrap::CreateForChannelAndPeerID,
+                         std::move(endpoint), peer_pid));
 }
 
 void AppShimHostManager::OnListenError() {

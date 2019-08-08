@@ -60,11 +60,15 @@ class ChromeWebClient : public web::WebClient {
   std::unique_ptr<service_manager::Service> HandleServiceRequest(
       const std::string& service_name,
       service_manager::mojom::ServiceRequest request) override;
+  UIView* GetWindowedContainer() override;
 
  private:
   // Returns a string describing the product name and version, of the
   // form "productname/version". Used as part of the user agent string.
   std::string GetProduct() const;
+
+  // Reference to a view that is attached to a window.
+  UIView* windowed_container_ = nil;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWebClient);
 };

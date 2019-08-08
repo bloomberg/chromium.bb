@@ -15,7 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/ui/autofill/autofill_dialog_models.h"
+#include "chrome/browser/ui/autofill/payments/autofill_dialog_models.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -548,7 +548,7 @@ void CreditCardEditorViewController::StyledLabelLinkClicked(
   // link for a server card.
   chrome::ScopedTabbedBrowserDisplayer displayer(dialog()->GetProfile());
   ShowSingletonTab(displayer.browser(),
-                   autofill::payments::GetManageAddressesUrl(0));
+                   autofill::payments::GetManageAddressesUrl());
 }
 
 void CreditCardEditorViewController::SelectBasicCardNetworkIcon(

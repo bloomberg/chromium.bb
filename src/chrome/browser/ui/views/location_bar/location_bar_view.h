@@ -47,7 +47,7 @@ class LocationIconView;
 enum class OmniboxPart;
 class OmniboxPopupView;
 enum class OmniboxTint;
-class PageActionIconContainerView;
+class OmniboxPageActionIconContainerView;
 class Profile;
 class SelectedKeywordView;
 class StarView;
@@ -144,11 +144,9 @@ class LocationBarView : public LocationBar,
   // Toggles the star on or off.
   void SetStarToggled(bool on);
 
-#if defined(OS_CHROMEOS)
   // The intent picker, should not always be visible.  It will be null when
   // |browser_| is null.
   IntentPickerView* intent_picker_view() { return intent_picker_view_; }
-#endif  // defined(OS_CHROMEOS)
 
   // The star. It may not be visible.  It will be null when |browser_| is null.
   StarView* star_view() { return star_view_; }
@@ -163,8 +161,9 @@ class LocationBarView : public LocationBar,
     return local_card_migration_icon_view_;
   }
 
-  PageActionIconContainerView* page_action_icon_container_view() {
-    return page_action_icon_container_view_;
+  OmniboxPageActionIconContainerView*
+  omnibox_page_action_icon_container_view() {
+    return omnibox_page_action_icon_container_view_;
   }
 
   // Returns the screen coordinates of the omnibox (where the URL text appears,
@@ -247,7 +246,7 @@ class LocationBarView : public LocationBar,
   Browser* browser() { return browser_; }
 
   // LocationIconView::Delegate
-  bool IsEditingOrEmpty() override;
+  bool IsEditingOrEmpty() const override;
   void OnLocationIconPressed(const ui::MouseEvent& event) override;
   void OnLocationIconDragged(const ui::MouseEvent& event) override;
   bool ShowPageInfoDialog() override;
@@ -256,6 +255,9 @@ class LocationBarView : public LocationBar,
   gfx::ImageSkia GetLocationIcon(LocationIconView::Delegate::IconFetchedCallback
                                      on_icon_fetched) const override;
   SkColor GetLocationIconInkDropColor() const override;
+
+  // Gets the theme color tint for the location bar and results.
+  OmniboxTint GetTint();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SecurityIndicatorTest, CheckIndicatorText);
@@ -303,9 +305,6 @@ class LocationBarView : public LocationBar,
   // Gets the OmniboxPopupView associated with the model in |omnibox_view_|.
   OmniboxPopupView* GetOmniboxPopupView();
 
-  // Gets the theme color tint for the location bar and results.
-  OmniboxTint GetTint();
-
   // LocationBar:
   GURL GetDestinationURL() const override;
   WindowOpenDisposition GetWindowOpenDisposition() const override;
@@ -347,6 +346,7 @@ class LocationBarView : public LocationBar,
   // PageActionIconView::Delegate:
   SkColor GetPageActionInkDropColor() const override;
   content::WebContents* GetWebContentsForPageActionIconView() override;
+  bool IsLocationBarUserInputInProgress() const override;
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -363,6 +363,9 @@ class LocationBarView : public LocationBar,
 
   // ui::MaterialDesignControllerObserver:
   void OnTouchUiChanged() override;
+
+  // Called with an async fetched for the keyword view.
+  void OnKeywordFaviconFetched(const gfx::Image& icon);
 
   // The Browser this LocationBarView is in.  Note that at least
   // chromeos::SimpleWebViewDialog uses a LocationBarView outside any browser
@@ -400,7 +403,8 @@ class LocationBarView : public LocationBar,
   ContentSettingViews content_setting_views_;
 
   // The page action icons.
-  PageActionIconContainerView* page_action_icon_container_view_ = nullptr;
+  OmniboxPageActionIconContainerView* omnibox_page_action_icon_container_view_ =
+      nullptr;
 
   // The save credit card icon.  It will be null when |browser_| is null.
   autofill::SaveCardIconView* save_credit_card_icon_view_ = nullptr;
@@ -409,11 +413,9 @@ class LocationBarView : public LocationBar,
   autofill::LocalCardMigrationIconView* local_card_migration_icon_view_ =
       nullptr;
 
-#if defined(OS_CHROMEOS)
-  // The intent picker for accessing ARC's apps.  It will be null when
+  // The intent picker for accessing apps.  It will be null when
   // |browser_| is null.
   IntentPickerView* intent_picker_view_ = nullptr;
-#endif  // defined(OS_CHROMEOS)
 
   // The star for bookmarking.  It will be null when |browser_| is null.
   StarView* star_view_ = nullptr;
@@ -441,6 +443,8 @@ class LocationBarView : public LocationBar,
 
   // The focus ring, if one is in use.
   std::unique_ptr<views::FocusRing> focus_ring_;
+
+  bool is_initialized_ = false;
 
   ScopedObserver<ui::MaterialDesignController,
                  ui::MaterialDesignControllerObserver>

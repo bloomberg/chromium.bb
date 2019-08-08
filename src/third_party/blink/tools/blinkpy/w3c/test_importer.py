@@ -21,6 +21,7 @@ from blinkpy.common.net.buildbot import current_build_link
 from blinkpy.common.net.git_cl import GitCL
 from blinkpy.common.net.network_transaction import NetworkTimeout
 from blinkpy.common.path_finder import PathFinder
+from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.log_utils import configure_logging
 from blinkpy.w3c.chromium_exportable_commits import exportable_commits_over_last_n_commits
 from blinkpy.w3c.common import read_credentials, is_testharness_baseline, is_file_exportable, WPT_GH_URL
@@ -262,7 +263,14 @@ class TestImporter(object):
             return True
 
         _log.error('Cannot submit CL; aborting.')
-        self.git_cl.run(['set-close'])
+        try:
+            self.git_cl.run(['set-close'])
+        except ScriptError as e:
+            if e.output and 'Conflict: change is merged' in e.output:
+                _log.error('CL is already merged; treating as success.')
+                return True
+            else:
+                raise e
         return False
 
     def blink_try_bots(self):

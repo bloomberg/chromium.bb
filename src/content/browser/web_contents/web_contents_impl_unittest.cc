@@ -27,6 +27,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/interstitial_page_delegate.h"
@@ -276,9 +277,7 @@ class WebContentsImplTest : public RenderViewHostImplTestHarness {
 class TestWebContentsObserver : public WebContentsObserver {
  public:
   explicit TestWebContentsObserver(WebContents* contents)
-      : WebContentsObserver(contents),
-        last_theme_color_(SK_ColorTRANSPARENT) {
-  }
+      : WebContentsObserver(contents) {}
   ~TestWebContentsObserver() override {}
 
   void DidFinishLoad(RenderFrameHost* render_frame_host,
@@ -297,19 +296,19 @@ class TestWebContentsObserver : public WebContentsObserver {
     EXPECT_TRUE(web_contents()->CompletedFirstVisuallyNonEmptyPaint());
   }
 
-  void DidChangeThemeColor(SkColor theme_color) override {
+  void DidChangeThemeColor(base::Optional<SkColor> theme_color) override {
     last_theme_color_ = theme_color;
   }
 
   const GURL& last_url() const { return last_url_; }
-  SkColor last_theme_color() const { return last_theme_color_; }
+  base::Optional<SkColor> last_theme_color() const { return last_theme_color_; }
   bool observed_did_first_visually_non_empty_paint() const {
     return observed_did_first_visually_non_empty_paint_;
   }
 
  private:
   GURL last_url_;
-  SkColor last_theme_color_;
+  base::Optional<SkColor> last_theme_color_;
   bool observed_did_first_visually_non_empty_paint_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsObserver);
@@ -723,19 +722,20 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
   browser_client.set_assign_site_for_url(true);
   // Navigate to new site (should keep same site instance).
   const GURL url("http://www.google.com");
-  auto navigation =
+  auto navigation1 =
       NavigationSimulator::CreateBrowserInitiated(url, contents());
-  navigation->ReadyToCommit();
+  navigation1->ReadyToCommit();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(native_url, contents()->GetLastCommittedURL());
   EXPECT_EQ(url, contents()->GetVisibleURL());
   EXPECT_FALSE(contents()->GetPendingMainFrame());
-  navigation->Commit();
+  navigation1->Commit();
 
   // Keep the number of active frames in orig_rfh's SiteInstance
   // non-zero so that orig_rfh doesn't get deleted when it gets
   // swapped out.
   orig_rfh->GetSiteInstance()->IncrementActiveFrameCount();
+  SiteInstanceImpl* orig_site_instance = orig_rfh->GetSiteInstance();
 
   EXPECT_EQ(orig_instance, contents()->GetSiteInstance());
   EXPECT_TRUE(
@@ -744,10 +744,9 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
 
   // Navigate to another new site (should create a new site instance).
   const GURL url2("http://www.yahoo.com");
-  controller().LoadURL(
-      url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int entry_id = controller().GetPendingEntry()->GetUniqueID();
-  orig_rfh->PrepareForCommit();
+  auto navigation2 =
+      NavigationSimulator::CreateBrowserInitiated(url2, contents());
+  navigation2->ReadyToCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(url, contents()->GetLastCommittedURL());
   EXPECT_EQ(url2, contents()->GetVisibleURL());
@@ -757,8 +756,7 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
       &pending_rvh_delete_count);
 
   // DidNavigate from the pending page.
-  contents()->TestDidNavigate(pending_rfh, entry_id, true, url2,
-                              ui::PAGE_TRANSITION_TYPED);
+  navigation2->Commit();
   SiteInstance* new_instance = contents()->GetSiteInstance();
 
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
@@ -767,11 +765,11 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
   EXPECT_EQ(url2, contents()->GetVisibleURL());
   EXPECT_NE(new_instance, orig_instance);
   EXPECT_FALSE(contents()->GetPendingMainFrame());
+
   // We keep a proxy for the original RFH's SiteInstance.
   EXPECT_TRUE(contents()->GetRenderManagerForTesting()->GetRenderFrameProxyHost(
-      orig_rfh->GetSiteInstance()));
+      orig_site_instance));
   EXPECT_EQ(orig_rvh_delete_count, 0);
-  orig_rfh->OnSwappedOut();
 
   // Close contents and ensure RVHs are deleted.
   DeleteContents();
@@ -977,19 +975,15 @@ TEST_F(WebContentsImplTest, CrossSiteUnloadHandlers) {
   // Navigate again, but simulate an onbeforeunload approval.
   controller().LoadURL(
       url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int entry_id = controller().GetPendingEntry()->GetUniqueID();
   EXPECT_TRUE(orig_rfh->is_waiting_for_beforeunload_ack());
-  now = base::TimeTicks::Now();
-  orig_rfh->PrepareForCommit();
+  auto navigation = NavigationSimulator::CreateFromPending(contents());
+  navigation->ReadyToCommit();
   EXPECT_FALSE(orig_rfh->is_waiting_for_beforeunload_ack());
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   TestRenderFrameHost* pending_rfh = contents()->GetPendingMainFrame();
 
-  // We won't hear DidNavigate until the onunload handler has finished running.
-
   // DidNavigate from the pending page.
-  contents()->TestDidNavigate(pending_rfh, entry_id, true, url2,
-                              ui::PAGE_TRANSITION_TYPED);
+  navigation->Commit();
   SiteInstance* instance2 = contents()->GetSiteInstance();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(pending_rfh, main_test_rfh());
@@ -1010,16 +1004,16 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationPreempted) {
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(orig_rfh, main_test_rfh());
 
-  // Navigate to new site, simulating an onbeforeunload approval.
+  // Navigate to new site.
   const GURL url2("http://www.yahoo.com");
   controller().LoadURL(
       url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(orig_rfh->is_waiting_for_beforeunload_ack());
-  orig_rfh->PrepareForCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 
   // Suppose the original renderer navigates before the new one is ready.
-  orig_rfh->SendNavigate(0, true, GURL("http://www.google.com/foo"));
+  NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("http://www.google.com/foo"), orig_rfh);
 
   // Verify that the pending navigation is cancelled.
   EXPECT_FALSE(orig_rfh->is_waiting_for_beforeunload_ack());
@@ -1079,28 +1073,23 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
             NavigationEntryImpl::FromNavigationEntry(entry3)->site_instance());
 
   // Go back within the site.
-  controller().GoBack();
-  NavigationEntry* goback_entry = controller().GetPendingEntry();
+  auto back_navigation1 =
+      NavigationSimulator::CreateHistoryNavigation(-1, contents());
+  back_navigation1->Start();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(entry2, controller().GetPendingEntry());
 
   // Before that commits, go back again.
-  controller().GoBack();
+  back_navigation1->ReadyToCommit();
+  auto back_navigation2 =
+      NavigationSimulator::CreateHistoryNavigation(-1, contents());
+  back_navigation2->Start();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_TRUE(contents()->GetPendingMainFrame());
   EXPECT_EQ(entry1, controller().GetPendingEntry());
 
-  // Simulate beforeunload approval.
-  EXPECT_TRUE(google_rfh->is_waiting_for_beforeunload_ack());
-  base::TimeTicks now = base::TimeTicks::Now();
-  google_rfh->PrepareForCommit();
-  google_rfh->OnMessageReceived(
-      FrameHostMsg_BeforeUnload_ACK(0, true, now, now));
-
   // DidNavigate from the first back. This aborts the second back's pending RFH.
-  contents()->TestDidNavigateWithSequenceNumber(
-      google_rfh, goback_entry->GetUniqueID(), false, url2, Referrer(),
-      ui::PAGE_TRANSITION_TYPED, false, 1, 1);
+  back_navigation1->Commit();
 
   // We should commit this page and forget about the second back.
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
@@ -1121,7 +1110,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
 // Tests that if we go back twice (same-site then cross-site), and the cross-
 // site RFH commits first, we ignore the now-swapped-out RFH's commit.
 TEST_F(WebContentsImplTest, CrossSiteNavigationBackOldNavigationIgnored) {
-  // Start with a web ui page, which gets a new RVH with WebUI bindings.
+  // Start with a web ui page, which gets a new RFH with WebUI bindings.
   GURL url1(std::string(kChromeUIScheme) + "://" +
             std::string(kChromeUIGpuHost));
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url1);
@@ -1151,7 +1140,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackOldNavigationIgnored) {
   EXPECT_FALSE(google_rfh->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 
   // Navigate to third page on same site.
-  const GURL url3("http://news.google.com");
+  const GURL url3("http://google.com/foo");
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url3);
   NavigationEntry* entry3 = controller().GetLastCommittedEntry();
   SiteInstance* instance3 = contents()->GetSiteInstance();
@@ -1165,20 +1154,27 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackOldNavigationIgnored) {
             NavigationEntryImpl::FromNavigationEntry(entry3)->site_instance());
 
   // Go back within the site.
-  controller().GoBack();
+  auto back_navigation1 =
+      NavigationSimulator::CreateHistoryNavigation(-1, contents());
+  back_navigation1->ReadyToCommit();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(entry2, controller().GetPendingEntry());
 
   // Before that commits, go back again.
-  controller().GoBack();
+  auto back_navigation2 =
+      NavigationSimulatorImpl::CreateHistoryNavigation(-1, contents());
+  back_navigation2->set_drop_swap_out_ack(true);
+  back_navigation2->ReadyToCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_TRUE(contents()->GetPendingMainFrame());
   EXPECT_EQ(entry1, controller().GetPendingEntry());
   webui_rfh = contents()->GetPendingMainFrame();
 
   // DidNavigate from the second back.
-  contents()->TestDidNavigate(webui_rfh, entry1->GetUniqueID(), false, url1,
-                              ui::PAGE_TRANSITION_TYPED);
+  // Note that the process in instance1 is gone at this point, but we will still
+  // use instance1 and entry1 because HasWrongProcessForURL will return false
+  // when there is no process and the site URL matches.
+  back_navigation2->Commit();
 
   // That should have landed us on the first entry.
   EXPECT_EQ(entry1, controller().GetLastCommittedEntry());
@@ -1187,6 +1183,12 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackOldNavigationIgnored) {
   contents()->TestDidNavigate(google_rfh, entry2->GetUniqueID(), false, url2,
                               ui::PAGE_TRANSITION_TYPED);
   EXPECT_EQ(entry1, controller().GetLastCommittedEntry());
+
+  // The newly created process for url1 should be locked to chrome://gpu.
+  RenderProcessHost* new_process = contents()->GetMainFrame()->GetProcess();
+  auto* policy = content::ChildProcessSecurityPolicy::GetInstance();
+  EXPECT_TRUE(policy->CanAccessDataForOrigin(new_process->GetID(), url1));
+  EXPECT_FALSE(policy->CanAccessDataForOrigin(new_process->GetID(), url2));
 }
 
 // Test that during a slow cross-site navigation, a sub-frame navigation in the
@@ -1220,31 +1222,29 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationNotPreemptedByFrame) {
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 }
 
-namespace {
-void SetAsNonUserGesture(FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
-  params->gesture = NavigationGestureAuto;
-}
-}  // namespace
-
 // Test that a cross-site navigation is not preempted if the previous
 // renderer sends a FrameNavigate message just before being told to stop.
 // We should only preempt the cross-site navigation if the previous renderer
-// has started a new navigation.  See http://crbug.com/79176.
+// has started a new navigation. See http://crbug.com/79176.
 TEST_F(WebContentsImplTest, CrossSiteNotPreemptedDuringBeforeUnload) {
-  // Navigate to WebUI URL.
-  const GURL url("chrome://gpu");
-  controller().LoadURL(
-      url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int entry1_id = controller().GetPendingEntry()->GetUniqueID();
+  const GURL kUrl("http://foo");
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kUrl);
+
+  // First, make a non-user initiated same-site navigation.
+  const GURL kSameSiteUrl("http://foo/1");
   TestRenderFrameHost* orig_rfh = main_test_rfh();
-  orig_rfh->PrepareForCommit();
+  auto same_site_navigation = NavigationSimulator::CreateRendererInitiated(
+      kSameSiteUrl, main_test_rfh());
+  same_site_navigation->SetHasUserGesture(false);
+  same_site_navigation->ReadyToCommit();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
 
-  // Navigate to new site, with the beforeunload request in flight.
-  const GURL url2("http://www.yahoo.com");
-  controller().LoadURL(
-      url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int entry2_id = controller().GetPendingEntry()->GetUniqueID();
+  // Navigate to a new site, with the beforeunload request in flight.
+  const GURL kCrossSiteUrl("http://www.yahoo.com");
+  auto cross_site_navigation = NavigationSimulatorImpl::CreateBrowserInitiated(
+      kCrossSiteUrl, contents());
+  cross_site_navigation->set_block_on_before_unload_ack(true);
+  cross_site_navigation->Start();
   TestRenderFrameHost* pending_rfh = contents()->GetPendingMainFrame();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_TRUE(orig_rfh->is_waiting_for_beforeunload_ack());
@@ -1253,21 +1253,19 @@ TEST_F(WebContentsImplTest, CrossSiteNotPreemptedDuringBeforeUnload) {
   // Suppose the first navigation tries to commit now, with a
   // FrameMsg_Stop in flight.  This should not cancel the pending navigation,
   // but it should act as if the beforeunload ack arrived.
-  orig_rfh->SendNavigateWithModificationCallback(
-      entry1_id, true, url, base::Bind(SetAsNonUserGesture));
+  same_site_navigation->Commit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(orig_rfh, main_test_rfh());
   EXPECT_FALSE(orig_rfh->is_waiting_for_beforeunload_ack());
   // It should commit.
-  ASSERT_EQ(1, controller().GetEntryCount());
-  EXPECT_EQ(url, controller().GetLastCommittedEntry()->GetURL());
+  ASSERT_EQ(2, controller().GetEntryCount());
+  EXPECT_EQ(kSameSiteUrl, controller().GetLastCommittedEntry()->GetURL());
 
   // The pending navigation should be able to commit successfully.
-  contents()->TestDidNavigate(pending_rfh, entry2_id, true, url2,
-                              ui::PAGE_TRANSITION_TYPED);
+  cross_site_navigation->Commit();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(pending_rfh, main_test_rfh());
-  EXPECT_EQ(2, controller().GetEntryCount());
+  EXPECT_EQ(3, controller().GetEntryCount());
 }
 
 // Test that NavigationEntries have the correct page state after going
@@ -2831,47 +2829,43 @@ TEST_F(WebContentsImplTest, ActiveContentsCountNavigate) {
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
 
   // Navigate to a URL.
-  contents->GetController().LoadURL(GURL("http://a.com/1"),
-                                    Referrer(),
-                                    ui::PAGE_TRANSITION_TYPED,
-                                    std::string());
+  auto navigation1 = NavigationSimulator::CreateBrowserInitiated(
+      GURL("http://a.com/1"), contents.get());
+  navigation1->Start();
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
-  contents->CommitPendingNavigation();
+  navigation1->Commit();
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
 
   // Navigate to a URL in the same site.
-  contents->GetController().LoadURL(GURL("http://a.com/2"),
-                                    Referrer(),
-                                    ui::PAGE_TRANSITION_TYPED,
-                                    std::string());
+  auto navigation2 = NavigationSimulator::CreateBrowserInitiated(
+      GURL("http://a.com/2"), contents.get());
+  navigation2->Start();
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
-  contents->CommitPendingNavigation();
+  navigation2->Commit();
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
 
   // Navigate to a URL in a different site in the same BrowsingInstance.
   const GURL kUrl2("http://b.com");
-  contents->GetController().LoadURL(kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK,
-                                    std::string());
-  int entry_id = contents->GetController().GetPendingEntry()->GetUniqueID();
-  contents->GetMainFrame()->PrepareForCommit();
-  if (AreAllSitesIsolatedForTesting())
-    EXPECT_TRUE(contents->CrossProcessNavigationPending());
+  auto navigation3 =
+      NavigationSimulator::CreateRendererInitiated(kUrl2, main_test_rfh());
+  navigation3->ReadyToCommit();
+  EXPECT_FALSE(contents->CrossProcessNavigationPending());
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
-  contents->GetPendingMainFrame()->SendNavigate(entry_id, true, kUrl2);
+  navigation3->Commit();
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
 
   // Navigate to a URL in a different site and different BrowsingInstance, by
   // using a TYPED page transition instead of LINK.
   const GURL kUrl3("http://c.com");
-  contents->GetController().LoadURL(kUrl3, Referrer(),
-                                    ui::PAGE_TRANSITION_TYPED, std::string());
-  entry_id = contents->GetController().GetPendingEntry()->GetUniqueID();
-  contents->GetMainFrame()->PrepareForCommit();
+  auto navigation4 =
+      NavigationSimulator::CreateBrowserInitiated(kUrl3, contents.get());
+  navigation4->SetTransition(ui::PAGE_TRANSITION_TYPED);
+  navigation4->ReadyToCommit();
   EXPECT_TRUE(contents->CrossProcessNavigationPending());
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
   scoped_refptr<SiteInstance> new_instance =
       contents->GetPendingMainFrame()->GetSiteInstance();
-  contents->GetPendingMainFrame()->SendNavigate(entry_id, true, kUrl3);
+  navigation4->Commit();
   EXPECT_EQ(0u, instance->GetRelatedActiveContentsCount());
   EXPECT_EQ(1u, new_instance->GetRelatedActiveContentsCount());
   EXPECT_FALSE(new_instance->IsRelatedSiteInstance(instance.get()));
@@ -2902,12 +2896,9 @@ TEST_F(WebContentsImplTest, ActiveContentsCountChangeBrowsingInstance) {
 
   // Navigate to a URL with WebUI. This will change BrowsingInstances.
   const GURL kWebUIUrl = GURL("chrome://gpu");
-  contents->GetController().LoadURL(kWebUIUrl,
-                                    Referrer(),
-                                    ui::PAGE_TRANSITION_TYPED,
-                                    std::string());
-  int entry_id = contents->GetController().GetPendingEntry()->GetUniqueID();
-  contents->GetMainFrame()->PrepareForCommit();
+  auto web_ui_navigation =
+      NavigationSimulator::CreateBrowserInitiated(kWebUIUrl, contents.get());
+  web_ui_navigation->Start();
   EXPECT_TRUE(contents->CrossProcessNavigationPending());
   scoped_refptr<SiteInstance> instance_webui(
       contents->GetPendingMainFrame()->GetSiteInstance());
@@ -2918,7 +2909,7 @@ TEST_F(WebContentsImplTest, ActiveContentsCountChangeBrowsingInstance) {
   EXPECT_EQ(0u, instance_webui->GetRelatedActiveContentsCount());
 
   // Commit and contents counts for the new one.
-  contents->GetPendingMainFrame()->SendNavigate(entry_id, true, kWebUIUrl);
+  web_ui_navigation->Commit();
   EXPECT_EQ(0u, instance->GetRelatedActiveContentsCount());
   EXPECT_EQ(1u, instance_webui->GetRelatedActiveContentsCount());
 
@@ -3212,10 +3203,8 @@ TEST_F(WebContentsImplTest, ThemeColorChangeDependingOnFirstVisiblePaint) {
   TestRenderFrameHost* rfh = main_test_rfh();
   rfh->InitializeRenderFrameIfNeeded();
 
-  SkColor transparent = SK_ColorTRANSPARENT;
-
-  EXPECT_EQ(transparent, contents()->GetThemeColor());
-  EXPECT_EQ(transparent, observer.last_theme_color());
+  EXPECT_EQ(base::nullopt, contents()->GetThemeColor());
+  EXPECT_EQ(base::nullopt, observer.last_theme_color());
 
   // Theme color changes should not propagate past the WebContentsImpl before
   // the first visually non-empty paint has occurred.
@@ -3223,7 +3212,7 @@ TEST_F(WebContentsImplTest, ThemeColorChangeDependingOnFirstVisiblePaint) {
       FrameHostMsg_DidChangeThemeColor(rfh->GetRoutingID(), SK_ColorRED));
 
   EXPECT_EQ(SK_ColorRED, contents()->GetThemeColor());
-  EXPECT_EQ(transparent, observer.last_theme_color());
+  EXPECT_EQ(base::nullopt, observer.last_theme_color());
 
   // Simulate that the first visually non-empty paint has occurred. This will
   // propagate the current theme color to the delegates.

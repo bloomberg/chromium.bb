@@ -148,12 +148,15 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
     state->BeginArray("items");
 
     PlaybackParams params(nullptr, SkMatrix::I());
-    const auto& bounds = rtree_.GetAllBoundsForTracing();
-    size_t i = 0;
+    std::map<size_t, gfx::Rect> visual_rects = rtree_.GetAllBoundsForTracing();
     for (const PaintOp* op : PaintOpBuffer::Iterator(&paint_op_buffer_)) {
       state->BeginDictionary();
       state->SetString("name", PaintOpTypeToString(op->GetType()));
-      MathUtil::AddToTracedValue("visual_rect", bounds[i++], state.get());
+
+      MathUtil::AddToTracedValue(
+          "visual_rect",
+          visual_rects[paint_op_buffer_.GetOpOffsetForTracing(op)],
+          state.get());
 
       SkPictureRecorder recorder;
       SkCanvas* canvas =

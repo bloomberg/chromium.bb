@@ -678,10 +678,10 @@ class NavigationListModel extends cr.EventTarget {
       }
 
       // Remove partitions that aren't available anymore.
-      const existingVolumeIds =
-          new Set(removableGroup.map(p => p.volumeInfo.volumeId));
+      const existingVolumeInfos =
+          new Set(removableGroup.map(p => p.volumeInfo));
       for (const partition of removableEntry.getUIChildren()) {
-        if (!existingVolumeIds.has(partition.volumeInfo.volumeId)) {
+        if (!existingVolumeInfos.has(partition.volumeInfo)) {
           removableEntry.removeChildEntry(partition);
         }
       }
@@ -689,8 +689,7 @@ class NavigationListModel extends cr.EventTarget {
       // Add partitions as entries.
       for (const partition of removableGroup) {
         // Only add partition if it doesn't exist as a child already.
-        if (removableEntry.findIndexByVolumeInfo(partition.volumeInfo) ===
-            -1) {
+        if (removableEntry.findIndexByVolumeInfo(partition.volumeInfo) === -1) {
           removableEntry.addEntry(new VolumeEntry(partition.volumeInfo));
         }
       }

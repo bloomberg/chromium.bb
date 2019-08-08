@@ -309,22 +309,57 @@ class SkylabHWTestStage(HWTestStage):
   def _SetBranchedSuiteConfig(self, suite_config):
     suite_config.SetBranchedValuesForSkylab()
 
+  # Temporary hack during skylab and quotascheduler migration, to override
+  # certain builders' pool config values.
+  def _PoolHack(self, pool):
+    # Override the pool for all pfqs (except those also running release in
+    # Skylab) to use the quotascheduler pool. See crbug.com/950017
+    blacklist = ('asuka', 'coral', 'nyan_blaze', 'reef')
+    build_type = self._run.config.build_type
+    if config_lib.IsPFQType(build_type) and self._board_name not in blacklist:
+      pool = constants.HWTEST_QUOTA_POOL
+
+    # Retain guado_moblab and wukong paladins on cq pool, until they are able
+    # to migrate to Skylab. See crbug.com/949217
+    if (self._board_name in ('guado_moblab', 'wukong') and
+        config_lib.IsCQType(self._run.config.build_type)):
+      pool = constants.HWTEST_PALADIN_POOL
+
+    return pool
+
+  # Temporary measure during skylab and quotascheduler migration, because
+  # quota_account is not yet correctly specified in most HWTestConfig entries.
+  def _InferQuotaAccount(self):
+    """Attempt to infer quota account to use for this test, if applicable."""
+    build_type = self._run.config.build_type
+    # The order of checks matters here, because CQ builds are considered to be
+    # PFQ type as well.
+    if config_lib.IsCQType(build_type):
+      return 'cq'
+    if config_lib.IsPFQType(build_type):
+      return 'pfq'
+    return None
+
   def PerformStage(self):
     build = '/'.join([self._bot_id, self.version])
+
+    pool = self._PoolHack(self.suite_config.pool)
+    quota_account = self.suite_config.quota_account or self._InferQuotaAccount()
 
     cmd_result = commands.RunSkylabHWTestSuite(
         build,
         self.suite_config.suite,
         self._board_name,
         model=self._model,
-        pool=self.suite_config.pool,
+        pool=pool,
         wait_for_results=self.wait_for_results,
         priority=self.suite_config.priority,
         timeout_mins=self.suite_config.timeout_mins,
         retry=self.suite_config.retry,
         max_retries=self.suite_config.max_retries,
         suite_args=self.suite_config.suite_args,
-        job_keyvals=self.GetJobKeyvals())
+        job_keyvals=self.GetJobKeyvals(),
+        quota_account=quota_account)
 
     if cmd_result.to_raise:
       raise cmd_result.to_raise
@@ -435,31 +470,6 @@ class BinhostTestStage(generic_stages.BuilderStage):
     incremental = not (self._run.config.chrome_rev or
                        self._run.options.chrome_rev)
     commands.RunBinhostTest(self._build_root, incremental=incremental)
-
-
-class BranchUtilTestStage(generic_stages.BuilderStage):
-  """Stage that verifies branching works on the latest manifest version."""
-
-  config_name = 'branch_util_test'
-  category = constants.CI_INFRA_STAGE
-
-  def PerformStage(self):
-    assert (hasattr(self._run.attrs, 'manifest_manager') and
-            self._run.attrs.manifest_manager is not None), \
-        'Must run ManifestVersionedSyncStage before this stage.'
-    manifest_manager = self._run.attrs.manifest_manager
-
-    args = [
-        '--branch-name',
-        'test_branch',
-        '--version',
-        manifest_manager.GetCurrentVersionInfo().VersionString(),
-    ]
-
-    if self._run.options.git_cache_dir:
-      args.extend(['--git-cache-dir', self._run.options.git_cache_dir])
-
-    commands.RunLocalTryjob(self._build_root, 'branch-util-tryjob', args)
 
 
 class CrosSigningTestStage(generic_stages.BuilderStage):

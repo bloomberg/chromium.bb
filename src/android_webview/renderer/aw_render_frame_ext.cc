@@ -159,7 +159,7 @@ AwRenderFrameExt::AwRenderFrameExt(content::RenderFrame* render_frame)
   new autofill::AutofillAgent(render_frame, password_autofill_agent, nullptr,
                               &registry_);
   if (content_capture::features::IsContentCaptureEnabled())
-    new content_capture::ContentCaptureSender(render_frame);
+    new content_capture::ContentCaptureSender(render_frame, &registry_);
 
   // Add myself to the RenderFrame => AwRenderFrameExt register.
   render_frame_ext_map.Get().emplace(render_frame, this);
@@ -343,12 +343,12 @@ void AwRenderFrameExt::OnSetBackgroundColor(SkColor c) {
 
 void AwRenderFrameExt::OnSmoothScroll(int target_x,
                                       int target_y,
-                                      int duration_ms) {
+                                      uint64_t duration_ms) {
   blink::WebView* webview = GetWebView();
   if (!webview)
     return;
 
-  webview->SmoothScroll(target_x, target_y, static_cast<long>(duration_ms));
+  webview->SmoothScroll(target_x, target_y, duration_ms);
 }
 
 void AwRenderFrameExt::OnSetWillSuppressErrorPage(bool suppress) {

@@ -173,6 +173,12 @@ class MetaBuildWrapper(object):
                             help='look up the command for a given config or '
                                  'builder')
     AddCommonOptions(subp)
+    subp.add_argument('--quiet', default=False, action='store_true',
+                      help='Print out just the arguments, '
+                           'do not emulate the output of the gen subcommand.')
+    subp.add_argument('--recursive', default=False, action='store_true',
+                      help='Lookup arguments from imported files, '
+                           'implies --quiet')
     subp.set_defaults(func=self.CmdLookup)
 
     subp = subps.add_parser(
@@ -330,12 +336,15 @@ class MetaBuildWrapper(object):
 
   def CmdLookup(self):
     vals = self.Lookup()
-    cmd = self.GNCmd('gen', '_path_')
-    gn_args = self.GNArgs(vals)
-    self.Print('\nWriting """\\\n%s""" to _path_/args.gn.\n' % gn_args)
-    env = None
+    gn_args = self.GNArgs(vals, expand_imports=self.args.recursive)
+    if self.args.quiet or self.args.recursive:
+      self.Print(gn_args, end='')
+    else:
+      cmd = self.GNCmd('gen', '_path_')
+      self.Print('\nWriting """\\\n%s""" to _path_/args.gn.\n' % gn_args)
+      env = None
 
-    self.PrintCmd(cmd, env)
+      self.PrintCmd(cmd, env)
     return 0
 
   def CmdRun(self):
@@ -391,17 +400,17 @@ class MetaBuildWrapper(object):
     # crbug.com/812428
 
     # Add in required base software. This should be kept in sync with the
-    # `swarming` recipe module in build.git. All references to `swarming_module`
-    # below are purely due to this.
+    # `chromium_swarming` recipe module in build.git. All references to
+    # `swarming_module` below are purely due to this.
     cipd_packages = [
       ('infra/python/cpython/${platform}',
        'version:2.7.14.chromium14'),
       ('infra/tools/luci/logdog/butler/${platform}',
        'git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c'),
       ('infra/tools/luci/vpython-native/${platform}',
-       'git_revision:b6cdec8586c9f8d3d728b1bc0bd4331330ba66fc'),
+       'git_revision:cc09450f1c27c0034ec08b1f6d63bbc298294763'),
       ('infra/tools/luci/vpython/${platform}',
-       'git_revision:b6cdec8586c9f8d3d728b1bc0bd4331330ba66fc'),
+       'git_revision:cc09450f1c27c0034ec08b1f6d63bbc298294763'),
     ]
     for pkg, vers in cipd_packages:
       cmd.append('--cipd-package=.swarming_module:%s:%s' % (pkg, vers))
@@ -420,6 +429,9 @@ class MetaBuildWrapper(object):
     ])
 
   def _RunUnderSwarming(self, build_dir, target):
+    isolate_server = 'isolateserver.appspot.com'
+    namespace = 'default-gzip'
+    swarming_server = 'chromium-swarm.appspot.com'
     # TODO(dpranke): Look up the information for the target in
     # the //testing/buildbot.json file, if possible, so that we
     # can determine the isolate target, command line, and additional
@@ -434,9 +446,9 @@ class MetaBuildWrapper(object):
         self.executable,
         self.PathJoin('tools', 'swarming_client', 'isolate.py'),
         'archive',
-        '-s',
-        self.ToSrcRelPath('%s/%s.isolated' % (build_dir, target)),
-        '-I', 'isolateserver.appspot.com',
+        '-s', self.ToSrcRelPath('%s/%s.isolated' % (build_dir, target)),
+        '-I', isolate_server,
+        '--namespace', namespace,
       ]
     ret, out, _ = self.Run(cmd, force_verbose=False)
     if ret:
@@ -448,8 +460,9 @@ class MetaBuildWrapper(object):
         self.PathJoin('tools', 'swarming_client', 'swarming.py'),
           'run',
           '-s', isolated_hash,
-          '-I', 'isolateserver.appspot.com',
-          '-S', 'chromium-swarm.appspot.com',
+          '-I', isolate_server,
+          '--namespace', namespace,
+          '-S', swarming_server,
       ] + dimensions
     self._AddBaseSoftware(cmd)
     if self.args.extra_args:
@@ -936,19 +949,27 @@ class MetaBuildWrapper(object):
     """
 
     android = 'target_os="android"' in vals['gn_args']
+    ios = 'target_os="ios"' in vals['gn_args']
     fuchsia = 'target_os="fuchsia"' in vals['gn_args']
     win = self.platform == 'win32' or 'target_os="win"' in vals['gn_args']
     possible_runtime_deps_rpaths = {}
     for target in ninja_targets:
+      target_type = isolate_map[target]['type']
+      label = isolate_map[target]['label']
+      stamp_runtime_deps = 'obj/%s.stamp.runtime_deps' % label.replace(':', '/')
       # TODO(https://crbug.com/876065): 'official_tests' use
       # type='additional_compile_target' to isolate tests. This is not the
       # intended use for 'additional_compile_target'.
-      if (isolate_map[target]['type'] == 'additional_compile_target' and
+      if (target_type == 'additional_compile_target' and
           target != 'official_tests'):
         # By definition, additional_compile_targets are not tests, so we
         # shouldn't generate isolates for them.
         raise MBErr('Cannot generate isolate for %s since it is an '
                     'additional_compile_target.' % target)
+      elif fuchsia or ios or target_type == 'generated_script':
+        # iOS and Fuchsia targets end up as groups.
+        # generated_script targets are always actions.
+        rpaths = [stamp_runtime_deps]
       elif android:
         # Android targets may be either android_apk or executable. The former
         # will result in runtime_deps associated with the stamp file, while the
@@ -956,20 +977,16 @@ class MetaBuildWrapper(object):
         label = isolate_map[target]['label']
         rpaths = [
             target + '.runtime_deps',
-            'obj/%s.stamp.runtime_deps' % label.replace(':', '/')]
-      elif fuchsia:
-        # Only emit a runtime deps file for the group() target on Fuchsia.
-        label = isolate_map[target]['label']
-        rpaths = ['obj/%s.stamp.runtime_deps' % label.replace(':', '/')]
-      elif (isolate_map[target]['type'] == 'script' or
-            isolate_map[target]['type'] == 'fuzzer' or
+            stamp_runtime_deps]
+      elif (target_type == 'script' or
+            target_type == 'fuzzer' or
             isolate_map[target].get('label_type') == 'group'):
         # For script targets, the build target is usually a group,
         # for which gn generates the runtime_deps next to the stamp file
         # for the label, which lives under the obj/ directory, but it may
         # also be an executable.
         label = isolate_map[target]['label']
-        rpaths = ['obj/%s.stamp.runtime_deps' % label.replace(':', '/')]
+        rpaths = [stamp_runtime_deps]
         if win:
           rpaths += [ target + '.exe.runtime_deps' ]
         else:
@@ -1079,7 +1096,7 @@ class MetaBuildWrapper(object):
     return [gn_path, subcommand, path] + list(args)
 
 
-  def GNArgs(self, vals):
+  def GNArgs(self, vals, expand_imports=False):
     if vals['cros_passthrough']:
       if not 'GN_ARGS' in os.environ:
         raise MBErr('MB is expecting GN_ARGS to be in the environment')
@@ -1103,26 +1120,34 @@ class MetaBuildWrapper(object):
     if android_version_name:
       gn_args += ' android_default_version_name="%s"' % android_version_name
 
-    # Canonicalize the arg string into a sorted, newline-separated list
-    # of key-value pairs, and de-dup the keys if need be so that only
-    # the last instance of each arg is listed.
-    gn_args = gn_helpers.ToGNString(gn_helpers.FromGNArgs(gn_args))
+    args_gn_lines = []
+    parsed_gn_args = {}
 
     # If we're using the Simple Chrome SDK, add a comment at the top that
     # points to the doc. This must happen after the gn_helpers.ToGNString()
     # call above since gn_helpers strips comments.
     if vals['cros_passthrough']:
-      simplechrome_comment = [
+      args_gn_lines.extend([
           '# These args are generated via the Simple Chrome SDK. See the link',
           '# below for more details:',
           '# https://chromium.googlesource.com/chromiumos/docs/+/master/simple_chrome_workflow.md',  # pylint: disable=line-too-long
-      ]
-      gn_args = '%s\n%s' % ('\n'.join(simplechrome_comment), gn_args)
+      ])
 
     args_file = vals.get('args_file', None)
     if args_file:
-      gn_args = ('import("%s")\n' % vals['args_file']) + gn_args
-    return gn_args
+      if expand_imports:
+        content = self.ReadFile(self.ToAbsPath(args_file))
+        parsed_gn_args = gn_helpers.FromGNArgs(content)
+      else:
+        args_gn_lines.append('import("%s")' % args_file)
+
+    # Canonicalize the arg string into a sorted, newline-separated list
+    # of key-value pairs, and de-dup the keys if need be so that only
+    # the last instance of each arg is listed.
+    parsed_gn_args.update(gn_helpers.FromGNArgs(gn_args))
+    args_gn_lines.append(gn_helpers.ToGNString(parsed_gn_args))
+
+    return '\n'.join(args_gn_lines)
 
   def GetIsolateCommand(self, target, vals):
     isolate_map = self.ReadIsolateMap()
@@ -1149,7 +1174,8 @@ class MetaBuildWrapper(object):
     test_type = isolate_map[target]['type']
 
     executable = isolate_map[target].get('executable', target)
-    executable_suffix = '.exe' if is_win else ''
+    executable_suffix = isolate_map[target].get(
+        'executable_suffix', '.exe' if is_win else '')
 
     cmdline = []
     extra_files = [
@@ -1161,7 +1187,12 @@ class MetaBuildWrapper(object):
       self.WriteFailureAndRaise('We should not be isolating %s.' % target,
                                 output_path=None)
 
-    if test_type == 'fuzzer':
+    if test_type == 'generated_script':
+      cmdline = [
+          '../../testing/test_env.py',
+          isolate_map[target]['script'],
+      ]
+    elif test_type == 'fuzzer':
       cmdline = [
         '../../testing/test_env.py',
         '../../tools/code_coverage/run_fuzz_target.py',
@@ -1169,7 +1200,10 @@ class MetaBuildWrapper(object):
         '--output-dir', '${ISOLATED_OUTDIR}',
         '--timeout', '3600']
     elif is_android and test_type != "script":
-      cmdline = [
+      cmdline = []
+      if asan:
+        cmdline += [os.path.join('bin', 'run_with_asan'), '--']
+      cmdline += [
           '../../testing/test_env.py',
           '../../build/android/test_wrapper/logdog_wrapper.py',
           '--target', target,

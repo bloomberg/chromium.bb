@@ -4,6 +4,7 @@
 
 // <include src="post_message_channel.js">
 // <include src="webview_event_manager.js">
+// <include src="../chromeos/login/saml_password_attributes.js">
 
 /**
  * @fileoverview Saml support for webview based auth.
@@ -71,8 +72,12 @@ cr.define('cr.login', function() {
    * auth IdP pages.
    */
   class SamlHandler extends cr.EventTarget {
-    /** @param {webview} webview */
-    constructor(webview) {
+    /**
+     * @param {webview} webview
+     * @param {boolean} startsOnSamlPage - whether initial URL is already SAML
+     *                  page
+     * */
+    constructor(webview, startsOnSamlPage) {
       super();
 
       /**
@@ -82,17 +87,22 @@ cr.define('cr.login', function() {
       this.webview_ = webview;
 
       /**
+       * Whether a Saml page is in the webview from the start.
+       */
+      this.startsOnSamlPage_ = startsOnSamlPage;
+
+      /**
        * Whether a Saml IdP page is display in the webview.
        * @type {boolean}
        */
-      this.isSamlPage_ = false;
+      this.isSamlPage_ = this.startsOnSamlPage_;
 
       /**
        * Pending Saml IdP page flag that is set when a SAML_HEADER is received
        * and is copied to |isSamlPage_| in loadcommit.
        * @type {boolean}
        */
-      this.pendingIsSamlPage_ = false;
+      this.pendingIsSamlPage_ = this.startsOnSamlPage_;
 
       /**
        * The last aborted top level url. It is recorded in loadabort event and
@@ -139,12 +149,19 @@ cr.define('cr.login', function() {
        */
       this.apiPasswordBytes_ = null;
 
-      /*
+      /**
        * Whether to abort the authentication flow and show an error messagen
        * when content served over an unencrypted connection is detected.
        * @type {boolean}
        */
       this.blockInsecureContent = false;
+
+      /**
+       * Whether to attempt to extract password attributes from the SAMLResponse
+       * XML. See ../chromeos/login/saml_password_attributes.js
+       * @type {boolean}
+       */
+      this.extractSamlPasswordAttributes = false;
 
       this.webviewEventManager_ = WebviewEventManager.create();
 
@@ -153,8 +170,6 @@ cr.define('cr.login', function() {
       this.webviewEventManager_.addEventListener(
           this.webview_, 'loadabort', this.onLoadAbort_.bind(this));
       this.webviewEventManager_.addEventListener(
-          this.webview_, 'loadcommit', this.onLoadCommit_.bind(this));
-      this.webviewEventManager_.addEventListener(
           this.webview_, 'permissionrequest',
           this.onPermissionRequest_.bind(this));
 
@@ -162,11 +177,23 @@ cr.define('cr.login', function() {
           this.webview_.request.onBeforeRequest,
           this.onInsecureRequest.bind(this),
           {urls: ['http://*/*', 'file://*/*', 'ftp://*/*']}, ['blocking']);
+
       this.webviewEventManager_.addWebRequestEventListener(
-          this.webview_.request.onHeadersReceived,
-          this.onHeadersReceived_.bind(this),
-          {urls: ['<all_urls>'], types: ['main_frame', 'xmlhttprequest']},
-          ['blocking', 'responseHeaders']);
+          this.webview_.request.onBeforeRequest,
+          this.onMainFrameWebRequest.bind(this),
+          {urls: ['http://*/*', 'https://*/*'], types: ['main_frame']},
+          ['requestBody']);
+
+      if (!this.startsOnSamlPage_) {
+        this.webviewEventManager_.addEventListener(
+            this.webview_, 'loadcommit', this.onLoadCommit_.bind(this));
+
+        this.webviewEventManager_.addWebRequestEventListener(
+            this.webview_.request.onHeadersReceived,
+            this.onHeadersReceived_.bind(this),
+            {urls: ['<all_urls>'], types: ['main_frame', 'xmlhttprequest']},
+            ['blocking', 'responseHeaders']);
+      }
 
       this.webview_.addContentScripts([{
         name: injectedScriptName,
@@ -213,6 +240,19 @@ cr.define('cr.login', function() {
     }
 
     /**
+     * Gets the list of passwords which were scpared exactly |times| times.
+     * @return {Array<string>}
+     */
+    getPasswordsScrapedTimes(times) {
+      const passwords = {};
+      for (const property in this.passwordStore_) {
+        const key = this.passwordStore_[property];
+        passwords[key] = (passwords[key] + 1) || 1;
+      }
+      return Object.keys(passwords).filter(key => passwords[key] == times);
+    }
+
+    /**
      * Gets the de-duped scraped passwords.
      * @return {Array<string>}
      * @private
@@ -239,8 +279,8 @@ cr.define('cr.login', function() {
      * Resets all auth states
      */
     reset() {
-      this.isSamlPage_ = false;
-      this.pendingIsSamlPage_ = false;
+      this.isSamlPage_ = this.startsOnSamlPage_;
+      this.pendingIsSamlPage_ = this.startsOnSamlPage_;
       this.passwordStore_ = {};
 
       this.apiInitialized_ = false;
@@ -316,6 +356,37 @@ cr.define('cr.login', function() {
       this.dispatchEvent(new CustomEvent(
           'insecureContentBlocked', {detail: {url: strippedUrl}}));
       return {cancel: true};
+    }
+
+    /**
+     * Handler for webRequest.onBeforeRequest that looks for the Base64
+     * encoded SAMLResponse in the POST-ed formdata sent from the SAML page.
+     * Non-blocking.
+     * @param {Object} details The web-request details.
+     */
+    onMainFrameWebRequest(details) {
+      if (!this.extractSamlPasswordAttributes) return;
+      if (!this.isSamlPage_ || details.method != 'POST') return;
+
+      const formData = details.requestBody.formData;
+      let samlResponse = (formData && formData.SAMLResponse);
+      if (!samlResponse) {
+        samlResponse = new URL(details.url).searchParams.get('SAMLResponse');
+      }
+      if (!samlResponse) return;
+
+      try {
+        // atob means asciiToBinary, which actually means base64Decode:
+        samlResponse = window.atob(samlResponse);
+      } catch (decodingError) {
+        console.warn('SAMLResponse is not Base64 encoded');
+        return;
+      }
+
+      const attr = samlPasswordAttributes.readPasswordAttributes(samlResponse);
+      chrome.send('updatePasswordAttributes', [
+        attr.modifiedTimestamp, attr.expirationTimestamp, attr.passwordChangeUrl
+      ]);
     }
 
     /**

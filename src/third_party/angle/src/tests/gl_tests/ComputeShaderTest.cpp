@@ -384,6 +384,9 @@ void main()
 // Basic test for DispatchComputeIndirect.
 TEST_P(ComputeShaderTest, DispatchComputeIndirect)
 {
+    // Flaky crash on teardown, see http://anglebug.com/3349
+    ANGLE_SKIP_TEST_IF(IsD3D11() && IsIntel() && IsWindows());
+
     GLTexture texture;
     GLFramebuffer framebuffer;
     const char kCSSource[] = R"(#version 310 es
@@ -2378,6 +2381,8 @@ TEST_P(ComputeShaderTestES3, NotSupported)
 // The contents of shared variables should be cleared to zero at the beginning of shader execution.
 TEST_P(WebGL2ComputeTest, sharedVariablesShouldBeZero)
 {
+    // http://anglebug.com/3226
+    ANGLE_SKIP_TEST_IF(IsD3D11());
     const char kCSShader[] = R"(#version 310 es
 layout (local_size_x = 4, local_size_y = 4, local_size_z = 1) in;
 layout (r32ui, binding = 0) readonly uniform highp uimage2D srcImage;
@@ -2489,9 +2494,6 @@ void main()
 // Test storage buffer bound is unchanged, shader writes it, buffer content should be updated.
 TEST_P(ComputeShaderTest, StorageBufferBoundUnchanged)
 {
-    // TODO(xinghua.cao@intel.com): Fix this. http://anglebug.com/3037
-    ANGLE_SKIP_TEST_IF(IsD3D11());
-
     constexpr char kCS[] = R"(#version 310 es
 layout(local_size_x=16, local_size_y=16) in;
 precision highp usampler2D;
@@ -2748,6 +2750,14 @@ void main()
     glReadPixels(0, 0, kWidth1, kHeight1, GL_RED_INTEGER, GL_UNSIGNED_INT, &outputValues);
     EXPECT_GL_NO_ERROR();
     EXPECT_EQ(expectedValue, outputValues);
+}
+
+// Test that invalid memory barrier will produce an error.
+TEST_P(ComputeShaderTest, InvalidMemoryBarrier)
+{
+    GLbitfield barriers = 0;
+    glMemoryBarrier(barriers);
+    EXPECT_GL_ERROR(GL_INVALID_VALUE);
 }
 
 ANGLE_INSTANTIATE_TEST(ComputeShaderTest, ES31_OPENGL(), ES31_OPENGLES(), ES31_D3D11());

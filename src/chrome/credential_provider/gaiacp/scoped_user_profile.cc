@@ -4,28 +4,19 @@
 
 #include "chrome/credential_provider/gaiacp/scoped_user_profile.h"
 
-// Must appear before gdiplus.h
-// gdiplus.h requires global functions min and max to exist. But the usage of
-// these functions occurs in the Gdiplus namespace only so we just declare
-// std::min and std::max in this namespace so that gdiplus can find them.
-// This is similar to what was done in:
-// https://cs.chromium.org/chromium/src/third_party/pdfium/core/fxge/win32/fx_win32_gdipext.cpp?type=cs&q=gdiplus.h&g=0&l=29
-namespace Gdiplus {
-using std::max;
-using std::min;
-}  // namespace Gdiplus
-
 #include <Windows.h>
 
+#include <aclapi.h>
 #include <atlcomcli.h>
 #include <atlconv.h>
 #include <dpapi.h>
-#include <gdiplus.h>
 #include <objidl.h>
 #include <security.h>
 #include <shlobj.h>
 #include <shlwapi.h>
 #include <userenv.h>
+
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -53,13 +44,12 @@ namespace {
 // retrying would not be needed, but this notification does not exist.
 const int kWaitForProfileCreationRetryCount = 30;
 
-constexpr int kProfilePictureSizes[] = {
-    32, 40, 48, 96, 192, 240, kLargestProfilePictureSize};
+constexpr int kProfilePictureSizes[] = {32, 40, 48, 96, 192, 240, 448};
 
 std::string GetEncryptedRefreshToken(
     base::win::ScopedHandle::Handle logon_handle,
-    const base::DictionaryValue& properties) {
-  std::string refresh_token = GetDictStringUTF8(&properties, kKeyRefreshToken);
+    const base::Value& properties) {
+  std::string refresh_token = GetDictStringUTF8(properties, kKeyRefreshToken);
   if (refresh_token.empty()) {
     LOGFN(ERROR) << "Refresh token is empty";
     return std::string();
@@ -95,100 +85,27 @@ std::string GetEncryptedRefreshToken(
   return encrypted_data;
 }
 
-HRESULT GetEncoderClsidByExtension(const base::string16& desired_extension,
-                                   CLSID* clsid_out) {
-  DCHECK(clsid_out);
-  // Number of image encoders.
-  UINT num = 0;
-  // Size of the image encoder array in bytes.
-  UINT size = 0;
-
-  Gdiplus::ImageCodecInfo* image_codec_info = nullptr;
-
-  Gdiplus::GetImageEncodersSize(&num, &size);
-  if (size == 0)
-    return E_FAIL;
-
-  std::unique_ptr<char[]> encoder_buffer(new char[size]);
-
-  image_codec_info =
-      reinterpret_cast<Gdiplus::ImageCodecInfo*>(encoder_buffer.get());
-
-  if (image_codec_info == nullptr)
-    return E_FAIL;
-
-  Gdiplus::GetImageEncoders(num, size, image_codec_info);
-
-  for (UINT j = 0; j < num; ++j) {
-    // FilenameExtension is a semicolon separated list of extensions recognized
-    // by the codec. Each extension is in the format "*.{ext}" so the * needs to
-    // be removed to get the real extension.
-    std::vector<base::string16> codec_extensions = base::SplitString(
-        base::StringPiece16(image_codec_info[j].FilenameExtension), L";",
-        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-
-    for (auto& extension : codec_extensions) {
-      size_t first_period = extension.find_last_of('.');
-      if (first_period != base::string16::npos &&
-          base::EqualsCaseInsensitiveASCII(extension.substr(first_period),
-                                           desired_extension)) {
-        *clsid_out = image_codec_info[j].Clsid;
-        return S_OK;
-      }
-    }
-  }
-
-  return E_FAIL;
-}
-
-HRESULT ConvertImageToDesiredFormat(const std::vector<char>& image_buffer,
-                                    const base::FilePath& converted_path) {
-  // Only support conversion to |kCredentialLogoPictureFileExtension| for now.
-  DCHECK(base::EqualsCaseInsensitiveASCII(converted_path.Extension(),
-                                          kCredentialLogoPictureFileExtension));
-
-  // Initialize GDI+.
-  Gdiplus::GdiplusStartupInput gdiplus_startup_input;
-  ULONG_PTR gdiplus_token;
-  Gdiplus::GdiplusStartup(&gdiplus_token, &gdiplus_startup_input, NULL);
-
-  // Load the image stream into memory. Gdiplus::Image can automatically detect
-  // the file type and load the correct contents. Note that gaia returns a
-  // picture url with a .jpg extension but when the url is downloaded the image
-  // is actually a .png format and the Image class can handle this case
-  // correctly here.
-  CComPtr<IStream> buffer_stream;
-  buffer_stream.Attach(::SHCreateMemStream(
-      reinterpret_cast<const BYTE*>(image_buffer.data()), image_buffer.size()));
-  std::unique_ptr<Gdiplus::Image> image =
-      std::make_unique<Gdiplus::Image>(buffer_stream);
-
-  if (image->GetType() == Gdiplus::ImageTypeUnknown) {
-    LOGFN(ERROR) << "Unknown image type when loading image stream";
-    Gdiplus::GdiplusShutdown(gdiplus_token);
-    return E_FAIL;
-  }
-
-  // Get the CLSID of the encoder to the desired file type.
-  CLSID encoder_clsid;
-  HRESULT hr =
-      GetEncoderClsidByExtension(converted_path.Extension(), &encoder_clsid);
+HRESULT GetUserAccountPicturePath(const base::string16& sid,
+                                  base::FilePath* base_path) {
+  DCHECK(base_path);
+  base_path->clear();
+  LPWSTR path;
+  HRESULT hr = ::SHGetKnownFolderPath(FOLDERID_PublicUserTiles, 0, NULL, &path);
   if (FAILED(hr)) {
-    LOGFN(ERROR) << "GetEncoderClsid hr=" << putHR(hr);
-    Gdiplus::GdiplusShutdown(gdiplus_token);
+    LOGFN(ERROR) << "SHGetKnownFolderPath=" << putHR(hr);
     return hr;
   }
-
-  Gdiplus::Status stat =
-      image->Save(converted_path.value().c_str(), &encoder_clsid, nullptr);
-  Gdiplus::GdiplusShutdown(gdiplus_token);
-
-  if (stat != Gdiplus::Ok) {
-    LOGFN(ERROR) << "image->Save stat=" << stat;
-    return E_FAIL;
-  }
-
+  *base_path = base::FilePath(path).Append(sid);
+  ::CoTaskMemFree(path);
   return S_OK;
+}
+
+base::FilePath GetUserSizedAccountPictureFilePath(
+    const base::FilePath& account_picture_path,
+    int size,
+    const base::string16& picture_extension) {
+  return account_picture_path.Append(base::StringPrintf(
+      L"GoogleAccountPicture_%i%ls", size, picture_extension.c_str()));
 }
 
 using ImageProcessor =
@@ -228,6 +145,118 @@ HRESULT SaveProcessedProfilePictureToDisk(
   return hr;
 }
 
+HRESULT CreateDirectoryWithRestrictedAccess(const base::FilePath& path) {
+  if (base::PathExists(path))
+    return S_OK;
+
+  SECURITY_DESCRIPTOR sd;
+  if (!::InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION)) {
+    LOGFN(ERROR) << "Failed to initialize sd hr="
+                 << HRESULT_FROM_WIN32(::GetLastError());
+    return E_FAIL;
+  }
+
+  PSID everyone_sid = nullptr;
+  PSID creator_owner_sid = nullptr;
+  PSID administrators_sid = nullptr;
+  SID_IDENTIFIER_AUTHORITY everyone_sid_id = SECURITY_WORLD_SID_AUTHORITY;
+  SID_IDENTIFIER_AUTHORITY creator_owner_sid_id =
+      SECURITY_CREATOR_SID_AUTHORITY;
+  SID_IDENTIFIER_AUTHORITY administrators_sid_id = SECURITY_NT_AUTHORITY;
+  BYTE real_owner_sid[SECURITY_MAX_SID_SIZE];
+  DWORD size_owner_sid = base::size(real_owner_sid);
+
+  HRESULT hr = S_OK;
+
+  // Get SIDs for Administrators, everyone, creator owner and local system.
+  if (!::AllocateAndInitializeSid(&everyone_sid_id, 1, SECURITY_WORLD_RID, 0, 0,
+                                  0, 0, 0, 0, 0, &everyone_sid) ||
+      !::AllocateAndInitializeSid(&creator_owner_sid_id, 1,
+                                  SECURITY_CREATOR_OWNER_RID, 0, 0, 0, 0, 0, 0,
+                                  0, &creator_owner_sid) ||
+      !::AllocateAndInitializeSid(
+          &administrators_sid_id, 2, SECURITY_BUILTIN_DOMAIN_RID,
+          DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &administrators_sid) ||
+      !::CreateWellKnownSid(WinLocalSystemSid, nullptr, real_owner_sid,
+                            &size_owner_sid)) {
+    hr = HRESULT_FROM_WIN32(::GetLastError());
+    LOGFN(ERROR) << "Failed to get well known sids hr=" << putHR(hr);
+  } else {
+    std::vector<EXPLICIT_ACCESS> ea;
+
+    // Only apply read access to the contents of the folder and not the folder
+    // itself. If read access is given to the folder, then users will be able
+    // to rename the folder (even though they are not allowed to delete it).
+    ea.push_back({GENERIC_READ | STANDARD_RIGHTS_READ,
+                  SET_ACCESS,
+                  SUB_CONTAINERS_AND_OBJECTS_INHERIT | INHERIT_ONLY_ACE,
+                  {nullptr, NO_MULTIPLE_TRUSTEE, TRUSTEE_IS_SID,
+                   TRUSTEE_IS_WELL_KNOWN_GROUP,
+                   reinterpret_cast<wchar_t*>(everyone_sid)}});
+
+    // Allow full access for administrators and creator owners.
+    ea.push_back(
+        {GENERIC_ALL | STANDARD_RIGHTS_ALL,
+         SET_ACCESS,
+         SUB_CONTAINERS_AND_OBJECTS_INHERIT,
+         {nullptr, NO_MULTIPLE_TRUSTEE, TRUSTEE_IS_SID, TRUSTEE_IS_GROUP,
+          reinterpret_cast<wchar_t*>(administrators_sid)}});
+    ea.push_back(
+        {GENERIC_ALL | STANDARD_RIGHTS_ALL,
+         SET_ACCESS,
+         SUB_CONTAINERS_AND_OBJECTS_INHERIT,
+         {nullptr, NO_MULTIPLE_TRUSTEE, TRUSTEE_IS_SID, TRUSTEE_IS_USER,
+          reinterpret_cast<wchar_t*>(creator_owner_sid)}});
+
+    PACL acl = nullptr;
+    DWORD err = ::SetEntriesInAcl(base::size(ea), ea.data(), nullptr, &acl);
+    if (ERROR_SUCCESS != errno) {
+      hr = HRESULT_FROM_WIN32(err);
+      LOGFN(ERROR) << "Failed set sids in acl hr=" << putHR(hr);
+    } else {
+      // Add the ACL to the security descriptor.
+      if (!::SetSecurityDescriptorDacl(&sd, TRUE, acl, FALSE)) {
+        hr = HRESULT_FROM_WIN32(::GetLastError());
+        LOGFN(ERROR) << "Failed to set dacl=" << path << " hr=" << putHR(hr);
+      } else {
+        // Make SYSTEM be the owner of this folder and all its children.
+        if (!::SetSecurityDescriptorOwner(&sd, real_owner_sid, FALSE)) {
+          hr = HRESULT_FROM_WIN32(::GetLastError());
+          LOGFN(ERROR) << "Can't set owner sid hr=" << putHR(hr);
+        } else {
+          // Don't inherit ACE from parents.
+          if (!::SetSecurityDescriptorControl(&sd, SE_DACL_PROTECTED,
+                                              SE_DACL_PROTECTED)) {
+            hr = HRESULT_FROM_WIN32(::GetLastError());
+            LOGFN(ERROR) << "Failed to remove inheritance on descriptor hr="
+                         << putHR(hr);
+          } else {
+            // Finally create the directory with the correct permissions.
+            SECURITY_ATTRIBUTES sa{sizeof(SECURITY_ATTRIBUTES), &sd, FALSE};
+            if (!::CreateDirectory(path.value().c_str(), &sa)) {
+              hr = HRESULT_FROM_WIN32(::GetLastError());
+              LOGFN(ERROR) << "Failed to create profile picture directory="
+                           << path << " hr=" << putHR(hr);
+            }
+          }
+        }
+      }
+
+      if (acl)
+        ::LocalFree(acl);
+    }
+
+    if (everyone_sid)
+      ::FreeSid(everyone_sid);
+    if (creator_owner_sid)
+      ::FreeSid(creator_owner_sid);
+    if (administrators_sid)
+      ::FreeSid(administrators_sid);
+  }
+
+  return hr;
+}
+
 HRESULT UpdateProfilePicturesForWindows8AndNewer(
     const base::string16& sid,
     const base::string16& picture_url,
@@ -259,11 +288,13 @@ HRESULT UpdateProfilePicturesForWindows8AndNewer(
     return E_FAIL;
   }
 
-  if (!base::PathExists(account_picture_path) &&
-      !base::CreateDirectory(account_picture_path)) {
-    LOGFN(ERROR) << "Failed to create profile picture directory="
-                 << account_picture_path;
-    return E_FAIL;
+  if (!base::PathExists(account_picture_path)) {
+    HRESULT hr = CreateDirectoryWithRestrictedAccess(account_picture_path);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "Failed to create profile picture directory="
+                   << account_picture_path << " hr=" << putHR(hr);
+      return hr;
+    }
   }
 
   base::string16 base_picture_extension = kDefaultProfilePictureFileExtension;
@@ -275,16 +306,11 @@ HRESULT UpdateProfilePicturesForWindows8AndNewer(
   for (auto image_size : kProfilePictureSizes) {
     base::FilePath target_picture_path = GetUserSizedAccountPictureFilePath(
         account_picture_path, image_size, base_picture_extension);
-    base::FilePath bmp_picture_path = target_picture_path.ReplaceExtension(
-        kCredentialLogoPictureFileExtension);
     bool needs_to_save_original =
         force_update || !base::PathExists(target_picture_path);
-    bool needs_to_save_bitmap =
-        force_update || (image_size == kLargestProfilePictureSize &&
-                         !base::PathExists(bmp_picture_path));
 
     // Skip if the file already exists and an update is not forced.
-    if (!needs_to_save_original && !needs_to_save_bitmap) {
+    if (!needs_to_save_original) {
       // Update the reg string for the image if it is not up to date.
       wchar_t old_picture_path[MAX_PATH];
       ULONG path_size = base::size(old_picture_path);
@@ -342,21 +368,6 @@ HRESULT UpdateProfilePicturesForWindows8AndNewer(
               },
               sid, image_size));
     }
-
-    if (needs_to_save_bitmap) {
-      SaveProcessedProfilePictureToDisk(
-          bmp_picture_path, response,
-          base::BindOnce([](const base::FilePath& picture_path,
-                            const std::vector<char>& picture_buffer) {
-            HRESULT hr =
-                ConvertImageToDesiredFormat(picture_buffer, picture_path);
-            if (FAILED(hr))
-              LOGFN(ERROR) << "ConvertImageToDesiredFormat(pic) hr="
-                           << putHR(hr);
-
-            return hr;
-          }));
-    }
   }
 
   return S_OK;
@@ -413,7 +424,7 @@ bool ScopedUserProfile::IsValid() {
 }
 
 HRESULT ScopedUserProfile::ExtractAssociationInformation(
-    const base::DictionaryValue& properties,
+    const base::Value& properties,
     base::string16* sid,
     base::string16* id,
     base::string16* email,
@@ -423,25 +434,25 @@ HRESULT ScopedUserProfile::ExtractAssociationInformation(
   DCHECK(email);
   DCHECK(token_handle);
 
-  *sid = GetDictString(&properties, kKeySID);
+  *sid = GetDictString(properties, kKeySID);
   if (sid->empty()) {
     LOGFN(ERROR) << "SID is empty";
     return E_INVALIDARG;
   }
 
-  *id = GetDictString(&properties, kKeyId);
+  *id = GetDictString(properties, kKeyId);
   if (id->empty()) {
     LOGFN(ERROR) << "Id is empty";
     return E_INVALIDARG;
   }
 
-  *email = GetDictString(&properties, kKeyEmail);
+  *email = GetDictString(properties, kKeyEmail);
   if (email->empty()) {
     LOGFN(ERROR) << "Email is empty";
     return E_INVALIDARG;
   }
 
-  *token_handle = GetDictString(&properties, kKeyTokenHandle);
+  *token_handle = GetDictString(properties, kKeyTokenHandle);
   if (token_handle->empty()) {
     LOGFN(ERROR) << "Token handle is empty";
     return E_INVALIDARG;
@@ -478,8 +489,7 @@ HRESULT ScopedUserProfile::RegisterAssociation(
   return S_OK;
 }
 
-HRESULT ScopedUserProfile::SaveAccountInfo(
-    const base::DictionaryValue& properties) {
+HRESULT ScopedUserProfile::SaveAccountInfo(const base::Value& properties) {
   LOGFN(INFO);
 
   base::string16 sid;
@@ -540,7 +550,7 @@ HRESULT ScopedUserProfile::SaveAccountInfo(
 
   // This code for setting profile pictures is specific for windows 8+.
   if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
-    base::string16 picture_url = GetDictString(&properties, kKeyPicture);
+    base::string16 picture_url = GetDictString(properties, kKeyPicture);
     if (!picture_url.empty() && !sid.empty()) {
       wchar_t old_picture_url[512];
       ULONG url_size = base::size(old_picture_url);

@@ -575,8 +575,7 @@ void DataReductionProxyNetworkDelegate::CalculateAndRecordDataUsage(
           request),
       request.traffic_annotation().unique_id_hash_code);
 
-  if (params::IsDataSaverSiteBreakdownUsingPLMEnabled() &&
-      data_reduction_proxy_io_data_ &&
+  if (data_reduction_proxy_io_data_ &&
       data_reduction_proxy_io_data_->resource_type_provider() &&
       data_reduction_proxy_io_data_->resource_type_provider()
           ->IsNonContentInitiatedRequest(request)) {
@@ -661,12 +660,14 @@ bool DataReductionProxyNetworkDelegate::WasEligibleWithoutHoldback(
                                            request.method())) {
     return false;
   }
-  net::ProxyConfig proxy_config =
-      data_reduction_proxy_config_->ProxyConfigIgnoringHoldback();
-  net::ProxyInfo data_reduction_proxy_info;
-  return util::ApplyProxyConfigToProxyInfo(proxy_config, proxy_retry_info,
-                                           request.url(),
-                                           &data_reduction_proxy_info);
+  // Deprecated non network-service code. If in proxy holdback group, assume
+  // that the URL was eligible for proxying if and only if it has scheme "http".
+  // This code should be removed once network service is enabled by default, and
+  // is necessary only to prevent DCHECKs from triggering in tests.
+  DCHECK(params::IsIncludedInHoldbackFieldTrial());
+  return data_reduction_proxy_config_->enabled_by_user_and_reachable() &&
+         request.url().SchemeIsHTTPOrHTTPS() &&
+         !request.url().SchemeIsCryptographic();
 }
 
 void DataReductionProxyNetworkDelegate::MaybeAddChromeProxyECTHeader(

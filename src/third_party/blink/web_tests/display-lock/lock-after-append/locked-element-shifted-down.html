@@ -42,7 +42,7 @@ function finishTest(status_string) {
 
 function runTest() {
   let container = document.getElementById("container");
-  container.displayLock.acquire({ timeout: Infinity }).then(() => {
+  container.displayLock.acquire({ timeout: Infinity, size: [150, 150] }).then(() => {
     document.getElementById("spacer").style.height = "100px";
     finishTest("PASS");
   });

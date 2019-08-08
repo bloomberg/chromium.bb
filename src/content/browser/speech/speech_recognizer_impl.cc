@@ -109,12 +109,6 @@ bool DetectClipping(const AudioChunk& chunk) {
 
 }  // namespace
 
-const int SpeechRecognizerImpl::kAudioSampleRate = 16000;
-const ChannelLayout SpeechRecognizerImpl::kChannelLayout =
-    media::CHANNEL_LAYOUT_MONO;
-const int SpeechRecognizerImpl::kNumBitsPerAudioSample = 16;
-const int SpeechRecognizerImpl::kNoSpeechTimeoutMs = 8000;
-const int SpeechRecognizerImpl::kEndpointerEstimationTimeMs = 300;
 media::AudioSystem* SpeechRecognizerImpl::audio_system_for_tests_ = nullptr;
 media::AudioCapturerSource*
     SpeechRecognizerImpl::audio_capturer_source_for_tests_ = nullptr;

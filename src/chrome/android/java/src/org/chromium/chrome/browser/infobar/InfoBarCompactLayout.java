@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.infobar;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.support.annotation.ColorRes;
 import android.support.annotation.StringRes;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -35,8 +36,16 @@ public class InfoBarCompactLayout extends LinearLayout implements View.OnClickLi
     private final int mIconWidth;
     private final View mCloseButton;
 
-    InfoBarCompactLayout(
-            Context context, InfoBarView infoBarView, int iconResourceId, Bitmap iconBitmap) {
+    /**
+     * Constructs a compat layout for the specified infobar.
+     * @param context The context used to render.
+     * @param infoBarView {@link InfoBarView} that listens to events.
+     * @param iconResourceId Resource ID of the icon to use for the infobar.
+     * @param iconTintId The {@link ColorRes} used as tint for {@code iconResourceId}.
+     * @param iconBitmap Bitmap for the icon to use, if {@code iconResourceId} is not set.
+     */
+    InfoBarCompactLayout(Context context, InfoBarView infoBarView, int iconResourceId,
+            @ColorRes int iconTintId, Bitmap iconBitmap) {
         super(context);
         mInfoBarView = infoBarView;
         mCompactInfoBarSize =
@@ -46,7 +55,7 @@ public class InfoBarCompactLayout extends LinearLayout implements View.OnClickLi
         setOrientation(LinearLayout.HORIZONTAL);
         setGravity(Gravity.CENTER_VERTICAL);
 
-        prepareIcon(iconResourceId, iconBitmap);
+        prepareIcon(iconResourceId, iconTintId, iconBitmap);
         mCloseButton = prepareCloseButton();
     }
 
@@ -79,10 +88,12 @@ public class InfoBarCompactLayout extends LinearLayout implements View.OnClickLi
     /**
      * Adds an icon to the start of the infobar, if the infobar requires one.
      * @param iconResourceId Resource ID of the icon to use.
-     * @param iconBitmap     Raw {@link Bitmap} to use instead of a resource.
+     * @param iconTintId The {@link ColorRes} used as tint for {@code iconResourceId}.
+     * @param iconBitmap Raw {@link Bitmap} to use instead of a resource.
      */
-    private void prepareIcon(int iconResourceId, Bitmap iconBitmap) {
-        ImageView iconView = InfoBarLayout.createIconView(getContext(), iconResourceId, iconBitmap);
+    private void prepareIcon(int iconResourceId, @ColorRes int iconTintId, Bitmap iconBitmap) {
+        ImageView iconView =
+                InfoBarLayout.createIconView(getContext(), iconResourceId, iconTintId, iconBitmap);
         if (iconView != null) {
             LinearLayout.LayoutParams iconParams =
                     new LinearLayout.LayoutParams(mIconWidth, mCompactInfoBarSize);

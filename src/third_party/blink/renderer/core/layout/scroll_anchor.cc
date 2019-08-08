@@ -88,13 +88,11 @@ static LayoutRect RelativeBounds(const LayoutObject* layout_object,
       LayoutUnit max_y =
           std::max(local_bounds.MaxY(),
                    ToLayoutBox(layout_object)->LayoutOverflowRect().MaxY());
-      if (layout_object->IsLayoutBlockFlow() &&
-          ToLayoutBlockFlow(layout_object)->ContainsFloats()) {
+      auto* layout_block_flow = DynamicTo<LayoutBlockFlow>(layout_object);
+      if (layout_block_flow && layout_block_flow->ContainsFloats()) {
         // Note that lowestFloatLogicalBottom doesn't include floating
         // grandchildren.
-        max_y = std::max(
-            max_y,
-            ToLayoutBlockFlow(layout_object)->LowestFloatLogicalBottom());
+        max_y = std::max(max_y, layout_block_flow->LowestFloatLogicalBottom());
       }
       local_bounds.ShiftMaxYEdgeTo(max_y);
     }
@@ -332,9 +330,9 @@ bool ScrollAnchor::FindAnchorRecursive(LayoutObject* candidate) {
 
   // Make a separate pass to catch positioned descendants with a static DOM
   // parent that we skipped over (crbug.com/692701).
-  if (candidate->IsLayoutBlock()) {
+  if (auto* layouy_block = DynamicTo<LayoutBlock>(candidate)) {
     if (TrackedLayoutBoxListHashSet* positioned_descendants =
-            ToLayoutBlock(candidate)->PositionedObjects()) {
+            layouy_block->PositionedObjects()) {
       for (LayoutBox* descendant : *positioned_descendants) {
         if (descendant->Parent() != candidate) {
           if (FindAnchorRecursive(descendant))

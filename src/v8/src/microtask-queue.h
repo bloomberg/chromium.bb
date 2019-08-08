@@ -62,7 +62,7 @@ class V8_EXPORT_PRIVATE MicrotaskQueue final : public v8::MicrotaskQueue {
   // invocation, which happens when depth reaches zero.
   void IncrementMicrotasksScopeDepth() { ++microtasks_depth_; }
   void DecrementMicrotasksScopeDepth() { --microtasks_depth_; }
-  int GetMicrotasksScopeDepth() const { return microtasks_depth_; }
+  int GetMicrotasksScopeDepth() const override;
 
   // Possibly nested microtasks suppression scopes prevent microtasks
   // from running.
@@ -87,8 +87,6 @@ class V8_EXPORT_PRIVATE MicrotaskQueue final : public v8::MicrotaskQueue {
   }
   v8::MicrotasksPolicy microtasks_policy() const { return microtasks_policy_; }
 
-  void AddMicrotasksCompletedCallback(MicrotasksCompletedCallback callback);
-  void RemoveMicrotasksCompletedCallback(MicrotasksCompletedCallback callback);
   void FireMicrotasksCompletedCallback(Isolate* isolate) const;
 
   intptr_t capacity() const { return capacity_; }

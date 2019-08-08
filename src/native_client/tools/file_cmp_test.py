@@ -7,7 +7,8 @@
 """Simple test comparing two files.
 """
 
-# python imports
+from __future__ import print_function
+
 import filecmp
 import os.path
 import sys
@@ -24,16 +25,17 @@ def main(argv):
     return 0
   else:
     def dump_file_contents(fn):
-      print 'File %s' % fn
-      print 70 * '-'
+      print('File %s' % fn)
+      print(70 * '-')
       h = None
       try:
         h = open(fn)
-        print h.read()
+        print(h.read())
       finally:
         if h is not None:
           h.close()
-      print 70 * '-'
+      print(70 * '-')
+
     dump_file_contents(argv[0])
     dump_file_contents(argv[1])
     command_tester.Print(command_tester.FailureMessage(0))  # bogus time

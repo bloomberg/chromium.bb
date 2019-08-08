@@ -26,6 +26,8 @@
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/geometry/dip_util.h"
+#include "ui/gfx/gpu_fence.h"
+#include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/wm/core/window_util.h"
 
@@ -93,6 +95,7 @@ TEST_P(SurfaceTest, Attach) {
 
   // Attach the buffer to surface1.
   surface->Attach(buffer.get());
+  EXPECT_TRUE(surface->HasPendingAttachedBuffer());
   surface->Commit();
 
   // Commit without calling Attach() should have no effect.
@@ -102,6 +105,7 @@ TEST_P(SurfaceTest, Attach) {
   // Attach a null buffer to surface, this should release the previously
   // attached buffer.
   surface->Attach(nullptr);
+  EXPECT_FALSE(surface->HasPendingAttachedBuffer());
   surface->Commit();
   // LayerTreeFrameSinkHolder::ReclaimResources() gets called via
   // CompositorFrameSinkClient interface. We need to wait here for the mojo
@@ -930,6 +934,22 @@ TEST_P(SurfaceTest, DestroyWithAttachedBufferReleasesBuffer) {
   surface.reset();
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(1, release_buffer_call_count);
+}
+
+TEST_P(SurfaceTest, AcquireFence) {
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(1, 1)));
+  auto surface = std::make_unique<Surface>();
+
+  // We can only commit an acquire fence if a buffer is attached.
+  surface->Attach(buffer.get());
+
+  EXPECT_FALSE(surface->HasPendingAcquireFence());
+  surface->SetAcquireFence(
+      std::make_unique<gfx::GpuFence>(gfx::GpuFenceHandle()));
+  EXPECT_TRUE(surface->HasPendingAcquireFence());
+  surface->Commit();
+  EXPECT_FALSE(surface->HasPendingAcquireFence());
 }
 
 }  // namespace

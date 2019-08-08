@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/component_export.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -61,6 +62,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
       const base::Optional<MediaMetadata>& metadata) override;
   void MediaSessionActionsChanged(
       const std::vector<mojom::MediaSessionAction>& actions) override;
+  void MediaSessionChanged(
+      const base::Optional<base::UnguessableToken>& request_id) override;
 
   void WaitForState(mojom::MediaSessionInfo::SessionState wanted_state);
   void WaitForPlaybackState(mojom::MediaPlaybackState wanted_state);
@@ -72,6 +75,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
   void WaitForEmptyActions();
   void WaitForExpectedActions(
       const std::set<mojom::MediaSessionAction>& actions);
+
+  void WaitForSession(const base::Optional<base::UnguessableToken>& request_id);
 
   const mojom::MediaSessionInfoPtr& session_info() const {
     return *session_info_;
@@ -92,6 +97,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
   base::Optional<mojom::MediaSessionInfoPtr> session_info_;
   base::Optional<base::Optional<MediaMetadata>> session_metadata_;
   base::Optional<std::set<mojom::MediaSessionAction>> session_actions_;
+  base::Optional<base::Optional<base::UnguessableToken>> session_request_id_;
 
   base::Optional<MediaMetadata> expected_metadata_;
   base::Optional<std::set<mojom::MediaSessionAction>> expected_actions_;
@@ -100,6 +106,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
   bool waiting_for_empty_info_ = false;
   base::Optional<mojom::MediaSessionInfo::SessionState> wanted_state_;
   base::Optional<mojom::MediaPlaybackState> wanted_playback_state_;
+
+  base::Optional<base::Optional<base::UnguessableToken>> expected_request_id_;
 
   std::unique_ptr<base::RunLoop> run_loop_;
 

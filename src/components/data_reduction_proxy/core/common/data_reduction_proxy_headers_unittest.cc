@@ -602,58 +602,6 @@ TEST(DataReductionProxyHeadersTest, HasDataReductionProxyViaHeader) {
   }
 }
 
-TEST(DataReductionProxyHeadersTest, BypassMissingViaIfExperiment) {
-  const char kWarmupFetchCallbackEnabledParam[] =
-      "warmup_fetch_callback_enabled";
-
-  const struct {
-    const char* headers;
-    std::map<std::string, std::string> feature_parameters;
-    DataReductionProxyBypassType expected_result;
-  } tests[] = {
-      {
-          "HTTP/1.1 200 OK\n",
-          {
-              {kWarmupFetchCallbackEnabledParam, "true"},
-              {params::GetMissingViaBypassParamName(), "true"},
-          },
-          BYPASS_EVENT_TYPE_MAX,
-      },
-      {
-          "HTTP/1.1 200 OK\n",
-          {
-              {kWarmupFetchCallbackEnabledParam, "true"},
-              {params::GetMissingViaBypassParamName(), "false"},
-          },
-          BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER,
-      },
-      {
-          "HTTP/1.1 200 OK\n",
-          {
-              {kWarmupFetchCallbackEnabledParam, "false"},
-              {params::GetMissingViaBypassParamName(), "false"},
-          },
-          BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER,
-      },
-  };
-  for (auto test : tests) {
-    std::string headers(test.headers);
-    HeadersToRaw(&headers);
-    scoped_refptr<net::HttpResponseHeaders> parsed(
-        new net::HttpResponseHeaders(headers));
-    DataReductionProxyInfo proxy_info;
-
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeatureWithParameters(
-        features::kDataReductionProxyRobustConnection, test.feature_parameters);
-
-    EXPECT_EQ(test.expected_result,
-              GetDataReductionProxyBypassType(std::vector<GURL>(), *parsed,
-                                              &proxy_info));
-    if (test.expected_result != BYPASS_EVENT_TYPE_MAX)
-      EXPECT_TRUE(proxy_info.mark_proxies_as_bad);
-  }
-}
 
 TEST(DataReductionProxyHeadersTest, GetDataReductionProxyBypassEventType) {
   const struct {

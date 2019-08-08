@@ -9,12 +9,12 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "ios/web/common/features.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_item_impl_list.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
-#include "ios/web/public/features.h"
 #import "ios/web/public/navigation_item.h"
 #include "ios/web/public/reload_type.h"
 #import "ios/web/public/web_client.h"
@@ -112,14 +112,22 @@ void LegacyNavigationManagerImpl::CommitPendingItem() {
 
 void LegacyNavigationManagerImpl::CommitPendingItem(
     std::unique_ptr<NavigationItemImpl> item) {
-  // TODO(crbug.com/665189): NavigationManager::GetPendingItemIndex returns
-  // incorrect value, so CRWSessionController.pendingItemIndex is used instead.
   if (web::features::StorePendingItemInContext() &&
-      session_controller_.pendingItemIndex == -1) {
+      GetPendingItemIndex() == -1) {
     [session_controller_ commitPendingItem:std::move(item)];
   } else {
     CommitPendingItem();
   }
+}
+
+std::unique_ptr<web::NavigationItemImpl>
+LegacyNavigationManagerImpl::ReleasePendingItem() {
+  return [session_controller_ releasePendingItem];
+}
+
+void LegacyNavigationManagerImpl::SetPendingItem(
+    std::unique_ptr<web::NavigationItemImpl> item) {
+  [session_controller_ setPendingItem:std::move(item)];
 }
 
 BrowserState* LegacyNavigationManagerImpl::GetBrowserState() const {

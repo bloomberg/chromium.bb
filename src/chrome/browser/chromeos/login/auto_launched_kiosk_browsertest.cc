@@ -25,17 +25,17 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
-#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -290,7 +290,6 @@ class AutoLaunchedKioskTest : public extensions::ExtensionApiTest {
       : install_attributes_(
             chromeos::StubInstallAttributes::CreateCloudManaged("domain.com",
                                                                 "device_id")),
-        fake_session_manager_(new PersistentSessionManagerClient()),
         fake_cws_(new FakeCWS) {
     set_chromeos_user_ = false;
   }
@@ -303,6 +302,9 @@ class AutoLaunchedKioskTest : public extensions::ExtensionApiTest {
   }
 
   void SetUp() override {
+    // Will be destroyed in ChromeBrowserMain.
+    fake_session_manager_ = new PersistentSessionManagerClient();
+
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     AppLaunchController::SkipSplashWaitForTesting();
 
@@ -350,8 +352,6 @@ class AutoLaunchedKioskTest : public extensions::ExtensionApiTest {
 
     // Arbitrary non-empty state keys.
     fake_session_manager_->set_server_backed_state_keys({"1"});
-    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        std::move(fake_session_manager_));
 
     extensions::ExtensionApiTest::SetUpInProcessBrowserTestFixture();
   }
@@ -385,7 +385,6 @@ class AutoLaunchedKioskTest : public extensions::ExtensionApiTest {
 
   void InitDevicePolicy() {
     device_policy_helper_.InstallOwnerKey();
-    device_policy_helper_.MarkAsEnterpriseOwned();
 
     // Create device policy, and cache it to local state.
     em::DeviceLocalAccountsProto* const device_local_accounts =
@@ -496,7 +495,8 @@ class AutoLaunchedKioskTest : public extensions::ExtensionApiTest {
   chromeos::ScopedStubInstallAttributes install_attributes_;
   policy::UserPolicyBuilder device_local_account_policy_;
   policy::DevicePolicyCrosTestHelper device_policy_helper_;
-  std::unique_ptr<PersistentSessionManagerClient> fake_session_manager_;
+  // Owned by SessionManagerClient global instance.
+  PersistentSessionManagerClient* fake_session_manager_;
   std::unique_ptr<FakeCWS> fake_cws_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoLaunchedKioskTest);

@@ -55,7 +55,7 @@
     ],
     "min_manifest_version": 2
   },
-  "background.service_worker_script": {
+  "background.service_worker": {
     "channel": "trunk",
     "extension_types": ["extension"],
     "min_manifest_version": 2
@@ -139,7 +139,10 @@
   "file_handlers": [
     {
       "channel": "stable",
-      "extension_types": ["platform_app"]
+      "extension_types": [
+        "platform_app",
+        "hosted_app"  // This should be removed when bookmark apps have migrated off hosted apps.
+      ]
     }, {
       "channel": "stable",
       "extension_types": [ "extension"],
@@ -150,6 +153,11 @@
       ]
     }
   ],
+  "host_permissions": {
+    "channel": "dev",
+    "extension_types": ["extension"],
+    "min_manifest_version": 3
+  },
   "icons": {
     "channel": "stable",
     "extension_types": "all"
@@ -282,6 +290,11 @@
     "extension_types": [
       "extension", "legacy_packaged_app", "hosted_app", "platform_app"
     ]
+  },
+  "replacement_web_app": {
+    "channel": "stable",
+    "extension_types": ["extension", "platform_app"],
+    "min_manifest_version": 2
   },
   "sandbox": {
     "channel": "stable",

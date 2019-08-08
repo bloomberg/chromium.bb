@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.customtabs;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
@@ -23,8 +24,9 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -36,8 +38,10 @@ import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.Callable;
@@ -71,7 +75,7 @@ public class CustomTabFromChromeExternalNavigationTest {
     }
 
     private Intent getCustomTabFromChromeIntent(final String url, final boolean markFromChrome) {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Intent>() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Intent>() {
             @Override
             public Intent call() throws Exception {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -90,7 +94,6 @@ public class CustomTabFromChromeExternalNavigationTest {
                 return intent;
             }
         });
-
     }
 
     private void startCustomTabFromChrome(String url) throws InterruptedException {
@@ -124,7 +127,10 @@ public class CustomTabFromChromeExternalNavigationTest {
     @Test
     @Feature("CustomTabFromChrome")
     @LargeTest
-    public void testIntentWithRedirectToApp() throws Exception {
+    @DisableIf.Build(message = "Flaky on K, https://crbug.com/962974",
+            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
+    public void
+    testIntentWithRedirectToApp() throws Exception {
         final String redirectUrl = "https://maps.google.com/maps?q=1600+amphitheatre+parkway";
         final String initialUrl =
                 mTestServer.getURL("/chrome/test/data/android/redirect/js_redirect.html"
@@ -144,8 +150,10 @@ public class CustomTabFromChromeExternalNavigationTest {
             @Override
             public boolean isSatisfied() {
                 Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-                if (tab == null || tab.getInterceptNavigationDelegate() == null) return false;
-                navigationDelegate.set(tab.getInterceptNavigationDelegate());
+                if (tab == null) return false;
+                InterceptNavigationDelegateImpl delegate = InterceptNavigationDelegateImpl.get(tab);
+                if (delegate == null) return false;
+                navigationDelegate.set(delegate);
                 return true;
             }
         });
@@ -198,12 +206,8 @@ public class CustomTabFromChromeExternalNavigationTest {
     }
 
     private void showAppMenuAndAssertMenuShown(final AppMenuHandler appMenuHandler) {
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                appMenuHandler.showAppMenu(null, false, false);
-            }
-        });
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                () -> { appMenuHandler.showAppMenu(null, false, false); });
         CriteriaHelper.pollUiThread(new Criteria("AppMenu did not show") {
             @Override
             public boolean isSatisfied() {

@@ -34,9 +34,9 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
+#include "base/hash/md5.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/md5.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
@@ -61,9 +61,9 @@
 #include "media/base/test_data_util.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/buildflags.h"
-#include "media/gpu/fake_video_decode_accelerator.h"
 #include "media/gpu/format_utils.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
+#include "media/gpu/test/fake_video_decode_accelerator.h"
 #include "media/gpu/test/rendering_helper.h"
 #include "media/gpu/test/texture_ref.h"
 #include "media/gpu/test/video_accelerator_unittest_helpers.h"
@@ -555,10 +555,11 @@ void GLRenderingVDAClient::ProvidePictureBuffers(
       TextureRefMap::iterator texture_it = active_textures_.find(buffer.id());
       ASSERT_NE(active_textures_.end(), texture_it);
 
-      const gfx::GpuMemoryBufferHandle& handle =
+      gfx::GpuMemoryBufferHandle handle =
           texture_it->second->ExportGpuMemoryBufferHandle();
       LOG_ASSERT(!handle.is_null()) << "Failed producing GMB handle";
-      decoder_->ImportBufferForPicture(buffer.id(), pixel_format, handle);
+      decoder_->ImportBufferForPicture(buffer.id(), pixel_format,
+                                       std::move(handle));
     }
   }
 }
@@ -1691,60 +1692,6 @@ TEST_F(VideoDecodeAcceleratorTest, NoCrash) {
   CreateAndStartDecoder(clients_[0].get(), notes_[0].get());
   WaitUntilDecodeFinish(notes_[0].get());
 }
-
-#if defined(OS_CHROMEOS)
-// This is the case only for generating md5 values of video frames on stream.
-// This is disabled by default. To run this, you should run this test with
-// --gtest_filter=VideoDecodeAcceleratorTest.DISABLED_GenMD5 and
-// --gtest_also_run_disabled_tests
-TEST_F(VideoDecodeAcceleratorTest, DISABLED_GenMD5) {
-  g_validate_frames = false;
-  g_calculate_checksums = true;
-  g_test_import = true;
-
-  ASSERT_EQ(test_video_files_.size(), 1u);
-  notes_.push_back(
-      std::make_unique<media::test::ClientStateNotification<ClientState>>());
-  const TestVideoFile* video_file = test_video_files_[0].get();
-  GLRenderingVDAClient::Config config;
-  config.frame_size = gfx::Size(video_file->width, video_file->height);
-  config.profile = video_file->profile;
-  config.fake_decoder = g_fake_decoder;
-  config.num_frames = video_file->num_frames;
-  auto video_frame_validator =
-      CreateAndInitializeVideoFrameValidator(video_file->file_name);
-  media::test::VideoFrameValidator* frame_validator =
-      video_frame_validator.get();
-  clients_.push_back(std::make_unique<GLRenderingVDAClient>(
-      std::move(config), video_file->data_str, &rendering_helper_,
-      std::move(video_frame_validator), nullptr, notes_[0].get()));
-  RenderingHelperParams helper_params;
-  helper_params.num_windows = 1;
-  InitializeRenderingHelper(helper_params);
-  CreateAndStartDecoder(clients_[0].get(), notes_[0].get());
-  ClientState last_state = WaitUntilDecodeFinish(notes_[0].get());
-  EXPECT_NE(CS_ERROR, last_state);
-
-  // Write out computed md5 values.
-  frame_validator->WaitUntilDone();
-  const std::vector<std::string>& frame_checksums =
-      frame_validator->GetFrameChecksums();
-  base::FilePath md5_file_path(video_file->file_name);
-  md5_file_path = md5_file_path.AddExtension(FILE_PATH_LITERAL(".frames.md5"));
-  base::File md5_file(md5_file_path, base::File::FLAG_CREATE_ALWAYS |
-                                         base::File::FLAG_WRITE |
-                                         base::File::FLAG_APPEND);
-  if (!md5_file.IsValid())
-    LOG(ERROR) << "Failed to create md5 file to write " << md5_file_path;
-
-  for (const std::string& frame_checksum : frame_checksums) {
-    md5_file.Write(0, frame_checksum.data(), frame_checksum.size());
-    md5_file.Write(0, "\n", 1);
-  }
-
-  g_test_import = false;
-}
-#endif
 
 // TODO(fischman, vrk): add more tests!  In particular:
 // - Test life-cycle: Seek/Stop/Pause/Play for a single decoder.

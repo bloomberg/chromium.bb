@@ -507,7 +507,7 @@ bool ServiceUtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-const base::Process& ServiceUtilityProcessHost::GetProcess() const {
+const base::Process& ServiceUtilityProcessHost::GetProcess() {
   return process_;
 }
 

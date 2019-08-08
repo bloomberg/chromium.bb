@@ -34,12 +34,12 @@ class Widget;
 // A cache responsible for assigning id's to a set of interesting Aura views.
 class VIEWS_EXPORT AXAuraObjCache : public aura::client::FocusChangeObserver {
  public:
-  // Get the single instance of this class.
-  static AXAuraObjCache* GetInstance();
+  AXAuraObjCache();
+  ~AXAuraObjCache() override;
 
   class Delegate {
    public:
-    virtual ~Delegate() {}
+    virtual ~Delegate() = default;
 
     virtual void OnChildWindowRemoved(AXAuraObjWrapper* parent) = 0;
     virtual void OnEvent(AXAuraObjWrapper* aura_obj,
@@ -103,9 +103,6 @@ class VIEWS_EXPORT AXAuraObjCache : public aura::client::FocusChangeObserver {
 
  private:
   friend class base::NoDestructor<AXAuraObjCache>;
-
-  AXAuraObjCache();
-  ~AXAuraObjCache() override;
 
   View* GetFocusedView();
 

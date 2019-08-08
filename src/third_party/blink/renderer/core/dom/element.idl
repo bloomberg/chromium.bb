@@ -122,8 +122,8 @@ interface Element : Node {
 
     // Non-standard API
     [MeasureAs=ElementScrollIntoViewIfNeeded] void scrollIntoViewIfNeeded(optional boolean centerIfNeeded);
-    [OriginTrialEnabled=ShadowDOMV0, RaisesException, DeprecateAs=ElementCreateShadowRoot] ShadowRoot createShadowRoot();
-    [OriginTrialEnabled=ShadowDOMV0] NodeList getDestinationInsertionPoints();
+    [RuntimeEnabled=ShadowDOMV0, RaisesException, DeprecateAs=ElementCreateShadowRoot] ShadowRoot createShadowRoot();
+    [RuntimeEnabled=ShadowDOMV0] NodeList getDestinationInsertionPoints();
 
     // Experimental accessibility API
     [RuntimeEnabled=ComputedAccessibilityInfo] readonly attribute DOMString? computedRole;
@@ -144,6 +144,6 @@ interface Element : Node {
     [RuntimeEnabled=DisplayLocking, ImplementedAs=getDisplayLockForBindings] readonly attribute DisplayLockContext displayLock;
 };
 
-Element implements ParentNode;
-Element implements ChildNode;
-Element implements NonDocumentTypeChildNode;
+Element includes ParentNode;
+Element includes ChildNode;
+Element includes NonDocumentTypeChildNode;

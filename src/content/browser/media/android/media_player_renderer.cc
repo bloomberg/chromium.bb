@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/android/build_info.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/task/post_task.h"
@@ -33,13 +34,18 @@ const float kDefaultVolume = 1.0;
 
 }  // namespace
 
-MediaPlayerRenderer::MediaPlayerRenderer(int process_id,
-                                         int routing_id,
-                                         WebContents* web_contents)
-    : render_process_id_(process_id),
+MediaPlayerRenderer::MediaPlayerRenderer(
+    int process_id,
+    int routing_id,
+    WebContents* web_contents,
+    RendererExtensionRequest renderer_extension_request,
+    ClientExtensionPtr client_extension_ptr)
+    : client_extension_(std::move(client_extension_ptr)),
+      render_process_id_(process_id),
       routing_id_(routing_id),
       has_error_(false),
       volume_(kDefaultVolume),
+      renderer_extension_binding_(this, std::move(renderer_extension_request)),
       weak_factory_(this) {
   DCHECK_EQ(static_cast<RenderFrameHostImpl*>(
                 RenderFrameHost::FromID(process_id, routing_id))
@@ -112,11 +118,16 @@ void MediaPlayerRenderer::CreateMediaPlayer(
 
   const std::string user_agent = GetContentClient()->browser()->GetUserAgent();
 
+  // Never allow credentials on KitKat. See https://crbug.com/936566.
+  bool allow_credentials = url_params.allow_credentials &&
+                           base::android::BuildInfo::GetInstance()->sdk_int() >
+                               base::android::SDK_VERSION_KITKAT;
+
   media_player_.reset(new media::MediaPlayerBridge(
       url_params.media_url, url_params.site_for_cookies, user_agent,
       false,  // hide_url_log
-      this,
-      true));  // allow_crendentials
+      this,   // MediaPlayerBridge::Client
+      allow_credentials));
 
   media_player_->Initialize();
   UpdateVolume();
@@ -179,7 +190,8 @@ void MediaPlayerRenderer::OnScopedSurfaceRequestCompleted(
   media_player_->SetVideoSurface(std::move(surface));
 }
 
-base::UnguessableToken MediaPlayerRenderer::InitiateScopedSurfaceRequest() {
+void MediaPlayerRenderer::InitiateScopedSurfaceRequest(
+    InitiateScopedSurfaceRequestCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   CancelScopedSurfaceRequest();
@@ -189,7 +201,7 @@ base::UnguessableToken MediaPlayerRenderer::InitiateScopedSurfaceRequest() {
           base::Bind(&MediaPlayerRenderer::OnScopedSurfaceRequestCompleted,
                      weak_factory_.GetWeakPtr()));
 
-  return surface_request_token_;
+  std::move(callback).Run(surface_request_token_);
 }
 
 void MediaPlayerRenderer::SetVolume(float volume) {
@@ -240,7 +252,7 @@ void MediaPlayerRenderer::OnMediaDurationChanged(base::TimeDelta duration) {
 
   if (duration_ != duration) {
     duration_ = duration;
-    renderer_client_->OnDurationChange(duration);
+    client_extension_->OnDurationChange(duration);
   }
 }
 
@@ -269,7 +281,10 @@ void MediaPlayerRenderer::OnVideoSizeChanged(int width, int height) {
   gfx::Size new_size = gfx::Size(width, height);
   if (video_size_ != new_size) {
     video_size_ = new_size;
-    renderer_client_->OnVideoNaturalSizeChange(video_size_);
+    // Send via |client_extension_| instead of |renderer_client_|, so
+    // MediaPlayerRendererClient can update its texture size.
+    // MPRClient will then continue propagating changes via its RendererClient.
+    client_extension_->OnVideoSizeChange(video_size_);
   }
 }
 

@@ -26,7 +26,6 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
         url_loader_factory_info,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         script_loader_factory_info,
-    int service_worker_provider_id,
     std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
     std::unique_ptr<WebSocketHandshakeThrottleProvider>
         websocket_handshake_throttle_provider,
@@ -35,7 +34,6 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
       worker_script_url_(worker_script_url),
       url_loader_factory_info_(std::move(url_loader_factory_info)),
       script_loader_factory_info_(std::move(script_loader_factory_info)),
-      service_worker_provider_id_(service_worker_provider_id),
       throttle_provider_(std::move(throttle_provider)),
       websocket_handshake_throttle_provider_(
           std::move(websocket_handshake_throttle_provider)),
@@ -97,11 +95,10 @@ ServiceWorkerFetchContextImpl::GetScriptLoaderFactory() {
 void ServiceWorkerFetchContextImpl::WillSendRequest(
     blink::WebURLRequest& request) {
   if (renderer_preferences_.enable_do_not_track) {
-    request.SetHTTPHeaderField(blink::WebString::FromUTF8(kDoNotTrackHeader),
+    request.SetHttpHeaderField(blink::WebString::FromUTF8(kDoNotTrackHeader),
                                "1");
   }
   auto extra_data = std::make_unique<RequestExtraData>();
-  extra_data->set_service_worker_provider_id(service_worker_provider_id_);
   extra_data->set_originated_from_service_worker(true);
   extra_data->set_initiated_in_secure_context(true);
   if (throttle_provider_) {
@@ -111,7 +108,7 @@ void ServiceWorkerFetchContextImpl::WillSendRequest(
   request.SetExtraData(std::move(extra_data));
 
   if (!renderer_preferences_.enable_referrers) {
-    request.SetHTTPReferrer(blink::WebString(),
+    request.SetHttpReferrer(blink::WebString(),
                             network::mojom::ReferrerPolicy::kDefault);
   }
 }

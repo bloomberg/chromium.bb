@@ -34,6 +34,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/debug/alias.h"
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
@@ -251,8 +252,7 @@ Page* ChromeClientImpl::CreateWindowDelegate(
     LocalFrame* frame,
     const FrameLoadRequest& r,
     const WebWindowFeatures& features,
-    NavigationPolicy navigation_policy,
-    SandboxFlags sandbox_flags,
+    WebSandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state,
     const SessionStorageNamespaceId& session_storage_namespace_id) {
   if (!web_view_->Client())
@@ -269,8 +269,7 @@ Page* ChromeClientImpl::CreateWindowDelegate(
       static_cast<WebViewImpl*>(web_view_->Client()->CreateView(
           WebLocalFrameImpl::FromFrame(frame),
           WrappedResourceRequest(r.GetResourceRequest()), features, frame_name,
-          static_cast<WebNavigationPolicy>(navigation_policy),
-          r.GetShouldSetOpener() == kNeverSetOpener,
+          static_cast<WebNavigationPolicy>(r.GetNavigationPolicy()),
           static_cast<WebSandboxFlags>(sandbox_flags), opener_feature_state,
           session_storage_namespace_id));
   if (!new_view)
@@ -281,14 +280,23 @@ Page* ChromeClientImpl::CreateWindowDelegate(
 void ChromeClientImpl::DidOverscroll(const FloatSize& overscroll_delta,
                                      const FloatSize& accumulated_overscroll,
                                      const FloatPoint& position_in_viewport,
-                                     const FloatSize& velocity_in_viewport,
-                                     const cc::OverscrollBehavior& behavior) {
-  if (!web_view_->WidgetClient())
+                                     const FloatSize& velocity_in_viewport) {
+  if (!web_view_->does_composite())
     return;
-
   web_view_->WidgetClient()->DidOverscroll(
       overscroll_delta, accumulated_overscroll, position_in_viewport,
-      velocity_in_viewport, behavior);
+      velocity_in_viewport);
+}
+
+void ChromeClientImpl::SetOverscrollBehavior(
+    LocalFrame& main_frame,
+    const cc::OverscrollBehavior& overscroll_behavior) {
+  DCHECK(main_frame.IsMainFrame());
+  if (!web_view_->does_composite())
+    return;
+  WebWidgetClient* client =
+      WebLocalFrameImpl::FromFrame(main_frame)->FrameWidgetImpl()->Client();
+  client->SetOverscrollBehavior(overscroll_behavior);
 }
 
 void ChromeClientImpl::Show(NavigationPolicy navigation_policy) {
@@ -308,7 +316,7 @@ bool ChromeClientImpl::ShouldReportDetailedMessageForSource(
 }
 
 void ChromeClientImpl::AddMessageToConsole(LocalFrame* local_frame,
-                                           MessageSource source,
+                                           mojom::ConsoleMessageSource source,
                                            mojom::ConsoleMessageLevel level,
                                            const String& message,
                                            unsigned line_number,
@@ -336,8 +344,8 @@ bool ChromeClientImpl::OpenBeforeUnloadConfirmPanelDelegate(LocalFrame* frame,
 }
 
 void ChromeClientImpl::CloseWindowSoon() {
-  if (web_view_->WidgetClient())
-    web_view_->WidgetClient()->CloseWidgetSoon();
+  if (web_view_->Client())
+    web_view_->Client()->CloseWindowSoon();
 }
 
 // Although a LocalFrame is passed in, we don't actually use it, since we
@@ -405,12 +413,12 @@ void ChromeClientImpl::ScheduleAnimation(const LocalFrameView* frame_view) {
   // a local frame root that doesn't have a WebWidget? During initialization
   // there is no content to draw so this call serves no purpose. Maybe the
   // WebFrameWidget needs to be initialized before initializing the core frame?
-  if (!web_frame->LocalRootFrameWidget())
-    return;
-  // LocalRootFrameWidget() is a WebWidget, its client is the embedder.
-  WebWidgetClient* web_widget_client =
-      web_frame->LocalRootFrameWidget()->Client();
-  web_widget_client->ScheduleAnimation();
+  WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
+  if (widget) {
+    // LocalRootFrameWidget() is a WebWidget, its client is the embedder.
+    WebWidgetClient* web_widget_client = widget->Client();
+    web_widget_client->ScheduleAnimation();
+  }
 }
 
 IntRect ChromeClientImpl::ViewportToScreen(
@@ -565,10 +573,11 @@ ColorChooser* ChromeClientImpl::OpenColorChooser(
     return nullptr;
 
   if (RuntimeEnabledFeatures::PagePopupEnabled()) {
-    controller =
-        ColorChooserPopupUIController::Create(frame, this, chooser_client);
+    controller = MakeGarbageCollected<ColorChooserPopupUIController>(
+        frame, this, chooser_client);
   } else {
-    controller = ColorChooserUIController::Create(frame, chooser_client);
+    controller =
+        MakeGarbageCollected<ColorChooserUIController>(frame, chooser_client);
   }
   controller->OpenUI();
   return controller;
@@ -585,8 +594,10 @@ DateTimeChooser* ChromeClientImpl::OpenDateTimeChooser(
     return nullptr;
 
   NotifyPopupOpeningObservers();
-  if (RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled())
-    return DateTimeChooserImpl::Create(this, picker_client, parameters);
+  if (RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled()) {
+    return MakeGarbageCollected<DateTimeChooserImpl>(this, picker_client,
+                                                     parameters);
+  }
   return ExternalDateTimeChooser::Create(this, web_view_->Client(),
                                          picker_client, parameters);
 }
@@ -881,6 +892,44 @@ void ChromeClientImpl::RequestDecode(LocalFrame* frame,
   web_frame->LocalRootFrameWidget()->RequestDecode(image, std::move(callback));
 }
 
+void ChromeClientImpl::NotifySwapTime(
+    LocalFrame& frame,
+    WebWidgetClient::ReportTimeCallback callback) {
+  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
+  WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
+  if (!widget)
+    return;
+  WebWidgetClient* client = widget->Client();
+  client->NotifySwapTime(std::move(callback));
+}
+
+void ChromeClientImpl::FallbackCursorModeLockCursor(LocalFrame* frame,
+                                                    bool left,
+                                                    bool right,
+                                                    bool up,
+                                                    bool down) {
+  DCHECK(frame);
+  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
+  WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
+  if (!widget)
+    return;
+
+  if (WebWidgetClient* client = widget->Client())
+    client->FallbackCursorModeLockCursor(left, right, up, down);
+}
+
+void ChromeClientImpl::FallbackCursorModeSetCursorVisibility(LocalFrame* frame,
+                                                             bool visible) {
+  DCHECK(frame);
+  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
+  WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
+  if (!widget)
+    return;
+
+  if (WebWidgetClient* client = widget->Client())
+    client->FallbackCursorModeSetCursorVisibility(visible);
+}
+
 void ChromeClientImpl::SetEventListenerProperties(
     LocalFrame* frame,
     cc::EventListenerClass event_class,
@@ -1143,11 +1192,6 @@ TransformationMatrix ChromeClientImpl::GetDeviceEmulationTransform() const {
 
 void ChromeClientImpl::DidUpdateBrowserControls() const {
   web_view_->DidUpdateBrowserControls();
-}
-
-void ChromeClientImpl::SetOverscrollBehavior(
-    const cc::OverscrollBehavior& overscroll_behavior) {
-  web_view_->SetOverscrollBehavior(overscroll_behavior);
 }
 
 void ChromeClientImpl::RegisterPopupOpeningObserver(

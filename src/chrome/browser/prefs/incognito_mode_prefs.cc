@@ -123,11 +123,20 @@ class PlatformParentalControlsValue {
 }  // namespace
 #endif  // OS_WIN
 
+namespace {
+static constexpr IncognitoModePrefs::Availability kDefaultAvailability =
+#if defined(INCOGNITO_DEFAULT_DISABLED)
+    IncognitoModePrefs::DISABLED;
+#else
+    IncognitoModePrefs::ENABLED;
+#endif
+}  // namespace
+
 // static
 bool IncognitoModePrefs::IntToAvailability(int in_value,
                                            Availability* out_value) {
   if (in_value < 0 || in_value >= AVAILABILITY_NUM_TYPES) {
-    *out_value = ENABLED;
+    *out_value = kDefaultAvailability;
     return false;
   }
   *out_value = static_cast<Availability>(in_value);
@@ -150,7 +159,7 @@ void IncognitoModePrefs::SetAvailability(PrefService* prefs,
 void IncognitoModePrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(prefs::kIncognitoModeAvailability,
-                                IncognitoModePrefs::ENABLED);
+                                kDefaultAvailability);
 }
 
 // static
@@ -218,7 +227,7 @@ IncognitoModePrefs::Availability IncognitoModePrefs::GetAvailabilityInternal(
     GetAvailabilityMode mode) {
   DCHECK(pref_service);
   int pref_value = pref_service->GetInteger(prefs::kIncognitoModeAvailability);
-  Availability result = IncognitoModePrefs::ENABLED;
+  Availability result = kDefaultAvailability;
   bool valid = IntToAvailability(pref_value, &result);
   DCHECK(valid);
   if (result != IncognitoModePrefs::DISABLED &&

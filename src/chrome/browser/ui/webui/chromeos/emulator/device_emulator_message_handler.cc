@@ -15,9 +15,9 @@
 #include "chrome/browser/chromeos/system/fake_input_device_settings.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
+#include "chromeos/dbus/audio/fake_cras_audio_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_cras_audio_client.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "content/public/browser/web_ui.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -141,24 +141,21 @@ class DeviceEmulatorMessageHandler::CrasAudioObserver
  public:
   explicit CrasAudioObserver(DeviceEmulatorMessageHandler* owner)
       : owner_(owner) {
-    owner_->fake_cras_audio_client_->AddObserver(this);
+    chromeos::FakeCrasAudioClient::Get()->AddObserver(this);
   }
 
   ~CrasAudioObserver() override {
-    owner_->fake_cras_audio_client_->RemoveObserver(this);
+    chromeos::FakeCrasAudioClient::Get()->RemoveObserver(this);
   }
 
   // chromeos::CrasAudioClient::Observer.
-  void NodesChanged() override;
+  void NodesChanged() override { owner_->HandleRequestAudioNodes(nullptr); }
 
  private:
   DeviceEmulatorMessageHandler* owner_;
+
   DISALLOW_COPY_AND_ASSIGN(CrasAudioObserver);
 };
-
-void DeviceEmulatorMessageHandler::CrasAudioObserver::NodesChanged() {
-  owner_->HandleRequestAudioNodes(nullptr);
-}
 
 class DeviceEmulatorMessageHandler::PowerObserver
     : public PowerManagerClient::Observer {
@@ -201,8 +198,6 @@ DeviceEmulatorMessageHandler::DeviceEmulatorMessageHandler()
     : fake_bluetooth_device_client_(
           static_cast<bluez::FakeBluetoothDeviceClient*>(
               bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient())),
-      fake_cras_audio_client_(static_cast<chromeos::FakeCrasAudioClient*>(
-          chromeos::DBusThreadManager::Get()->GetCrasAudioClient())),
       fake_power_manager_client_(chromeos::FakePowerManagerClient::Get()),
       weak_ptr_factory_(this) {
   device::BluetoothAdapterFactory::GetAdapter(
@@ -307,7 +302,8 @@ void DeviceEmulatorMessageHandler::HandleRequestAudioNodes(
   // Get every active audio node and create a dictionary to
   // send it to JavaScript.
   base::ListValue audio_nodes;
-  for (const AudioNode& node : fake_cras_audio_client_->node_list()) {
+  for (const AudioNode& node :
+       chromeos::FakeCrasAudioClient::Get()->node_list()) {
     std::unique_ptr<base::DictionaryValue> audio_node(
         new base::DictionaryValue());
 
@@ -339,7 +335,7 @@ void DeviceEmulatorMessageHandler::HandleInsertAudioNode(
   CHECK(device_dict->GetString("id", &tmp_id));
   CHECK(base::StringToUint64(tmp_id, &audio_node.id));
 
-  fake_cras_audio_client_->InsertAudioNodeToList(audio_node);
+  chromeos::FakeCrasAudioClient::Get()->InsertAudioNodeToList(audio_node);
 }
 
 void DeviceEmulatorMessageHandler::HandleRemoveAudioNode(
@@ -349,7 +345,7 @@ void DeviceEmulatorMessageHandler::HandleRemoveAudioNode(
   CHECK(args->GetString(0, &tmp_id));
   CHECK(base::StringToUint64(tmp_id, &id));
 
-  fake_cras_audio_client_->RemoveAudioNodeFromList(id);
+  chromeos::FakeCrasAudioClient::Get()->RemoveAudioNodeFromList(id);
 }
 
 void DeviceEmulatorMessageHandler::HandleSetHasTouchpad(

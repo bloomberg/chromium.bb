@@ -12,8 +12,6 @@
 #include "base/time/time.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 
-class PrefRegistrySimple;
-
 namespace chromeos {
 
 namespace device_sync {
@@ -36,9 +34,6 @@ class CryptAuthEnrollmentManager {
     virtual ~Observer() = default;
   };
 
-  // Registers the prefs used by this class to the given |pref_service|.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-
   CryptAuthEnrollmentManager();
   virtual ~CryptAuthEnrollmentManager();
 
@@ -52,6 +47,9 @@ class CryptAuthEnrollmentManager {
   // enrollment is already in progress, this function does nothing.
   // |invocation_reason| specifies the reason that the enrollment was triggered,
   // which is upload to the server.
+  // TODO(nohle): Change cryptauth::InvocationReason to
+  // cryptauthv2::ClientMetadata::InvocationReason when CryptAuth v1 is
+  // obsolete.
   virtual void ForceEnrollmentNow(
       cryptauth::InvocationReason invocation_reason) = 0;
 

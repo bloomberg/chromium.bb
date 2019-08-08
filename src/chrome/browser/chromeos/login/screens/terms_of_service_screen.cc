@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -30,10 +29,9 @@
 namespace chromeos {
 
 TermsOfServiceScreen::TermsOfServiceScreen(
-    BaseScreenDelegate* base_screen_delegate,
     TermsOfServiceScreenView* view,
     const ScreenExitCallback& exit_callback)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_TERMS_OF_SERVICE),
+    : BaseScreen(OobeScreen::SCREEN_TERMS_OF_SERVICE),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

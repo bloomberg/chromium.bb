@@ -5,6 +5,7 @@
 #include "components/data_reduction_proxy/content/common/data_reduction_proxy_url_loader_throttle.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/data_reduction_proxy/content/common/header_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
@@ -19,6 +20,17 @@ class HttpRequestHeaders;
 }
 
 namespace data_reduction_proxy {
+
+namespace {
+void RecordQuicProxyStatus(const net::ProxyServer& proxy_server) {
+  if (proxy_server.is_https() || proxy_server.is_quic()) {
+    RecordQuicProxyStatus(IsQuicProxy(proxy_server)
+                              ? QUIC_PROXY_STATUS_AVAILABLE
+                              : QUIC_PROXY_NOT_SUPPORTED);
+  }
+}
+
+}  // namespace
 
 DataReductionProxyURLLoaderThrottle::DataReductionProxyURLLoaderThrottle(
     const net::HttpRequestHeaders& post_cache_headers,
@@ -37,7 +49,8 @@ void DataReductionProxyURLLoaderThrottle::WillStartRequest(
   url_chain_.clear();
   url_chain_.push_back(request->url);
   request_method_ = request->method;
-  is_main_frame_ = request->resource_type == content::RESOURCE_TYPE_MAIN_FRAME;
+  is_main_frame_ = request->resource_type ==
+                   static_cast<int>(content::ResourceType::kMainFrame);
   final_load_flags_ = request->load_flags;
 
   MaybeSetAcceptTransformHeader(
@@ -45,7 +58,7 @@ void DataReductionProxyURLLoaderThrottle::WillStartRequest(
       request->previews_state, &request->custom_proxy_pre_cache_headers);
   request->custom_proxy_post_cache_headers = post_cache_headers_;
 
-  if (request->resource_type == content::RESOURCE_TYPE_MEDIA)
+  if (request->resource_type == static_cast<int>(content::ResourceType::kMedia))
     request->custom_proxy_use_alternate_proxy_list = true;
 }
 
@@ -63,6 +76,7 @@ void DataReductionProxyURLLoaderThrottle::BeforeWillProcessResponse(
     const GURL& response_url,
     const network::ResourceResponseHead& response_head,
     bool* defer) {
+  before_will_process_response_received_ = true;
   if (response_head.was_fetched_via_cache)
     return;
 
@@ -76,8 +90,8 @@ void DataReductionProxyURLLoaderThrottle::BeforeWillProcessResponse(
   if (params::IsWarmupURL(response_url))
     return;
 
-  before_will_process_response_received_ = true;
   MaybeRetry(proxy_server, response_head.headers.get(), net::OK, defer);
+  RecordQuicProxyStatus(proxy_server);
 }
 
 void DataReductionProxyURLLoaderThrottle::MaybeRetry(

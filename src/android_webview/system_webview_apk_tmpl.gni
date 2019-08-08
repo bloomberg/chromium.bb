@@ -3,11 +3,17 @@
 # found in the LICENSE file.
 
 import("//base/android/proguard/proguard.gni")
-import("//build/config/android/chrome_version.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
+import("//build/util/version.gni")
+import("//chrome/android/trichrome.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
+
+declare_args() {
+  # Package name of the system_webview_apk target.
+  system_webview_package_name = "com.android.webview"
+}
 
 template("system_webview_apk_tmpl") {
   android_apk(target_name) {
@@ -27,8 +33,6 @@ template("system_webview_apk_tmpl") {
     if (!defined(alternative_android_sdk_dep)) {
       alternative_android_sdk_dep = webview_framework_dep
     }
-
-    shared_resources = true
 
     _use_trichrome_library =
         defined(use_trichrome_library) && use_trichrome_library
@@ -52,8 +56,14 @@ template("system_webview_apk_tmpl") {
         secondary_abi_loadable_modules =
             [ "$_secondary_out_dir/libcrashpad_handler_trampoline.so" ]
       }
+      shared_resources = true
     } else {
       uncompress_shared_libraries = true
+
+      app_as_shared_lib = true
+      if (trichrome_synchronized_proguard) {
+        emit_resource_ids = true
+      }
 
       # Include placeholder libraries to ensure we are treated as the desired
       # architecture.
@@ -99,9 +109,7 @@ template("system_webview_apk_tmpl") {
     # Used as an additional apk in test scripts.
     never_incremental = true
 
-    if (is_java_debug) {
-      enable_multidex = true
-    } else {
+    if (!is_java_debug) {
       proguard_enabled = true
       if (!defined(proguard_configs)) {
         proguard_configs = []
@@ -125,8 +133,12 @@ template("system_webview_apk_tmpl") {
     if (!defined(version_code)) {
       if (_use_trichrome_library) {
         version_code = trichrome_version_code
+      } else if (android_channel == "dev") {
+        version_code = webview_dev_version_code
+      } else if (android_channel == "beta") {
+        version_code = webview_beta_version_code
       } else {
-        version_code = webview_version_code
+        version_code = webview_stable_version_code
       }
     }
     if (!defined(version_name)) {

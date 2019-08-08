@@ -282,13 +282,6 @@ void gcm_gmult_clmul(uint64_t Xi[2], const u128 Htable[16]);
 void gcm_ghash_clmul(uint64_t Xi[2], const u128 Htable[16], const uint8_t *inp,
                      size_t len);
 
-#if defined(OPENSSL_X86_64)
-#define GHASH_ASM_X86_64
-void gcm_init_avx(u128 Htable[16], const uint64_t Xi[2]);
-void gcm_gmult_avx(uint64_t Xi[2], const u128 Htable[16]);
-void gcm_ghash_avx(uint64_t Xi[2], const u128 Htable[16], const uint8_t *in,
-                   size_t len);
-
 OPENSSL_INLINE char gcm_ssse3_capable(void) {
   return (OPENSSL_ia32cap_get()[1] & (1 << (41 - 32))) != 0;
 }
@@ -299,6 +292,13 @@ void gcm_init_ssse3(u128 Htable[16], const uint64_t Xi[2]);
 void gcm_gmult_ssse3(uint64_t Xi[2], const u128 Htable[16]);
 void gcm_ghash_ssse3(uint64_t Xi[2], const u128 Htable[16], const uint8_t *in,
                      size_t len);
+
+#if defined(OPENSSL_X86_64)
+#define GHASH_ASM_X86_64
+void gcm_init_avx(u128 Htable[16], const uint64_t Xi[2]);
+void gcm_gmult_avx(uint64_t Xi[2], const u128 Htable[16]);
+void gcm_ghash_avx(uint64_t Xi[2], const u128 Htable[16], const uint8_t *in,
+                   size_t len);
 
 #define AESNI_GCM
 size_t aesni_gcm_encrypt(const uint8_t *in, uint8_t *out, size_t len,
@@ -327,28 +327,12 @@ void gcm_gmult_v8(uint64_t Xi[2], const u128 Htable[16]);
 void gcm_ghash_v8(uint64_t Xi[2], const u128 Htable[16], const uint8_t *inp,
                   size_t len);
 
-#if defined(OPENSSL_ARM)
-// 32-bit ARM also has support for doing GCM with NEON instructions.
 OPENSSL_INLINE int gcm_neon_capable(void) { return CRYPTO_is_NEON_capable(); }
 
 void gcm_init_neon(u128 Htable[16], const uint64_t Xi[2]);
 void gcm_gmult_neon(uint64_t Xi[2], const u128 Htable[16]);
 void gcm_ghash_neon(uint64_t Xi[2], const u128 Htable[16], const uint8_t *inp,
                     size_t len);
-#else
-// AArch64 only has the ARMv8 versions of functions.
-OPENSSL_INLINE int gcm_neon_capable(void) { return 0; }
-OPENSSL_INLINE void gcm_init_neon(u128 Htable[16], const uint64_t Xi[2]) {
-  abort();
-}
-OPENSSL_INLINE void gcm_gmult_neon(uint64_t Xi[2], const u128 Htable[16]) {
-  abort();
-}
-OPENSSL_INLINE void gcm_ghash_neon(uint64_t Xi[2], const u128 Htable[16],
-                                   const uint8_t *inp, size_t len) {
-  abort();
-}
-#endif  // OPENSSL_ARM
 
 #elif defined(OPENSSL_PPC64LE)
 #define GHASH_ASM_PPC64LE

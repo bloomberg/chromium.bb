@@ -164,6 +164,14 @@ class AccessibilityPrivateGetBatteryDescriptionFunction
   ash::mojom::AccessibilityControllerPtr controller_ = nullptr;
 };
 
+// API function that opens or closes the virtual keyboard.
+class AccessibilityPrivateSetVirtualKeyboardVisibleFunction
+    : public UIThreadExtensionFunction {
+  ~AccessibilityPrivateSetVirtualKeyboardVisibleFunction() override {}
+  ResponseAction Run() override;
+  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.setVirtualKeyboardVisible",
+                             ACCESSIBILITY_PRIVATE_SETVIRTUALKEYBOARDVISIBLE)
+};
 #endif  // defined (OS_CHROMEOS)
 
 #endif  // CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EXTENSION_API_H_

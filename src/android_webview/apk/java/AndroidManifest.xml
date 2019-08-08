@@ -10,7 +10,10 @@
     package="{{manifest_package|default('com.android.webview')}}"
     tools:ignore="MissingLeanbackLauncher">
     <uses-sdk android:minSdkVersion="{{min_sdk_version|default(21)}}"
-              android:targetSdkVersion="{{target_sdk_version|default(28)}}">
+              android:targetSdkVersion="{{target_sdk_version|default(28)}}"
+              {% if max_sdk_version is defined %}
+                android:maxSdkVersion="{{max_sdk_version}}"
+              {% endif %}>
     </uses-sdk>
 
     <uses-feature android:name="android.hardware.touchscreen"
@@ -21,7 +24,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <application android:label="Android System WebView"
+    <application android:label="{{ application_label|default('Android System WebView') }}"
                  android:icon="@{{manifest_package|default('com.android.webview')}}:drawable/icon_webview"
                  android:name="{{ application_name|default('com.android.webview.chromium.WebViewApplication') }}"
                  android:multiArch="true"

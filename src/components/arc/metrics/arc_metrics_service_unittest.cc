@@ -17,9 +17,9 @@
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
@@ -116,27 +116,17 @@ class FakeTickClock : public base::TickClock {
   DISALLOW_COPY_AND_ASSIGN(FakeTickClock);
 };
 
-// Helper class that initializes DBusThreadManager for testing, and ensures the
-// lifetime of DBusThreadManager.
+// Helper class that initializes and shuts down dbus clients for testing.
 class DBusThreadManagerLifetimeHelper {
  public:
   DBusThreadManagerLifetimeHelper() {
-    // Get DBusThreadManagerSetter for setting fake DBusThreadManager clients.
-    // This also initializes the global DBusThreadManager instance.
-    std::unique_ptr<chromeos::DBusThreadManagerSetter>
-        dbus_thread_manager_setter =
-            chromeos::DBusThreadManager::GetSetterForTesting();
-
-    // Set fake clients for testing.
-    dbus_thread_manager_setter->SetSessionManagerClient(
-        std::make_unique<chromeos::FakeSessionManagerClient>());
-    chromeos::PowerManagerClient::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
+    chromeos::SessionManagerClient::InitializeFakeInMemory();
   }
 
   ~DBusThreadManagerLifetimeHelper() {
+    chromeos::SessionManagerClient::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
-    // Destroy the global DBusThreadManager instance.
-    chromeos::DBusThreadManager::Shutdown();
   }
 };
 
@@ -184,7 +174,7 @@ class ArcMetricsServiceTest : public testing::Test {
       : arc_service_manager_(std::make_unique<ArcServiceManager>()),
         context_(std::make_unique<TestBrowserContext>()),
         service_(CreateArcMetricsService(context_.get())) {
-    GetSessionManagerClient()->set_arc_available(true);
+    chromeos::FakeSessionManagerClient::Get()->set_arc_available(true);
 
     auto fake_arc_window_delegate = std::make_unique<FakeArcWindowDelegate>();
     fake_arc_window_delegate_ = fake_arc_window_delegate.get();
@@ -205,7 +195,8 @@ class ArcMetricsServiceTest : public testing::Test {
     const base::TimeTicks arc_start_time =
         base::TimeDelta::FromMilliseconds(arc_start_time_in_ms) +
         base::TimeTicks();
-    GetSessionManagerClient()->set_arc_start_time(arc_start_time);
+    chromeos::FakeSessionManagerClient::Get()->set_arc_start_time(
+        arc_start_time);
   }
 
   std::vector<mojom::BootProgressEventPtr> GetBootProgressEvents(
@@ -244,11 +235,6 @@ class ArcMetricsServiceTest : public testing::Test {
   FakeTickClock* fake_tick_clock() { return &fake_tick_clock_; }
 
  private:
-  chromeos::FakeSessionManagerClient* GetSessionManagerClient() {
-    return static_cast<chromeos::FakeSessionManagerClient*>(
-        chromeos::DBusThreadManager::Get()->GetSessionManagerClient());
-  }
-
   chromeos::FakePowerManagerClient* GetPowerManagerClient() {
     return static_cast<chromeos::FakePowerManagerClient*>(
         chromeos::PowerManagerClient::Get());

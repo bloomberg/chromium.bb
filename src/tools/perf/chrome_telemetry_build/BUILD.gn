@@ -20,7 +20,10 @@ group("telemetry_chrome_test") {
   data = []
 
   if (is_android) {
-    data_deps += [ "//chrome/android:chrome_public_apk" ]
+    data_deps += [
+      "//android_webview/test:webview_instrumentation_apk",
+      "//chrome/android:chrome_public_apk",
+    ]
 
     if (enable_chrome_android_internal) {
       data_deps += [ "//clank:telemetry_clank_test" ]
@@ -83,22 +86,24 @@ group("telemetry_chrome_test") {
 group("telemetry_chrome_test_without_chrome") {
   testonly = true
 
-  data_deps = [
-    "//third_party/catapult:telemetry_chrome_test_support",
-  ]
-  if (is_android) {
-    data_deps += [
-      "//third_party/breakpad:minidump_dump",
-      "//third_party/breakpad:minidump_stackwalk",
-      "//third_party/breakpad:dump_syms",
-    ]
-  } else {
-    data_deps += [ "//third_party/catapult/telemetry:bitmaptools" ]
-  }
-
   data = [
     "//tools/perf/core/",  # chrome_telemetry_build/ depends on core/
     "//tools/perf/chrome_telemetry_build/",
     "//components/crash/content/tools/generate_breakpad_symbols.py",
   ]
+  data_deps = [
+    "//third_party/catapult:telemetry_chrome_test_support",
+  ]
+  if (is_android) {
+    data += [ "//build/android/stacktrace/" ]
+    data_deps += [
+      "//chrome/android/webapk/shell_apk:maps_go_webapk",
+      "//build/android:devil_chromium_py",
+      "//third_party/breakpad:dump_syms",
+      "//third_party/breakpad:minidump_dump",
+      "//third_party/breakpad:minidump_stackwalk",
+    ]
+  } else {
+    data_deps += [ "//third_party/catapult/telemetry:bitmaptools" ]
+  }
 }

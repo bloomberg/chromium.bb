@@ -16,13 +16,13 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy_factory.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -105,7 +105,7 @@ String GetStringFromTrustedType(
     const Document* doc,
     ExceptionState& exception_state) {
   DCHECK(string_or_trusted_type.IsString() ||
-         origin_trials::TrustedDOMTypesEnabled(doc));
+         RuntimeEnabledFeatures::TrustedDOMTypesEnabled(doc));
   DCHECK(!string_or_trusted_type.IsNull());
 
   if (string_or_trusted_type.IsString() && doc && doc->RequireTrustedTypes()) {
@@ -200,16 +200,23 @@ String GetStringFromTrustedHTML(StringOrTrustedHTML string_or_trusted_html,
                                 const Document* doc,
                                 ExceptionState& exception_state) {
   DCHECK(string_or_trusted_html.IsString() ||
-         origin_trials::TrustedDOMTypesEnabled(doc));
+         RuntimeEnabledFeatures::TrustedDOMTypesEnabled(doc));
   DCHECK(!string_or_trusted_html.IsNull());
-
-  bool require_trusted_type = doc && doc->RequireTrustedTypes();
-  if (!require_trusted_type && string_or_trusted_html.IsString()) {
-    return string_or_trusted_html.GetAsString();
-  }
 
   if (string_or_trusted_html.IsTrustedHTML()) {
     return string_or_trusted_html.GetAsTrustedHTML()->toString();
+  }
+
+  return GetStringFromTrustedHTML(string_or_trusted_html.GetAsString(), doc,
+                                  exception_state);
+}
+
+String GetStringFromTrustedHTML(const String& string,
+                                const Document* doc,
+                                ExceptionState& exception_state) {
+  bool require_trusted_type = doc && doc->RequireTrustedTypes();
+  if (!require_trusted_type) {
+    return string;
   }
 
   TrustedTypePolicy* default_policy =
@@ -218,11 +225,11 @@ String GetStringFromTrustedHTML(StringOrTrustedHTML string_or_trusted_html,
     if (TrustedTypeFail(kTrustedHTMLAssignment, doc, exception_state)) {
       return g_empty_string;
     }
-    return string_or_trusted_html.GetAsString();
+    return string;
   }
 
-  TrustedHTML* result = default_policy->CreateHTML(
-      doc->GetIsolate(), string_or_trusted_html.GetAsString(), exception_state);
+  TrustedHTML* result =
+      default_policy->CreateHTML(doc->GetIsolate(), string, exception_state);
   if (exception_state.HadException()) {
     exception_state.ClearException();
     TrustedTypeFail(kTrustedHTMLAssignmentAndDefaultPolicyFailed, doc,
@@ -238,7 +245,7 @@ String GetStringFromTrustedScript(
     const Document* doc,
     ExceptionState& exception_state) {
   DCHECK(string_or_trusted_script.IsString() ||
-         origin_trials::TrustedDOMTypesEnabled(doc));
+         RuntimeEnabledFeatures::TrustedDOMTypesEnabled(doc));
 
   // To remain compatible with legacy behaviour, HTMLElement uses extended IDL
   // attributes to allow for nullable union of (DOMString or TrustedScript).
@@ -297,12 +304,12 @@ String GetStringFromTrustedScriptURL(
     const Document* doc,
     ExceptionState& exception_state) {
   DCHECK(string_or_trusted_script_url.IsString() ||
-         origin_trials::TrustedDOMTypesEnabled(doc));
+         RuntimeEnabledFeatures::TrustedDOMTypesEnabled(doc));
   DCHECK(!string_or_trusted_script_url.IsNull());
 
-  bool require_trusted_type = doc &&
-                              origin_trials::TrustedDOMTypesEnabled(doc) &&
-                              doc->RequireTrustedTypes();
+  bool require_trusted_type =
+      doc && RuntimeEnabledFeatures::TrustedDOMTypesEnabled(doc) &&
+      doc->RequireTrustedTypes();
   if (!require_trusted_type && string_or_trusted_script_url.IsString()) {
     return string_or_trusted_script_url.GetAsString();
   }
@@ -338,7 +345,7 @@ String GetStringFromTrustedURL(USVStringOrTrustedURL string_or_trusted_url,
                                const Document* doc,
                                ExceptionState& exception_state) {
   DCHECK(string_or_trusted_url.IsUSVString() ||
-         origin_trials::TrustedDOMTypesEnabled(doc));
+         RuntimeEnabledFeatures::TrustedDOMTypesEnabled(doc));
   DCHECK(!string_or_trusted_url.IsNull());
 
   bool require_trusted_type = doc && doc->RequireTrustedTypes();
@@ -371,4 +378,5 @@ String GetStringFromTrustedURL(USVStringOrTrustedURL string_or_trusted_url,
 
   return result->toString();
 }
+
 }  // namespace blink

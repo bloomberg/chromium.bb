@@ -482,7 +482,7 @@ void PaletteTray::ShowBubble(bool show_by_click) {
   init_params.delegate = this;
   init_params.parent_window = GetBubbleWindowContainer();
   init_params.anchor_view = GetBubbleAnchor();
-  init_params.anchor_alignment = GetAnchorAlignment();
+  init_params.shelf_alignment = shelf()->alignment();
   init_params.min_width = kPaletteWidth;
   init_params.max_width = kPaletteWidth;
   init_params.close_on_deactivate = true;

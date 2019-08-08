@@ -10,7 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/md5.h"
+#include "base/hash/md5.h"
 #include "base/pickle.h"
 
 namespace {

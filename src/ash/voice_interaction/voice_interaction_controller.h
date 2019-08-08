@@ -37,6 +37,7 @@ class ASH_EXPORT VoiceInteractionController
   void NotifyNotificationEnabled(bool enabled) override;
   void NotifyLocaleChanged(const std::string& locale) override;
   void NotifyLaunchWithMicOpen(bool launch_with_mic_open) override;
+  void NotifyArcPlayStoreEnabledChanged(bool enabled) override;
   void AddObserver(mojom::VoiceInteractionObserverPtr observer) override;
 
   // Adding local observers in the same process.

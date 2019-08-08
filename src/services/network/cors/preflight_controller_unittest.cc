@@ -249,10 +249,8 @@ class PreflightControllerTest : public testing::Test {
     preflight_controller_->PerformPreflightCheck(
         base::BindOnce(&PreflightControllerTest::HandleRequestCompletion,
                        base::Unretained(this)),
-        0 /* request_id */, request, tainted, TRAFFIC_ANNOTATION_FOR_TESTS,
-        url_loader_factory_ptr_.get(),
-        base::BindOnce(&PreflightControllerTest::CancelPreflight,
-                       base::Unretained(this)));
+        request, tainted, TRAFFIC_ANNOTATION_FOR_TESTS,
+        url_loader_factory_ptr_.get());
     run_loop_->Run();
   }
 
@@ -260,7 +258,6 @@ class PreflightControllerTest : public testing::Test {
   base::Optional<CorsErrorStatus> status() { return status_; }
   base::Optional<CorsErrorStatus> success() { return base::nullopt; }
   size_t access_count() { return access_count_; }
-  bool cancel_preflight_called() const { return cancel_preflight_called_; }
 
  private:
   void SetUp() override {
@@ -302,8 +299,6 @@ class PreflightControllerTest : public testing::Test {
     return response;
   }
 
-  void CancelPreflight() { cancel_preflight_called_ = true; }
-
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
@@ -313,7 +308,6 @@ class PreflightControllerTest : public testing::Test {
 
   net::test_server::EmbeddedTestServer test_server_;
   size_t access_count_ = 0;
-  bool cancel_preflight_called_ = false;
 
   std::unique_ptr<PreflightController> preflight_controller_;
   int net_error_ = net::OK;
@@ -350,6 +344,25 @@ TEST_F(PreflightControllerTest, CheckValidRequest) {
   EXPECT_EQ(net::OK, net_error());
   ASSERT_FALSE(status());
   EXPECT_EQ(1u, access_count());  // Should be from the preflight cache.
+
+  // Verify if cache related flags work to skip the preflight cache.
+  request.load_flags = net::LOAD_VALIDATE_CACHE;
+  PerformPreflightCheck(request);
+  EXPECT_EQ(net::OK, net_error());
+  ASSERT_FALSE(status());
+  EXPECT_EQ(2u, access_count());
+
+  request.load_flags = net::LOAD_BYPASS_CACHE;
+  PerformPreflightCheck(request);
+  EXPECT_EQ(net::OK, net_error());
+  ASSERT_FALSE(status());
+  EXPECT_EQ(3u, access_count());
+
+  request.load_flags = net::LOAD_DISABLE_CACHE;
+  PerformPreflightCheck(request);
+  EXPECT_EQ(net::OK, net_error());
+  ASSERT_FALSE(status());
+  EXPECT_EQ(4u, access_count());
 }
 
 TEST_F(PreflightControllerTest, CheckTaintedRequest) {
@@ -362,23 +375,6 @@ TEST_F(PreflightControllerTest, CheckTaintedRequest) {
   PerformPreflightCheck(request, true /* tainted */);
   EXPECT_EQ(net::OK, net_error());
   ASSERT_FALSE(status());
-  EXPECT_EQ(1u, access_count());
-}
-
-// TODO(yhirano): Remove this test case when the network service is fully
-// enabled.
-TEST_F(PreflightControllerTest, CancelPreflightIsCalled) {
-  ResourceRequest request;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
-  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
-  request.url = GetURL("/allow");
-  request.request_initiator = url::Origin::Create(request.url);
-
-  EXPECT_FALSE(cancel_preflight_called());
-  PerformPreflightCheck(request);
-  EXPECT_EQ(net::OK, net_error());
-  ASSERT_FALSE(status());
-  EXPECT_TRUE(cancel_preflight_called());
   EXPECT_EQ(1u, access_count());
 }
 

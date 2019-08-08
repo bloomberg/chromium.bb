@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/page_load_metrics/observers/largest_contentful_paint_handler.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/offline_pages/buildflags/buildflags.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/load_timing_info.h"
 #include "net/http/http_response_headers.h"
@@ -27,6 +29,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
+#include "ui/events/blink/blink_features.h"
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
@@ -77,6 +80,16 @@ base::Optional<HttpProtocolScheme> ConvertConnectionInfoToHttpProtocolScheme(
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_99:
       return HttpProtocolScheme::kQuic;
   }
+}
+
+int64_t LayoutJankUkmValue(float jank_score) {
+  // Report (jank_score * 100) as an int in the range [0, 1000].
+  return static_cast<int>(roundf(std::min(jank_score, 10.0f) * 100.0f));
+}
+
+int32_t LayoutJankUmaValue(float jank_score) {
+  // Report (jank_score * 10) as an int in the range [0, 100].
+  return static_cast<int>(roundf(std::min(jank_score, 10.0f) * 10.0f));
 }
 
 }  // namespace
@@ -164,8 +177,13 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
   was_cached_ = navigation_handle->WasResponseCached();
   is_signed_exchange_inner_response_ =
       navigation_handle->IsSignedExchangeInnerResponse();
-  navigation_start_ = navigation_handle->NavigationStart();
   RecordNoStatePrefetchMetrics(navigation_handle, source_id);
+  navigation_is_cross_process_ = !navigation_handle->IsSameProcess();
+  navigation_entry_offset_ = navigation_handle->GetNavigationEntryOffset();
+  main_document_sequence_number_ = navigation_handle->GetWebContents()
+                                       ->GetController()
+                                       .GetLastCommittedEntry()
+                                       ->GetMainFrameDocumentSequenceNumber();
   return CONTINUE_OBSERVING;
 }
 
@@ -224,19 +242,27 @@ void UkmPageLoadMetricsObserver::OnComplete(
   ReportLayoutStability(info);
 }
 
+void UkmPageLoadMetricsObserver::OnResourceDataUseObserved(
+    content::RenderFrameHost* content,
+    const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+        resources) {
+  if (was_hidden_)
+    return;
+  for (auto const& resource : resources) {
+    network_bytes_ += resource->delta_bytes;
+    if (resource->is_complete && resource->was_fetched_via_cache) {
+      cache_bytes_ += resource->encoded_body_length;
+    }
+  }
+}
+
 void UkmPageLoadMetricsObserver::OnLoadedResource(
     const page_load_metrics::ExtraRequestCompleteInfo&
         extra_request_complete_info) {
   if (was_hidden_)
     return;
-  if (extra_request_complete_info.was_cached) {
-    cache_bytes_ += extra_request_complete_info.raw_body_bytes;
-  } else {
-    network_bytes_ += extra_request_complete_info.raw_body_bytes;
-  }
-
   if (extra_request_complete_info.resource_type ==
-      content::RESOURCE_TYPE_MAIN_FRAME) {
+      content::ResourceType::kMainFrame) {
     DCHECK(!main_frame_timing_.has_value());
     main_frame_timing_ = *extra_request_complete_info.load_timing_info;
   }
@@ -288,23 +314,11 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     builder.SetExperimental_PaintTiming_NavigationToLargestImagePaint(
         timing.paint_timing->largest_image_paint.value().InMilliseconds());
   }
-  if (timing.paint_timing->last_image_paint.has_value() &&
-      WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->last_image_paint, info)) {
-    builder.SetExperimental_PaintTiming_NavigationToLastImagePaint(
-        timing.paint_timing->last_image_paint.value().InMilliseconds());
-  }
   if (timing.paint_timing->largest_text_paint.has_value() &&
       WasStartedInForegroundOptionalEventInForeground(
           timing.paint_timing->largest_text_paint, info)) {
     builder.SetExperimental_PaintTiming_NavigationToLargestTextPaint(
         timing.paint_timing->largest_text_paint.value().InMilliseconds());
-  }
-  if (timing.paint_timing->last_text_paint.has_value() &&
-      WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->last_text_paint, info)) {
-    builder.SetExperimental_PaintTiming_NavigationToLastTextPaint(
-        timing.paint_timing->last_text_paint.value().InMilliseconds());
   }
   base::Optional<base::TimeDelta> largest_content_paint_time;
   uint64_t largest_content_paint_size;
@@ -338,14 +352,40 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
   if (timing.interactive_timing->first_input_delay) {
     base::TimeDelta first_input_delay =
         timing.interactive_timing->first_input_delay.value();
-    builder.SetInteractiveTiming_FirstInputDelay3(
+    builder.SetInteractiveTiming_FirstInputDelay_SkipFilteringComparison(
         first_input_delay.InMilliseconds());
+    if (base::FeatureList::IsEnabled(features::kSkipTouchEventFilter)) {
+      // This experiment will change the FID and first input metric by
+      // changing the timestamp on pointerdown events on mobile pages with no
+      // pointer event handlers. If it is ramped up to 100% to launch, we need
+      // to update the metric name (v3->v4).
+      builder.SetInteractiveTiming_FirstInputDelay4(
+          first_input_delay.InMilliseconds());
+    } else {
+      // If the SkipTouchEventFilter experiment does not launch, we want to
+      // continue reporting first input events under the current name.
+      builder.SetInteractiveTiming_FirstInputDelay3(
+          first_input_delay.InMilliseconds());
+    }
   }
   if (timing.interactive_timing->first_input_timestamp) {
     base::TimeDelta first_input_timestamp =
         timing.interactive_timing->first_input_timestamp.value();
-    builder.SetInteractiveTiming_FirstInputTimestamp3(
+    builder.SetInteractiveTiming_FirstInputTimestamp_SkipFilteringComparison(
         first_input_timestamp.InMilliseconds());
+    if (base::FeatureList::IsEnabled(features::kSkipTouchEventFilter)) {
+      // This experiment will change the FID and first input metric by
+      // changing the timestamp on pointerdown events on mobile pages with no
+      // pointer event handlers. If it is ramped up to 100% to launch, we need
+      // to update the metric name (v3->v4).
+      builder.SetInteractiveTiming_FirstInputTimestamp4(
+          first_input_timestamp.InMilliseconds());
+    } else {
+      // If the SkipTouchEventFilter experiment does not launch, we want to
+      // continue reporting first input events under the current name.
+      builder.SetInteractiveTiming_FirstInputTimestamp3(
+          first_input_timestamp.InMilliseconds());
+    }
   }
 
   if (timing.interactive_timing->longest_input_delay) {
@@ -363,7 +403,7 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
 
   // Use a bucket spacing factor of 1.3 for bytes.
   builder.SetNet_CacheBytes(ukm::GetExponentialBucketMin(cache_bytes_, 1.3));
-  builder.SetNet_NetworkBytes(
+  builder.SetNet_NetworkBytes2(
       ukm::GetExponentialBucketMin(network_bytes_, 1.3));
 
   if (main_frame_timing_)
@@ -433,6 +473,13 @@ void UkmPageLoadMetricsObserver::RecordPageLoadExtraInfoMetrics(
   if (info.did_commit && is_signed_exchange_inner_response_) {
     builder.SetIsSignedExchangeInnerResponse(1);
   }
+  if (info.did_commit && navigation_is_cross_process_) {
+    builder.SetIsCrossProcessNavigation(navigation_is_cross_process_);
+  }
+  if (info.did_commit) {
+    builder.SetNavigationEntryOffset(navigation_entry_offset_);
+    builder.SetMainDocumentSequenceNumber(main_document_sequence_number_);
+  }
   builder.Record(ukm::UkmRecorder::Get());
 }
 
@@ -488,9 +535,9 @@ void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
       request_start_to_receive_headers_end_ms);
 
   if (!main_frame_timing_->request_start.is_null() &&
-      !navigation_start_.is_null()) {
+      !GetDelegate()->GetNavigationStart().is_null()) {
     base::TimeDelta navigation_start_to_request_start =
-        main_frame_timing_->request_start - navigation_start_;
+        main_frame_timing_->request_start - GetDelegate()->GetNavigationStart();
 
     builder->SetMainFrameResource_NavigationStartToRequestStart(
         navigation_start_to_request_start.InMilliseconds());
@@ -511,19 +558,20 @@ void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
 
 void UkmPageLoadMetricsObserver::ReportLayoutStability(
     const page_load_metrics::PageLoadExtraInfo& info) {
-  // Report (jank_score * 100) as an int in the range [0, 1000].
-  float jank_score = info.main_frame_render_data.layout_jank_score;
-  int64_t ukm_value =
-      static_cast<int>(roundf(std::min(jank_score, 10.0f) * 100.0f));
+  ukm::builders::PageLoad(info.source_id)
+      .SetLayoutStability_JankScore(
+          LayoutJankUkmValue(info.page_render_data.layout_jank_score))
+      .SetLayoutStability_JankScore_MainFrame(
+          LayoutJankUkmValue(info.main_frame_render_data.layout_jank_score))
+      .Record(ukm::UkmRecorder::Get());
 
-  ukm::builders::PageLoad builder(info.source_id);
-  builder.SetLayoutStability_JankScore(ukm_value);
-  builder.Record(ukm::UkmRecorder::Get());
+  UMA_HISTOGRAM_COUNTS_100(
+      "PageLoad.Experimental.LayoutStability.JankScore",
+      LayoutJankUmaValue(info.page_render_data.layout_jank_score));
 
-  int32_t uma_value =
-      static_cast<int>(roundf(std::min(jank_score, 10.0f) * 10.0f));
-  UMA_HISTOGRAM_COUNTS_100("PageLoad.Experimental.LayoutStability.JankScore",
-                           uma_value);
+  UMA_HISTOGRAM_COUNTS_100(
+      "PageLoad.Experimental.LayoutStability.JankScore.MainFrame",
+      LayoutJankUmaValue(info.main_frame_render_data.layout_jank_score));
 }
 
 base::Optional<int64_t>

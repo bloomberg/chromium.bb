@@ -17,6 +17,7 @@
 namespace autofill_assistant {
 
 class ActionDelegate;
+class ClientStatus;
 
 // An action that performs a single step of a script on the website.
 class Action {
@@ -45,6 +46,7 @@ class Action {
       const google::protobuf::RepeatedPtrField<std::string>& repeated_strings);
 
   void UpdateProcessedAction(ProcessedActionStatusProto status);
+  void UpdateProcessedAction(const ClientStatus& status);
 
   // Intended for debugging. Writes a string representation of |action| to
   // |out|.

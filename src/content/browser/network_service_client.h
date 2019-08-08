@@ -41,7 +41,7 @@ class CONTENT_EXPORT NetworkServiceClient
                       const GURL& url,
                       const GURL& site_for_cookies,
                       bool first_auth_attempt,
-                      const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+                      const net::AuthChallengeInfo& auth_info,
                       int32_t resource_type,
                       const base::Optional<network::ResourceResponseHead>& head,
                       network::mojom::AuthChallengeResponderPtr

@@ -8,6 +8,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
+#include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -34,14 +35,16 @@ using ScopedPathUnlinker =
 bool CheckFDAccessMode(int fd, int expected_mode) {
   int fd_status = fcntl(fd, F_GETFL);
   if (fd_status == -1) {
-    DPLOG(ERROR) << "fcntl(" << fd << ", F_GETFL) failed";
+    // TODO(crbug.com/838365): convert to DLOG when bug fixed.
+    PLOG(ERROR) << "fcntl(" << fd << ", F_GETFL) failed";
     return false;
   }
 
   int mode = fd_status & O_ACCMODE;
   if (mode != expected_mode) {
-    DLOG(ERROR) << "Descriptor access mode (" << mode
-                << ") differs from expected (" << expected_mode << ")";
+    // TODO(crbug.com/838365): convert to DLOG when bug fixed.
+    LOG(ERROR) << "Descriptor access mode (" << mode
+               << ") differs from expected (" << expected_mode << ")";
     return false;
   }
 
@@ -227,11 +230,10 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   if (!GetShmemTempDir(false /* executable */, &directory))
     return {};
 
-  ScopedFD fd;
   FilePath path;
-  fd.reset(CreateAndOpenFdForTemporaryFileInDir(directory, &path));
+  File shm_file(CreateAndOpenFdForTemporaryFileInDir(directory, &path));
 
-  if (!fd.is_valid()) {
+  if (!shm_file.IsValid()) {
     PLOG(ERROR) << "Creating shared memory in " << path.value() << " failed";
     FilePath dir = path.DirName();
     if (access(dir.value().c_str(), W_OK | X_OK) < 0) {
@@ -259,20 +261,21 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
     }
   }
 
-  // Get current size.
-  struct stat stat = {};
-  if (fstat(fd.get(), &stat) != 0)
+  if (!AllocateFileRegion(&shm_file, 0, size))
     return {};
-  const size_t current_size = stat.st_size;
-  if (current_size != size) {
-    if (HANDLE_EINTR(ftruncate(fd.get(), size)) != 0)
-      return {};
-  }
 
   if (readonly_fd.is_valid()) {
+    struct stat stat = {};
+    if (fstat(shm_file.GetPlatformFile(), &stat) != 0) {
+      DPLOG(ERROR) << "fstat(fd) failed";
+      return {};
+    }
+
     struct stat readonly_stat = {};
-    if (fstat(readonly_fd.get(), &readonly_stat))
-      NOTREACHED();
+    if (fstat(readonly_fd.get(), &readonly_stat) != 0) {
+      DPLOG(ERROR) << "fstat(readonly_fd) failed";
+      return {};
+    }
 
     if (stat.st_dev != readonly_stat.st_dev ||
         stat.st_ino != readonly_stat.st_ino) {
@@ -281,8 +284,9 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
     }
   }
 
-  return PlatformSharedMemoryRegion({std::move(fd), std::move(readonly_fd)},
-                                    mode, size, UnguessableToken::Create());
+  return PlatformSharedMemoryRegion(
+      {ScopedFD(shm_file.TakePlatformFile()), std::move(readonly_fd)}, mode,
+      size, UnguessableToken::Create());
 #endif  // !defined(OS_NACL)
 }
 
@@ -301,7 +305,8 @@ bool PlatformSharedMemoryRegion::CheckPlatformHandlePermissionsCorrespondToMode(
 
   // The second descriptor must be invalid in kReadOnly and kUnsafe modes.
   if (handle.readonly_fd != -1) {
-    DLOG(ERROR) << "The second descriptor must be invalid";
+    // TODO(crbug.com/838365): convert to DLOG when bug fixed.
+    LOG(ERROR) << "The second descriptor must be invalid";
     return false;
   }
 

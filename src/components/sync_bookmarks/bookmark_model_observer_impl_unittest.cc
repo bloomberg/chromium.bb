@@ -405,11 +405,13 @@ TEST_F(BookmarkModelObserverImplTest,
   ASSERT_THAT(
       bookmark_tracker()->GetEntitiesWithLocalChanges(kMaxEntries).size(), 1U);
 
+  bookmark_tracker()->MarkCommitMayHaveStarted(id);
+
   // Remove the folder.
   bookmark_model()->Remove(folder_node);
 
   // Simulate a commit response for the first commit request (the creation).
-  // Don't simulate change in id for simplcity.
+  // Don't simulate change in id for simplicity.
   bookmark_tracker()->UpdateUponCommitResponse(id, id,
                                                /*acked_sequence_number=*/1,
                                                /*server_version=*/1);
@@ -425,6 +427,29 @@ TEST_F(BookmarkModelObserverImplTest,
   bookmark_tracker()->UpdateUponCommitResponse(id, id,
                                                /*acked_sequence_number=*/2,
                                                /*server_version=*/2);
+  // Entity should have been dropped.
+  EXPECT_THAT(bookmark_tracker()->TrackedEntitiesCountForTest(), 3U);
+}
+
+TEST_F(BookmarkModelObserverImplTest,
+       BookmarkCreationAndRemovalBeforeCommitRequestShouldBeRemovedDirectly) {
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model()->bookmark_bar_node();
+  const bookmarks::BookmarkNode* folder_node = bookmark_model()->AddFolder(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16("folder"));
+
+  // Node should be tracked now.
+  ASSERT_THAT(bookmark_tracker()->TrackedEntitiesCountForTest(), 4U);
+  const std::string id = bookmark_tracker()
+                             ->GetEntityForBookmarkNode(folder_node)
+                             ->metadata()
+                             ->server_id();
+  ASSERT_THAT(
+      bookmark_tracker()->GetEntitiesWithLocalChanges(kMaxEntries).size(), 1U);
+
+  // Remove the folder.
+  bookmark_model()->Remove(folder_node);
+
   // Entity should have been dropped.
   EXPECT_THAT(bookmark_tracker()->TrackedEntitiesCountForTest(), 3U);
 }

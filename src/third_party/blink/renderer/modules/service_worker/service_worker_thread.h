@@ -59,6 +59,13 @@ class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
   InstalledScriptsManager* GetInstalledScriptsManager() override;
   void TerminateForTesting() override;
 
+  void RunInstalledClassicScript(const KURL& script_url,
+                                 const v8_inspector::V8StackTraceId& stack_id);
+  void RunInstalledModuleScript(
+      const KURL& module_url_record,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      network::mojom::FetchCredentialsMode);
+
  private:
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams>) override;
@@ -66,6 +73,15 @@ class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
   WebThreadType GetThreadType() const override {
     return WebThreadType::kServiceWorkerThread;
   }
+
+  void RunInstalledClassicScriptOnWorkerThread(
+      const KURL& script_url,
+      const v8_inspector::V8StackTraceId& stack_id);
+  void RunInstalledModuleScriptOnWorkerThread(
+      const KURL& module_url_record,
+      std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
+          outside_settings_object,
+      network::mojom::FetchCredentialsMode);
 
   Persistent<ServiceWorkerGlobalScopeProxy> global_scope_proxy_;
   std::unique_ptr<WorkerBackingThread> worker_backing_thread_;

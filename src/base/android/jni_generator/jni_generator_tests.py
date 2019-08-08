@@ -11,6 +11,8 @@ code generator and ensures the output matches a golden
 file.
 """
 
+from __future__ import print_function
+
 import difflib
 import inspect
 import optparse
@@ -133,16 +135,16 @@ class BaseTest(unittest.TestCase):
     stripped_generated = FilterText(generated_text)
     if stripped_golden == stripped_generated:
       return True
-    print self.id()
+    print(self.id())
     for line in difflib.context_diff(stripped_golden, stripped_generated):
-      print line
-    print '\n\nGenerated'
-    print '=' * 80
-    print generated_text
-    print '=' * 80
-    print 'Run with:'
-    print 'REBASELINE=1', sys.argv[0]
-    print 'to regenerate the data files.'
+      print(line)
+    print('\n\nGenerated')
+    print('=' * 80)
+    print(generated_text)
+    print('=' * 80)
+    print('Run with:')
+    print('REBASELINE=1', sys.argv[0])
+    print('to regenerate the data files.')
 
   def AssertGoldenTextEquals(self, generated_text, suffix='', golden_file=None):
     """Compares generated text with the corresponding golden_file

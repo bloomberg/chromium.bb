@@ -750,7 +750,7 @@ TEST_P(LazyLoadFramesParamsTest,
         <body onload='console.log("main body onload");'>
         <div style='height: %dpx;'></div>
         <iframe src='https://crossorigin.com/subframe.html'
-             style='width: 200px; height: 200px;' load='eager'
+             style='width: 200px; height: 200px;' loading='eager'
              onload='console.log("child frame element onload");'></iframe>
         </body>)HTML",
       kViewportHeight + GetLoadingDistanceThreshold() + 100));
@@ -798,7 +798,7 @@ TEST_P(LazyLoadFramesParamsTest,
           <body onload='console.log("main body onload");'>
           <div style='height: %dpx;'></div>
           <iframe src='https://example.com/subframe.html'
-               style='width: 400px; height: 400px;' load='lazy'
+               style='width: 400px; height: 400px;' loading='lazy'
                onload='console.log("child frame element onload");'></iframe>
           </body>)HTML",
       kViewportHeight + GetLoadingDistanceThreshold() + 100));
@@ -916,7 +916,7 @@ TEST_P(LazyLoadFramesParamsTest,
 
   Element* child_frame_element = GetDocument().getElementById("child_frame");
   ASSERT_TRUE(child_frame_element);
-  child_frame_element->setAttribute(html_names::kLoadAttr, "eager");
+  child_frame_element->setAttribute(html_names::kLoadingAttr, "eager");
 
   ExpectInitialDeferralActionHistogramSamplesIfApplicable(
       LazyLoadFrameObserver::FrameInitialDeferralAction::kDeferred, 1);
@@ -962,14 +962,14 @@ TEST_P(LazyLoadFramesParamsTest,
   // There's another nested cross origin iframe inside the first child frame,
   // even further down such that it's not near the viewport. If LazyLoad is
   // enabled, it should be deferred even though it's nested inside a frame that
-  // was previously deferred, because it has the attribute load=lazy.
+  // was previously deferred, because it has the attribute loading=lazy.
   base::Optional<SimRequest> nested_frame_resource;
   if (!RuntimeEnabledFeatures::LazyFrameLoadingEnabled())
     nested_frame_resource.emplace("https://test.com/", "text/html");
 
   child_frame_resource->Complete(
       String::Format("<div style='height: %dpx;'></div>"
-                     "<iframe src='https://test.com/' load='lazy'"
+                     "<iframe src='https://test.com/' loading='lazy'"
                      "     style='width: 200px; height: 200px;'>"
                      "</iframe>",
                      kViewportHeight + GetLoadingDistanceThreshold() + 100));
@@ -1001,7 +1001,7 @@ TEST_P(LazyLoadFramesParamsTest,
         <body onload='console.log("main body onload");'>
         <div style='height: %dpx;'></div>
         <iframe src='https://crossorigin.com/subframe.html'
-             style='width: 200px; height: 200px;' load='eager'
+             style='width: 200px; height: 200px;' loading='eager'
              onload='console.log("child frame element onload");'></iframe>
         </body>)HTML",
       kViewportHeight + GetLoadingDistanceThreshold() + 100));
@@ -1011,15 +1011,16 @@ TEST_P(LazyLoadFramesParamsTest,
 
   // There's another nested cross origin iframe inside the first child frame,
   // even further down such that it's not near the viewport. If LazyLoad is
-  // enabled, it should be deferred because it has the attribute load=lazy,
-  // even though it's nested inside a frame that has the attribute load=eager.
+  // enabled, it should be deferred because it has the attribute loading=lazy,
+  // even though it's nested inside a frame that has the attribute
+  // loading=eager.
   base::Optional<SimRequest> nested_frame_resource;
   if (!RuntimeEnabledFeatures::LazyFrameLoadingEnabled())
     nested_frame_resource.emplace("https://test.com/", "text/html");
 
   child_frame_resource.Complete(
       String::Format("<div style='height: %dpx;'></div>"
-                     "<iframe src='https://test.com/' load='lazy'"
+                     "<iframe src='https://test.com/' loading='lazy'"
                      "     style='width: 200px; height: 200px;'>"
                      "</iframe>",
                      kViewportHeight + GetLoadingDistanceThreshold() + 100));
@@ -1051,7 +1052,7 @@ TEST_P(LazyLoadFramesParamsTest,
         <body onload='console.log("main body onload");'>
         <div style='height: %dpx;'></div>
         <iframe src='https://crossorigin.com/subframe.html'
-             style='width: 200px; height: 200px;' load='eager'
+             style='width: 200px; height: 200px;' loading='eager'
              onload='console.log("child frame element onload");'></iframe>
         </body>)HTML",
       kViewportHeight + GetLoadingDistanceThreshold() + 100));
@@ -1061,14 +1062,14 @@ TEST_P(LazyLoadFramesParamsTest,
 
   // There's another nested cross origin iframe inside the first child frame,
   // even further down such that it's not near the viewport. Since it has the
-  // attribute load=eager, it shouldn't be deferred. Note that this also
+  // attribute loading=eager, it shouldn't be deferred. Note that this also
   // matches the default behavior that would happen if the load attribute was
   // omitted on the nested iframe entirely.
   SimRequest nested_frame_resource("https://test.com/", "text/html");
 
   child_frame_resource.Complete(
       String::Format("<div style='height: %dpx;'></div>"
-                     "<iframe src='https://test.com/' load='eager'"
+                     "<iframe src='https://test.com/' loading='eager'"
                      "     style='width: 200px; height: 200px;'>"
                      "</iframe>",
                      kViewportHeight + GetLoadingDistanceThreshold() + 100));
@@ -1211,7 +1212,7 @@ TEST_F(LazyLoadFramesTest,
   ScopedRestrictLazyFrameLoadingToDataSaverForTest
       scoped_restrict_lazy_frame_loading_to_data_saver_for_test_(false);
 
-  TestCrossOriginFrameIsImmediatelyLoaded("load='eager'");
+  TestCrossOriginFrameIsImmediatelyLoaded("loading='eager'");
 }
 
 TEST_F(LazyLoadFramesTest, LazyLoadWhenDataSaverDisabledAndRestricted) {
@@ -1231,6 +1232,7 @@ TEST_F(LazyLoadFramesTest, LazyLoadWhenDataSaverEnabledHoldbackAndRestricted) {
 
   GetNetworkStateNotifier().SetSaveDataEnabled(true);
   WebView().GetPage()->GetSettings().SetDataSaverHoldbackWebApi(true);
+  TestCrossOriginFrameIsLazilyLoaded("loading='lazy'");
   TestCrossOriginFrameIsImmediatelyLoaded("");
 }
 
@@ -1251,7 +1253,10 @@ TEST_F(LazyLoadFramesTest, LazyLoadWhenDataSaverDisabledAndRestrictedAttrOn) {
 
   GetNetworkStateNotifier().SetSaveDataEnabled(false);
   WebView().GetPage()->GetSettings().SetDataSaverHoldbackWebApi(false);
-  TestCrossOriginFrameIsImmediatelyLoaded("load='lazy'");
+
+  // Even when restricted to data saver, the attribute should be respected.
+  TestCrossOriginFrameIsLazilyLoaded("loading='lazy'");
+  TestCrossOriginFrameIsImmediatelyLoaded("");
 }
 
 }  // namespace

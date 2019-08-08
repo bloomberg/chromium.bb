@@ -1,18 +1,17 @@
 <link rel="import" href="../../html/polymer.html">
 
+<link rel="import" href="../cr_icon_button/cr_icon_button.html">
 <link rel="import" href="../cr_icons_css.html">
 <link rel="import" href="../cr_toolbar/cr_toolbar_search_field.html">
 <link rel="import" href="../hidden_style_css.html">
 <link rel="import" href="../shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-media-query/iron-media-query.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 
 <dom-module id="cr-toolbar">
   <template>
     <style include="cr-icons cr-hidden-style">
       :host {
         --cr-toolbar-height: 56px;
-        --paper-icon-button-ink-color: white;
         align-items: center;
         background-color: var(--google-blue-700);
         color: #fff;
@@ -37,7 +36,7 @@
         padding-inline-end: 12px;
       }
 
-      :host-context([dark]) :-webkit-any(h1, #menuButtonContainer) {
+      :host-context([dark]) h1 {
         color: var(--cr-primary-text-color);
       }
 
@@ -54,11 +53,14 @@
         margin-inline-start: 6px;
       }
 
-      #menuButtonContainer {
-        height: 32px;
+      cr-icon-button {
+        --cr-icon-button-size:  32px;
         min-width: 32px;
         padding: 6px 0;
-        width: 32px;
+      }
+
+      :host-context(html:not([dark])) cr-icon-button {
+        --cr-icon-button-color: currentColor;
       }
 
       #centeredContent {
@@ -147,14 +149,10 @@
       <div id="leftSpacer">
         <!-- Note: showing #menuPromo relies on this dom-if being [restamp]. -->
         <template is="dom-if" if="[[showMenu]]" restamp>
-          <paper-icon-button-light id="menuButtonContainer"
-              class="icon-toolbar-menu no-overlap">
-            <button id="menuButton"
-                on-tap="onMenuTap_"
-                title="[[titleIfNotShowMenuPromo_(menuLabel, showMenuPromo)]]"
-                aria-label$="[[menuLabel]]">
-            </button>
-          </paper-icon-button-light>
+          <cr-icon-button id="menuButton" class="icon-toolbar-menu no-overlap"
+              on-click="onMenuTap_" aria-label$="[[menuLabel]]"
+              title="[[titleIfNotShowMenuPromo_(menuLabel, showMenuPromo)]]">
+          </cr-icon-button>
           <template is="dom-if" if="[[showMenuPromo]]">
             <div id="menuPromo" role="tooltip">
               [[menuPromo]]

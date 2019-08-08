@@ -16,7 +16,6 @@
 
 #include "absl/strings/string_view.h"
 #include "api/rtp_headers.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "modules/rtp_rtcp/include/rtp_header_extension_map.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 
@@ -37,7 +36,8 @@ class RtpHeaderParser {
   bool RTCP() const;
   bool ParseRtcp(RTPHeader* header) const;
   bool Parse(RTPHeader* parsedPacket,
-             const RtpHeaderExtensionMap* ptrExtensionMap = nullptr) const;
+             const RtpHeaderExtensionMap* ptrExtensionMap = nullptr,
+             bool header_only = false) const;
 
  private:
   void ParseOneByteExtensionHeader(RTPHeader* parsedPacket,

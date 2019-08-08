@@ -37,10 +37,10 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/arc_session.h"
+#include "components/arc/session/arc_session.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -395,7 +395,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     // Initialize arc session manager - NoteTakingHelper expects it to be set.
     arc_session_manager_ = std::make_unique<arc::ArcSessionManager>(
         std::make_unique<arc::ArcSessionRunner>(
-            base::Bind(&ArcSessionFactory)));
+            base::BindRepeating(&ArcSessionFactory)));
 
     chromeos::NoteTakingHelper::Initialize();
 

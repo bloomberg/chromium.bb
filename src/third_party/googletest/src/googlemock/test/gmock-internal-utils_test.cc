@@ -57,8 +57,6 @@
 # include <sys/types.h>  // For ssize_t. NOLINT
 #endif
 
-class ProtocolMessage;
-
 namespace proto2 {
 class Message;
 }  // namespace proto2
@@ -558,7 +556,7 @@ void ExpectCallLogger() {
   DummyMock mock;
   EXPECT_CALL(mock, TestMethod());
   mock.TestMethod();
-};
+}
 
 // Verifies that EXPECT_CALL logs if the --gmock_verbose flag is set to "info".
 TEST(ExpectCallTest, LogsWhenVerbosityIsInfo) {
@@ -581,7 +579,7 @@ TEST(ExpectCallTest,  DoesNotLogWhenVerbosityIsError) {
 void OnCallLogger() {
   DummyMock mock;
   ON_CALL(mock, TestMethod());
-};
+}
 
 // Verifies that ON_CALL logs if the --gmock_verbose flag is set to "info".
 TEST(OnCallTest, LogsWhenVerbosityIsInfo) {

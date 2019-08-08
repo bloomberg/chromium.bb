@@ -10,11 +10,11 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/presentation_feedback_map.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/common/surfaces/surface_range.h"
@@ -40,9 +40,12 @@ class SurfaceManager;
 enum class SubmitResult {
   ACCEPTED = 0,
   COPY_OUTPUT_REQUESTS_NOT_ALLOWED = 1,
-  SURFACE_INVARIANTS_VIOLATION = 2,
+  // SURFACE_INVARIANTS_VIOLATION = 2 is deprecated.
+  SIZE_MISMATCH = 3,
+  SURFACE_ID_DECREASED = 4,
+  SURFACE_OWNED_BY_ANOTHER_CLIENT = 5,
   // Magic constant used by the histogram macros.
-  kMaxValue = SURFACE_INVARIANTS_VIOLATION,
+  kMaxValue = SURFACE_OWNED_BY_ANOTHER_CLIENT,
 };
 
 class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
@@ -56,8 +59,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
                                    const gfx::Size& frame_size_in_pixels,
                                    const gfx::Rect& damage_rect,
                                    base::TimeTicks expected_display_time)>;
-  using PresentationFeedbackMap =
-      base::flat_map<uint32_t, gfx::PresentationFeedback>;
 
   static const uint64_t kFrameIndexStart = 2;
 
@@ -102,7 +103,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   // SurfaceClient implementation.
   void OnSurfaceActivated(Surface* surface) override;
-  void OnSurfaceDiscarded(Surface* surface) override;
+  void OnSurfaceDestroyed(Surface* surface) override;
   void OnSurfaceDrawn(Surface* surface) override;
   void RefResources(
       const std::vector<TransferableResource>& resources) override;
@@ -230,6 +231,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   void EvictLastActiveSurface();
   bool ShouldSendBeginFrame(base::TimeTicks timestamp);
 
+  bool IsEvicted(const LocalSurfaceId& local_surface_id) const;
+
   mojom::CompositorFrameSinkClient* const client_;
 
   FrameSinkManagerImpl* const frame_sink_manager_;
@@ -310,7 +313,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   uint32_t trace_sequence_ = 0;
 
   PresentationFeedbackMap presentation_feedbacks_;
-  uint32_t last_evicted_parent_sequence_number_ = 0;
+  LocalSurfaceId last_evicted_local_surface_id_;
 
   base::TimeTicks last_frame_time_;
 

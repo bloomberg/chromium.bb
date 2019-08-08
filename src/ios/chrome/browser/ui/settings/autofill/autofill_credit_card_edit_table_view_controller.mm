@@ -98,7 +98,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // In the case of server cards, open the Payments editing page instead.
   if (_creditCard.record_type() == autofill::CreditCard::FULL_SERVER_CARD ||
       _creditCard.record_type() == autofill::CreditCard::MASKED_SERVER_CARD) {
-    GURL paymentsURL = autofill::payments::GetManageInstrumentsUrl(0);
+    GURL paymentsURL = autofill::payments::GetManageInstrumentsUrl();
     OpenNewTabCommand* command =
         [OpenNewTabCommand commandWithURLFromChrome:paymentsURL];
     [self.dispatcher closeSettingsUIAndOpenURL:command];
@@ -260,7 +260,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   cell.selectionStyle = UITableViewCellSelectionStyleNone;
 
   NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
-  AutofillEditCell* editCell = base::mac::ObjCCast<AutofillEditCell>(cell);
+  TableViewTextEditCell* editCell =
+      base::mac::ObjCCast<TableViewTextEditCell>(cell);
   editCell.textField.delegate = self;
   switch (itemType) {
     case ItemTypeCardholderName:
@@ -296,8 +297,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   if (self.tableView.editing) {
     UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
-    AutofillEditCell* textFieldCell =
-        base::mac::ObjCCastStrict<AutofillEditCell>(cell);
+    TableViewTextEditCell* textFieldCell =
+        base::mac::ObjCCastStrict<TableViewTextEditCell>(cell);
     [textFieldCell.textField becomeFirstResponder];
   }
 }

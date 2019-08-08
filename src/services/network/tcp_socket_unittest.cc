@@ -1122,6 +1122,19 @@ TEST_P(TCPSocketWithMockSocketTest, InitialTCPConnectedSocketOptionsFails) {
 }
 
 TEST_P(TCPSocketWithMockSocketTest, SetBufferSizes) {
+  typedef struct {
+    int passed_buffer_size;
+    int expected_buffer_size;
+  } BufferSizeTestData;
+
+  static const BufferSizeTestData kBufferSizeDataTestCases[] = {
+      // Setting a buffer size < 0 is replaced by setting a buffer size of 0.
+      {-1, 0},
+      {1024, 1024},
+      {TCPConnectedSocket::kMaxBufferSize + 1,
+       TCPConnectedSocket::kMaxBufferSize},
+      {0, 0}};
+
   mojom::TCPConnectedSocketPtr client_socket;
   net::IPEndPoint server_addr(net::IPAddress::IPv4Localhost(), 1234);
   mojo::ScopedDataPipeConsumerHandle client_socket_receive_handle;
@@ -1140,46 +1153,26 @@ TEST_P(TCPSocketWithMockSocketTest, SetBufferSizes) {
 
   EXPECT_EQ(-1, data_provider.receive_buffer_size());
 
-  net::TestCompletionCallback callback;
-  // Setting a buffer size < 0 is replaced by setting a buffer size of 0.
-  client_socket->SetReceiveBufferSize(-1, callback.callback());
-  EXPECT_EQ(net::OK, callback.WaitForResult());
-  EXPECT_EQ(0, data_provider.receive_buffer_size());
-
-  client_socket->SetReceiveBufferSize(1024, callback.callback());
-  EXPECT_EQ(net::OK, callback.WaitForResult());
-  EXPECT_EQ(1024, data_provider.receive_buffer_size());
-
-  client_socket->SetReceiveBufferSize(TCPConnectedSocket::kMaxBufferSize + 1,
-                                      callback.callback());
-  EXPECT_EQ(net::OK, callback.WaitForResult());
-  EXPECT_EQ(TCPConnectedSocket::kMaxBufferSize,
-            data_provider.receive_buffer_size());
-
-  client_socket->SetReceiveBufferSize(0, callback.callback());
-  EXPECT_EQ(net::OK, callback.WaitForResult());
-  EXPECT_EQ(0, data_provider.receive_buffer_size());
+  for (const BufferSizeTestData& test_case : kBufferSizeDataTestCases) {
+    net::TestCompletionCallback callback;
+    // Setting a buffer size < 0 is replaced by setting a buffer size of 0.
+    client_socket->SetReceiveBufferSize(test_case.passed_buffer_size,
+                                        callback.callback());
+    EXPECT_EQ(net::OK, callback.WaitForResult());
+    EXPECT_EQ(test_case.expected_buffer_size,
+              data_provider.receive_buffer_size());
+  }
 
   EXPECT_EQ(-1, data_provider.send_buffer_size());
 
-  // Setting a buffer size < 0 is replaced by setting a buffer size of 0.
-  client_socket->SetSendBufferSize(-1, callback.callback());
-  EXPECT_EQ(net::OK, callback.WaitForResult());
-  EXPECT_EQ(0, data_provider.send_buffer_size());
-
-  client_socket->SetSendBufferSize(1024, callback.callback());
-  EXPECT_EQ(net::OK, callback.WaitForResult());
-  EXPECT_EQ(1024, data_provider.send_buffer_size());
-
-  client_socket->SetSendBufferSize(TCPConnectedSocket::kMaxBufferSize + 1,
-                                   callback.callback());
-  EXPECT_EQ(net::OK, callback.WaitForResult());
-  EXPECT_EQ(TCPConnectedSocket::kMaxBufferSize,
-            data_provider.send_buffer_size());
-
-  client_socket->SetSendBufferSize(0, callback.callback());
-  EXPECT_EQ(net::OK, callback.WaitForResult());
-  EXPECT_EQ(0, data_provider.send_buffer_size());
+  for (const BufferSizeTestData& test_case : kBufferSizeDataTestCases) {
+    net::TestCompletionCallback callback;
+    // Setting a buffer size < 0 is replaced by setting a buffer size of 0.
+    client_socket->SetSendBufferSize(test_case.passed_buffer_size,
+                                     callback.callback());
+    EXPECT_EQ(net::OK, callback.WaitForResult());
+    EXPECT_EQ(test_case.expected_buffer_size, data_provider.send_buffer_size());
+  }
 }
 
 TEST_P(TCPSocketWithMockSocketTest, SetBufferSizesFails) {
@@ -1201,12 +1194,13 @@ TEST_P(TCPSocketWithMockSocketTest, SetBufferSizesFails) {
                 base::nullopt /*local_addr*/, server_addr,
                 &client_socket_receive_handle, &client_socket_send_handle));
 
-  net::TestCompletionCallback callback;
-  client_socket->SetReceiveBufferSize(1024, callback.callback());
-  EXPECT_EQ(net::ERR_FAILED, callback.WaitForResult());
+  net::TestCompletionCallback receive_buffer_callback;
+  client_socket->SetReceiveBufferSize(1024, receive_buffer_callback.callback());
+  EXPECT_EQ(net::ERR_FAILED, receive_buffer_callback.WaitForResult());
 
-  client_socket->SetSendBufferSize(1024, callback.callback());
-  EXPECT_EQ(net::ERR_UNEXPECTED, callback.WaitForResult());
+  net::TestCompletionCallback send_buffer_callback;
+  client_socket->SetSendBufferSize(1024, send_buffer_callback.callback());
+  EXPECT_EQ(net::ERR_UNEXPECTED, send_buffer_callback.WaitForResult());
 }
 
 TEST_F(TCPSocketWithMockSocketTest, SetNoDelayAndKeepAlive) {
@@ -1369,13 +1363,14 @@ TEST_F(TCPSocketWithMockSocketTest, SetOptionsAfterTLSUpgrade) {
     run_loop.Run();
   }
 
-  net::TestCompletionCallback callback;
-  client_socket->SetReceiveBufferSize(1024, callback.callback());
-  EXPECT_EQ(net::ERR_UNEXPECTED, callback.WaitForResult());
+  net::TestCompletionCallback receive_buffer_callback;
+  client_socket->SetReceiveBufferSize(1024, receive_buffer_callback.callback());
+  EXPECT_EQ(net::ERR_UNEXPECTED, receive_buffer_callback.WaitForResult());
   EXPECT_EQ(-1, data_provider.receive_buffer_size());
 
-  client_socket->SetSendBufferSize(1024, callback.callback());
-  EXPECT_EQ(net::ERR_UNEXPECTED, callback.WaitForResult());
+  net::TestCompletionCallback send_buffer_callback;
+  client_socket->SetSendBufferSize(1024, send_buffer_callback.callback());
+  EXPECT_EQ(net::ERR_UNEXPECTED, send_buffer_callback.WaitForResult());
   EXPECT_EQ(-1, data_provider.send_buffer_size());
 
   {

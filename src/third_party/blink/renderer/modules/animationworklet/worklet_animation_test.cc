@@ -34,12 +34,12 @@ KeyframeEffectModelBase* CreateEffectModel() {
   StringKeyframeVector frames_mixed_properties;
   Persistent<StringKeyframe> keyframe = StringKeyframe::Create();
   keyframe->SetOffset(0);
-  keyframe->SetCSSPropertyValue(CSSPropertyOpacity, "0",
+  keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "0",
                                 SecureContextMode::kInsecureContext, nullptr);
   frames_mixed_properties.push_back(keyframe);
   keyframe = StringKeyframe::Create();
   keyframe->SetOffset(1);
-  keyframe->SetCSSPropertyValue(CSSPropertyOpacity, "1",
+  keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "1",
                                 SecureContextMode::kInsecureContext, nullptr);
   frames_mixed_properties.push_back(keyframe);
   return StringKeyframeEffectModel::Create(frames_mixed_properties);
@@ -79,7 +79,7 @@ base::TimeDelta ToTimeDelta(double milliseconds) {
 class WorkletAnimationTest : public RenderingTest {
  public:
   WorkletAnimationTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()) {}
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
   void SetUp() override {
     RenderingTest::SetUp();
@@ -188,12 +188,11 @@ TEST_F(WorkletAnimationTest,
 
   scrollable_area->SetScrollOffset(ScrollOffset(0, 40), kProgrammaticScroll);
 
-  EXPECT_TIME_NEAR(40,
-                   worklet_animation->CurrentTime().value().InMillisecondsF());
+  bool is_null;
+  EXPECT_TIME_NEAR(40, worklet_animation->currentTime(is_null));
 
   scrollable_area->SetScrollOffset(ScrollOffset(0, 70), kProgrammaticScroll);
-  EXPECT_TIME_NEAR(70,
-                   worklet_animation->CurrentTime().value().InMillisecondsF());
+  EXPECT_TIME_NEAR(70, worklet_animation->currentTime(is_null));
 }
 
 TEST_F(WorkletAnimationTest, MainThreadSendsPeekRequestTest) {
@@ -262,14 +261,14 @@ TEST_F(WorkletAnimationTest, DocumentTimelineSetPlaybackRate) {
   worklet_animation_->play(ASSERT_NO_EXCEPTION);
   worklet_animation_->UpdateCompositingState();
   // Zero current time is not impacted by playback rate.
-  EXPECT_TIME_NEAR(0,
-                   worklet_animation_->CurrentTime().value().InMillisecondsF());
+  bool is_null;
+  EXPECT_TIME_NEAR(0, worklet_animation_->currentTime(is_null));
   // Play the animation until second_ticks.
   SimulateFrame(111.0 + 123.4);
   // Verify that the current time is updated playback_rate faster than the
   // timeline time.
   EXPECT_TIME_NEAR(123.4 * playback_rate,
-                   worklet_animation_->CurrentTime().value().InMillisecondsF());
+                   worklet_animation_->currentTime(is_null));
 }
 
 // Verifies correctness of current time when playback rate is set while the
@@ -286,40 +285,37 @@ TEST_F(WorkletAnimationTest, DocumentTimelineSetPlaybackRateWhilePlaying) {
   worklet_animation_->setPlaybackRate(GetScriptState(), playback_rate);
   // Verify current time after third tick.
   SimulateFrame(111.0 + 123.4 + 200.0);
+  bool is_null;
   EXPECT_TIME_NEAR(123.4 + 200.0 * playback_rate,
-                   worklet_animation_->CurrentTime().value().InMillisecondsF());
+                   worklet_animation_->currentTime(is_null));
 }
 
 TEST_F(WorkletAnimationTest, PausePlay) {
+  bool is_null;
   SimulateFrame(0);
   worklet_animation_->play(ASSERT_NO_EXCEPTION);
   EXPECT_EQ(Animation::kPending, worklet_animation_->PlayState());
   SimulateFrame(0);
   EXPECT_EQ(Animation::kRunning, worklet_animation_->PlayState());
   EXPECT_TRUE(worklet_animation_->Playing());
-  EXPECT_TIME_NEAR(0,
-                   worklet_animation_->CurrentTime().value().InMillisecondsF());
+  EXPECT_TIME_NEAR(0, worklet_animation_->currentTime(is_null));
   SimulateFrame(10);
   worklet_animation_->pause(ASSERT_NO_EXCEPTION);
   EXPECT_EQ(Animation::kPaused, worklet_animation_->PlayState());
   EXPECT_FALSE(worklet_animation_->Playing());
-  EXPECT_TIME_NEAR(10,
-                   worklet_animation_->CurrentTime().value().InMillisecondsF());
+  EXPECT_TIME_NEAR(10, worklet_animation_->currentTime(is_null));
   SimulateFrame(20);
   EXPECT_EQ(Animation::kPaused, worklet_animation_->PlayState());
-  EXPECT_TIME_NEAR(10,
-                   worklet_animation_->CurrentTime().value().InMillisecondsF());
+  EXPECT_TIME_NEAR(10, worklet_animation_->currentTime(is_null));
   worklet_animation_->play(ASSERT_NO_EXCEPTION);
   EXPECT_EQ(Animation::kPending, worklet_animation_->PlayState());
   SimulateFrame(20);
   EXPECT_EQ(Animation::kRunning, worklet_animation_->PlayState());
   EXPECT_TRUE(worklet_animation_->Playing());
-  EXPECT_TIME_NEAR(10,
-                   worklet_animation_->CurrentTime().value().InMillisecondsF());
+  EXPECT_TIME_NEAR(10, worklet_animation_->currentTime(is_null));
   SimulateFrame(30);
   EXPECT_EQ(Animation::kRunning, worklet_animation_->PlayState());
-  EXPECT_TIME_NEAR(20,
-                   worklet_animation_->CurrentTime().value().InMillisecondsF());
+  EXPECT_TIME_NEAR(20, worklet_animation_->currentTime(is_null));
 }
 
 // Verifies correctness of current time when playback rate is set while
@@ -361,8 +357,8 @@ TEST_F(WorkletAnimationTest, ScrollTimelineSetPlaybackRate) {
   worklet_animation->UpdateCompositingState();
 
   // Initial current time increased by playback rate.
-  EXPECT_TIME_NEAR(40,
-                   worklet_animation->CurrentTime().value().InMillisecondsF());
+  bool is_null;
+  EXPECT_TIME_NEAR(40, worklet_animation->currentTime(is_null));
 
   // Update scroll offset.
   scrollable_area->SetScrollOffset(ScrollOffset(0, 40), kProgrammaticScroll);
@@ -370,7 +366,7 @@ TEST_F(WorkletAnimationTest, ScrollTimelineSetPlaybackRate) {
   // Verify that the current time is updated playback_rate faster than the
   // timeline time.
   EXPECT_TIME_NEAR(40 + 20 * playback_rate,
-                   worklet_animation->CurrentTime().value().InMillisecondsF());
+                   worklet_animation->currentTime(is_null));
 }
 
 // Verifies correctness of current time when playback rate is set while the
@@ -415,8 +411,146 @@ TEST_F(WorkletAnimationTest, ScrollTimelineSetPlaybackRateWhilePlaying) {
 
   // Verify the current time after another scroll offset update.
   scrollable_area->SetScrollOffset(ScrollOffset(0, 80), kProgrammaticScroll);
+  bool is_null;
   EXPECT_TIME_NEAR(40 + 40 * playback_rate,
-                   worklet_animation->CurrentTime().value().InMillisecondsF());
+                   worklet_animation->currentTime(is_null));
+}
+
+// Verifies correcteness of worklet animation start and current time when
+// inactive timeline becomes active.
+TEST_F(WorkletAnimationTest, ScrollTimelineNewlyActive) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #scroller { overflow: visible; width: 100px; height: 100px; }
+      #spacer { width: 200px; height: 200px; }
+    </style>
+    <div id='scroller'>
+      <div id='spacer'></div>
+    </div>
+  )HTML");
+
+  Element* scroller_element = GetElementById("scroller");
+
+  ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
+  DoubleOrScrollTimelineAutoKeyword time_range =
+      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  options->setTimeRange(time_range);
+  options->setScrollSource(scroller_element);
+  ScrollTimeline* scroll_timeline =
+      ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
+  ASSERT_FALSE(scroll_timeline->IsActive());
+
+  WorkletAnimation* worklet_animation = CreateWorkletAnimation(
+      GetScriptState(), element_, animator_name_, scroll_timeline);
+
+  // Start the animation.
+  DummyExceptionStateForTesting exception_state;
+  worklet_animation->play(exception_state);
+  worklet_animation->UpdateCompositingState();
+
+  // Scroll timeline is inactive, thus the current and start times are
+  // unresolved.
+  bool is_null;
+  worklet_animation->currentTime(is_null);
+  EXPECT_TRUE(is_null);
+
+  worklet_animation->startTime(is_null);
+  EXPECT_TRUE(is_null);
+
+  // Make the timeline active.
+  scroller_element->setAttribute(html_names::kStyleAttr,
+                                 "overflow:scroll;width:100px;height:100px;");
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_TRUE(scroll_timeline->IsActive());
+
+  // As the timeline becomes newly active, start and current time must be
+  // initialized to zero.
+  double current_time = worklet_animation->currentTime(is_null);
+  EXPECT_FALSE(is_null);
+  EXPECT_TIME_NEAR(0, current_time);
+  double start_time = worklet_animation->startTime(is_null);
+  EXPECT_FALSE(is_null);
+  EXPECT_TIME_NEAR(0, start_time);
+}
+
+// Verifies correcteness of worklet animation start and current time when
+// active timeline becomes inactive and then active again.
+TEST_F(WorkletAnimationTest, ScrollTimelineNewlyInactive) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #scroller { overflow: scroll; width: 100px; height: 100px; }
+      #spacer { width: 200px; height: 200px; }
+    </style>
+    <div id='scroller'>
+      <div id='spacer'></div>
+    </div>
+  )HTML");
+
+  Element* scroller_element = GetElementById("scroller");
+
+  ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
+  DoubleOrScrollTimelineAutoKeyword time_range =
+      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  options->setTimeRange(time_range);
+  options->setScrollSource(scroller_element);
+  ScrollTimeline* scroll_timeline =
+      ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
+  ASSERT_TRUE(scroll_timeline->IsActive());
+
+  LayoutBoxModelObject* scroller =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  ASSERT_TRUE(scroller);
+  ASSERT_TRUE(scroller->HasOverflowClip());
+  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
+  ASSERT_TRUE(scrollable_area);
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 40), kProgrammaticScroll);
+
+  WorkletAnimation* worklet_animation = CreateWorkletAnimation(
+      GetScriptState(), element_, animator_name_, scroll_timeline);
+
+  // Start the animation.
+  DummyExceptionStateForTesting exception_state;
+  worklet_animation->play(exception_state);
+  worklet_animation->UpdateCompositingState();
+
+  // Scroll timeline is active, thus the current and start times are resolved.
+  bool is_null;
+  double current_time = worklet_animation->currentTime(is_null);
+  EXPECT_FALSE(is_null);
+  EXPECT_TIME_NEAR(40, current_time);
+
+  double start_time = worklet_animation->startTime(is_null);
+  EXPECT_FALSE(is_null);
+  EXPECT_TIME_NEAR(0, start_time);
+
+  // Make the timeline inactive.
+  scroller_element->setAttribute(html_names::kStyleAttr,
+                                 "overflow:visible;width:100px;height:100px;");
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_FALSE(scroll_timeline->IsActive());
+
+  // As the timeline becomes newly inactive, start time must be unresolved and
+  // current time the same as previous current time.
+  start_time = worklet_animation->startTime(is_null);
+  EXPECT_TRUE(is_null);
+  current_time = worklet_animation->currentTime(is_null);
+  EXPECT_FALSE(is_null);
+  EXPECT_TIME_NEAR(40, current_time);
+
+  // Make the timeline active again.
+  scroller_element->setAttribute(html_names::kStyleAttr,
+                                 "overflow:scroll;width:100px;height:100px;");
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_TRUE(scroll_timeline->IsActive());
+
+  // As the timeline becomes newly active, start time must be recalculated and
+  // current time same as the previous current time.
+  start_time = worklet_animation->startTime(is_null);
+  EXPECT_FALSE(is_null);
+  EXPECT_TIME_NEAR(0, start_time);
+  current_time = worklet_animation->currentTime(is_null);
+  EXPECT_FALSE(is_null);
+  EXPECT_TIME_NEAR(40, current_time);
 }
 
 }  //  namespace blink

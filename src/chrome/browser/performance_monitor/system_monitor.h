@@ -23,6 +23,7 @@
 namespace performance_monitor {
 
 class MetricEvaluatorsHelper;
+class SystemMonitorMetricsLogger;
 
 // Monitors various various system metrics such as free memory, disk idle time,
 // etc.
@@ -243,6 +244,9 @@ class SystemMonitor {
   static SystemMonitor::MetricVector EvaluateMetrics(
       MetricVector metric_vector);
 
+  // Create a |MetricEvaluatorsHelper| instance for the current platform.
+  static std::unique_ptr<MetricEvaluatorsHelper> CreateMetricEvaluatorsHelper();
+
   // Create the array of MetricMetadata used to initialize
   // |metric_evaluators_metadata_|.
   static MetricMetadataArray CreateMetricMetadataArray();
@@ -282,6 +286,9 @@ class SystemMonitor {
   // There should be one |MetricMetadata| for each value of
   // |MetricEvaluator::Type|.
   MetricMetadataArray metric_evaluators_metadata_;
+
+  // The logger responsible of logging the system metrics.
+  std::unique_ptr<SystemMonitorMetricsLogger> metrics_logger_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

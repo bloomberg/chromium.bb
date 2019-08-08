@@ -21,6 +21,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">teraz</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minuta}few{# minuty}many{# minut}other{# minuty}}</translation>
+<translation id="1756116796893109054">Wysyłam kartę…</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Kropka</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 miesiąc}few{# miesiące}many{# miesięcy}other{# miesiąca}}</translation>
@@ -34,6 +35,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Zaznacz &amp;wszystko</translation>
 <translation id="1938451708255335766">Aby dostosować gęstość wyświetlania okien, ponownie uruchom aplikację.</translation>
+<translation id="208586643495776849">Spróbuj ponownie</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 dzień}few{# dni}many{# dni}other{# dnia}}</translation>
 <translation id="2148716181193084225">Dzisiaj</translation>
 <translation id="2168039046890040389">Strona do góry</translation>
@@ -51,11 +53,14 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">Kalibracja została ukończona</translation>
 <translation id="252373100621549798">Nieznany wyświetlacz</translation>
+<translation id="2573731672208488250">{HOURS,plural, =1{za 1 godz.}few{za # godz.}many{za # godz.}other{za # godz.}}</translation>
 <translation id="2583543531130364912">Skalibruj ekran dotykowy</translation>
 <translation id="2666092431469916601">Do góry</translation>
+<translation id="2701330563083355633">Tę kartę udostępnia <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">Skopiuj do schowka</translation>
 <translation id="2803313416453193357">Otwórz folder</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{rok temu}few{# lata temu}many{# lat temu}other{# roku temu}}</translation>
+<translation id="2907671656515444832">{DAYS,plural, =1{za 1 dzień}few{za # dni}many{za # dni}other{za # dnia}}</translation>
 <translation id="2931838996092594335">kliknij</translation>
 <translation id="3036649622769666520">Otwórz pliki</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
@@ -67,6 +72,7 @@
 <translation id="3234408098842461169">Strzałka w dół</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dzień}few{# dni}many{# dni}other{# dnia}}</translation>
 <translation id="335581015389089642">Mowa</translation>
+<translation id="3443810440409579745">Odebrano kartę.</translation>
 <translation id="3479552764303398839">Nie teraz</translation>
 <translation id="348799646910989694">Półka ukryta automatycznie</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Pozostał 1 dzień}few{Pozostały # dni}many{Pozostało # dni}other{Pozostało # dnia}}</translation>
@@ -96,6 +102,7 @@
 <translation id="4730374152663651037">CZĘSTO UŻYWANE</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Pozostał miesiąc}few{Pozostały # miesiące}many{Pozostało # miesięcy}other{Pozostało # miesiąca}}</translation>
 <translation id="4841881773802181781">Wstawienie</translation>
+<translation id="4881695831933465202">Otwórz</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekunda}few{# sekundy}many{# sekund}other{# sekundy}}</translation>
 <translation id="4971687151119236543">Poprzedni utwór multimedialny</translation>
 <translation id="5046499563572181734">Kliknij tutaj</translation>
@@ -103,6 +110,7 @@
 <translation id="5137751499640340777">Uruchom Asystenta Google</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Trójkąt rozwinięcia</translation>
+<translation id="5278860589123563674">Nie udało się wysłać</translation>
 <translation id="528468243742722775">Zakończ</translation>
 <translation id="5329858601952122676">&amp;Usuń</translation>
 <translation id="5395308026110844773">Aplikacja <ph name="DRAGGED_APP_NAME" /> jest nad aplikacją <ph name="IN_PLACE_APP" /> – puść, by utworzyć folder.</translation>
@@ -114,6 +122,7 @@
 <translation id="5613020302032141669">Strzałka w lewo</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}few{# min}many{# min}other{# min}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dzień i }few{# dni i }many{# dni i }other{# dnia i }}</translation>
+<translation id="5866104238061687188">{YEARS,plural, =1{za 1 rok}few{za # lata}many{za # lat}other{za # roku}}</translation>
 <translation id="5895138241574237353">Uruchom ponownie</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Pozostała 1 sekunda}few{Pozostały # sekundy}many{Pozostało # sekund}other{Pozostało # sekundy}}</translation>
 <translation id="5941711191222866238">Minimalizuj</translation>
@@ -145,7 +154,6 @@
 <translation id="6808150112686056157">Zatrzymaj multimedia</translation>
 <translation id="6845383723252244143">Wybierz folder</translation>
 <translation id="6845533974506654842">naciśnij</translation>
-<translation id="686304767576508198">Udostępnione z:</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{Pozostała 1 godzina}few{Pozostały # godziny}many{Pozostało # godzin}other{Pozostało # godziny}}</translation>
 <translation id="688711909580084195">Strona internetowa bez tytułu</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
@@ -170,6 +178,7 @@
 <translation id="7907591526440419938">Otwórz plik</translation>
 <translation id="7969046989155602842">Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Więcej niż 1 nieprzeczytane powiadomienie}few{Więcej niż # nieprzeczytane powiadomienia}many{Więcej niż # nieprzeczytanych powiadomień}other{Więcej niż # nieprzeczytanego powiadomienia}}</translation>
+<translation id="8086866675552927481">{MINUTES,plural, =1{za 1 min}few{za # min}many{za # min}other{za # min}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 godzinę temu}few{# godziny temu}many{# godzin temu}other{# godziny temu}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Pozostała 1 s}few{Pozostały # s}many{Pozostało # s}other{Pozostało # s}}</translation>
@@ -198,6 +207,7 @@
 <translation id="8806053966018712535">Folder <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Dodaj notatkę na grafice</translation>
 <translation id="8841375032071747811">Przycisk Wstecz</translation>
+<translation id="8876215549894133151">Format:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="8926951137623668982">Półka zawsze ukryta</translation>
 <translation id="9002566407876343676">otwórz</translation>

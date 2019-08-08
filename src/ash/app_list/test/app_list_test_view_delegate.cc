@@ -35,6 +35,10 @@ SearchModel* AppListTestViewDelegate::GetSearchModel() {
   return search_model_.get();
 }
 
+bool AppListTestViewDelegate::KeyboardTraversalEngaged() {
+  return true;
+}
+
 void AppListTestViewDelegate::OpenSearchResult(
     const std::string& result_id,
     int event_flags,
@@ -53,6 +57,18 @@ void AppListTestViewDelegate::OpenSearchResult(
     }
   }
   ++open_search_result_count_;
+
+  if (launch_type == ash::mojom::AppListLaunchType::kAppSearchResult) {
+    switch (launched_from) {
+      case ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox:
+      case ash::mojom::AppListLaunchedFrom::kLaunchedFromSuggestionChip:
+        RecordAppLaunched(launched_from);
+        return;
+      case ash::mojom::AppListLaunchedFrom::kLaunchedFromGrid:
+      case ash::mojom::AppListLaunchedFrom::kLaunchedFromShelf:
+        return;
+    }
+  }
 }
 
 void AppListTestViewDelegate::DismissAppList() {
@@ -69,13 +85,16 @@ void AppListTestViewDelegate::SetSearchEngineIsGoogle(bool is_google) {
   search_model_->SetSearchEngineIsGoogle(is_google);
 }
 
-void AppListTestViewDelegate::ActivateItem(const std::string& id,
-                                           int event_flags) {
+void AppListTestViewDelegate::ActivateItem(
+    const std::string& id,
+    int event_flags,
+    ash::mojom::AppListLaunchedFrom launched_from) {
   app_list::AppListItem* item = model_->FindItem(id);
   if (!item)
     return;
   DCHECK(!item->is_folder());
   static_cast<AppListTestModel::AppListTestItem*>(item)->Activate(event_flags);
+  RecordAppLaunched(launched_from);
 }
 
 void AppListTestViewDelegate::GetContextMenuModel(
@@ -108,8 +127,8 @@ bool AppListTestViewDelegate::CanProcessEventsOnApplistViews() {
 }
 
 void AppListTestViewDelegate::GetNavigableContentsFactory(
-    content::mojom::NavigableContentsFactoryRequest request) {
-  fake_navigable_contents_factory_.BindRequest(std::move(request));
+    mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {
+  fake_navigable_contents_factory_.BindReceiver(std::move(receiver));
 }
 
 void AppListTestViewDelegate::GetSearchResultContextMenuModel(
@@ -135,6 +154,16 @@ void AppListTestViewDelegate::OnSearchResultVisibilityChanged(
 
 bool AppListTestViewDelegate::IsAssistantAllowedAndEnabled() const {
   return false;
+}
+
+void AppListTestViewDelegate::OnStateTransitionAnimationCompleted(
+    ash::mojom::AppListViewState state) {}
+
+void AppListTestViewDelegate::RecordAppLaunched(
+    ash::mojom::AppListLaunchedFrom launched_from) {
+  app_list::RecordAppListAppLaunched(launched_from, model_->state_fullscreen(),
+                                     false /*tablet mode*/,
+                                     false /*home launcher shown*/);
 }
 
 bool AppListTestViewDelegate::IsCommandIdChecked(int command_id) const {

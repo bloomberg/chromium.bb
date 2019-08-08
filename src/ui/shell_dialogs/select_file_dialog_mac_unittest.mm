@@ -102,7 +102,7 @@ class SelectFileDialogMacTest : public testing::Test,
 
   // Returns the number of panels currently active.
   size_t GetActivePanelCount() const {
-    return dialog_->dialog_data_map_.size();
+    return dialog_->dialog_data_list_.size();
   }
 
   // Returns one of the created NSSavePanel. If multiple SelectFile calls were
@@ -110,7 +110,8 @@ class SelectFileDialogMacTest : public testing::Test,
   // returned.
   NSSavePanel* GetPanel() const {
     DCHECK_GE(GetActivePanelCount(), 1lu);
-    return dialog_->dialog_data_map_.begin()->first;
+    return dialog_->dialog_data_list_.begin()
+        ->save_panel_bridge->GetNativePanelForTesting();
   }
 
   void ResetDialog() { dialog_ = new SelectFileDialogImpl(this, nullptr); }
@@ -462,15 +463,24 @@ TEST_F(SelectFileDialogMacTest, DefaultPath) {
 TEST_F(SelectFileDialogMacTest, MultipleExtension) {
   const std::string fake_path_normal = "/fake_directory/filename.tar";
   const std::string fake_path_multiple = "/fake_directory/filename.tar.gz";
+  const std::string fake_path_long = "/fake_directory/example.com-123.json";
   FileDialogArguments args(GetDefaultArguments());
 
   args.default_path = base::FilePath(FILE_PATH_LITERAL(fake_path_normal));
   SelectFileWithParams(args);
   NSSavePanel* panel = GetPanel();
   EXPECT_TRUE([panel canSelectHiddenExtension]);
+  EXPECT_TRUE([panel isExtensionHidden]);
 
   ResetDialog();
   args.default_path = base::FilePath(FILE_PATH_LITERAL(fake_path_multiple));
+  SelectFileWithParams(args);
+  panel = GetPanel();
+  EXPECT_FALSE([panel canSelectHiddenExtension]);
+  EXPECT_FALSE([panel isExtensionHidden]);
+
+  ResetDialog();
+  args.default_path = base::FilePath(FILE_PATH_LITERAL(fake_path_long));
   SelectFileWithParams(args);
   panel = GetPanel();
   EXPECT_FALSE([panel canSelectHiddenExtension]);

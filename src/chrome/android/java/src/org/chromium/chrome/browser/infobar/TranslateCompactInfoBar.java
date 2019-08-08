@@ -170,7 +170,7 @@ public class TranslateCompactInfoBar extends InfoBar
     TranslateCompactInfoBar(int initialStep, String sourceLanguageCode, String targetLanguageCode,
             boolean alwaysTranslate, boolean triggeredFromMenu, String[] languages,
             String[] languageCodes, int[] hashCodes, int tabTextColor) {
-        super(R.drawable.infobar_translate_compact, null, null);
+        super(R.drawable.infobar_translate_compact, 0, null, null);
 
         mInitialStep = initialStep;
         mDefaultTextColor = tabTextColor;
@@ -204,7 +204,7 @@ public class TranslateCompactInfoBar extends InfoBar
         if (mDefaultTextColor > 0) {
             mTabLayout.setTabTextColors(
                     ContextCompat.getColor(getContext(), R.color.default_text_color),
-                    ContextCompat.getColor(getContext(), R.color.infobar_accent_blue));
+                    ContextCompat.getColor(getContext(), R.color.tab_layout_selected_tab_color));
         }
         mTabLayout.addTabs(mOptions.sourceLanguageName(), mOptions.targetLanguageName());
 
@@ -327,6 +327,8 @@ public class TranslateCompactInfoBar extends InfoBar
     }
 
     private void closeInfobar(boolean explicitly) {
+        if (isDismissed()) return;
+
         if (!mUserInteracted) {
             recordInfobarAction(INFOBAR_DECLINE);
         }
@@ -348,7 +350,9 @@ public class TranslateCompactInfoBar extends InfoBar
 
     @Override
     public void onCloseButtonClicked() {
-        mTabLayout.endScrollingAnimationIfPlaying();
+        // TODO(https://crbug.com/965058): If the infobar was not properly initialized (in touchless
+        //                                 mode for example), mTabLayout will be null.
+        if (mTabLayout != null) mTabLayout.endScrollingAnimationIfPlaying();
         closeInfobar(true);
     }
 

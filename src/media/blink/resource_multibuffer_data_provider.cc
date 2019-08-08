@@ -23,6 +23,7 @@
 #include "net/http/http_byte_range.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/cors/cors.h"
+#include "third_party/blink/public/platform/web_network_state_notifier.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -84,17 +85,19 @@ void ResourceMultiBufferDataProvider::Start() {
   request.SetRequestContext(is_client_audio_element_
                                 ? blink::mojom::RequestContextType::AUDIO
                                 : blink::mojom::RequestContextType::VIDEO);
-  request.SetHTTPHeaderField(
+  request.SetHttpHeaderField(
       WebString::FromUTF8(net::HttpRequestHeaders::kRange),
       WebString::FromUTF8(
           net::HttpByteRange::RightUnbounded(byte_pos()).GetHeaderValue()));
 
   if (url_data_->length() == kPositionNotSpecified &&
-      url_data_->CachedSize() == 0 && url_data_->BytesReadFromCache() == 0) {
+      url_data_->CachedSize() == 0 && url_data_->BytesReadFromCache() == 0 &&
+      blink::WebNetworkStateNotifier::SaveDataEnabled() &&
+      url_data_->url().SchemeIs(url::kHttpScheme)) {
     // This lets the data reduction proxy know that we don't have anything
     // previously cached data for this resource. We can only send it if this is
     // the first request for this resource.
-    request.SetHTTPHeaderField(WebString::FromUTF8("chrome-proxy"),
+    request.SetHttpHeaderField(WebString::FromUTF8("chrome-proxy"),
                                WebString::FromUTF8("frfr"));
   }
 
@@ -105,7 +108,7 @@ void ResourceMultiBufferDataProvider::Start() {
   // along the way. See crbug/504194 and crbug/689989 for more information.
 
   // Disable compression, compression for audio/video doesn't make sense...
-  request.SetHTTPHeaderField(
+  request.SetHttpHeaderField(
       WebString::FromUTF8(net::HttpRequestHeaders::kAcceptEncoding),
       WebString::FromUTF8("identity;q=1, *;q=0"));
 

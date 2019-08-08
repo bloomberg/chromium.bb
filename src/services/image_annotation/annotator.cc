@@ -31,6 +31,13 @@ namespace {
 
 constexpr size_t kMaxResponseSize = 1024 * 1024;  // 1MB.
 
+// For a given source ID and requested description language, returns the unique
+// image ID string that can be used to look up results from a server response.
+std::string MakeImageId(const std::string& source_id,
+                        const std::string& desc_lang_tag) {
+  return source_id + (desc_lang_tag.empty() ? "" : " " + desc_lang_tag);
+}
+
 // The server returns separate OCR results for each region of the image; we
 // naively concatenate these into one response string.
 //
@@ -157,16 +164,25 @@ std::tuple<bool, std::vector<mojom::AnnotationPtr>> ParseJsonDescAnnotations(
       continue;
 
     const base::Value* const score = desc.FindKey("score");
-    if (!score || (!score->is_double() && !score->is_int()) ||
-        score->GetDouble() < 0.0 || score->GetDouble() > 1.0)
+    if (!score || (!score->is_double() && !score->is_int()))
       continue;
 
     const base::Value* const text = desc.FindKey("text");
-    if (!text || !text->is_string() || text->GetString().empty())
+    if (!text || !text->is_string())
       continue;
 
     ReportDescAnnotation(type_lookup->second, score->GetDouble(),
                          text->GetString().empty());
+
+    // For OCR, we allow empty text and unusual scores; at the time of writing,
+    // a score of -1 is always returned for OCR.
+    //
+    // For other annotation types, we do not allow these cases.
+    if (type_lookup->second != mojom::AnnotationType::kOcr &&
+        (text->GetString().empty() || score->GetDouble() < 0.0 ||
+         score->GetDouble() > 1.0))
+      continue;
+
     results.push_back(mojom::Annotation::New(
         type_lookup->second, score->GetDouble(), text->GetString()));
   }
@@ -202,7 +218,7 @@ int ExtractStatusCode(const base::Value* const status_dict) {
 }
 
 // Attempts to extract annotation results from the server response, returning a
-// map from each source ID to its annotations (if successfully extracted).
+// map from each image ID to its annotations (if successfully extracted).
 std::map<std::string, mojom::AnnotateImageResultPtr> UnpackJsonResponse(
     const base::Value& json_data,
     const double min_ocr_confidence) {
@@ -296,6 +312,34 @@ std::map<std::string, mojom::AnnotateImageResultPtr> UnpackJsonResponse(
 
 constexpr char Annotator::kGoogApiKeyHeader[];
 
+static_assert(Annotator::kDescMinDimension > 0,
+              "Description engine must accept images of some sizes.");
+static_assert(Annotator::kDescMaxAspectRatio > 0.0,
+              "Description engine must accept images of some aspect ratios.");
+
+Annotator::ClientRequestInfo::ClientRequestInfo(
+    mojom::ImageProcessorPtr in_image_processor,
+    AnnotateImageCallback in_callback)
+    : image_processor(std::move(in_image_processor)),
+      callback(std::move(in_callback)) {}
+
+Annotator::ClientRequestInfo::~ClientRequestInfo() = default;
+
+Annotator::ServerRequestInfo::ServerRequestInfo(
+    const std::string& in_source_id,
+    const bool in_desc_requested,
+    const std::string& in_desc_lang_tag,
+    const std::vector<uint8_t>& in_image_bytes)
+    : source_id(in_source_id),
+      desc_requested(in_desc_requested),
+      desc_lang_tag(in_desc_lang_tag),
+      image_bytes(in_image_bytes) {}
+
+Annotator::ServerRequestInfo& Annotator::ServerRequestInfo::operator=(
+    ServerRequestInfo&& other) = default;
+
+Annotator::ServerRequestInfo::~ServerRequestInfo() = default;
+
 Annotator::Annotator(
     GURL server_url,
     std::string api_key,
@@ -306,7 +350,7 @@ Annotator::Annotator(
     service_manager::Connector* const connector)
     : url_loader_factory_(std::move(url_loader_factory)),
       connector_(connector),
-      http_request_timer_(
+      server_request_timer_(
           FROM_HERE,
           throttle,
           base::BindRepeating(&Annotator::SendRequestBatchToServer,
@@ -333,10 +377,13 @@ void Annotator::BindRequest(mojom::AnnotatorRequest request) {
 }
 
 void Annotator::AnnotateImage(const std::string& source_id,
+                              const std::string& description_language_tag,
                               mojom::ImageProcessorPtr image_processor,
                               AnnotateImageCallback callback) {
+  const RequestKey request_key(source_id, description_language_tag);
+
   // Return cached results if they exist.
-  const auto cache_lookup = cached_results_.find(source_id);
+  const auto cache_lookup = cached_results_.find(request_key);
   ReportCacheHit(cache_lookup != cached_results_.end());
   if (cache_lookup != cached_results_.end()) {
     std::move(callback).Run(cache_lookup->second.Clone());
@@ -344,45 +391,60 @@ void Annotator::AnnotateImage(const std::string& source_id,
   }
 
   // Register the ImageProcessor and callback to be used for this request.
-  RequestInfoList& request_info_list = request_infos_[source_id];
-  request_info_list.push_back(
-      {std::move(image_processor), std::move(callback)});
+  std::list<ClientRequestInfo>& request_info_list = request_infos_[request_key];
+  request_info_list.emplace_back(std::move(image_processor),
+                                 std::move(callback));
 
   // If the image processor dies: automatically delete the request info and
   // reassign local processing (for other interested clients) if the dead image
   // processor was responsible for some ongoing work.
-  request_info_list.back().first.set_connection_error_handler(base::BindOnce(
-      &Annotator::RemoveRequestInfo, base::Unretained(this), source_id,
-      --request_info_list.end(), true /* canceled */));
+  request_info_list.back().image_processor.set_connection_error_handler(
+      base::BindOnce(&Annotator::RemoveRequestInfo, base::Unretained(this),
+                     request_key, --request_info_list.end(),
+                     true /* canceled */));
 
-  // Don't start local work if it would duplicate some ongoing or already-
-  // completed work.
-  if (base::ContainsKey(local_processors_, source_id) ||
-      base::ContainsKey(pending_source_ids_, source_id))
+  // Don't start local work if it would duplicate some already-ongoing work.
+  if (base::ContainsKey(local_processors_, request_key) ||
+      base::ContainsKey(pending_requests_, request_key))
     return;
 
   local_processors_.insert(
-      std::make_pair(source_id, &request_info_list.back().first));
+      {request_key, &request_info_list.back().image_processor});
 
   // TODO(crbug.com/916420): first query the public result cache by URL to
   // improve latency.
 
-  request_info_list.back().first->GetJpgImageData(
+  request_info_list.back().image_processor->GetJpgImageData(
       base::BindOnce(&Annotator::OnJpgImageDataReceived, base::Unretained(this),
-                     source_id, --request_info_list.end()));
+                     request_key, --request_info_list.end()));
+}
+
+// static
+bool Annotator::IsWithinDescPolicy(const int32_t width, const int32_t height) {
+  if (width < kDescMinDimension || height < kDescMinDimension)
+    return false;
+
+  // Can't be 0 or inf because |kDescMinDimension| is guaranteed positive (via a
+  // static_assert).
+  const double aspect_ratio = static_cast<double>(width) / height;
+  if (aspect_ratio < 1.0 / kDescMaxAspectRatio ||
+      aspect_ratio > kDescMaxAspectRatio)
+    return false;
+
+  return true;
 }
 
 // static
 std::string Annotator::FormatJsonRequest(
-    const HttpRequestQueue::iterator begin_it,
-    const HttpRequestQueue::iterator end_it) {
+    const std::deque<ServerRequestInfo>::iterator begin,
+    const std::deque<ServerRequestInfo>::iterator end) {
   base::Value image_request_list(base::Value::Type::LIST);
-  for (HttpRequestQueue::iterator it = begin_it; it != end_it; ++it) {
+  for (std::deque<ServerRequestInfo>::iterator it = begin; it != end; ++it) {
     // Re-encode image bytes into base64, which can be represented in JSON.
     std::string base64_data;
     Base64Encode(
-        base::StringPiece(reinterpret_cast<const char*>(it->second.data()),
-                          it->second.size()),
+        base::StringPiece(reinterpret_cast<const char*>(it->image_bytes.data()),
+                          it->image_bytes.size()),
         &base64_data);
 
     // TODO(crbug.com/916420): accept and propagate page language info to
@@ -390,16 +452,33 @@ std::string Annotator::FormatJsonRequest(
     base::Value ocr_engine_params(base::Value::Type::DICTIONARY);
     ocr_engine_params.SetKey("ocrParameters",
                              base::Value(base::Value::Type::DICTIONARY));
-    base::Value desc_engine_params(base::Value::Type::DICTIONARY);
-    desc_engine_params.SetKey("descriptionParameters",
-                              base::Value(base::Value::Type::DICTIONARY));
 
     base::Value engine_params_list(base::Value::Type::LIST);
     engine_params_list.GetList().push_back(std::move(ocr_engine_params));
-    engine_params_list.GetList().push_back(std::move(desc_engine_params));
+
+    // Also add a description annotations request if the image is within model
+    // policy.
+    if (it->desc_requested) {
+      base::Value desc_params(base::Value::Type::DICTIONARY);
+
+      // Add preferred description language if it has been specified.
+      if (!it->desc_lang_tag.empty()) {
+        base::Value desc_lang_list(base::Value::Type::LIST);
+        desc_lang_list.GetList().push_back(base::Value(it->desc_lang_tag));
+
+        desc_params.SetKey("preferredLanguages", std::move(desc_lang_list));
+      }
+
+      base::Value engine_params(base::Value::Type::DICTIONARY);
+      engine_params.SetKey("descriptionParameters", std::move(desc_params));
+
+      engine_params_list.GetList().push_back(std::move(engine_params));
+    }
+    ReportImageRequestIncludesDesc(it->desc_requested);
 
     base::Value image_request(base::Value::Type::DICTIONARY);
-    image_request.SetKey("imageId", base::Value(it->first));
+    image_request.SetKey(
+        "imageId", base::Value(MakeImageId(it->source_id, it->desc_lang_tag)));
     image_request.SetKey("imageBytes", base::Value(std::move(base64_data)));
     image_request.SetKey("engineParameters", std::move(engine_params_list));
 
@@ -421,13 +500,11 @@ std::string Annotator::FormatJsonRequest(
 std::unique_ptr<network::SimpleURLLoader> Annotator::MakeRequestLoader(
     const GURL& server_url,
     const std::string& api_key,
-    const HttpRequestQueue::iterator begin_it,
-    const HttpRequestQueue::iterator end_it) {
+    const std::deque<ServerRequestInfo>::iterator begin,
+    const std::deque<ServerRequestInfo>::iterator end) {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->method = "POST";
 
-  // TODO(crbug.com/916420): accept and pass API key when the server is
-  //                         configured to require it.
   resource_request->url = server_url;
 
   resource_request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES |
@@ -475,86 +552,92 @@ std::unique_ptr<network::SimpleURLLoader> Annotator::MakeRequestLoader(
   auto url_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
 
-  url_loader->AttachStringForUpload(FormatJsonRequest(begin_it, end_it),
+  url_loader->AttachStringForUpload(FormatJsonRequest(begin, end),
                                     "application/json");
 
   return url_loader;
 }
 
 void Annotator::OnJpgImageDataReceived(
-    const std::string& source_id,
-    const RequestInfoList::iterator request_info_it,
-    const std::vector<uint8_t>& image_bytes) {
+    const RequestKey& request_key,
+    const std::list<ClientRequestInfo>::iterator request_info_it,
+    const std::vector<uint8_t>& image_bytes,
+    const int32_t width,
+    const int32_t height) {
+  const std::string& source_id = request_key.first;
+  const std::string& desc_lang_tag = request_key.second;
+
   ReportPixelFetchSuccess(!image_bytes.empty());
 
   // Failed to retrieve bytes from local processor; remove dead processor and
   // reschedule processing.
   if (image_bytes.empty()) {
-    RemoveRequestInfo(source_id, request_info_it, false /* canceled */);
+    RemoveRequestInfo(request_key, request_info_it, false /* canceled */);
     return;
   }
 
   // Local processing is no longer ongoing.
-  local_processors_.erase(source_id);
+  local_processors_.erase(request_key);
 
-  // Schedule an HTTP request for this image.
-  http_request_queue_.push_front({source_id, image_bytes});
-  pending_source_ids_.insert(source_id);
+  // Schedule a server request for this image.
+  server_request_queue_.emplace_front(
+      source_id, IsWithinDescPolicy(width, height), desc_lang_tag, image_bytes);
+  pending_requests_.insert(request_key);
 
   // Start sending batches to the server.
-  if (!http_request_timer_.IsRunning())
-    http_request_timer_.Reset();
+  if (!server_request_timer_.IsRunning())
+    server_request_timer_.Reset();
 }
 
 void Annotator::SendRequestBatchToServer() {
-  if (http_request_queue_.empty()) {
-    http_request_timer_.Stop();
+  if (server_request_queue_.empty()) {
+    server_request_timer_.Stop();
     return;
   }
 
   // Take last n elements (or all elements if there are less than n).
-  const auto begin_it =
-      http_request_queue_.end() -
-      std::min<size_t>(http_request_queue_.size(), batch_size_);
-  const auto end_it = http_request_queue_.end();
+  const auto begin =
+      server_request_queue_.end() -
+      std::min<size_t>(server_request_queue_.size(), batch_size_);
+  const auto end = server_request_queue_.end();
 
-  // The set of source IDs relevant for this request.
-  std::set<std::string> source_ids;
-  for (HttpRequestQueue::iterator it = begin_it; it != end_it; it++) {
-    source_ids.insert(it->first);
+  // The set of (source ID, desc lang) pairs relevant for this request.
+  std::set<RequestKey> request_keys;
+  for (std::deque<ServerRequestInfo>::iterator it = begin; it != end; it++) {
+    request_keys.insert({it->source_id, it->desc_lang_tag});
   }
 
   // Kick off server communication.
-  http_requests_.push_back(
-      MakeRequestLoader(server_url_, api_key_, begin_it, end_it));
-  http_requests_.back()->DownloadToString(
+  ongoing_server_requests_.push_back(
+      MakeRequestLoader(server_url_, api_key_, begin, end));
+  ongoing_server_requests_.back()->DownloadToString(
       url_loader_factory_.get(),
       base::BindOnce(&Annotator::OnServerResponseReceived,
-                     base::Unretained(this), source_ids,
-                     --http_requests_.end()),
+                     base::Unretained(this), request_keys,
+                     --ongoing_server_requests_.end()),
       kMaxResponseSize);
 
-  http_request_queue_.erase(begin_it, end_it);
+  server_request_queue_.erase(begin, end);
 }
 
 void Annotator::OnServerResponseReceived(
-    const std::set<std::string>& source_ids,
-    const UrlLoaderList::iterator http_request_it,
+    const std::set<RequestKey>& request_keys,
+    const UrlLoaderList::iterator server_request_it,
     const std::unique_ptr<std::string> json_response) {
-  ReportServerNetError(http_request_it->get()->NetError());
+  ReportServerNetError(server_request_it->get()->NetError());
 
   if (const network::ResourceResponseInfo* const response_info =
-          http_request_it->get()->ResponseInfo()) {
+          server_request_it->get()->ResponseInfo()) {
     ReportServerResponseCode(response_info->headers->response_code());
     ReportServerLatency(response_info->response_time -
                         response_info->request_time);
   }
 
-  http_requests_.erase(http_request_it);
+  ongoing_server_requests_.erase(server_request_it);
 
   if (!json_response) {
     DVLOG(1) << "HTTP request to image annotation server failed.";
-    ProcessResults(source_ids, {});
+    ProcessResults(request_keys, {});
     return;
   }
 
@@ -563,46 +646,48 @@ void Annotator::OnServerResponseReceived(
   // Send JSON string to a dedicated service for safe parsing.
   GetJsonParser().Parse(*json_response,
                         base::BindOnce(&Annotator::OnResponseJsonParsed,
-                                       base::Unretained(this), source_ids));
+                                       base::Unretained(this), request_keys));
 }
 
 void Annotator::OnResponseJsonParsed(
-    const std::set<std::string>& source_ids,
+    const std::set<RequestKey>& request_keys,
     const base::Optional<base::Value> json_data,
     const base::Optional<std::string>& error) {
   const bool success = json_data.has_value() && !error.has_value();
   ReportJsonParseSuccess(success);
 
-  // Extract annotation results for each source ID with valid results.
+  // Extract annotation results for each request key with valid results.
   if (success) {
-    ProcessResults(source_ids,
+    ProcessResults(request_keys,
                    UnpackJsonResponse(*json_data, min_ocr_confidence_));
   } else {
     DVLOG(1) << "Parsing server response JSON failed with error: "
              << error.value_or("No reason reported.");
-    ProcessResults(source_ids, {});
+    ProcessResults(request_keys, {});
   }
 }
 
 void Annotator::ProcessResults(
-    const std::set<std::string>& source_ids,
+    const std::set<RequestKey>& request_keys,
     const std::map<std::string, mojom::AnnotateImageResultPtr>& results) {
-  // Process each source ID for which we expect to have results.
-  for (const std::string& source_id : source_ids) {
-    pending_source_ids_.erase(source_id);
+  // Process each request key for which we expect to have results.
+  for (const RequestKey& request_key : request_keys) {
+    pending_requests_.erase(request_key);
 
     // The lookup will be successful if there is a valid result (i.e. not an
-    // error and not a malformed result) for this source ID.
-    const auto result_lookup = results.find(source_id);
+    // error and not a malformed result) for this (source ID, desc lang) pair.
+    const auto result_lookup =
+        results.find(MakeImageId(request_key.first, request_key.second));
 
     // Populate the result struct for this image and copy it into the cache if
     // necessary.
     if (result_lookup != results.end())
-      cached_results_.insert({source_id, result_lookup->second.Clone()});
+      cached_results_.insert({request_key, result_lookup->second.Clone()});
 
     // This should not happen, since only this method removes entries of
-    // |request_infos_|, and this method should only execute once per source ID.
-    const auto request_info_it = request_infos_.find(source_id);
+    // |request_infos_|, and this method should only execute once per request
+    // key.
+    const auto request_info_it = request_infos_.find(request_key);
     if (request_info_it == request_infos_.end())
       continue;
 
@@ -617,7 +702,7 @@ void Annotator::ProcessResults(
     // Notify clients of success or failure.
     // TODO(crbug.com/916420): explore server retry strategies.
     for (auto& info : request_info_it->second) {
-      std::move(info.second).Run(image_result.Clone());
+      std::move(info.callback).Run(image_result.Clone());
       ReportClientResult(client_result);
     }
     request_infos_.erase(request_info_it);
@@ -637,34 +722,40 @@ data_decoder::mojom::JsonParser& Annotator::GetJsonParser() {
 }
 
 void Annotator::RemoveRequestInfo(
-    const std::string& source_id,
-    const RequestInfoList::iterator request_info_it,
+    const RequestKey& request_key,
+    const std::list<ClientRequestInfo>::iterator request_info_it,
     const bool canceled) {
   // Check whether we are deleting the ImageProcessor responsible for current
   // local processing.
-  auto lookup = local_processors_.find(source_id);
-  const bool should_reassign = lookup != local_processors_.end() &&
-                               lookup->second == &request_info_it->first;
+  auto local_processor_lookup = local_processors_.find(request_key);
+  const bool should_reassign =
+      local_processor_lookup != local_processors_.end() &&
+      local_processor_lookup->second == &request_info_it->image_processor;
 
   // Notify client of cancellation / failure.
   ReportClientResult(canceled ? ClientResult::kCanceled
                               : ClientResult::kFailed);
-  std::move(request_info_it->second)
+  std::move(request_info_it->callback)
       .Run(mojom::AnnotateImageResult::NewErrorCode(
           canceled ? mojom::AnnotateImageError::kCanceled
                    : mojom::AnnotateImageError::kFailure));
 
   // Delete the specified ImageProcessor.
-  RequestInfoList& request_info_list = request_infos_[source_id];
+  std::list<ClientRequestInfo>& request_info_list = request_infos_[request_key];
   request_info_list.erase(request_info_it);
 
   // If necessary, reassign local processing.
-  if (!request_info_list.empty() && should_reassign) {
-    lookup->second = &request_info_list.front().first;
+  if (should_reassign) {
+    if (request_info_list.empty()) {
+      local_processors_.erase(local_processor_lookup);
+    } else {
+      local_processor_lookup->second =
+          &request_info_list.front().image_processor;
 
-    request_info_list.front().first->GetJpgImageData(base::BindOnce(
-        &Annotator::OnJpgImageDataReceived, base::Unretained(this), source_id,
-        request_info_list.begin()));
+      request_info_list.front().image_processor->GetJpgImageData(base::BindOnce(
+          &Annotator::OnJpgImageDataReceived, base::Unretained(this),
+          request_key, request_info_list.begin()));
+    }
   }
 }
 

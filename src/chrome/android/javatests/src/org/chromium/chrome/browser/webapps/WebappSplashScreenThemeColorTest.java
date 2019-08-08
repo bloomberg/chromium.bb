@@ -15,8 +15,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.metrics.SameActivityWebappUmaCache;
 import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
@@ -78,13 +79,9 @@ public class WebappSplashScreenThemeColorTest {
             finalColor = ColorUtils.getDarkenedColorForStatusBar(Color.GREEN);
         }
 
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                TabTestUtils.simulateChangeThemeColor(
-                        mActivityTestRule.getActivity().getActivityTab(), baseColor);
-            }
-        });
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                () -> TabTestUtils.simulateChangeThemeColor(
+                                mActivityTestRule.getActivity().getActivityTab(), baseColor));
 
         // Waits for theme-color to change so the test doesn't rely on system timing.
         CriteriaHelper.pollInstrumentationThread(

@@ -40,8 +40,8 @@ static int profile_count = 0;
 void StartProfiling(const std::string& name) {
   ++profile_count;
   std::string full_name(name);
-  std::string pid = IntToString(GetCurrentProcId());
-  std::string count = IntToString(profile_count);
+  std::string pid = NumberToString(GetCurrentProcId());
+  std::string count = NumberToString(profile_count);
   ReplaceSubstringsAfterOffset(&full_name, 0, "{pid}", pid);
   ReplaceSubstringsAfterOffset(&full_name, 0, "{count}", count);
   ProfilerStart(full_name.c_str());

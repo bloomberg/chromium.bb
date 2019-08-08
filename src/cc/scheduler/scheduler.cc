@@ -578,6 +578,7 @@ void Scheduler::SendDidNotProduceFrame(const viz::BeginFrameArgs& args) {
   if (last_begin_frame_ack_.source_id == args.source_id &&
       last_begin_frame_ack_.sequence_number == args.sequence_number)
     return;
+  compositor_timing_history_->DidNotProduceFrame();
   last_begin_frame_ack_ = viz::BeginFrameAck(args, false /* has_damage */);
   client_->DidNotProduceFrame(last_begin_frame_ack_);
 }
@@ -601,7 +602,7 @@ void Scheduler::BeginImplFrame(const viz::BeginFrameArgs& args,
                                     args.animate_only);
     devtools_instrumentation::DidBeginFrame(layer_tree_host_id_);
     compositor_timing_history_->WillBeginImplFrame(
-        state_machine_.NewActiveTreeLikely(), args.frame_time, args.type, now);
+        args, state_machine_.NewActiveTreeLikely(), now);
     bool has_damage =
         client_->WillBeginImplFrame(begin_impl_frame_tracker_.Current());
 
@@ -931,6 +932,17 @@ bool Scheduler::ShouldDropBeginFrame(const viz::BeginFrameArgs& args) const {
       !settings_.enable_surface_synchronization) {
     return true;
   }
+
+  // We shouldn't be handling missed frames in the browser process (i.e. where
+  // commit_to_active_tree is set) since we don't know if we should create a
+  // frame at this time. Doing so leads to issues like crbug.com/882907. This
+  // early-out is a short term fix to keep fling animations smooth.
+  // TODO(bokan): In the long term, the display compositor should decide
+  // whether to issue a missed frame; it is tracked in
+  // https://crbug.com/930890.
+  if (args.type == viz::BeginFrameArgs::MISSED &&
+      settings_.commit_to_active_tree)
+    return true;
 
   return false;
 }

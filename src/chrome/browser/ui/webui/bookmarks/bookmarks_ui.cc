@@ -47,8 +47,8 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
 
   // Build an Accelerator to describe undo shortcut
   // NOTE: the undo shortcut is also defined in bookmarks/command_manager.js
-  // TODO(b/893033): de-duplicate shortcut by moving all shortcut definitions
-  // from JS to C++.
+  // TODO(crbug/893033): de-duplicate shortcut by moving all shortcut
+  // definitions from JS to C++.
   ui::Accelerator undoAccelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
   source->AddString("undoDescription", l10n_util::GetStringFUTF16(
                                            IDS_BOOKMARK_BAR_UNDO_DESCRIPTION,
@@ -122,10 +122,6 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
                      IDS_BOOKMARK_MANAGER_SEARCH_BUTTON);
   AddLocalizedString(source, "sidebarAxLabel",
                      IDS_BOOKMARK_MANAGER_SIDEBAR_AX_LABEL);
-  AddLocalizedString(source, "sidebarNodeCollapseAxLabel",
-                     IDS_BOOKMARK_MANAGER_SIDEBAR_NODE_COLLAPSE_AX_LABEL);
-  AddLocalizedString(source, "sidebarNodeExpandAxLabel",
-                     IDS_BOOKMARK_MANAGER_SIDEBAR_NODE_EXPAND_AX_LABEL);
   AddLocalizedString(source, "searchCleared", IDS_SEARCH_CLEARED);
   AddLocalizedString(source, "searchResults", IDS_SEARCH_RESULTS);
   AddLocalizedString(source, "saveEdit", IDS_SAVE);
@@ -197,9 +193,6 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
   source->AddResourcePath("store_client.html", IDR_BOOKMARKS_STORE_CLIENT_HTML);
   source->AddResourcePath("store_client.js", IDR_BOOKMARKS_STORE_CLIENT_JS);
   source->AddResourcePath("strings.html", IDR_BOOKMARKS_STRINGS_HTML);
-  source->AddResourcePath("toast_manager.html",
-                          IDR_BOOKMARKS_TOAST_MANAGER_HTML);
-  source->AddResourcePath("toast_manager.js", IDR_BOOKMARKS_TOAST_MANAGER_JS);
   source->AddResourcePath("toolbar.html", IDR_BOOKMARKS_TOOLBAR_HTML);
   source->AddResourcePath("toolbar.js", IDR_BOOKMARKS_TOOLBAR_JS);
   source->AddResourcePath("util.html", IDR_BOOKMARKS_UTIL_HTML);

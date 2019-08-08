@@ -74,8 +74,7 @@ suite('<bookmarks-command-manager>', function() {
 
     commandManager = new TestCommandManager();
     replaceBody(commandManager);
-    document.body.appendChild(
-        document.createElement('bookmarks-toast-manager'));
+    document.body.appendChild(document.createElement('cr-toast-manager'));
     bookmarks.DialogFocusManager.instance_ = null;
   });
 
@@ -186,6 +185,32 @@ suite('<bookmarks-command-manager>', function() {
     MockInteractions.pressAndReleaseKeyOn(
         document.body, '', redoModifier, redoKey);
     commandManager.assertLastCommand(Command.REDO);
+  });
+
+  test('undo triggered when bookmarks-toolbar element has focus', function() {
+    const element = document.createElement('bookmarks-toolbar');
+    document.body.appendChild(element);
+    MockInteractions.pressAndReleaseKeyOn(
+        element, '', cr.isMac ? 'meta' : 'ctrl', 'z');
+    commandManager.assertLastCommand(Command.UNDO);
+  });
+
+  test('undo not triggered when most other elements have focus', function() {
+    const element = document.createElement('div');
+    document.body.appendChild(element);
+    MockInteractions.pressAndReleaseKeyOn(
+        element, '', cr.isMac ? 'meta' : 'ctrl', 'z');
+    commandManager.assertLastCommand(null);
+  });
+
+  test('undo not triggered when toolbar input has focus', function() {
+    const toolbar = document.createElement('bookmarks-toolbar');
+    const input = document.createElement('input');
+    toolbar.appendChild(input);
+    document.body.appendChild(toolbar);
+    MockInteractions.pressAndReleaseKeyOn(
+        input, '', cr.isMac ? 'meta' : 'ctrl', 'z');
+    commandManager.assertLastCommand(null);
   });
 
   test('Show In Folder is only available during search', function() {

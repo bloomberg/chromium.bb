@@ -54,8 +54,6 @@ aggregate_vector_icons("chrome_vector_icons") {
     "forward_arrow_touch.icon",
     "generic_stop.icon",
     "globe.icon",
-    "google_g_logo.icon",
-    "google_pay_logo.icon",
     "horizontal_menu.icon",
     "incognito.icon",
     "incognito_profile.icon",
@@ -121,6 +119,26 @@ aggregate_vector_icons("chrome_vector_icons") {
     "vr_headset.icon",
     "warning_badge.icon",
     "web.icon",
+    "webauthn/webauthn_ble.icon",
+    "webauthn/webauthn_ble_dark.icon",
+    "webauthn/webauthn_ble_name.icon",
+    "webauthn/webauthn_ble_name_dark.icon",
+    "webauthn/webauthn_ble_pin.icon",
+    "webauthn/webauthn_ble_pin_dark.icon",
+    "webauthn/webauthn_ble_tap.icon",
+    "webauthn/webauthn_ble_tap_dark.icon",
+    "webauthn/webauthn_error.icon",
+    "webauthn/webauthn_error_bluetooth.icon",
+    "webauthn/webauthn_error_bluetooth_dark.icon",
+    "webauthn/webauthn_error_dark.icon",
+    "webauthn/webauthn_permission.icon",
+    "webauthn/webauthn_permission_dark.icon",
+    "webauthn/webauthn_phone.icon",
+    "webauthn/webauthn_phone_dark.icon",
+    "webauthn/webauthn_usb.icon",
+    "webauthn/webauthn_usb_dark.icon",
+    "webauthn/webauthn_welcome.icon",
+    "webauthn/webauthn_welcome_dark.icon",
     "zoom_minus.icon",
     "zoom_plus.icon",
     "${branding_path_component}/product.icon",
@@ -149,6 +167,13 @@ aggregate_vector_icons("chrome_vector_icons") {
   if (enable_vr && !is_android) {
     # Used on desktop VR headsets and Linux unit tests.
     icons += [ "open_in_browser.icon" ]
+  }
+
+  if (is_chrome_branded) {
+    icons += [
+      "google_chrome/google_g_logo.icon",
+      "google_chrome/google_pay_logo.icon",
+    ]
   }
 }
 

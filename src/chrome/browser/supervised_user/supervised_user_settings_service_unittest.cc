@@ -60,7 +60,7 @@ const char kSplitItemName[] = "X-SuperMoosePowers";
 
 class SupervisedUserSettingsServiceTest : public ::testing::Test {
  protected:
-  SupervisedUserSettingsServiceTest() : settings_service_(nullptr) {}
+  SupervisedUserSettingsServiceTest() {}
   ~SupervisedUserSettingsServiceTest() override {}
 
   std::unique_ptr<syncer::SyncChangeProcessor> CreateSyncProcessor() {
@@ -124,7 +124,7 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
   void SetUp() override {
     TestingPrefStore* pref_store = new TestingPrefStore;
     settings_service_.Init(pref_store);
-    user_settings_subscription_ = settings_service_.Subscribe(
+    user_settings_subscription_ = settings_service_.SubscribeForSettingsChange(
         base::Bind(&SupervisedUserSettingsServiceTest::OnNewSettingsAvailable,
                    base::Unretained(this)));
     pref_store->SetInitializationCompleted();

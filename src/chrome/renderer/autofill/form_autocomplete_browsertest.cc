@@ -184,7 +184,7 @@ void SimulateOnFillForm(autofill::AutofillAgent* autofill_agent,
 
   FormData data;
   data.name = base::ASCIIToUTF16("name");
-  data.origin = GURL("http://example.com/");
+  data.url = GURL("http://example.com/");
   data.action = GURL("http://example.com/blade.php");
   data.is_form_tag = true;  // Default value.
 

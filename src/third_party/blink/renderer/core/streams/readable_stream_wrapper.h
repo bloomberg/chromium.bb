@@ -14,7 +14,6 @@
 namespace blink {
 
 // This is an implementation of the corresponding IDL interface.
-// Use TraceWrapperMember to hold a reference to an instance of this class.
 class CORE_EXPORT ReadableStreamWrapper : public ReadableStream {
  public:
   // Call one of Init functions before using the instance.

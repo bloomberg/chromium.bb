@@ -1,3 +1,15 @@
+diff --git a/javascript/atoms/action.js b/javascript/atoms/action.js
+index 74a0fa1c1b..204cd73323 100644
+--- a/javascript/atoms/action.js
++++ b/javascript/atoms/action.js
+@@ -98,7 +98,6 @@ bot.action.clear = function(element) {
+       element.value = '';
+     }
+     bot.events.fire(element, bot.events.EventType.CHANGE);
+-    bot.events.fire(element, bot.events.EventType.BLUR);
+     var body = bot.getDocument().body;
+     if (body) {
+       bot.action.LegacyDevice_.focusOnElement(body);
 diff --git a/javascript/atoms/dom.js b/javascript/atoms/dom.js
 index 9bd669a05d..569de66f58 100644
 --- a/javascript/atoms/dom.js

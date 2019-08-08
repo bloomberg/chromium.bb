@@ -17,6 +17,11 @@
 namespace gfx {
 
 // static
+bool Animation::ShouldRenderRichAnimationImpl() {
+  return !PrefersReducedMotion();
+}
+
+// static
 bool Animation::ScrollAnimationsEnabledBySystem() {
   // Because of sandboxing, OS settings should only be queried from the browser
   // process.

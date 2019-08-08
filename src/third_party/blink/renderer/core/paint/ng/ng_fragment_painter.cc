@@ -54,7 +54,7 @@ void NGFragmentPainter::AddPDFURLRectIfNeeded(const PaintInfo& paint_info,
   if (!url.IsValid())
     return;
 
-  IntRect rect = PixelSnappedIntRect(paint_fragment_.VisualRect());
+  IntRect rect = paint_fragment_.VisualRect();
   if (rect.IsEmpty())
     return;
 
@@ -90,7 +90,7 @@ bool NGFragmentPainter::ShouldRecordHitTestData(
   if (fragment.Style().Visibility() != EVisibility::kVisible)
     return false;
 
-  auto touch_action = fragment.EffectiveWhitelistedTouchAction();
+  auto touch_action = fragment.EffectiveAllowedTouchAction();
   if (touch_action == TouchAction::kTouchActionAuto)
     return false;
 

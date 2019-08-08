@@ -4,14 +4,16 @@
 
 #include "ash/shelf/shelf_controller.h"
 
-#include <memory>
+#include <algorithm>
+#include <utility>
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/remote_shelf_item_delegate.h"
+#include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
-#include "ash/shelf/app_list_shelf_item_delegate.h"
+#include "ash/shelf/home_button_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_widget.h"
@@ -120,9 +122,9 @@ ShelfController::ShelfController()
   back_item.title = l10n_util::GetStringUTF16(IDS_ASH_SHELF_BACK_BUTTON_TITLE);
   model_.Set(0, back_item);
 
-  // Set the delegate and title string for the app list item.
+  // Set the delegate and title string for the home button.
   model_.SetShelfItemDelegate(ShelfID(kAppListId),
-                              std::make_unique<AppListShelfItemDelegate>());
+                              std::make_unique<HomeButtonDelegate>());
   DCHECK_EQ(1, model_.ItemIndexByID(ShelfID(kAppListId)));
   ShelfItem launcher_item = model_.items()[1];
   launcher_item.title =
@@ -130,9 +132,11 @@ ShelfController::ShelfController()
   model_.Set(1, launcher_item);
 
   model_.AddObserver(this);
+
   Shell::Get()->session_controller()->AddObserver(this);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
+
   if (is_notification_indicator_enabled_)
     message_center_observer_.Add(message_center::MessageCenter::Get());
 }
@@ -260,6 +264,24 @@ void ShelfController::SetShelfItemDelegate(
         id, std::make_unique<RemoteShelfItemDelegate>(id, std::move(delegate)));
   else
     model_.SetShelfItemDelegate(id, nullptr);
+}
+
+void ShelfController::GetAutoHideBehaviorForTesting(
+    int64_t display_id,
+    GetAutoHideBehaviorForTestingCallback callback) {
+  Shelf* shelf = GetShelfForDisplay(display_id);
+  DCHECK(shelf);
+  std::move(callback).Run(shelf->auto_hide_behavior());
+}
+
+void ShelfController::SetAutoHideBehaviorForTesting(
+    int64_t display_id,
+    ShelfAutoHideBehavior behavior,
+    SetAutoHideBehaviorForTestingCallback callback) {
+  Shelf* shelf = GetShelfForDisplay(display_id);
+  DCHECK(shelf);
+  shelf->SetAutoHideBehavior(behavior);
+  std::move(callback).Run();
 }
 
 void ShelfController::ShelfItemAdded(int index) {

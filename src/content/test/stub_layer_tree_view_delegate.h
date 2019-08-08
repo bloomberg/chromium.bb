@@ -29,15 +29,16 @@ class StubLayerTreeViewDelegate : public LayerTreeViewDelegate {
   void DidBeginMainFrame() override {}
   void RecordStartOfFrameMetrics() override {}
   void RecordEndOfFrameMetrics(base::TimeTicks) override {}
+  void BeginUpdateLayers() override {}
+  void EndUpdateLayers() override {}
   void RequestNewLayerTreeFrameSink(
       LayerTreeFrameSinkCallback callback) override;
   void DidCommitAndDrawCompositorFrame() override {}
+  void WillCommitCompositorFrame() override {}
   void DidCommitCompositorFrame() override {}
   void DidCompletePageScaleAnimation() override {}
   void UpdateVisualState() override {}
   void WillBeginCompositorFrame() override {}
-  std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForWebTest(
-      std::unique_ptr<viz::CopyOutputRequest> request) override;
 };
 
 }  // namespace content

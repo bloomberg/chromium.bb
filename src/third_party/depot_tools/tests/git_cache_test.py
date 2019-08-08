@@ -166,6 +166,18 @@ class GitCacheDirTest(unittest.TestCase):
           os.environ[name] = val
 
 
+class MirrorTest(unittest.TestCase):
+  def test_same_cache_for_authenticated_and_unauthenticated_urls(self):
+    # GoB can fetch a repo via two different URLs; if the url contains '/a/'
+    # it forces authenticated access instead of allowing anonymous access,
+    # even in the case where a repo is public. We want this in order to make
+    # sure bots are authenticated and get the right quotas. However, we
+    # only want to maintain a single cache for the repo.
+    self.assertEqual(git_cache.Mirror.UrlToCacheDir(
+        'https://chromium.googlesource.com/a/chromium/src.git'),
+        'chromium.googlesource.com-chromium-src')
+
+
 if __name__ == '__main__':
   sys.exit(coverage_utils.covered_main((
     os.path.join(DEPOT_TOOLS_ROOT, 'git_cache.py')

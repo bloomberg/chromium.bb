@@ -20,8 +20,10 @@ class RunTelemetryTest(run_performance_test.RunPerformanceTest):
     # Telemetry parameter `--results-label <change>` to the runs.
     extra_args = copy.copy(self._extra_args)
     extra_args += ('--results-label', str(change))
+    extra_swarming_tags = {'change': str(change)}
 
-    return self._Start(change, isolate_server, isolate_hash, extra_args)
+    return self._Start(change, isolate_server, isolate_hash, extra_args,
+                       extra_swarming_tags)
 
   @classmethod
   def _ExtraTestArgs(cls, arguments):
@@ -40,13 +42,9 @@ class RunTelemetryTest(run_performance_test.RunPerformanceTest):
     if story_tags:
       extra_test_args += ('--story-tag-filter', story_tags)
 
-    network_service_cold = benchmark.startswith(
-        'loading.desktop.network_service') and '.cold' in story
-
     # TODO: Workaround for crbug.com/677843.
     if (benchmark.startswith('startup.warm') or
-        benchmark.startswith('start_with_url.warm') or
-        network_service_cold):
+        benchmark.startswith('start_with_url.warm')):
       extra_test_args += ('--pageset-repeat', '2')
     else:
       extra_test_args += ('--pageset-repeat', '1')
@@ -64,3 +62,19 @@ class RunTelemetryTest(run_performance_test.RunPerformanceTest):
     extra_test_args += _DEFAULT_EXTRA_ARGS
     extra_test_args += super(RunTelemetryTest, cls)._ExtraTestArgs(arguments)
     return extra_test_args
+
+  @classmethod
+  def _GetSwarmingTags(cls, arguments):
+    tags = {}
+    benchmark = arguments.get('benchmark')
+    if not benchmark:
+      raise TypeError('Missing "benchmark" argument.')
+    tags['benchmark'] = benchmark
+    story_filter = arguments.get('story')
+    tag_filter = arguments.get('story_tags')
+    tags['hasfilter'] = '1' if story_filter or tag_filter else '0'
+    if story_filter:
+      tags['storyfilter'] = story_filter
+    if tag_filter:
+      tags['tagfilter'] = tag_filter
+    return tags

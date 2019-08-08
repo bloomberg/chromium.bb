@@ -38,6 +38,10 @@ bool IsUnhandledArrowKeyEvent(const ui::KeyEvent& event) {
   if (!IsUnhandledUnmodifiedEvent(event))
     return false;
 
+  return IsArrowKeyEvent(event);
+}
+
+bool IsArrowKeyEvent(const ui::KeyEvent& event) {
   return event.key_code() == ui::VKEY_DOWN ||
          event.key_code() == ui::VKEY_RIGHT ||
          event.key_code() == ui::VKEY_LEFT || event.key_code() == ui::VKEY_UP;

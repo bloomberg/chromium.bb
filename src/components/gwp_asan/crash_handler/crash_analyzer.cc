@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <algorithm>
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
@@ -26,6 +27,7 @@
 namespace gwp_asan {
 namespace internal {
 
+using GetMetadataReturnType = AllocatorState::GetMetadataReturnType;
 using GwpAsanCrashAnalysisResult = CrashAnalyzer::GwpAsanCrashAnalysisResult;
 
 GwpAsanCrashAnalysisResult CrashAnalyzer::GetExceptionInfo(
@@ -109,33 +111,72 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
   else if (valid_state.free_invalid_address)
     exception_addr = valid_state.free_invalid_address;
 
-  if (!exception_addr)
+  if (!exception_addr || !valid_state.PointerIsMine(exception_addr))
     return GwpAsanCrashAnalysisResult::kUnrelatedCrash;
+  // All errors that occur below happen for an exception known to be related to
+  // GWP-ASan.
 
-  uintptr_t slot_address;
-  auto ret = valid_state.GetMetadataForAddress(exception_addr, &slot_address);
-  if (ret == AllocatorState::GetMetadataReturnType::kErrorBadSlot) {
-    DLOG(ERROR) << "Allocator computed a bad slot index!";
-    return GwpAsanCrashAnalysisResult::kErrorBadSlot;
-  }
-  if (ret == AllocatorState::GetMetadataReturnType::kUnrelatedCrash)
-    return GwpAsanCrashAnalysisResult::kUnrelatedCrash;
-
-  SlotMetadata slot;
-  if (!memory.Read(slot_address, sizeof(slot), &slot)) {
-    DLOG(ERROR) << "Failed to read SlotMetadata from process.";
+  // Read the allocator's entire metadata array.
+  auto metadata_arr = std::make_unique<AllocatorState::SlotMetadata[]>(
+      valid_state.num_metadata);
+  if (!memory.Read(
+          valid_state.metadata_addr,
+          sizeof(AllocatorState::SlotMetadata) * valid_state.num_metadata,
+          metadata_arr.get())) {
+    DLOG(ERROR) << "Failed to read metadata from process.";
     return GwpAsanCrashAnalysisResult::kErrorFailedToReadSlotMetadata;
   }
 
-  AllocatorState::ErrorType error = valid_state.GetErrorType(
-      exception_addr, slot.alloc.trace_collected, slot.dealloc.trace_collected);
-  proto->set_error_type(static_cast<Crash_ErrorType>(error));
-  proto->set_allocation_address(slot.alloc_ptr);
-  proto->set_allocation_size(slot.alloc_size);
-  if (slot.alloc.tid != base::kInvalidThreadId || slot.alloc.trace_len)
-    ReadAllocationInfo(slot.alloc, proto->mutable_allocation());
-  if (slot.dealloc.tid != base::kInvalidThreadId || slot.dealloc.trace_len)
-    ReadAllocationInfo(slot.dealloc, proto->mutable_deallocation());
+  // Read the allocator's slot_to_metadata mapping.
+  auto slot_to_metadata =
+      std::make_unique<AllocatorState::MetadataIdx[]>(valid_state.total_pages);
+  if (!memory.Read(
+          valid_state.slot_to_metadata_addr,
+          sizeof(AllocatorState::MetadataIdx) * valid_state.total_pages,
+          slot_to_metadata.get())) {
+    DLOG(ERROR) << "Failed to read slot_to_metadata from process.";
+    return GwpAsanCrashAnalysisResult::kErrorFailedToReadSlotMetadataMapping;
+  }
+
+  AllocatorState::MetadataIdx metadata_idx;
+  auto ret =
+      valid_state.GetMetadataForAddress(exception_addr, metadata_arr.get(),
+                                        slot_to_metadata.get(), &metadata_idx);
+  if (ret == GetMetadataReturnType::kErrorBadSlot) {
+    DLOG(ERROR) << "Allocator computed a bad slot index!";
+    return GwpAsanCrashAnalysisResult::kErrorBadSlot;
+  }
+  if (ret == GetMetadataReturnType::kErrorBadMetadataIndex) {
+    DLOG(ERROR) << "Allocator state held a bad metadata index!";
+    return GwpAsanCrashAnalysisResult::kErrorBadMetadataIndex;
+  }
+  if (ret == GetMetadataReturnType::kErrorOutdatedMetadataIndex) {
+    DLOG(ERROR) << "Metadata index was outdated!";
+    return GwpAsanCrashAnalysisResult::kErrorOutdatedMetadataIndex;
+  }
+
+  bool missing_metadata =
+      (ret == GetMetadataReturnType::kGwpAsanCrashWithMissingMetadata);
+  proto->set_missing_metadata(missing_metadata);
+
+  if (!missing_metadata) {
+    SlotMetadata& metadata = metadata_arr[metadata_idx];
+    AllocatorState::ErrorType error =
+        valid_state.GetErrorType(exception_addr, metadata.alloc.trace_collected,
+                                 metadata.dealloc.trace_collected);
+    proto->set_error_type(static_cast<Crash_ErrorType>(error));
+    proto->set_allocation_address(metadata.alloc_ptr);
+    proto->set_allocation_size(metadata.alloc_size);
+    if (metadata.alloc.tid != base::kInvalidThreadId ||
+        metadata.alloc.trace_len)
+      ReadAllocationInfo(metadata.stack_trace_pool, 0, metadata.alloc,
+                         proto->mutable_allocation());
+    if (metadata.dealloc.tid != base::kInvalidThreadId ||
+        metadata.dealloc.trace_len)
+      ReadAllocationInfo(metadata.stack_trace_pool, metadata.alloc.trace_len,
+                         metadata.dealloc, proto->mutable_deallocation());
+  }
+
   proto->set_region_start(valid_state.pages_base_addr);
   proto->set_region_size(valid_state.pages_end_addr -
                          valid_state.pages_base_addr);
@@ -146,6 +187,8 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
 }
 
 void CrashAnalyzer::ReadAllocationInfo(
+    const uint8_t* stack_trace,
+    size_t stack_trace_offset,
     const SlotMetadata::AllocationInfo& slot_info,
     gwp_asan::Crash_AllocationInfo* proto_info) {
   if (slot_info.tid != base::kInvalidThreadId)
@@ -154,15 +197,17 @@ void CrashAnalyzer::ReadAllocationInfo(
   if (!slot_info.trace_len || !slot_info.trace_collected)
     return;
 
-  if (slot_info.trace_len > AllocatorState::kMaxPackedTraceLength) {
+  if (slot_info.trace_len > AllocatorState::kMaxPackedTraceLength ||
+      stack_trace_offset + slot_info.trace_len >
+          AllocatorState::kMaxPackedTraceLength) {
     DLOG(ERROR) << "Stack trace length is corrupted: " << slot_info.trace_len;
     return;
   }
 
   uintptr_t unpacked_stack_trace[AllocatorState::kMaxPackedTraceLength];
   size_t unpacked_len =
-      Unpack(slot_info.packed_trace, slot_info.trace_len, unpacked_stack_trace,
-             AllocatorState::kMaxPackedTraceLength);
+      Unpack(stack_trace + stack_trace_offset, slot_info.trace_len,
+             unpacked_stack_trace, AllocatorState::kMaxPackedTraceLength);
   if (!unpacked_len) {
     DLOG(ERROR) << "Failed to unpack stack trace.";
     return;

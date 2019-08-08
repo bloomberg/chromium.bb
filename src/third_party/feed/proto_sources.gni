@@ -3,9 +3,11 @@
 # found in the LICENSE file.
 
 feed_lib_proto_sources = [
-  "src/src/main/proto/com/google/android/libraries/feed/api/proto/stream_data.proto",
   "src/src/main/proto/com/google/android/libraries/feed/basicstream/internal/proto/stream_saved_instance_state.proto",
+  "src/src/main/proto/com/google/android/libraries/feed/internalapi/proto/stream_data.proto",
   "src/src/main/proto/com/google/android/libraries/feed/sharedstream/proto/scroll_state.proto",
+  "src/src/main/proto/com/google/android/libraries/feed/sharedstream/proto/ui_refresh_reason.proto",
+  "src/src/main/proto/com/google/android/libraries/feed/testing/proto/ui_context_for_test.proto",
   "src/src/main/proto/search/now/ui/action/feed_action.proto",
   "src/src/main/proto/search/now/ui/action/feed_action_payload.proto",
   "src/src/main/proto/search/now/ui/action/piet_extensions.proto",
@@ -27,6 +29,7 @@ feed_lib_proto_sources = [
   "src/src/main/proto/search/now/ui/stream/stream_offline_extension.proto",
   "src/src/main/proto/search/now/ui/stream/stream_structure.proto",
   "src/src/main/proto/search/now/ui/stream/stream_swipe_extension.proto",
+  "src/src/main/proto/search/now/wire/feed/action_payload.proto",
   "src/src/main/proto/search/now/wire/feed/action_properties.proto",
   "src/src/main/proto/search/now/wire/feed/action_request.proto",
   "src/src/main/proto/search/now/wire/feed/action_type.proto",
@@ -35,6 +38,7 @@ feed_lib_proto_sources = [
   "src/src/main/proto/search/now/wire/feed/consistency_token.proto",
   "src/src/main/proto/search/now/wire/feed/content_id.proto",
   "src/src/main/proto/search/now/wire/feed/data_operation.proto",
+  "src/src/main/proto/search/now/wire/feed/display_info.proto",
   "src/src/main/proto/search/now/wire/feed/feature.proto",
   "src/src/main/proto/search/now/wire/feed/feed_action.proto",
   "src/src/main/proto/search/now/wire/feed/feed_action_query_data.proto",
@@ -53,7 +57,7 @@ feed_lib_proto_sources = [
   "src/src/main/proto/search/now/wire/feed/response.proto",
   "src/src/main/proto/search/now/wire/feed/semantic_properties.proto",
   "src/src/main/proto/search/now/wire/feed/token.proto",
-  "src/src/main/proto/search/now/wire/feed/upload_action_type.proto",
   "src/src/main/proto/search/now/wire/feed/version.proto",
+  "src/src/test/proto/search/now/wire/feed/action_payload_for_test.proto",
   "src/src/test/proto/search/now/wire/feed/opaque_action_data_for_test.proto",
 ]

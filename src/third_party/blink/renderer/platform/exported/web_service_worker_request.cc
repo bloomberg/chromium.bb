@@ -103,7 +103,7 @@ void WebServiceWorkerRequest::AppendHeader(const WebString& key,
         result.stored_value->value + ", " + String(value);
 }
 
-void WebServiceWorkerRequest::VisitHTTPHeaderFields(
+void WebServiceWorkerRequest::VisitHttpHeaderFields(
     WebHTTPHeaderVisitor* header_visitor) const {
   for (HTTPHeaderMap::const_iterator i = private_->headers_.begin(),
                                      end = private_->headers_.end();

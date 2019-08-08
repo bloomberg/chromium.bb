@@ -9,8 +9,8 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/hash/md5.h"
 #include "base/lazy_instance.h"
-#include "base/md5.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"

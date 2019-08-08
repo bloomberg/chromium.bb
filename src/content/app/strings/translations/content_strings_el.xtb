@@ -176,7 +176,9 @@
 <translation id="6941933287844615239">λήψη μέσων</translation>
 <translation id="6981594929165378967">εισαγωγή</translation>
 <translation id="6989848892321993519">Αυξήστε την έκταση αυτού του κειμένου στους <ph name="MIN_CHARACTERS" /> χαρακτήρες ή περισσότερο (αυτήν τη στιγμή χρησιμοποιείτε 1 χαρακτήρα).</translation>
+<translation id="7033340931668032222">επάνω και κάτω για αλλαγή της έντασης ήχου</translation>
 <translation id="709897737746224366">Αντιστοιχίστε τη ζητούμενη μορφή.</translation>
+<translation id="7118469954320184356">Δεν υπάρχει διαθέσιμη περιγραφή.</translation>
 <translation id="7139483182332611405">πρόλογος</translation>
 <translation id="7263440858009898357">Επιλέξτε ένα στοιχείο από τη λίστα.</translation>
 <translation id="727747134524199931">κεφαλίδα στήλης</translation>
@@ -226,6 +228,7 @@
 <translation id="8550857728288566671">σύμβολο γραφικών</translation>
 <translation id="8583702881314752957">λίστα ορισμών</translation>
 <translation id="8597182159515967513">επικεφαλίδα</translation>
+<translation id="8603553056539299761">αριστερά και δεξιά για αναζήτηση</translation>
 <translation id="860475260694818407">πίνακας περιεχομένων</translation>
 <translation id="8613126697340063924">έλεγχος απομακρυσμένης αναπαραγωγής</translation>
 <translation id="862370744433916922">υπότιτλος</translation>

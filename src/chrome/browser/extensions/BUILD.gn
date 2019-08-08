@@ -18,6 +18,8 @@ jumbo_static_library("extensions") {
   sources = [
     # TODO These references to files in //chrome/browser/ should either be
     # moved to the browser target or the files moved to this directory.
+    "../accessibility/accessibility_extension_api.cc",
+    "../accessibility/accessibility_extension_api.h",
     "../ui/app_icon_loader.cc",
     "../ui/app_icon_loader.h",
     "../ui/toolbar/toolbar_actions_model.cc",
@@ -383,6 +385,8 @@ jumbo_static_library("extensions") {
     "api/tabs/tabs_constants.h",
     "api/tabs/tabs_event_router.cc",
     "api/tabs/tabs_event_router.h",
+    "api/tabs/tabs_util.h",
+    "api/tabs/tabs_util_chromeos.cc",
     "api/tabs/tabs_windows_api.cc",
     "api/tabs/tabs_windows_api.h",
     "api/tabs/windows_event_router.cc",
@@ -750,6 +754,9 @@ jumbo_static_library("extensions") {
   defines = []
 
   allow_circular_includes_from = [
+    # Lots of APIs use headers from the list above.
+    "//chrome/browser/extensions/api:api_registration",
+
     # TODO(loyso): Remove this circular dependency. http://crbug.com/876576.
     "//chrome/browser/web_applications/extensions",
 
@@ -847,6 +854,7 @@ jumbo_static_library("extensions") {
     "//components/undo",
     "//components/unified_consent",
     "//components/update_client",
+    "//components/update_client:common_impl",
     "//components/url_matcher",
     "//components/user_prefs",
     "//components/vector_icons",
@@ -967,11 +975,16 @@ jumbo_static_library("extensions") {
     }
     deps += [
       "//ash/public/cpp",
+      "//chrome/browser/chromeos/kiosk_next_home/mojom",
       "//chrome/browser/resources/chromeos/camera:chrome_camera_app",
+      "//chromeos",
       "//chromeos/attestation",
       "//chromeos/components/proximity_auth",
+      "//chromeos/constants",
       "//chromeos/cryptohome",
       "//chromeos/dbus",
+      "//chromeos/dbus/cryptohome",
+      "//chromeos/dbus/power",
       "//chromeos/disks",
       "//chromeos/login/login_state",
       "//chromeos/network",
@@ -980,16 +993,19 @@ jumbo_static_library("extensions") {
       "//chromeos/services/machine_learning/public/mojom",
       "//chromeos/services/media_perception/public/mojom",
       "//chromeos/settings",
+      "//chromeos/system",
       "//chromeos/tpm",
       "//components/arc",
       "//components/constrained_window",
       "//components/drive",
       "//components/user_manager",
+      "//media/capture:capture_lib",
       "//media/capture/video/chromeos/mojo:cros_camera",
       "//remoting/base",
       "//remoting/host",
       "//remoting/host/it2me:chrome_os_host",
       "//third_party/protobuf:protobuf_lite",
+      "//ui/base/ime/chromeos",
       "//ui/chromeos",
       "//ui/chromeos/events",
       "//ui/file_manager",
@@ -1016,6 +1032,7 @@ jumbo_static_library("extensions") {
       "api/messaging/native_process_launcher.cc",
       "api/messaging/native_process_launcher.h",
       "api/messaging/native_process_launcher_win.cc",
+      "api/tabs/tabs_util.cc",
       "chrome_kiosk_delegate.cc",
       "default_apps.cc",
       "default_apps.h",

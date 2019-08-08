@@ -28,7 +28,6 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/time/default_tick_clock.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/views/widget/widget.h"
@@ -195,18 +194,19 @@ void PowerButtonController::OnLegacyPowerButtonEvent(bool down) {
 
   if (!down)
     return;
+
+  // Ignore the power button down event if the menu is partially opened.
+  if (IsMenuOpened() && !show_menu_animation_done_)
+    return;
+
   // If power button releases won't get reported correctly because we're not
-  // running on official hardware, just lock the screen or shut down
-  // immediately.
-  const SessionController* const session_controller =
-      Shell::Get()->session_controller();
-  if (session_controller->CanLockScreen() &&
-      !session_controller->IsUserSessionBlocked() &&
-      !lock_state_controller_->LockRequested()) {
-    lock_state_controller_->StartLockAnimationAndLockImmediately();
-  } else {
+  // running on official hardware, show menu animation on the first power
+  // button press. On a further press while the menu is open, simply shut down
+  // (http://crbug.com/945005).
+  if (!show_menu_animation_done_)
+    StartPowerMenuAnimation();
+  else
     lock_state_controller_->RequestShutdown(ShutdownReason::POWER_BUTTON);
-  }
 }
 
 void PowerButtonController::OnPowerButtonEvent(
@@ -422,6 +422,15 @@ void PowerButtonController::OnGetSwitchStates(
 
 void PowerButtonController::OnAccelerometerUpdated(
     scoped_refptr<const AccelerometerUpdate> update) {
+  // When ChromeOS EC lid angle driver is present, there's always tablet mode
+  // switch in device, so PowerButtonController doesn't need to listens to
+  // accelerometer events.
+  if (update->HasLidAngleDriver(ACCELEROMETER_SOURCE_SCREEN) ||
+      update->HasLidAngleDriver(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD)) {
+    AccelerometerReader::GetInstance()->RemoveObserver(this);
+    return;
+  }
+
   if (!has_tablet_mode_switch_ && observe_accelerometer_events_)
     InitTabletPowerButtonMembers();
 }
@@ -522,8 +531,10 @@ void PowerButtonController::LockScreenIfRequired() {
 
 void PowerButtonController::SetShowMenuAnimationDone() {
   show_menu_animation_done_ = true;
-  pre_shutdown_timer_.Start(FROM_HERE, kStartShutdownAnimationTimeout, this,
-                            &PowerButtonController::OnPreShutdownTimeout);
+  if (button_type_ != ButtonType::LEGACY) {
+    pre_shutdown_timer_.Start(FROM_HERE, kStartShutdownAnimationTimeout, this,
+                              &PowerButtonController::OnPreShutdownTimeout);
+  }
 }
 
 void PowerButtonController::ParsePowerButtonPositionSwitch() {

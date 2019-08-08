@@ -101,6 +101,7 @@ class StyledMarkupTraverser {
   EditingStyle* CreateInlineStyle(Element&);
   bool NeedsInlineStyle(const Element&);
   bool ShouldApplyWrappingStyle(const Node&) const;
+  bool ContainsOnlyBRElement(const Element&) const;
 
   StyledMarkupAccumulator* accumulator_;
   Member<Node> last_closed_;
@@ -169,7 +170,8 @@ static bool AreSameRanges(Node* node,
 
 static EditingStyle* StyleFromMatchedRulesAndInlineDecl(
     const HTMLElement* element) {
-  EditingStyle* style = EditingStyle::Create(element->InlineStyle());
+  EditingStyle* style =
+      MakeGarbageCollected<EditingStyle>(element->InlineStyle());
   // FIXME: Having to const_cast here is ugly, but it is quite a bit of work to
   // untangle the non-const-ness of styleFromMatchedRulesForElement.
   style->MergeStyleFromRules(const_cast<HTMLElement*>(element));
@@ -251,10 +253,10 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
         if ((!fully_selected_root_style ||
              !fully_selected_root_style->Style() ||
              !fully_selected_root_style->Style()->GetPropertyCSSValue(
-                 CSSPropertyBackgroundImage)) &&
+                 CSSPropertyID::kBackgroundImage)) &&
             fully_selected_root->hasAttribute(kBackgroundAttr)) {
           fully_selected_root_style->Style()->SetProperty(
-              CSSPropertyBackgroundImage,
+              CSSPropertyID::kBackgroundImage,
               "url('" + fully_selected_root->getAttribute(kBackgroundAttr) +
                   "')",
               /* important */ false,
@@ -267,14 +269,17 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
           // all text of a <body> element whose 'text-decoration' property is
           // "inherit", and copy it.
           if (!PropertyMissingOrEqualToNone(fully_selected_root_style->Style(),
-                                            CSSPropertyTextDecoration))
+                                            CSSPropertyID::kTextDecoration)) {
             fully_selected_root_style->Style()->SetProperty(
-                CSSPropertyTextDecoration, CSSValueNone);
+                CSSPropertyID::kTextDecoration, CSSValueID::kNone);
+          }
           if (!PropertyMissingOrEqualToNone(
                   fully_selected_root_style->Style(),
-                  CSSPropertyWebkitTextDecorationsInEffect))
+                  CSSPropertyID::kWebkitTextDecorationsInEffect)) {
             fully_selected_root_style->Style()->SetProperty(
-                CSSPropertyWebkitTextDecorationsInEffect, CSSValueNone);
+                CSSPropertyID::kWebkitTextDecorationsInEffect,
+                CSSValueID::kNone);
+          }
           markup_accumulator.WrapWithStyleNode(
               fully_selected_root_style->Style());
         }
@@ -286,7 +291,7 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
         // don't want to keep styles that affect its relationship to the nodes
         // around it only the ones that affect it and the nodes within it.
         if (style && style->Style())
-          style->Style()->RemoveProperty(CSSPropertyFloat);
+          style->Style()->RemoveProperty(CSSPropertyID::kFloat);
         traverser.WrapWithNode(*ancestor, style);
       }
 
@@ -300,7 +305,8 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
 
   // FIXME: The interchange newline should be placed in the block that it's in,
   // not after all of the content, unconditionally.
-  if (ShouldAnnotate() && NeedInterchangeNewlineAt(visible_end))
+  if (!(last_closed && IsHTMLBRElement(*last_closed)) && ShouldAnnotate() &&
+      NeedInterchangeNewlineAt(visible_end))
     markup_accumulator.AppendInterchangeNewline();
 
   return markup_accumulator.TakeResults();
@@ -353,8 +359,9 @@ Node* StyledMarkupTraverser<Strategy>::Traverse(Node* start_node,
     } else {
       next = Strategy::Next(*n);
       if (IsEnclosingBlock(n) && CanHaveChildrenForEditing(n) &&
-          next == past_end) {
-        // Don't write out empty block containers that aren't fully selected.
+          next == past_end && !ContainsOnlyBRElement(ToElement(*n))) {
+        // Don't write out empty block containers that aren't fully selected
+        // unless the block container only contains br element.
         continue;
       }
 
@@ -372,7 +379,15 @@ Node* StyledMarkupTraverser<Strategy>::Traverse(Node* start_node,
 
         // If node has no children, close the tag now.
         if (Strategy::HasChildren(*n)) {
-          ancestors_to_close.push_back(ToContainerNode(n));
+          if (next == past_end && ContainsOnlyBRElement(ToElement(*n))) {
+            // node is not fully selected and node contains only one br element
+            // as child. Close the br tag now.
+            AppendStartMarkup(*next);
+            AppendEndMarkup(*next);
+            last_closed = next;
+          } else {
+            ancestors_to_close.push_back(ToContainerNode(n));
+          }
           continue;
         }
         AppendEndMarkup(*n);
@@ -495,7 +510,8 @@ void StyledMarkupTraverser<Strategy>::AppendStartMarkup(Node& node) {
         // block }.
         inline_style->ForceInline();
         // FIXME: Should this be included in forceInline?
-        inline_style->Style()->SetProperty(CSSPropertyFloat, CSSValueNone);
+        inline_style->Style()->SetProperty(CSSPropertyID::kFloat,
+                                           CSSValueID::kNone);
       }
       accumulator_->AppendTextWithInlineStyle(text, inline_style);
       break;
@@ -542,7 +558,7 @@ EditingStyle* StyledMarkupTraverser<Strategy>::CreateInlineStyle(
     inline_style->RemovePropertiesInElementDefaultStyle(&element);
     inline_style->RemoveStyleConflictingWithStyleOfElement(&element);
   } else {
-    inline_style = EditingStyle::Create();
+    inline_style = MakeGarbageCollected<EditingStyle>();
   }
 
   if (element.IsStyledElement() && element.InlineStyle())
@@ -552,6 +568,15 @@ EditingStyle* StyledMarkupTraverser<Strategy>::CreateInlineStyle(
     inline_style->MergeStyleFromRulesForSerialization(&ToHTMLElement(element));
 
   return inline_style;
+}
+
+template <typename Strategy>
+bool StyledMarkupTraverser<Strategy>::ContainsOnlyBRElement(
+    const Element& element) const {
+  auto* const first_child = element.firstChild();
+  if (!first_child)
+    return false;
+  return IsHTMLBRElement(first_child) && first_child == element.lastChild();
 }
 
 template class StyledMarkupSerializer<EditingStrategy>;

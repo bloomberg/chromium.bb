@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -17,6 +18,38 @@ const float kEpsilon = 0.00001;
 
 namespace blink {
 
+class FakeImageForCacheTest : public Image {
+ public:
+  static scoped_refptr<FakeImageForCacheTest> Create() {
+    return base::AdoptRef(new FakeImageForCacheTest());
+  }
+
+  int GetMapSize() { return dark_mode_classifications_.size(); }
+
+  DarkModeClassification GetClassification(const FloatRect& src_rect) {
+    return GetDarkModeClassification(src_rect);
+  }
+
+  void AddClassification(
+      const FloatRect& src_rect,
+      const DarkModeClassification dark_mode_classification) {
+    AddDarkModeClassification(src_rect, dark_mode_classification);
+  }
+
+  // Pure virtual functions that have to be overridden.
+  bool CurrentFrameKnownToBeOpaque() override { return false; }
+  IntSize Size() const override { return IntSize(0, 0); }
+  void DestroyDecodedData() override {}
+  PaintImage PaintImageForCurrentFrame() override { return PaintImage(); }
+  void Draw(cc::PaintCanvas*,
+            const cc::PaintFlags&,
+            const FloatRect& dst_rect,
+            const FloatRect& src_rect,
+            RespectImageOrientationEnum,
+            ImageClampingMode,
+            ImageDecodingMode) override {}
+};
+
 class DarkModeImageClassifierTest : public testing::Test {
  public:
   // Loads the image from |file_name|, computes features vector into |features|,
@@ -25,9 +58,10 @@ class DarkModeImageClassifierTest : public testing::Test {
                                     std::vector<float>* features) {
     SCOPED_TRACE(file_name);
     scoped_refptr<BitmapImage> image = LoadImage(file_name);
-    classifier_.SetRandomGeneratorForTesting();
     classifier_.ComputeImageFeaturesForTesting(*image.get(), features);
-    return classifier_.ShouldApplyDarkModeFilterToImage(*image.get());
+    DarkModeClassification result = classifier_.ClassifyBitmapImageForDarkMode(
+        *image.get(), FloatRect(0, 0, image->width(), image->height()));
+    return result == DarkModeClassification::kApplyDarkModeFilter;
   }
 
   void AssertFeaturesEqual(const std::vector<float>& features,
@@ -43,8 +77,7 @@ class DarkModeImageClassifierTest : public testing::Test {
 
  protected:
   scoped_refptr<BitmapImage> LoadImage(const std::string& file_name) {
-    String file_path = test::BlinkWebTestsDir();
-    file_path.append(file_name.c_str());
+    String file_path = test::BlinkWebTestsDir() + file_name.c_str();
     scoped_refptr<SharedBuffer> image_data = test::ReadFromFile(file_path);
     EXPECT_TRUE(image_data.get() && image_data.get()->size());
 
@@ -70,18 +103,18 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
                                            &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
             DarkModeClassification::kApplyDarkModeFilter);
-  AssertFeaturesEqual(features, {0.0f, 0.1875f, 0.0f, 0.1f});
+  AssertFeaturesEqual(features, {0.0f, 0.1875f, 0.0f, 0.0f});
 
   // Test Case 2:
   // Grayscale
   // Color Buckets Ratio: Medium
   // Decision Tree: Can't Decide
   // Neural Network: Apply
-  EXPECT_TRUE(GetFeaturesAndClassification("/images/resources/apng08-ref.png",
-                                           &features));
+  EXPECT_FALSE(GetFeaturesAndClassification("/images/resources/apng08-ref.png",
+                                            &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
             DarkModeClassification::kNotClassified);
-  AssertFeaturesEqual(features, {0.0f, 0.8125f, 0.409f, 0.59f});
+  AssertFeaturesEqual(features, {0.0f, 0.8125f, 0.446667f, 0.03f});
 
   // Test Case 3:
   // Color
@@ -92,7 +125,7 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
       "/images/resources/count-down-color-test.png", &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
             DarkModeClassification::kApplyDarkModeFilter);
-  AssertFeaturesEqual(features, {1.0f, 0.0134277f, 0.0f, 0.43f});
+  AssertFeaturesEqual(features, {1.0f, 0.0078125f, 0.0f, 0.0f});
 
   // Test Case 4:
   // Color
@@ -103,18 +136,48 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
       "/images/resources/blue-wheel-srgb-color-profile.png", &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
             DarkModeClassification::kDoNotApplyDarkModeFilter);
-  AssertFeaturesEqual(features, {1.0f, 0.03027f, 0.0f, 0.24f});
+  AssertFeaturesEqual(features, {1.0f, 0.032959f, 0.0f, 0.0f});
 
   // Test Case 5:
   // Color
   // Color Buckets Ratio: Medium
-  // Decision Tree: Can't Decide
-  // Neural Network: Apply.
+  // Decision Tree: Apply
+  // Neural Network: NA.
   EXPECT_TRUE(GetFeaturesAndClassification(
       "/images/resources/ycbcr-444-float.jpg", &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
+            DarkModeClassification::kApplyDarkModeFilter);
+  AssertFeaturesEqual(features, {1.0f, 0.0151367f, 0.0f, 0.0f});
+}
+
+TEST_F(DarkModeImageClassifierTest, Caching) {
+  scoped_refptr<FakeImageForCacheTest> image = FakeImageForCacheTest::Create();
+  FloatRect src_rect1(0, 0, 50, 50);
+  FloatRect src_rect2(5, 20, 100, 100);
+  FloatRect src_rect3(6, -9, 50, 50);
+
+  EXPECT_EQ(image->GetClassification(src_rect1),
             DarkModeClassification::kNotClassified);
-  AssertFeaturesEqual(features, {1.0f, 0.0166016f, 0.0f, 0.59f});
+  image->AddClassification(src_rect1,
+                           DarkModeClassification::kApplyDarkModeFilter);
+  EXPECT_EQ(image->GetClassification(src_rect1),
+            DarkModeClassification::kApplyDarkModeFilter);
+
+  EXPECT_EQ(image->GetClassification(src_rect2),
+            DarkModeClassification::kNotClassified);
+  image->AddClassification(src_rect2,
+                           DarkModeClassification::kDoNotApplyDarkModeFilter);
+  EXPECT_EQ(image->GetClassification(src_rect2),
+            DarkModeClassification::kDoNotApplyDarkModeFilter);
+
+  EXPECT_EQ(image->GetClassification(src_rect3),
+            DarkModeClassification::kNotClassified);
+  image->AddClassification(src_rect3,
+                           DarkModeClassification::kApplyDarkModeFilter);
+  EXPECT_EQ(image->GetClassification(src_rect3),
+            DarkModeClassification::kApplyDarkModeFilter);
+
+  EXPECT_EQ(image->GetMapSize(), 3);
 }
 
 }  // namespace blink

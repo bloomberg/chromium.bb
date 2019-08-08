@@ -212,7 +212,9 @@ ExtensionFunction::ResponseAction CookiesGetFunction::Run() {
   return RespondLater();
 }
 
-void CookiesGetFunction::GetCookieCallback(const net::CookieList& cookie_list) {
+void CookiesGetFunction::GetCookieCallback(
+    const net::CookieList& cookie_list,
+    const net::CookieStatusList& excluded_cookies) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (const net::CanonicalCookie& cookie : cookie_list) {
     // Return the first matching cookie. Relies on the fact that the
@@ -267,7 +269,8 @@ ExtensionFunction::ResponseAction CookiesGetAllFunction::Run() {
 }
 
 void CookiesGetAllFunction::GetAllCookiesCallback(
-    const net::CookieList& cookie_list) {
+    const net::CookieList& cookie_list,
+    const net::CookieStatusList& excluded_cookies) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ResponseValue response;
   if (extension()) {
@@ -320,11 +323,11 @@ ExtensionFunction::ResponseAction CookiesSetFunction::Run() {
         base::Time::FromDoubleT(*parsed_args_->details.expiration_date);
   }
 
-  net::CookieSameSite same_site = net::CookieSameSite::DEFAULT_MODE;
+  net::CookieSameSite same_site = net::CookieSameSite::NO_RESTRICTION;
   switch (parsed_args_->details.same_site) {
     case api::cookies::SAME_SITE_STATUS_NONE:
     case api::cookies::SAME_SITE_STATUS_NO_RESTRICTION:
-      same_site = net::CookieSameSite::DEFAULT_MODE;
+      same_site = net::CookieSameSite::NO_RESTRICTION;
       break;
     case api::cookies::SAME_SITE_STATUS_LAX:
       same_site = net::CookieSameSite::LAX_MODE;
@@ -361,15 +364,19 @@ ExtensionFunction::ResponseAction CookiesSetFunction::Run() {
     // is generated.
     success_ = false;
     state_ = SET_COMPLETED;
-    GetCookieListCallback(net::CookieList());
+    GetCookieListCallback(net::CookieList(), net::CookieStatusList());
     return AlreadyResponded();
   }
 
   // Dispatch the setter, immediately followed by the getter.  This
   // plus FIFO ordering on the cookie_manager_ pipe means that no
   // other extension function will affect the get result.
+  net::CookieOptions options;
+  options.set_include_httponly();
+  options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   cookie_manager->SetCanonicalCookie(
-      *cc, url_.scheme(), true /*modify_http_only*/,
+      *cc, url_.scheme(), options,
       base::BindOnce(&CookiesSetFunction::SetCanonicalCookieCallback, this));
   cookies_helpers::GetCookieListFromManager(
       cookie_manager, url_,
@@ -379,15 +386,18 @@ ExtensionFunction::ResponseAction CookiesSetFunction::Run() {
   return RespondLater();
 }
 
-void CookiesSetFunction::SetCanonicalCookieCallback(bool set_cookie_result) {
+void CookiesSetFunction::SetCanonicalCookieCallback(
+    net::CanonicalCookie::CookieInclusionStatus set_cookie_result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(NO_RESPONSE, state_);
   state_ = SET_COMPLETED;
-  success_ = set_cookie_result;
+  success_ = (set_cookie_result ==
+              net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
 }
 
 void CookiesSetFunction::GetCookieListCallback(
-    const net::CookieList& cookie_list) {
+    const net::CookieList& cookie_list,
+    const net::CookieStatusList& excluded_cookies) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(SET_COMPLETED, state_);
   state_ = GET_COMPLETED;

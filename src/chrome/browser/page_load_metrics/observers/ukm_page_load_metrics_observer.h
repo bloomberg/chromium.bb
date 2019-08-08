@@ -71,6 +71,11 @@ class UkmPageLoadMetricsObserver
   void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
 
+  void OnResourceDataUseObserved(
+      content::RenderFrameHost* content,
+      const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+          resources) override;
+
   void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
                             extra_request_complete_info) override;
 
@@ -137,9 +142,6 @@ class UkmPageLoadMetricsObserver
   // PAGE_TRANSITION_LINK is the default PageTransition value.
   ui::PageTransition page_transition_ = ui::PAGE_TRANSITION_LINK;
 
-  // Time of navigation start.
-  base::TimeTicks navigation_start_;
-
   // True if the page started hidden, or ever became hidden.
   bool was_hidden_ = false;
 
@@ -154,6 +156,22 @@ class UkmPageLoadMetricsObserver
 
   // The browser context this navigation is operating in.
   content::BrowserContext* browser_context_ = nullptr;
+
+  // Whether the navigation resulted in the main frame being hosted in
+  // a different process.
+  bool navigation_is_cross_process_ = false;
+
+  // Difference between indices of the previous and current navigation entries
+  // (i.e. item history for the current tab).
+  // Typically -1/0/1 for back navigations / reloads / forward navigations.
+  // 0 for most of navigations with replacement (e.g. location.replace).
+  // 1 for regular navigations (link click / omnibox / etc).
+  int navigation_entry_offset_ = 0;
+
+  // Id for the main document, which persists across history navigations to the
+  // same document.
+  // Unique across the lifetime of the browser process.
+  int main_document_sequence_number_ = -1;
 
   // The connection info for the committed URL.
   base::Optional<net::HttpResponseInfo::ConnectionInfo> connection_info_;

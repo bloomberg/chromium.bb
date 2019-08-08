@@ -229,7 +229,7 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (network_service_enabled &&
       type_ == content::URLLoaderThrottleProviderType::kFrame &&
-      resource_type == content::RESOURCE_TYPE_OBJECT) {
+      resource_type == content::ResourceType::kObject) {
     content::RenderFrame* render_frame =
         content::RenderFrame::FromRoutingID(render_frame_id);
     auto mime_handlers =

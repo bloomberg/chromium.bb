@@ -22,7 +22,7 @@ NGFieldsetLayoutAlgorithm::NGFieldsetLayoutAlgorithm(
     NGBlockNode node,
     const NGConstraintSpace& space,
     const NGBreakToken* break_token)
-    : NGLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)) {
+    : NGLayoutAlgorithm(node, space, To<NGBlockBreakToken>(break_token)) {
   container_builder_.SetIsNewFormattingContext(space.IsNewFormattingContext());
 }
 
@@ -131,9 +131,8 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
   container_builder_.SetBorders(borders);
   container_builder_.SetPadding(padding);
 
-  NGOutOfFlowLayoutPart(&container_builder_, Node().IsAbsoluteContainer(),
-                        Node().IsFixedContainer(), borders_with_legend,
-                        ConstraintSpace(), Style())
+  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), borders_with_legend,
+                        &container_builder_)
       .Run();
 
   return container_builder_.ToBoxFragment();

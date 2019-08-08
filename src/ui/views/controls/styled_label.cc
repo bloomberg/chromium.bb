@@ -49,10 +49,11 @@ std::unique_ptr<Label> CreateLabelRange(
 
     result.reset(link);
   } else if (style_info.custom_font) {
-    result.reset(new Label(text, {style_info.custom_font.value()}));
+    result = std::make_unique<Label>(
+        text, Label::CustomFont{style_info.custom_font.value()});
   } else {
-    result.reset(new Label(text, text_context,
-                           style_info.text_style.value_or(default_style)));
+    result = std::make_unique<Label>(
+        text, text_context, style_info.text_style.value_or(default_style));
   }
   if (style_info.override_color != SK_ColorTRANSPARENT)
     result->SetEnabledColor(style_info.override_color);
@@ -91,7 +92,7 @@ StyledLabel::RangeStyleInfo::RangeStyleInfo() = default;
 StyledLabel::RangeStyleInfo::RangeStyleInfo(const RangeStyleInfo& copy) =
     default;
 
-StyledLabel::RangeStyleInfo::~RangeStyleInfo() {}
+StyledLabel::RangeStyleInfo::~RangeStyleInfo() = default;
 
 // static
 StyledLabel::RangeStyleInfo StyledLabel::RangeStyleInfo::CreateForLink() {
@@ -130,7 +131,7 @@ StyledLabel::StyledLabel(const base::string16& text,
   base::TrimWhitespace(text, base::TRIM_TRAILING, &text_);
 }
 
-StyledLabel::~StyledLabel() {}
+StyledLabel::~StyledLabel() = default;
 
 void StyledLabel::SetText(const base::string16& text) {
   text_ = text;
@@ -191,10 +192,10 @@ void StyledLabel::SetDisplayedOnBackgroundColor(SkColor color) {
   displayed_on_background_color_ = color;
   displayed_on_background_color_set_ = true;
 
-  for (int i = 0, count = child_count(); i < count; ++i) {
-    DCHECK((child_at(i)->GetClassName() == Label::kViewClassName) ||
-           (child_at(i)->GetClassName() == Link::kViewClassName));
-    static_cast<Label*>(child_at(i))->SetBackgroundColor(color);
+  for (View* child : children()) {
+    DCHECK((child->GetClassName() == Label::kViewClassName) ||
+           (child->GetClassName() == Link::kViewClassName));
+    static_cast<Label*>(child)->SetBackgroundColor(color);
   }
 }
 

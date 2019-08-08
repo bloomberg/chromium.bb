@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/engine/sync_encryption_handler.h"
+#include "components/sync/nigori/keystore_keys_handler.h"
 #include "components/sync/syncable/nigori_handler.h"
 
 namespace syncer {
@@ -43,11 +44,12 @@ class WriteTransaction;
 // random salt. Used with scrypt key derivation method.
 //
 // Note: See sync_encryption_handler.h for a description of the chrome visible
-// methods and what they do, and nigori_handler.h for a description of the
-// sync methods.
+// methods and what they do, and nigori_handler.h and keystore_keys_handler.h
+// for a description of the sync methods.
 // All methods are non-thread-safe and should only be called from the sync
 // thread unless explicitly noted otherwise.
-class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
+class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
+                                  public SyncEncryptionHandler,
                                   public syncable::NigoriHandler {
  public:
   SyncEncryptionHandlerImpl(
@@ -74,15 +76,15 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
   void UpdateNigoriFromEncryptedTypes(
       sync_pb::NigoriSpecifics* nigori,
       syncable::BaseTransaction* const trans) const override;
-  bool NeedKeystoreKey(syncable::BaseTransaction* const trans) const override;
-  bool SetKeystoreKeys(
-      const google::protobuf::RepeatedPtrField<google::protobuf::string>& keys,
-      syncable::BaseTransaction* const trans) override;
   // Can be called from any thread.
   ModelTypeSet GetEncryptedTypes(
       syncable::BaseTransaction* const trans) const override;
   PassphraseType GetPassphraseType(
       syncable::BaseTransaction* const trans) const override;
+
+  // KeystoreKeysHandler implementation.
+  bool NeedKeystoreKey() const override;
+  bool SetKeystoreKeys(const std::vector<std::string>& keys) override;
 
   // Unsafe getters. Use only if sync is not up and running and there is no risk
   // of other threads calling this.
@@ -150,6 +152,35 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
     DISALLOW_COPY_AND_ASSIGN(Vault);
   };
 
+  // Enumeration of methods, which can trigger Nigori migration to keystore
+  // either directly (by calling AttemptToMigrateNigoriToKeystore) or indirectly
+  // (by calling WriteEncryptionStateToNigori or RewriteNigori). Used only for
+  // UMA metrics. These values are persisted to logs. Entries should not be
+  // renumbered and numeric values should never be reused.
+  enum class NigoriMigrationTrigger {
+    kApplyNigoriUpdate = 0,
+    kEnableEncryptEverything = 1,
+    kFinishSetPassphrase = 2,
+    kInit = 3,
+    kSetKeystoreKeys = 4,
+    kMaxValue = kSetKeystoreKeys
+  };
+
+  // Enumeration of possible reasons to trigger Nigori migration to keystore
+  // (see GetMigrationReason). These values are persisted to logs. Entries
+  // should not be renumbered and numeric values should never be reused.
+  enum class NigoriMigrationReason {
+    kNoReason = 0,
+    kCannotDecryptUsingDefaultKey = 1,
+    kEncryptEverythingWithKeystorePassphrase = 2,
+    KNigoriNotMigrated = 3,
+    kNotEncryptEverythingWithExplicitPassphrase = 4,
+    kOldPassphraseType = 5,
+    kServerKeyRotation = 6,
+    kInitialization = 7,
+    kMaxValue = kInitialization
+  };
+
   // Iterate over all encrypted types ensuring each entry is properly encrypted.
   void ReEncryptEverything(WriteTransaction* trans);
 
@@ -164,13 +195,18 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
                              syncable::BaseTransaction* const trans);
 
   // Wrapper around WriteEncryptionStateToNigori that creates a new write
-  // transaction.
-  void RewriteNigori();
+  // transaction. Because this function can trigger a migration,
+  // |migration_trigger| allows distinguishing the "cause" of the migration,
+  // for UMA purposes.
+  void RewriteNigori(NigoriMigrationTrigger migration_trigger);
 
   // Write the current encryption state into the nigori node. This includes
   // the encrypted types/encrypt everything state, as well as the keybag/
-  // explicit passphrase state (if the cryptographer is ready).
-  void WriteEncryptionStateToNigori(WriteTransaction* trans);
+  // explicit passphrase state (if the cryptographer is ready). Because this
+  // function can trigger a migration, |migration_trigger| allows
+  // distinguishing the "cause" of the migration, for UMA purposes.
+  void WriteEncryptionStateToNigori(WriteTransaction* trans,
+                                    NigoriMigrationTrigger migration_trigger);
 
   // Updates local encrypted types from |nigori|.
   // Returns true if the local set of encrypted types either matched or was
@@ -241,21 +277,28 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
   const Vault& UnlockVault(syncable::BaseTransaction* const trans) const;
 
   // Helper method for determining if migration of a nigori node should be
-  // triggered or not.
+  // triggered or not. In case migration shouldn't be triggered the method will
+  // return kNoReason value. Other values mean migration should be triggered
+  // and used itself only for UMA.
   // Conditions for triggering migration:
   // 1. Cryptographer has no pending keys
   // 2. Nigori node isn't already properly migrated or we need to rotate keys.
   // 3. Keystore key is available.
-  // Note: if the nigori node is migrated but has an invalid state, will return
-  // true (e.g. node has KEYSTORE_PASSPHRASE, local is CUSTOM_PASSPHRASE).
-  bool ShouldTriggerMigration(const sync_pb::NigoriSpecifics& nigori,
-                              const Cryptographer& cryptographer,
-                              PassphraseType passphrase_type) const;
+  // Note: if the nigori node is migrated but has an invalid state, migration
+  // should be triggered (e.g. node has KEYSTORE_PASSPHRASE, local is
+  // CUSTOM_PASSPHRASE).
+  NigoriMigrationReason GetMigrationReason(
+      const sync_pb::NigoriSpecifics& nigori,
+      const Cryptographer& cryptographer,
+      PassphraseType passphrase_type) const;
 
-  // Performs the actual migration of the |nigori_node| to support keystore
-  // encryption iff ShouldTriggerMigration(..) returns true.
-  bool AttemptToMigrateNigoriToKeystore(WriteTransaction* trans,
-                                        WriteNode* nigori_node);
+  // Tries to perform the actual migration of the |nigori_node| to support
+  // keystore encryption unless GetMigrationReason(..) returns kNoReason.
+  // Returns true if migration was attempted and successful.
+  bool AttemptToMigrateNigoriToKeystore(
+      WriteTransaction* trans,
+      WriteNode* nigori_node,
+      NigoriMigrationTrigger migration_trigger);
 
   // Fill |encrypted_blob| with the keystore decryptor token if
   // |encrypted_blob|'s contents didn't already contain the key.
@@ -336,6 +379,10 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
   base::Optional<KeyDerivationParams> custom_passphrase_key_derivation_params_;
 
   base::RepeatingCallback<std::string()> random_salt_generator_;
+
+  // Determines whether Nigori migration was triggered. Used for UMA metric
+  // only.
+  bool migration_attempted_;
 
   base::WeakPtrFactory<SyncEncryptionHandlerImpl> weak_ptr_factory_;
 

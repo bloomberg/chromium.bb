@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "third_party/libyuv/include/libyuv/planar_functions.h"
 
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -20,49 +19,12 @@
 #include "media/base/video_frame_layout.h"
 #include "media/gpu/image_processor_factory.h"
 #include "media/gpu/test/image.h"
+#include "media/gpu/test/video_frame_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace media {
 namespace test {
-
-namespace {
-// TODO(crbug.com/917951): Move these functions to video_frame_helpers.h
-
-// Copy |src_frame| into a new VideoFrame with |dst_layout|. The created
-// VideoFrame's content is the same as |src_frame|. Returns nullptr on failure.
-scoped_refptr<VideoFrame> CloneVideoFrameWithLayout(
-    const VideoFrame* const src_frame,
-    const VideoFrameLayout& dst_layout) {
-  LOG_ASSERT(src_frame->IsMappable());
-  LOG_ASSERT(src_frame->format() == dst_layout.format());
-  // Create VideoFrame, which allocates and owns data.
-  auto dst_frame = VideoFrame::CreateFrameWithLayout(
-      dst_layout, src_frame->visible_rect(), src_frame->natural_size(),
-      src_frame->timestamp(), false /* zero_initialize_memory*/);
-  if (!dst_frame) {
-    LOG(ERROR) << "Failed to create VideoFrame";
-    return nullptr;
-  }
-
-  // Copy every plane's content from |src_frame| to |dst_frame|.
-  const size_t num_planes = VideoFrame::NumPlanes(dst_layout.format());
-  LOG_ASSERT(dst_layout.planes().size() == num_planes);
-  LOG_ASSERT(src_frame->layout().planes().size() == num_planes);
-  for (size_t i = 0; i < num_planes; ++i) {
-    libyuv::CopyPlane(
-        src_frame->data(i), src_frame->layout().planes()[i].stride,
-        dst_frame->data(i), dst_frame->layout().planes()[i].stride,
-        VideoFrame::Columns(i, dst_frame->format(),
-                            dst_frame->natural_size().width()),
-        VideoFrame::Rows(i, dst_frame->format(),
-                         dst_frame->natural_size().height()));
-  }
-
-  return dst_frame;
-}
-
-}  // namespace
 
 // static
 std::unique_ptr<ImageProcessorClient> ImageProcessorClient::Create(
@@ -143,44 +105,12 @@ scoped_refptr<VideoFrame> ImageProcessorClient::CreateInputFrame(
   DCHECK_CALLED_ON_VALID_THREAD(test_main_thread_checker_);
   LOG_ASSERT(image_processor_);
   LOG_ASSERT(input_image.IsLoaded());
-  LOG_ASSERT(input_image.DataSize() ==
-             VideoFrame::AllocationSize(input_image.PixelFormat(),
-                                        input_image.Size()));
-
-  const auto format = input_image.PixelFormat();
-  const auto visible_size = input_image.Size();
-
-  // Create planes for layout. We cannot use WrapExternalData() because it
-  // calls GetDefaultLayout() and it supports only a few pixel formats.
-  const size_t num_planes = VideoFrame::NumPlanes(format);
-  std::vector<VideoFrameLayout::Plane> planes(num_planes);
-  const auto strides = VideoFrame::ComputeStrides(format, visible_size);
-  size_t offset = 0;
-  for (size_t i = 0; i < num_planes; ++i) {
-    planes[i].stride = strides[i];
-    planes[i].offset = offset;
-    offset += VideoFrame::PlaneSize(format, i, visible_size).GetArea();
-  }
-
-  auto layout = VideoFrameLayout::CreateWithPlanes(
-      format, visible_size, std::move(planes), {input_image.DataSize()});
-  if (!layout) {
-    LOG(ERROR) << "Failed to create VideoFrameLayout";
-    return nullptr;
-  }
-
-  auto frame = VideoFrame::WrapExternalDataWithLayout(
-      *layout, gfx::Rect(visible_size), visible_size, input_image.Data(),
-      input_image.DataSize(), base::TimeDelta());
-  if (!frame) {
-    LOG(ERROR) << "Failed to create VideoFrame";
-    return nullptr;
-  }
 
   const auto& input_layout = image_processor_->input_layout();
   if (VideoFrame::IsStorageTypeMappable(
           image_processor_->input_storage_type())) {
-    return CloneVideoFrameWithLayout(frame.get(), input_layout);
+    return CloneVideoFrame(CreateVideoFrameFromImage(input_image).get(),
+                           input_layout, VideoFrame::STORAGE_OWNED_MEMORY);
   } else {
 #if defined(OS_CHROMEOS)
     LOG_ASSERT(image_processor_->input_storage_type() ==
@@ -223,7 +153,7 @@ void ImageProcessorClient::FrameReady(size_t frame_index,
   // VideoFrame should be processed in FIFO order.
   EXPECT_EQ(frame_index, num_processed_frames_);
   for (auto& processor : frame_processors_)
-    processor->ProcessVideoFrame(std::move(frame), frame_index);
+    processor->ProcessVideoFrame(frame, frame_index);
   num_processed_frames_++;
   output_cv_.Signal();
 }

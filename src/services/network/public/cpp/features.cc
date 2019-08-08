@@ -59,6 +59,16 @@ const base::Feature kDelayRequestsOnMultiplexedConnections{
 const base::Feature kEnforceRequestInitiatorLockForCorb{
     "EnforceRequestInitiatorLockForCorb", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Implementation of https://mikewest.github.io/sec-metadata/
+const base::Feature kFetchMetadata{"FetchMetadata",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
+// The `Sec-Fetch-Dest` header is split out from the main "FetchMetadata"
+// feature so we can ship the broader feature without this specifific bit
+// while we continue discussion.
+const base::Feature kFetchMetadataDestination{
+    "FetchMetadataDestination", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool ShouldEnableOutOfBlinkCors() {
   // OOR-CORS requires NetworkService.
   if (!base::FeatureList::IsEnabled(features::kNetworkService))

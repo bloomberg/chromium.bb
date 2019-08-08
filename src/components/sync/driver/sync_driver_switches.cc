@@ -4,7 +4,17 @@
 
 #include "components/sync/driver/sync_driver_switches.h"
 
+#include "base/command_line.h"
+
 namespace switches {
+
+bool IsSyncAllowedByFlag() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableSync);
+}
+
+// Disables syncing browser data to a Google Account.
+const char kDisableSync[] = "disable-sync";
 
 // Allows overriding the deferred init fallback timeout.
 const char kSyncDeferredStartupTimeoutSeconds[] =
@@ -13,9 +23,6 @@ const char kSyncDeferredStartupTimeoutSeconds[] =
 // Enables deferring sync backend initialization until user initiated changes
 // occur.
 const char kSyncDisableDeferredStartup[] = "sync-disable-deferred-startup";
-
-// Enables feature to avoid unnecessary GetUpdate requests.
-const char kSyncEnableGetUpdateAvoidance[] = "sync-enable-get-update-avoidance";
 
 // Controls whether the initial state of the "Capture Specifics" flag on
 // chrome://sync-internals is enabled.
@@ -41,6 +48,10 @@ const char kSyncShortNudgeDelayForTest[] = "sync-short-nudge-delay-for-test";
 const base::Feature kSyncAllowWalletDataInTransportModeWithCustomPassphrase{
     "SyncAllowAutofillWalletDataInTransportModeWithCustomPassphrase",
     base::FEATURE_ENABLED_BY_DEFAULT};
+
+// If enabled, the sync engine will be shut down in the "paused" state.
+const base::Feature kStopSyncInPausedState{"StopSyncInPausedState",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // For each below, if enabled, the SyncableService implementation of the
 // corresponding datatype(s) is wrapped within the USS architecture.
@@ -71,32 +82,15 @@ const base::Feature kSyncPseudoUSSSupervisedUsers{
 const base::Feature kSyncPseudoUSSThemes{"SyncPseudoUSSThemes",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether a user can send tabs between synced devices
+// Controls whether a user can receive tabs from their synced devices
 const base::Feature kSyncSendTabToSelf{"SyncSendTabToSelf",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, allows the Sync machinery to start with a signed-in account that
 // has *not* been chosen as Chrome's primary account (see IdentityManager). Only
 // has an effect if SyncStandaloneTransport is also enabled.
 const base::Feature kSyncSupportSecondaryAccount{
     "SyncSupportSecondaryAccount", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Gates registration and construction of user events machinery. Enabled by
-// default as each use case should have their own gating feature as well.
-const base::Feature kSyncUserEvents{"SyncUserEvents",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Gates emission of FieldTrial events.
-const base::Feature kSyncUserFieldTrialEvents{"SyncUserFieldTrialEvents",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Gates registration for user language detection events.
-const base::Feature kSyncUserLanguageDetectionEvents{
-    "SyncUserLanguageDetectionEvents", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Gates registration for user translation events.
-const base::Feature kSyncUserTranslationEvents{
-    "SyncUserTranslationEvents", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable USS implementation of Bookmarks datatype.
 const base::Feature kSyncUSSBookmarks{"SyncUSSBookmarks",

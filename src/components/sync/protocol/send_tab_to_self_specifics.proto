@@ -34,4 +34,6 @@ message SendTabToSelfSpecifics {
   optional int64 navigation_time_usec = 6;
   // A non-unique but human readable name to describe this client, used in UI.
   optional string device_name = 4;
+  // The stable Device_id of the device that this tab was shared with.
+  optional string target_device_sync_cache_guid = 7;
 }

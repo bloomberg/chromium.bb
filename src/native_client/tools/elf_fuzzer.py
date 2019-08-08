@@ -13,7 +13,8 @@ randomly modify a copy of the nexe and run sel_ldr with the -F flag.
 If/when sel_ldr crashes, the copy of the nexe is saved.
 """
 
-from __future__ import with_statement  # pre-2.6
+from __future__ import print_function
+from __future__ import with_statement
 
 import getopt
 import os
@@ -64,7 +65,7 @@ def simple_fuzz(nexe_elf):
 
 
 def genius_fuzz(nexe_elf):
-  print >>sys.stderr, 'Genius fuzzer not implemented yet.'
+  print('Genius fuzzer not implemented yet.', file=sys.stderr)
   # parse as phdr and use a distribution that concentrates on certain fields
   sys.exit(1 + hash(nexe_elf))  # ARGSUSED
 
@@ -76,7 +77,8 @@ available_fuzzers = {
 
 
 def usage(stream):
-  print >>stream, """\
+  print(
+      """\
 Usage: elf_fuzzer.py [-d destination_dir]
                      [-D destination_for_log_fatal]
                      [-f fuzzer]
@@ -103,7 +105,8 @@ Usage: elf_fuzzer.py [-d destination_dir]
      runs.  Requires verbosity to be at least 1.  Default is %d.
  -S: Seed_string_for_rng is used to seed the random module's random number
      generator; any string will do -- it is hashed.
-""" % (', '.join(available_fuzzers.keys()), default_progress_period)
+""" % (', '.join(available_fuzzers.keys()), default_progress_period),
+      file=stream)
 
 
 def choose_progress_char(num_saved):
@@ -128,7 +131,7 @@ def main(argv):
   try:
     opt_list, args = getopt.getopt(argv[1:], 'd:D:f:i:m:n:p:s:S:v')
   except getopt.error, e:
-    print >>sys.stderr, e
+    print(e, file=sys.stderr)
     usage(sys.stderr)
     return 1
 
@@ -141,7 +144,7 @@ def main(argv):
       if available_fuzzers.has_key(val):
         fuzzer = val
       else:
-        print >>sys.stderr, 'No fuzzer:', val
+        print('No fuzzer:', val, file=sys.stderr)
         usage(sys.stderr)
         return 1
     elif opt == '-i':
@@ -159,23 +162,24 @@ def main(argv):
     elif opt == '-v':
       verbosity = verbosity + 1
     else:
-      print >>sys.stderr, 'Option', opt, 'not understood.'
+      print('Option', opt, 'not understood.', file=sys.stderr)
       return -1
 
   if progress_period <= 0:
-    print >>sys.stderr, 'verbose progress indication period must be positive.'
+    print(
+        'verbose progress indication period must be positive.', file=sys.stderr)
     return 1
 
   if not nexe_path:
-    print >>sys.stderr, 'No nexe specified.'
+    print('No nexe specified.', file=sys.stderr)
     return 2
   if sel_ldr_path is None:
-    print >>sys.stderr, 'No sel_ldr specified.'
+    print('No sel_ldr specified.', file=sys.stderr)
     return 3
 
   if verbosity > 0:
-    print 'sel_ldr is at', sel_ldr_path
-    print 'nexe prototype(s) are at', nexe_path
+    print('sel_ldr is at', sel_ldr_path)
+    print('nexe prototype(s) are at', nexe_path)
 
   nfa = re.compile(r'LOG_FATAL abort exit$')
 
@@ -204,15 +208,15 @@ def main(argv):
 
       if p.returncode < 0:
         if verbosity > 1:
-          print 'sel_ldr exited with status', p.returncode, ', output.'
-          print 79 * '-'
-          print 'standard output'
-          print 79 * '-'
-          print out_data
-          print 79 * '-'
-          print 'standard error'
-          print 79 * '-'
-          print err_data
+          print('sel_ldr exited with status', p.returncode, ', output.')
+          print(79 * '-')
+          print('standard output')
+          print(79 * '-')
+          print(out_data)
+          print(79 * '-')
+          print('standard error')
+          print(79 * '-')
+          print(err_data)
         elif verbosity > 0:
           os.write(1, '*')
 
@@ -237,7 +241,7 @@ def main(argv):
             num_saved = num_saved + 1
             progress_char = choose_progress_char(num_saved)
           elif verbosity > 1:
-            print 'LOG_FATAL exit, not saving'
+            print('LOG_FATAL exit, not saving')
     finally:
       os.unlink(path)
 
@@ -248,7 +252,7 @@ def main(argv):
 
     which_nexe = which_nexe + 1
 
-  print 'A total of', num_saved, 'nexes caused sel_ldr to exit with a signal.'
+  print('A total of', num_saved, 'nexes caused sel_ldr to exit with a signal.')
 
 
 if __name__ == '__main__':

@@ -65,14 +65,13 @@ class WebViewClient {
   // The request parameter is only for the client to check if the request
   // could be fulfilled.  The client should not load the request.
   // The policy parameter indicates how the new view will be displayed in
-  // WebWidgetClient::show.
+  // WebWidgetClient::Show.
   virtual WebView* CreateView(
       WebLocalFrame* creator,
       const WebURLRequest& request,
       const WebWindowFeatures& features,
       const WebString& name,
       WebNavigationPolicy policy,
-      bool suppress_opener,
       WebSandboxFlags,
       const FeaturePolicy::FeatureState&,
       const SessionStorageNamespaceId& session_storage_namespace_id) {
@@ -88,6 +87,11 @@ class WebViewClient {
   }
 
   // Misc ----------------------------------------------------------------
+
+  // Called when the window for this WebView should be closed. The WebView
+  // and its frame tree will be closed asynchronously as a result of this
+  // request.
+  virtual void CloseWindowSoon() {}
 
   // Called when a region of the WebView needs to be re-painted. This is only
   // for non-composited WebViews that exist to contribute to a "parent" WebView
@@ -171,12 +175,6 @@ class WebViewClient {
 
   // Session history -----------------------------------------------------
 
-  // Tells the embedder to navigate back or forward in session history by
-  // the given offset (relative to the current position in session
-  // history). |has_user_gesture| tells whether or not this is the consequence
-  // of a user action.
-  virtual void NavigateBackForwardSoon(int offset, bool has_user_gesture) {}
-
   // Returns the number of history items before/after the current
   // history item.
   virtual int HistoryBackListCount() { return 0; }
@@ -197,8 +195,10 @@ class WebViewClient {
   // the default values.
   virtual void ZoomLimitsChanged(double minimum_level, double maximum_level) {}
 
-  // Informs the browser that the page scale has changed.
-  virtual void PageScaleFactorChanged() {}
+  // Informs the browser that the page scale has changed and/or a pinch gesture
+  // has started or ended.
+  virtual void PageScaleFactorChanged(float page_scale_factor,
+                                      bool is_pinch_gesture_active) {}
 
   // Gestures -------------------------------------------------------------
 

@@ -6,6 +6,7 @@
 #define MEDIA_LEARNING_IMPL_LEARNING_TASK_CONTROLLER_IMPL_H_
 
 #include <memory>
+#include <set>
 
 #include "base/callback.h"
 #include "base/component_export.h"
@@ -20,6 +21,7 @@
 namespace media {
 namespace learning {
 
+class DistributionReporter;
 class LearningTaskControllerImplTest;
 
 // Controller for a single learning task.  Takes training examples, and forwards
@@ -44,20 +46,26 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
   ~LearningTaskControllerImpl() override;
 
   // LearningTaskController
-  void BeginObservation(ObservationId id,
+  void BeginObservation(base::UnguessableToken id,
                         const FeatureVector& features) override;
-  void CompleteObservation(ObservationId id,
+  void CompleteObservation(base::UnguessableToken id,
                            const ObservationCompletion& completion) override;
-  void CancelObservation(ObservationId id) override;
+  void CancelObservation(base::UnguessableToken id) override;
 
  private:
   // Add |example| to the training data, and process it.
   void AddFinishedExample(LabelledExample example);
 
-  // Called by |training_cb_| when the model is trained.
-  void OnModelTrained(std::unique_ptr<Model> model);
+  // Called by |training_cb_| when the model is trained.  |training_weight| and
+  // |training_size| are the training set's total weight and number of examples.
+  void OnModelTrained(double training_weight,
+                      int training_size,
+                      std::unique_ptr<Model> model);
 
   void SetTrainerForTesting(std::unique_ptr<TrainingAlgorithm> trainer);
+
+  // Update |task_| to reflect a randomly chosen subset of features.
+  void DoFeatureSubsetSelection();
 
   LearningTask task_;
 
@@ -74,6 +82,10 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
   // This helps us decide when to train a new model.
   int num_untrained_examples_ = 0;
 
+  // Total weight and number of examples in the most recently trained model.
+  double last_training_weight_ = 0.;
+  size_t last_training_size_ = 0u;
+
   // Training algorithm that we'll use.
   std::unique_ptr<TrainingAlgorithm> trainer_;
 
@@ -82,6 +94,13 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
 
   // Helper that we use to handle deferred examples.
   std::unique_ptr<LearningTaskControllerHelper> helper_;
+
+  // If the task specifies feature importance measurement, then this is the
+  // randomly chosen subset of features.
+  std::set<int> feature_indices_;
+
+  // Number of features that we expect in each observation.
+  size_t expected_feature_count_;
 
   friend class LearningTaskControllerImplTest;
 };

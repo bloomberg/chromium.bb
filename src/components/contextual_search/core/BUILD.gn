@@ -8,6 +8,8 @@ static_library("browser") {
     "browser/contextual_search_preference.h",
     "browser/ctr_aggregator.cc",
     "browser/ctr_aggregator.h",
+    "browser/public.cc",
+    "browser/public.h",
     "browser/weekly_activity_storage.cc",
     "browser/weekly_activity_storage.h",
   ]

@@ -115,9 +115,10 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
                                      new_url_loaded_runner.QuitClosure()));
   new_url_loaded_runner.Run();
 
-  std::string page_title;
-  content::ExecuteScriptAndGetValue(after_web_contents->GetMainFrame(),
-                                    "document.title")->GetAsString(&page_title);
+  std::string page_title =
+      content::ExecuteScriptAndGetValue(after_web_contents->GetMainFrame(),
+                                        "document.title")
+          .GetString();
 
   // Verify the new URL is showing distilled content in a new WebContents.
   EXPECT_NE(initial_web_contents, after_web_contents);
@@ -162,17 +163,19 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
 
   // Verify that the source WebContents is showing the original article.
   EXPECT_EQ(article_url, source_web_contents->GetLastCommittedURL());
-  std::string page_title;
-  content::ExecuteScriptAndGetValue(source_web_contents->GetMainFrame(),
-                                    "document.title")->GetAsString(&page_title);
+  std::string page_title =
+      content::ExecuteScriptAndGetValue(source_web_contents->GetMainFrame(),
+                                        "document.title")
+          .GetString();
   EXPECT_EQ("Test Page Title", page_title);
 
   // Verify the destination WebContents is showing distilled content.
   EXPECT_TRUE(raw_destination_web_contents->GetLastCommittedURL().SchemeIs(
       kDomDistillerScheme));
-  content::ExecuteScriptAndGetValue(
-      raw_destination_web_contents->GetMainFrame(), "document.title")
-      ->GetAsString(&page_title);
+  page_title =
+      content::ExecuteScriptAndGetValue(
+          raw_destination_web_contents->GetMainFrame(), "document.title")
+          .GetString();
   EXPECT_EQ("Test Page Title", page_title);
 
   content::WebContentsDestroyedWatcher destroyed_watcher(

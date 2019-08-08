@@ -41,13 +41,6 @@ enum CompositeOperationType {
 
 class PLATFORM_EXPORT FEComposite final : public FilterEffect {
  public:
-  static FEComposite* Create(Filter*,
-                             const CompositeOperationType&,
-                             float,
-                             float,
-                             float,
-                             float);
-
   FEComposite(Filter*,
               const CompositeOperationType&,
               float,

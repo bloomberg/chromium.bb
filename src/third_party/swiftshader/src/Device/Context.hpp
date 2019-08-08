@@ -15,17 +15,22 @@
 #ifndef sw_Context_hpp
 #define sw_Context_hpp
 
+#include "Vulkan/VkConfig.h"
+#include "Vulkan/VkDescriptorSet.hpp"
 #include "Sampler.hpp"
 #include "Stream.hpp"
 #include "Point.hpp"
 #include "Vertex.hpp"
 #include "System/Types.hpp"
 
+#include <Vulkan/VkConfig.h>
+
 namespace vk
 {
+	class DescriptorSet;
 	class ImageView;
 	class PipelineLayout;
-} // namespace vk
+}
 
 namespace sw
 {
@@ -58,38 +63,6 @@ namespace sw
 		PositionT = 15
 	};
 
-	enum DrawType ENUM_UNDERLYING_TYPE_UNSIGNED_INT
-	{
-		// These types must stay ordered by vertices per primitive. Also, if these basic types
-		// are modified, verify the value assigned to task->verticesPerPrimitive in Renderer.cpp
-		DRAW_POINTLIST     = 0x00,
-		DRAW_LINELIST      = 0x01,
-		DRAW_LINESTRIP     = 0x02,
-		DRAW_TRIANGLELIST  = 0x03,
-		DRAW_TRIANGLESTRIP = 0x04,
-		DRAW_TRIANGLEFAN   = 0x05,
-
-		DRAW_NONINDEXED = 0x00,
-		DRAW_INDEXED16  = 0x20,
-		DRAW_INDEXED32  = 0x30,
-
-		DRAW_INDEXEDPOINTLIST16 = DRAW_POINTLIST | DRAW_INDEXED16,
-		DRAW_INDEXEDLINELIST16  = DRAW_LINELIST  | DRAW_INDEXED16,
-		DRAW_INDEXEDLINESTRIP16 = DRAW_LINESTRIP | DRAW_INDEXED16,
-		DRAW_INDEXEDTRIANGLELIST16  = DRAW_TRIANGLELIST  | DRAW_INDEXED16,
-		DRAW_INDEXEDTRIANGLESTRIP16 = DRAW_TRIANGLESTRIP | DRAW_INDEXED16,
-		DRAW_INDEXEDTRIANGLEFAN16   = DRAW_TRIANGLEFAN   | DRAW_INDEXED16,
-
-		DRAW_INDEXEDPOINTLIST32 = DRAW_POINTLIST | DRAW_INDEXED32,
-		DRAW_INDEXEDLINELIST32  = DRAW_LINELIST  | DRAW_INDEXED32,
-		DRAW_INDEXEDLINESTRIP32 = DRAW_LINESTRIP | DRAW_INDEXED32,
-		DRAW_INDEXEDTRIANGLELIST32  = DRAW_TRIANGLELIST  | DRAW_INDEXED32,
-		DRAW_INDEXEDTRIANGLESTRIP32 = DRAW_TRIANGLESTRIP | DRAW_INDEXED32,
-		DRAW_INDEXEDTRIANGLEFAN32   = DRAW_TRIANGLEFAN   | DRAW_INDEXED32,
-
-		DRAW_LAST = DRAW_INDEXEDTRIANGLEFAN32
-	};
-
 	enum CullMode ENUM_UNDERLYING_TYPE_UNSIGNED_INT
 	{
 		CULL_NONE,
@@ -105,6 +78,11 @@ namespace sw
 		TRANSPARENCY_ALPHA_TO_COVERAGE,
 
 		TRANSPARENCY_LAST = TRANSPARENCY_ALPHA_TO_COVERAGE
+	};
+
+	struct PushConstantStorage
+	{
+		unsigned char data[vk::MAX_PUSH_CONSTANT_SIZE];
 	};
 
 	class Context
@@ -156,25 +134,12 @@ namespace sw
 
 		VkLogicOp colorLogicOp();
 
-		DrawType drawType;
+		VkPrimitiveTopology topology;
 
 		bool stencilEnable;
-		VkCompareOp stencilCompareMode;
-		int stencilReference;
-		int stencilMask;
-		VkStencilOp stencilFailOperation;
-		VkStencilOp stencilPassOperation;
-		VkStencilOp stencilZFailOperation;
-		int stencilWriteMask;
-
 		bool twoSidedStencil;
-		VkCompareOp stencilCompareModeCCW;
-		int stencilReferenceCCW;
-		int stencilMaskCCW;
-		VkStencilOp stencilFailOperationCCW;
-		VkStencilOp stencilPassOperationCCW;
-		VkStencilOp stencilZFailOperationCCW;
-		int stencilWriteMaskCCW;
+		VkStencilOpState frontStencil;
+		VkStencilOpState backStencil;
 
 		// Pixel processor states
 		VkCullModeFlags cullMode;
@@ -189,6 +154,8 @@ namespace sw
 		int colorWriteActive(int index);
 		bool colorUsed();
 
+		vk::DescriptorSet::Bindings descriptorSets = {};
+		vk::DescriptorSet::DynamicOffsets descriptorDynamicOffsets = {};
 		Stream input[MAX_VERTEX_INPUTS];
 		void *indexBuffer;
 
@@ -212,6 +179,7 @@ namespace sw
 
 		// Pixel processor states
 		bool rasterizerDiscard;
+		bool depthBoundsTestEnable;
 		bool depthBufferEnable;
 		VkCompareOp depthCompareMode;
 		bool depthWriteEnable;
@@ -233,6 +201,8 @@ namespace sw
 		unsigned int sampleMask;
 		unsigned int multiSampleMask;
 		int sampleCount;
+
+		PushConstantStorage pushConstants;
 	};
 }
 

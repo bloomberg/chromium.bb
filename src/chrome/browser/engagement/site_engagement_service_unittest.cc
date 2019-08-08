@@ -1083,10 +1083,10 @@ TEST_F(SiteEngagementServiceTest, NavigationAccumulation) {
                                              ui::PAGE_TRANSITION_AUTO_BOOKMARK);
   NavigateWithTransitionAndExpectHigherScore(
       service, url, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
+  NavigateWithTransitionAndExpectHigherScore(service, url,
+                                             ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
 
   // Other transition types should not accumulate engagement.
-  NavigateWithTransitionAndExpectEqualScore(service, url,
-                                            ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   NavigateWithTransitionAndExpectEqualScore(service, url,
                                             ui::PAGE_TRANSITION_LINK);
   NavigateWithTransitionAndExpectEqualScore(service, url,

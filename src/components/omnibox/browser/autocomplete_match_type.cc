@@ -156,6 +156,19 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
   if (label_prefix_length)
     *label_prefix_length = 0;
 
+  // Document provider should use its full display text; description has
+  // already been constructed via IDS_DRIVE_SUGGESTION_DESCRIPTION_TEMPLATE.
+  // TODO(skare) http://crbug.com/951109: format as string in grd so this isn't
+  // special-cased.
+  if (match.type == AutocompleteMatchType::DOCUMENT_SUGGESTION) {
+    base::string16 doc_string = match.contents + base::ASCIIToUTF16(", ") +
+                                match.description + base::ASCIIToUTF16(", ") +
+                                match_text;
+    return AddTabSwitchLabelTextIfNecessary(doc_string, match.has_tab_match,
+                                            is_tab_switch_button_focused,
+                                            label_prefix_length);
+  }
+
   int message = message_ids[match.type];
   if (!message) {
     return AddTabSwitchLabelTextIfNecessary(match_text, match.has_tab_match,

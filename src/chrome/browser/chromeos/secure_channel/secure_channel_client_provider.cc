@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/secure_channel/secure_channel_client_provider.h"
 
-#include "base/macros.h"
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client_impl.h"
 #include "content/public/common/service_manager_connection.h"
 
@@ -18,7 +17,8 @@ SecureChannelClientProvider::~SecureChannelClientProvider() = default;
 
 // static
 SecureChannelClientProvider* SecureChannelClientProvider::GetInstance() {
-  return base::Singleton<SecureChannelClientProvider>::get();
+  static base::NoDestructor<SecureChannelClientProvider> provider;
+  return provider.get();
 }
 
 SecureChannelClient* SecureChannelClientProvider::GetClient() {

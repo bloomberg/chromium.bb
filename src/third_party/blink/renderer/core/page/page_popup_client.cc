@@ -66,32 +66,13 @@ void PagePopupClient::AddJavaScriptString(const String& str,
       builder.Append("\\x3C");
     } else if (str[i] < 0x20 || str[i] == kLineSeparator ||
                str[i] == kParagraphSeparator) {
-      builder.Append(String::Format("\\u%04X", str[i]));
+      builder.AppendFormat("\\u%04X", str[i]);
     } else {
       builder.Append(str[i]);
     }
   }
   AddString(builder.ToString(), data);
   addLiteral("\"", data);
-}
-
-void PagePopupClient::AddHTMLString(const String& str, SharedBuffer* data) {
-  StringBuilder builder;
-  builder.ReserveCapacity(str.length());
-  for (unsigned i = 0; i < str.length(); ++i) {
-    if (str[i] == '&') {
-      builder.Append("&amp;");
-    } else if (str[i] == '<') {
-      builder.Append("&lt;");
-    } else if (str[i] == '\'') {
-      builder.Append("&apos;");
-    } else if (str[i] == '"') {
-      builder.Append("&quot;");
-    } else {
-      builder.Append(str[i]);
-    }
-  }
-  AddString(builder.ToString(), data);
 }
 
 void PagePopupClient::AddProperty(const char* name,

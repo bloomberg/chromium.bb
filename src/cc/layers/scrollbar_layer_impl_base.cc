@@ -282,4 +282,29 @@ bool ScrollbarLayerImplBase::HasFindInPageTickmarks() const {
   return false;
 }
 
+gfx::Rect ScrollbarLayerImplBase::BackButtonRect() const {
+  return gfx::Rect(0, 0);
+}
+
+gfx::Rect ScrollbarLayerImplBase::ForwardButtonRect() const {
+  return gfx::Rect(0, 0);
+}
+
+// This manages identifying which part of a composited scrollbar got hit based
+// on the position_in_widget.
+ScrollbarPart ScrollbarLayerImplBase::IdentifyScrollbarPart(
+    const gfx::PointF position_in_widget) const {
+  const gfx::Point pointer_location(position_in_widget.x(),
+                                    position_in_widget.y());
+  if (BackButtonRect().Contains(pointer_location))
+    return ScrollbarPart::BACK_BUTTON;
+  if (ForwardButtonRect().Contains(pointer_location))
+    return ScrollbarPart::FORWARD_BUTTON;
+
+  // TODO(arakeri): Once crbug.com/952314 is fixed, add a DCHECK to verify that
+  // the point that is passed in is within the TrackRect. Also, please note that
+  // hit testing other scrollbar parts is not yet implemented.
+  return ScrollbarPart::NO_PART;
+}
+
 }  // namespace cc

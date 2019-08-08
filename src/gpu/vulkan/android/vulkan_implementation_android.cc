@@ -11,7 +11,9 @@
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_instance.h"
+#include "gpu/vulkan/vulkan_posix_util.h"
 #include "gpu/vulkan/vulkan_surface.h"
+#include "gpu/vulkan/vulkan_util.h"
 #include "ui/gfx/gpu_fence.h"
 
 namespace gpu {
@@ -20,7 +22,8 @@ VulkanImplementationAndroid::VulkanImplementationAndroid() = default;
 
 VulkanImplementationAndroid::~VulkanImplementationAndroid() = default;
 
-bool VulkanImplementationAndroid::InitializeVulkanInstance() {
+bool VulkanImplementationAndroid::InitializeVulkanInstance(bool using_surface) {
+  DCHECK(using_surface);
   std::vector<const char*> required_extensions = {
       VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_ANDROID_SURFACE_EXTENSION_NAME,
       VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME,
@@ -105,65 +108,30 @@ VulkanImplementationAndroid::ExportVkFenceToGpuFence(VkDevice vk_device,
   return nullptr;
 }
 
-bool VulkanImplementationAndroid::ImportSemaphoreFdKHR(
-    VkDevice vk_device,
-    base::ScopedFD sync_fd,
-    VkSemaphore* vk_semaphore) {
-  // Create a VkSemaphore.
-  VkSemaphoreCreateInfo info = {VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
-  bool result = vkCreateSemaphore(vk_device, &info, nullptr, vk_semaphore);
-  if (result != VK_SUCCESS) {
-    LOG(ERROR) << "vkCreateSemaphore failed : " << result;
-    return false;
-  }
-
-  // Create VkImportSemaphoreFdInfoKHR structure.
-  VkImportSemaphoreFdInfoKHR import;
-  import.sType = VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_FD_INFO_KHR;
-  import.pNext = nullptr;
-  import.semaphore = *vk_semaphore;
-  import.flags = VK_SEMAPHORE_IMPORT_TEMPORARY_BIT_KHR;
-
-  // VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT specifies a POSIX file
-  // descriptor handle to a Linux Sync File or Android Fence object.
-  import.handleType = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT;
-  import.fd = sync_fd.get();
-
-  // Import the fd into the semaphore.
-  result = vkImportSemaphoreFdKHR(vk_device, &import);
-  if (result != VK_SUCCESS) {
-    LOG(ERROR) << "vkImportSemaphoreFdKHR failed : " << result;
-    vkDestroySemaphore(vk_device, *vk_semaphore, nullptr);
-    return false;
-  }
-
-  // If import is successful, the VkSemaphore object takes the ownership of fd.
-  ignore_result(sync_fd.release());
-  return true;
+VkSemaphore VulkanImplementationAndroid::CreateExternalSemaphore(
+    VkDevice vk_device) {
+  return CreateExternalVkSemaphore(
+      vk_device, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT);
 }
 
-bool VulkanImplementationAndroid::GetSemaphoreFdKHR(VkDevice vk_device,
-                                                    VkSemaphore vk_semaphore,
-                                                    base::ScopedFD* sync_fd) {
-  // Create VkSemaphoreGetFdInfoKHR structure.
-  VkSemaphoreGetFdInfoKHR info;
-  info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR;
-  info.pNext = nullptr;
-  info.semaphore = vk_semaphore;
-  info.handleType = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT;
+VkSemaphore VulkanImplementationAndroid::ImportSemaphoreHandle(
+    VkDevice vk_device,
+    SemaphoreHandle sync_handle) {
+  return ImportVkSemaphoreHandlePosix(vk_device, std::move(sync_handle));
+}
 
-  // Create a new sync fd from the semaphore.
-  int fd = -1;
-  bool result = vkGetSemaphoreFdKHR(vk_device, &info, &fd);
-  if (result != VK_SUCCESS) {
-    LOG(ERROR) << "vkGetSemaphoreFdKHR failed : " << result;
-    sync_fd->reset(-1);
-    return false;
-  }
+SemaphoreHandle VulkanImplementationAndroid::GetSemaphoreHandle(
+    VkDevice vk_device,
+    VkSemaphore vk_semaphore) {
+  // VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT specifies a POSIX file
+  // descriptor handle to a Linux Sync File or Android Fence object.
+  return GetVkSemaphoreHandlePosix(
+      vk_device, vk_semaphore, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT);
+}
 
-  // Transfer the ownership of the fd to the caller.
-  sync_fd->reset(fd);
-  return true;
+VkExternalMemoryHandleTypeFlagBits
+VulkanImplementationAndroid::GetExternalImageHandleType() {
+  return VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID;
 }
 
 bool VulkanImplementationAndroid::CreateVkImageAndImportAHB(

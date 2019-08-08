@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/autofill/autofill_uitest.h"
 #include "chrome/browser/autofill/autofill_uitest_util.h"
+#include "chrome/browser/autofill/automated_tests/cache_replayer.h"
 #include "chrome/browser/autofill/captured_sites_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
@@ -40,12 +41,14 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/browser/state_names.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
+#include "services/network/public/cpp/data_element.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,8 +67,11 @@ struct GetParamAsString {
 base::FilePath GetReplayFilesDirectory() {
   base::FilePath src_dir;
   if (base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir)) {
-    return src_dir.Append(
-        FILE_PATH_LITERAL("chrome/test/data/autofill/captured_sites"));
+    return src_dir.AppendASCII("chrome")
+        .AppendASCII("test")
+        .AppendASCII("data")
+        .AppendASCII("autofill")
+        .AppendASCII("captured_sites");
   } else {
     src_dir.clear();
     return src_dir;
@@ -219,10 +225,23 @@ class AutofillCapturedSitesInteractiveTest
         std::make_unique<captured_sites_test_utils::TestRecipeReplayer>(
             browser(), this);
     recipe_replayer()->Setup();
+
+    const base::FilePath capture_file_path =
+        GetReplayFilesDirectory().AppendASCII(GetParam().c_str());
+    SetServerUrlLoader(std::make_unique<test::ServerUrlLoader>(
+        absl::make_unique<test::ServerCacheReplayer>(
+            capture_file_path,
+            test::ServerCacheReplayer::kOptionFailOnInvalidJsonRecord)));
   }
 
   void TearDownOnMainThread() override {
     recipe_replayer()->Cleanup();
+    // Need to delete the URL loader and its underlying interceptor on the main
+    // thread. Will result in a fatal crash otherwise. The pointer has its
+    // memory cleaned up twice: first time in that single thread, a second time
+    // when the fixture's destructor is called, which will have no effect since
+    // the raw pointer will be nullptr.
+    server_url_loader_.reset(nullptr);
     AutofillUiTest::TearDownOnMainThread();
   }
 
@@ -236,8 +255,14 @@ class AutofillCapturedSitesInteractiveTest
     command_line->AppendSwitch(switches::kShowAutofillTypePredictions);
     command_line->AppendSwitchASCII(::switches::kForceFieldTrials,
                                     "AutofillFieldMetadata/Enabled/");
+
     captured_sites_test_utils::TestRecipeReplayer::SetUpCommandLine(
         command_line);
+  }
+
+  void SetServerUrlLoader(
+      std::unique_ptr<test::ServerUrlLoader> server_url_loader) {
+    server_url_loader_ = std::move(server_url_loader);
   }
 
   captured_sites_test_utils::TestRecipeReplayer* recipe_replayer() {
@@ -288,6 +313,8 @@ class AutofillCapturedSitesInteractiveTest
   std::map<const std::string, ServerFieldType> string_to_field_type_map_;
 
   base::test::ScopedFeatureList feature_list_;
+
+  std::unique_ptr<test::ServerUrlLoader> server_url_loader_;
 };
 
 IN_PROC_BROWSER_TEST_P(AutofillCapturedSitesInteractiveTest, Recipe) {
@@ -303,6 +330,9 @@ IN_PROC_BROWSER_TEST_P(AutofillCapturedSitesInteractiveTest, Recipe) {
   // Craft the recipe file path.
   base::FilePath recipe_file_path = GetReplayFilesDirectory().AppendASCII(
       base::StringPrintf("%s.test", GetParam().c_str()));
+
+  VLOG(1) << "Recipe file path: " << recipe_file_path;
+  VLOG(1) << "Capture file path: " << capture_file_path;
 
   ASSERT_TRUE(
       recipe_replayer()->ReplayTest(capture_file_path, recipe_file_path));

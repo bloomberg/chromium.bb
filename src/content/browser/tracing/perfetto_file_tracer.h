@@ -30,6 +30,9 @@ class PerfettoFileTracer : public tracing::mojom::TracingSession {
 
   static bool ShouldEnable();
 
+  // tracing::mojom::TracingSession implementation:
+  void OnTracingEnabled() override;
+
  private:
   void OnNoMorePackets(bool queued_after_disable);
   void ReadBuffers();

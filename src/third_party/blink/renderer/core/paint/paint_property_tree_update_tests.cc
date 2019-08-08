@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder_test.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 
 namespace blink {
@@ -739,20 +740,18 @@ TEST_P(PaintPropertyTreeUpdateTest, TransformUpdatesOnRelativeLengthChanges) {
 
   auto* transform = GetDocument().getElementById("transform");
   auto* transform_object = transform->GetLayoutObject();
-  EXPECT_EQ(TransformationMatrix().Translate3d(50, 100, 0),
-            transform_object->FirstFragment()
-                .PaintProperties()
-                ->Transform()
-                ->Matrix());
+  EXPECT_EQ(FloatSize(50, 100), transform_object->FirstFragment()
+                                    .PaintProperties()
+                                    ->Transform()
+                                    ->Translation2D());
 
   transform->setAttribute(html_names::kStyleAttr,
                           "width: 200px; height: 300px;");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(TransformationMatrix().Translate3d(100, 150, 0),
-            transform_object->FirstFragment()
-                .PaintProperties()
-                ->Transform()
-                ->Matrix());
+  EXPECT_EQ(FloatSize(100, 150), transform_object->FirstFragment()
+                                     .PaintProperties()
+                                     ->Transform()
+                                     ->Translation2D());
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, CSSClipDependingOnSize) {
@@ -1114,7 +1113,7 @@ TEST_P(PaintPropertyTreeUpdateTest, CompositingReasonForAnimation) {
   UpdateAllLifecyclePhasesForTest();
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_TRUE(transform->HasDirectCompositingReasons());
-    EXPECT_TRUE(transform->RequiresCompositingForAnimation());
+    EXPECT_TRUE(transform->HasActiveTransformAnimation());
   }
   // TODO(flackr): After https://crbug.com/900241 is fixed the filter effect
   // should no longer have direct compositing reasons due to the animation.
@@ -1126,11 +1125,11 @@ TEST_P(PaintPropertyTreeUpdateTest, CompositingReasonForAnimation) {
   // The transform animation still continues.
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_TRUE(transform->HasDirectCompositingReasons());
-    EXPECT_TRUE(transform->RequiresCompositingForAnimation());
+    EXPECT_TRUE(transform->HasActiveTransformAnimation());
     // The filter node should have correct direct compositing reasons, not
     // shadowed by the transform animation.
     EXPECT_TRUE(filter->HasDirectCompositingReasons());
-    EXPECT_TRUE(filter->RequiresCompositingForAnimation());
+    EXPECT_TRUE(transform->HasActiveTransformAnimation());
   }
 }
 
@@ -1593,9 +1592,8 @@ TEST_P(PaintPropertyTreeUpdateTest, SubpixelAccumulationAcrossIsolation) {
   auto* child = GetLayoutObjectByElementId("child");
   EXPECT_EQ(LayoutPoint(LayoutUnit(10.25), LayoutUnit()),
             parent->FirstFragment().PaintOffset());
-  EXPECT_EQ(FloatSize(10, 0), isolation_properties->PaintOffsetTranslation()
-                                  ->Matrix()
-                                  .To2DTranslation());
+  EXPECT_EQ(FloatSize(10, 0),
+            isolation_properties->PaintOffsetTranslation()->Translation2D());
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(LayoutPoint(), child->FirstFragment().PaintOffset());
   } else {
@@ -1608,15 +1606,99 @@ TEST_P(PaintPropertyTreeUpdateTest, SubpixelAccumulationAcrossIsolation) {
 
   EXPECT_EQ(LayoutPoint(LayoutUnit(12.75), LayoutUnit()),
             parent->FirstFragment().PaintOffset());
-  EXPECT_EQ(FloatSize(13, 0), isolation_properties->PaintOffsetTranslation()
-                                  ->Matrix()
-                                  .To2DTranslation());
+  EXPECT_EQ(FloatSize(13, 0),
+            isolation_properties->PaintOffsetTranslation()->Translation2D());
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(LayoutPoint(), child->FirstFragment().PaintOffset());
   } else {
     EXPECT_EQ(LayoutPoint(LayoutUnit(-0.25), LayoutUnit()),
               child->FirstFragment().PaintOffset());
   }
+}
+
+TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+      !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    return;
+
+  SetBodyInnerHTML("<div id='target' style='width: 100px; height: 100px'>");
+  auto* target = GetLayoutObjectByElementId("target");
+  auto style = ComputedStyle::Clone(target->StyleRef());
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  // Simulates starting a composite animation.
+  style->SetHasCurrentTransformAnimation(true);
+  style->SetIsRunningTransformAnimationOnCompositor(true);
+  target->SetStyle(std::move(style));
+  EXPECT_TRUE(target->NeedsPaintPropertyUpdate());
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+
+  const auto* transform_node =
+      target->FirstFragment().PaintProperties()->Transform();
+  ASSERT_TRUE(transform_node);
+  EXPECT_TRUE(transform_node->HasActiveTransformAnimation());
+  EXPECT_EQ(TransformationMatrix(), transform_node->Matrix());
+  EXPECT_EQ(FloatPoint3D(50, 50, 0), transform_node->Origin());
+  // Change of animation status should update PaintArtifactCompositor.
+  auto* paint_artifact_compositor =
+      GetDocument().View()->GetPaintArtifactCompositorForTesting();
+  EXPECT_TRUE(paint_artifact_compositor->NeedsUpdate());
+  // PaintArtifactCompositor can't clear the NeedsUpdate flag by itself when
+  // there is no cc::LayerTreeHost.
+  paint_artifact_compositor->ClearNeedsUpdateForTesting();
+
+  // Simulates changing transform and transform-origin during an animation.
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  style = ComputedStyle::Clone(target->StyleRef());
+  TransformOperations transform;
+  transform.Operations().push_back(
+      RotateTransformOperation::Create(10, TransformOperation::kRotate));
+  style->SetTransform(transform);
+  style->SetTransformOrigin(TransformOrigin(Length(70, Length::kFixed),
+                                            Length(30, Length::kFixed), 0));
+  target->SetStyle(std::move(style));
+  EXPECT_TRUE(target->NeedsPaintPropertyUpdate());
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+
+  ASSERT_EQ(transform_node,
+            target->FirstFragment().PaintProperties()->Transform());
+  EXPECT_TRUE(transform_node->HasActiveTransformAnimation());
+  EXPECT_EQ(TransformationMatrix().Rotate(10), transform_node->Matrix());
+  EXPECT_EQ(FloatPoint3D(70, 30, 0), transform_node->Origin());
+  EXPECT_TRUE(transform_node->BackfaceVisibilitySameAsParent());
+  // Changing only transform or transform-origin values during a composited
+  // animation should not schedule a PaintArtifactCompositor update.
+  EXPECT_FALSE(paint_artifact_compositor->NeedsUpdate());
+
+  // Simulates changing backface visibility during animation.
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  style = ComputedStyle::Clone(target->StyleRef());
+  style->SetBackfaceVisibility(EBackfaceVisibility::kHidden);
+  target->SetStyle(std::move(style));
+  EXPECT_TRUE(target->NeedsPaintPropertyUpdate());
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+
+  ASSERT_EQ(transform_node,
+            target->FirstFragment().PaintProperties()->Transform());
+  EXPECT_TRUE(transform_node->HasActiveTransformAnimation());
+  EXPECT_EQ(TransformationMatrix().Rotate(10), transform_node->Matrix());
+  EXPECT_EQ(FloatPoint3D(70, 30, 0), transform_node->Origin());
+  EXPECT_FALSE(transform_node->BackfaceVisibilitySameAsParent());
+  // Only transform and transform-origin value changes during composited
+  // animation should not schedule PaintArtifactCompositor update. Backface
+  // visibility changes should schedule an update.
+  EXPECT_TRUE(paint_artifact_compositor->NeedsUpdate());
+}
+
+TEST_P(PaintPropertyTreeUpdateTest, BackfaceVisibilityInvalidatesProperties) {
+  SetBodyInnerHTML("<span id='span'>a</span>");
+
+  auto* span = GetDocument().getElementById("span");
+  span->setAttribute(html_names::kStyleAttr, "backface-visibility: hidden;");
+  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  EXPECT_TRUE(span->GetLayoutObject()->NeedsPaintPropertyUpdate());
 }
 
 }  // namespace blink

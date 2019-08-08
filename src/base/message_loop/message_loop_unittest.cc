@@ -21,7 +21,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -2328,20 +2328,8 @@ class PostTaskOnDestroy {
 }  // namespace
 
 // Test that MessageLoop destruction handles a task's destructor posting another
-// task by:
-//  1) Not getting stuck clearing its task queue.
-//  2) DCHECKing when clearing pending tasks many times still doesn't yield an
-//     empty queue.
-TEST(MessageLoopDestructionTest, ExpectDeathWithStubbornPostTaskOnDestroy) {
-  std::unique_ptr<MessageLoop> loop = std::make_unique<MessageLoop>();
-
-  EXPECT_DCHECK_DEATH({
-    PostTaskOnDestroy::PostTaskWithPostingDestructor(1000);
-    loop.reset();
-  });
-}
-
-TEST(MessageLoopDestructionTest, DestroysFineWithReasonablePostTaskOnDestroy) {
+// task.
+TEST(MessageLoopDestructionTest, DestroysFineWithPostTaskOnDestroy) {
   std::unique_ptr<MessageLoop> loop = std::make_unique<MessageLoop>();
 
   PostTaskOnDestroy::PostTaskWithPostingDestructor(10);

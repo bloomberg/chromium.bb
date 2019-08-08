@@ -8,14 +8,6 @@
 
 namespace blink {
 
-AuthenticatorAttestationResponse* AuthenticatorAttestationResponse::Create(
-    DOMArrayBuffer* client_data_json,
-    DOMArrayBuffer* attestation_object,
-    Vector<mojom::AuthenticatorTransport> transports) {
-  return MakeGarbageCollected<AuthenticatorAttestationResponse>(
-      client_data_json, attestation_object, std::move(transports));
-}
-
 AuthenticatorAttestationResponse::AuthenticatorAttestationResponse(
     DOMArrayBuffer* client_data_json,
     DOMArrayBuffer* attestation_object,

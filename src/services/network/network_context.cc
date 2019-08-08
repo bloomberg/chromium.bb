@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_current.h"
@@ -44,7 +45,6 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/mapped_host_resolver.h"
-#include "net/extras/sqlite/sqlite_channel_id_store.h"
 #include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
 #include "net/http/failing_http_transaction_factory.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -81,7 +81,6 @@
 #include "services/network/resolve_host_request.h"
 #include "services/network/resource_scheduler_client.h"
 #include "services/network/restricted_cookie_manager.h"
-#include "services/network/session_cleanup_channel_id_store.h"
 #include "services/network/session_cleanup_cookie_store.h"
 #include "services/network/ssl_config_service_mojo.h"
 #include "services/network/throttling/network_conditions.h"
@@ -116,12 +115,12 @@
 #endif  // !defined(OS_IOS)
 
 #if BUILDFLAG(ENABLE_REPORTING)
+#include "net/base/http_user_agent_settings.h"
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_browsing_data_remover.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_report.h"
 #include "net/reporting/reporting_service.h"
-#include "net/url_request/http_user_agent_settings.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 #if BUILDFLAG(ENABLE_MDNS)
@@ -241,12 +240,12 @@ bool MatchesUrlFilter(mojom::ClearDataFilter_Type filter_type,
                       std::set<std::string> filter_domains,
                       std::set<url::Origin> filter_origins,
                       const GURL& url) {
-  std::string url_registerable_domain =
+  std::string url_registrable_domain =
       net::registry_controlled_domains::GetDomainAndRegistry(
           url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   bool found_domain =
-      (filter_domains.find(url_registerable_domain != ""
-                               ? url_registerable_domain
+      (filter_domains.find(url_registrable_domain != ""
+                               ? url_registrable_domain
                                : url.host()) != filter_domains.end());
 
   bool found_origin =
@@ -530,8 +529,7 @@ NetworkContext::NetworkContext(
       app_status_listener_(
           std::make_unique<NetworkContextApplicationStatusListener>()),
 #endif
-      binding_(this, std::move(request)),
-      host_resolver_factory_(std::make_unique<net::HostResolver::Factory>()) {
+      binding_(this, std::move(request)) {
   url_request_context_owner_ = MakeURLRequestContext();
   url_request_context_ = url_request_context_owner_.url_request_context.get();
 
@@ -549,7 +547,7 @@ NetworkContext::NetworkContext(
   resource_scheduler_ =
       std::make_unique<ResourceScheduler>(enable_resource_scheduler_);
 
-  InitializeCorsOriginAccessList();
+  InitializeCorsParams();
 }
 
 // TODO(mmenke): Share URLRequestContextBulder configuration between two
@@ -567,8 +565,7 @@ NetworkContext::NetworkContext(
       app_status_listener_(
           std::make_unique<NetworkContextApplicationStatusListener>()),
 #endif
-      binding_(this, std::move(request)),
-      host_resolver_factory_(std::make_unique<net::HostResolver::Factory>()) {
+      binding_(this, std::move(request)) {
   url_request_context_owner_ = ApplyContextParamsToBuilder(builder.get());
   url_request_context_ = url_request_context_owner_.url_request_context.get();
 
@@ -578,12 +575,14 @@ NetworkContext::NetworkContext(
   resource_scheduler_ =
       std::make_unique<ResourceScheduler>(enable_resource_scheduler_);
 
-  InitializeCorsOriginAccessList();
+  InitializeCorsParams();
 }
 
-NetworkContext::NetworkContext(NetworkService* network_service,
-                               mojom::NetworkContextRequest request,
-                               net::URLRequestContext* url_request_context)
+NetworkContext::NetworkContext(
+    NetworkService* network_service,
+    mojom::NetworkContextRequest request,
+    net::URLRequestContext* url_request_context,
+    const std::vector<std::string>& cors_exempt_header_list)
     : network_service_(network_service),
       url_request_context_(url_request_context),
 #if defined(OS_ANDROID)
@@ -594,17 +593,18 @@ NetworkContext::NetworkContext(NetworkService* network_service,
       cookie_manager_(
           std::make_unique<CookieManager>(url_request_context->cookie_store(),
                                           nullptr,
-                                          nullptr,
                                           nullptr)),
       socket_factory_(
           std::make_unique<SocketFactory>(url_request_context_->net_log(),
-                                          url_request_context)),
-      host_resolver_factory_(std::make_unique<net::HostResolver::Factory>()) {
+                                          url_request_context)) {
   // May be nullptr in tests.
   if (network_service_)
     network_service_->RegisterNetworkContext(this);
   resource_scheduler_ =
       std::make_unique<ResourceScheduler>(enable_resource_scheduler_);
+
+  for (const auto& key : cors_exempt_header_list)
+    cors_exempt_header_list_.insert(key);
 }
 
 NetworkContext::~NetworkContext() {
@@ -776,6 +776,17 @@ size_t NetworkContext::GetNumOutstandingResolveHostRequestsForTesting() const {
 
 bool NetworkContext::SkipReportingPermissionCheck() const {
   return params_ && params_->skip_reporting_send_permission_check;
+}
+
+size_t NetworkContext::ReportAndGatherCorsPreflightCacheSizeMetric() {
+  return cors_preflight_controller_.ReportAndGatherCacheSizeMetric();
+}
+
+size_t NetworkContext::GatherActiveLoaderCount() {
+  size_t count = 0;
+  for (const auto& factory : url_loader_factories_)
+    count += factory->GetActiveLoaderCount();
+  return count;
 }
 
 void NetworkContext::ClearNetworkingHistorySince(
@@ -1308,6 +1319,7 @@ void NetworkContext::CreateWebSocket(
     int32_t process_id,
     int32_t render_frame_id,
     const url::Origin& origin,
+    uint32_t options,
     mojom::AuthenticationHandlerPtr auth_handler,
     mojom::TrustedHeaderClientPtr header_client) {
 #if !defined(OS_IOS)
@@ -1315,7 +1327,7 @@ void NetworkContext::CreateWebSocket(
     websocket_factory_ = std::make_unique<WebSocketFactory>(this);
   websocket_factory_->CreateWebSocket(
       std::move(request), std::move(auth_handler), std::move(header_client),
-      process_id, render_frame_id, origin);
+      process_id, render_frame_id, origin, options);
 #endif  // !defined(OS_IOS)
 }
 
@@ -1357,8 +1369,11 @@ void NetworkContext::CreateHostResolver(
     net::HostResolver::Options options;
     options.enable_caching = false;
 
-    private_internal_resolver = host_resolver_factory_->CreateResolver(
-        options, url_request_context_->net_log());
+    private_internal_resolver =
+        network_service_->host_resolver_factory()->CreateStandaloneResolver(
+            url_request_context_->net_log(), options, "",
+            false /* enable_caching */);
+    private_internal_resolver->SetRequestContext(url_request_context_);
     internal_resolver = private_internal_resolver.get();
 
     internal_resolver->SetDnsClientEnabled(true);
@@ -1727,7 +1742,10 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
   if (network_service_) {
     net_log = network_service_->net_log();
     builder->set_net_log(net_log);
-    builder->set_shared_host_resolver(network_service_->host_resolver());
+    builder->set_host_resolver_manager(
+        network_service_->host_resolver_manager());
+    builder->set_host_resolver_factory(
+        network_service_->host_resolver_factory());
     builder->set_shared_http_auth_handler_factory(
         network_service_->GetHttpAuthHandlerFactory());
     builder->set_network_quality_estimator(
@@ -1735,7 +1753,6 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
   }
 
   scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store;
-  scoped_refptr<SessionCleanupChannelIDStore> session_cleanup_channel_id_store;
   if (params_->cookie_path) {
     scoped_refptr<base::SequencedTaskRunner> client_task_runner =
         base::MessageLoopCurrent::Get()->task_runner();
@@ -1765,7 +1782,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
 
     std::unique_ptr<net::CookieMonster> cookie_store =
         std::make_unique<net::CookieMonster>(session_cleanup_cookie_store.get(),
-                                             nullptr, net_log);
+                                             net_log);
     if (params_->persist_session_cookies)
       cookie_store->SetPersistSessionCookies(true);
 
@@ -1829,10 +1846,6 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
       std::move(params_->initial_proxy_config),
       std::move(params_->proxy_config_poller_client)));
   builder->set_pac_quick_check_enabled(params_->pac_quick_check_enabled);
-  builder->set_pac_sanitize_url_policy(
-      params_->dangerously_allow_pac_access_to_secure_urls
-          ? net::ProxyResolutionService::SanitizeUrlPolicy::UNSAFE
-          : net::ProxyResolutionService::SanitizeUrlPolicy::SAFE);
 
   std::unique_ptr<PrefService> pref_service;
   if (params_->http_server_properties_path) {
@@ -1865,12 +1878,10 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
         *params_->transport_security_persister_path);
   }
 
-  builder->set_data_enabled(params_->enable_data_url_support);
-#if !BUILDFLAG(DISABLE_FILE_SUPPORT)
-  builder->set_file_enabled(params_->enable_file_url_support);
-#else  // BUILDFLAG(DISABLE_FILE_SUPPORT)
-  DCHECK(!params_->enable_file_url_support);
-#endif
+  // With the network service data URLs are handled by clients directly.
+  if (!base::FeatureList::IsEnabled(features::kNetworkService))
+    builder->set_data_enabled(true);
+
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   builder->set_ftp_enabled(params_->enable_ftp_url_support);
 #else  // BUILDFLAG(DISABLE_FTP_SUPPORT)
@@ -1965,6 +1976,16 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
     builder->set_ct_verifier(std::move(ct_verifier));
   }
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
+
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  builder->set_host_mapping_rules(
+      command_line->GetSwitchValueASCII(switches::kHostResolverRules));
+
+  // Allow legacy context CopyFrom() functionality only if network service is
+  // disabled. The new service-enabled world should never do such copying.
+  if (!base::FeatureList::IsEnabled(features::kNetworkService))
+    builder->set_allow_copy();
 
   auto result =
       URLRequestContextOwner(std::move(pref_service), builder->Build());
@@ -2078,7 +2099,6 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
   cookie_manager_ = std::make_unique<CookieManager>(
       result.url_request_context->cookie_store(),
       std::move(session_cleanup_cookie_store),
-      std::move(session_cleanup_channel_id_store),
       std::move(params_->cookie_manager_params));
 
   return result;
@@ -2317,7 +2337,7 @@ void NetworkContext::TrustAnchorUsed() {
 }
 #endif
 
-void NetworkContext::InitializeCorsOriginAccessList() {
+void NetworkContext::InitializeCorsParams() {
   for (const auto& pattern : params_->cors_origin_access_list) {
     url::Origin origin = url::Origin::Create(GURL(pattern->source_origin));
     cors_origin_access_list_.SetAllowListForOrigin(origin,
@@ -2325,6 +2345,8 @@ void NetworkContext::InitializeCorsOriginAccessList() {
     cors_origin_access_list_.SetBlockListForOrigin(origin,
                                                    pattern->block_patterns);
   }
+  for (const auto& key : params_->cors_exempt_header_list)
+    cors_exempt_header_list_.insert(key);
 }
 
 }  // namespace network

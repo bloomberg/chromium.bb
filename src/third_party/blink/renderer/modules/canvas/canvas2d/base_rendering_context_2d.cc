@@ -34,7 +34,7 @@ const double BaseRenderingContext2D::kCDeviceScaleFactor = 1.0;
 
 BaseRenderingContext2D::BaseRenderingContext2D()
     : clip_antialiasing_(kNotAntiAliased), origin_tainted_by_content_(false) {
-  state_stack_.push_back(CanvasRenderingContext2DState::Create());
+  state_stack_.push_back(MakeGarbageCollected<CanvasRenderingContext2DState>());
 }
 
 BaseRenderingContext2D::~BaseRenderingContext2D() = default;
@@ -51,7 +51,7 @@ void BaseRenderingContext2D::RealizeSaves() {
     // Reduce the current state's unrealized count by one now,
     // to reflect the fact we are saving one state.
     state_stack_.back()->Restore();
-    state_stack_.push_back(CanvasRenderingContext2DState::Create(
+    state_stack_.push_back(MakeGarbageCollected<CanvasRenderingContext2DState>(
         GetState(), CanvasRenderingContext2DState::kDontCopyClipList));
     // Set the new state's unrealized count to 0, because it has no outstanding
     // saves.
@@ -130,7 +130,7 @@ void BaseRenderingContext2D::Reset() {
   ValidateStateStack();
   UnwindStateStack();
   state_stack_.resize(1);
-  state_stack_.front() = CanvasRenderingContext2DState::Create();
+  state_stack_.front() = MakeGarbageCollected<CanvasRenderingContext2DState>();
   path_.Clear();
   if (cc::PaintCanvas* c = ExistingDrawingCanvas()) {
     // The canvas should always have an initial/unbalanced save frame, which
@@ -411,7 +411,7 @@ void BaseRenderingContext2D::setFilter(
     return;
 
   const CSSValue* filter_value = CSSParser::ParseSingleValue(
-      CSSPropertyFilter, filter_string,
+      CSSPropertyID::kFilter, filter_string,
       CSSParserContext::Create(kHTMLStandardMode,
                                execution_context->GetSecureContextMode()));
 
@@ -1361,8 +1361,8 @@ CanvasGradient* BaseRenderingContext2D::createLinearGradient(double x0,
   float fx1 = clampTo<float>(x1);
   float fy1 = clampTo<float>(y1);
 
-  CanvasGradient* gradient =
-      CanvasGradient::Create(FloatPoint(fx0, fy0), FloatPoint(fx1, fy1));
+  auto* gradient = MakeGarbageCollected<CanvasGradient>(FloatPoint(fx0, fy0),
+                                                        FloatPoint(fx1, fy1));
   return gradient;
 }
 
@@ -1394,8 +1394,8 @@ CanvasGradient* BaseRenderingContext2D::createRadialGradient(
   float fy1 = clampTo<float>(y1);
   float fr1 = clampTo<float>(r1);
 
-  CanvasGradient* gradient = CanvasGradient::Create(FloatPoint(fx0, fy0), fr0,
-                                                    FloatPoint(fx1, fy1), fr1);
+  auto* gradient = MakeGarbageCollected<CanvasGradient>(
+      FloatPoint(fx0, fy0), fr0, FloatPoint(fx1, fy1), fr1);
   return gradient;
 }
 
@@ -1464,8 +1464,8 @@ CanvasPattern* BaseRenderingContext2D::createPattern(
 
   bool origin_clean = !WouldTaintOrigin(image_source);
 
-  return CanvasPattern::Create(std::move(image_for_rendering), repeat_mode,
-                               origin_clean);
+  return MakeGarbageCollected<CanvasPattern>(std::move(image_for_rendering),
+                                             repeat_mode, origin_clean);
 }
 
 bool BaseRenderingContext2D::ComputeDirtyRect(const FloatRect& local_rect,
@@ -1735,14 +1735,23 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
     return;
 
   if (dirty_width < 0) {
-    dirty_x += dirty_width;
-    dirty_width = base::saturated_cast<int>(base::SafeUnsignedAbs(dirty_width));
+    if (dirty_x < 0) {
+      dirty_x = dirty_width = 0;
+    } else {
+      dirty_x += dirty_width;
+      dirty_width =
+          base::saturated_cast<int>(base::SafeUnsignedAbs(dirty_width));
+    }
   }
 
   if (dirty_height < 0) {
-    dirty_y += dirty_height;
-    dirty_height =
-        base::saturated_cast<int>(base::SafeUnsignedAbs(dirty_height));
+    if (dirty_y < 0) {
+      dirty_y = dirty_height = 0;
+    } else {
+      dirty_y += dirty_height;
+      dirty_height =
+          base::saturated_cast<int>(base::SafeUnsignedAbs(dirty_height));
+    }
   }
 
   IntRect dest_rect(dirty_x, dirty_y, dirty_width, dirty_height);

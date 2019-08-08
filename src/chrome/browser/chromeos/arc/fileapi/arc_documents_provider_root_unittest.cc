@@ -15,9 +15,9 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/file_system.mojom.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_file_system_instance.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -139,7 +139,7 @@ class ArcDocumentsProviderRootTest : public testing::Test {
 
     root_ = std::make_unique<ArcDocumentsProviderRoot>(
         ArcFileSystemOperationRunner::GetForBrowserContext(profile_.get()),
-        kAuthority, kRootSpec.document_id);
+        kAuthority, kRootSpec.document_id, "", std::vector<std::string>());
   }
 
   void TearDown() override {
@@ -494,6 +494,414 @@ TEST_F(ArcDocumentsProviderRootTest, ReadDirectoryPendingCallbacks) {
 
   // All callbacks should have been invoked.
   EXPECT_EQ(3, num_callbacks);
+}
+
+TEST_F(ArcDocumentsProviderRootTest, DeleteFile) {
+  // Make sure that dir/photo.jpg exists.
+  ASSERT_TRUE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg"))));
+
+  base::RunLoop run_loop;
+  root_->DeleteFile(base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+                    base::BindOnce(
+                        [](base::RunLoop* run_loop, base::File::Error error) {
+                          run_loop->Quit();
+                          EXPECT_EQ(base::File::FILE_OK, error);
+                        },
+                        &run_loop));
+  run_loop.Run();
+  // dir/photo.jpg should have been removed.
+  EXPECT_FALSE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg"))));
+}
+
+TEST_F(ArcDocumentsProviderRootTest, DeleteFileNonExist) {
+  base::RunLoop run_loop;
+  root_->DeleteFile(base::FilePath(FILE_PATH_LITERAL("dir/non_exist.jpg")),
+                    base::BindOnce(
+                        [](base::RunLoop* run_loop, base::File::Error error) {
+                          run_loop->Quit();
+                          // An attempt to delete a non-existent file should
+                          // return NOT_FOUND error.
+                          EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, error);
+                        },
+                        &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ArcDocumentsProviderRootTest, DeleteDirectory) {
+  // Make sure that dir (directory) exists.
+  ASSERT_TRUE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir"))));
+  // Confirm that "dir" is actually a directory.
+  ASSERT_EQ(kAndroidDirectoryMimeType,
+            fake_file_system_
+                .GetDocument(kAuthority, kRootSpec.document_id,
+                             base::FilePath(FILE_PATH_LITERAL("dir")))
+                .mime_type);
+  EXPECT_TRUE(
+      fake_file_system_.DocumentExists(kAuthority, kDirSpec.document_id));
+  base::RunLoop run_loop;
+  root_->DeleteFile(base::FilePath(FILE_PATH_LITERAL("dir")),
+                    base::BindOnce(
+                        [](base::RunLoop* run_loop, base::File::Error error) {
+                          run_loop->Quit();
+                          EXPECT_EQ(base::File::FILE_OK, error);
+                        },
+                        &run_loop));
+  run_loop.Run();
+  // dir should have been removed.
+  EXPECT_FALSE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir"))));
+}
+
+TEST_F(ArcDocumentsProviderRootTest, CreateFile) {
+  // Make sure that dir/new.txt doesn't exist.
+  ASSERT_FALSE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/new.txt"))));
+  base::RunLoop run_loop;
+  root_->CreateFile(base::FilePath(FILE_PATH_LITERAL("dir/new.txt")),
+                    base::BindOnce(
+                        [](base::RunLoop* run_loop, base::File::Error error) {
+                          run_loop->Quit();
+                          EXPECT_EQ(base::File::FILE_OK, error);
+                        },
+                        &run_loop));
+  run_loop.Run();
+  // The dir/new.txt should have been created.
+  EXPECT_TRUE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/new.txt"))));
+  // The *.txt file's MIME type should be regarded as "text/plain".
+  EXPECT_EQ("text/plain",
+            fake_file_system_
+                .GetDocument(kAuthority, kRootSpec.document_id,
+                             base::FilePath(FILE_PATH_LITERAL("dir/new.txt")))
+                .mime_type);
+}
+
+TEST_F(ArcDocumentsProviderRootTest, CreateFileWithFallbackMimeType) {
+  base::RunLoop run_loop;
+  root_->CreateFile(base::FilePath(FILE_PATH_LITERAL("dir/new")),
+                    base::BindOnce(
+                        [](base::RunLoop* run_loop, base::File::Error error) {
+                          run_loop->Quit();
+                          EXPECT_EQ(base::File::FILE_OK, error);
+                        },
+                        &run_loop));
+  run_loop.Run();
+  // The dir/new.txt should have been created.
+  EXPECT_TRUE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/new"))));
+  // If the file's extension is unknown, MIME type should be regarded as
+  // "application/octet-stream" as a fallback.
+  EXPECT_EQ("application/octet-stream",
+            fake_file_system_
+                .GetDocument(kAuthority, kRootSpec.document_id,
+                             base::FilePath(FILE_PATH_LITERAL("dir/new")))
+                .mime_type);
+}
+
+TEST_F(ArcDocumentsProviderRootTest, CreateFileAlreadyExists) {
+  // Make sure that dir/new.txt already exists.
+  ASSERT_TRUE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg"))));
+  base::RunLoop run_loop;
+  root_->CreateFile(base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+                    base::BindOnce(
+                        [](base::RunLoop* run_loop, base::File::Error error) {
+                          run_loop->Quit();
+                          EXPECT_EQ(base::File::FILE_ERROR_EXISTS, error);
+                        },
+                        &run_loop));
+  run_loop.Run();
+  // The dir/photo.jpg is still there.
+  EXPECT_TRUE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg"))));
+  // The document ID of dir/photo.jpg shouldn't have changed.
+  EXPECT_EQ(kPhotoSpec.document_id,
+            fake_file_system_
+                .GetDocument(kAuthority, kRootSpec.document_id,
+                             base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")))
+                .document_id);
+}
+
+TEST_F(ArcDocumentsProviderRootTest, CreateFileParentNotFound) {
+  base::RunLoop run_loop;
+  root_->CreateFile(base::FilePath(FILE_PATH_LITERAL("dir3/photo.jpg")),
+                    base::BindOnce(
+                        [](base::RunLoop* run_loop, base::File::Error error) {
+                          run_loop->Quit();
+                          EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, error);
+                        },
+                        &run_loop));
+  run_loop.Run();
+  EXPECT_FALSE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir3/photo.jpg"))));
+}
+
+TEST_F(ArcDocumentsProviderRootTest, CreateDirectory) {
+  // Make sure that directory "dir2" doesn't exist.
+  ASSERT_FALSE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir2"))));
+  base::RunLoop run_loop;
+  root_->CreateDirectory(
+      base::FilePath(FILE_PATH_LITERAL("dir2")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error) {
+            run_loop->Quit();
+            EXPECT_EQ(base::File::FILE_OK, error);
+          },
+          &run_loop));
+  run_loop.Run();
+  // The dir2 should have been created.
+  EXPECT_TRUE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir2"))));
+  // The dir2 should be a directory.
+  EXPECT_EQ(kAndroidDirectoryMimeType,
+            fake_file_system_
+                .GetDocument(kAuthority, kRootSpec.document_id,
+                             base::FilePath(FILE_PATH_LITERAL("dir2")))
+                .mime_type);
+}
+
+TEST_F(ArcDocumentsProviderRootTest, CreateDirectoryExists) {
+  // Make sure that directory "dir" already exists.
+  ASSERT_TRUE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir"))));
+  base::RunLoop run_loop;
+  root_->CreateDirectory(
+      base::FilePath(FILE_PATH_LITERAL("dir")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error) {
+            run_loop->Quit();
+            EXPECT_EQ(base::File::FILE_ERROR_EXISTS, error);
+          },
+          &run_loop));
+  run_loop.Run();
+  // The "dir" is still there.
+  EXPECT_TRUE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir"))));
+  // The document ID of "dir" shouldn't have changed.
+  EXPECT_EQ(kDirSpec.document_id,
+            fake_file_system_
+                .GetDocument(kAuthority, kRootSpec.document_id,
+                             base::FilePath(FILE_PATH_LITERAL("dir")))
+                .document_id);
+}
+
+TEST_F(ArcDocumentsProviderRootTest, CreateDirectoryParentNotFound) {
+  base::RunLoop run_loop;
+  root_->CreateDirectory(
+      base::FilePath(FILE_PATH_LITERAL("dir3/new_dir")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error) {
+            run_loop->Quit();
+            EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, error);
+          },
+          &run_loop));
+  run_loop.Run();
+  EXPECT_FALSE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir3/new_dir"))));
+}
+
+TEST_F(ArcDocumentsProviderRootTest, CopyFile) {
+  base::RunLoop run_loop;
+  root_->CopyFileLocal(
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+      base::FilePath(FILE_PATH_LITERAL("dir/photo2.jpg")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error) {
+            run_loop->Quit();
+            EXPECT_EQ(base::File::FILE_OK, error);
+          },
+          &run_loop));
+  run_loop.Run();
+  // dir/photo2.jpg should be created by the copy.
+  EXPECT_TRUE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/photo2.jpg"))));
+  // The source file should still be there.
+  EXPECT_TRUE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg"))));
+}
+
+TEST_F(ArcDocumentsProviderRootTest, CopyFileToDifferentDirectory) {
+  base::RunLoop run_loop;
+  root_->CopyFileLocal(
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+      base::FilePath(FILE_PATH_LITERAL("photo.jpg")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error) {
+            run_loop->Quit();
+            EXPECT_EQ(base::File::FILE_OK, error);
+          },
+          &run_loop));
+  run_loop.Run();
+  // photo.jpg should be created by the copy.
+  EXPECT_TRUE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("photo.jpg"))));
+  // The source file should still be there.
+  EXPECT_TRUE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg"))));
+}
+
+TEST_F(ArcDocumentsProviderRootTest, CopyFileSrcNotFound) {
+  base::RunLoop run_loop;
+  root_->CopyFileLocal(
+      base::FilePath(FILE_PATH_LITERAL("dir/photo3.jpg")),
+      base::FilePath(FILE_PATH_LITERAL("dir/photo2.jpg")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error) {
+            run_loop->Quit();
+            EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, error);
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ArcDocumentsProviderRootTest, CopyFileDestParentNotFound) {
+  base::RunLoop run_loop;
+  root_->CopyFileLocal(
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+      base::FilePath(FILE_PATH_LITERAL("dir3/photo2.jpg")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error) {
+            run_loop->Quit();
+            EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, error);
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ArcDocumentsProviderRootTest, RenameFile) {
+  base::RunLoop run_loop;
+  root_->MoveFileLocal(
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+      base::FilePath(FILE_PATH_LITERAL("dir/photo2.jpg")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error) {
+            run_loop->Quit();
+            EXPECT_EQ(base::File::FILE_OK, error);
+          },
+          &run_loop));
+  run_loop.Run();
+  // There should be dir/photo2.jpg which was renamed from dir/photo.jpg.
+  EXPECT_TRUE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/photo2.jpg"))));
+  // The source file should be gone by rename.
+  EXPECT_FALSE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg"))));
+  // The renamed file should have the same document ID as the source.
+  EXPECT_EQ(
+      kPhotoSpec.document_id,
+      fake_file_system_
+          .GetDocument(kAuthority, kRootSpec.document_id,
+                       base::FilePath(FILE_PATH_LITERAL("dir/photo2.jpg")))
+          .document_id);
+}
+
+TEST_F(ArcDocumentsProviderRootTest, MoveFile) {
+  base::RunLoop run_loop;
+  root_->MoveFileLocal(
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+      base::FilePath(FILE_PATH_LITERAL("photo.jpg")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error) {
+            run_loop->Quit();
+            EXPECT_EQ(base::File::FILE_OK, error);
+          },
+          &run_loop));
+  run_loop.Run();
+  // There should be photo.jpg which was moved from dir/photo.jpg.
+  EXPECT_TRUE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("photo.jpg"))));
+  // The source file should be gone by move.
+  EXPECT_FALSE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg"))));
+  // The moved file should have the same document ID as the source.
+  EXPECT_EQ(kPhotoSpec.document_id,
+            fake_file_system_
+                .GetDocument(kAuthority, kRootSpec.document_id,
+                             base::FilePath(FILE_PATH_LITERAL("photo.jpg")))
+                .document_id);
+}
+
+TEST_F(ArcDocumentsProviderRootTest, MoveFileWithDifferentName) {
+  base::RunLoop run_loop;
+  root_->MoveFileLocal(
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+      base::FilePath(FILE_PATH_LITERAL("photo2.jpg")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error) {
+            run_loop->Quit();
+            EXPECT_EQ(base::File::FILE_OK, error);
+          },
+          &run_loop));
+  run_loop.Run();
+  // There should be photo.jpg which was moved from dir/photo.jpg.
+  EXPECT_TRUE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("photo2.jpg"))));
+  // The source file should be gone by move.
+  EXPECT_FALSE(fake_file_system_.DocumentExists(
+      kAuthority, kRootSpec.document_id,
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg"))));
+  // The moved file should have the same document ID as the source.
+  EXPECT_EQ(kPhotoSpec.document_id,
+            fake_file_system_
+                .GetDocument(kAuthority, kRootSpec.document_id,
+                             base::FilePath(FILE_PATH_LITERAL("photo2.jpg")))
+                .document_id);
+}
+
+TEST_F(ArcDocumentsProviderRootTest, MoveFileSrcNotFound) {
+  base::RunLoop run_loop;
+  root_->MoveFileLocal(
+      base::FilePath(FILE_PATH_LITERAL("dir3/photo.jpg")),
+      base::FilePath(FILE_PATH_LITERAL("photo2.jpg")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error) {
+            run_loop->Quit();
+            EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, error);
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ArcDocumentsProviderRootTest, MoveFileDestParentNotFound) {
+  base::RunLoop run_loop;
+  root_->MoveFileLocal(
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+      base::FilePath(FILE_PATH_LITERAL("dir3/photo.jpg")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, base::File::Error error) {
+            run_loop->Quit();
+            EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, error);
+          },
+          &run_loop));
+  run_loop.Run();
 }
 
 TEST_F(ArcDocumentsProviderRootTest, WatchChanged) {

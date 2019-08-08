@@ -67,14 +67,12 @@ std::string FakeLoopbackGroupMember::GetDeviceId() const {
   return media::AudioDeviceDescription::kDefaultDeviceId;
 }
 
-void FakeLoopbackGroupMember::StartSnooping(Snooper* snooper,
-                                            SnoopingMode mode) {
+void FakeLoopbackGroupMember::StartSnooping(Snooper* snooper) {
   CHECK(!snooper_);
   snooper_ = snooper;
 }
 
-void FakeLoopbackGroupMember::StopSnooping(Snooper* snooper,
-                                           SnoopingMode mode) {
+void FakeLoopbackGroupMember::StopSnooping(Snooper* snooper) {
   snooper_ = nullptr;
 }
 

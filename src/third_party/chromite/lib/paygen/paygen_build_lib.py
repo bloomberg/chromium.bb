@@ -232,7 +232,17 @@ def _DefaultPayloadUri(payload, random_str=None):
   if payload.src_image:
     src_version = payload.src_image.build.version
 
-  if gspaths.IsImage(payload.tgt_image):
+  if gspaths.IsDLCImage(payload.tgt_image):
+    # Signed DLC payload.
+    return gspaths.ChromeosReleases.DLCPayloadUri(
+        payload.build,
+        random_str=random_str,
+        dlc_id=payload.tgt_image.dlc_id,
+        dlc_package=payload.tgt_image.dlc_package,
+        image_channel=payload.tgt_image.image_channel,
+        image_version=payload.tgt_image.image_version,
+        src_version=src_version)
+  elif gspaths.IsImage(payload.tgt_image):
     # Signed payload.
     return gspaths.ChromeosReleases.PayloadUri(
         payload.build, random_str=random_str, key=payload.tgt_image.key,
@@ -506,6 +516,24 @@ class PaygenBuild(object):
       msg = '%s has no basic images.' % build
       raise ImageMissing(msg)
 
+  def _ValidateExpectedDLCBuildImages(self, build, images):
+    """Validate that we got the expected DLC images for a build.
+
+    Each DLC image URI should end in the form of:
+      |dlc_id|/|dlc_package|/dlc.img
+
+    Args:
+      build: The build the images are from.
+      images: The DLC images discovered associated with the build.
+
+    Raises:
+      BuildCorrupt: Raised if unexpected images are found.
+    """
+    for image in images:
+      if image.dlc_image != gspaths.ChromeosReleases.DLCImageName():
+        msg = '%s has unexpected DLC images: %s.' % (build, image.uri)
+        raise BuildCorrupt(msg)
+
   @retry_util.WithRetry(max_retry=3, exception=ImageMissing,
                         sleep=BUILD_DISCOVER_RETRY_SLEEP)
   def _DiscoverSignedImages(self, build):
@@ -576,6 +604,37 @@ class PaygenBuild(object):
 
     return images[0]
 
+  @retry_util.WithRetry(max_retry=3, exception=ImageMissing,
+                        sleep=BUILD_DISCOVER_RETRY_SLEEP)
+  def _DiscoverDLCImages(self, build):
+    """Return a list of DLC image archives associated with a given build.
+
+    Args:
+      build: The build to find images for.
+
+    Returns:
+      A gspaths.Image instance.
+
+    Raises:
+      BuildCorrupt: Raised if unexpected images are found.
+    """
+    search_uri = gspaths.ChromeosReleases.DLCImagesUri(build)
+    image_uris = []
+    try:
+      image_uris = self._ctx.LS(search_uri)
+    except gs.GSNoSuchKey:
+      logging.info('No DLC modules exist: %s', search_uri)
+
+    images = [gspaths.ChromeosReleases.ParseDLCImageUri(uri)
+              for uri in image_uris]
+
+    # Unparsable URIs will result in Nones; filter them out.
+    images = [i for i in images if i is not None]
+
+    self._ValidateExpectedDLCBuildImages(build, images)
+
+    return images
+
   def _DiscoverRequiredDeltasBuildToBuild(self, source_images, images):
     """Find the deltas to generate between two builds.
 
@@ -610,6 +669,29 @@ class PaygenBuild(object):
 
     return results
 
+  def _DiscoverRequiredDLCDeltasBuildToBuild(self, source_images, images):
+    """Find the DLC deltas to generate between two builds.
+
+    One DLC (a unique DLC ID) has at most one source image/target image.
+
+    Args:
+      source_images: All DLC images associated with the source build.
+      images: All DLC images associated with the target build.
+
+    Returns:
+      A list of gspaths.Payload objects.
+    """
+    results = []
+
+    for source_image in source_images:
+      for image in images:
+        if (source_image.dlc_id == image.dlc_id and
+            source_image.dlc_package == image.dlc_package):
+          results.append(gspaths.Payload(tgt_image=image,
+                                         src_image=source_image))
+
+    return results
+
   def _DiscoverRequiredPayloads(self):
     """Find the payload definitions for the current build.
 
@@ -638,6 +720,7 @@ class PaygenBuild(object):
       # discoverable right away (GS eventual consistency). So, we retry.
       images = self._DiscoverSignedImages(self._build)
       test_image = self._DiscoverTestImage(self._build)
+      dlc_module_images = self._DiscoverDLCImages(self._build)
 
     except ImageMissing as e:
       # If the main build doesn't have the final build images, then it's
@@ -645,11 +728,15 @@ class PaygenBuild(object):
       logging.info(e)
       raise BuildNotReady()
 
-    _LogList('Images found', images+[test_image])
+    _LogList('Images found', images + [test_image] + dlc_module_images)
 
     # Add full payloads for PreMP and MP (as needed).
     for i in images:
       payloads.append(gspaths.Payload(tgt_image=i))
+
+    # Add full DLC payloads.
+    for dlc_module_image in dlc_module_images:
+      payloads.append(gspaths.Payload(tgt_image=dlc_module_image))
 
     # Add full test payload, and N2N test for it.
     full_test_payload = gspaths.Payload(tgt_image=test_image)
@@ -683,11 +770,19 @@ class PaygenBuild(object):
 
       source_images = self._DiscoverSignedImages(source_build)
       source_test_image = self._DiscoverTestImage(source_build)
+      source_dlc_module_images = self._DiscoverDLCImages(source_build)
+
+      _LogList('Images found (source)', (source_images + [source_test_image] +
+                                         source_dlc_module_images))
 
       if not self._skip_delta_payloads and source['generate_delta']:
         # Generate the signed deltas.
         payloads.extend(self._DiscoverRequiredDeltasBuildToBuild(
             source_images, images+[test_image]))
+
+        # Generate DLC deltas.
+        payloads.extend(self._DiscoverRequiredDLCDeltasBuildToBuild(
+            source_dlc_module_images, dlc_module_images))
 
         # Generate the test delta.
         test_payload = gspaths.Payload(
@@ -712,6 +807,17 @@ class PaygenBuild(object):
 
     return payloads, payload_tests
 
+  def _ShouldSign(self, image):
+    """Whether to sign the image.
+
+    Args:
+      image: an image object.
+
+    Returns:
+      True if to sign the image, false if not to sign the image.
+    """
+    return gspaths.IsImage(image) or gspaths.IsDLCImage(image)
+
   def _GeneratePayloads(self, payloads):
     """Generate the payloads called for by a list of payload definitions.
 
@@ -725,12 +831,16 @@ class PaygenBuild(object):
       Any arbitrary exception raised by CreateAndUploadPayload.
     """
     payloads_args = [(payload,
-                      isinstance(payload.tgt_image, gspaths.Image),
+                      self._ShouldSign(payload.tgt_image),
                       True)
                      for payload in payloads]
 
+    # delta_generator can eat gigs of RAM so we need to constrain the total
+    # number of such processes running at the same time. Also note that some
+    # other instances of this could be running at the same time so this
+    # number could have an additional multiplier applied to it.
     parallel.RunTasksInProcessPool(paygen_payload_lib.CreateAndUploadPayload,
-                                   payloads_args)
+                                   payloads_args, processes=2)
 
   def _FindFullTestPayloads(self, channel, version):
     """Returns a list of full test payloads for a given version.

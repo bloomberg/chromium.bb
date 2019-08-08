@@ -90,6 +90,26 @@ TEST_F(WindowMirrorViewTest, RemoteClientForcedVisibleWhenRunning) {
   EXPECT_TRUE(client_root_test_helper.IsWindowForcedVisible());
 }
 
+TEST_F(WindowMirrorViewTest, LocalWindowOcclusionMadeVisible) {
+  auto widget = CreateTestWidget();
+  widget->Hide();
+  aura::Window* widget_window = widget->GetNativeWindow();
+  widget_window->TrackOcclusionState();
+  EXPECT_EQ(aura::Window::OcclusionState::HIDDEN,
+            widget_window->occlusion_state());
+
+  auto mirror_widget = CreateTestWidget();
+  auto mirror_view = std::make_unique<WindowMirrorView>(
+      widget_window, /*trilinear_filtering_on_init=*/false);
+  mirror_widget->widget_delegate()->GetContentsView()->AddChildView(
+      mirror_view.get());
+
+  // Even though the widget is hidden, the occlusion state is considered
+  // visible. This is to ensure renderers still produce content.
+  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
+            widget_window->occlusion_state());
+}
+
 }  // namespace
 }  // namespace wm
 }  // namespace ash

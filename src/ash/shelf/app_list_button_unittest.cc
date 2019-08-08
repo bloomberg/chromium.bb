@@ -16,6 +16,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
@@ -84,12 +85,12 @@ TEST_F(AppListButtonTest, SwipeUpToOpenFullscreenAppList) {
       start, end, base::TimeDelta::FromMilliseconds(100), 4 /* steps */);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(app_list::AppListViewState::PEEKING);
+  GetAppListTestHelper()->CheckState(ash::mojom::AppListViewState::kPeeking);
 
   // Closing the app list.
   GetAppListTestHelper()->DismissAndRunLoop();
   GetAppListTestHelper()->CheckVisibility(false);
-  GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
+  GetAppListTestHelper()->CheckState(ash::mojom::AppListViewState::kClosed);
 
   // Swiping above the threshold should trigger a fullscreen app list.
   end.set_y(shelf->GetIdealBounds().bottom() -
@@ -100,7 +101,7 @@ TEST_F(AppListButtonTest, SwipeUpToOpenFullscreenAppList) {
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
   GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
+      ash::mojom::AppListViewState::kFullscreenAllApps);
 }
 
 TEST_F(AppListButtonTest, ClickToOpenAppList) {
@@ -115,11 +116,11 @@ TEST_F(AppListButtonTest, ClickToOpenAppList) {
   GetEventGenerator()->ClickLeftButton();
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(app_list::AppListViewState::PEEKING);
+  GetAppListTestHelper()->CheckState(ash::mojom::AppListViewState::kPeeking);
   GetEventGenerator()->ClickLeftButton();
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
-  GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
+  GetAppListTestHelper()->CheckState(ash::mojom::AppListViewState::kClosed);
 
   // Shift-click should open the app list in fullscreen.
   GetEventGenerator()->set_flags(ui::EF_SHIFT_DOWN);
@@ -128,7 +129,7 @@ TEST_F(AppListButtonTest, ClickToOpenAppList) {
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
   GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
+      ash::mojom::AppListViewState::kFullscreenAllApps);
 
   // Another shift-click should close the app list.
   GetEventGenerator()->set_flags(ui::EF_SHIFT_DOWN);
@@ -136,7 +137,7 @@ TEST_F(AppListButtonTest, ClickToOpenAppList) {
   GetEventGenerator()->set_flags(0);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
-  GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
+  GetAppListTestHelper()->CheckState(ash::mojom::AppListViewState::kClosed);
 }
 
 TEST_F(AppListButtonTest, ButtonPositionInTabletMode) {
@@ -153,7 +154,7 @@ TEST_F(AppListButtonTest, ButtonPositionInTabletMode) {
 
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
   test_api.RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ(0, app_list_button()->bounds().x());
+  EXPECT_EQ(ShelfConstants::button_spacing(), app_list_button()->bounds().x());
 }
 
 class VoiceInteractionAppListButtonTest : public AppListButtonTest {

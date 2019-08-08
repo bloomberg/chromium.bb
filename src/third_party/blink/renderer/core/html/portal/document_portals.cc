@@ -43,6 +43,14 @@ HTMLPortalElement* DocumentPortals::GetPortal(
   return nullptr;
 }
 
+bool DocumentPortals::IsPortalInDocumentActivating() const {
+  for (HTMLPortalElement* portal : portals_) {
+    if (portal->IsActivating())
+      return true;
+  }
+  return false;
+}
+
 void DocumentPortals::Trace(Visitor* visitor) {
   Supplement<Document>::Trace(visitor);
   visitor->Trace(portals_);

@@ -153,6 +153,7 @@
 <translation id="4240294130679914010">Chromoting 主機解除安裝程式</translation>
 <translation id="4277463233460010382">這台電腦已設為允許一或多個用戶端可不輸入 PIN 進行連線。</translation>
 <translation id="4277736576214464567">存取碼無效，請再試一次。</translation>
+<translation id="4281844954008187215">服務條款</translation>
 <translation id="4361728918881830843">如要為其他電腦啟用遠端連線，請在你想要連線的電腦上安裝 Chrome 遠端桌面，然後按一下 [<ph name="BUTTON_NAME" />]。</translation>
 <translation id="4394049700291259645">停用</translation>
 <translation id="4405930547258349619">核心資料庫</translation>
@@ -345,6 +346,7 @@ PC</translation>
 <translation id="8747048596626351634">工作階段當機或無法啟動。如果遠端電腦有 ~/.chrome-remote-desktop-session，請確認該檔案開始執行長期運作的前景程序，例如桌面環境或視窗管理員。</translation>
 <translation id="8759753423332885148">瞭解詳情</translation>
 <translation id="8791202241915690908">下載 Chromoting 主機安裝程式</translation>
+<translation id="8804164990146287819">隱私權政策</translation>
 <translation id="894763922177556086">良好</translation>
 <translation id="895780780740011433">適用於 Windows 7 以上版本</translation>
 <translation id="897805526397249209">如要為其他電腦啟用遠端連線，請在你想要連線的電腦上安裝 Chromoting，然後按一下 [<ph name="BUTTON_NAME" />]。</translation>

@@ -99,7 +99,7 @@ FetchResponseData* FetchResponseData::CreateCorsFilteredResponse(
   response->SetURLList(url_list_);
   for (const auto& header : header_list_->List()) {
     const String& name = header.first;
-    if (cors::IsOnAccessControlResponseHeaderWhitelist(name) ||
+    if (cors::IsCorsSafelistedResponseHeader(name) ||
         (exposed_headers.find(name.Ascii().data()) != exposed_headers.end() &&
          !FetchUtils::IsForbiddenResponseHeaderName(name))) {
       response->header_list_->Append(name, header.second);
@@ -299,7 +299,7 @@ FetchResponseData::FetchResponseData(Type type,
       response_source_(source),
       status_(status),
       status_message_(status_message),
-      header_list_(FetchHeaderList::Create()),
+      header_list_(MakeGarbageCollected<FetchHeaderList>()),
       response_time_(base::Time::Now()) {}
 
 void FetchResponseData::ReplaceBodyStreamBuffer(BodyStreamBuffer* buffer) {

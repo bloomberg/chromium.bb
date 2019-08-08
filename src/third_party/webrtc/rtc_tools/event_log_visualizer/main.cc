@@ -112,6 +112,10 @@ WEBRTC_DEFINE_bool(
     false,
     "Run the send-side bandwidth estimator with the outgoing rtp and "
     "incoming rtcp and plot the resulting estimate.");
+WEBRTC_DEFINE_bool(plot_simulated_goog_cc,
+                   false,
+                   "Run the GoogCC congestion controller based on the logged "
+                   "events and plot the target bitrate.");
 WEBRTC_DEFINE_bool(
     plot_network_delay_feedback,
     true,
@@ -210,6 +214,12 @@ WEBRTC_DEFINE_bool(
     true,
     "Normalize the log timestamps so that the call starts at time 0.");
 
+WEBRTC_DEFINE_bool(shared_xaxis,
+                   false,
+                   "Share x-axis between all plots so that zooming in one plot "
+                   "updates all the others too. A downside is that certain "
+                   "operations like panning become much slower.");
+
 WEBRTC_DEFINE_bool(protobuf_output,
                    false,
                    "Output charts as protobuf instead of python code.");
@@ -290,7 +300,7 @@ int main(int argc, char* argv[]) {
   if (FLAG_protobuf_output) {
     collection.reset(new webrtc::ProtobufPlotCollection());
   } else {
-    collection.reset(new webrtc::PythonPlotCollection());
+    collection.reset(new webrtc::PythonPlotCollection(FLAG_shared_xaxis));
   }
 
   if (FLAG_plot_incoming_packet_sizes) {
@@ -364,6 +374,9 @@ int main(int argc, char* argv[]) {
   }
   if (FLAG_plot_simulated_sendside_bwe) {
     analyzer.CreateSendSideBweSimulationGraph(collection->AppendNewPlot());
+  }
+  if (FLAG_plot_simulated_goog_cc) {
+    analyzer.CreateGoogCcSimulationGraph(collection->AppendNewPlot());
   }
   if (FLAG_plot_network_delay_feedback) {
     analyzer.CreateNetworkDelayFeedbackGraph(collection->AppendNewPlot());
@@ -487,6 +500,12 @@ int main(int argc, char* argv[]) {
     analyzer.CreateNetEqNetworkStatsGraph(
         neteq_stats,
         [](const webrtc::NetEqNetworkStatistics& stats) {
+          return stats.preemptive_rate / 16384.f;
+        },
+        "Preemptive rate", collection->AppendNewPlot());
+    analyzer.CreateNetEqNetworkStatsGraph(
+        neteq_stats,
+        [](const webrtc::NetEqNetworkStatistics& stats) {
           return stats.packet_loss_rate / 16384.f;
         },
         "Packet loss rate", collection->AppendNewPlot());
@@ -496,6 +515,12 @@ int main(int argc, char* argv[]) {
           return static_cast<float>(stats.concealment_events);
         },
         "Concealment events", collection->AppendNewPlot());
+    analyzer.CreateNetEqNetworkStatsGraph(
+        neteq_stats,
+        [](const webrtc::NetEqNetworkStatistics& stats) {
+          return stats.preferred_buffer_size_ms;
+        },
+        "Preferred buffer size (ms)", collection->AppendNewPlot());
   }
 
   if (FLAG_plot_ice_candidate_pair_config) {
@@ -542,6 +567,7 @@ void SetAllPlotFlags(bool setting) {
   FLAG_plot_outgoing_layer_bitrate_allocation = setting;
   FLAG_plot_simulated_receiveside_bwe = setting;
   FLAG_plot_simulated_sendside_bwe = setting;
+  FLAG_plot_simulated_goog_cc = setting;
   FLAG_plot_network_delay_feedback = setting;
   FLAG_plot_fraction_loss_feedback = setting;
   FLAG_plot_timestamps = setting;

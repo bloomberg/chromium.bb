@@ -164,7 +164,7 @@ void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
           spec_->url_payment_method_identifiers().end());
 }
 
-void PaymentRequest::Show(bool is_user_gesture) {
+void PaymentRequest::Show(bool is_user_gesture, bool wait_for_updated_details) {
   if (!IsInitialized()) {
     log_.Error("Attempted show without initialization");
     OnConnectionTerminated();
@@ -207,8 +207,14 @@ void PaymentRequest::Show(bool is_user_gesture) {
 
   is_show_user_gesture_ = is_user_gesture;
 
-  display_handle_->Show(this);
+  if (wait_for_updated_details) {
+    // Put |spec_| into uninitialized state, so the UI knows to show a spinner.
+    // This method does not block.
+    spec_->StartWaitingForUpdateWith(
+        PaymentRequestSpec::UpdateReason::INITIAL_PAYMENT_DETAILS);
+  }
 
+  display_handle_->Show(this);
   state_->AreRequestedMethodsSupported(
       base::BindOnce(&PaymentRequest::AreRequestedMethodsSupportedCallback,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -268,7 +274,18 @@ void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
     return;
   }
 
+  bool is_resolving_promise_passed_into_show_method = !spec_->IsInitialized();
+
   spec_->UpdateWith(std::move(details));
+
+  if (is_resolving_promise_passed_into_show_method) {
+    if (SatisfiesSkipUIConstraints()) {
+      skipped_payment_request_ui_ = true;
+      Pay();
+    } else if (spec_->request_shipping()) {
+      state_->SelectDefaultShippingAddressAndNotifyObservers();
+    }
+  }
 }
 
 void PaymentRequest::NoUpdatedPaymentDetails() {
@@ -403,6 +420,7 @@ void PaymentRequest::AreRequestedMethodsSupportedCallback(
   if (methods_supported) {
     if (SatisfiesSkipUIConstraints()) {
       skipped_payment_request_ui_ = true;
+      journey_logger_.SetEventOccurred(JourneyLogger::EVENT_SKIPPED_SHOW);
       Pay();
     }
   } else {
@@ -425,16 +443,17 @@ bool PaymentRequest::IsThisPaymentRequestShowing() const {
 }
 
 bool PaymentRequest::SatisfiesSkipUIConstraints() const {
-  return base::FeatureList::IsEnabled(features::kWebPaymentsSingleAppUiSkip) &&
+  // Only allowing URL base payment apps to skip the payment sheet.
+  return (spec()->url_payment_method_identifiers().size() == 1 ||
+          skip_ui_for_non_url_payment_method_identifiers_for_test_) &&
+         base::FeatureList::IsEnabled(features::kWebPaymentsSingleAppUiSkip) &&
          base::FeatureList::IsEnabled(::features::kServiceWorkerPaymentApps) &&
-         is_show_user_gesture_ && state()->is_get_all_instruments_finished() &&
+         is_show_user_gesture_ && state()->IsInitialized() &&
+         spec()->IsInitialized() &&
          state()->available_instruments().size() == 1 &&
          spec()->stringified_method_data().size() == 1 &&
          !spec()->request_shipping() && !spec()->request_payer_name() &&
-         !spec()->request_payer_phone() &&
-         !spec()->request_payer_email()
-         // Only allowing URL base payment apps to skip the payment sheet.
-         && spec()->url_payment_method_identifiers().size() == 1;
+         !spec()->request_payer_phone() && !spec()->request_payer_email();
 }
 
 void PaymentRequest::OnPaymentResponseAvailable(

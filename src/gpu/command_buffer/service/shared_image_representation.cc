@@ -11,6 +11,7 @@ SharedImageRepresentation::SharedImageRepresentation(
     SharedImageBacking* backing,
     MemoryTypeTracker* owning_tracker)
     : manager_(manager), backing_(backing), tracker_(owning_tracker) {
+  DCHECK(tracker_);
   backing_->AddRef(this);
 }
 

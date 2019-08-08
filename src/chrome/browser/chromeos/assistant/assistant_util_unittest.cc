@@ -11,7 +11,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -27,6 +26,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/icu/source/common/unicode/locid.h"
+#include "ui/events/devices/device_data_manager.h"
 
 namespace assistant {
 namespace {
@@ -147,11 +147,13 @@ class ChromeAssistantUtilTest : public testing::Test {
         std::make_unique<FakeUserManagerWithLocalState>(
             profile_manager_.get()));
 
+    ui::DeviceDataManager::CreateInstance();
+
     profile_ = profile_manager_->CreateTestingProfile(kTestProfileName);
   }
 
   void TearDown() override {
-    // Avoid retries, let the next test start safely.
+    ui::DeviceDataManager::DeleteInstance();
     profile_manager_->DeleteTestingProfile(kTestProfileName);
     profile_ = nullptr;
     user_manager_enabler_.reset();
@@ -207,15 +209,6 @@ TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_SupervisedUser) {
             IsAssistantAllowedForProfile(profile()));
 }
 
-TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_ChildUser) {
-  ScopedLogIn login(GetFakeUserManager(),
-                    AccountId::FromUserEmailGaiaId(
-                        profile()->GetProfileUserName(), kTestGaiaId));
-  profile()->SetSupervisedUserId(supervised_users::kChildAccountSUID);
-  EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_CHILD_USER,
-            IsAssistantAllowedForProfile(profile()));
-}
-
 TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_Locale) {
   profile()->GetTestingPrefService()->SetString(
       language::prefs::kApplicationLocale, "he");
@@ -249,6 +242,15 @@ TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_PublicSession) {
                     AccountId::FromUserEmail(profile()->GetProfileUserName()),
                     user_manager::USER_TYPE_PUBLIC_ACCOUNT);
   EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_PUBLIC_SESSION,
+            IsAssistantAllowedForProfile(profile()));
+}
+
+TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_NonGmail) {
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmailGaiaId("user2@someotherdomain.com",
+                                                   "0123456789"));
+
+  EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE,
             IsAssistantAllowedForProfile(profile()));
 }
 

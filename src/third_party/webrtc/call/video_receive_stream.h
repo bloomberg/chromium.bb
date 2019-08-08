@@ -85,7 +85,6 @@ class VideoReceiveStream {
     int current_payload_type = -1;
 
     int total_bitrate_bps = 0;
-    int discarded_packets = 0;
 
     int width = 0;
     int height = 0;
@@ -260,6 +259,11 @@ class VideoReceiveStream {
 
   // Returns current value of base minimum delay in milliseconds.
   virtual int GetBaseMinimumPlayoutDelayMs() const = 0;
+
+  // Allows a FrameDecryptor to be attached to a VideoReceiveStream after
+  // creation without resetting the decoder state.
+  virtual void SetFrameDecryptor(
+      rtc::scoped_refptr<FrameDecryptorInterface> frame_decryptor) = 0;
 
  protected:
   virtual ~VideoReceiveStream() {}

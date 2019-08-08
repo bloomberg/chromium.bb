@@ -177,14 +177,14 @@ class BaseParallelResourceThrottleTest : public testing::Test {
                                               net::MEDIUM, &request_delegate_,
                                               TRAFFIC_ANNOTATION_FOR_TESTS);
     content::ResourceRequestInfo::AllocateForTesting(
-        request_.get(), content::RESOURCE_TYPE_MAIN_FRAME, nullptr, -1, -1, -1,
+        request_.get(), content::ResourceType::kMainFrame, nullptr, -1, -1, -1,
         true, content::ResourceInterceptPolicy::kAllowAll, true,
         content::PREVIEWS_OFF, nullptr);
 
     database_manager_ = new TestDatabaseManager();
     url_checker_delegate_ = new TestUrlCheckerDelegate(database_manager_);
     throttle_ = std::make_unique<TestParallelResourceThrottle>(
-        request_.get(), content::RESOURCE_TYPE_MAIN_FRAME,
+        request_.get(), content::ResourceType::kMainFrame,
         url_checker_delegate_);
     throttle_->set_delegate_for_testing(&resource_throttle_delegate_);
   }

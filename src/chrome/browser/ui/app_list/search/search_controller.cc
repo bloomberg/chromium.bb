@@ -47,6 +47,11 @@ void SearchController::Start(const base::string16& query) {
   OnResultsChanged();
 }
 
+void SearchController::ViewClosing() {
+  for (const auto& provider : providers_)
+    provider->ViewClosing();
+}
+
 void SearchController::OpenResult(ChromeSearchResult* result, int event_flags) {
   // This can happen in certain circumstances due to races. See
   // https://crbug.com/534772

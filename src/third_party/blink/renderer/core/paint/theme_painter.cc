@@ -42,7 +42,6 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
-#include "third_party/blink/renderer/platform/theme.h"
 #include "ui/native_theme/native_theme.h"
 
 // The methods in this file are shared by all themes on every platform.
@@ -209,20 +208,10 @@ bool ThemePainter::Paint(const LayoutObject& o,
         COUNT_APPEARANCE(doc, SliderThumbVerticalForOthers);
       return PaintSliderThumb(node, style, paint_info, r);
     }
-    case kMediaEnterFullscreenButtonPart:
-    case kMediaExitFullscreenButtonPart:
-    case kMediaPlayButtonPart:
-    case kMediaOverlayPlayButtonPart:
-    case kMediaMuteButtonPart:
-    case kMediaToggleClosedCaptionsButtonPart:
     case kMediaSliderPart:
     case kMediaSliderThumbPart:
-    case kMediaVolumeSliderContainerPart:
     case kMediaVolumeSliderPart:
     case kMediaVolumeSliderThumbPart:
-    case kMediaTimeRemainingPart:
-    case kMediaCurrentTimePart:
-    case kMediaControlsBackgroundPart:
       return true;
     case kMenulistButtonPart:
     case kTextFieldPart:

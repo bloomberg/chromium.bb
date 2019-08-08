@@ -23,6 +23,7 @@ struct RemoteDevice {
 
   std::string user_id;
   std::string name;
+  std::string pii_free_name;
   std::string public_key;
   std::string persistent_symmetric_key;
   int64_t last_update_time_millis;
@@ -33,6 +34,7 @@ struct RemoteDevice {
   RemoteDevice(
       const std::string& user_id,
       const std::string& name,
+      const std::string& pii_free_name,
       const std::string& public_key,
       const std::string& persistent_symmetric_key,
       int64_t last_update_time_millis,

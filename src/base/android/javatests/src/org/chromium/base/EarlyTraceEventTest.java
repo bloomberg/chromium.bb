@@ -105,6 +105,7 @@ public class EarlyTraceEventTest {
         EarlyTraceEvent.enable();
         long myThreadId = Process.myTid();
         long beforeNanos = Event.elapsedRealtimeNanos();
+        Assert.assertTrue(EarlyTraceEvent.sPendingEventByKey.isEmpty());
         try (TraceEvent e = TraceEvent.scoped(EVENT_NAME)) {
             // Required comment to pass presubmit checks.
         }

@@ -178,10 +178,9 @@ ProvidersModel.prototype.getMountableProviders = function() {
  * @param {string} providerId
  */
 ProvidersModel.prototype.requestMount = providerId => {
-  chrome.fileManagerPrivate.addProvidedFileSystem(
-      assert(providerId), () => {
-        if (chrome.runtime.lastError) {
-          console.error(chrome.runtime.lastError.message);
-        }
-      });
+  chrome.fileManagerPrivate.addProvidedFileSystem(assert(providerId), () => {
+    if (chrome.runtime.lastError) {
+      console.error(chrome.runtime.lastError.message);
+    }
+  });
 };

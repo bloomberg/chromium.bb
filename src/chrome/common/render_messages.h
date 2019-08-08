@@ -116,6 +116,14 @@ IPC_SYNC_MESSAGE_CONTROL3_1(ChromeViewHostMsg_AllowIndexedDB,
                             GURL /* top origin url */,
                             bool /* allowed */)
 
+// Sent by the renderer process to check whether access to CacheStorage is
+// granted by content settings.
+IPC_SYNC_MESSAGE_CONTROL3_1(ChromeViewHostMsg_AllowCacheStorage,
+                            int /* render_frame_id */,
+                            GURL /* origin_url */,
+                            GURL /* top origin url */,
+                            bool /* allowed */)
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Sent by the renderer to check if crash reporting is enabled.
 IPC_SYNC_MESSAGE_CONTROL0_1(ChromeViewHostMsg_IsCrashReportingEnabled,

@@ -18,6 +18,7 @@ const ErrorType = {
 
 (function() {
 
+const DIGITS_ONLY_REGEX = /^[0-9]+$/;
 const PIN_MIN_LENGTH = 4;
 const PUK_MIN_LENGTH = 8;
 const TOGGLE_DEBOUNCE_MS = 500;
@@ -505,9 +506,9 @@ Polymer({
   },
 
   /**
-   * Checks whether |pin1| is of the proper length and if opt_pin2 is not
-   * undefined, whether pin1 and opt_pin2 match. On any failure, sets
-   * |this.error_| and returns false.
+   * Checks whether |pin1| is of the proper length and contains only digits.
+   * If opt_pin2 is not undefined, then it also checks whether pin1 and
+   * opt_pin2 match. On any failure, sets |this.error_| and returns false.
    * @param {string} pin1
    * @param {string=} opt_pin2
    * @return {boolean} True if the pins match and are of minimum length.
@@ -517,7 +518,7 @@ Polymer({
     if (!pin1.length) {
       return false;
     }
-    if (pin1.length < PIN_MIN_LENGTH) {
+    if (pin1.length < PIN_MIN_LENGTH || !DIGITS_ONLY_REGEX.test(pin1)) {
       this.error_ = ErrorType.INVALID_PIN;
       return false;
     }
@@ -529,14 +530,14 @@ Polymer({
   },
 
   /**
-   * Checks whether |puk| is of the proper length. If not, sets |this.error_|
-   * and returns false.
+   * Checks whether |puk| is of the proper length and contains only digits.
+   * If not, sets |this.error_| and returns false.
    * @param {string} puk
    * @return {boolean} True if the puk is of minimum length.
    * @private
    */
   validatePuk_: function(puk) {
-    if (puk.length < PUK_MIN_LENGTH) {
+    if (puk.length < PUK_MIN_LENGTH || !DIGITS_ONLY_REGEX.test(puk)) {
       this.error_ = ErrorType.INVALID_PUK;
       return false;
     }

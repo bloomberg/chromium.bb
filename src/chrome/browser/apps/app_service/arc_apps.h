@@ -16,7 +16,7 @@
 #include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
-#include "components/arc/connection_observer.h"
+#include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -46,7 +46,8 @@ class ArcApps : public KeyedService,
   // apps::mojom::Publisher overrides.
   void Connect(apps::mojom::SubscriberPtr subscriber,
                apps::mojom::ConnectOptionsPtr opts) override;
-  void LoadIcon(apps::mojom::IconKeyPtr icon_key,
+  void LoadIcon(const std::string& app_id,
+                apps::mojom::IconKeyPtr icon_key,
                 apps::mojom::IconCompression icon_compression,
                 int32_t size_hint_in_dip,
                 bool allow_placeholder_icon,
@@ -82,7 +83,7 @@ class ArcApps : public KeyedService,
 
   const base::FilePath GetCachedIconFilePath(const std::string& app_id,
                                              int32_t size_hint_in_dip);
-  void LoadIconFromVM(const std::string icon_key_s_key,
+  void LoadIconFromVM(const std::string app_id,
                       apps::mojom::IconCompression icon_compression,
                       int32_t size_hint_in_dip,
                       bool allow_placeholder_icon,

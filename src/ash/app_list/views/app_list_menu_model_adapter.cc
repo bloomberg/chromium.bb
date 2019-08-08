@@ -10,22 +10,23 @@
 #include "ash/public/cpp/menu_utils.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/view.h"
 
 namespace app_list {
 
 AppListMenuModelAdapter::AppListMenuModelAdapter(
     const std::string& app_id,
-    views::View* menu_owner,
+    views::Widget* widget_owner,
     ui::MenuSourceType source_type,
     Delegate* delegate,
     AppListViewAppType type,
-    base::OnceClosure on_menu_closed_callback)
+    base::OnceClosure on_menu_closed_callback,
+    bool is_tablet_mode)
     : ash::AppMenuModelAdapter(app_id,
                                std::make_unique<ui::SimpleMenuModel>(nullptr),
-                               menu_owner,
+                               widget_owner,
                                source_type,
-                               std::move(on_menu_closed_callback)),
+                               std::move(on_menu_closed_callback),
+                               is_tablet_mode),
       delegate_(delegate),
       type_(type) {
   DCHECK(delegate_);
@@ -54,13 +55,43 @@ void AppListMenuModelAdapter::RecordHistogramOnMenuClosed() {
       UMA_HISTOGRAM_TIMES(
           "Apps.ContextMenuUserJourneyTime.SuggestedAppFullscreen",
           user_journey_time);
+      if (is_tablet_mode()) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Apps.ContextMenuShowSource.SuggestedAppFullscreen.TabletMode",
+            source_type(), ui::MenuSourceType::MENU_SOURCE_TYPE_LAST);
+        UMA_HISTOGRAM_TIMES(
+            "Apps.ContextMenuUserJourneyTime.SuggestedAppFullscreen.TabletMode",
+            user_journey_time);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Apps.ContextMenuShowSource.SuggestedAppFullscreen.ClamshellMode",
+            source_type(), ui::MenuSourceType::MENU_SOURCE_TYPE_LAST);
+        UMA_HISTOGRAM_TIMES(
+            "Apps.ContextMenuUserJourneyTime.SuggestedAppFullscreen."
+            "ClamshellMode",
+            user_journey_time);
+      }
       break;
     case FULLSCREEN_APP_GRID:
       UMA_HISTOGRAM_ENUMERATION("Apps.ContextMenuShowSource.AppGrid",
                                 source_type(), ui::MENU_SOURCE_TYPE_LAST);
       UMA_HISTOGRAM_TIMES("Apps.ContextMenuUserJourneyTime.AppGrid",
                           user_journey_time);
-
+      if (is_tablet_mode()) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Apps.ContextMenuShowSource.AppGrid.TabletMode", source_type(),
+            ui::MenuSourceType::MENU_SOURCE_TYPE_LAST);
+        UMA_HISTOGRAM_TIMES(
+            "Apps.ContextMenuUserJourneyTime.AppGrid.TabletMode",
+            user_journey_time);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Apps.ContextMenuShowSource.AppGrid.ClamshellMode", source_type(),
+            ui::MenuSourceType::MENU_SOURCE_TYPE_LAST);
+        UMA_HISTOGRAM_TIMES(
+            "Apps.ContextMenuUserJourneyTime.AppGrid.ClamshellMode",
+            user_journey_time);
+      }
       break;
     case PEEKING_SUGGESTED:
       UMA_HISTOGRAM_ENUMERATION(
@@ -68,6 +99,21 @@ void AppListMenuModelAdapter::RecordHistogramOnMenuClosed() {
           ui::MenuSourceType::MENU_SOURCE_TYPE_LAST);
       UMA_HISTOGRAM_TIMES("Apps.ContextMenuUserJourneyTime.SuggestedAppPeeking",
                           user_journey_time);
+      if (is_tablet_mode()) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Apps.ContextMenuShowSource.SuggestedAppPeeking.TabletMode",
+            source_type(), ui::MenuSourceType::MENU_SOURCE_TYPE_LAST);
+        UMA_HISTOGRAM_TIMES(
+            "Apps.ContextMenuUserJourneyTime.SuggestedAppPeeking.TabletMode",
+            user_journey_time);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Apps.ContextMenuShowSource.SuggestedAppPeeking.ClamshellMode",
+            source_type(), ui::MenuSourceType::MENU_SOURCE_TYPE_LAST);
+        UMA_HISTOGRAM_TIMES(
+            "Apps.ContextMenuUserJourneyTime.SuggestedAppPeeking.ClamshellMode",
+            user_journey_time);
+      }
       break;
     case HALF_SEARCH_RESULT:
     case FULLSCREEN_SEARCH_RESULT:
@@ -76,6 +122,21 @@ void AppListMenuModelAdapter::RecordHistogramOnMenuClosed() {
                                 ui::MenuSourceType::MENU_SOURCE_TYPE_LAST);
       UMA_HISTOGRAM_TIMES("Apps.ContextMenuUserJourneyTime.SearchResult",
                           user_journey_time);
+      if (is_tablet_mode()) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Apps.ContextMenuShowSource.SearchResult.TabletMode", source_type(),
+            ui::MenuSourceType::MENU_SOURCE_TYPE_LAST);
+        UMA_HISTOGRAM_TIMES(
+            "Apps.ContextMenuUserJourneyTime.SearchResult.TabletMode",
+            user_journey_time);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Apps.ContextMenuShowSource.SearchResult.ClamshellMode",
+            source_type(), ui::MenuSourceType::MENU_SOURCE_TYPE_LAST);
+        UMA_HISTOGRAM_TIMES(
+            "Apps.ContextMenuUserJourneyTime.SearchResult.ClamshellMode",
+            user_journey_time);
+      }
       break;
     case SEARCH_RESULT:
       // SearchResult can use this class, but the code is dead and does not show

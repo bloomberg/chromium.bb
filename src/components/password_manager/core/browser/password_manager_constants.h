@@ -16,7 +16,6 @@ extern const base::FilePath::CharType kSecondLoginDataFileName[];
 #endif  // defined(USE_X11)
 
 // URL to the password manager account dashboard.
-// TODO(crbug.com/862269): remove when "Smart Lock" is completely gone.
 extern const char kPasswordManagerAccountDashboardURL[];
 
 // URL to the help center article about Smart Lock;

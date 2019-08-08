@@ -15,6 +15,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wm/always_on_top_controller.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_positioner.h"
@@ -97,7 +98,8 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(aura::Window* window)
       settings_bubble_window_observer_(this),
       work_area_in_parent_(
           screen_util::GetDisplayWorkAreaBoundsInParent(window_)),
-      is_fullscreen_(wm::GetWindowForFullscreenMode(window) != nullptr) {
+      is_fullscreen_(wm::GetWindowForFullscreenModeForContext(window) !=
+                     nullptr) {
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->activation_client()->AddObserver(this);
   root_window_->AddObserver(this);
@@ -107,9 +109,11 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(aura::Window* window)
   keyboard::KeyboardController::Get()->AddObserver(this);
   settings_bubble_container_ = window->GetRootWindow()->GetChildById(
       kShellWindowId_SettingBubbleContainer);
+  root_window_controller_->shelf()->AddObserver(this);
 }
 
 WorkspaceLayoutManager::~WorkspaceLayoutManager() {
+  root_window_controller_->shelf()->RemoveObserver(this);
   if (root_window_)
     root_window_->RemoveObserver(this);
   if (settings_bubble_container_)
@@ -396,13 +400,23 @@ void WorkspaceLayoutManager::OnDisplayMetricsChanged(
 //////////////////////////////////////////////////////////////////////////////
 // WorkspaceLayoutManager, ShellObserver implementation:
 
-void WorkspaceLayoutManager::OnFullscreenStateChanged(
-    bool is_fullscreen,
-    aura::Window* root_window) {
-  if (root_window != root_window_ || is_fullscreen_ == is_fullscreen)
+void WorkspaceLayoutManager::OnFullscreenStateChanged(bool is_fullscreen,
+                                                      aura::Window* container) {
+  // Note that only the active desk's container broadcasts this event, but all
+  // containers' workspaces (active desk's and inactive desks' as well the
+  // always-on-top container) receive it.
+  DCHECK(desks_util::IsActiveDeskContainer(container));
+
+  // If |container| is the one associated with this workspace, then fullscreen
+  // state must match.
+  DCHECK(window_ != container || is_fullscreen == is_fullscreen_);
+
+  // This notification may come from active desk containers on other displays.
+  // No need to update the always-on-top states if the fullscreen state change
+  // happened on a different root window.
+  if (container->GetRootWindow() != root_window_)
     return;
 
-  is_fullscreen_ = is_fullscreen;
   if (Shell::Get()->screen_pinning_controller()->IsPinned()) {
     // If this is in pinned mode, then this event does not trigger the
     // always-on-top state change, because it is kept disabled regardless of
@@ -410,8 +424,11 @@ void WorkspaceLayoutManager::OnFullscreenStateChanged(
     return;
   }
 
-  UpdateAlwaysOnTop(is_fullscreen_ ? wm::GetWindowForFullscreenMode(window_)
-                                   : nullptr);
+  // We need to update the always-on-top states even for inactive desks
+  // containers, because inactive desks may have a previously demoted
+  // always-on-top windows that we need to promote back to the always-on-top
+  // container if there no longer fullscreen windows on this root window.
+  UpdateAlwaysOnTop(wm::GetWindowForFullscreenModeInRoot(root_window_));
 }
 
 void WorkspaceLayoutManager::OnPinnedStateChanged(aura::Window* pinned_window) {
@@ -425,6 +442,13 @@ void WorkspaceLayoutManager::OnPinnedStateChanged(aura::Window* pinned_window) {
   }
 
   UpdateAlwaysOnTop(is_pinned ? pinned_window : nullptr);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// WorkspaceLayoutManager, ShelfObserver implementation:
+void WorkspaceLayoutManager::OnAutoHideStateChanged(
+    ShelfAutoHideState new_state) {
+  NotifySystemUiAreaChanged();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -458,21 +482,23 @@ void WorkspaceLayoutManager::UpdateShelfVisibility() {
 }
 
 void WorkspaceLayoutManager::UpdateFullscreenState() {
-  // TODO(flackr): The fullscreen state is currently tracked per workspace
-  // but the shell notification implies a per root window state. Currently
-  // only windows in the default workspace container will go fullscreen but
-  // this should really be tracked by the RootWindowController since
-  // technically any container could get a fullscreen window.
-  if (window_->id() != kShellWindowId_DefaultContainer)
+  // Note that we don't allow always-on-top or PiP containers to have fullscreen
+  // windows, and we only update the fullscreen state for the active desk
+  // container.
+  if (!desks_util::IsActiveDeskContainer(window_))
     return;
-  bool is_fullscreen = wm::GetWindowForFullscreenMode(window_) != nullptr;
-  if (is_fullscreen != is_fullscreen_) {
-    Shell::Get()->NotifyFullscreenStateChanged(is_fullscreen, root_window_);
-    is_fullscreen_ = is_fullscreen;
-  }
+
+  const bool is_fullscreen =
+      wm::GetWindowForFullscreenModeForContext(window_) != nullptr;
+  if (is_fullscreen == is_fullscreen_)
+    return;
+
+  is_fullscreen_ = is_fullscreen;
+  Shell::Get()->NotifyFullscreenStateChanged(is_fullscreen, window_);
 }
 
-void WorkspaceLayoutManager::UpdateAlwaysOnTop(aura::Window* window_on_top) {
+void WorkspaceLayoutManager::UpdateAlwaysOnTop(
+    aura::Window* active_desk_fullscreen_window) {
   // Changing always on top state may change window's parent. Iterate on a copy
   // of |windows_| to avoid invalidating an iterator. Since both workspace and
   // always_on_top containers' layouts are managed by this class all the
@@ -480,8 +506,8 @@ void WorkspaceLayoutManager::UpdateAlwaysOnTop(aura::Window* window_on_top) {
   WindowSet windows(windows_);
   for (aura::Window* window : windows) {
     wm::WindowState* window_state = wm::GetWindowState(window);
-    if (window_on_top)
-      window_state->DisableAlwaysOnTop(window_on_top);
+    if (active_desk_fullscreen_window)
+      window_state->DisableAlwaysOnTop(active_desk_fullscreen_window);
     else
       window_state->RestoreAlwaysOnTop();
   }

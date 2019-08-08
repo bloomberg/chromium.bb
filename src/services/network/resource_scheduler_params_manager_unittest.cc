@@ -116,11 +116,11 @@ class ResourceSchedulerParamsManagerTest : public testing::Test {
         return;
 
       case net::EFFECTIVE_CONNECTION_TYPE_3G:
-        EXPECT_EQ(10u, resource_scheduler_params_manager
-                           .GetParamsForEffectiveConnectionType(
-                               effective_connection_type)
-                           .max_delayable_requests);
-        EXPECT_EQ(0.0, resource_scheduler_params_manager
+        EXPECT_EQ(8u, resource_scheduler_params_manager
+                          .GetParamsForEffectiveConnectionType(
+                              effective_connection_type)
+                          .max_delayable_requests);
+        EXPECT_EQ(3.0, resource_scheduler_params_manager
                            .GetParamsForEffectiveConnectionType(
                                effective_connection_type)
                            .non_delayable_weight);
@@ -209,7 +209,8 @@ TEST_F(ResourceSchedulerParamsManagerTest,
     net::EffectiveConnectionType ect =
         static_cast<net::EffectiveConnectionType>(effective_connection_type);
     if (effective_connection_type == net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G ||
-        effective_connection_type == net::EFFECTIVE_CONNECTION_TYPE_2G) {
+        effective_connection_type == net::EFFECTIVE_CONNECTION_TYPE_2G ||
+        effective_connection_type == net::EFFECTIVE_CONNECTION_TYPE_3G) {
       EXPECT_EQ(8u, resource_scheduler_params_manager
                         .GetParamsForEffectiveConnectionType(ect)
                         .max_delayable_requests);
@@ -222,21 +223,6 @@ TEST_F(ResourceSchedulerParamsManagerTest,
       EXPECT_TRUE(resource_scheduler_params_manager
                       .GetParamsForEffectiveConnectionType(ect)
                       .max_queuing_time.has_value());
-
-    } else if (effective_connection_type == net::EFFECTIVE_CONNECTION_TYPE_3G) {
-      EXPECT_EQ(10u, resource_scheduler_params_manager
-                         .GetParamsForEffectiveConnectionType(ect)
-                         .max_delayable_requests);
-      EXPECT_EQ(0.0, resource_scheduler_params_manager
-                         .GetParamsForEffectiveConnectionType(ect)
-                         .non_delayable_weight);
-      EXPECT_FALSE(resource_scheduler_params_manager
-                       .GetParamsForEffectiveConnectionType(ect)
-                       .delay_requests_on_multiplexed_connections);
-      EXPECT_TRUE(resource_scheduler_params_manager
-                      .GetParamsForEffectiveConnectionType(ect)
-                      .max_queuing_time.has_value());
-
     } else {
       VerifyDefaultParams(
           resource_scheduler_params_manager,
@@ -281,10 +267,10 @@ TEST_F(ResourceSchedulerParamsManagerTest, MaxQueuingTime) {
                     .max_queuing_time);
 
     } else if (effective_connection_type == net::EFFECTIVE_CONNECTION_TYPE_3G) {
-      EXPECT_EQ(10u, resource_scheduler_params_manager
-                         .GetParamsForEffectiveConnectionType(ect)
-                         .max_delayable_requests);
-      EXPECT_EQ(0.0, resource_scheduler_params_manager
+      EXPECT_EQ(8u, resource_scheduler_params_manager
+                        .GetParamsForEffectiveConnectionType(ect)
+                        .max_delayable_requests);
+      EXPECT_EQ(3.0, resource_scheduler_params_manager
                          .GetParamsForEffectiveConnectionType(ect)
                          .non_delayable_weight);
       EXPECT_TRUE(resource_scheduler_params_manager

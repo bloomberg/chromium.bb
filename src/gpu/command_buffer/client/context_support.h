@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/span.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/presentation_feedback.h"
 
@@ -133,6 +134,12 @@ class ContextSupport {
   virtual void DeleteTransferCacheEntry(uint32_t type, uint32_t id) = 0;
 
   virtual unsigned int GetTransferBufferFreeSize() const = 0;
+
+  // Determines if an encoded image can be decoded using hardware decode
+  // acceleration. If this method returns true, then the client can be confident
+  // that a call to RasterInterface::ScheduleImageDecode() will succeed.
+  virtual bool CanDecodeWithHardwareAcceleration(
+      base::span<const uint8_t> encoded_data) const = 0;
 
   // Returns true if the context provider automatically manages calls to
   // GrContext::resetContext under the hood to prevent GL state synchronization

@@ -70,6 +70,11 @@ void OneGoogleBarService::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+void OneGoogleBarService::SetLanguageCodeForTesting(
+    const std::string& language_code) {
+  language_code_ = language_code;
+}
+
 void OneGoogleBarService::SigninStatusChanged() {
   // If we have cached data, clear it and notify observers.
   if (one_google_bar_data_.has_value()) {
@@ -85,6 +90,7 @@ void OneGoogleBarService::OneGoogleBarDataLoaded(
   // notify observers of the finished load (attempt).
   if (status != OneGoogleBarLoader::Status::TRANSIENT_ERROR) {
     one_google_bar_data_ = data;
+    language_code_ = data.has_value() ? data->language_code : std::string();
   }
   NotifyObservers();
 }

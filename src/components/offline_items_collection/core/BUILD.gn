@@ -9,6 +9,7 @@ if (is_android) {
 
 static_library("core") {
   sources = [
+    "fail_state.cc",
     "fail_state.h",
     "filtered_offline_item_observer.cc",
     "filtered_offline_item_observer.h",
@@ -92,7 +93,7 @@ if (is_android) {
 
     deps = [
       "//base:base_java",
-      "//third_party/android_deps:android_support_annotations_java",
+      "//third_party/android_deps:com_android_support_support_annotations_java",
     ]
   }
 

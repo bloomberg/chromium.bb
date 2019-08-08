@@ -5,8 +5,6 @@
 #ifndef UI_BASE_CLIPBOARD_CLIPBOARD_OZONE_H_
 #define UI_BASE_CLIPBOARD_CLIPBOARD_OZONE_H_
 
-#include <stddef.h>
-#include <stdint.h>
 #include <memory>
 #include <string>
 #include <vector>

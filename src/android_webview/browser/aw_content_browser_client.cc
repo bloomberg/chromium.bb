@@ -22,16 +22,16 @@
 #include "android_webview/browser/aw_feature_list.h"
 #include "android_webview/browser/aw_feature_list_creator.h"
 #include "android_webview/browser/aw_http_auth_handler.h"
-#include "android_webview/browser/aw_proxying_url_loader_factory.h"
 #include "android_webview/browser/aw_quota_permission_context.h"
 #include "android_webview/browser/aw_settings.h"
 #include "android_webview/browser/aw_speech_recognition_manager_delegate.h"
-#include "android_webview/browser/aw_url_loader_throttle.h"
 #include "android_webview/browser/aw_web_contents_view_delegate.h"
 #include "android_webview/browser/cookie_manager.h"
+#include "android_webview/browser/net/aw_proxy_config_monitor.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
-#include "android_webview/browser/net_helpers.h"
-#include "android_webview/browser/net_network_service/aw_cookie_manager_wrapper.h"
+#include "android_webview/browser/network_service/aw_proxying_url_loader_factory.h"
+#include "android_webview/browser/network_service/aw_url_loader_throttle.h"
+#include "android_webview/browser/network_service/net_helpers.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/browser/safe_browsing/aw_url_checker_delegate_impl.h"
 #include "android_webview/browser/tracing/aw_tracing_delegate.h"
@@ -71,12 +71,15 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
+#include "content/public/browser/cors_exempt_headers.h"
+#include "content/public/browser/file_url_loader.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_descriptors.h"
@@ -87,6 +90,7 @@
 #include "content/public/common/user_agent.h"
 #include "content/public/common/web_preferences.h"
 #include "net/android/network_library.h"
+#include "net/http/http_util.h"
 #include "net/log/net_log.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_info.h"
@@ -102,7 +106,6 @@
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "components/spellcheck/browser/spell_check_host_impl.h"
-#include "components/spellcheck/common/spellcheck_switches.h"
 #endif
 
 using content::BrowserThread;
@@ -111,7 +114,7 @@ using content::WebContents;
 
 namespace android_webview {
 namespace {
-static bool g_should_create_task_scheduler = true;
+static bool g_should_create_thread_pool = true;
 
 #if DCHECK_IS_ON()
 // A boolean value to determine if the NetworkContext has been created yet. This
@@ -213,34 +216,16 @@ void DummyBindPasswordManagerDriver(
     autofill::mojom::PasswordManagerDriverRequest request,
     content::RenderFrameHost* render_frame_host) {}
 
-// TODO(timvolodine): consider refactoring this into common utility method.
-void OnReceivedErrorOnUIThread(
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-    const AwWebResourceRequest& request) {
-  AwContentsClientBridge* client =
-      AwContentsClientBridge::FromWebContentsGetter(web_contents_getter);
-  if (!client) {
-    DLOG(WARNING) << "client is null, onReceivedError dropped for "
-                  << request.url;
-    return;
-  }
-  client->OnReceivedError(request, net::ERR_UNKNOWN_URL_SCHEME,
-                          false /*safebrowsing_hit*/);
-}
-
-void PassCookieManagerToCookieManagerWrapper(
+void PassMojoCookieManagerToAwCookieManager(
     const network::mojom::NetworkContextPtr& network_context) {
   // Get the CookieManager from the NetworkContext.
   network::mojom::CookieManagerPtrInfo cookie_manager_info;
   network_context->GetCookieManager(mojo::MakeRequest(&cookie_manager_info));
 
-  // Pass the CookieManagerPtrInfo to AwCookieManagerWrapper, so it can use that
-  // CookieManager to implement its APIs on the correct thread.
-  CookieManager* aw_cookie_manager = CookieManager::GetInstance();
-  aw_cookie_manager->GetCookieStoreTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&CookieManager::SetMojoCookieManager,
-                                base::Unretained(aw_cookie_manager),
-                                std::move(cookie_manager_info)));
+  // Pass the CookieManagerPtrInfo to android_webview::CookieManager, so it can
+  // implement its APIs with this mojo CookieManager.
+  CookieManager::GetInstance()->SetMojoCookieManager(
+      std::move(cookie_manager_info));
 }
 
 }  // anonymous namespace
@@ -307,6 +292,17 @@ AwContentBrowserClient::AwContentBrowserClient(
 
 AwContentBrowserClient::~AwContentBrowserClient() {}
 
+void AwContentBrowserClient::OnNetworkServiceCreated(
+    network::mojom::NetworkService* network_service) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
+  network::mojom::HttpAuthStaticParamsPtr auth_static_params =
+      network::mojom::HttpAuthStaticParams::New();
+  auth_static_params->supported_schemes = AwBrowserContext::GetAuthSchemes();
+  content::GetNetworkService()->SetUpHttpAuth(std::move(auth_static_params));
+}
+
 network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
     content::BrowserContext* context,
     bool in_memory,
@@ -314,6 +310,12 @@ network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
   DCHECK(context);
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     return nullptr;
+
+  // There is only one BrowserContext in WebView, so initialize this now as it
+  // depends on the PrefService which is owned by the BrowserContext.
+  auto* aw_context = static_cast<AwBrowserContext*>(context);
+  content::GetNetworkService()->ConfigureHttpAuthPrefs(
+      aw_context->CreateHttpAuthDynamicParams());
 
   network::mojom::NetworkContextPtr network_context;
   network::mojom::NetworkContextParamsPtr context_params =
@@ -327,7 +329,7 @@ network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
 
   // Pass a CookieManager to the code supporting AwCookieManager.java (i.e., the
   // Cookies APIs).
-  PassCookieManagerToCookieManagerWrapper(network_context);
+  PassMojoCookieManagerToAwCookieManager(network_context);
 
   return network_context;
 }
@@ -341,8 +343,8 @@ AwContentBrowserClient::GetNetworkContextParams() {
   // preferred locales (http://crbug.com/898555). For now, set this to
   // "en-US,en" instead of "en-us,en", since Android guarantees region codes
   // will be uppercase.
-  context_params->accept_language = "en-US,en";
-  context_params->enable_data_url_support = true;
+  context_params->accept_language =
+      net::HttpUtil::GenerateAcceptLanguageHeader("en-US,en");
 
   // HTTP cache
   context_params->http_cache_enabled = true;
@@ -354,6 +356,10 @@ AwContentBrowserClient::GetNetworkContextParams() {
   context_params->cookie_path = AwBrowserContext::GetCookieStorePath();
   context_params->restore_old_session_cookies = true;
   context_params->persist_session_cookies = true;
+  context_params->cookie_manager_params =
+      network::mojom::CookieManagerParams::New();
+  context_params->cookie_manager_params->allow_file_scheme_cookies =
+      CookieManager::GetInstance()->AllowFileSchemeCookies();
 
   context_params->initial_ssl_config = network::mojom::SSLConfig::New();
   // Allow SHA-1 to be used for locally-installed trust anchors, as WebView
@@ -375,6 +381,13 @@ AwContentBrowserClient::GetNetworkContextParams() {
   g_created_network_context_params = true;
 #endif
   context_params->check_clear_text_permitted = g_check_cleartext_permitted;
+
+  content::UpdateCorsExemptHeader(context_params.get());
+
+  // Add proxy settings
+  AwProxyConfigMonitor::GetInstance()->AddProxyToNetworkContextParams(
+      context_params);
+
   return context_params;
 }
 
@@ -505,12 +518,8 @@ bool AwContentBrowserClient::AllowGetCookie(const GURL& url,
                                             content::ResourceContext* context,
                                             int render_process_id,
                                             int render_frame_id) {
-  return AwCookieAccessPolicy::GetInstance()->AllowGetCookie(url,
-                                                             first_party,
-                                                             cookie_list,
-                                                             context,
-                                                             render_process_id,
-                                                             render_frame_id);
+  return AwCookieAccessPolicy::GetInstance()->AllowCookies(
+      url, first_party, render_process_id, render_frame_id);
 }
 
 bool AwContentBrowserClient::AllowSetCookie(const GURL& url,
@@ -519,8 +528,8 @@ bool AwContentBrowserClient::AllowSetCookie(const GURL& url,
                                             content::ResourceContext* context,
                                             int render_process_id,
                                             int render_frame_id) {
-  return AwCookieAccessPolicy::GetInstance()->AllowSetCookie(
-      url, first_party, cookie, context, render_process_id, render_frame_id);
+  return AwCookieAccessPolicy::GetInstance()->AllowCookies(
+      url, first_party, render_process_id, render_frame_id);
 }
 
 void AwContentBrowserClient::AllowWorkerFileSystem(
@@ -538,7 +547,7 @@ bool AwContentBrowserClient::AllowWorkerIndexedDB(
   return true;
 }
 
-content::QuotaPermissionContext*
+scoped_refptr<content::QuotaPermissionContext>
 AwContentBrowserClient::CreateQuotaPermissionContext() {
   return new AwQuotaPermissionContext;
 }
@@ -737,9 +746,9 @@ base::Optional<service_manager::Manifest>
 AwContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   if (name == content::mojom::kBrowserServiceName)
     return GetAWContentBrowserOverlayManifest();
-  else if (name == content::mojom::kRendererServiceName)
+  if (name == content::mojom::kRendererServiceName)
     return GetAWContentRendererOverlayManifest();
-  else if (name == content::mojom::kUtilityServiceName)
+  if (name == content::mojom::kUtilityServiceName)
     return GetAWContentUtilityOverlayManifest();
   return base::nullopt;
 }
@@ -761,8 +770,8 @@ bool AwContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
         autofill::mojom::AutofillDriverAssociatedRequest(std::move(*handle)),
         render_frame_host);
     return true;
-  } else if (interface_name ==
-             content_capture::mojom::ContentCaptureReceiver::Name_) {
+  }
+  if (interface_name == content_capture::mojom::ContentCaptureReceiver::Name_) {
     content_capture::ContentCaptureReceiverManager::BindContentCaptureReceiver(
         content_capture::mojom::ContentCaptureReceiverAssociatedRequest(
             std::move(*handle)),
@@ -823,7 +832,8 @@ AwContentBrowserClient::CreateURLLoaderThrottles(
     }
   }
 
-  if (request.resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
+  if (request.resource_type ==
+      static_cast<int>(content::ResourceType::kMainFrame)) {
     const bool is_load_url =
         request.transition_type & ui::PAGE_TRANSITION_FROM_API;
     const bool is_go_back_forward =
@@ -901,13 +911,13 @@ bool AwContentBrowserClient::ShouldOverrideUrlLoading(
       url, has_user_gesture, is_redirect, is_main_frame, ignore_navigation);
 }
 
-bool AwContentBrowserClient::ShouldCreateTaskScheduler() {
-  return g_should_create_task_scheduler;
+bool AwContentBrowserClient::ShouldCreateThreadPool() {
+  return g_should_create_thread_pool;
 }
 
 std::unique_ptr<content::LoginDelegate>
 AwContentBrowserClient::CreateLoginDelegate(
-    net::AuthChallengeInfo* auth_info,
+    const net::AuthChallengeInfo& auth_info,
     content::WebContents* web_contents,
     const content::GlobalRequestID& request_id,
     bool is_main_frame,
@@ -929,17 +939,17 @@ bool AwContentBrowserClient::HandleExternalProtocol(
     ui::PageTransition page_transition,
     bool has_user_gesture,
     const std::string& method,
-    const net::HttpRequestHeaders& headers) {
+    const net::HttpRequestHeaders& headers,
+    network::mojom::URLLoaderFactoryRequest* factory_request,
+    network::mojom::URLLoaderFactory*& out_factory) {
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    AwWebResourceRequest aw_resource_request(url.spec(), method, is_main_frame,
-                                             has_user_gesture, headers);
-    aw_resource_request.is_renderer_initiated =
-        ui::PageTransitionIsWebTriggerable(
-            static_cast<ui::PageTransition>(page_transition));
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&OnReceivedErrorOnUIThread, web_contents_getter,
-                       std::move(aw_resource_request)));
+    auto proxied_request = std::move(*factory_request);
+    network::mojom::URLLoaderFactoryPtrInfo target_factory_info;
+    *factory_request = mojo::MakeRequest(&target_factory_info);
+
+    out_factory = new android_webview::AwProxyingURLLoaderFactory(
+        0 /* process_id */, std::move(proxied_request),
+        std::move(target_factory_info), nullptr, true /* intercept_only */);
   } else {
     // The AwURLRequestJobFactory implementation should ensure this method never
     // gets called when Network Service is not enabled.
@@ -952,6 +962,23 @@ void AwContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
   (*services)[heap_profiling::mojom::kServiceName] =
       base::BindRepeating(&base::ASCIIToUTF16, "Heap Profiling Service");
+}
+
+void AwContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
+    int render_process_id,
+    int render_frame_id,
+    NonNetworkURLLoaderFactoryMap* factories) {
+  AwSettings* aw_settings =
+      AwSettings::FromWebContents(content::WebContents::FromRenderFrameHost(
+          content::RenderFrameHost::FromID(render_process_id,
+                                           render_frame_id)));
+
+  if (aw_settings && aw_settings->GetAllowFileAccess()) {
+    auto file_factory = CreateFileURLLoaderFactory(
+        AwBrowserContext::GetDefault()->GetPath(),
+        AwBrowserContext::GetDefault()->GetSharedCorsOriginAccessList());
+    factories->emplace(url::kFileScheme, std::move(file_factory));
+  }
 }
 
 bool AwContentBrowserClient::ShouldIsolateErrorPage(bool in_main_frame) {
@@ -993,6 +1020,44 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
   return true;
 }
 
+void AwContentBrowserClient::WillCreateURLLoaderFactoryForAppCacheSubresource(
+    int render_process_id,
+    network::mojom::URLLoaderFactoryPtrInfo* factory_ptr_info) {
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  auto proxied_ptr_info = std::move(*factory_ptr_info);
+  network::mojom::URLLoaderFactoryRequest factory_request =
+      mojo::MakeRequest(factory_ptr_info);
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
+      base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy,
+                     render_process_id, std::move(factory_request),
+                     std::move(proxied_ptr_info),
+                     nullptr /* AwInterceptedRequestHandler */));
+}
+
+void AwContentBrowserClient::WillCreateWebSocket(
+    content::RenderFrameHost* frame,
+    network::mojom::WebSocketRequest* request,
+    network::mojom::AuthenticationHandlerPtr* auth_handler,
+    network::mojom::TrustedHeaderClientPtr* header_client,
+    uint32_t* options) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(frame);
+  AwContents* aw_contents = AwContents::FromWebContents(web_contents);
+
+  bool global_cookie_policy =
+      AwCookieAccessPolicy::GetInstance()->GetShouldAcceptCookies();
+  bool third_party_cookie_policy = aw_contents->AllowThirdPartyCookies();
+  if (!global_cookie_policy) {
+    *options |= network::mojom::kWebSocketOptionBlockAllCookies;
+  } else if (!third_party_cookie_policy) {
+    *options |= network::mojom::kWebSocketOptionBlockThirdPartyCookies;
+  }
+}
+
 std::string AwContentBrowserClient::GetProduct() const {
   return android_webview::GetProduct();
 }
@@ -1014,8 +1079,8 @@ AwContentBrowserClient::CreateSpeechRecognitionManagerDelegate() {
 }
 
 // static
-void AwContentBrowserClient::DisableCreatingTaskScheduler() {
-  g_should_create_task_scheduler = false;
+void AwContentBrowserClient::DisableCreatingThreadPool() {
+  g_should_create_thread_pool = false;
 }
 
 }  // namespace android_webview

@@ -5,11 +5,17 @@
 #ifndef CHROME_BROWSER_VR_TEST_WEBVR_BROWSER_TEST_H_
 #define CHROME_BROWSER_VR_TEST_WEBVR_BROWSER_TEST_H_
 
+#include "build/build_config.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "device/vr/buildflags/buildflags.h"
+
+#if defined(OS_WIN)
+#include "services/service_manager/sandbox/features.h"
+#endif
 
 namespace vr {
 
@@ -37,6 +43,14 @@ class WebVrBrowserTestOpenVrDisabled : public WebVrBrowserTestBase {
  public:
   WebVrBrowserTestOpenVrDisabled() {
     append_switches_.push_back(switches::kEnableWebVR);
+
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+    disable_features_.push_back(features::kWindowsMixedReality);
+#endif
+
+#if defined(OS_WIN)
+    disable_features_.push_back(service_manager::features::kXRSandbox);
+#endif
   }
 };
 
@@ -48,6 +62,10 @@ class WebVrBrowserTestStandard : public WebVrBrowserTestBase {
   WebVrBrowserTestStandard() {
     append_switches_.push_back(switches::kEnableWebVR);
     enable_features_.push_back(features::kOpenVR);
+
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+    disable_features_.push_back(features::kWindowsMixedReality);
+#endif
   }
 };
 
@@ -56,6 +74,10 @@ class WebVrBrowserTestWebVrDisabled : public WebVrBrowserTestBase {
  public:
   WebVrBrowserTestWebVrDisabled() {
     enable_features_.push_back(features::kOpenVR);
+
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+    disable_features_.push_back(features::kWindowsMixedReality);
+#endif
   }
 };
 #endif  // OS_WIN

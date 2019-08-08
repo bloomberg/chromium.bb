@@ -14,7 +14,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -32,6 +31,7 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.List;
@@ -58,7 +58,7 @@ public final class SubresourceFilterTest {
 
     private void createAndPublishRulesetDisallowingSuffix(String suffix) {
         TestSubresourceFilterPublisher publisher = new TestSubresourceFilterPublisher();
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 (Runnable) ()
                         -> publisher.createAndPublishRulesetDisallowingSuffixForTesting(suffix));
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -121,13 +121,13 @@ public final class SubresourceFilterTest {
         AdsBlockedInfoBar infobar = (AdsBlockedInfoBar) infoBars.get(0);
 
         // Click the link once to expand it.
-        ThreadUtils.runOnUiThreadBlocking(infobar::onLinkClicked);
+        TestThreadUtils.runOnUiThreadBlocking(infobar::onLinkClicked);
 
         // Check the checkbox and press the button to reload.
-        ThreadUtils.runOnUiThreadBlocking(() -> infobar.onCheckedChanged(null, true));
+        TestThreadUtils.runOnUiThreadBlocking(() -> infobar.onCheckedChanged(null, true));
 
         // Think better of it and just close the infobar.
-        ThreadUtils.runOnUiThreadBlocking(infobar::onCloseButtonClicked);
+        TestThreadUtils.runOnUiThreadBlocking(infobar::onCloseButtonClicked);
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         CriteriaHelper.pollUiThread(() -> !InfoBarContainer.get(tab).hasInfoBars());
     }
@@ -146,12 +146,13 @@ public final class SubresourceFilterTest {
         Tab originalTab = mActivityTestRule.getActivity().getActivityTab();
         CallbackHelper tabCreatedCallback = new CallbackHelper();
         TabModel tabModel = mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel();
-        ThreadUtils.runOnUiThreadBlocking(() -> tabModel.addObserver(new EmptyTabModelObserver() {
-            @Override
-            public void didAddTab(Tab tab, @TabLaunchType int type) {
-                if (tab.getUrl().equals(LEARN_MORE_PAGE)) tabCreatedCallback.notifyCalled();
-            }
-        }));
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> tabModel.addObserver(new EmptyTabModelObserver() {
+                    @Override
+                    public void didAddTab(Tab tab, @TabLaunchType int type) {
+                        if (tab.getUrl().equals(LEARN_MORE_PAGE)) tabCreatedCallback.notifyCalled();
+                    }
+                }));
 
         // Check that the infobar is showing.
         List<InfoBar> infoBars = mActivityTestRule.getInfoBars();
@@ -159,10 +160,10 @@ public final class SubresourceFilterTest {
         AdsBlockedInfoBar infobar = (AdsBlockedInfoBar) infoBars.get(0);
 
         // Click the link once to expand it.
-        ThreadUtils.runOnUiThreadBlocking(infobar::onLinkClicked);
+        TestThreadUtils.runOnUiThreadBlocking(infobar::onLinkClicked);
 
         // Click again to navigate, which should spawn a new tab.
-        ThreadUtils.runOnUiThreadBlocking(infobar::onLinkClicked);
+        TestThreadUtils.runOnUiThreadBlocking(infobar::onLinkClicked);
 
         // Wait for the tab to be added with the correct URL. Note, do not wait for this URL to be
         // loaded since it is not controlled by the test instrumentation. Just waiting for the
@@ -190,11 +191,11 @@ public final class SubresourceFilterTest {
         AdsBlockedInfoBar infobar = (AdsBlockedInfoBar) infoBars.get(0);
 
         // Click the link once to expand it.
-        ThreadUtils.runOnUiThreadBlocking(infobar::onLinkClicked);
+        TestThreadUtils.runOnUiThreadBlocking(infobar::onLinkClicked);
 
         // Check the checkbox and press the button to reload.
-        ThreadUtils.runOnUiThreadBlocking(() -> infobar.onCheckedChanged(null, true));
-        ThreadUtils.runOnUiThreadBlocking(() -> infobar.onButtonClicked(true));
+        TestThreadUtils.runOnUiThreadBlocking(() -> infobar.onCheckedChanged(null, true));
+        TestThreadUtils.runOnUiThreadBlocking(() -> infobar.onButtonClicked(true));
 
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         ChromeTabUtils.waitForTabPageLoaded(tab, url);

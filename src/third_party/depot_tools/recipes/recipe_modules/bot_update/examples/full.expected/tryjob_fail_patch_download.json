@@ -149,7 +149,6 @@
     "infra_step": true,
     "name": "Patch failure",
     "~followup_annotations": [
-      "step returned non-zero exit code: 1",
       "@@@STEP_TEXT@Git reported a download failure@@@",
       "@@@STEP_LOG_LINE@patch error@Downloading patch...@@@",
       "@@@STEP_LOG_LINE@patch error@Applying the patch...@@@",

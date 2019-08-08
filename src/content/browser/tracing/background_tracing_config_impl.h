@@ -6,10 +6,12 @@
 #define CONTENT_BROWSER_TRACING_BACKGROUND_TRACING_CONFIG_IMPL_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/trace_event/trace_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/background_tracing_config.h"
 
@@ -53,12 +55,6 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
     return rules_;
   }
   const std::string& scenario_name() const { return scenario_name_; }
-  const std::string& enable_blink_features() const {
-    return enable_blink_features_;
-  }
-  const std::string& disable_blink_features() const {
-    return disable_blink_features_;
-  }
 
   void AddPreemptiveRule(const base::DictionaryValue* dict);
   void AddReactiveRule(
@@ -79,6 +75,10 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
       const std::string& category_preset_string,
       BackgroundTracingConfigImpl::CategoryPreset* category_preset);
 
+  static base::trace_event::TraceConfig GetConfigForCategoryPreset(
+      BackgroundTracingConfigImpl::CategoryPreset,
+      base::trace_event::TraceRecordMode);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BackgroundTracingConfigTest,
                            ValidPreemptiveConfigToString);
@@ -86,8 +86,6 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
   CategoryPreset category_preset_;
   std::vector<std::unique_ptr<BackgroundTracingRule>> rules_;
   std::string scenario_name_;
-  std::string enable_blink_features_;
-  std::string disable_blink_features_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundTracingConfigImpl);
 };

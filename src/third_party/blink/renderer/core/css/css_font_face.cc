@@ -60,7 +60,7 @@ void CSSFontFace::DidBeginLoad() {
     SetLoadStatus(FontFace::kLoading);
 }
 
-bool CSSFontFace::FontLoaded(RemoteFontFaceSource* source) {
+bool CSSFontFace::FontLoaded(CSSFontFaceSource* source) {
   if (!IsValid() || source != sources_.front())
     return false;
 
@@ -186,7 +186,7 @@ void CSSFontFace::Load(const FontDescription& font_description) {
   while (!sources_.IsEmpty()) {
     Member<CSSFontFaceSource>& source = sources_.front();
     if (source->IsValid()) {
-      if (source->IsLocal()) {
+      if (source->IsLocalNonBlocking()) {
         if (source->IsLocalFontAvailable(font_description)) {
           SetLoadStatus(FontFace::kLoaded);
           return;

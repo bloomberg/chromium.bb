@@ -16,7 +16,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "mojo/core/embedder/embedder.h"
@@ -88,7 +88,7 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
   }
 #endif  // defined(REMOTING_ENABLE_BREAKPAD)
 
-  base::TaskScheduler::CreateAndStartWithDefaultParams("Me2Me");
+  base::ThreadPool::CreateAndStartWithDefaultParams("Me2Me");
 
   mojo::core::Init();
 
@@ -268,7 +268,7 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
   run_loop.Run();
 
   // Block until tasks blocking shutdown have completed their execution.
-  base::TaskScheduler::GetInstance()->Shutdown();
+  base::ThreadPool::GetInstance()->Shutdown();
 
   return kSuccessExitCode;
 }

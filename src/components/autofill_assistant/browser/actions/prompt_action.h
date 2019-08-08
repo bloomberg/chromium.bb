@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/chip.h"
@@ -30,17 +31,18 @@ class PromptAction : public Action {
   void InternalProcessAction(ActionDelegate* delegate,
                              ProcessActionCallback callback) override;
 
+  void RunPeriodicChecks();
   void SetupPreconditions();
+  bool HasNonemptyPreconditions();
   void CheckPreconditions();
   void OnPreconditionResult(size_t choice_index, bool result);
-  bool HasNonemptyPreconditions();
   void OnPreconditionChecksDone();
   void UpdateChips();
-  void SetupAutoSelect();
+  bool HasAutoSelect();
+  void CheckAutoSelect();
   void OnAutoSelectElementExists(int choice_index, bool exists);
   void OnAutoSelectDone();
   void OnSuggestionChosen(int choice_index);
-  void OnTerminated();
 
   ProcessActionCallback callback_;
   ActionDelegate* delegate_;
@@ -65,6 +67,8 @@ class PromptAction : public Action {
 
   // Batch element checker for auto-selection, if any.
   std::unique_ptr<BatchElementChecker> auto_select_checker_;
+
+  std::unique_ptr<base::RepeatingTimer> timer_;
 
   base::WeakPtrFactory<PromptAction> weak_ptr_factory_;
 

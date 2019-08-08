@@ -297,8 +297,6 @@ class LayoutGrid final : public LayoutBlock {
   static LayoutUnit OverrideContainingBlockContentSizeForChild(
       const LayoutBox& child,
       GridTrackSizingDirection);
-  static LayoutUnit SynthesizedBaselineFromContentBox(const LayoutBox&,
-                                                      LineDirectionMode);
   static LayoutUnit SynthesizedBaselineFromBorderBox(const LayoutBox&,
                                                      LineDirectionMode);
   static const StyleContentAlignmentData& ContentAlignmentNormalBehavior();

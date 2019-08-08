@@ -24,6 +24,7 @@ class NullExecutionContext
 
  public:
   NullExecutionContext();
+  ~NullExecutionContext() override;
 
   void SetURL(const KURL& url) { url_ = url; }
 
@@ -76,6 +77,11 @@ class NullExecutionContext
   bool is_secure_context_;
 
   KURL url_;
+
+  // A dummy scheduler to ensure that the callers of
+  // ExecutionContext::GetScheduler don't have to check for whether it's null or
+  // not.
+  std::unique_ptr<FrameOrWorkerScheduler> scheduler_;
 };
 
 }  // namespace blink

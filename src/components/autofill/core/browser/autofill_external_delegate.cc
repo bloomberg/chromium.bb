@@ -22,7 +22,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
-#include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
@@ -207,6 +207,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
     manager_->ShowAutofillSettings(popup_type_ == PopupType::kCreditCards);
   } else if (identifier == POPUP_ITEM_ID_CLEAR_FORM) {
     // User selected 'Clear form'.
+    AutofillMetrics::LogAutofillFormCleared();
     driver_->RendererShouldClearFilledSection();
   } else if (identifier == POPUP_ITEM_ID_PASSWORD_ENTRY ||
              identifier == POPUP_ITEM_ID_USERNAME_ENTRY) {

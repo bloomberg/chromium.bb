@@ -987,87 +987,28 @@ TEST_F(CorePageLoadMetricsObserverTest, LargestImagePaint_ReportLastCandidate) {
       testing::ElementsAre(base::Bucket(4780, 1)));
 }
 
-TEST_F(CorePageLoadMetricsObserverTest, LastImagePaint) {
-  page_load_metrics::mojom::PageLoadTiming timing;
-  page_load_metrics::InitPageLoadTimingForTest(&timing);
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  // Pick a value that lines up with a histogram bucket.
-  timing.paint_timing->last_image_paint =
-      base::TimeDelta::FromMilliseconds(4780);
-  PopulateRequiredTimingFields(&timing);
-
-  NavigateAndCommit(GURL(kDefaultTestUrl));
-  SimulateTimingUpdate(timing);
-  // Navigate again to force histogram recording.
-  NavigateAndCommit(GURL(kDefaultTestUrl2));
-
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples(internal::kHistogramLastImagePaint),
-      testing::ElementsAre(base::Bucket(4780, 1)));
-}
-
-TEST_F(CorePageLoadMetricsObserverTest,
-       LastImagePaint_DiscardBackgroundResult) {
-  page_load_metrics::mojom::PageLoadTiming timing;
-  page_load_metrics::InitPageLoadTimingForTest(&timing);
-  PopulateRequiredTimingFields(&timing);
-
-  NavigateAndCommit(GURL(kDefaultTestUrl));
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  web_contents()->WasHidden();
-  // Set a large enough value to make sure it will be larger than background
-  // time, so that the result will be discarded.
-  timing.paint_timing->last_image_paint = base::TimeDelta::FromSeconds(10);
-  SimulateTimingUpdate(timing);
-  // Navigate again to force histogram recording.
-  NavigateAndCommit(GURL(kDefaultTestUrl2));
-
-  histogram_tester().ExpectTotalCount(internal::kHistogramLastImagePaint, 0);
-}
-
-TEST_F(CorePageLoadMetricsObserverTest, LastImagePaint_ReportLastCandidate) {
+TEST_F(CorePageLoadMetricsObserverTest, ReportLastNullCandidate) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
 
   NavigateAndCommit(GURL(kDefaultTestUrl));
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing->last_image_paint =
+
+  timing.paint_timing->largest_image_paint =
       base::TimeDelta::FromMilliseconds(1000);
+  timing.paint_timing->largest_image_paint_size = 10u;
+
   PopulateRequiredTimingFields(&timing);
   SimulateTimingUpdate(timing);
 
-  timing.paint_timing->last_image_paint =
-      base::TimeDelta::FromMilliseconds(4780);
-  PopulateRequiredTimingFields(&timing);
-  SimulateTimingUpdate(timing);
-  // Navigate again to force histogram recording.
-  NavigateAndCommit(GURL(kDefaultTestUrl2));
-
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples(internal::kHistogramLastImagePaint),
-      testing::ElementsAre(base::Bucket(4780, 1)));
-}
-
-TEST_F(CorePageLoadMetricsObserverTest,
-       LastImagePaint_ReportLastNullCandidate) {
-  page_load_metrics::mojom::PageLoadTiming timing;
-  page_load_metrics::InitPageLoadTimingForTest(&timing);
-
-  NavigateAndCommit(GURL(kDefaultTestUrl));
-  timing.navigation_start = base::Time::FromDoubleT(1);
-
-  timing.paint_timing->last_image_paint =
-      base::TimeDelta::FromMilliseconds(1000);
-  PopulateRequiredTimingFields(&timing);
-  SimulateTimingUpdate(timing);
-
-  timing.paint_timing->last_image_paint = base::Optional<base::TimeDelta>();
+  timing.paint_timing->largest_image_paint = base::Optional<base::TimeDelta>();
+  timing.paint_timing->largest_image_paint_size = 0;
   PopulateRequiredTimingFields(&timing);
   SimulateTimingUpdate(timing);
   // Navigate again to force histogram recording.
   NavigateAndCommit(GURL(kDefaultTestUrl2));
 
-  histogram_tester().ExpectTotalCount(internal::kHistogramLastImagePaint, 0);
+  histogram_tester().ExpectTotalCount(internal::kHistogramLargestImagePaint, 0);
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, LargestTextPaint) {
@@ -1087,25 +1028,6 @@ TEST_F(CorePageLoadMetricsObserverTest, LargestTextPaint) {
 
   EXPECT_THAT(
       histogram_tester().GetAllSamples(internal::kHistogramLargestTextPaint),
-      testing::ElementsAre(base::Bucket(4780, 1)));
-}
-
-TEST_F(CorePageLoadMetricsObserverTest, LastTextPaint) {
-  page_load_metrics::mojom::PageLoadTiming timing;
-  page_load_metrics::InitPageLoadTimingForTest(&timing);
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  // Pick a value that lines up with a histogram bucket.
-  timing.paint_timing->last_text_paint =
-      base::TimeDelta::FromMilliseconds(4780);
-  PopulateRequiredTimingFields(&timing);
-
-  NavigateAndCommit(GURL(kDefaultTestUrl));
-  SimulateTimingUpdate(timing);
-  // Navigate again to force histogram recording.
-  NavigateAndCommit(GURL(kDefaultTestUrl2));
-
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples(internal::kHistogramLastTextPaint),
       testing::ElementsAre(base::Bucket(4780, 1)));
 }
 
@@ -1517,4 +1439,22 @@ TEST_F(CorePageLoadMetricsObserverTest,
 
   histogram_tester().ExpectTotalCount(
       internal::kHistogramUserGestureNavigationToForwardBack, 1);
+}
+
+TEST_F(CorePageLoadMetricsObserverTest, UnfinishedBytesRecorded) {
+  NavigateAndCommit(GURL(kDefaultTestUrl));
+
+  std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr> resources;
+  // Incomplete resource.
+  resources.push_back(
+      CreateResource(false /* was_cached */, 10 * 1024 /* delta_bytes */,
+                     0 /* encoded_body_length */, false /* is_complete */));
+  SimulateResourceDataUseUpdate(resources);
+
+  // Navigate again to force histogram recording.
+  NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  // Verify that the unfinished resource bytes are recorded.
+  histogram_tester().ExpectUniqueSample(
+      internal::kHistogramPageLoadUnfinishedBytes, 10, 1);
 }

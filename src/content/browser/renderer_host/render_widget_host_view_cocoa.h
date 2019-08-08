@@ -194,6 +194,13 @@ struct DidOverscrollParams;
 
   // Whether the pen's tip is in contact with the stylus digital tablet.
   bool has_pen_contact_;
+
+  bool mouse_locked_;
+  gfx::PointF last_mouse_screen_position_;
+  gfx::PointF mouse_locked_screen_position_;
+
+  // The parent accessibility element. This is set only in the browser process.
+  base::scoped_nsobject<id> accessibilityParent_;
 }
 
 @property(nonatomic, assign) NSRange markedRange;
@@ -249,6 +256,15 @@ struct DidOverscrollParams;
 // KeyboardLock methods.
 - (void)lockKeyboard:(base::Optional<base::flat_set<ui::DomCode>>)keysToLock;
 - (void)unlockKeyboard;
+
+// Cursorlock methods.
+- (void)setCursorLocked:(BOOL)locked;
+
+// Sets |accessibilityParent| as the object returned when the
+// receiver is queried for its accessibility parent.
+// TODO(lgrey/ellyjones): Remove this in favor of setAccessibilityParent:
+// when we switch to the new accessibility API.
+- (void)setAccessibilityParentElement:(id)accessibilityParent;
 
 // Methods previously marked as private.
 - (id)initWithClient:(content::mojom::RenderWidgetHostNSViewClient*)client

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,25 +35,27 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.Assert;
 
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ChromeWindow;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.AccessorySheetData;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryCoordinator;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.data.PropertyProvider;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_tabs.PasswordAccessorySheetCoordinator;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.components.autofill.AutofillDelegate;
-import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.content_public.browser.ImeAdapter;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestInputMethodManagerWrapper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
-import org.chromium.ui.DropdownItem;
 import org.chromium.ui.DropdownPopupWindowInterface;
 
 import java.util.concurrent.ExecutionException;
@@ -71,8 +73,8 @@ public class ManualFillingTestHelper {
     private final ChromeTabbedActivityTestRule mActivityTestRule;
     private final AtomicReference<WebContents> mWebContentsRef = new AtomicReference<>();
     private TestInputMethodManagerWrapper mInputMethodManagerWrapper;
-    private Provider<AccessorySheetData> mSheetSuggestionsProvider =
-            new KeyboardAccessoryData.PropertyProvider<>();
+    private PropertyProvider<AccessorySheetData> mSheetSuggestionsProvider =
+            new PropertyProvider<>();
 
     private EmbeddedTestServer mEmbeddedTestServer;
 
@@ -89,32 +91,30 @@ public class ManualFillingTestHelper {
     }
 
     public void loadTestPage(String url, boolean isRtl) throws InterruptedException {
-        loadTestPage(url, isRtl, false);
+        loadTestPage(url, isRtl, false, FakeKeyboard::new);
     }
 
-    public void loadTestPage(String url, boolean isRtl, boolean waitForNode)
+    public void loadTestPage(String url, boolean isRtl, boolean waitForNode,
+            ChromeWindow.KeyboardVisibilityDelegateFactory keyboardDelegate)
             throws InterruptedException {
         mEmbeddedTestServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
-        ChromeWindow.setKeyboardVisibilityDelegateFactory(FakeKeyboard::new);
+        ChromeWindow.setKeyboardVisibilityDelegateFactory(keyboardDelegate);
         mActivityTestRule.startMainActivityWithURL(mEmbeddedTestServer.getURL(url));
         setRtlForTesting(isRtl);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             ChromeTabbedActivity activity = mActivityTestRule.getActivity();
             mWebContentsRef.set(activity.getActivityTab().getWebContents());
-            activity.getManualFillingController()
-                    .getMediatorForTesting()
-                    .setInsetObserverViewSupplier(
-                            ()
-                                    -> getKeyboard().createInsetObserver(
-                                            activity.getInsetObserverView().getContext()));
+            getManualFillingCoordinator().getMediatorForTesting().setInsetObserverViewSupplier(
+                    ()
+                            -> getKeyboard().createInsetObserver(
+                                    activity.getInsetObserverView().getContext()));
             // The TestInputMethodManagerWrapper intercepts showSoftInput so that a keyboard is
             // never brought up.
             final ImeAdapter imeAdapter = ImeAdapter.fromWebContents(mWebContentsRef.get());
             mInputMethodManagerWrapper = TestInputMethodManagerWrapper.create(imeAdapter);
             imeAdapter.setInputMethodManagerWrapper(mInputMethodManagerWrapper);
-            activity.getManualFillingController().registerPasswordProvider(
-                    mSheetSuggestionsProvider);
+            getManualFillingCoordinator().registerPasswordProvider(mSheetSuggestionsProvider);
         });
         if (waitForNode) DOMUtils.waitForNonZeroNodeBounds(mWebContentsRef.get(), PASSWORD_NODE_ID);
         cacheCredentials(new String[0], new String[0]); // This caches the empty state.
@@ -133,9 +133,14 @@ public class ManualFillingTestHelper {
         return mWebContentsRef.get();
     }
 
+    ManualFillingCoordinator getManualFillingCoordinator() {
+        return (ManualFillingCoordinator) mActivityTestRule.getActivity()
+                .getManualFillingComponent();
+    }
+
     public void focusPasswordField() throws TimeoutException, InterruptedException {
         DOMUtils.focusNode(mActivityTestRule.getWebContents(), PASSWORD_NODE_ID);
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mActivityTestRule.getWebContents().scrollFocusedEditableNodeIntoView(); });
         getKeyboard().showKeyboard(mActivityTestRule.getActivity().getCurrentFocus());
     }
@@ -149,11 +154,8 @@ public class ManualFillingTestHelper {
         // TODO(fhorschig): This should be |focusNode|. Change with autofill popup deprecation.
         DOMUtils.clickNode(mWebContentsRef.get(), USERNAME_NODE_ID);
         if (forceAccessory) {
-            ThreadUtils.runOnUiThreadBlocking(() -> {
-                mActivityTestRule.getActivity()
-                        .getManualFillingController()
-                        .getMediatorForTesting()
-                        .showWhenKeyboardIsVisible();
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                getManualFillingCoordinator().getMediatorForTesting().showWhenKeyboardIsVisible();
             });
         }
         getKeyboard().showKeyboard(mActivityTestRule.getActivity().getCurrentFocus());
@@ -161,8 +163,12 @@ public class ManualFillingTestHelper {
 
     public void clickNodeAndShowKeyboard(String node)
             throws TimeoutException, InterruptedException {
-        DOMUtils.clickNode(mWebContentsRef.get(), node);
+        clickNode(node);
         getKeyboard().showKeyboard(mActivityTestRule.getActivity().getCurrentFocus());
+    }
+
+    public void clickNode(String node) throws TimeoutException, InterruptedException {
+        DOMUtils.clickNode(mWebContentsRef.get(), node);
     }
 
     /**
@@ -188,9 +194,8 @@ public class ManualFillingTestHelper {
 
     public void waitForKeyboardAccessoryToDisappear() {
         CriteriaHelper.pollInstrumentationThread(() -> {
-            KeyboardAccessoryCoordinator accessory = mActivityTestRule.getActivity()
-                                                             .getManualFillingController()
-                                                             .getKeyboardAccessory();
+            KeyboardAccessoryCoordinator accessory =
+                    getManualFillingCoordinator().getMediatorForTesting().getKeyboardAccessory();
             return accessory != null && !accessory.isShown();
         });
         CriteriaHelper.pollUiThread(() -> {
@@ -201,9 +206,8 @@ public class ManualFillingTestHelper {
 
     public void waitForKeyboardAccessoryToBeShown() {
         CriteriaHelper.pollInstrumentationThread(() -> {
-            KeyboardAccessoryCoordinator accessory = mActivityTestRule.getActivity()
-                                                             .getManualFillingController()
-                                                             .getKeyboardAccessory();
+            KeyboardAccessoryCoordinator accessory =
+                    getManualFillingCoordinator().getMediatorForTesting().getKeyboardAccessory();
             return accessory != null && accessory.isShown();
         });
         CriteriaHelper.pollUiThread(() -> {
@@ -219,7 +223,7 @@ public class ManualFillingTestHelper {
         // Wait for InputConnection to be ready and fill the filterInput. Then wait for the anchor.
         CriteriaHelper.pollUiThread(
                 Criteria.equals(1, () -> mInputMethodManagerWrapper.getShowSoftInputCounter()));
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             ImeAdapter.fromWebContents(webContents).setComposingTextForTest(filterInput, 4);
         });
         CriteriaHelper.pollUiThread(new Criteria("Autofill Popup anchor view was never added.") {
@@ -243,6 +247,10 @@ public class ManualFillingTestHelper {
         });
 
         return popup;
+    }
+
+    public PasswordAccessorySheetCoordinator getOrCreatePasswordAccessorySheet() {
+        return getManualFillingCoordinator().getMediatorForTesting().getOrCreatePasswordSheet();
     }
 
     // ----------------------------------
@@ -274,7 +282,7 @@ public class ManualFillingTestHelper {
      * @param passwords {@link String}s to be used as display text for password chips.
      */
     public void cacheCredentials(String[] usernames, String[] passwords) {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             ManualFillingBridge.cachePasswordSheetData(
                     mActivityTestRule.getWebContents(), usernames, passwords);
         });
@@ -323,7 +331,8 @@ public class ManualFillingTestHelper {
                             .withCause(new Throwable("No tab at index " + tabIndex))
                             .build();
                 }
-                ThreadUtils.runOnUiThread(() -> tabLayout.getTabAt(tabIndex).select());
+                PostTask.runOrPostTask(
+                        UiThreadTaskTraits.DEFAULT, () -> tabLayout.getTabAt(tabIndex).select());
             }
         };
     }
@@ -399,43 +408,13 @@ public class ManualFillingTestHelper {
     // --------------------------------------------
 
     public void addGenerationButton() {
-        KeyboardAccessoryData
-                .PropertyProvider<KeyboardAccessoryData.Action[]> generationActionProvider =
-                new KeyboardAccessoryData.PropertyProvider<>(
-                        AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
-        mActivityTestRule.getActivity().getManualFillingController().registerActionProvider(
-                generationActionProvider);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        PropertyProvider<KeyboardAccessoryData.Action[]> generationActionProvider =
+                new PropertyProvider<>(AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
+        getManualFillingCoordinator().registerActionProvider(generationActionProvider);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             generationActionProvider.notifyObservers(new KeyboardAccessoryData.Action[] {
                     new KeyboardAccessoryData.Action("Generate Password",
                             AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, result -> {})});
-        });
-    }
-
-    public void addAutofillChips() {
-        KeyboardAccessoryData.PropertyProvider<AutofillSuggestion[]> suggestionProvider =
-                new KeyboardAccessoryData.PropertyProvider<>(AccessoryAction.AUTOFILL_SUGGESTION);
-        mActivityTestRule.getActivity()
-                .getManualFillingController()
-                .getKeyboardAccessory()
-                .registerAutofillProvider(suggestionProvider, new AutofillDelegate() {
-                    @Override
-                    public void dismissed() {}
-                    @Override
-                    public void suggestionSelected(int listIndex) {}
-                    @Override
-                    public void deleteSuggestion(int listIndex) {}
-                    @Override
-                    public void accessibilityFocusCleared() {}
-                });
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            suggestionProvider.notifyObservers(new AutofillSuggestion[] {
-                    new AutofillSuggestion("Johnathan", "Smithonian-Jackson", DropdownItem.NO_ICON,
-                            false, 0, false, false, false),
-                    new AutofillSuggestion("Jane Erika", "Donovanova", DropdownItem.NO_ICON, false,
-                            1, false, false, false),
-                    new AutofillSuggestion("Marcus", "McSpartangregor", DropdownItem.NO_ICON, false,
-                            2, false, false, false)});
         });
     }
 }

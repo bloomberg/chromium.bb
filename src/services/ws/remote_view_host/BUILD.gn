@@ -16,6 +16,11 @@ source_set("remote_view_host") {
     "//ui/aura",
     "//ui/views",
   ]
+
+  deps = []
+  if (is_chromeos) {
+    deps += [ "//ui/wm" ]
+  }
 }
 
 source_set("tests") {

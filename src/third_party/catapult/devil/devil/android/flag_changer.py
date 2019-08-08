@@ -74,6 +74,8 @@ class FlagChanger(object):
     if use_legacy_path:
       cmdline_path, alternate_cmdline_path = (
           alternate_cmdline_path, cmdline_path)
+      if not self._device.HasRoot():
+        raise ValueError('use_legacy_path requires a rooted device')
     self._cmdline_path = cmdline_path
 
     if self._device.PathExists(alternate_cmdline_path):
@@ -103,7 +105,7 @@ class FlagChanger(object):
     self._state_stack[-1] = set(flags)
     return flags
 
-  def ReplaceFlags(self, flags):
+  def ReplaceFlags(self, flags, log_flags=True):
     """Replaces the flags in the command line with the ones provided.
        Saves the current flags state on the stack, so a call to Restore will
        change the state back to the one preceeding the call to ReplaceFlags.
@@ -119,7 +121,7 @@ class FlagChanger(object):
     new_flags = set(flags)
     self._state_stack.append(new_flags)
     self._SetPermissive()
-    return self._UpdateCommandLineFile()
+    return self._UpdateCommandLineFile(log_flags=log_flags)
 
   def AddFlags(self, flags):
     """Appends flags to the command line if they aren't already there.
@@ -179,10 +181,14 @@ class FlagChanger(object):
     """Set SELinux to permissive, if needed.
 
     On Android N and above this is needed in order to allow Chrome to read the
-    command line file.
+    legacy command line file.
 
     TODO(crbug.com/699082): Remove when a better solution exists.
     """
+    # TODO(crbug.com/948578): figure out the exact scenarios where the lowered
+    # permissions are needed, and document them in the code.
+    if not self._device.HasRoot():
+      return
     if (self._device.build_version_sdk >= version_codes.NOUGAT and
         self._device.GetEnforce()):
       self._device.SetEnforce(enabled=False)
@@ -209,7 +215,7 @@ class FlagChanger(object):
       self._ResetEnforce()
     return self._UpdateCommandLineFile()
 
-  def _UpdateCommandLineFile(self):
+  def _UpdateCommandLineFile(self, log_flags=True):
     """Writes out the command line to the file, or removes it if empty.
 
     Returns:
@@ -221,14 +227,11 @@ class FlagChanger(object):
     else:
       self._device.RemovePath(self._cmdline_path, force=True, as_root=True)
 
-    current_flags = self.GetCurrentFlags()
-    if self._cmdline_path:
-      logger.info(
-          'Flags now set on the device at %s: %s',
-          self._cmdline_path, current_flags)
-    else:
-      logger.info('Flags now set on the device: %s', current_flags)
-    return current_flags
+    flags = self.GetCurrentFlags()
+    logging.info('Flags now written on the device to %s', self._cmdline_path)
+    if log_flags:
+      logging.info('Flags: %s', flags)
+    return flags
 
 
 def _ParseFlags(line):

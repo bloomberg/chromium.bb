@@ -24,28 +24,6 @@ DataUseMetricsObserver::OnCommit(content::NavigationHandle* navigation_handle,
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
-DataUseMetricsObserver::OnStart(content::NavigationHandle* navigation_handle,
-                                const GURL& currently_committed_url,
-                                bool started_in_foreground) {
-  currently_in_foreground_ = started_in_foreground;
-  return CONTINUE_OBSERVING;
-}
-
-page_load_metrics::PageLoadMetricsObserver::ObservePolicy
-DataUseMetricsObserver::OnHidden(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  currently_in_foreground_ = false;
-  return CONTINUE_OBSERVING;
-}
-
-page_load_metrics::PageLoadMetricsObserver::ObservePolicy
-DataUseMetricsObserver::OnShown() {
-  currently_in_foreground_ = true;
-  return CONTINUE_OBSERVING;
-}
-
-page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 DataUseMetricsObserver::ShouldObserveMimeType(
     const std::string& mime_type) const {
   // Observe all MIME types. We still only use actual data usage, so strange
@@ -55,7 +33,7 @@ DataUseMetricsObserver::ShouldObserveMimeType(
 }
 
 void DataUseMetricsObserver::OnResourceDataUseObserved(
-    FrameTreeNodeId frame_tree_node_id,
+    content::RenderFrameHost* rfh,
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
         resources) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -69,10 +47,12 @@ void DataUseMetricsObserver::OnResourceDataUseObserved(
     received_data_length += resource->delta_bytes;
     chrome_data_use_measurement->RecordContentTypeMetric(
         resource->mime_type, resource->is_main_frame_resource,
-        currently_in_foreground_, resource->delta_bytes);
+        GetDelegate()->GetVisibilityTracker().currently_in_foreground(),
+        resource->delta_bytes);
   }
   if (!received_data_length)
     return;
   chrome_data_use_measurement->ReportUserTrafficDataUse(
-      currently_in_foreground_, received_data_length);
+      GetDelegate()->GetVisibilityTracker().currently_in_foreground(),
+      received_data_length);
 }

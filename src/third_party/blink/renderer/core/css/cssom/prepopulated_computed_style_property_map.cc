@@ -29,7 +29,7 @@ PrepopulatedComputedStylePropertyMap::PrepopulatedComputedStylePropertyMap(
 
   for (const auto& property_id : native_properties) {
     // Silently drop shorthand properties.
-    DCHECK_NE(property_id, CSSPropertyInvalid);
+    DCHECK_NE(property_id, CSSPropertyID::kInvalid);
     if (CSSProperty::Get(property_id).IsShorthand())
       continue;
 
@@ -49,7 +49,7 @@ void PrepopulatedComputedStylePropertyMap::UpdateStyle(
     const Document& document,
     const ComputedStyle& style) {
   for (const auto& property_id : native_values_.Keys()) {
-    DCHECK_NE(property_id, CSSPropertyInvalid);
+    DCHECK_NE(property_id, CSSPropertyID::kInvalid);
     UpdateNativeProperty(style, property_id);
   }
 

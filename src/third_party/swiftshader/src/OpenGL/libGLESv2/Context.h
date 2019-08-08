@@ -410,6 +410,7 @@ struct State
 	gl::BindingPointer<Buffer> pixelPackBuffer;
 	gl::BindingPointer<Buffer> pixelUnpackBuffer;
 	gl::BindingPointer<Buffer> genericUniformBuffer;
+	gl::BindingPointer<Buffer> genericTransformFeedbackBuffer;
 	BufferBinding uniformBuffers[MAX_UNIFORM_BUFFER_BINDINGS];
 
 	GLuint readFramebuffer;
@@ -640,6 +641,7 @@ public:
 	GLenum getPixels(const GLvoid **data, GLenum type, GLsizei imageSize) const;
 	bool getBuffer(GLenum target, es2::Buffer **buffer) const;
 	Program *getCurrentProgram() const;
+	Texture *getTargetTexture(GLenum target) const;
 	Texture2D *getTexture2D() const;
 	Texture2D *getTexture2D(GLenum target) const;
 	Texture3D *getTexture3D() const;

@@ -14,16 +14,16 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/browser_sync/browser_sync_switches.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 
 namespace {
 
-using browser_sync::ProfileSyncService;
+using syncer::ProfileSyncService;
 
-class SyncActiveChecker : public SingleClientStatusChangeChecker {
+class SyncTransportActiveChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit SyncActiveChecker(ProfileSyncService* service)
+  explicit SyncTransportActiveChecker(ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied() override {
@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(LocalSyncTest, ShouldStart) {
           browser()->profile());
 
   // Wait until the first sync cycle is completed.
-  ASSERT_TRUE(SyncActiveChecker(service).Wait());
+  ASSERT_TRUE(SyncTransportActiveChecker(service).Wait());
 
   EXPECT_TRUE(service->IsLocalSyncEnabled());
 }

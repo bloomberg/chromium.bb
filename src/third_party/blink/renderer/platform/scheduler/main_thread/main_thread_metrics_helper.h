@@ -74,8 +74,6 @@ class PLATFORM_EXPORT MainThreadMetricsHelper : public MetricsHelper {
   // useless tasks to be posted.
   bool renderer_shutting_down_;
 
-  const bool is_page_almost_idle_signal_enabled_;
-
   base::Optional<base::TimeTicks> last_reported_task_;
 
   ThreadLoadTracker main_thread_load_tracker_;

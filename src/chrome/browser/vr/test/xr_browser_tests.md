@@ -43,12 +43,18 @@ flags that are set in its `SetUp` function.
 
 ## Compiling And Running
 
-The tests are compiled in the `xr_browser_tests` target, which is currently
-only defined on Windows.
+The tests are compiled in the `xr_browser_tests` target. This is a combination
+of the `xr_browser_tests_binary` target, which is the actual test, and the
+`xr_browser_tests_runner` target, which is a wrapper script that ensures special
+setup is completed before running the tests.
 
 Once compiled, the tests can be run using the following command line:
 
-`xr_browser_tests.exe --enable-gpu --test-launcher-jobs=1
+`run_xr_browser_tests.py --enable-gpu --test-launcher-jobs=1
 --enable-pixel-output-in-tests`
+
+Because the "test" is actually a Python wrapper script, you may need to prepend
+`python` to the front of the command on Windows if Python file association is
+not set up on your machine.
 
 [1]: https://chromium.googlesource.com/chromium/src/+/master/chrome/android/javatests/src/org/chromium/chrome/browser/vr

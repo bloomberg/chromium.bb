@@ -52,8 +52,8 @@
 #include "chrome/browser/chromeos/login/users/supervised_user_manager_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
-#include "chrome/browser/chromeos/printing/external_printers.h"
-#include "chrome/browser/chromeos/printing/external_printers_factory.h"
+#include "chrome/browser/chromeos/printing/bulk_printers_calculator.h"
+#include "chrome/browser/chromeos/printing/bulk_printers_calculator_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/session_length_limiter.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -76,7 +76,7 @@
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/upstart_client.h"
+#include "chromeos/dbus/upstart/upstart_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/proxy/proxy_config_service_impl.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -194,9 +194,9 @@ policy::MinimumVersionPolicyHandler* GetMinimumVersionPolicyHandler() {
       ->GetMinimumVersionPolicyHandler();
 }
 
-base::WeakPtr<ExternalPrinters> GetExternalPrinters(
+base::WeakPtr<BulkPrintersCalculator> GetBulkPrintersCalculator(
     const AccountId& account_id) {
-  return ExternalPrintersFactory::Get()->GetForAccountId(account_id);
+  return BulkPrintersCalculatorFactory::Get()->GetForAccountId(account_id);
 }
 
 // Starts bluetooth logging service for accounts ending with |kGoogleDotCom|
@@ -206,14 +206,8 @@ void MaybeStartBluetoothLogging(const AccountId& account_id) {
                       base::CompareCase::INSENSITIVE_ASCII)) {
     return;
   }
-  const std::vector<std::string> board =
-      base::SplitString(base::SysInfo::GetLsbReleaseBoard(), "-",
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  const std::string board_name = board[0];
-  if (board_name != "eve" && board_name != "nocturne")
-    return;
-  chromeos::DBusThreadManager::Get()->GetUpstartClient()->StartJob(
-      kBluetoothLoggingUpstartJob, {}, EmptyVoidDBusMethodCallback());
+  chromeos::UpstartClient::Get()->StartJob(kBluetoothLoggingUpstartJob, {},
+                                           EmptyVoidDBusMethodCallback());
 }
 
 bool IsManagedSessionEnabled(policy::DeviceLocalAccountPolicyBroker* broker) {
@@ -233,15 +227,6 @@ const base::Value::ListStorage* GetListPolicyValue(
     return nullptr;
 
   return &entry->value->GetList();
-}
-
-bool IsPacHttpsUrlStrippingDisabled(
-    policy::DeviceLocalAccountPolicyBroker* broker) {
-  const policy::PolicyMap::Entry* entry =
-      broker->core()->store()->policy_map().Get(
-          policy::key::kPacHttpsUrlStrippingEnabled);
-  // Policy is enabled and it's value is set to 'false'.
-  return entry && entry->value && !entry->value->GetBool();
 }
 
 bool AreRiskyPoliciesUsed(policy::DeviceLocalAccountPolicyBroker* broker) {
@@ -466,7 +451,7 @@ void ChromeUserManagerImpl::Shutdown() {
   wallpaper_policy_observer_.reset();
   // Remove the observer before shutting down the printer policy objects.
   printers_policy_observer_.reset();
-  ExternalPrintersFactory::Get()->Shutdown();
+  BulkPrintersCalculatorFactory::Get()->ShutdownProfiles();
   registrar_.RemoveAll();
 }
 
@@ -527,20 +512,6 @@ user_manager::UserList ChromeUserManagerImpl::GetUsersAllowedForMultiProfile()
   }
 
   return result;
-}
-
-user_manager::UserList
-ChromeUserManagerImpl::GetUsersAllowedForSupervisedUsersCreation() const {
-  CrosSettings* cros_settings = CrosSettings::Get();
-  bool allow_new_user = true;
-  cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
-  bool supervised_users_allowed = AreSupervisedUsersAllowed();
-
-  // Restricted either by policy or by owner.
-  if (!allow_new_user || !supervised_users_allowed)
-    return user_manager::UserList();
-
-  return GetUsersAllowedAsSupervisedUserManagers(GetUsers());
 }
 
 user_manager::UserList ChromeUserManagerImpl::GetUnlockUsers() const {
@@ -712,7 +683,7 @@ void ChromeUserManagerImpl::OnExternalDataSet(const std::string& policy,
   if (policy == policy::key::kUserAvatarImage)
     GetUserImageManager(account_id)->OnExternalDataSet(policy);
   else if (policy == policy::key::kNativePrintersBulkConfiguration)
-    GetExternalPrinters(account_id)->ClearData();
+    GetBulkPrintersCalculator(account_id)->ClearData();
   else if (policy != policy::key::kWallpaperImage)
     NOTREACHED();
 }
@@ -724,7 +695,7 @@ void ChromeUserManagerImpl::OnExternalDataCleared(const std::string& policy,
   if (policy == policy::key::kUserAvatarImage)
     GetUserImageManager(account_id)->OnExternalDataCleared(policy);
   else if (policy == policy::key::kNativePrintersBulkConfiguration)
-    GetExternalPrinters(account_id)->ClearData();
+    GetBulkPrintersCalculator(account_id)->ClearData();
   else if (policy == policy::key::kWallpaperImage)
     WallpaperControllerClient::Get()->RemovePolicyWallpaper(account_id);
   else
@@ -742,7 +713,7 @@ void ChromeUserManagerImpl::OnExternalDataFetched(
     GetUserImageManager(account_id)
         ->OnExternalDataFetched(policy, std::move(data));
   } else if (policy == policy::key::kNativePrintersBulkConfiguration) {
-    GetExternalPrinters(account_id)->SetData(std::move(data));
+    GetBulkPrintersCalculator(account_id)->SetData(std::move(data));
   } else if (policy == policy::key::kWallpaperImage) {
     WallpaperControllerClient::Get()->SetPolicyWallpaper(account_id,
                                                          std::move(data));
@@ -1163,7 +1134,7 @@ void ChromeUserManagerImpl::RemoveNonCryptohomeData(
   // |known_user::RemovePrefs|. See https://crbug.com/778077.
   WallpaperControllerClient::Get()->RemoveUserWallpaper(account_id);
   GetUserImageManager(account_id)->DeleteUserImage();
-  ExternalPrintersFactory::Get()->RemoveForUserId(account_id);
+  BulkPrintersCalculatorFactory::Get()->RemoveForUserId(account_id);
   // TODO(tbarzic): Forward data removal request to ash::HammerDeviceHandler,
   // instead of removing the prefs value here.
   if (GetLocalState()->FindPreference(ash::prefs::kDetachableBaseDevices)) {
@@ -1536,8 +1507,7 @@ bool ChromeUserManagerImpl::IsManagedSessionEnabledForUser(
 bool ChromeUserManagerImpl::IsFullManagementDisclosureNeeded(
     policy::DeviceLocalAccountPolicyBroker* broker) const {
   return IsManagedSessionEnabled(broker) &&
-         (IsPacHttpsUrlStrippingDisabled(broker) ||
-          AreRiskyPoliciesUsed(broker) ||
+         (AreRiskyPoliciesUsed(broker) ||
           AreRiskyExtensionsForceInstalled(broker) ||
           AreForcedNetworkCertificatesInstalled() ||
           IsProxyUsed(GetLocalState()));
@@ -1569,7 +1539,7 @@ void ChromeUserManagerImpl::AsyncRemoveCryptohome(
   cryptohome::AccountIdentifier account_id_proto;
   account_id_proto.set_account_id(cryptohome::Identification(account_id).id());
 
-  DBusThreadManager::Get()->GetCryptohomeClient()->RemoveEx(
+  CryptohomeClient::Get()->RemoveEx(
       account_id_proto, base::BindOnce(&OnRemoveUserComplete, account_id));
 }
 

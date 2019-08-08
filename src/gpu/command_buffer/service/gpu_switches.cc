@@ -73,14 +73,16 @@ const char kEmulateShaderPrecision[] = "emulate-shader-precision";
 // tracking.
 const char kUseCmdDecoder[] = "use-cmd-decoder";
 
-// Turns on rastering to SkImage with RasterDecoder.
-const char kEnableRasterToSkImage[] = "enable-raster-to-sk-image";
-
-// Enable RasterDecoder with passthrough GLES2 command decoding.
-const char kEnablePassthroughRasterDecoder[] =
-    "enable-passthrough-raster-decoder";
-
 // Enable Vulkan support, must also have ENABLE_VULKAN defined.
 const char kEnableVulkan[] = "enable-vulkan";
+
+// Disables VK_KHR_surface extension. Instead of using swapchain, bitblt will be
+// used for present render result on screen.
+const char kDisableVulkanSurface[] = "disable-vulkan-surface";
+
+// Disables falling back to GL based hardware rendering if initializing Vulkan
+// fails. This is to allow tests to catch regressions in Vulkan.
+const char kDisableVulkanFallbackToGLForTesting[] =
+    "disable-vulkan-fallback-to-gl-for-testing";
 
 }  // namespace switches

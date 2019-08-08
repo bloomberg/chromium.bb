@@ -36,6 +36,7 @@
 
 #define QSV_HAVE_CO2 QSV_VERSION_ATLEAST(1, 6)
 #define QSV_HAVE_CO3 QSV_VERSION_ATLEAST(1, 11)
+#define QSV_HAVE_CO_VPS  QSV_VERSION_ATLEAST(1, 17)
 
 #define QSV_HAVE_TRELLIS QSV_VERSION_ATLEAST(1, 8)
 #define QSV_HAVE_MAX_SLICE_SIZE QSV_VERSION_ATLEAST(1, 9)
@@ -89,6 +90,7 @@
 { "adaptive_b",     "Adaptive B-frame placement",             OFFSET(qsv.adaptive_b),     AV_OPT_TYPE_INT, { .i64 = -1 }, -1,          1, VE },                         \
 { "b_strategy",     "Strategy to choose between I/P/B-frames", OFFSET(qsv.b_strategy),    AV_OPT_TYPE_INT, { .i64 = -1 }, -1,          1, VE },                         \
 { "forced_idr",     "Forcing I frames as IDR frames",         OFFSET(qsv.forced_idr),     AV_OPT_TYPE_BOOL,{ .i64 = 0  },  0,          1, VE },                         \
+{ "low_power", "enable low power mode(experimental: many limitations by mfx version, BRC modes, etc.)", OFFSET(qsv.low_power), AV_OPT_TYPE_BOOL, { .i64 = 0}, 0, 1, VE},\
 
 typedef int SetEncodeCtrlCB (AVCodecContext *avctx,
                              const AVFrame *frame, mfxEncodeCtrl* enc_ctrl);
@@ -131,6 +133,10 @@ typedef struct QSVEncContext {
 
     QSVFramesContext frames_ctx;
 
+    mfxVersion          ver;
+
+    int hevc_vps;
+
     // options set by the caller
     int async_depth;
     int idr_interval;
@@ -151,7 +157,6 @@ typedef struct QSVEncContext {
 
     int single_sei_nal_unit;
     int max_dec_frame_buffering;
-    int trellis;
 
     int bitrate_limit;
     int mbbrc;

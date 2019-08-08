@@ -16,6 +16,7 @@
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -40,6 +41,7 @@
 #include "content/public/common/result_codes.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/service_worker/service_worker_type_converters.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
@@ -59,11 +61,8 @@ constexpr base::TimeDelta kStartInstalledWorkerTimeout =
 // Timeout for a request to be handled.
 constexpr base::TimeDelta kRequestTimeout = base::TimeDelta::FromMinutes(5);
 
-// Time to wait until stopping an idle worker.
-constexpr base::TimeDelta kIdleWorkerTimeout = base::TimeDelta::FromSeconds(30);
-
-// Default delay for scheduled update.
-constexpr base::TimeDelta kUpdateDelay = base::TimeDelta::FromSeconds(1);
+const base::FeatureParam<int> kUpdateDelayParam{
+    &blink::features::kServiceWorkerUpdateDelay, "update_delay_in_ms", 1000};
 
 const char kClaimClientsStateErrorMesage[] =
     "Only the active worker can claim clients.";
@@ -197,6 +196,10 @@ void DidNavigateClient(
     error_msg.emplace("Cannot navigate to URL: " + url.spec());
   }
   std::move(callback).Run(success, std::move(client), error_msg);
+}
+
+base::TimeDelta GetUpdateDelay() {
+  return base::TimeDelta::FromMilliseconds(kUpdateDelayParam.Get());
 }
 
 }  // namespace
@@ -366,7 +369,7 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
     const ServiceWorkerProviderHost* host = controllee.second;
     info.clients.insert(std::make_pair(
         host->client_uuid(),
-        ServiceWorkerClientInfo(host->process_id(), host->route_id(),
+        ServiceWorkerClientInfo(host->process_id(), host->frame_id(),
                                 host->web_contents_getter(),
                                 host->provider_type())));
   }
@@ -518,7 +521,8 @@ void ServiceWorkerVersion::ScheduleUpdate() {
   // Protect |this| until the timer fires, since we may be stopping
   // and soon no one might hold a reference to us.
   context_->ProtectVersion(base::WrapRefCounted(this));
-  update_timer_.Start(FROM_HERE, kUpdateDelay,
+
+  update_timer_.Start(FROM_HERE, GetUpdateDelay(),
                       base::BindOnce(&ServiceWorkerVersion::StartUpdate,
                                      weak_factory_.GetWeakPtr()));
 }
@@ -530,11 +534,6 @@ void ServiceWorkerVersion::StartUpdate() {
       registration_id_, scope_.GetOrigin(),
       base::BindOnce(&ServiceWorkerVersion::FoundRegistrationForUpdate,
                      weak_factory_.GetWeakPtr()));
-}
-
-void ServiceWorkerVersion::DeferScheduledUpdate() {
-  if (update_timer_.IsRunning())
-    update_timer_.Reset();
 }
 
 int ServiceWorkerVersion::StartRequest(
@@ -603,10 +602,9 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
   if (expiration_time > max_request_expiration_time_)
     max_request_expiration_time_ = expiration_time;
 
-  // S13nServiceWorker:
   // Even if the worker is in the idle state, the new event which is about to
   // be dispatched will reset the idle status. That means the worker can receive
-  // events directly from any clients, so we cannot trigger OnNoWork after this
+  // events directly from any client, so we cannot trigger OnNoWork after this
   // point.
   worker_is_idle_on_renderer_ = false;
   return request_id;
@@ -643,7 +641,6 @@ bool ServiceWorkerVersion::FinishRequest(int request_id, bool was_handled) {
       request->event_type, tick_clock_->NowTicks() - request->start_time_ticks,
       was_handled);
 
-  RestartTick(&idle_time_);
   TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::Request",
                          request, "Handled", was_handled);
   request_timeouts_.erase(request->timeout_iter);
@@ -707,11 +704,7 @@ void ServiceWorkerVersion::AddControllee(
   DCHECK(!base::ContainsKey(controllee_map_, uuid));
 
   controllee_map_[uuid] = provider_host;
-
   embedded_worker_->UpdateForegroundPriority();
-
-  // Keep the worker alive a bit longer right after a new controllee is added.
-  RestartTick(&idle_time_);
   ClearTick(&no_controllees_time_);
 
   ServiceWorkerRegistration* registration =
@@ -726,7 +719,7 @@ void ServiceWorkerVersion::AddControllee(
       base::BindOnce(&ServiceWorkerVersion::NotifyControlleeAdded,
                      weak_factory_.GetWeakPtr(), uuid,
                      ServiceWorkerClientInfo(
-                         provider_host->process_id(), provider_host->route_id(),
+                         provider_host->process_id(), provider_host->frame_id(),
                          provider_host->web_contents_getter(),
                          provider_host->provider_type())));
 }
@@ -744,20 +737,6 @@ void ServiceWorkerVersion::RemoveControllee(const std::string& client_uuid) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&ServiceWorkerVersion::NotifyControlleeRemoved,
                                 weak_factory_.GetWeakPtr(), client_uuid));
-}
-
-void ServiceWorkerVersion::OnStreamResponseStarted() {
-  CHECK_LT(inflight_stream_response_count_, std::numeric_limits<int>::max());
-  inflight_stream_response_count_++;
-}
-
-void ServiceWorkerVersion::OnStreamResponseFinished() {
-  DCHECK_GT(inflight_stream_response_count_, 0);
-  inflight_stream_response_count_--;
-  if (!blink::ServiceWorkerUtils::IsServicificationEnabled() &&
-      !HasWorkInBrowser()) {
-    OnNoWorkInBrowser();
-  }
 }
 
 void ServiceWorkerVersion::AddObserver(Observer* observer) {
@@ -924,8 +903,6 @@ void ServiceWorkerVersion::SetClockForTesting(base::Clock* clock) {
 }
 
 bool ServiceWorkerVersion::HasNoWork() const {
-  if (!blink::ServiceWorkerUtils::IsServicificationEnabled())
-    return !HasWorkInBrowser();
   return !HasWorkInBrowser() && worker_is_idle_on_renderer_;
 }
 
@@ -980,7 +957,6 @@ void ServiceWorkerVersion::OnStarting() {
 void ServiceWorkerVersion::OnStarted(
     blink::mojom::ServiceWorkerStartStatus start_status) {
   DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, running_status());
-  RestartTick(&idle_time_);
 
   // TODO(falken): This maps kAbruptCompletion to kErrorScriptEvaluated, which
   // most start callbacks will consider to be a failure. But the worker thread
@@ -1056,14 +1032,14 @@ void ServiceWorkerVersion::OnReportException(
 }
 
 void ServiceWorkerVersion::OnReportConsoleMessage(
-    int source_identifier,
+    blink::mojom::ConsoleMessageSource source,
     blink::mojom::ConsoleMessageLevel message_level,
     const base::string16& message,
     int line_number,
     const GURL& source_url) {
   for (auto& observer : observers_) {
-    observer.OnReportConsoleMessage(this, source_identifier, message_level,
-                                    message, line_number, source_url);
+    observer.OnReportConsoleMessage(this, source, message_level, message,
+                                    line_number, source_url);
   }
 }
 
@@ -1082,8 +1058,8 @@ void ServiceWorkerVersion::SetCachedMetadata(const GURL& url,
                            callback_id, "URL", url.spec());
   script_cache_map_.WriteMetadata(
       url, data,
-      base::Bind(&ServiceWorkerVersion::OnSetCachedMetadataFinished,
-                 weak_factory_.GetWeakPtr(), callback_id, data.size()));
+      base::BindOnce(&ServiceWorkerVersion::OnSetCachedMetadataFinished,
+                     weak_factory_.GetWeakPtr(), callback_id, data.size()));
 }
 
 void ServiceWorkerVersion::ClearCachedMetadata(const GURL& url) {
@@ -1092,8 +1068,8 @@ void ServiceWorkerVersion::ClearCachedMetadata(const GURL& url) {
                            "ServiceWorkerVersion::ClearCachedMetadata",
                            callback_id, "URL", url.spec());
   script_cache_map_.ClearMetadata(
-      url, base::Bind(&ServiceWorkerVersion::OnClearCachedMetadataFinished,
-                      weak_factory_.GetWeakPtr(), callback_id));
+      url, base::BindOnce(&ServiceWorkerVersion::OnClearCachedMetadataFinished,
+                          weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void ServiceWorkerVersion::ClaimClients(ClaimClientsCallback callback) {
@@ -1438,8 +1414,7 @@ void ServiceWorkerVersion::OpenWindow(
 }
 
 bool ServiceWorkerVersion::HasWorkInBrowser() const {
-  return !inflight_requests_.IsEmpty() || inflight_stream_response_count_ > 0 ||
-         !start_callbacks_.empty();
+  return !inflight_requests_.IsEmpty() || !start_callbacks_.empty();
 }
 
 void ServiceWorkerVersion::OnSimpleEventFinished(
@@ -1504,12 +1479,10 @@ std::string ServiceWorkerVersion::VersionStatusToString(
 }
 
 void ServiceWorkerVersion::IncrementPendingUpdateHintCount() {
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   pending_update_hint_count_++;
 }
 
 void ServiceWorkerVersion::DecrementPendingUpdateHintCount() {
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK_GT(pending_update_hint_count_, 0);
   pending_update_hint_count_--;
   if (pending_update_hint_count_ == 0)
@@ -1661,7 +1634,6 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   if (!pause_after_download())
     InitializeGlobalScope();
 
-  // S13nServiceWorker:
   if (!controller_request_.is_pending()) {
     DCHECK(!controller_ptr_.is_bound());
     controller_request_ = mojo::MakeRequest(&controller_ptr_);
@@ -1688,9 +1660,6 @@ void ServiceWorkerVersion::StartTimeoutTimer() {
     skip_recording_startup_time_ = false;
   }
 
-  // The worker is starting up and not yet idle.
-  ClearTick(&idle_time_);
-
   // Ping will be activated in OnScriptEvaluationStart.
   ping_controller_.Deactivate();
 
@@ -1700,7 +1669,6 @@ void ServiceWorkerVersion::StartTimeoutTimer() {
 
 void ServiceWorkerVersion::StopTimeoutTimer() {
   timeout_timer_.Stop();
-  ClearTick(&idle_time_);
 
   // Trigger update if worker is stale.
   if (!in_dtor_ && !stale_time_.is_null()) {
@@ -1801,16 +1769,6 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
   // nothing more to do if the worker is already stopping.
   if (running_status() == EmbeddedWorkerStatus::STOPPING)
     return;
-
-  // The worker has been idle for longer than a certain period.
-  // S13nServiceWorker: The idle timer is implemented on the renderer, so we can
-  // skip this check.
-  if (!blink::ServiceWorkerUtils::IsServicificationEnabled() &&
-      GetTickDuration(idle_time_) > kIdleWorkerTimeout) {
-    if (HasNoWork())
-      embedded_worker_->StopIfNotAttachedToDevTools();
-    return;
-  }
 
   // Check ping status.
   ping_controller_.CheckPingStatus();
@@ -2076,13 +2034,6 @@ void ServiceWorkerVersion::CleanUpExternalRequest(
 
 void ServiceWorkerVersion::OnNoWorkInBrowser() {
   DCHECK(!HasWorkInBrowser());
-  if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    for (auto& observer : observers_)
-      observer.OnNoWork(this);
-    return;
-  }
-
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   if (worker_is_idle_on_renderer_) {
     for (auto& observer : observers_)
       observer.OnNoWork(this);
@@ -2199,7 +2150,8 @@ void ServiceWorkerVersion::InitializeGlobalScope() {
   service_worker_ptr_->InitializeGlobalScope(
       std::move(service_worker_host_),
       provider_host_->CreateServiceWorkerRegistrationObjectInfo(
-          std::move(registration)));
+          std::move(registration)),
+      fetch_handler_existence_);
 }
 
 }  // namespace content

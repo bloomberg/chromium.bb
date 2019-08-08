@@ -206,8 +206,7 @@ TEST_F(OverviewControllerTest, AnimationCallbacks) {
   EXPECT_FALSE(shell->overview_controller()->IsSelecting());
   EXPECT_EQ(TestOverviewObserver::CANCELED,
             observer.starting_animation_state());
-  // No shield so ending animation ends immediately.
-  EXPECT_EQ(TestOverviewObserver::COMPLETED, observer.ending_animation_state());
+  EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.ending_animation_state());
   // Blur animation never started.
   EXPECT_FALSE(overview_controller->HasBlurForTest());
   EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
@@ -217,11 +216,13 @@ TEST_F(OverviewControllerTest, AnimationCallbacks) {
   // Enter again before exit animation ends.
   shell->overview_controller()->ToggleOverview();
   EXPECT_TRUE(shell->overview_controller()->IsSelecting());
-  EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.ending_animation_state());
   EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.starting_animation_state());
+  EXPECT_EQ(TestOverviewObserver::CANCELED, observer.ending_animation_state());
   // Blur animation will start when animation is completed.
   EXPECT_FALSE(overview_controller->HasBlurForTest());
   EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
+
+  observer.Reset();
 
   // Activating window while entering animation should cancel the overview.
   wm::ActivateWindow(window1.get());

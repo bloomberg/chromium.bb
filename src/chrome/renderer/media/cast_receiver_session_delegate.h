@@ -40,11 +40,11 @@ class CastReceiverSessionDelegate : public CastSessionDelegateBase {
  private:
   void OnDecodedAudioFrame(std::unique_ptr<media::AudioBus> audio_bus,
                            const base::TimeTicks& playout_time,
-                           bool is_continous);
+                           bool is_continuous);
 
   void OnDecodedVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
                            const base::TimeTicks& playout_time,
-                           bool is_continous);
+                           bool is_continuous);
 
   scoped_refptr<CastReceiverAudioValve> audio_valve_;
   blink::VideoCaptureDeliverFrameCB frame_callback_;

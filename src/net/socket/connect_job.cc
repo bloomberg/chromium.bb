@@ -18,20 +18,30 @@
 namespace net {
 
 CommonConnectJobParams::CommonConnectJobParams(
-    const SocketTag& socket_tag,
     ClientSocketFactory* client_socket_factory,
     HostResolver* host_resolver,
+    HttpAuthCache* http_auth_cache,
+    HttpAuthHandlerFactory* http_auth_handler_factory,
+    SpdySessionPool* spdy_session_pool,
+    const quic::QuicTransportVersionVector* quic_supported_versions,
+    QuicStreamFactory* quic_stream_factory,
     ProxyDelegate* proxy_delegate,
+    const HttpUserAgentSettings* http_user_agent_settings,
     const SSLClientSocketContext& ssl_client_socket_context,
     const SSLClientSocketContext& ssl_client_socket_context_privacy_mode,
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
     NetworkQualityEstimator* network_quality_estimator,
     NetLog* net_log,
     WebSocketEndpointLockManager* websocket_endpoint_lock_manager)
-    : socket_tag(socket_tag),
-      client_socket_factory(client_socket_factory),
+    : client_socket_factory(client_socket_factory),
       host_resolver(host_resolver),
+      http_auth_cache(http_auth_cache),
+      http_auth_handler_factory(http_auth_handler_factory),
+      spdy_session_pool(spdy_session_pool),
+      quic_supported_versions(quic_supported_versions),
+      quic_stream_factory(quic_stream_factory),
       proxy_delegate(proxy_delegate),
+      http_user_agent_settings(http_user_agent_settings),
       ssl_client_socket_context(ssl_client_socket_context),
       ssl_client_socket_context_privacy_mode(
           ssl_client_socket_context_privacy_mode),
@@ -49,20 +59,22 @@ CommonConnectJobParams& CommonConnectJobParams::operator=(
     const CommonConnectJobParams& other) = default;
 
 ConnectJob::ConnectJob(RequestPriority priority,
+                       const SocketTag& socket_tag,
                        base::TimeDelta timeout_duration,
-                       const CommonConnectJobParams& common_connect_job_params,
+                       const CommonConnectJobParams* common_connect_job_params,
                        Delegate* delegate,
                        const NetLogWithSource* net_log,
                        NetLogSourceType net_log_source_type,
                        NetLogEventType net_log_connect_event_type)
     : timeout_duration_(timeout_duration),
       priority_(priority),
+      socket_tag_(socket_tag),
       common_connect_job_params_(common_connect_job_params),
       delegate_(delegate),
       top_level_job_(net_log == nullptr),
       net_log_(net_log
                    ? *net_log
-                   : NetLogWithSource::Make(common_connect_job_params.net_log,
+                   : NetLogWithSource::Make(common_connect_job_params->net_log,
                                             net_log_source_type)),
       net_log_connect_event_type_(net_log_connect_event_type) {
   DCHECK(delegate);
@@ -104,6 +116,23 @@ int ConnectJob::Connect() {
   return rv;
 }
 
+ConnectionAttempts ConnectJob::GetConnectionAttempts() const {
+  // Return empty list by default - used by proxy classes.
+  return ConnectionAttempts();
+}
+
+std::unique_ptr<StreamSocket> ConnectJob::PassProxySocketOnFailure() {
+  return nullptr;
+}
+
+bool ConnectJob::IsSSLError() const {
+  return false;
+}
+
+scoped_refptr<SSLCertRequestInfo> ConnectJob::GetCertRequestInfo() {
+  return nullptr;
+}
+
 void ConnectJob::SetSocket(std::unique_ptr<StreamSocket> socket) {
   if (socket)
     net_log().AddEvent(NetLogEventType::CONNECT_JOB_SET_SOCKET);
@@ -134,6 +163,10 @@ void ConnectJob::ResetTimer(base::TimeDelta remaining_time) {
     timer_.Start(FROM_HERE, remaining_time, this, &ConnectJob::OnTimeout);
 }
 
+bool ConnectJob::TimerIsRunning() const {
+  return timer_.IsRunning();
+}
+
 void ConnectJob::LogConnectStart() {
   connect_timing_.connect_start = base::TimeTicks::Now();
   net_log().BeginEvent(net_log_connect_event_type_);
@@ -148,9 +181,13 @@ void ConnectJob::OnTimeout() {
   // Make sure the socket is NULL before calling into |delegate|.
   SetSocket(nullptr);
 
+  OnTimedOutInternal();
+
   net_log_.AddEvent(NetLogEventType::CONNECT_JOB_TIMED_OUT);
 
   NotifyDelegateOfCompletion(ERR_TIMED_OUT);
 }
+
+void ConnectJob::OnTimedOutInternal() {}
 
 }  // namespace net

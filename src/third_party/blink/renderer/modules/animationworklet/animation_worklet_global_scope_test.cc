@@ -8,7 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_module.h"
+#include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
@@ -79,8 +79,8 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
   // the worklet once the task completion is signaled.
   void RunTestOnWorkletThread(TestCalback callback) {
     std::unique_ptr<WorkerThread> worklet =
-        CreateAnimationAndPaintWorkletThread(&GetDocument(),
-                                             reporting_proxy_.get());
+        CreateThreadAndProvideAnimationWorkletProxyClient(
+            &GetDocument(), reporting_proxy_.get());
     base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
@@ -104,7 +104,8 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     v8::Isolate* isolate = script_state->GetIsolate();
     ASSERT_TRUE(isolate);
     ScriptState::Scope scope(script_state);
-    ASSERT_TRUE(EvaluateScriptModule(global_scope, source_code));
+    ASSERT_TRUE(global_scope->ScriptController()->Evaluate(
+        ScriptSourceCode(source_code), SanitizeScriptErrors::kDoNotSanitize));
     waitable_event->Signal();
   }
 
@@ -130,7 +131,8 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
               animate () {}
             });
           )JS";
-      ASSERT_TRUE(EvaluateScriptModule(global_scope, source_code));
+      ASSERT_TRUE(global_scope->ScriptController()->Evaluate(
+          ScriptSourceCode(source_code), SanitizeScriptErrors::kDoNotSanitize));
 
       AnimatorDefinition* definition =
           global_scope->FindDefinitionForTest("test");
@@ -141,7 +143,8 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
       // registerAnimator() with a null class definition should fail to define
       // an animator.
       String source_code = "registerAnimator('null', null);";
-      ASSERT_FALSE(EvaluateScriptModule(global_scope, source_code));
+      ASSERT_FALSE(global_scope->ScriptController()->Evaluate(
+          ScriptSourceCode(source_code), SanitizeScriptErrors::kDoNotSanitize));
       EXPECT_FALSE(global_scope->FindDefinitionForTest("null"));
     }
 
@@ -180,7 +183,8 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
               }
             });
         )JS";
-    ASSERT_TRUE(EvaluateScriptModule(global_scope, source_code));
+    ASSERT_TRUE(global_scope->ScriptController()->Evaluate(
+        ScriptSourceCode(source_code), SanitizeScriptErrors::kDoNotSanitize));
 
     ScriptValue constructed_before =
         global_scope->ScriptController()->EvaluateAndReturnValueForTest(
@@ -256,7 +260,8 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
             registerAnimator('stateless_animator', Stateless);
             registerAnimator('foo', Foo);
         )JS";
-    ASSERT_TRUE(EvaluateScriptModule(global_scope, source_code));
+    ASSERT_TRUE(global_scope->ScriptController()->Evaluate(
+        ScriptSourceCode(source_code), SanitizeScriptErrors::kDoNotSanitize));
 
     AnimatorDefinition* first_definition =
         global_scope->FindDefinitionForTest("stateful_animator");
@@ -427,25 +432,6 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
   }
 
   std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
-
- private:
-  // Returns false when a script evaluation error happens.
-  bool EvaluateScriptModule(AnimationWorkletGlobalScope* global_scope,
-                            const String& source_code) {
-    ScriptState* script_state =
-        global_scope->ScriptController()->GetScriptState();
-    EXPECT_TRUE(script_state);
-    const KURL js_url("https://example.com/worklet.js");
-    ScriptModule module = ScriptModule::Compile(
-        script_state->GetIsolate(), source_code, js_url, js_url,
-        ScriptFetchOptions(), TextPosition::MinimumPosition(),
-        ASSERT_NO_EXCEPTION);
-    EXPECT_FALSE(module.IsNull());
-    ScriptValue exception = module.Instantiate(script_state);
-    EXPECT_TRUE(exception.IsEmpty());
-    ScriptValue value = module.Evaluate(script_state);
-    return value.IsEmpty();
-  }
 };
 
 TEST_F(AnimationWorkletGlobalScopeTest, BasicParsing) {
@@ -482,8 +468,9 @@ TEST_F(AnimationWorkletGlobalScopeTest,
        ShouldRegisterItselfAfterFirstAnimatorRegistration) {
   MockAnimationWorkletProxyClient* proxy_client =
       MakeGarbageCollected<MockAnimationWorkletProxyClient>();
-  std::unique_ptr<WorkerThread> worklet = CreateAnimationAndPaintWorkletThread(
-      &GetDocument(), reporting_proxy_.get(), proxy_client);
+  std::unique_ptr<WorkerThread> worklet =
+      CreateThreadAndProvideAnimationWorkletProxyClient(
+          &GetDocument(), reporting_proxy_.get(), proxy_client);
   // Animation worklet global scope (AWGS) should not register itself upon
   // creation.
   EXPECT_FALSE(proxy_client->did_add_global_scope());

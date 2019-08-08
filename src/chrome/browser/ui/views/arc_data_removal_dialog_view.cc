@@ -93,17 +93,17 @@ DataRemovalConfirmationDialog::DataRemovalConfirmationDialog(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
   SetLayoutManager(std::move(layout));
 
-  icon_view_ = new views::ImageView();
-  icon_view_->SetPreferredSize(gfx::Size(kArcAppIconSize, kArcAppIconSize));
-  AddChildView(icon_view_);
+  auto icon_view = std::make_unique<views::ImageView>();
+  icon_view->SetPreferredSize(gfx::Size(kArcAppIconSize, kArcAppIconSize));
+  icon_view_ = AddChildView(std::move(icon_view));
 
   // UI hierarchy owned.
-  views::Label* label = new views::Label(
+  auto label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_ARC_DATA_REMOVAL_CONFIRMATION_HEADING),
       views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT);
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(label);
+  AddChildView(std::move(label));
 
   icon_loader_ =
       std::make_unique<ArcAppIconLoader>(profile_, kArcAppIconSize, this);

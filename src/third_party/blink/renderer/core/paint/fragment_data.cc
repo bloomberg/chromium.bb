@@ -142,7 +142,7 @@ void FragmentData::InvalidateClipPathCache() {
   rare_data_->clip_path_path = nullptr;
 }
 
-void FragmentData::SetClipPathCache(const base::Optional<IntRect>& bounding_box,
+void FragmentData::SetClipPathCache(const IntRect& bounding_box,
                                     scoped_refptr<const RefCountedPath> path) {
   EnsureRareData().is_clip_path_cache_valid = true;
   rare_data_->clip_path_bounding_box = bounding_box;
@@ -167,11 +167,12 @@ static void MapRectBetweenFragment(
 
 void FragmentData::MapRectToFragment(const FragmentData& fragment,
                                      IntRect& rect) const {
-  MapRectBetweenFragment(*this, fragment,
-                         [](const LayoutPoint& paint_offset) {
-                           return RoundedIntPoint(paint_offset);
-                         },
-                         rect);
+  MapRectBetweenFragment(
+      *this, fragment,
+      [](const LayoutPoint& paint_offset) {
+        return RoundedIntPoint(paint_offset);
+      },
+      rect);
 }
 
 void FragmentData::MapRectToFragment(const FragmentData& fragment,

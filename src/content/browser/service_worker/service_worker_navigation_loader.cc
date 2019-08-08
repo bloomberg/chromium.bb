@@ -43,16 +43,6 @@ std::string ComposeFetchEventResultString(
   return stream.str();
 }
 
-bool BodyHasNoDataPipeGetters(const network::ResourceRequestBody* body) {
-  if (!body)
-    return true;
-  for (const auto& elem : *body->elements()) {
-    if (elem.type() == network::mojom::DataElementType::kDataPipe)
-      return false;
-  }
-  return true;
-}
-
 }  // namespace
 
 // This class waits for completion of a stream response from the service worker.
@@ -63,16 +53,12 @@ class ServiceWorkerNavigationLoader::StreamWaiter
  public:
   StreamWaiter(
       ServiceWorkerNavigationLoader* owner,
-      scoped_refptr<ServiceWorkerVersion> streaming_version,
       blink::mojom::ServiceWorkerStreamCallbackRequest callback_request)
       : owner_(owner),
-        streaming_version_(streaming_version),
         binding_(this, std::move(callback_request)) {
-    streaming_version_->OnStreamResponseStarted();
     binding_.set_connection_error_handler(
         base::BindOnce(&StreamWaiter::OnAborted, base::Unretained(this)));
   }
-  ~StreamWaiter() override { streaming_version_->OnStreamResponseFinished(); }
 
   // Implements mojom::ServiceWorkerStreamCallback.
   void OnCompleted() override {
@@ -86,7 +72,6 @@ class ServiceWorkerNavigationLoader::StreamWaiter
 
  private:
   ServiceWorkerNavigationLoader* owner_;
-  scoped_refptr<ServiceWorkerVersion> streaming_version_;
   mojo::Binding<blink::mojom::ServiceWorkerStreamCallback> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamWaiter);
@@ -135,9 +120,9 @@ void ServiceWorkerNavigationLoader::FallbackToNetwork() {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerNavigationLoader::FallbackToNetwork", this,
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  // The URLJobWrapper only calls this if this loader never intercepted the
-  // request. Fallback to network after interception uses |fallback_callback_|
-  // instead.
+  // ServiceWorkerControlleeRequestHandler only calls this if this loader never
+  // intercepted the request. Fallback to network after interception uses
+  // |fallback_callback_| instead.
   DCHECK_EQ(response_type_, ResponseType::NOT_DETERMINED);
   response_type_ = ResponseType::FALLBACK_TO_NETWORK;
 
@@ -213,16 +198,6 @@ void ServiceWorkerNavigationLoader::StartRequest(
     return;
   }
 
-  // Passing the request body over Mojo moves out the DataPipeGetter elements,
-  // which would mean we should clone the body like
-  // ServiceWorkerSubresourceLoader does. But we don't expect DataPipeGetters
-  // here yet: they are only created by the renderer when converting from a
-  // Blob, which doesn't happen for navigations. In interest of speed, just
-  // don't clone until proven necessary.
-  DCHECK(BodyHasNoDataPipeGetters(resource_request_.request_body.get()))
-      << "We assumed there would be no data pipe getter elements here, but "
-         "there are. Add code here to clone the body before proceeding.";
-
   if (!provider_host_) {
     // We lost |provider_host_| (for the client) somehow before dispatching
     // FetchEvent.
@@ -243,18 +218,16 @@ void ServiceWorkerNavigationLoader::StartRequest(
       blink::mojom::FetchAPIRequest::From(resource_request_),
       static_cast<ResourceType>(resource_request_.resource_type),
       provider_host_->client_uuid(), active_worker,
-      net::NetLogWithSource() /* TODO(scottmg): net log? */,
       base::BindOnce(&ServiceWorkerNavigationLoader::DidPrepareFetchEvent,
                      weak_factory_.GetWeakPtr(),
                      base::WrapRefCounted(active_worker),
                      active_worker->running_status()),
       base::BindOnce(&ServiceWorkerNavigationLoader::DidDispatchFetchEvent,
                      weak_factory_.GetWeakPtr()));
-  did_navigation_preload_ =
-      fetch_dispatcher_->MaybeStartNavigationPreloadWithURLLoader(
-          resource_request_, url_loader_factory_getter_.get(),
-          std::move(context), provider_host_->web_contents_getter(),
-          base::DoNothing(/* TODO(crbug/762357): metrics? */));
+  did_navigation_preload_ = fetch_dispatcher_->MaybeStartNavigationPreload(
+      resource_request_, url_loader_factory_getter_.get(), std::move(context),
+      provider_host_->web_contents_getter(),
+      base::DoNothing(/* TODO(crbug/762357): metrics? */));
 
   // Record worker start time here as |fetch_dispatcher_| will start a service
   // worker if there is no running service worker.
@@ -464,7 +437,7 @@ void ServiceWorkerNavigationLoader::StartResponse(
                            TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                            "result", "stream response");
     stream_waiter_ = std::make_unique<StreamWaiter>(
-        this, std::move(version), std::move(body_as_stream->callback_request));
+        this, std::move(body_as_stream->callback_request));
     CommitResponseBody(std::move(body_as_stream->stream));
     // StreamWaiter will call CommitCompleted() when done.
     return;
@@ -563,7 +536,8 @@ void ServiceWorkerNavigationLoader::RecordTimingMetrics(bool handled) {
   DCHECK(!completion_time_.is_null());
 
   // We only record these metrics for top-level navigation.
-  if (resource_request_.resource_type != RESOURCE_TYPE_MAIN_FRAME)
+  if (resource_request_.resource_type !=
+      static_cast<int>(ResourceType::kMainFrame))
     return;
 
   // |fetch_event_timing_| is recorded in renderer so we can get reasonable
@@ -665,6 +639,15 @@ void ServiceWorkerNavigationLoader::TransitionToStatus(Status new_status) {
   status_ = new_status;
   if (new_status == Status::kCompleted)
     completion_time_ = base::TimeTicks::Now();
+}
+
+ServiceWorkerNavigationLoaderWrapper::ServiceWorkerNavigationLoaderWrapper(
+    std::unique_ptr<ServiceWorkerNavigationLoader> loader)
+    : loader_(std::move(loader)) {}
+
+ServiceWorkerNavigationLoaderWrapper::~ServiceWorkerNavigationLoaderWrapper() {
+  if (loader_)
+    loader_.release()->DetachedFromRequest();
 }
 
 }  // namespace content

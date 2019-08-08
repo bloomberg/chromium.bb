@@ -427,63 +427,24 @@ void MockChromeCleanerProcess::PromptUserCallback(
   std::move(quit_closure).Run();
 }
 
+// Keep the printable names of these enums short since they're used in tests
+// with very long parameter lists.
+
 std::ostream& operator<<(std::ostream& out, CrashPoint crash_point) {
-  switch (crash_point) {
-    case CrashPoint::kNone:
-      return out << "NoCrash";
-    case CrashPoint::kOnStartup:
-      return out << "CrashOnStartup";
-    case CrashPoint::kAfterConnection:
-      return out << "CrashAfterConnection";
-    case CrashPoint::kAfterRequestSent:
-      return out << "CrashAfterRequestSent";
-    case CrashPoint::kAfterResponseReceived:
-      return out << "CrashAfterResponseReceived";
-    default:
-      NOTREACHED();
-      return out << "UnknownCrashPoint";
-  }
+  return out << "CrPt" << static_cast<int>(crash_point);
 }
 
 std::ostream& operator<<(std::ostream& out, UwsFoundStatus status) {
-  switch (status) {
-    case UwsFoundStatus::kNoUwsFound:
-      return out << "NoUwsFound";
-    case UwsFoundStatus::kUwsFoundRebootRequired:
-      return out << "UwsFoundRebootRequired";
-    case UwsFoundStatus::kUwsFoundNoRebootRequired:
-      return out << "UwsFoundNoRebootRequired";
-    default:
-      NOTREACHED();
-      return out << "UnknownFoundStatus";
-  }
+  return out << "UwS" << static_cast<int>(status);
 }
 
 std::ostream& operator<<(std::ostream& out,
                          ExtensionCleaningFeatureStatus status) {
-  switch (status) {
-    case ExtensionCleaningFeatureStatus::kEnabled:
-      return out << "ExtensionCleaningEnabled";
-    case ExtensionCleaningFeatureStatus::kDisabled:
-      return out << "ExtensionCleaningDisabled";
-    default:
-      NOTREACHED();
-      return out << "UnknownExtensionCleaningStatus";
-  }
+  return out << "Ext" << static_cast<int>(status);
 }
 
 std::ostream& operator<<(std::ostream& out, ItemsReporting items_reporting) {
-  switch (items_reporting) {
-    case ItemsReporting::kUnsupported:
-      return out << "kUnsupported";
-    case ItemsReporting::kNotReported:
-      return out << "kNotReported";
-    case ItemsReporting::kReported:
-      return out << "kReported";
-    default:
-      NOTREACHED();
-      return out << "UnknownItemsReporting";
-  }
+  return out << "Items" << static_cast<int>(items_reporting);
 }
 
 }  // namespace safe_browsing

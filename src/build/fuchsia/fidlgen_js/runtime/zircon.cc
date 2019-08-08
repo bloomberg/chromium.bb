@@ -243,7 +243,7 @@ v8::Local<v8::Object> ZxChannelRead(gin::Arguments* args) {
   uint32_t data_size;
   uint32_t num_handles;
   zx_status_t status =
-      ch->read(0, nullptr, 0, &data_size, nullptr, 0, &num_handles);
+      ch->rea2(0, nullptr, nullptr, 0, 0, &data_size, &num_handles);
   DCHECK_EQ(status, ZX_ERR_BUFFER_TOO_SMALL);
 
   std::vector<zx_handle_t> handles;
@@ -252,8 +252,8 @@ v8::Local<v8::Object> ZxChannelRead(gin::Arguments* args) {
   v8::Local<v8::ArrayBuffer> buf =
       v8::ArrayBuffer::New(args->isolate(), data_size);
   uint32_t actual_bytes, actual_handles;
-  status = ch->read(0, buf->GetContents().Data(), data_size, &actual_bytes,
-                    handles.data(), handles.size(), &actual_handles);
+  status = ch->rea2(0, buf->GetContents().Data(), handles.data(), data_size,
+                    handles.size(), &actual_bytes, &actual_handles);
   DCHECK_EQ(actual_bytes, data_size);
   DCHECK_EQ(actual_handles, num_handles);
 

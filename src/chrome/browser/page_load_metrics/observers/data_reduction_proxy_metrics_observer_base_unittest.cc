@@ -186,7 +186,7 @@ TEST_F(DataReductionProxyMetricsObserverBaseTest, OnCompletePingback) {
       1024 * 40 /* raw_body_bytes */,
       0 /* original_network_content_length */,
       std::move(data),
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
+      content::ResourceType::kScript,
       0,
       {} /* load_timing()info */};
 

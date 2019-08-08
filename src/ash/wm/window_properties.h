@@ -19,26 +19,6 @@ namespace wm {
 class WindowState;
 }  // namespace wm
 
-// Used with kWidgetCreationType to indicate source of the widget creation.
-//
-// TODO: investigate removing this. If it's still needed, we can likely ask
-// the window service if it has a remote client for the window rather than using
-// a property. https://crbug.com/865616
-enum class WidgetCreationType {
-  // The widget was created internally, and not at the request of a client.
-  // For example, overview mode creates a number of widgets. These widgets are
-  // created with a type of INTERNAL. This is the default.
-  INTERNAL,
-
-  // The widget was created for a client. In other words there is a client
-  // embedded in the aura::Window. For example, when Chrome creates a new
-  // browser window the window manager is asked to create the aura::Window.
-  // The window manager creates an aura::Window and a views::Widget to show
-  // the non-client frame decorations. In this case the creation type is
-  // FOR_CLIENT.
-  FOR_CLIENT,
-};
-
 // Shell-specific window property keys; some keys are exported for use in tests.
 
 // Alphabetical sort.
@@ -46,9 +26,6 @@ enum class WidgetCreationType {
 // If this is set to true, the window stays in the same root window even if the
 // bounds outside of its root window is set.
 ASH_EXPORT extern const aura::WindowProperty<bool>* const kLockedToRootKey;
-
-ASH_EXPORT extern const aura::WindowProperty<WidgetCreationType>* const
-    kWidgetCreationTypeKey;
 
 // Set to true if the window server tells us the window is janky (see
 // WindowManagerDelegate::OnWmClientJankinessChanged()).

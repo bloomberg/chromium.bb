@@ -232,7 +232,7 @@ bool HTMLFormElement::ValidateInteractively() {
 
   // Needs to update layout now because we'd like to call isFocusable(), which
   // has !layoutObject()->needsLayout() assertion.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   // Focus on the first focusable control and show a validation message.
   for (const auto& unhandled : unhandled_invalid_controls) {
@@ -252,7 +252,7 @@ bool HTMLFormElement::ValidateInteractively() {
           "An invalid form control with name='%name' is not focusable.");
       message.Replace("%name", unhandled->GetName());
       GetDocument().AddConsoleMessage(
-          ConsoleMessage::Create(kRenderingMessageSource,
+          ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
                                  mojom::ConsoleMessageLevel::kError, message));
     }
   }
@@ -268,14 +268,16 @@ void HTMLFormElement::PrepareForSubmission(
 
   if (!isConnected()) {
     GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kWarning,
         "Form submission canceled because the form is not connected"));
     return;
   }
 
-  if (GetDocument().IsSandboxed(kSandboxForms)) {
+  if (GetDocument().IsSandboxed(WebSandboxFlags::kForms)) {
     GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
+        mojom::ConsoleMessageSource::kSecurity,
+        mojom::ConsoleMessageLevel::kError,
         "Blocked form submission to '" + attributes_.Action() +
             "' because the form's frame is sandboxed and the 'allow-forms' "
             "permission is not set."));
@@ -291,7 +293,8 @@ void HTMLFormElement::PrepareForSubmission(
       if (RuntimeEnabledFeatures::UnclosedFormControlIsInvalidEnabled()) {
         String tag_name = ToHTMLFormControlElement(element)->tagName();
         GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-            kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
+            mojom::ConsoleMessageSource::kSecurity,
+            mojom::ConsoleMessageLevel::kError,
             "Form submission failed, as the <" + tag_name +
                 "> element named "
                 "'" +
@@ -361,17 +364,19 @@ void HTMLFormElement::Submit(Event* event,
   // context flag set, then abort these steps without doing anything.
   if (!isConnected()) {
     GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kWarning,
         "Form submission canceled because the form is not connected"));
     return;
   }
 
   if (is_constructing_entry_list_) {
     DCHECK(RuntimeEnabledFeatures::FormDataEventEnabled());
-    GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
-        "Form submission canceled because the form is "
-        "constructing entry list"));
+    GetDocument().AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kWarning,
+                               "Form submission canceled because the form is "
+                               "constructing entry list"));
     return;
   }
 
@@ -405,7 +410,8 @@ void HTMLFormElement::Submit(Event* event,
   // 'formdata' event handlers might disconnect the form.
   if (RuntimeEnabledFeatures::FormDataEventEnabled() && !isConnected()) {
     GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kWarning,
         "Form submission canceled because the form is not connected"));
     return;
   }
@@ -458,11 +464,12 @@ void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
   DCHECK(submission->Form());
   if (submission->Action().IsEmpty())
     return;
-  if (GetDocument().IsSandboxed(kSandboxForms)) {
+  if (GetDocument().IsSandboxed(WebSandboxFlags::kForms)) {
     // FIXME: This message should be moved off the console once a solution to
     // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
     GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
+        mojom::ConsoleMessageSource::kSecurity,
+        mojom::ConsoleMessageLevel::kError,
         "Blocked form submission to '" + submission->Action().ElidedString() +
             "' because the form's frame is sandboxed and the 'allow-forms' "
             "permission is not set."));
@@ -474,27 +481,6 @@ void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
     return;
   }
 
-  if (submission->Action().ProtocolIsJavaScript()) {
-    if (FastHasAttribute(kDisabledAttr)) {
-      UseCounter::Count(GetDocument(),
-                        WebFeature::kFormDisabledAttributePresentAndSubmit);
-    }
-    GetDocument().ProcessJavaScriptUrl(submission->Action(),
-                                       kCheckContentSecurityPolicy);
-    return;
-  }
-
-  Frame* target_frame = GetDocument().GetFrame()->FindFrameForNavigation(
-      submission->Target(), *GetDocument().GetFrame(),
-      submission->RequestURL());
-  if (!target_frame) {
-    target_frame = GetDocument().GetFrame();
-  } else {
-    submission->ClearTarget();
-  }
-  if (!target_frame->GetPage())
-    return;
-
   UseCounter::Count(GetDocument(), WebFeature::kFormsSubmitted);
   if (MixedContentChecker::IsMixedFormAction(GetDocument().GetFrame(),
                                              submission->Action())) {
@@ -505,22 +491,13 @@ void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
                       WebFeature::kFormDisabledAttributePresentAndSubmit);
   }
 
-  // TODO(lukasza): Investigate if the code below can uniformly handle remote
-  // and local frames (i.e. by calling virtual Frame::navigate from a timer).
-  // See also https://goo.gl/95d2KA.
-  if (auto* target_local_frame = DynamicTo<LocalFrame>(target_frame)) {
-    target_local_frame->GetNavigationScheduler().ScheduleFormSubmission(
-        &GetDocument(), submission);
-  } else {
-    FrameLoadRequest frame_load_request =
-        submission->CreateFrameLoadRequest(&GetDocument());
-    frame_load_request.GetResourceRequest().SetHasUserGesture(
-        LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()));
-    // TODO(dgozman): we lose information about triggering event and desired
-    // navigation policy here.
-    To<RemoteFrame>(target_frame)
-        ->Navigate(frame_load_request, WebFrameLoadType::kStandard);
-  }
+  FrameLoadRequest frame_load_request =
+      submission->CreateFrameLoadRequest(&GetDocument());
+  frame_load_request.SetNavigationPolicy(submission->GetNavigationPolicy());
+  frame_load_request.GetResourceRequest().SetHasUserGesture(
+      LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()));
+  GetDocument().GetFrame()->Navigate(frame_load_request,
+                                     WebFrameLoadType::kStandard);
 }
 
 void HTMLFormElement::reset() {

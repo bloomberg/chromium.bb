@@ -180,14 +180,15 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       const GURL& url,
       RequestOutcome* reason) const = 0;
 
-  // Called when password reuse warning or phishing reuse warning is shown.
-  // Must be called on UI thread.
-  virtual void OnPolicySpecifiedPasswordReuseDetected(const GURL& url,
-                                                      bool is_phishing_url) = 0;
+  // Triggers the safeBrowsingPrivate.OnPolicySpecifiedPasswordReuseDetected.
+  virtual void MaybeReportPasswordReuseDetected(
+      content::WebContents* web_contents,
+      ReusedPasswordType reused_password_type,
+      bool is_phishing_url) = 0;
 
   // Called when a protected password change is detected. Must be called on
   // UI thread.
-  virtual void OnPolicySpecifiedPasswordChanged() = 0;
+  virtual void ReportPasswordChanged() = 0;
 
   // Converts from password::metrics_util::PasswordType to
   // LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordType.

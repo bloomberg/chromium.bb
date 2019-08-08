@@ -30,7 +30,6 @@
 #include "third_party/blink/renderer/core/testing/internal_dictionary.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -243,6 +242,13 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   void setObjectOrNullMember(ScriptValue);
   void setObjectOrNullMemberToNull();
 
+  bool hasOriginTrialFourthMember() const { return has_origin_trial_fourth_member_; }
+  bool originTrialFourthMember() const {
+    DCHECK(has_origin_trial_fourth_member_);
+    return origin_trial_fourth_member_;
+  }
+  inline void setOriginTrialFourthMember(bool);
+
   bool hasOriginTrialMember() const { return has_origin_trial_member_; }
   bool originTrialMember() const {
     DCHECK(has_origin_trial_member_);
@@ -256,6 +262,13 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
     return origin_trial_second_member_;
   }
   inline void setOriginTrialSecondMember(bool);
+
+  bool hasOriginTrialThirdMember() const { return has_origin_trial_third_member_; }
+  bool originTrialThirdMember() const {
+    DCHECK(has_origin_trial_third_member_);
+    return origin_trial_third_member_;
+  }
+  inline void setOriginTrialThirdMember(bool);
 
   bool hasOtherDoubleOrStringMember() const { return !other_double_or_string_member_.IsNull(); }
   const DoubleOrString& otherDoubleOrStringMember() const {
@@ -475,8 +488,10 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   bool has_is_public_ = false;
   bool has_long_member_ = false;
   bool has_member_with_hyphen_in_name_ = false;
+  bool has_origin_trial_fourth_member_ = false;
   bool has_origin_trial_member_ = false;
   bool has_origin_trial_second_member_ = false;
+  bool has_origin_trial_third_member_ = false;
   bool has_record_member_ = false;
   bool has_restricted_double_member_ = false;
   bool has_runtime_member_ = false;
@@ -498,7 +513,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   int32_t applicable_to_type_long_member_;
   String applicable_to_type_string_member_;
   bool boolean_member_;
-  TraceWrapperMember<V8VoidCallbackFunction> callback_function_member_;
+  Member<V8VoidCallbackFunction> callback_function_member_;
   bool create_member_;
   Dictionary dictionary_member_;
   String dom_string_treat_null_as_empty_string_member_;
@@ -522,11 +537,13 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   bool member_with_hyphen_in_name_;
   ScriptValue object_member_;
   ScriptValue object_or_null_member_;
+  bool origin_trial_fourth_member_;
   bool origin_trial_member_;
   bool origin_trial_second_member_;
+  bool origin_trial_third_member_;
   DoubleOrString other_double_or_string_member_;
   Vector<std::pair<String, int8_t>> record_member_;
-  TraceWrapperMember<V8VoidCallbackFunction> required_callback_function_member_;
+  Member<V8VoidCallbackFunction> required_callback_function_member_;
   double restricted_double_member_;
   bool runtime_member_;
   bool runtime_second_member_;
@@ -543,7 +560,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   Member<TestInterfaceImplementation> test_interface_or_null_member_;
   HeapVector<Member<TestInterfaceImplementation>> test_interface_sequence_member_;
   HeapVector<Member<TestObject>> test_object_sequence_member_;
-  TraceWrapperMember<V8TreatNonObjectAsNullVoidFunction> treat_non_null_obj_member_;
+  Member<V8TreatNonObjectAsNullVoidFunction> treat_non_null_obj_member_;
   Vector<String> treat_null_as_string_sequence_member_;
   Member<DOMUint8Array> uint8_array_member_;
   HeapVector<std::pair<String, LongOrBoolean>> union_in_record_member_;
@@ -631,6 +648,11 @@ void TestDictionary::setMemberWithHyphenInName(bool value) {
   has_member_with_hyphen_in_name_ = true;
 }
 
+void TestDictionary::setOriginTrialFourthMember(bool value) {
+  origin_trial_fourth_member_ = value;
+  has_origin_trial_fourth_member_ = true;
+}
+
 void TestDictionary::setOriginTrialMember(bool value) {
   origin_trial_member_ = value;
   has_origin_trial_member_ = true;
@@ -639,6 +661,11 @@ void TestDictionary::setOriginTrialMember(bool value) {
 void TestDictionary::setOriginTrialSecondMember(bool value) {
   origin_trial_second_member_ = value;
   has_origin_trial_second_member_ = true;
+}
+
+void TestDictionary::setOriginTrialThirdMember(bool value) {
+  origin_trial_third_member_ = value;
+  has_origin_trial_third_member_ = true;
 }
 
 void TestDictionary::setRestrictedDoubleMember(double value) {

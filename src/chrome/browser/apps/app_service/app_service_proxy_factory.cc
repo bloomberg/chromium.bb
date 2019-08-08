@@ -5,7 +5,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 
 #include "base/feature_list.h"
-#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -26,7 +26,7 @@ AppServiceProxy* AppServiceProxyFactory::GetForProfile(Profile* profile) {
   //     is branched from (i.e. "inherit" the parent service),
   //   - return a temporary service just for the incognito session (probably
   //     the least sensible option).
-  return static_cast<AppServiceProxy*>(
+  return static_cast<AppServiceProxyImpl*>(
       AppServiceProxyFactory::GetInstance()->GetServiceForBrowserContext(
           profile, true /* create */));
 }
@@ -39,6 +39,7 @@ AppServiceProxyFactory* AppServiceProxyFactory::GetInstance() {
 // static
 bool AppServiceProxyFactory::IsEnabled() {
   return base::FeatureList::IsEnabled(features::kAppServiceAsh) ||
+         base::FeatureList::IsEnabled(features::kAppServiceServer) ||
          base::FeatureList::IsEnabled(features::kAppManagement);
 }
 
@@ -56,7 +57,7 @@ AppServiceProxyFactory::~AppServiceProxyFactory() = default;
 
 KeyedService* AppServiceProxyFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new AppServiceProxy(Profile::FromBrowserContext(context));
+  return new AppServiceProxyImpl(Profile::FromBrowserContext(context));
 }
 
 bool AppServiceProxyFactory::ServiceIsCreatedWithBrowserContext() const {

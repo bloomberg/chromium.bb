@@ -9,13 +9,17 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
+#include "base/one_shot_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/bookmark_apps/bookmark_app_install_manager.h"
+#include "chrome/browser/web_applications/components/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/components/web_app_audio_focus_id_map.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_install_finalizer.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_tab_helper.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
@@ -23,7 +27,6 @@
 #include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "chrome/browser/web_applications/external_web_apps.h"
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
-#include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_database.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
@@ -33,12 +36,10 @@
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
-#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/common/one_shot_event.h"
 
 namespace web_app {
 
@@ -82,6 +83,27 @@ void WebAppProvider::StartRegistry() {
                                   weak_ptr_factory_.GetWeakPtr()));
 }
 
+AppRegistrar& WebAppProvider::registrar() {
+  return *registrar_;
+}
+
+InstallManager& WebAppProvider::install_manager() {
+  return *install_manager_;
+}
+
+PendingAppManager& WebAppProvider::pending_app_manager() {
+  return *pending_app_manager_;
+}
+
+WebAppPolicyManager* WebAppProvider::policy_manager() {
+  return web_app_policy_manager_.get();
+}
+
+WebAppUiDelegate& WebAppProvider::ui_delegate() {
+  DCHECK(ui_delegate_);
+  return *ui_delegate_;
+}
+
 void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   database_factory_ = std::make_unique<WebAppDatabaseFactory>(profile);
   database_ = std::make_unique<WebAppDatabase>(database_factory_.get());
@@ -89,10 +111,10 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   icon_manager_ = std::make_unique<WebAppIconManager>(
       profile, std::make_unique<FileUtilsWrapper>());
 
-  auto install_finalizer = std::make_unique<WebAppInstallFinalizer>(
+  install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
       web_app_registrar.get(), icon_manager_.get());
-  install_manager_ = std::make_unique<WebAppInstallManager>(
-      profile, std::move(install_finalizer));
+  install_manager_ =
+      std::make_unique<WebAppInstallManager>(profile, install_finalizer_.get());
 
   registrar_ = std::move(web_app_registrar);
 }
@@ -101,11 +123,14 @@ void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
   auto bookmark_app_registrar =
       std::make_unique<extensions::BookmarkAppRegistrar>(profile);
 
-  install_manager_ = std::make_unique<extensions::BookmarkAppInstallManager>();
+  install_finalizer_ =
+      std::make_unique<extensions::BookmarkAppInstallFinalizer>(profile_);
+  install_manager_ =
+      std::make_unique<extensions::BookmarkAppInstallManager>(profile);
 
   pending_app_manager_ =
       std::make_unique<extensions::PendingBookmarkAppManager>(
-          profile, bookmark_app_registrar.get());
+          profile, bookmark_app_registrar.get(), install_finalizer_.get());
 
   web_app_policy_manager_ = std::make_unique<WebAppPolicyManager>(
       profile, pending_app_manager_.get());
@@ -139,6 +164,7 @@ void WebAppProvider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   ExtensionIdsMap::RegisterProfilePrefs(registry);
   WebAppPolicyManager::RegisterProfilePrefs(registry);
+  SystemWebAppManager::RegisterProfilePrefs(registry);
 }
 
 // static
@@ -199,15 +225,16 @@ void WebAppProvider::Reset() {
   // TODO(loyso): Make it independent to the order of destruction via using two
   // end-to-end passes:
   // 1) Do Reset() for each subsystem to nullify pointers (detach subsystems).
-  // 2) Destroy subsystems.
+  install_manager_->Reset();
 
-  // PendingAppManager is used by WebAppPolicyManager and therefore should be
-  // deleted after it.
+  // 2) Destroy subsystems.
+  // The order of destruction is the reverse order of creation:
   web_app_policy_manager_.reset();
   system_web_app_manager_.reset();
   pending_app_manager_.reset();
 
   install_manager_.reset();
+  install_finalizer_.reset();
   icon_manager_.reset();
   registrar_.reset();
   database_.reset();
@@ -216,9 +243,10 @@ void WebAppProvider::Reset() {
 }
 
 void WebAppProvider::OnScanForExternalWebApps(
-    std::vector<web_app::PendingAppManager::AppInfo> app_infos) {
+    std::vector<InstallOptions> desired_apps_install_options) {
   pending_app_manager_->SynchronizeInstalledApps(
-      std::move(app_infos), InstallSource::kExternalDefault);
+      std::move(desired_apps_install_options), InstallSource::kExternalDefault,
+      base::DoNothing());
 }
 
 }  // namespace web_app

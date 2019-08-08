@@ -187,7 +187,7 @@ jumbo_component("aura") {
     "//skia",
     "//ui/base",
     "//ui/base/clipboard",
-    "//ui/base/ime",
+    "//ui/base/ime/init",
     "//ui/display",
     "//ui/events",
     "//ui/events:dom_keyboard_layout",
@@ -202,6 +202,7 @@ jumbo_component("aura") {
   ]
 
   public_deps = [
+    "//ui/base/ime",
     "//ui/compositor",
   ]
 
@@ -222,7 +223,10 @@ jumbo_component("aura") {
   }
 
   if (is_win) {
-    libs = [ "wtsapi32.lib" ]
+    libs = [
+      "wtsapi32.lib",
+      "dwmapi.lib",
+    ]
   }
 
   if (use_ozone) {
@@ -317,7 +321,7 @@ jumbo_static_library("test_support") {
     "//skia",
     "//testing/gtest",
     "//ui/base:test_support",
-    "//ui/base/ime",
+    "//ui/base/ime/init",
     "//ui/compositor:test_support",
     "//ui/display",
     "//ui/display/manager",
@@ -368,7 +372,7 @@ executable("demo") {
     "//skia",
     "//third_party/icu",
     "//ui/base",
-    "//ui/base/ime",
+    "//ui/base/ime/init",
     "//ui/compositor",
     "//ui/compositor:test_support",
     "//ui/display",
@@ -412,6 +416,7 @@ test("aura_unittests") {
 
   if (is_win) {
     sources += [ "native_window_occlusion_tracker_unittest.cc" ]
+    libs = [ "dwmapi.lib" ]
   }
 
   deps = [
@@ -462,7 +467,7 @@ source_set("aura_interactive_ui_tests") {
       "//base/test:test_support",
       "//net",
       "//testing/gtest",
-      "//ui/base/ime:ime",
+      "//ui/base/ime/init",
       "//ui/display:display",
       "//ui/gfx",
       "//ui/gfx/geometry",

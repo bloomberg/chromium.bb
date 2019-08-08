@@ -15,26 +15,28 @@
 #include <stdint.h>
 #include <map>
 #include <memory>
+#include <utility>
 #include <vector>
 
+#include "absl/memory/memory.h"
 #include "absl/types/optional.h"
+#include "api/task_queue/queued_task.h"
+#include "api/task_queue/task_queue_base.h"
 #include "api/test/videocodec_test_fixture.h"
-#include "api/test/videocodec_test_stats.h"
 #include "api/video/encoded_image.h"
 #include "api/video/video_bitrate_allocation.h"
 #include "api/video/video_bitrate_allocator.h"
 #include "api/video/video_frame.h"
 #include "api/video_codecs/video_decoder.h"
 #include "api/video_codecs/video_encoder.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "modules/include/module_common_types.h"
+#include "modules/video_coding/codecs/test/videocodec_test_stats_impl.h"
 #include "modules/video_coding/include/video_codec_interface.h"
 #include "modules/video_coding/utility/ivf_file_writer.h"
 #include "rtc_base/buffer.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/constructor_magic.h"
-#include "rtc_base/sequenced_task_checker.h"
-#include "rtc_base/task_queue.h"
+#include "rtc_base/synchronization/sequence_checker.h"
 #include "rtc_base/thread_annotations.h"
 #include "rtc_base/thread_checker.h"
 #include "test/testsupport/frame_reader.h"
@@ -51,15 +53,18 @@ namespace test {
 class VideoProcessor {
  public:
   using VideoDecoderList = std::vector<std::unique_ptr<VideoDecoder>>;
-  using IvfFileWriterList = std::vector<std::unique_ptr<IvfFileWriter>>;
+  using LayerKey = std::pair<int /* spatial_idx */, int /* temporal_idx */>;
+  using IvfFileWriterMap = std::map<LayerKey, std::unique_ptr<IvfFileWriter>>;
+  // TODO(brandtr): Consider changing FrameWriterList to be a FrameWriterMap,
+  // to be able to save different TLs separately.
   using FrameWriterList = std::vector<std::unique_ptr<FrameWriter>>;
 
   VideoProcessor(webrtc::VideoEncoder* encoder,
                  VideoDecoderList* decoders,
                  FrameReader* input_frame_reader,
                  const VideoCodecTestFixture::Config& config,
-                 VideoCodecTestStats* stats,
-                 IvfFileWriterList* encoded_frame_writers,
+                 VideoCodecTestStatsImpl* stats,
+                 IvfFileWriterMap* encoded_frame_writers,
                  FrameWriterList* decoded_frame_writers);
   ~VideoProcessor();
 
@@ -79,7 +84,7 @@ class VideoProcessor {
     explicit VideoProcessorEncodeCompleteCallback(
         VideoProcessor* video_processor)
         : video_processor_(video_processor),
-          task_queue_(rtc::TaskQueue::Current()) {
+          task_queue_(TaskQueueBase::Current()) {
       RTC_DCHECK(video_processor_);
       RTC_DCHECK(task_queue_);
     }
@@ -92,9 +97,8 @@ class VideoProcessor {
 
       // Post the callback to the right task queue, if needed.
       if (!task_queue_->IsCurrent()) {
-        task_queue_->PostTask(
-            std::unique_ptr<rtc::QueuedTask>(new EncodeCallbackTask(
-                video_processor_, encoded_image, codec_specific_info)));
+        task_queue_->PostTask(absl::make_unique<EncodeCallbackTask>(
+            video_processor_, encoded_image, codec_specific_info));
         return Result(Result::OK, 0);
       }
 
@@ -103,7 +107,7 @@ class VideoProcessor {
     }
 
    private:
-    class EncodeCallbackTask : public rtc::QueuedTask {
+    class EncodeCallbackTask : public QueuedTask {
      public:
       EncodeCallbackTask(VideoProcessor* video_processor,
                          const webrtc::EncodedImage& encoded_image,
@@ -126,7 +130,7 @@ class VideoProcessor {
     };
 
     VideoProcessor* const video_processor_;
-    rtc::TaskQueue* const task_queue_;
+    TaskQueueBase* const task_queue_;
   };
 
   class VideoProcessorDecodeCompleteCallback
@@ -137,7 +141,7 @@ class VideoProcessor {
         size_t simulcast_svc_idx)
         : video_processor_(video_processor),
           simulcast_svc_idx_(simulcast_svc_idx),
-          task_queue_(rtc::TaskQueue::Current()) {
+          task_queue_(TaskQueueBase::Current()) {
       RTC_DCHECK(video_processor_);
       RTC_DCHECK(task_queue_);
     }
@@ -158,7 +162,7 @@ class VideoProcessor {
    private:
     VideoProcessor* const video_processor_;
     const size_t simulcast_svc_idx_;
-    rtc::TaskQueue* const task_queue_;
+    TaskQueueBase* const task_queue_;
   };
 
   // Invoked by the callback adapter when a frame has completed encoding.
@@ -182,7 +186,7 @@ class VideoProcessor {
   // Test input/output.
   VideoCodecTestFixture::Config config_ RTC_GUARDED_BY(sequence_checker_);
   const size_t num_simulcast_or_spatial_layers_;
-  VideoCodecTestStats* const stats_;
+  VideoCodecTestStatsImpl* const stats_;
 
   // Codecs.
   webrtc::VideoEncoder* const encoder_;
@@ -219,7 +223,7 @@ class VideoProcessor {
 
   // These (optional) file writers are used to persistently store the encoded
   // and decoded bitstreams. Each frame writer is enabled by being non-null.
-  IvfFileWriterList* const encoded_frame_writers_;
+  IvfFileWriterMap* const encoded_frame_writers_;
   FrameWriterList* const decoded_frame_writers_;
 
   // Metadata for inputed/encoded/decoded frames. Used for frame identification,
@@ -246,7 +250,7 @@ class VideoProcessor {
   int64_t post_encode_time_ns_ RTC_GUARDED_BY(sequence_checker_);
 
   // This class must be operated on a TaskQueue.
-  rtc::SequencedTaskChecker sequence_checker_;
+  SequenceChecker sequence_checker_;
 
   RTC_DISALLOW_COPY_AND_ASSIGN(VideoProcessor);
 };

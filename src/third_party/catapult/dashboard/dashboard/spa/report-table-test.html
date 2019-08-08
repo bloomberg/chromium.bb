@@ -8,6 +8,7 @@ found in the LICENSE file.
 <script src="/bower_components/webcomponentsjs/webcomponents-loader.js"></script>
 <script src="/bower_components/web-component-tester/browser.js"></script>
 <link rel="import" href="/dashboard/spa/report-table.html">
+<script src="/dashboard/spa/import-module.js"></script>
 
 <test-fixture id="test">
   <template>
@@ -67,6 +68,11 @@ suite('report-table', function() {
     await cp.afterRender();
     await cp.afterRender();
     assert.deepEqual(report.tooltip.rows, [['suite', 'bot', 'case']]);
+    const reportRect = report.getBoundingClientRect();
+    assert.strictEqual(report.tooltip.top,
+        tr.children[0].getBoundingClientRect().bottom - reportRect.top);
+    assert.strictEqual(report.tooltip.left,
+        tr.children[3].getBoundingClientRect().left - reportRect.left);
 
     const a = tr.children[0].children[0];
     let chartOptions;
@@ -87,6 +93,7 @@ suite('report-table', function() {
   });
 
   test('copy', async function() {
+    await importModule('./cp-toast.js');
     const report = fixture('test');
     await cp.afterRender();
     report.$.copy.click();

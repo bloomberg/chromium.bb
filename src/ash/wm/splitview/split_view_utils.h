@@ -20,27 +20,28 @@ class Layer;
 
 namespace ash {
 
-// Enum of the different splitview mode animations. Sorted by type (fade/slide)
-// then alphabetically.
+// Enum of the different splitview mode animations. Sorted by property
+// (opacity/transform) and then alphabetically.
 enum SplitviewAnimationType {
   // Used to fade in and out the highlights on either side which indicate where
   // to drag a selector item.
   SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN,
   SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT,
-  // Used to fade out the other highlight. There are normally two highlights,
-  // one on each side. When entering a state with a preview highlight, one
-  // highlight is the preview highlight, and the other highlight is the other
-  // highlight.
+  // Used to fade in and out the other highlight. There are normally two
+  // highlights, one on each side. When entering a state with a preview
+  // highlight, one highlight is the preview highlight, and the other highlight
+  // is the other highlight.
+  SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_IN,
   SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_OUT,
-  // Used to fade in and out the preview area highlight which indicates the
-  // bounds of the window that is about to get snapped.
-  SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_IN,
-  SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_OUT,
   // Used to fade in and out the label on the overview item which warns users
   // the item cannot be snapped. The label appears on the overview item after
   // another window has been snapped.
   SPLITVIEW_ANIMATION_OVERVIEW_ITEM_FADE_IN,
   SPLITVIEW_ANIMATION_OVERVIEW_ITEM_FADE_OUT,
+  // Used to fade in and out the preview area highlight which indicates the
+  // bounds of the window that is about to get snapped.
+  SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_IN,
+  SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_OUT,
   // Used to fade in and out the labels which appear on either side of overview
   // mode when a overview item is selected. They indicate where to drag the
   // selector item if it is snappable, or if an item cannot be snapped.
@@ -54,11 +55,17 @@ enum SplitviewAnimationType {
   // Used to slide in and out the other highlight.
   SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_IN,
   SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_OUT,
+  // Used to slide in and out the text label on the other highlight.
+  SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_TEXT_SLIDE_IN,
+  SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_TEXT_SLIDE_OUT,
+  // Used to animate the inset of the preview area to nothing.
+  SPLITVIEW_ANIMATION_PREVIEW_AREA_NIX_INSET,
   // Used to slide in and out the preview area highlight.
-  SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN_OUT,
-  // Used to slide in the text labels.
-  SPLITVIEW_ANIMATION_TEXT_SLIDE_IN,
-  SPLITVIEW_ANIMATION_TEXT_SLIDE_OUT,
+  SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN,
+  SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_OUT,
+  // Used to slide in and out the text label on the preview area highlight.
+  SPLITVIEW_ANIMATION_PREVIEW_AREA_TEXT_SLIDE_IN,
+  SPLITVIEW_ANIMATION_PREVIEW_AREA_TEXT_SLIDE_OUT,
   // Used to apply window transform on the selector item after it gets snapped
   // or on the dragged window after the drag ends.
   SPLITVIEW_ANIMATION_SET_WINDOW_TRANSFORM,
@@ -72,8 +79,11 @@ void DoSplitviewTransformAnimation(ui::Layer* layer,
                                    SplitviewAnimationType type,
                                    const gfx::Transform& target_transform);
 
-// Returns true if split view mode is supported. Currently the split view
-// mode is only supported in tablet mode.
+// Returns true if we allow dragging an overview window to snap to split view in
+// clamshell mode.
+ASH_EXPORT bool IsClamshellSplitViewModeEnabled();
+
+// Returns true if split view mode is supported.
 ASH_EXPORT bool ShouldAllowSplitView();
 
 // Returns true if |window| can be activated and snapped in split screen in

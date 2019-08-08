@@ -47,7 +47,7 @@ class LayoutProviderTest : public testing::Test {
     // later, since it's known to have flaky results on Windows 7. See
     // http://crbug.com/759870.
     if (base::win::GetVersion() >= base::win::VERSION_WIN10)
-      gfx::win::MaybeInitializeDirectWrite();
+      gfx::win::InitializeDirectWrite();
   }
 #endif
 
@@ -311,7 +311,8 @@ TEST_F(LayoutProviderTest, TypographyLineHeight) {
 // Ensure that line heights reported in a default bot configuration match the
 // Harmony spec. This test will only run if it detects that the current machine
 // has the default OS configuration.
-TEST_F(LayoutProviderTest, ExplicitTypographyLineHeight) {
+// Flaky. http://crbug.com/759870
+TEST_F(LayoutProviderTest, DISABLED_ExplicitTypographyLineHeight) {
   std::unique_ptr<views::LayoutProvider> layout_provider =
       ChromeLayoutProvider::CreateLayoutProvider();
 

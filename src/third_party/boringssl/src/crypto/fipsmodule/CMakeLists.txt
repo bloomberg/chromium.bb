@@ -7,7 +7,6 @@ if(${ARCH} STREQUAL "x86_64")
     aesni-gcm-x86_64.${ASM_EXT}
     aesni-x86_64.${ASM_EXT}
     aes-x86_64.${ASM_EXT}
-    bsaes-x86_64.${ASM_EXT}
     ghash-ssse3-x86_64.${ASM_EXT}
     ghash-x86_64.${ASM_EXT}
     md5-x86_64.${ASM_EXT}
@@ -32,6 +31,7 @@ if(${ARCH} STREQUAL "x86")
     aesni-x86.${ASM_EXT}
     bn-586.${ASM_EXT}
     co-586.${ASM_EXT}
+    ghash-ssse3-x86.${ASM_EXT}
     ghash-x86.${ASM_EXT}
     md5-586.${ASM_EXT}
     sha1-586.${ASM_EXT}
@@ -64,10 +64,12 @@ if(${ARCH} STREQUAL "aarch64")
 
     aesv8-armx.${ASM_EXT}
     armv8-mont.${ASM_EXT}
+    ghash-neon-armv8.${ASM_EXT}
     ghashv8-armx.${ASM_EXT}
     sha1-armv8.${ASM_EXT}
     sha256-armv8.${ASM_EXT}
     sha512-armv8.${ASM_EXT}
+    vpaes-armv8.${ASM_EXT}
   )
 endif()
 
@@ -92,12 +94,13 @@ perlasm(armv4-mont.${ASM_EXT} bn/asm/armv4-mont.pl)
 perlasm(armv8-mont.${ASM_EXT} bn/asm/armv8-mont.pl)
 perlasm(bn-586.${ASM_EXT} bn/asm/bn-586.pl)
 perlasm(bsaes-armv7.${ASM_EXT} aes/asm/bsaes-armv7.pl)
-perlasm(bsaes-x86_64.${ASM_EXT} aes/asm/bsaes-x86_64.pl)
 perlasm(co-586.${ASM_EXT} bn/asm/co-586.pl)
 perlasm(ghash-armv4.${ASM_EXT} modes/asm/ghash-armv4.pl)
 perlasm(ghashp8-ppc.${ASM_EXT} modes/asm/ghashp8-ppc.pl)
 perlasm(ghashv8-armx.${ASM_EXT} modes/asm/ghashv8-armx.pl)
+perlasm(ghash-neon-armv8.${ASM_EXT} modes/asm/ghash-neon-armv8.pl)
 perlasm(ghash-ssse3-x86_64.${ASM_EXT} modes/asm/ghash-ssse3-x86_64.pl)
+perlasm(ghash-ssse3-x86.${ASM_EXT} modes/asm/ghash-ssse3-x86.pl)
 perlasm(ghash-x86_64.${ASM_EXT} modes/asm/ghash-x86_64.pl)
 perlasm(ghash-x86.${ASM_EXT} modes/asm/ghash-x86.pl)
 perlasm(md5-586.${ASM_EXT} md5/asm/md5-586.pl)
@@ -118,6 +121,7 @@ perlasm(sha512-586.${ASM_EXT} sha/asm/sha512-586.pl)
 perlasm(sha512-armv4.${ASM_EXT} sha/asm/sha512-armv4.pl)
 perlasm(sha512-armv8.${ASM_EXT} sha/asm/sha512-armv8.pl)
 perlasm(sha512-x86_64.${ASM_EXT} sha/asm/sha512-x86_64.pl)
+perlasm(vpaes-armv8.${ASM_EXT} aes/asm/vpaes-armv8.pl)
 perlasm(vpaes-x86_64.${ASM_EXT} aes/asm/vpaes-x86_64.pl)
 perlasm(vpaes-x86.${ASM_EXT} aes/asm/vpaes-x86.pl)
 perlasm(x86_64-mont5.${ASM_EXT} bn/asm/x86_64-mont5.pl)

@@ -81,20 +81,6 @@ const char kAshUiModeTablet[] = "touch_view";
 const char kAshHideNotificationsForFactory[] =
     "ash-hide-notifications-for-factory";
 
-// Enables the shelf color to be derived from the wallpaper.
-const char kAshShelfColor[] = "ash-shelf-color";
-const char kAshShelfColorEnabled[] = "enabled";
-const char kAshShelfColorDisabled[] = "disabled";
-
-// The color scheme to be used when the |kAshShelfColor| feature is enabled.
-const char kAshShelfColorScheme[] = "ash-shelf-color-scheme";
-const char kAshShelfColorSchemeLightMuted[] = "light_muted";
-const char kAshShelfColorSchemeLightVibrant[] = "light_vibrant";
-const char kAshShelfColorSchemeNormalMuted[] = "normal_muted";
-const char kAshShelfColorSchemeNormalVibrant[] = "normal_vibrant";
-const char kAshShelfColorSchemeDarkMuted[] = "dark_muted";
-const char kAshShelfColorSchemeDarkVibrant[] = "dark_vibrant";
-
 // Enables the heads-up display for tracking touch points.
 const char kAshTouchHud[] = "ash-touch-hud";
 

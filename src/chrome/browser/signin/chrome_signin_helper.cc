@@ -50,7 +50,7 @@
 #include "net/url_request/url_request.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/signin/account_management_screen_helper.h"
+#include "chrome/browser/android/signin/signin_utils.h"
 #include "ui/android/view_android.h"
 #else
 #include "chrome/browser/ui/browser_commands.h"
@@ -63,6 +63,9 @@
 #endif
 
 namespace signin {
+
+const void* const kManageAccountsHeaderReceivedUserDataKey =
+    &kManageAccountsHeaderReceivedUserDataKey;
 
 namespace {
 
@@ -139,10 +142,10 @@ void DestroyLockWrapperAfterDelay(
 bool ShouldBlockReconcilorForRequest(ChromeRequestAdapter* request) {
   content::ResourceType resource_type = request->GetResourceType();
 
-  if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
+  if (resource_type == content::ResourceType::kMainFrame)
     return true;
 
-  return (resource_type == content::RESOURCE_TYPE_XHR) &&
+  return (resource_type == content::ResourceType::kXhr) &&
          gaia::IsGaiaSignonRealm(request->GetReferrerOrigin());
 }
 
@@ -160,6 +163,12 @@ class RequestDestructionObserverUserData : public base::SupportsUserData::Data {
 
   DISALLOW_COPY_AND_ASSIGN(RequestDestructionObserverUserData);
 };
+
+// This user data is used as a marker that a Mirror header was found on the
+// redirect chain. It does not contain any data, its presence is enough to
+// indicate that a header has already be found on the request.
+class ManageAccountsHeaderReceivedUserData
+    : public base::SupportsUserData::Data {};
 
 // Processes the mirror response header on the UI thread. Currently depending
 // on the value of |header_value|, it either shows the profile avatar menu, or
@@ -187,44 +196,39 @@ void ProcessMirrorHeaderUIThread(
       AccountReconcilorFactory::GetForProfile(profile);
   account_reconcilor->OnReceivedManageAccountsResponse(service_type);
 #if defined(OS_CHROMEOS)
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (browser) {
-    BrowserWindow::AvatarBubbleMode bubble_mode;
-    switch (service_type) {
-      case GAIA_SERVICE_TYPE_INCOGNITO:
-        chrome::NewIncognitoWindow(profile);
-        return;
-      case GAIA_SERVICE_TYPE_ADDSESSION:
-        bubble_mode = BrowserWindow::AVATAR_BUBBLE_MODE_ADD_ACCOUNT;
-        break;
-      case GAIA_SERVICE_TYPE_REAUTH:
-        bubble_mode = BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH;
-        break;
-      default:
-        bubble_mode = BrowserWindow::AVATAR_BUBBLE_MODE_ACCOUNT_MANAGEMENT;
-    }
-    signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
-        account_reconcilor->GetState());
-
-    if (chromeos::switches::IsAccountManagerEnabled()) {
-      // Chrome OS Account Manager is available. The only allowed operations
-      // are:
-      //
-      // - Going Incognito (already handled in above switch-case).
-      // - Displaying the Account Manager for managing accounts.
-      chrome::SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
-          profile, GURL("chrome://settings/accountManager"));
-      return;
-    }
-
-    // TODO(sinhak): Remove this when Chrome OS Account Manager is released.
-    // Chrome OS does not have an account picker right now. To fix
-    // https://crbug.com/807568, this is a no-op here. This is OK because in
-    // the limited cases where Mirror is available on Chrome OS, 1:1 account
-    // consistency is enforced and adding/removing accounts is not allowed,
-    // GAIA_SERVICE_TYPE_INCOGNITO may be allowed though.
+  if (chrome::FindBrowserWithWebContents(web_contents) &&
+      service_type == GAIA_SERVICE_TYPE_INCOGNITO) {
+    chrome::NewIncognitoWindow(profile);
     return;
   }
+  signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
+      account_reconcilor->GetState());
+
+  if (chromeos::switches::IsAccountManagerEnabled()) {
+    // Chrome OS Account Manager is available. The only allowed operations
+    // are:
+    //
+    // - Going Incognito (already handled in above switch-case).
+    // - Displaying the Account Manager for managing accounts.
+
+    // Do not display Account Manager if the navigation happened in the
+    // "background".
+    if (!chrome::FindBrowserWithWebContents(web_contents))
+      return;
+
+    chrome::SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
+        profile, GURL("chrome://settings/accountManager"));
+    return;
+  }
+
+  // TODO(sinhak): Remove this when Chrome OS Account Manager is released.
+  // Chrome OS does not have an account picker right now. To fix
+  // https://crbug.com/807568, this is a no-op here. This is OK because in
+  // the limited cases where Mirror is available on Chrome OS, 1:1 account
+  // consistency is enforced and adding/removing accounts is not allowed,
+  // GAIA_SERVICE_TYPE_INCOGNITO may be allowed though.
+  return;
+
 #else   // !defined(OS_CHROMEOS)
   if (service_type == signin::GAIA_SERVICE_TYPE_INCOGNITO) {
     GURL url(manage_accounts_params.continue_url.empty()
@@ -237,8 +241,8 @@ void ProcessMirrorHeaderUIThread(
     signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
         account_reconcilor->GetState());
     auto* window = web_contents->GetNativeView()->GetWindowAndroid();
-    AccountManagementScreenHelper::OpenAccountManagementScreen(window,
-                                                               service_type);
+    SigninUtils::OpenAccountManagementScreen(window, service_type,
+                                             manage_accounts_params.email);
   }
 #endif  // defined(OS_CHROMEOS)
 #endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
@@ -338,11 +342,9 @@ void ProcessDiceHeaderUIThread(
 void ProcessMirrorResponseHeaderIfExists(ResponseAdapter* response,
                                          bool is_off_the_record) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(gaia::IsGaiaSignonRealm(response->GetOrigin()));
 
   if (!response->IsMainFrame())
-    return;
-
-  if (!gaia::IsGaiaSignonRealm(response->GetOrigin()))
     return;
 
   const net::HttpResponseHeaders* response_headers = response->GetHeaders();
@@ -367,6 +369,18 @@ void ProcessMirrorResponseHeaderIfExists(ResponseAdapter* response,
   if (params.service_type == GAIA_SERVICE_TYPE_NONE)
     return;
 
+  // Only process one mirror header per request (multiple headers on the same
+  // redirect chain are ignored).
+  if (response->GetUserData(kManageAccountsHeaderReceivedUserDataKey)) {
+    LOG(ERROR) << "Multiple X-Chrome-Manage-Accounts headers on a redirect "
+               << "chain, ignoring";
+    return;
+  }
+
+  response->SetUserData(
+      kManageAccountsHeaderReceivedUserDataKey,
+      std::make_unique<ManageAccountsHeaderReceivedUserData>());
+
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
                            base::BindOnce(ProcessMirrorHeaderUIThread, params,
                                           response->GetWebContentsGetter()));
@@ -376,11 +390,9 @@ void ProcessMirrorResponseHeaderIfExists(ResponseAdapter* response,
 void ProcessDiceResponseHeaderIfExists(ResponseAdapter* response,
                                        bool is_off_the_record) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(gaia::IsGaiaSignonRealm(response->GetOrigin()));
 
   if (is_off_the_record)
-    return;
-
-  if (!gaia::IsGaiaSignonRealm(response->GetOrigin()))
     return;
 
   const net::HttpResponseHeaders* response_headers = response->GetHeaders();
@@ -447,7 +459,7 @@ void ChromeRequestAdapter::SetDestructionCallback(base::OnceClosure closure) {
       std::make_unique<RequestDestructionObserverUserData>(std::move(closure)));
 }
 
-ResponseAdapter::ResponseAdapter(const net::URLRequest* request)
+ResponseAdapter::ResponseAdapter(net::URLRequest* request)
     : request_(request) {}
 
 ResponseAdapter::~ResponseAdapter() = default;
@@ -460,7 +472,7 @@ ResponseAdapter::GetWebContentsGetter() const {
 
 bool ResponseAdapter::IsMainFrame() const {
   auto* info = content::ResourceRequestInfo::ForRequest(request_);
-  return info && (info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME);
+  return info && (info->GetResourceType() == content::ResourceType::kMainFrame);
 }
 
 GURL ResponseAdapter::GetOrigin() const {
@@ -473,6 +485,17 @@ const net::HttpResponseHeaders* ResponseAdapter::GetHeaders() const {
 
 void ResponseAdapter::RemoveHeader(const std::string& name) {
   request_->response_headers()->RemoveHeader(name);
+}
+
+base::SupportsUserData::Data* ResponseAdapter::GetUserData(
+    const void* key) const {
+  return request_->GetUserData(key);
+}
+
+void ResponseAdapter::SetUserData(
+    const void* key,
+    std::unique_ptr<base::SupportsUserData::Data> data) {
+  request_->SetUserData(key, std::move(data));
 }
 
 void SetDiceAccountReconcilorBlockDelayForTesting(int delay_ms) {
@@ -549,14 +572,13 @@ void FixAccountConsistencyRequestHeader(ChromeRequestAdapter* request,
 void ProcessAccountConsistencyResponseHeaders(ResponseAdapter* response,
                                               const GURL& redirect_url,
                                               bool is_off_the_record) {
-  if (redirect_url.is_empty()) {
-    // This is not a redirect.
+  if (!gaia::IsGaiaSignonRealm(response->GetOrigin()))
+    return;
 
-    // See if the response contains the X-Chrome-Manage-Accounts header. If so
-    // show the profile avatar bubble so that user can complete signin/out
-    // action the native UI.
-    ProcessMirrorResponseHeaderIfExists(response, is_off_the_record);
-  }
+  // See if the response contains the X-Chrome-Manage-Accounts header. If so
+  // show the profile avatar bubble so that user can complete signin/out
+  // action the native UI.
+  ProcessMirrorResponseHeaderIfExists(response, is_off_the_record);
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // Process the Dice header: on sign-in, exchange the authorization code for a

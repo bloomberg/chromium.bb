@@ -108,6 +108,7 @@ TextureState::TextureState(TextureType type)
       mGenerateMipmapHint(GL_FALSE),
       mInitState(InitState::MayNeedInit),
       mCachedSamplerFormat(SamplerFormat::InvalidEnum),
+      mCachedSamplerCompareMode(GL_NONE),
       mCachedSamplerFormatValid(false)
 {}
 
@@ -241,12 +242,12 @@ GLenum TextureState::getGenerateMipmapHint() const
     return mGenerateMipmapHint;
 }
 
-SamplerFormat TextureState::computeRequiredSamplerFormat() const
+SamplerFormat TextureState::computeRequiredSamplerFormat(const SamplerState &samplerState) const
 {
     const ImageDesc &baseImageDesc = getImageDesc(getBaseImageTarget(), getEffectiveBaseLevel());
     if ((baseImageDesc.format.info->format == GL_DEPTH_COMPONENT ||
          baseImageDesc.format.info->format == GL_DEPTH_STENCIL) &&
-        mSamplerState.getCompareMode() != GL_NONE)
+        samplerState.getCompareMode() != GL_NONE)
     {
         return SamplerFormat::Shadow;
     }
@@ -1146,24 +1147,22 @@ angle::Result Texture::copyImage(Context *context,
 }
 
 angle::Result Texture::copySubImage(Context *context,
-                                    TextureTarget target,
-                                    GLint level,
+                                    const ImageIndex &index,
                                     const Offset &destOffset,
                                     const Rectangle &sourceArea,
                                     Framebuffer *source)
 {
-    ASSERT(TextureTargetToType(target) == mState.mType);
+    ASSERT(TextureTargetToType(index.getTarget()) == mState.mType);
 
     // Ensure source FBO is initialized.
     ANGLE_TRY(source->ensureReadAttachmentInitialized(context, GL_COLOR_BUFFER_BIT));
 
-    Box destBox(destOffset.x, destOffset.y, destOffset.y, sourceArea.width, sourceArea.height, 1);
-    ANGLE_TRY(ensureSubImageInitialized(context, target, level, destBox));
-
-    ImageIndex index = ImageIndex::MakeFromTarget(target, level);
+    Box destBox(destOffset.x, destOffset.y, destOffset.z, sourceArea.width, sourceArea.height, 1);
+    ANGLE_TRY(
+        ensureSubImageInitialized(context, index.getTarget(), index.getLevelIndex(), destBox));
 
     ANGLE_TRY(mTexture->copySubImage(context, index, destOffset, sourceArea, source));
-    ANGLE_TRY(handleMipmapGenerationHint(context, level));
+    ANGLE_TRY(handleMipmapGenerationHint(context, index.getLevelIndex()));
 
     return angle::Result::Continue;
 }
@@ -1304,6 +1303,41 @@ angle::Result Texture::setStorageMultisample(Context *context,
                                         InitState::MayNeedInit);
 
     signalDirtyStorage(context, InitState::MayNeedInit);
+
+    return angle::Result::Continue;
+}
+
+angle::Result Texture::setStorageExternalMemory(Context *context,
+                                                TextureType type,
+                                                GLsizei levels,
+                                                GLenum internalFormat,
+                                                const Extents &size,
+                                                MemoryObject *memoryObject,
+                                                GLuint64 offset)
+{
+    ASSERT(type == mState.mType);
+
+    // Release from previous calls to eglBindTexImage, to avoid calling the Impl after
+    ANGLE_TRY(releaseTexImageInternal(context));
+    ANGLE_TRY(orphanImages(context));
+
+    ANGLE_TRY(mTexture->setStorageExternalMemory(context, type, levels, internalFormat, size,
+                                                 memoryObject, offset));
+
+    mState.mImmutableFormat = true;
+    mState.mImmutableLevels = static_cast<GLuint>(levels);
+    mState.clearImageDescs();
+    mState.setImageDescChain(0, static_cast<GLuint>(levels - 1), size, Format(internalFormat),
+                             InitState::MayNeedInit);
+
+    // Changing the texture to immutable can trigger a change in the base and max levels:
+    // GLES 3.0.4 section 3.8.10 pg 158:
+    // "For immutable-format textures, levelbase is clamped to the range[0;levels],levelmax is then
+    // clamped to the range[levelbase;levels].
+    mDirtyBits.set(DIRTY_BIT_BASE_LEVEL);
+    mDirtyBits.set(DIRTY_BIT_MAX_LEVEL);
+
+    signalDirtyStorage(context, InitState::Initialized);
 
     return angle::Result::Continue;
 }
@@ -1770,6 +1804,7 @@ void Texture::onSubjectStateChange(const gl::Context *context,
     if (message == angle::SubjectMessage::DEPENDENT_DIRTY_BITS)
     {
         mDirtyBits.set(DIRTY_BIT_IMPLEMENTATION);
+        signalDirtyState(context, DIRTY_BIT_IMPLEMENTATION);
     }
 }
 }  // namespace gl

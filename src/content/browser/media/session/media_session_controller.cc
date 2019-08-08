@@ -14,7 +14,7 @@
 namespace content {
 
 MediaSessionController::MediaSessionController(
-    const WebContentsObserver::MediaPlayerId& id,
+    const MediaPlayerId& id,
     MediaWebContentsObserver* media_web_contents_observer)
     : id_(id),
       media_web_contents_observer_(media_web_contents_observer),
@@ -83,8 +83,11 @@ bool MediaSessionController::Initialize(
 
 void MediaSessionController::OnSuspend(int player_id) {
   DCHECK_EQ(player_id_, player_id);
+  // TODO(crbug.com/953645): Set triggered_by_user to true ONLY if that action
+  // was actually triggered by user as this will create a WebUserGestureToken.
   id_.render_frame_host->Send(new MediaPlayerDelegateMsg_Pause(
-      id_.render_frame_host->GetRoutingID(), id_.delegate_id));
+      id_.render_frame_host->GetRoutingID(), id_.delegate_id,
+      true /* triggered_by_user */));
 }
 
 void MediaSessionController::OnResume(int player_id) {

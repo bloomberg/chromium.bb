@@ -46,10 +46,10 @@ const ImageButton::VerticalAlignment kDefaultVerticalAlignment =
     ImageButton::ALIGN_TOP;
 }  // namespace
 
-typedef ViewsTestBase ImageButtonTest;
+using ImageButtonTest = ViewsTestBase;
 
 TEST_F(ImageButtonTest, Basics) {
-  ImageButton button(NULL);
+  ImageButton button(nullptr);
 
   // Our image to paint starts empty.
   EXPECT_TRUE(button.GetImageToPaint().isNull());
@@ -97,7 +97,7 @@ TEST_F(ImageButtonTest, Basics) {
 }
 
 TEST_F(ImageButtonTest, SetAndGetImage) {
-  ImageButton button(NULL);
+  ImageButton button(nullptr);
 
   // Images start as null.
   EXPECT_TRUE(button.GetImage(Button::STATE_NORMAL).isNull());
@@ -118,12 +118,12 @@ TEST_F(ImageButtonTest, SetAndGetImage) {
   EXPECT_TRUE(button.GetImage(Button::STATE_DISABLED).isNull());
 
   // ImageButton supports NULL image pointers.
-  button.SetImage(Button::STATE_NORMAL, NULL);
+  button.SetImage(Button::STATE_NORMAL, nullptr);
   EXPECT_TRUE(button.GetImage(Button::STATE_NORMAL).isNull());
 }
 
 TEST_F(ImageButtonTest, ImagePositionWithBorder) {
-  ImageButton button(NULL);
+  ImageButton button(nullptr);
   gfx::ImageSkia image = CreateTestImage(20, 30);
   button.SetImage(Button::STATE_NORMAL, &image);
 
@@ -172,7 +172,7 @@ TEST_F(ImageButtonTest, ImagePositionWithBorder) {
 }
 
 TEST_F(ImageButtonTest, LeftAlignedMirrored) {
-  ImageButton button(NULL);
+  ImageButton button(nullptr);
   gfx::ImageSkia image = CreateTestImage(20, 30);
   button.SetImage(Button::STATE_NORMAL, &image);
   button.SetBounds(0, 0, 50, 30);
@@ -190,7 +190,7 @@ TEST_F(ImageButtonTest, LeftAlignedMirrored) {
 }
 
 TEST_F(ImageButtonTest, RightAlignedMirrored) {
-  ImageButton button(NULL);
+  ImageButton button(nullptr);
   gfx::ImageSkia image = CreateTestImage(20, 30);
   button.SetImage(Button::STATE_NORMAL, &image);
   button.SetBounds(0, 0, 50, 30);

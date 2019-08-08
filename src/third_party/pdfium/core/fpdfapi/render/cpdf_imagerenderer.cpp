@@ -543,6 +543,8 @@ bool CPDF_ImageRenderer::Continue(PauseIndicatorIface* pPause) {
     case Mode::kTransform:
       return ContinueTransform(pPause);
   }
+  NOTREACHED();
+  return false;
 }
 
 bool CPDF_ImageRenderer::ContinueDefault(PauseIndicatorIface* pPause) {
@@ -550,6 +552,9 @@ bool CPDF_ImageRenderer::ContinueDefault(PauseIndicatorIface* pPause) {
     return true;
 
   if (!StartRenderDIBBase())
+    return false;
+
+  if (m_Mode == Mode::kDefault)
     return false;
 
   return Continue(pPause);

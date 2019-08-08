@@ -19,10 +19,8 @@
 #include "third_party/blink/renderer/core/html/media/remote_playback_controller.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_availability_observer.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/wtf/compiler.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -164,8 +162,7 @@ class MODULES_EXPORT RemotePlayback final
 
   mojom::blink::PresentationConnectionState state_;
   mojom::blink::ScreenAvailability availability_;
-  HeapHashMap<int, TraceWrapperMember<AvailabilityCallbackWrapper>>
-      availability_callbacks_;
+  HeapHashMap<int, Member<AvailabilityCallbackWrapper>> availability_callbacks_;
   Member<HTMLMediaElement> media_element_;
   Member<ScriptPromiseResolver> prompt_promise_resolver_;
   Vector<KURL> availability_urls_;

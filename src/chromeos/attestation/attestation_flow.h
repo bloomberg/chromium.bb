@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/dbus/attestation_constants.h"
+#include "chromeos/dbus/constants/attestation_constants.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -50,7 +50,7 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) ServerProxy {
 // and the Chrome OS Privacy CA server.  Sample usage:
 //
 //    AttestationFlow flow(AsyncMethodCaller::GetInstance(),
-//                         DBusThreadManager::Get().GetCryptohomeClient(),
+//                         CryptohomeClient::Get(),
 //                         std::move(my_server_proxy));
 //    AttestationFlow::CertificateCallback callback = base::Bind(&MyCallback);
 //    flow.GetCertificate(ENTERPRISE_USER_CERTIFICATE, false, callback);

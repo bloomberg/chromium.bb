@@ -328,7 +328,9 @@ void HeadlessShell::PollReadyState() {
 
 void HeadlessShell::OnReadyState(
     std::unique_ptr<runtime::EvaluateResult> result) {
-  if (result->GetResult()->GetValue()->is_string()) {
+  // |result| can be nullptr if HeadlessDevToolsClientImpl::DispatchMessageReply
+  // sees an error.
+  if (result && result->GetResult()->GetValue()->is_string()) {
     std::stringstream stream(result->GetResult()->GetValue()->GetString());
     std::string ready_state;
     std::string url;
@@ -601,7 +603,7 @@ bool ValidateCommandLine(const base::CommandLine& command_line) {
 int HeadlessShellMain(HINSTANCE instance,
                       sandbox::SandboxInterfaceInfo* sandbox_info) {
   base::CommandLine::Init(0, nullptr);
-#if defined(HEADLESS_USE_CRASPHAD)
+#if defined(HEADLESS_USE_CRASHPAD)
   std::string process_type =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           ::switches::kProcessType);
@@ -610,7 +612,7 @@ int HeadlessShellMain(HINSTANCE instance,
         *base::CommandLine::ForCurrentProcess(), base::FilePath(),
         ::switches::kProcessType, switches::kUserDataDir);
   }
-#endif  // defined(HEADLESS_USE_CRASPHAD)
+#endif  // defined(HEADLESS_USE_CRASHPAD)
   RunChildProcessIfNeeded(instance, sandbox_info);
   HeadlessBrowser::Options::Builder builder(0, nullptr);
   builder.SetInstance(instance);

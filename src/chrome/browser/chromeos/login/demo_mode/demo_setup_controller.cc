@@ -209,9 +209,6 @@ DemoSetupController::DemoSetupError CreateFromLockStatus(
 }  //  namespace
 
 // static
-constexpr char DemoSetupController::kDemoModeDomain[];
-
-// static
 DemoSetupController::DemoSetupError
 DemoSetupController::DemoSetupError::CreateFromEnrollmentStatus(
     const policy::EnrollmentStatus& status) {
@@ -474,7 +471,7 @@ std::string DemoSetupController::GetSubOrganizationEmail() {
   const base::flat_set<std::string> kCountriesWithCustomization(
       {"dk", "fi", "fr", "nl", "no", "se"});
   if (kCountriesWithCustomization.contains(country))
-    return "admin-" + country + "@" + DemoSetupController::kDemoModeDomain;
+    return "admin-" + country + "@" + policy::kDemoModeDomain;
   return std::string();
 }
 
@@ -579,10 +576,10 @@ void DemoSetupController::OnDemoResourcesCrOSComponentLoaded() {
   policy_manager->SetSubOrganization(GetSubOrganizationEmail());
   policy::EnrollmentConfig config;
   config.mode = policy::EnrollmentConfig::MODE_ATTESTATION;
-  config.management_domain = DemoSetupController::kDemoModeDomain;
+  config.management_domain = policy::kDemoModeDomain;
 
   enrollment_helper_ = EnterpriseEnrollmentHelper::Create(
-      this, nullptr, config, DemoSetupController::kDemoModeDomain);
+      this, nullptr, config, policy::kDemoModeDomain);
   enrollment_helper_->EnrollUsingAttestation();
 }
 
@@ -611,12 +608,11 @@ void DemoSetupController::EnrollOffline() {
   VLOG(1) << "Starting offline enrollment";
   policy::EnrollmentConfig config;
   config.mode = policy::EnrollmentConfig::MODE_OFFLINE_DEMO;
-  config.management_domain = DemoSetupController::kDemoModeDomain;
+  config.management_domain = policy::kDemoModeDomain;
   config.offline_policy_path =
       policy_dir.AppendASCII(kOfflineDevicePolicyFileName);
   enrollment_helper_ = EnterpriseEnrollmentHelper::Create(
-      this, nullptr /* ad_join_delegate */, config,
-      DemoSetupController::kDemoModeDomain);
+      this, nullptr /* ad_join_delegate */, config, policy::kDemoModeDomain);
   enrollment_helper_->EnrollForOfflineDemo();
 }
 

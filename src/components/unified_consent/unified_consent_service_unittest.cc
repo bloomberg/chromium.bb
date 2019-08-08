@@ -120,8 +120,8 @@ TEST_F(UnifiedConsentServiceTest, EnableUrlKeyedAnonymizedDataCollection) {
 TEST_F(UnifiedConsentServiceTest, Migration_UpdateSettings) {
   // Create user that syncs history and has no custom passphrase.
   identity_test_environment_.SetPrimaryAccount("testaccount");
-  sync_service_.GetUserSettings()->SetChosenDataTypes(
-      false, syncer::ModelTypeSet(syncer::TYPED_URLS));
+  sync_service_.GetUserSettings()->SetSelectedTypes(
+      false, {syncer::UserSelectableType::kHistory});
   EXPECT_TRUE(sync_service_.IsSyncFeatureActive());
   // Url keyed data collection is off before the migration.
   EXPECT_FALSE(pref_service_.GetBoolean(

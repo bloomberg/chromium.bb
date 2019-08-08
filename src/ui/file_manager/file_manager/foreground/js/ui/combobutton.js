@@ -108,11 +108,11 @@ cr.define('cr.ui', () => {
       this.addEventListener('menushow', this.handleMenuShow_.bind(this));
       this.addEventListener('menuhide', this.handleMenuHide_.bind(this));
 
-      this.trigger_.addEventListener('click',
-          this.handleTriggerClicked_.bind(this));
+      this.trigger_.addEventListener(
+          'click', this.handleTriggerClicked_.bind(this));
 
-      this.menu.addEventListener('activate',
-          this.handleMenuActivate_.bind(this));
+      this.menu.addEventListener(
+          'activate', this.handleMenuActivate_.bind(this));
 
       // Remove mousedown event listener created by MenuButton::decorate,
       // and move it down to trigger_.
@@ -132,7 +132,7 @@ cr.define('cr.ui', () => {
           }
           e.preventDefault();
           break;
-        case 'Escape': // Maybe this is remote desktop playing a prank?
+        case 'Escape':  // Maybe this is remote desktop playing a prank?
           this.hideMenu();
           break;
       }
@@ -181,6 +181,6 @@ cr.define('cr.ui', () => {
   cr.defineProperty(ComboButton, 'multiple', cr.PropertyKind.BOOL_ATTR);
 
   return {
-    ComboButton: ComboButton
+    ComboButton: ComboButton,
   };
 });

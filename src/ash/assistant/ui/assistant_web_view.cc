@@ -22,7 +22,6 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -34,37 +33,6 @@ int GetMaxHeight() {
              ? kMaxHeightEmbeddedDip
              : kMaxHeightDip;
 }
-
-// ContentsMaskPainter ---------------------------------------------------------
-
-class ContentsMaskPainter : public views::Painter {
- public:
-  ContentsMaskPainter() = default;
-  ~ContentsMaskPainter() override = default;
-
-  // views::Painter:
-  gfx::Size GetMinimumSize() const override { return gfx::Size(); }
-
-  void Paint(gfx::Canvas* canvas, const gfx::Size& size) override {
-    cc::PaintFlags flags;
-    flags.setAntiAlias(true);
-    flags.setColor(SK_ColorBLACK);
-
-    SkRRect rect;
-    rect.setRectRadii(
-        SkRect::MakeWH(size.width(), size.height()),
-        (const SkVector[]){
-            /*upper_left=*/SkVector::Make(0, 0),
-            /*upper_right=*/SkVector::Make(0, 0),
-            /*lower_right=*/SkVector::Make(kCornerRadiusDip, kCornerRadiusDip),
-            /*lower_left=*/SkVector::Make(kCornerRadiusDip, kCornerRadiusDip)});
-
-    canvas->sk_canvas()->drawRRect(rect, flags);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ContentsMaskPainter);
-};
 
 }  // namespace
 
@@ -120,21 +88,6 @@ void AssistantWebView::AboutToRequestFocusFromTabTraversal(bool reverse) {
     contents_->FocusThroughTabTraversal(reverse);
 }
 
-void AssistantWebView::OnWindowBoundsChanged(aura::Window* window,
-                                             const gfx::Rect& old_bounds,
-                                             const gfx::Rect& new_bounds,
-                                             ui::PropertyChangeReason reason) {
-  // The mask layer should always match the bounds of the contents' native view.
-  contents_mask_->layer()->SetBounds(gfx::Rect(new_bounds.size()));
-}
-
-void AssistantWebView::OnWindowDestroying(aura::Window* window) {
-  // It's possible for |window| to be deleted before AssistantWebView. When this
-  // happens, we need to perform clean up on |window| before it is destroyed.
-  window->RemoveObserver(this);
-  window->layer()->SetMaskLayer(nullptr);
-}
-
 void AssistantWebView::InitLayout() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
@@ -146,12 +99,6 @@ void AssistantWebView::InitLayout() {
   if (app_list_features::IsEmbeddedAssistantUIEnabled())
     caption_bar_->SetButtonVisible(AssistantButtonId::kClose, false);
   AddChildView(caption_bar_);
-
-  // Contents mask.
-  // This is used to enforce corner radius on the contents' native view layer.
-  contents_mask_ = views::Painter::CreatePaintedLayer(
-      std::make_unique<ContentsMaskPainter>());
-  contents_mask_->layer()->SetFillsBoundsOpaquely(false);
 }
 
 bool AssistantWebView::OnCaptionButtonPressed(AssistantButtonId id) {
@@ -179,13 +126,13 @@ bool AssistantWebView::OnCaptionButtonPressed(AssistantButtonId id) {
 void AssistantWebView::OnDeepLinkReceived(
     assistant::util::DeepLinkType type,
     const std::map<std::string, std::string>& params) {
-  if (!assistant::util::IsWebDeepLinkType(type))
+  if (!assistant::util::IsWebDeepLinkType(type, params))
     return;
 
   RemoveContents();
 
   delegate_->GetNavigableContentsFactoryForView(
-      mojo::MakeRequest(&contents_factory_));
+      contents_factory_.BindNewPipeAndPassReceiver());
 
   const gfx::Size preferred_size =
       gfx::Size(kPreferredWidthDip,
@@ -224,18 +171,10 @@ void AssistantWebView::DidStopLoading() {
   AddChildView(contents_->GetView()->view());
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
-  gfx::NativeView native_view = contents_->GetView()->native_view();
-
-  // We apply a layer mask to the contents' native view to enforce our desired
-  // corner radius. We need to sync the bounds of mask layer with the bounds
-  // of the native view prior to application to prevent DCHECK failure.
-  contents_mask_->layer()->SetBounds(
-      gfx::Rect(native_view->GetBoundsInScreen().size()));
-  native_view->layer()->SetMaskLayer(contents_mask_->layer());
-
-  // We observe |native_view| to ensure we keep the mask layer bounds in sync
-  // with the native view layer's bounds across size changes.
-  native_view->AddObserver(this);
+  // We need to clip the corners of our web contents to match our container.
+  contents_->GetView()->native_view()->layer()->SetRoundedCornerRadius(
+      {/*top_left=*/0, /*top_right=*/0, /*bottom_right=*/kCornerRadiusDip,
+       /*bottom_left=*/kCornerRadiusDip});
 }
 
 void AssistantWebView::DidSuppressNavigation(const GURL& url,
@@ -272,12 +211,6 @@ void AssistantWebView::OnUiVisibilityChanged(
 void AssistantWebView::RemoveContents() {
   if (!contents_)
     return;
-
-  gfx::NativeView native_view = contents_->GetView()->native_view();
-  if (native_view) {
-    native_view->RemoveObserver(this);
-    native_view->layer()->SetMaskLayer(nullptr);
-  }
 
   views::View* view = contents_->GetView()->view();
   if (view)

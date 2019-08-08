@@ -44,10 +44,6 @@ class WebGraphicsContext3DProviderForTests
   GrContext* GetGrContext() override { return nullptr; }
   gpu::webgpu::WebGPUInterface* WebGPUInterface() override { return nullptr; }
   bool BindToCurrentThread() override { return false; }
-  gpu::SharedImageInterface* GetSharedImageInterface() const override {
-    NOTREACHED();
-    return nullptr;
-  }
   const gpu::Capabilities& GetCapabilities() const override {
     return capabilities_;
   }
@@ -182,12 +178,6 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
         break;
     }
   }
-  MOCK_METHOD1(WaitSyncTokenCHROMIUMMock, void(const GLbyte* sync_token));
-  void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override {
-    memcpy(&most_recently_waited_sync_token_, sync_token,
-           sizeof(most_recently_waited_sync_token_));
-    WaitSyncTokenCHROMIUMMock(sync_token);
-  }
 
   GLenum CheckFramebufferStatus(GLenum target) override {
     return GL_FRAMEBUFFER_COMPLETE;
@@ -270,13 +260,6 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
     }
   }
 
-  void GenSyncTokenCHROMIUM(GLbyte* sync_token) override {
-    static uint64_t unique_id = 1;
-    gpu::SyncToken source(
-        gpu::GPU_IO, gpu::CommandBufferId::FromUnsafeValue(unique_id++), 2);
-    memcpy(sync_token, &source, sizeof(source));
-  }
-
   void GenTextures(GLsizei n, GLuint* textures) override {
     static GLuint id = 1;
     for (GLsizei i = 0; i < n; ++i)
@@ -294,6 +277,21 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
     last_imported_shared_image_.SetName(
         reinterpret_cast<const gpu::Mailbox*>(mailbox)->name);
     return texture_id;
+  }
+
+  // ImplementationBase implementation
+  void GenSyncTokenCHROMIUM(GLbyte* sync_token) override {
+    static uint64_t unique_id = 1;
+    gpu::SyncToken source(
+        gpu::GPU_IO, gpu::CommandBufferId::FromUnsafeValue(unique_id++), 2);
+    memcpy(sync_token, &source, sizeof(source));
+  }
+
+  MOCK_METHOD1(WaitSyncTokenCHROMIUMMock, void(const GLbyte* sync_token));
+  void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override {
+    memcpy(&most_recently_waited_sync_token_, sync_token,
+           sizeof(most_recently_waited_sync_token_));
+    WaitSyncTokenCHROMIUMMock(sync_token);
   }
 
   // DrawingBuffer::Client implementation.

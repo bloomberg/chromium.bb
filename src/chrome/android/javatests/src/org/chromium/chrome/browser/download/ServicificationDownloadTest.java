@@ -16,7 +16,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -28,6 +27,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServerRule;
 
 /**
@@ -70,8 +70,9 @@ public final class ServicificationDownloadTest {
     @Before
     public void setUp() throws InterruptedException {
         RecordHistogram.setDisabledForTests(true);
-        mServicificationBackgroundService = new ServicificationBackgroundService();
-        ThreadUtils.runOnUiThreadBlocking(
+        mServicificationBackgroundService =
+                new ServicificationBackgroundService(true /*supportsServiceManagerOnly*/);
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mNotificationService = new MockDownloadNotificationService(); });
     }
 
@@ -87,8 +88,8 @@ public final class ServicificationDownloadTest {
     public void testResumeInterruptedDownload() {
         mServicificationBackgroundService.onRunTask(
                 new TaskParams(ServiceManagerStartupUtils.TASK_TAG));
-        mServicificationBackgroundService.waitForServiceManagerStart();
-        mServicificationBackgroundService.postTaskAndVerifyFullBrowserNotStarted();
+        mServicificationBackgroundService.waitForNativeLoaded();
+        ServicificationBackgroundService.assertOnlyServiceManagerStarted();
 
         String tempFile = InstrumentationRegistry.getInstrumentation()
                                   .getTargetContext()
@@ -102,7 +103,7 @@ public final class ServicificationDownloadTest {
                         .setIsOffTheRecord(false)
                         .build());
         final String url = mEmbeddedTestServerRule.getServer().getURL(TEST_DOWNLOAD_FILE);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             DownloadManagerService downloadManagerService =
                     DownloadManagerService.getDownloadManagerService();
             ((SystemDownloadNotifier) downloadManagerService.getDownloadNotifier())

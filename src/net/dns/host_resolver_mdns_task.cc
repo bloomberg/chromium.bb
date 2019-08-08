@@ -143,6 +143,7 @@ HostResolverMdnsTask::~HostResolverMdnsTask() {
 void HostResolverMdnsTask::Start(base::OnceClosure completion_closure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!completion_closure_);
+  DCHECK(mdns_client_);
 
   completion_closure_ = std::move(completion_closure);
 

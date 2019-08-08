@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "ash/public/interfaces/assistant_controller.mojom.h"
+#include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
@@ -28,8 +30,7 @@ AssistantClient* AssistantClient::Get() {
   return g_instance;
 }
 
-AssistantClient::AssistantClient()
-    : client_binding_(this), device_actions_binding_(&device_actions_) {
+AssistantClient::AssistantClient() : client_binding_(this) {
   DCHECK_EQ(nullptr, g_instance);
   g_instance = this;
 }
@@ -43,17 +44,18 @@ AssistantClient::~AssistantClient() {
 }
 
 void AssistantClient::MaybeInit(Profile* profile) {
-  if (!profile_) {
-    profile_ = profile;
-    identity_manager_ = IdentityManagerFactory::GetForProfile(profile_);
-    identity_manager_->AddObserver(this);
-  }
-  DCHECK_EQ(profile_, profile);
-
   if (assistant::IsAssistantAllowedForProfile(profile) !=
       ash::mojom::AssistantAllowedState::ALLOWED) {
     return;
   }
+
+  if (!profile_) {
+    profile_ = profile;
+    identity_manager_ = IdentityManagerFactory::GetForProfile(profile_);
+    DCHECK(identity_manager_);
+    identity_manager_->AddObserver(this);
+  }
+  DCHECK_EQ(profile_, profile);
 
   if (initialized_)
     return;
@@ -66,11 +68,12 @@ void AssistantClient::MaybeInit(Profile* profile) {
   chromeos::assistant::mojom::ClientPtr client_ptr;
   client_binding_.Bind(mojo::MakeRequest(&client_ptr));
 
-  chromeos::assistant::mojom::DeviceActionsPtr device_actions_ptr;
-  device_actions_binding_.Bind(mojo::MakeRequest(&device_actions_ptr));
+  ash::mojom::AssistantControllerPtr assistant_controller;
+  connector->BindInterface(ash::mojom::kServiceName, &assistant_controller);
+  assistant_controller->SetDeviceActions(device_actions_.AddBinding());
 
   assistant_connection_->Init(std::move(client_ptr),
-                              std::move(device_actions_ptr));
+                              device_actions_.AddBinding());
 
   assistant_image_downloader_ =
       std::make_unique<AssistantImageDownloader>(connector);

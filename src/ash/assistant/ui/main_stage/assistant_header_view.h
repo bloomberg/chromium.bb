@@ -20,7 +20,7 @@ class BoxLayout;
 namespace ash {
 
 class AssistantViewDelegate;
-class BaseLogoView;
+class LogoView;
 
 // AssistantHeaderView is the child of UiElementContainerView which provides
 // the Assistant icon.
@@ -53,7 +53,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantHeaderView
   AssistantViewDelegate* const delegate_;  // Owned by Shell.
 
   views::BoxLayout* layout_manager_;  // Owned by view hierarchy.
-  BaseLogoView* molecule_icon_;       // Owned by view hierarchy.
+  LogoView* molecule_icon_;           // Owned by view hierarchy.
 
   // True if this is the first query response received for the current Assistant
   // UI session, false otherwise.

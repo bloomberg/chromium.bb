@@ -4,8 +4,8 @@
 
 #include "net/quic/mock_encrypter.h"
 
-#include "net/third_party/quic/core/quic_data_writer.h"
-#include "net/third_party/quic/core/quic_utils.h"
+#include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
+#include "net/third_party/quiche/src/quic/core/quic_utils.h"
 
 using quic::DiversificationNonce;
 using quic::Perspective;
@@ -41,6 +41,15 @@ bool MockEncrypter::EncryptPacket(uint64_t /*packet_number*/,
   memcpy(output, plaintext.data(), plaintext.length());
   *output_length = plaintext.size();
   return true;
+}
+
+bool MockEncrypter::SetHeaderProtectionKey(QuicStringPiece key) {
+  return key.empty();
+}
+
+std::string MockEncrypter::GenerateHeaderProtectionMask(
+    QuicStringPiece sample) {
+  return std::string(5, 0);
 }
 
 size_t MockEncrypter::GetKeySize() const {

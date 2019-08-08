@@ -136,8 +136,9 @@ IDBRequest::IDBRequest(ScriptState* script_state,
       isolate_(script_state->GetIsolate()),
       metrics_(std::move(metrics)),
       source_(source),
-      event_queue_(EventQueue::Create(ExecutionContext::From(script_state),
-                                      TaskType::kDatabaseAccess)) {}
+      event_queue_(
+          MakeGarbageCollected<EventQueue>(ExecutionContext::From(script_state),
+                                           TaskType::kDatabaseAccess)) {}
 
 IDBRequest::~IDBRequest() {
   DCHECK((ready_state_ == DONE && metrics_.IsEmpty()) ||
@@ -204,8 +205,7 @@ const String& IDBRequest::readyState() const {
 
 std::unique_ptr<WebIDBCallbacks> IDBRequest::CreateWebCallbacks() {
   DCHECK(!web_callbacks_);
-  std::unique_ptr<WebIDBCallbacks> callbacks =
-      WebIDBCallbacksImpl::Create(this);
+  auto callbacks = std::make_unique<WebIDBCallbacksImpl>(this);
   web_callbacks_ = callbacks.get();
   return callbacks;
 }
@@ -426,7 +426,7 @@ void IDBRequest::EnqueueResponse(const Vector<String>& string_list) {
     return;
   }
 
-  DOMStringList* dom_string_list = DOMStringList::Create();
+  auto* dom_string_list = MakeGarbageCollected<DOMStringList>();
   for (const auto& item : string_list)
     dom_string_list->Append(item);
   EnqueueResultInternal(IDBAny::Create(dom_string_list));
@@ -458,12 +458,14 @@ void IDBRequest::EnqueueResponse(std::unique_ptr<WebIDBCursor> backend,
 
   switch (cursor_type_) {
     case indexed_db::kCursorKeyOnly:
-      cursor = IDBCursor::Create(std::move(backend), cursor_direction_, this,
-                                 source, transaction_.Get());
+      cursor =
+          MakeGarbageCollected<IDBCursor>(std::move(backend), cursor_direction_,
+                                          this, source, transaction_.Get());
       break;
     case indexed_db::kCursorKeyAndValue:
-      cursor = IDBCursorWithValue::Create(std::move(backend), cursor_direction_,
-                                          this, source, transaction_.Get());
+      cursor = MakeGarbageCollected<IDBCursorWithValue>(
+          std::move(backend), cursor_direction_, this, source,
+          transaction_.Get());
       break;
     default:
       NOTREACHED();

@@ -25,8 +25,9 @@
 #include "perfetto/base/string_splitter.h"
 #include "perfetto/trace/profiling/profile_packet.pbzero.h"
 #include "perfetto/trace/trace_packet.pbzero.h"
+#include "perfetto/tracing/core/trace_writer.h"
 #include "src/profiling/memory/interner.h"
-#include "src/profiling/memory/queue_messages.h"
+#include "src/profiling/memory/unwound_messages.h"
 
 // Below is an illustration of the bookkeeping system state where
 // PID 1 does the following allocations:
@@ -245,7 +246,10 @@ class HeapTracker {
                     uint64_t address,
                     uint64_t size,
                     uint64_t sequence_number);
-  void Dump(pid_t pid, DumpState* dump_state);
+  void Dump(
+      std::function<void(protos::pbzero::ProfilePacket::ProcessHeapSamples*)>
+          fill_process_header,
+      DumpState* dump_state);
   void RecordFree(uint64_t address, uint64_t sequence_number) {
     RecordOperation(sequence_number, address);
   }

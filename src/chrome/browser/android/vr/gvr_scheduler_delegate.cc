@@ -20,6 +20,7 @@
 #include "chrome/browser/vr/scheduler_ui_interface.h"
 #include "content/public/common/content_features.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_android_hardware_buffer.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
@@ -91,6 +92,18 @@ GvrSchedulerDelegate::GvrSchedulerDelegate(GlBrowserInterface* browser,
 GvrSchedulerDelegate::~GvrSchedulerDelegate() {
   ClosePresentationBindings();
   webxr_.EndPresentation();
+  if (webxr_use_shared_buffer_draw_) {
+    std::vector<std::unique_ptr<WebXrSharedBuffer>> buffers =
+        webxr_.TakeSharedBuffers();
+    for (auto& buffer : buffers) {
+      if (!buffer->mailbox_holder.mailbox.IsZero()) {
+        DCHECK(mailbox_bridge_);
+        DVLOG(2) << ": DestroySharedImage, mailbox="
+                 << buffer->mailbox_holder.mailbox.ToDebugString();
+        mailbox_bridge_->DestroySharedImage(buffer->mailbox_holder);
+      }
+    }
+  }
 }
 
 void GvrSchedulerDelegate::SetBrowserRenderer(
@@ -863,7 +876,8 @@ void GvrSchedulerDelegate::SendVSync() {
     CHECK(webxr_.HaveAnimatingFrame());
     WebXrSharedBuffer* buffer = webxr_.GetAnimatingFrame()->shared_buffer.get();
     DCHECK(buffer);
-    frame_data->buffer_holder = *buffer->mailbox_holder;
+    DCHECK(buffer->mailbox_holder.sync_token.verified_flush());
+    frame_data->buffer_holder = buffer->mailbox_holder;
   }
 
   int64_t prediction_nanos = GetPredictedFrameTime().InMicroseconds() * 1000;
@@ -914,12 +928,6 @@ void GvrSchedulerDelegate::WebXrPrepareSharedBuffer() {
         std::make_unique<WebXrSharedBuffer>();
     buffer = webxr_.GetAnimatingFrame()->shared_buffer.get();
 
-    // Remote resources
-    buffer->mailbox_holder = std::make_unique<gpu::MailboxHolder>();
-    buffer->mailbox_holder->texture_target = GL_TEXTURE_2D;
-    buffer->remote_texture =
-        mailbox_bridge_->CreateMailboxTexture(&buffer->mailbox_holder->mailbox);
-
     // Local resources
     glGenTextures(1, &buffer->local_texture);
   }
@@ -927,12 +935,6 @@ void GvrSchedulerDelegate::WebXrPrepareSharedBuffer() {
   if (webxr_surface_size != buffer->size) {
     // Don't need the image for zero copy mode.
     WebXrCreateOrResizeSharedBufferImage(buffer, webxr_surface_size);
-    // We always need a valid sync token, even if not using
-    // the image. The Renderer waits for it before using the
-    // mailbox. Technically we don't need to update it
-    // after resize for zero copy mode, but we do need it
-    // after initial creation.
-    mailbox_bridge_->GenSyncToken(&buffer->mailbox_holder->sync_token);
 
     // Save the size to avoid expensive reallocation next time.
     buffer->size = webxr_surface_size;
@@ -944,11 +946,10 @@ void GvrSchedulerDelegate::WebXrCreateOrResizeSharedBufferImage(
     const gfx::Size& size) {
   TRACE_EVENT0("gpu", __func__);
   // Unbind previous image (if any).
-  if (buffer->remote_image) {
-    DVLOG(2) << ": UnbindSharedBuffer, remote_image=" << buffer->remote_image;
-    mailbox_bridge_->UnbindSharedBuffer(buffer->remote_image,
-                                        buffer->remote_texture);
-    buffer->remote_image = 0;
+  if (!buffer->mailbox_holder.mailbox.IsZero()) {
+    DVLOG(2) << ": DestroySharedImage, mailbox="
+             << buffer->mailbox_holder.mailbox.ToDebugString();
+    mailbox_bridge_->DestroySharedImage(buffer->mailbox_holder);
   }
 
   DVLOG(2) << __func__ << ": width=" << size.width()
@@ -964,9 +965,13 @@ void GvrSchedulerDelegate::WebXrCreateOrResizeSharedBufferImage(
       kBufferId, size, format, usage,
       gpu::GpuMemoryBufferImpl::DestructionCallback());
 
-  buffer->remote_image = mailbox_bridge_->BindSharedBufferImage(
-      buffer->gmb.get(), size, format, usage, buffer->remote_texture);
-  DVLOG(2) << ": BindSharedBufferImage, remote_image=" << buffer->remote_image;
+  uint32_t shared_image_usage = gpu::SHARED_IMAGE_USAGE_SCANOUT |
+                                gpu::SHARED_IMAGE_USAGE_DISPLAY |
+                                gpu::SHARED_IMAGE_USAGE_GLES2;
+  buffer->mailbox_holder = mailbox_bridge_->CreateSharedImage(
+      buffer->gmb.get(), gfx::ColorSpace(), shared_image_usage);
+  DVLOG(2) << ": CreateSharedImage, mailbox="
+           << buffer->mailbox_holder.mailbox.ToDebugString();
 
   scoped_refptr<gl::GLImageAHardwareBuffer> img(
       new gl::GLImageAHardwareBuffer(graphics_->webxr_surface_size()));
@@ -1043,11 +1048,21 @@ void GvrSchedulerDelegate::SubmitFrameMissing(
   if (!IsSubmitFrameExpected(frame_index))
     return;
 
-  // Renderer didn't submit a frame. Wait for the sync token to ensure
-  // that any mailbox_bridge_ operations for the next frame happen after
-  // whatever drawing the Renderer may have done before exiting.
-  if (webxr_.mailbox_bridge_ready())
-    mailbox_bridge_->WaitSyncToken(sync_token);
+  if (webxr_use_shared_buffer_draw_) {
+    // Renderer didn't submit a frame. Stash the sync token in the mailbox
+    // holder, so that we use the dependency before destroying or recycling the
+    // shared image.
+    WebXrSharedBuffer* buffer = webxr_.GetAnimatingFrame()->shared_buffer.get();
+    DCHECK(buffer);
+    DCHECK(sync_token.verified_flush());
+    buffer->mailbox_holder.sync_token = sync_token;
+  } else {
+    // Renderer didn't submit a frame. Wait for the sync token to ensure
+    // that any mailbox_bridge_ operations for the next frame happen after
+    // whatever drawing the Renderer may have done before exiting.
+    if (webxr_.mailbox_bridge_ready())
+      mailbox_bridge_->WaitSyncToken(sync_token);
+  }
 
   DVLOG(2) << __func__ << ": recycle unused animating frame";
   DCHECK(webxr_.HaveAnimatingFrame());
@@ -1077,6 +1092,22 @@ void GvrSchedulerDelegate::SubmitFrameDrawnIntoTexture(
     base::TimeDelta time_waited) {
   if (!SubmitFrameCommon(frame_index, time_waited))
     return;
+
+  if (webxr_use_shared_buffer_draw_) {
+    // Renderer submitted a frame. Stash the sync token in the mailbox
+    // holder, so that we use the dependency before destroying or recycling the
+    // shared image.
+    WebXrSharedBuffer* buffer = webxr_.GetAnimatingFrame()->shared_buffer.get();
+    DCHECK(buffer);
+    DCHECK(sync_token.verified_flush());
+    buffer->mailbox_holder.sync_token = sync_token;
+  } else {
+    mojo::ReportBadMessage(
+        "SubmitFrameDrawnIntoTexture called while using the wrong transport "
+        "mode");
+    ClosePresentationBindings();
+    return;
+  }
 
   webxr_.ProcessOrDefer(
       base::BindOnce(&GvrSchedulerDelegate::ProcessWebVrFrameFromGMB,

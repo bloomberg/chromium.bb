@@ -80,7 +80,7 @@ sk_sp<PaintRecord> RecordMarker(Color blink_color) {
   flags.setAntiAlias(true);
   flags.setColor(color);
   flags.setShader(PaintShader::MakeLinearGradient(
-      pts, colors, nullptr, ARRAY_SIZE(colors), SkShader::kClamp_TileMode));
+      pts, colors, nullptr, ARRAY_SIZE(colors), SkTileMode::kClamp));
   PaintRecorder recorder;
   recorder.beginRecording(kMarkerWidth, kMarkerHeight);
   recorder.getRecordingCanvas()->drawOval(SkRect::MakeWH(2 * kR, 2 * kR),
@@ -129,7 +129,7 @@ void DrawDocumentMarker(GraphicsContext& context,
   flags.setAntiAlias(true);
   flags.setShader(PaintShader::MakePaintRecord(
       sk_ref_sp(marker), FloatRect(0, 0, kMarkerWidth, kMarkerHeight),
-      SkShader::kRepeat_TileMode, SkShader::kClamp_TileMode, &local_matrix));
+      SkTileMode::kRepeat, SkTileMode::kClamp, &local_matrix));
 
   // Apply the origin translation as a global transform.  This ensures that the
   // shader local matrix depends solely on zoom => Skia can reuse the same
@@ -139,7 +139,7 @@ void DrawDocumentMarker(GraphicsContext& context,
   context.DrawRect(rect, flags);
 }
 
-}  // anonymous ns
+}  // namespace
 
 void DocumentMarkerPainter::PaintStyleableMarkerUnderline(
     GraphicsContext& context,

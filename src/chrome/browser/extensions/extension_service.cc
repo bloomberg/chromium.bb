@@ -18,12 +18,14 @@
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/one_shot_event.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/syslog_logging.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -90,6 +92,7 @@
 #include "extensions/browser/update_observer.h"
 #include "extensions/browser/updater/extension_cache.h"
 #include "extensions/browser/updater/extension_downloader.h"
+#include "extensions/browser/updater/manifest_fetch_data.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/feature_switch.h"
@@ -98,7 +101,6 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/manifest_url_handlers.h"
-#include "extensions/common/one_shot_event.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -288,7 +290,7 @@ ExtensionService::ExtensionService(Profile* profile,
                                    Blacklist* blacklist,
                                    bool autoupdate_enabled,
                                    bool extensions_enabled,
-                                   OneShotEvent* ready)
+                                   base::OneShotEvent* ready)
     : Blacklist::Observer(blacklist),
       command_line_(command_line),
       profile_(profile),
@@ -413,6 +415,7 @@ void ExtensionService::Init() {
   if (load_saved_extensions)
     InstalledLoader(this).LoadAllExtensions();
 
+  CheckManagementPolicy();
   OnInstalledExtensionsLoaded();
 
   LoadExtensionsFromCommandLineFlag(::switches::kDisableExtensionsExcept);
@@ -1028,6 +1031,23 @@ void ExtensionService::CheckManagementPolicy() {
     if (!to_recheck.ids.empty())
       updater_->CheckNow(std::move(to_recheck));
   }
+
+  // Check the disabled extensions to see if any should be force uninstalled.
+  std::vector<ExtensionId> remove_list;
+  for (const auto& extension : registry_->disabled_extensions()) {
+    if (system_->management_policy()->ShouldForceUninstall(extension.get(),
+                                                           nullptr /*error*/)) {
+      remove_list.push_back(extension->id());
+    }
+  }
+  for (auto extension_id : remove_list) {
+    base::string16 error;
+    if (!UninstallExtension(extension_id, UNINSTALL_REASON_INTERNAL_MANAGEMENT,
+                            &error)) {
+      SYSLOG(WARNING) << "Extension with id " << extension_id
+                      << " failed to be uninstalled via policy: " << error;
+    }
+  }
 }
 
 void ExtensionService::CheckForUpdatesSoon() {
@@ -1101,6 +1121,12 @@ void ExtensionService::OnAllExternalProvidersReady() {
             : base::BindOnce(
                   [](base::RepeatingClosure callback) { callback.Run(); },
                   external_updates_finished_callback_);
+    // We have to mark policy-forced extensions with foreground fetch priority,
+    // otherwise their installation may be throttled by bandwidth limits.
+    // See https://crbug.com/904600.
+    if (pending_extension_manager_.HasPendingExtensionFromPolicy()) {
+      params.fetch_priority = ManifestFetchData::FOREGROUND;
+    }
     updater()->CheckNow(std::move(params));
   }
 
@@ -1208,6 +1234,8 @@ void ExtensionService::AddExtension(const Extension* extension) {
 }
 
 void ExtensionService::AddComponentExtension(const Extension* extension) {
+  extension_prefs_->ClearInapplicableDisableReasonsForComponentExtension(
+      extension->id());
   const std::string old_version_string(
       extension_prefs_->GetVersionString(extension->id()));
   const base::Version old_version(old_version_string);
@@ -1718,10 +1746,17 @@ bool ExtensionService::OnExternalExtensionFileFound(
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_EXTERNAL_FILE);
   installer->set_install_immediately(info.install_immediately);
   installer->set_creation_flags(info.creation_flags);
+
+  CRXFileInfo file_info(
+      info.path,
+      info.crx_location == Manifest::EXTERNAL_POLICY
+          ? GetPolicyVerifierFormat(ExtensionPrefs::Get(profile_)
+                                        ->InsecureExtensionUpdatesEnabled())
+          : GetExternalVerifierFormat());
 #if defined(OS_CHROMEOS)
-  InstallLimiter::Get(profile_)->Add(installer, info.path);
+  InstallLimiter::Get(profile_)->Add(installer, file_info);
 #else
-  installer->InstallCrx(info.path);
+  installer->InstallCrxFile(file_info);
 #endif
 
   // Depending on the source, a new external extension might not need a user

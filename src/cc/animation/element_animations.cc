@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "base/macros.h"
 #include "base/numerics/ranges.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_events.h"
@@ -51,7 +50,11 @@ ElementAnimations::ElementAnimations(AnimationHost* host, ElementId element_id)
       element_id_(element_id),
       has_element_in_active_list_(false),
       has_element_in_pending_list_(false),
-      needs_push_properties_(false) {
+      needs_push_properties_(false),
+      active_maximum_scale_(kNotScaled),
+      active_starting_scale_(kNotScaled),
+      pending_maximum_scale_(kNotScaled),
+      pending_starting_scale_(kNotScaled) {
   InitAffectedElementTypes();
 }
 
@@ -226,38 +229,40 @@ bool ElementAnimations::AnimationsPreserveAxisAlignment() const {
   return true;
 }
 
-bool ElementAnimations::AnimationStartScale(ElementListType list_type,
-                                            float* start_scale) const {
-  *start_scale = 0.f;
+float ElementAnimations::AnimationStartScale(ElementListType list_type) const {
+  float start_scale = kNotScaled;
 
   for (auto& keyframe_effect : keyframe_effects_list_) {
-    float keyframe_effect_start_scale = 0.f;
+    if (keyframe_effect.HasOnlyTranslationTransforms(list_type))
+      continue;
+    float keyframe_effect_start_scale = kNotScaled;
     bool success = keyframe_effect.AnimationStartScale(
         list_type, &keyframe_effect_start_scale);
     if (!success)
-      return false;
+      return kNotScaled;
     // Union: a maximum.
-    *start_scale = std::max(*start_scale, keyframe_effect_start_scale);
+    start_scale = std::max(start_scale, keyframe_effect_start_scale);
   }
 
-  return true;
+  return start_scale;
 }
 
-bool ElementAnimations::MaximumTargetScale(ElementListType list_type,
-                                           float* max_scale) const {
-  *max_scale = 0.f;
+float ElementAnimations::MaximumTargetScale(ElementListType list_type) const {
+  float max_scale = kNotScaled;
 
   for (auto& keyframe_effect : keyframe_effects_list_) {
-    float keyframe_effect_max_scale = 0.f;
+    if (keyframe_effect.HasOnlyTranslationTransforms(list_type))
+      continue;
+    float keyframe_effect_max_scale = kNotScaled;
     bool success = keyframe_effect.MaximumTargetScale(
         list_type, &keyframe_effect_max_scale);
     if (!success)
-      return false;
+      return kNotScaled;
     // Union: a maximum.
-    *max_scale = std::max(*max_scale, keyframe_effect_max_scale);
+    max_scale = std::max(max_scale, keyframe_effect_max_scale);
   }
 
-  return true;
+  return max_scale;
 }
 
 bool ElementAnimations::ScrollOffsetAnimationWasInterrupted() const {
@@ -313,6 +318,14 @@ void ElementAnimations::NotifyClientScrollOffsetAnimated(
                            keyframe_model);
 }
 
+void ElementAnimations::InitClientAnimationState() {
+  // Clear current states so that UpdateClientAnimationState() will send all
+  // (instead of only changed) recalculated current states to the client.
+  pending_state_.Clear();
+  active_state_.Clear();
+  UpdateClientAnimationState();
+}
+
 void ElementAnimations::UpdateClientAnimationState() {
   if (!element_id())
     return;
@@ -347,16 +360,45 @@ void ElementAnimations::UpdateClientAnimationState() {
   DCHECK(active_state_.IsValid());
 
   PropertyToElementIdMap element_id_map = GetPropertyToElementIdMap();
+  ElementId transform_element_id = element_id_map[TargetProperty::TRANSFORM];
 
-  if (has_element_in_active_list() && prev_active != active_state_) {
-    PropertyAnimationState diff_active = prev_active ^ active_state_;
-    animation_host_->mutator_host_client()->ElementIsAnimatingChanged(
-        element_id_map, ElementListType::ACTIVE, diff_active, active_state_);
+  if (has_element_in_active_list()) {
+    if (prev_active != active_state_) {
+      PropertyAnimationState diff_active = prev_active ^ active_state_;
+      animation_host_->mutator_host_client()->ElementIsAnimatingChanged(
+          element_id_map, ElementListType::ACTIVE, diff_active, active_state_);
+    }
+
+    float maximum_scale = MaximumTargetScale(ElementListType::ACTIVE);
+    float starting_scale = AnimationStartScale(ElementListType::ACTIVE);
+    if (maximum_scale != active_maximum_scale_ ||
+        starting_scale != active_starting_scale_) {
+      animation_host_->mutator_host_client()->AnimationScalesChanged(
+          transform_element_id, ElementListType::ACTIVE, maximum_scale,
+          starting_scale);
+      active_maximum_scale_ = maximum_scale;
+      active_starting_scale_ = starting_scale;
+    }
   }
-  if (has_element_in_pending_list() && prev_pending != pending_state_) {
-    PropertyAnimationState diff_pending = prev_pending ^ pending_state_;
-    animation_host_->mutator_host_client()->ElementIsAnimatingChanged(
-        element_id_map, ElementListType::PENDING, diff_pending, pending_state_);
+
+  if (has_element_in_pending_list()) {
+    if (prev_pending != pending_state_) {
+      PropertyAnimationState diff_pending = prev_pending ^ pending_state_;
+      animation_host_->mutator_host_client()->ElementIsAnimatingChanged(
+          element_id_map, ElementListType::PENDING, diff_pending,
+          pending_state_);
+    }
+
+    float maximum_scale = MaximumTargetScale(ElementListType::PENDING);
+    float starting_scale = AnimationStartScale(ElementListType::PENDING);
+    if (maximum_scale != pending_maximum_scale_ ||
+        starting_scale != pending_starting_scale_) {
+      animation_host_->mutator_host_client()->AnimationScalesChanged(
+          transform_element_id, ElementListType::PENDING, maximum_scale,
+          starting_scale);
+      pending_maximum_scale_ = maximum_scale;
+      pending_starting_scale_ = starting_scale;
+    }
   }
 }
 

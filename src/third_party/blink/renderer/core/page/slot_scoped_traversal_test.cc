@@ -39,7 +39,7 @@ class SlotScopedTraversalTest : public testing::Test {
 };
 
 void SlotScopedTraversalTest::SetUp() {
-  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+  dummy_page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   document_ = &dummy_page_holder_->GetDocument();
   DCHECK(document_);
 }

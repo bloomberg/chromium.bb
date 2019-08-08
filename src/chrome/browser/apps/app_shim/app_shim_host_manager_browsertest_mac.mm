@@ -9,10 +9,12 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/app_shim/app_shim_controller.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/test/app_shim_host_manager_test_api_mac.h"
@@ -27,13 +29,13 @@
 #include "components/version_info/version_info.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/platform/features.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
 
 using LaunchAppCallback =
     chrome::mojom::AppShimHostBootstrap::LaunchAppCallback;
-
-namespace {
 
 const char kTestAppMode[] = "test_app";
 
@@ -41,6 +43,12 @@ const char kTestAppMode[] = "test_app";
 class TestShimClient : public chrome::mojom::AppShim {
  public:
   TestShimClient();
+
+  // Friend accessor.
+  mojo::PlatformChannelEndpoint ConnectToBrowser(
+      const mojo::NamedPlatformChannel::ServerName& server_name) {
+    return AppShimController::ConnectToBrowser(server_name);
+  }
 
   chrome::mojom::AppShimHostRequest GetHostRequest() {
     return std::move(host_request_);
@@ -86,16 +94,27 @@ TestShimClient::TestShimClient()
     : shim_binding_(this), host_request_(mojo::MakeRequest(&host_)) {
   base::FilePath user_data_dir;
   CHECK(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
-  base::FilePath symlink_path =
-      user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
 
-  base::FilePath socket_path;
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  CHECK(base::ReadSymbolicLink(symlink_path, &socket_path));
-  app_mode::VerifySocketPermissions(socket_path);
+  mojo::PlatformChannelEndpoint endpoint;
 
-  mojo::ScopedMessagePipeHandle message_pipe = mojo_connection_.Connect(
-      mojo::NamedPlatformChannel::ConnectToServer(socket_path.value()));
+  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
+    std::string name_fragment =
+        base::StringPrintf("%s.%s.%s", base::mac::BaseBundleID(),
+                           app_mode::kAppShimBootstrapNameFragment,
+                           base::MD5String(user_data_dir.value()).c_str());
+    endpoint = ConnectToBrowser(name_fragment);
+  } else {
+    base::FilePath symlink_path =
+        user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
+
+    base::FilePath socket_path;
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    CHECK(base::ReadSymbolicLink(symlink_path, &socket_path));
+    app_mode::VerifySocketPermissions(socket_path);
+    endpoint = mojo::NamedPlatformChannel::ConnectToServer(socket_path.value());
+  }
+  mojo::ScopedMessagePipeHandle message_pipe =
+      mojo_connection_.Connect(std::move(endpoint));
   host_bootstrap_ = chrome::mojom::AppShimHostBootstrapPtr(
       chrome::mojom::AppShimHostBootstrapPtrInfo(std::move(message_pipe), 0));
 }
@@ -222,7 +241,11 @@ IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTest,
                        PRE_ReCreate) {
   test::AppShimHostManagerTestApi test_api(
       g_browser_process->platform_part()->app_shim_host_manager());
-  EXPECT_TRUE(test_api.acceptor());
+  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
+    EXPECT_TRUE(test_api.mach_acceptor());
+  } else {
+    EXPECT_TRUE(test_api.acceptor());
+  }
 }
 
 // Ensure the domain socket can be re-created after a prior browser process has
@@ -231,7 +254,11 @@ IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTest,
                        ReCreate) {
   test::AppShimHostManagerTestApi test_api(
       g_browser_process->platform_part()->app_shim_host_manager());
-  EXPECT_TRUE(test_api.acceptor());
+  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
+    EXPECT_TRUE(test_api.mach_acceptor());
+  } else {
+    EXPECT_TRUE(test_api.acceptor());
+  }
 }
 
 // Tests for the files created by AppShimHostManager.
@@ -280,6 +307,9 @@ void AppShimHostManagerBrowserTestSocketFiles::
 
 IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTestSocketFiles,
                        ReplacesSymlinkAndCleansUpFiles) {
+  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac))
+    return;
+
   // Get the directory created by AppShimHostManager.
   test::AppShimHostManagerTestApi test_api(
       g_browser_process->platform_part()->app_shim_host_manager());
@@ -300,5 +330,3 @@ IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTestSocketFiles,
   EXPECT_TRUE(base::ReadSymbolicLink(version_path_, &version));
   EXPECT_EQ(version_info::GetVersionNumber(), version.value());
 }
-
-}  // namespace

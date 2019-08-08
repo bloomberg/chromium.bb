@@ -39,7 +39,7 @@
 // }
 //
 // If specified, "expirable_token" is stored as a string representing the
-// int64_t (base::Int64ToString()) form of the number of microseconds since
+// int64_t (base::NumberToString()) form of the number of microseconds since
 // Windows epoch (1601-01-01 00:00:00 UTC). It is the latest time that this
 // code should attempt to pre-provision more origins on some devices.
 
@@ -48,10 +48,17 @@ namespace {
 const char kMediaDrmOriginIds[] = "media.media_drm_origin_ids";
 const char kExpirableToken[] = "expirable_token";
 const char kOriginIds[] = "origin_ids";
-// Only pre-provision up to 5 origin IDs.
-constexpr int kMaxPreProvisionedOriginIds = 5;
+
+// The maximum number of origin IDs to pre-provision. Chosen to be small to
+// minimize provisioning server load.
+// TODO(jrummell): Adjust this value if needed after initial launch.
+constexpr int kMaxPreProvisionedOriginIds = 2;
+
 // "expirable_token" is only good for 24 hours.
 constexpr base::TimeDelta kExpirationDelta = base::TimeDelta::FromHours(24);
+
+// Time to wait before attempting pre-provisioning at startup (if enabled).
+constexpr base::TimeDelta kStartupDelay = base::TimeDelta::FromMinutes(1);
 
 // When unable to get an origin ID, only attempt to pre-provision more if
 // pre-provision is called within |kExpirationDelta| of the time of this
@@ -323,8 +330,15 @@ MediaDrmOriginIdManager::MediaDrmOriginIdManager(PrefService* pref_service)
   // is most likely going to call GetOriginId(), so let it pre-provision origin
   // IDs if necessary. This flag is also used by testing so that it can check
   // pre-provisioning directly.
-  if (base::FeatureList::IsEnabled(media::kMediaDrmPreprovisioningAtStartup))
-    PreProvisionIfNecessary();
+  if (base::FeatureList::IsEnabled(media::kMediaDrmPreprovisioningAtStartup)) {
+    // Running this after a delay of |kStartupDelay| in order to not do too much
+    // extra work when the profile is loaded.
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&MediaDrmOriginIdManager::PreProvisionIfNecessary,
+                       weak_factory_.GetWeakPtr()),
+        kStartupDelay);
+  }
 }
 
 MediaDrmOriginIdManager::~MediaDrmOriginIdManager() {
@@ -355,8 +369,11 @@ void MediaDrmOriginIdManager::PreProvisionIfNecessary() {
 
   // No need to pre-provision if there are already enough existing
   // pre-provisioned origin IDs.
-  if (CountAvailableOriginIds(update.Get()) >= kMaxPreProvisionedOriginIds)
+  if (CountAvailableOriginIds(update.Get()) >= kMaxPreProvisionedOriginIds) {
+    // Disable any network monitoring, if it exists.
+    network_observer_.reset();
     return;
+  }
 
   // Attempt to pre-provision more origin IDs in the near future.
   is_provisioning_ = true;

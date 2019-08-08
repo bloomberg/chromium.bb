@@ -102,7 +102,9 @@ SearchSuggestService::SearchSuggestService(
           identity_manager,
           base::BindRepeating(&SearchSuggestService::SigninStatusChanged,
                               base::Unretained(this)))),
-      profile_(profile) {}
+      profile_(profile),
+      search_suggest_data_(base::nullopt),
+      search_suggest_status_(SearchSuggestLoader::Status::FATAL_ERROR) {}
 
 SearchSuggestService::~SearchSuggestService() = default;
 
@@ -118,6 +120,11 @@ void SearchSuggestService::Shutdown() {
 const base::Optional<SearchSuggestData>&
 SearchSuggestService::search_suggest_data() const {
   return search_suggest_data_;
+}
+
+const SearchSuggestLoader::Status& SearchSuggestService::search_suggest_status()
+    const {
+  return search_suggest_status_;
 }
 
 void SearchSuggestService::Refresh() {
@@ -175,13 +182,16 @@ void SearchSuggestService::SearchSuggestDataLoaded(
     DictionaryPrefUpdate update(profile_->GetPrefs(),
                                 prefs::kNtpSearchSuggestionsImpressions);
 
-    if (data.has_value()) {
+    if (status == SearchSuggestLoader::Status::OK_WITH_SUGGESTIONS ||
+        status == SearchSuggestLoader::Status::OK_WITHOUT_SUGGESTIONS) {
       base::DictionaryValue* dict = update.Get();
       dict->SetInteger(kMaxImpressions, data->max_impressions);
       dict->SetInteger(kImpressionCapExpireTimeMs,
                        data->impression_cap_expire_time_ms);
       dict->SetInteger(kRequestFreezeTimeMs, data->request_freeze_time_ms);
-    } else if (status == SearchSuggestLoader::Status::FATAL_ERROR) {
+    }
+
+    if (status == SearchSuggestLoader::Status::OK_WITHOUT_SUGGESTIONS) {
       base::DictionaryValue* dict = update.Get();
       dict->SetBoolean(kIsRequestFrozen, true);
       dict->SetInteger(kRequestFrozenTimeMs, base::Time::Now().ToTimeT());

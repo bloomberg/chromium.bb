@@ -141,6 +141,15 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
   view_->GetAccessibleNodeData(data);
   if (custom_data_.role != ax::mojom::Role::kUnknown)
     data->role = custom_data_.role;
+  if (data->role == ax::mojom::Role::kAlertDialog) {
+    // When an alert dialog is used, indicate this with xml-roles. This helps
+    // JAWS understand that it's a dialog and not just an ordinary alert, even
+    // though xml-roles is normally used to expose ARIA roles in web content.
+    // Specifically, this enables the JAWS Insert+T read window title command.
+    // Note: if an alert has focusable descendants such as buttons, it should
+    // use kAlertDialog, not kAlert.
+    data->AddStringAttribute(ax::mojom::StringAttribute::kRole, "alertdialog");
+  }
 
   if (custom_data_.HasStringAttribute(ax::mojom::StringAttribute::kName)) {
     data->SetName(
@@ -164,8 +173,7 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
   }
 
   if (!data->HasStringAttribute(ax::mojom::StringAttribute::kDescription)) {
-    base::string16 tooltip;
-    view_->GetTooltipText(gfx::Point(), &tooltip);
+    base::string16 tooltip = view_->GetTooltipText(gfx::Point());
     // Some screen readers announce the accessible description right after the
     // accessible name. Only use the tooltip as the accessible description if
     // it's different from the name, otherwise users might be puzzled as to why
@@ -239,6 +247,22 @@ void ViewAccessibility::OverrideBounds(const gfx::RectF& bounds) {
 void ViewAccessibility::OverridePosInSet(int pos_in_set, int set_size) {
   custom_data_.AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, pos_in_set);
   custom_data_.AddIntAttribute(ax::mojom::IntAttribute::kSetSize, set_size);
+}
+
+void ViewAccessibility::OverrideNextFocus(Widget* widget) {
+  next_focus_ = widget;
+}
+
+void ViewAccessibility::OverridePreviousFocus(Widget* widget) {
+  previous_focus_ = widget;
+}
+
+Widget* ViewAccessibility::GetNextFocus() {
+  return next_focus_;
+}
+
+Widget* ViewAccessibility::GetPreviousFocus() {
+  return previous_focus_;
 }
 
 gfx::NativeViewAccessible ViewAccessibility::GetNativeObject() {

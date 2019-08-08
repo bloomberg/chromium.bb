@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
-#include "chromeos/dbus/shill_property_changed_observer.h"
+#include "chromeos/dbus/shill/shill_property_changed_observer.h"
 #include "chromeos/network/managed_state.h"
 #include "chromeos/network/network_handler_callbacks.h"
 

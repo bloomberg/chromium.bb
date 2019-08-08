@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
-#include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "v8/include/v8.h"
@@ -96,11 +95,6 @@ void RemoteWindowProxy::DisposeContext(Lifecycle next_status,
 void RemoteWindowProxy::Initialize() {
   TRACE_EVENT1("v8", "RemoteWindowProxy::initialize", "isMainWindow",
                GetFrame()->IsMainFrame());
-  SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
-      GetFrame()->IsMainFrame()
-          ? "Blink.Binding.InitializeMainRemoteWindowProxy"
-          : "Blink.Binding.InitializeNonMainRemoteWindowProxy");
-
   ScriptForbiddenScope::AllowUserAgentScript allow_script;
 
   v8::HandleScope handle_scope(GetIsolate());

@@ -43,15 +43,15 @@ scoped_refptr<device::FakeUsbDeviceInfo> CreateTestUsbDevice(
   configs.push_back(std::move(config_2));
 
   for (size_t i = 0; i < interface_classes.size(); ++i) {
+    auto alternate = device::mojom::UsbAlternateInterfaceInfo::New();
+    alternate->alternate_setting = 0;
+    alternate->class_code = interface_classes[i];
+    alternate->subclass_code = 255;
+    alternate->protocol_code = 255;
+
     auto interface = device::mojom::UsbInterfaceInfo::New();
     interface->interface_number = i;
-    interface->alternates.push_back(
-        device::mojom::UsbAlternateInterfaceInfo::New(
-            /*alternate_setting=*/0, interface_classes[i],
-            /*subclass_code=*/255,
-            /*protocol_code=*/255,
-            /*interface_name=*/base::nullopt,
-            std::vector<device::mojom::UsbEndpointInfoPtr>()));
+    interface->alternates.push_back(std::move(std::move(alternate)));
 
     configs[0]->interfaces.push_back(std::move(interface));
   }

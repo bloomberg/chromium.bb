@@ -26,10 +26,6 @@
 
 namespace {
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-const int kMaximumReportedProfileCount = 5;
-#endif
-
 const int kMaximumDaysOfDisuse = 4 * 7;  // Should be integral number of weeks.
 
 #if !defined(OS_ANDROID)
@@ -112,36 +108,68 @@ bool HasProfileBeenActiveSince(const ProfileAttributesEntry* entry,
 
 }  // namespace
 
+// This enum is used for histograms. Do not change existing values. Append new
+// values at the end.
 enum ProfileAvatar {
-  AVATAR_GENERIC = 0,       // The names for avatar icons
-  AVATAR_GENERIC_AQUA,
-  AVATAR_GENERIC_BLUE,
-  AVATAR_GENERIC_GREEN,
-  AVATAR_GENERIC_ORANGE,
-  AVATAR_GENERIC_PURPLE,
-  AVATAR_GENERIC_RED,
-  AVATAR_GENERIC_YELLOW,
-  AVATAR_SECRET_AGENT,
-  AVATAR_SUPERHERO,
-  AVATAR_VOLLEYBALL,        // 10
-  AVATAR_BUSINESSMAN,
-  AVATAR_NINJA,
-  AVATAR_ALIEN,
-  AVATAR_AWESOME,
-  AVATAR_FLOWER,
-  AVATAR_PIZZA,
-  AVATAR_SOCCER,
-  AVATAR_BURGER,
-  AVATAR_CAT,
-  AVATAR_CUPCAKE,           // 20
-  AVATAR_DOG,
-  AVATAR_HORSE,
-  AVATAR_MARGARITA,
-  AVATAR_NOTE,
-  AVATAR_SUN_CLOUD,
-  AVATAR_PLACEHOLDER,
-  AVATAR_UNKNOWN,           // 27
-  AVATAR_GAIA,              // 28
+  AVATAR_GENERIC = 0,  // The names for avatar icons
+  AVATAR_GENERIC_AQUA = 1,
+  AVATAR_GENERIC_BLUE = 2,
+  AVATAR_GENERIC_GREEN = 3,
+  AVATAR_GENERIC_ORANGE = 4,
+  AVATAR_GENERIC_PURPLE = 5,
+  AVATAR_GENERIC_RED = 6,
+  AVATAR_GENERIC_YELLOW = 7,
+  AVATAR_SECRET_AGENT = 8,
+  AVATAR_SUPERHERO = 9,
+  AVATAR_VOLLEYBALL = 10,
+  AVATAR_BUSINESSMAN = 11,
+  AVATAR_NINJA = 12,
+  AVATAR_ALIEN = 13,
+  AVATAR_AWESOME = 14,
+  AVATAR_FLOWER = 15,
+  AVATAR_PIZZA = 16,
+  AVATAR_SOCCER = 17,
+  AVATAR_BURGER = 18,
+  AVATAR_CAT = 19,
+  AVATAR_CUPCAKE = 20,
+  AVATAR_DOG = 21,
+  AVATAR_HORSE = 22,
+  AVATAR_MARGARITA = 23,
+  AVATAR_NOTE = 24,
+  AVATAR_SUN_CLOUD = 25,
+  AVATAR_PLACEHOLDER = 26,
+  AVATAR_UNKNOWN = 27,
+  AVATAR_GAIA = 28,
+  // Modern avatars:
+  AVATAR_ORIGAMI_CAT = 29,
+  AVATAR_ORIGAMI_CORGI = 30,
+  AVATAR_ORIGAMI_DRAGON = 31,
+  AVATAR_ORIGAMI_ELEPHANT = 32,
+  AVATAR_ORIGAMI_FOX = 33,
+  AVATAR_ORIGAMI_MONKEY = 34,
+  AVATAR_ORIGAMI_PANDA = 35,
+  AVATAR_ORIGAMI_PENGUIN = 36,
+  AVATAR_ORIGAMI_PINKBUTTERFLY = 37,
+  AVATAR_ORIGAMI_RABBIT = 38,
+  AVATAR_ORIGAMI_UNICORN = 39,
+  AVATAR_ILLUSTRATION_BASKETBALL = 40,
+  AVATAR_ILLUSTRATION_BIKE = 41,
+  AVATAR_ILLUSTRATION_BIRD = 42,
+  AVATAR_ILLUSTRATION_CHEESE = 43,
+  AVATAR_ILLUSTRATION_FOOTBALL = 44,
+  AVATAR_ILLUSTRATION_RAMEN = 45,
+  AVATAR_ILLUSTRATION_SUNGLASSES = 46,
+  AVATAR_ILLUSTRATION_SUSHI = 47,
+  AVATAR_ILLUSTRATION_TAMAGOTCHI = 48,
+  AVATAR_ILLUSTRATION_VINYL = 49,
+  AVATAR_ABSTRACT_AVOCADO = 50,
+  AVATAR_ABSTRACT_CAPPUCCINO = 51,
+  AVATAR_ABSTRACT_ICECREAM = 52,
+  AVATAR_ABSTRACT_ICEWATER = 53,
+  AVATAR_ABSTRACT_MELON = 54,
+  AVATAR_ABSTRACT_ONIGIRI = 55,
+  AVATAR_ABSTRACT_PIZZA = 56,
+  AVATAR_ABSTRACT_SANDWICH = 57,
   NUM_PROFILE_AVATAR_METRICS
 };
 
@@ -166,6 +194,8 @@ bool ProfileMetrics::CountProfileInformation(ProfileManager* manager,
       counts->unused++;
     } else {
       counts->active++;
+      if (!storage.IsDefaultProfileName(entry->GetName()))
+        counts->named++;
       if (entry->IsSupervised())
         counts->supervised++;
       if (entry->IsAuthenticated()) {
@@ -180,35 +210,10 @@ bool ProfileMetrics::CountProfileInformation(ProfileManager* manager,
   return true;
 }
 
-void ProfileMetrics::UpdateReportedProfilesStatistics(ProfileManager* manager) {
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  profile_metrics::Counts counts;
-  if (CountProfileInformation(manager, &counts)) {
-    size_t limited_total = counts.total;
-    size_t limited_signedin = counts.signedin;
-    if (limited_total > kMaximumReportedProfileCount) {
-      limited_total = kMaximumReportedProfileCount + 1;
-      limited_signedin =
-          (int)((float)(counts.signedin * limited_total)
-          / counts.total + 0.5);
-    }
-    UpdateReportedOSProfileStatistics(limited_total, limited_signedin);
-  }
-#endif
-}
-
 #if !defined(OS_ANDROID)
 void ProfileMetrics::LogNumberOfProfileSwitches() {
   UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfSwitches",
                            number_of_profile_switches_);
-}
-#endif
-
-// The OS_MACOSX implementation of this function is in profile_metrics_mac.mm.
-#if defined(OS_WIN)
-void ProfileMetrics::UpdateReportedOSProfileStatistics(
-    size_t active, size_t signedin) {
-  GoogleUpdateSettings::UpdateProfileCounts(active, signedin);
 }
 #endif
 
@@ -219,13 +224,8 @@ void ProfileMetrics::LogNumberOfProfiles(ProfileManager* manager) {
   profile_metrics::LogProfileMetricsCounts(counts);
 
   // Ignore other metrics if we have no profiles.
-  if (success) {
+  if (success)
     LogLockedProfileInformation(manager);
-
-#if defined(OS_WIN) || defined(OS_MACOSX)
-    UpdateReportedOSProfileStatistics(counts.total, counts.signedin);
-#endif
-  }
 }
 
 void ProfileMetrics::LogProfileAddNewUser(ProfileAdd metric) {
@@ -320,13 +320,99 @@ void ProfileMetrics::LogProfileAvatarSelection(size_t icon_index) {
     case 26:
       icon_name = AVATAR_PLACEHOLDER;
       break;
+    // Modern avatars:
+    case 27:
+      icon_name = AVATAR_ORIGAMI_CAT;
+      break;
+    case 28:
+      icon_name = AVATAR_ORIGAMI_CORGI;
+      break;
+    case 29:
+      icon_name = AVATAR_ORIGAMI_DRAGON;
+      break;
+    case 30:
+      icon_name = AVATAR_ORIGAMI_ELEPHANT;
+      break;
+    case 31:
+      icon_name = AVATAR_ORIGAMI_FOX;
+      break;
+    case 32:
+      icon_name = AVATAR_ORIGAMI_MONKEY;
+      break;
+    case 33:
+      icon_name = AVATAR_ORIGAMI_PANDA;
+      break;
+    case 34:
+      icon_name = AVATAR_ORIGAMI_PENGUIN;
+      break;
+    case 35:
+      icon_name = AVATAR_ORIGAMI_PINKBUTTERFLY;
+      break;
+    case 36:
+      icon_name = AVATAR_ORIGAMI_RABBIT;
+      break;
+    case 37:
+      icon_name = AVATAR_ORIGAMI_UNICORN;
+      break;
+    case 38:
+      icon_name = AVATAR_ILLUSTRATION_BASKETBALL;
+      break;
+    case 39:
+      icon_name = AVATAR_ILLUSTRATION_BIKE;
+      break;
+    case 40:
+      icon_name = AVATAR_ILLUSTRATION_BIRD;
+      break;
+    case 41:
+      icon_name = AVATAR_ILLUSTRATION_CHEESE;
+      break;
+    case 42:
+      icon_name = AVATAR_ILLUSTRATION_FOOTBALL;
+      break;
+    case 43:
+      icon_name = AVATAR_ILLUSTRATION_RAMEN;
+      break;
+    case 44:
+      icon_name = AVATAR_ILLUSTRATION_SUNGLASSES;
+      break;
+    case 45:
+      icon_name = AVATAR_ILLUSTRATION_SUSHI;
+      break;
+    case 46:
+      icon_name = AVATAR_ILLUSTRATION_TAMAGOTCHI;
+      break;
+    case 47:
+      icon_name = AVATAR_ILLUSTRATION_VINYL;
+      break;
+    case 48:
+      icon_name = AVATAR_ABSTRACT_AVOCADO;
+      break;
+    case 49:
+      icon_name = AVATAR_ABSTRACT_CAPPUCCINO;
+      break;
+    case 50:
+      icon_name = AVATAR_ABSTRACT_ICECREAM;
+      break;
+    case 51:
+      icon_name = AVATAR_ABSTRACT_ICEWATER;
+      break;
+    case 52:
+      icon_name = AVATAR_ABSTRACT_MELON;
+      break;
+    case 53:
+      icon_name = AVATAR_ABSTRACT_ONIGIRI;
+      break;
+    case 54:
+      icon_name = AVATAR_ABSTRACT_PIZZA;
+      break;
+    case 55:
+      icon_name = AVATAR_ABSTRACT_SANDWICH;
+      break;
     case SIZE_MAX:
       icon_name = AVATAR_GAIA;
       break;
     default:
-      DCHECK(profiles::IsModernAvatarIconIndex(icon_index));
-      // TODO(crbug.com/937834): Log modern avatar selection.
-      break;
+      NOTREACHED();
   }
   UMA_HISTOGRAM_ENUMERATION("Profile.Avatar", icon_name,
                             NUM_PROFILE_AVATAR_METRICS);
@@ -432,10 +518,6 @@ void ProfileMetrics::LogProfileDesktopMenu(
       UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.GAIAAddSession", metric,
                                 NUM_PROFILE_DESKTOP_MENU_METRICS);
       break;
-    case signin::GAIA_SERVICE_TYPE_REAUTH:
-      UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.GAIAReAuth", metric,
-                                NUM_PROFILE_DESKTOP_MENU_METRICS);
-      break;
     case signin::GAIA_SERVICE_TYPE_SIGNUP:
       UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.GAIASignup", metric,
                                 NUM_PROFILE_DESKTOP_MENU_METRICS);
@@ -485,12 +567,6 @@ void ProfileMetrics::LogProfileAndroidAccountManagementMenu(
     case signin::GAIA_SERVICE_TYPE_ADDSESSION:
       UMA_HISTOGRAM_ENUMERATION(
           "Profile.AndroidAccountManagementMenu.GAIAAddSession",
-          metric,
-          NUM_PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_METRICS);
-      break;
-    case signin::GAIA_SERVICE_TYPE_REAUTH:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Profile.AndroidAccountManagementMenu.GAIAReAuth",
           metric,
           NUM_PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_METRICS);
       break;

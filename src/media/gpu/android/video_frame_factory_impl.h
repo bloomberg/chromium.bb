@@ -5,10 +5,13 @@
 #ifndef MEDIA_GPU_ANDROID_VIDEO_FRAME_FACTORY_IMPL_
 #define MEDIA_GPU_ANDROID_VIDEO_FRAME_FACTORY_IMPL_
 
+#include <memory>
+
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "media/base/video_frame.h"
@@ -23,7 +26,6 @@
 namespace media {
 class CodecImageGroup;
 class GpuVideoFrameFactory;
-class TexturePool;
 
 // VideoFrameFactoryImpl creates CodecOutputBuffer backed VideoFrames and tries
 // to eagerly render them to their surface to release the buffers back to the
@@ -97,7 +99,6 @@ class GpuVideoFrameFactory
       gfx::Size natural_size,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
       scoped_refptr<VideoFrame>* video_frame_out,
-      std::unique_ptr<gpu::gles2::AbstractTexture>* texture_out,
       CodecImage** codec_image_out);
 
   void OnWillDestroyStub(bool have_context) override;
@@ -122,9 +123,6 @@ class GpuVideoFrameFactory
   // Current image group to which new images (frames) will be added.  We'll
   // replace this when SetImageGroup() is called.
   scoped_refptr<CodecImageGroup> image_group_;
-
-  // Pool which owns all the textures that we create.
-  scoped_refptr<TexturePool> texture_pool_;
 
   THREAD_CHECKER(thread_checker_);
   base::WeakPtrFactory<GpuVideoFrameFactory> weak_factory_;

@@ -42,10 +42,6 @@ using PerformanceEntryMap = HeapHashMap<AtomicString, PerformanceEntryVector>;
 
 class UserTiming final : public GarbageCollected<UserTiming> {
  public:
-  static UserTiming* Create(Performance& performance) {
-    return MakeGarbageCollected<UserTiming>(performance);
-  }
-
   explicit UserTiming(Performance&);
 
   PerformanceMark* Mark(ScriptState* script_state,

@@ -46,6 +46,8 @@ fuzzer_test("origin_policy_parser_fuzzer") {
     "origin_policy_parser_fuzzer.cc",
   ]
   deps = [
+    "//base",
+    "//base:i18n",
     "//content/test:test_support",
   ]
   dict =
@@ -161,6 +163,7 @@ fuzzer_test("merkle_integrity_source_stream_fuzzer") {
     "//net:test_support",
   ]
   dict = "//content/test/data/fuzzer_dictionaries/merkle_integrity_source_stream_fuzzer.dict"
+  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
 proto_library("appcache_fuzzer_proto") {

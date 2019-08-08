@@ -235,6 +235,13 @@ bool SessionController::IsUserFirstLogin() const {
   return GetUserSession(0)->user_info->is_new_profile;
 }
 
+bool SessionController::ShouldDisplayManagedUI() const {
+  if (!IsActiveUserSessionStarted())
+    return false;
+
+  return GetUserSession(0)->user_info->should_display_managed_ui;
+}
+
 void SessionController::LockScreen() {
   if (client_)
     client_->RequestLockScreen();
@@ -258,6 +265,11 @@ void SessionController::CycleActiveUser(CycleUserDirection direction) {
 void SessionController::ShowMultiProfileLogin() {
   if (client_)
     client_->ShowMultiProfileLogin();
+}
+
+void SessionController::EmitAshInitialized() {
+  if (client_)
+    client_->EmitAshInitialized();
 }
 
 PrefService* SessionController::GetSigninScreenPrefService() const {

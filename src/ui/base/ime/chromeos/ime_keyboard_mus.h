@@ -5,9 +5,9 @@
 #ifndef UI_BASE_IME_CHROMEOS_IME_KEYBOARD_MUS_H_
 #define UI_BASE_IME_CHROMEOS_IME_KEYBOARD_MUS_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
-#include "ui/base/ime/ui_base_ime_export.h"
 
 namespace ws {
 class InputDeviceControllerClient;
@@ -16,7 +16,8 @@ class InputDeviceControllerClient;
 namespace chromeos {
 namespace input_method {
 
-class UI_BASE_IME_EXPORT ImeKeyboardMus : public ImeKeyboard {
+class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) ImeKeyboardMus
+    : public ImeKeyboard {
  public:
   explicit ImeKeyboardMus(
       ws::InputDeviceControllerClient* input_device_controller_client);

@@ -69,8 +69,7 @@ class NET_EXPORT_PRIVATE URLRequestFtpJob : public URLRequestJob {
   // Overridden from URLRequestJob:
   LoadState GetLoadState() const override;
   bool NeedsAuth() override;
-  void GetAuthChallengeInfo(
-      scoped_refptr<AuthChallengeInfo>* auth_info) override;
+  std::unique_ptr<AuthChallengeInfo> GetAuthChallengeInfo() override;
   void SetAuth(const AuthCredentials& credentials) override;
   void CancelAuth() override;
 

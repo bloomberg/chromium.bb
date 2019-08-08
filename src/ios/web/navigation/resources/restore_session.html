@@ -99,8 +99,16 @@
               getRestoreURL(sessionHistoryObject.urls[i] || "about:blank"));
         }
 
+        // iOS12.2 added a throttling mechanism where previous pushStates may
+        // not immediately be available. Set a 10ms interval delay until
+        // history.length reaches sessionHistory.length.
         var currentItemOffset = parseInt(sessionHistoryObject.offset);
-        history.go(currentItemOffset);
+        var goWhenReady = setInterval(() => {
+           if (history.length == sessionHistoryObject.urls.length) {
+             history.go(currentItemOffset);
+             window.clearInterval(goWhenReady);
+           }
+        }, 10);
       } catch (e) {
         handleError(e.name + ": " + e.message + " raw session history: " + sessionHistory);
       }

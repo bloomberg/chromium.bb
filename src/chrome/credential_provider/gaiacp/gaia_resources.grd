@@ -88,11 +88,14 @@
       <message name="IDS_AUTH_FID_DESCRIPTION" desc="">
         Sign in using your work account.
       </message>
+      <message name="IDS_REAUTH_FID_DESCRIPTION" desc="">
+        Your session has expired. Sign in using your work account.
+      </message>
       <message name="IDS_AUTH_FID_PROVIDER_LABEL" desc="">
-        Add person
+        Add work account
       </message>
       <message name="IDS_EXISTING_AUTH_FID_PROVIDER_LABEL" desc="">
-        Sign in using your work account.
+        Sign in using your work account
       </message>
       <message name="IDS_USER_ACCOUNT_COMMENT" desc="">
         User created from a work account
@@ -107,7 +110,7 @@
         A user on this computer was already added using this account. Please sign in with a different account.
       </message>
       <message name="IDS_ACCOUNT_LOCKED" desc="">
-        Your account has been locked. Please contact a system adminstrator.
+        Your account has been locked. Please contact a system administrator.
       </message>
       <message name="IDS_MDM_ENROLLMENT_FAILED" desc="">
         Unable to enroll this computer for enterprise management.  Please sign in with a different work account.
@@ -117,6 +120,18 @@
       </message>
       <message name="IDS_ADD_USER_DISALLOWED" desc="">
         Failed to add a new user. This computer only allows one user to be created using a work account.
+      </message>
+      <message name="IDS_FORGOT_PASSWORD_LINK" desc="">
+        Forgot Windows Password
+      </message>
+      <message name="IDS_ENTER_PASSWORD_LINK" desc="">
+        Enter Windows Password
+      </message>
+      <message name="IDS_CONFIRM_FORCED_PASSWORD_CHANGE" desc="">
+        Continuing without entering your current Windows password might cause irreversible loss of information.
+      </message>
+      <message name="IDS_FORCED_PASSWORD_CHANGE_FAILURE" desc="">
+        Unable to continue without entering the current Windows password. Please contact a system administrator.
       </message>
     </messages>
   </release>

@@ -241,7 +241,7 @@ class AppUpdateTest : public testing::Test {
     // IconKey tests.
 
     if (state) {
-      auto x = apps::mojom::IconKey::New(app_type, 100, std::string(), 0);
+      auto x = apps::mojom::IconKey::New(100, 0, 0);
       state->icon_key = x.Clone();
       expect_icon_key_ = x.Clone();
       expect_icon_key_changed_ = false;
@@ -249,7 +249,7 @@ class AppUpdateTest : public testing::Test {
     }
 
     if (delta) {
-      auto x = apps::mojom::IconKey::New(app_type, 0, "one hundred", 0);
+      auto x = apps::mojom::IconKey::New(200, 0, 0);
       delta->icon_key = x.Clone();
       expect_icon_key_ = x.Clone();
       expect_icon_key_changed_ = true;

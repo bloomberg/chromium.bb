@@ -36,23 +36,6 @@ class Coordinates : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Coordinates* Create(double latitude,
-                             double longitude,
-                             bool provides_altitude,
-                             double altitude,
-                             double accuracy,
-                             bool provides_altitude_accuracy,
-                             double altitude_accuracy,
-                             bool provides_heading,
-                             double heading,
-                             bool provides_speed,
-                             double speed) {
-    return MakeGarbageCollected<Coordinates>(
-        latitude, longitude, provides_altitude, altitude, accuracy,
-        provides_altitude_accuracy, altitude_accuracy, provides_heading,
-        heading, provides_speed, speed);
-  }
-
   Coordinates(double latitude,
               double longitude,
               bool provides_altitude,

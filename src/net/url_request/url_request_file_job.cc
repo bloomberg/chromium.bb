@@ -134,7 +134,7 @@ bool URLRequestFileJob::IsRedirectResponse(GURL* location,
 
   base::FilePath new_path = file_path_;
   bool resolved;
-  resolved = base::win::ResolveShortcut(new_path, &new_path, NULL);
+  resolved = base::win::ResolveShortcut(new_path, &new_path, nullptr);
 
   // If shortcut is not resolved successfully, do not redirect.
   if (!resolved)
@@ -322,7 +322,7 @@ void URLRequestFileJob::DidRead(scoped_refptr<IOBuffer> buf, int result) {
   }
 
   OnReadComplete(buf.get(), result);
-  buf = NULL;
+  buf = nullptr;
 
   ReadRawDataComplete(result);
 }

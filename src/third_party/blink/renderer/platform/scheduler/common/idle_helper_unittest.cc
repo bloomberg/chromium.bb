@@ -34,8 +34,8 @@ namespace scheduler {
 // To avoid symbol collisions in jumbo builds.
 namespace idle_helper_unittest {
 
-using base::sequence_manager::TaskQueue;
 using base::sequence_manager::SequenceManager;
+using base::sequence_manager::TaskQueue;
 
 void AppendToVectorTestTask(std::vector<std::string>* vector,
                             std::string value) {
@@ -178,20 +178,21 @@ class BaseIdleHelperTest : public testing::Test {
       : message_loop_(std::move(message_loop)),
         test_task_runner_(base::MakeRefCounted<base::TestMockTimeTaskRunner>(
             base::TestMockTimeTaskRunner::Type::kStandalone)) {
-    std::unique_ptr<SequenceManager> sequence_manager;
     if (!message_loop_) {
-      sequence_manager = base::sequence_manager::SequenceManagerForTest::Create(
-          nullptr, test_task_runner_, test_task_runner_->GetMockTickClock());
+      sequence_manager_ =
+          base::sequence_manager::SequenceManagerForTest::Create(
+              nullptr, test_task_runner_,
+              test_task_runner_->GetMockTickClock());
     } else {
       // It's okay to use |test_task_runner_| just as a mock clock because
       // it isn't bound to thread and all tasks will go through a MessageLoop.
-      sequence_manager = base::sequence_manager::SequenceManagerForTest::Create(
-          message_loop_->GetMessageLoopBase(), message_loop_->task_runner(),
-          test_task_runner_->GetMockTickClock());
+      sequence_manager_ =
+          base::sequence_manager::SequenceManagerForTest::CreateOnCurrentThread(
+              SequenceManager::Settings{
+                  .clock = test_task_runner_->GetMockTickClock()});
     }
-    sequence_manager_ = sequence_manager.get();
     scheduler_helper_ = std::make_unique<NonMainThreadSchedulerHelper>(
-        std::move(sequence_manager), nullptr, TaskType::kInternalTest);
+        sequence_manager_.get(), nullptr, TaskType::kInternalTest);
     idle_helper_ = std::make_unique<IdleHelperForTest>(
         scheduler_helper_.get(),
         required_quiescence_duration_before_long_idle_period,
@@ -220,7 +221,7 @@ class BaseIdleHelperTest : public testing::Test {
     test_task_runner_->FastForwardUntilNoTasksRemain();
   }
 
-  SequenceManager* sequence_manager() const { return sequence_manager_; }
+  SequenceManager* sequence_manager() const { return sequence_manager_.get(); }
 
   template <typename E>
   static void CallForEachEnumValue(E first,
@@ -275,8 +276,8 @@ class BaseIdleHelperTest : public testing::Test {
 
   std::unique_ptr<base::MessageLoop> message_loop_;
   scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
+  std::unique_ptr<SequenceManager> sequence_manager_;
   std::unique_ptr<NonMainThreadSchedulerHelper> scheduler_helper_;
-  SequenceManager* sequence_manager_;  // Owned by scheduler_helper_.
   std::unique_ptr<IdleHelperForTest> idle_helper_;
   scoped_refptr<base::sequence_manager::TaskQueue> default_task_queue_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
@@ -936,8 +937,6 @@ TEST_F(IdleHelperWithQuiescencePeriodTestWithIdlePeriodObserver,
   test_task_runner_->RunUntilIdle();
 
   EXPECT_EQ(0, run_count);
-
-  scheduler_helper_->Shutdown();
 }
 
 TEST_F(IdleHelperWithQuiescencePeriodTest,

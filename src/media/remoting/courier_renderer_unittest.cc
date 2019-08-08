@@ -76,9 +76,6 @@ class RendererClientImpl final : public RendererClient {
     ON_CALL(*this, OnVideoOpacityChange(_))
         .WillByDefault(
             Invoke(this, &RendererClientImpl::DelegateOnVideoOpacityChange));
-    ON_CALL(*this, OnDurationChange(_))
-        .WillByDefault(
-            Invoke(this, &RendererClientImpl::DelegateOnDurationChange));
   }
   ~RendererClientImpl() = default;
 
@@ -92,7 +89,6 @@ class RendererClientImpl final : public RendererClient {
   void OnWaiting(WaitingReason reason) override {}
   MOCK_METHOD1(OnVideoNaturalSizeChange, void(const gfx::Size& size));
   MOCK_METHOD1(OnVideoOpacityChange, void(bool opaque));
-  MOCK_METHOD1(OnDurationChange, void(base::TimeDelta duration));
   MOCK_METHOD1(OnRemotePlayStateChange, void(MediaStatus::State state));
 
   void DelegateOnStatisticsUpdate(const PipelineStatistics& stats) {
@@ -107,9 +103,6 @@ class RendererClientImpl final : public RendererClient {
   }
   void DelegateOnVideoNaturalSizeChange(const gfx::Size& size) { size_ = size; }
   void DelegateOnVideoOpacityChange(bool opaque) { opaque_ = opaque; }
-  void DelegateOnDurationChange(base::TimeDelta duration) {
-    duration_ = duration;
-  }
 
   MOCK_METHOD1(OnPipelineStatus, void(PipelineStatus status));
   void DelegateOnPipelineStatus(PipelineStatus status) {
@@ -123,7 +116,6 @@ class RendererClientImpl final : public RendererClient {
   BufferingState state() const { return state_; }
   gfx::Size size() const { return size_; }
   bool opaque() const { return opaque_; }
-  base::TimeDelta duration() const { return duration_; }
   VideoDecoderConfig video_decoder_config() const {
     return video_decoder_config_;
   }
@@ -136,7 +128,6 @@ class RendererClientImpl final : public RendererClient {
   BufferingState state_ = BUFFERING_HAVE_NOTHING;
   gfx::Size size_;
   bool opaque_ = false;
-  base::TimeDelta duration_;
   PipelineStatistics stats_;
   VideoDecoderConfig video_decoder_config_;
   AudioDecoderConfig audio_decoder_config_;
@@ -650,36 +641,6 @@ TEST_F(CourierRendererTest, OnStatisticsUpdate) {
   EXPECT_NE(DefaultStats(), render_client_->stats());
   IssueStatisticsUpdateRpc();
   EXPECT_EQ(DefaultStats(), render_client_->stats());
-}
-
-TEST_F(CourierRendererTest, OnDurationChange) {
-  InitializeRenderer();
-  ASSERT_NE(render_client_->duration(),
-            base::TimeDelta::FromMicroseconds(1234));
-  // Issues RPC_RC_ONDURATIONCHANGE RPC message.
-  EXPECT_CALL(*render_client_,
-              OnDurationChange(base::TimeDelta::FromMicroseconds(1234)))
-      .Times(1);
-  std::unique_ptr<pb::RpcMessage> rpc(new pb::RpcMessage());
-  rpc->set_handle(5);
-  rpc->set_proc(pb::RpcMessage::RPC_RC_ONDURATIONCHANGE);
-  rpc->set_integer64_value(1234);
-  OnReceivedRpc(std::move(rpc));
-  RunPendingTasks();
-  ASSERT_EQ(render_client_->duration(),
-            base::TimeDelta::FromMicroseconds(1234));
-}
-
-TEST_F(CourierRendererTest, OnDurationChangeWithInvalidValue) {
-  InitializeRenderer();
-  // Issues RPC_RC_ONDURATIONCHANGE RPC message.
-  EXPECT_CALL(*render_client_, OnDurationChange(_)).Times(0);
-  std::unique_ptr<pb::RpcMessage> rpc(new pb::RpcMessage());
-  rpc->set_handle(5);
-  rpc->set_proc(pb::RpcMessage::RPC_RC_ONDURATIONCHANGE);
-  rpc->set_integer64_value(-345);
-  OnReceivedRpc(std::move(rpc));
-  RunPendingTasks();
 }
 
 TEST_F(CourierRendererTest, OnPacingTooSlowly) {

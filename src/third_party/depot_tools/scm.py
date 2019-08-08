@@ -4,8 +4,8 @@
 
 """SCM-specific utility classes."""
 
-import cStringIO
 import glob
+import io
 import logging
 import os
 import platform
@@ -51,7 +51,7 @@ def GenFakeDiff(filename):
   filename = filename.replace(os.sep, '/')
   nb_lines = len(file_content)
   # We need to use / since patch on unix will fail otherwise.
-  data = cStringIO.StringIO()
+  data = io.StringIO()
   data.write("Index: %s\n" % filename)
   data.write('=' * 67 + '\n')
   # Note: Should we use /dev/null instead?
@@ -226,7 +226,7 @@ class GIT(object):
     return remote, upstream_branch
 
   @staticmethod
-  def RefToRemoteRef(ref, remote=None):
+  def RefToRemoteRef(ref, remote):
     """Convert a checkout ref to the equivalent remote ref.
 
     Returns:
@@ -240,10 +240,24 @@ class GIT(object):
     m = re.match('^(refs/(remotes/)?)?branch-heads/', ref or '')
     if m:
       return ('refs/remotes/branch-heads/', ref.replace(m.group(0), ''))
-    if remote:
-      m = re.match('^((refs/)?remotes/)?%s/|(refs/)?heads/' % remote, ref or '')
-      if m:
-        return ('refs/remotes/%s/' % remote, ref.replace(m.group(0), ''))
+
+    m = re.match('^((refs/)?remotes/)?%s/|(refs/)?heads/' % remote, ref or '')
+    if m:
+      return ('refs/remotes/%s/' % remote, ref.replace(m.group(0), ''))
+
+    return None
+
+  @staticmethod
+  def RemoteRefToRef(ref, remote):
+    assert remote, 'A remote must be given'
+    if not ref or not ref.startswith('refs/'):
+      return None
+    if not ref.startswith('refs/remotes/'):
+      return ref
+    if ref.startswith('refs/remotes/branch-heads/'):
+      return 'refs' + ref[len('refs/remotes'):]
+    if ref.startswith('refs/remotes/%s/' % remote):
+      return 'refs/heads' + ref[len('refs/remotes/%s' % remote):]
     return None
 
   @staticmethod
@@ -369,9 +383,9 @@ class GIT(object):
     """Asserts git's version is at least min_version."""
     if cls.current_version is None:
       current_version = cls.Capture(['--version'], '.')
-      matched = re.search(r'version ([0-9\.]+)', current_version)
+      matched = re.search(r'version ([0-9\.]+)', current_version.decode())
       cls.current_version = matched.group(1)
-    current_version_list = map(only_int, cls.current_version.split('.'))
+    current_version_list = list(map(only_int, cls.current_version.split('.')))
     for min_ver in map(int, min_version.split('.')):
       ver = current_version_list.pop(0)
       if ver < min_ver:

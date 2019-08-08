@@ -15,11 +15,11 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
+import org.chromium.chrome.browser.datareduction.DataReductionSavingsMilestonePromo;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.preferences.datareduction.DataReductionSavingsMilestonePromo;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
@@ -69,7 +69,7 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
 
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
-                if (tab != activity.getActivityTabProvider().getActivityTab()) return;
+                if (tab != activity.getActivityTabProvider().get()) return;
                 mDataSavedOnStartPageLoad = DataReductionProxySettings.getInstance()
                                                     .getContentLengthSavedInHistorySummary();
                 mPageLoadTab = tab;
@@ -84,8 +84,7 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
                 Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
                 if (dataSaved > 0L) tracker.notifyEvent(EventConstants.DATA_SAVED_ON_PAGE_LOAD);
                 if (tab.isPreview()) tracker.notifyEvent(EventConstants.PREVIEWS_PAGE_LOADED);
-                if (tab == activity.getActivityTabProvider().getActivityTab()
-                        && tab.isUserInteractable()) {
+                if (tab == activity.getActivityTabProvider().get() && tab.isUserInteractable()) {
                     maybeShowDataSaverDetail(activity);
                     maybeShowDataSaverMilestonePromo(activity);
                     maybeShowPreviewVerboseStatus(activity);
@@ -100,13 +99,18 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
         mPageLoadObserver.destroy();
     }
 
+    private static int getDataReductionMenuItemHighlight() {
+        return FeatureUtilities.isBottomToolbarEnabled() ? R.id.data_reduction_menu_item
+                                                         : R.id.app_menu_footer;
+    }
+
     // Attempts to show an IPH text bubble for data saver detail.
     private static void maybeShowDataSaverDetail(ChromeActivity activity) {
         View anchorView = activity.getToolbarManager().getMenuButton();
         if (anchorView == null) return;
 
         setupAndMaybeShowIPHForFeature(FeatureConstants.DATA_SAVER_DETAIL_FEATURE,
-                R.id.data_reduction_menu_item, false, R.string.iph_data_saver_detail_text,
+                getDataReductionMenuItemHighlight(), false, R.string.iph_data_saver_detail_text,
                 R.string.iph_data_saver_detail_accessibility_text, anchorView,
                 activity.getAppMenuHandler(), Profile.getLastUsedProfile(), activity, null);
     }
@@ -125,14 +129,14 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
             promo.onPromoTextSeen();
         };
         setupAndMaybeShowIPHForFeature(FeatureConstants.DATA_SAVER_MILESTONE_PROMO_FEATURE,
-                R.id.data_reduction_menu_item, false, promo.getPromoText(), promo.getPromoText(),
-                anchorView, activity.getAppMenuHandler(), Profile.getLastUsedProfile(), activity,
-                dismissCallback);
+                getDataReductionMenuItemHighlight(), false, promo.getPromoText(),
+                promo.getPromoText(), anchorView, activity.getAppMenuHandler(),
+                Profile.getLastUsedProfile(), activity, dismissCallback);
     }
 
     // Attempts to show an IPH text bubble for page in preview mode.
     private static void maybeShowPreviewVerboseStatus(ChromeActivity activity) {
-        if (!activity.getActivityTabProvider().getActivityTab().isPreview()) return;
+        if (!activity.getActivityTabProvider().get().isPreview()) return;
 
         final View anchorView = activity.getToolbarManager().getSecurityIconView();
         if (anchorView == null) return;

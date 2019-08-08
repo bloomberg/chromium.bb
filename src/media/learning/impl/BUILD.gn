@@ -2,10 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/libfuzzer/fuzzer_test.gni")
+
 component("impl") {
   output_name = "learning_impl"
   visibility = [
     "//media/learning/impl:unit_tests",
+    "//media/learning/impl:learning_fuzzer",
 
     # Actual clients.
     "//content/browser",
@@ -35,8 +38,8 @@ component("impl") {
     "random_number_generator.h",
     "random_tree_trainer.cc",
     "random_tree_trainer.h",
-    "target_distribution.cc",
-    "target_distribution.h",
+    "target_histogram.cc",
+    "target_histogram.h",
     "training_algorithm.h",
     "voting_ensemble.cc",
     "voting_ensemble.h",
@@ -69,7 +72,7 @@ source_set("unit_tests") {
     "one_hot_unittest.cc",
     "random_number_generator_unittest.cc",
     "random_tree_trainer_unittest.cc",
-    "target_distribution_unittest.cc",
+    "target_histogram_unittest.cc",
     "test_random_number_generator.cc",
     "test_random_number_generator.h",
   ]
@@ -80,5 +83,16 @@ source_set("unit_tests") {
     "//media:test_support",
     "//media/learning/impl",
     "//testing/gtest",
+  ]
+}
+
+fuzzer_test("learning_fuzzer") {
+  sources = [
+    "learning_fuzzertest.cc",
+  ]
+  deps = [
+    ":impl",
+    "//base",
+    "//base/test:test_support",
   ]
 }

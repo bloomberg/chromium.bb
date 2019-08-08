@@ -17,7 +17,8 @@ namespace gpu {
 
 VulkanImplementationWin32::~VulkanImplementationWin32() = default;
 
-bool VulkanImplementationWin32::InitializeVulkanInstance() {
+bool VulkanImplementationWin32::InitializeVulkanInstance(bool using_surface) {
+  DCHECK(using_surface);
   std::vector<const char*> required_extensions = {
       VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME};
 
@@ -102,6 +103,30 @@ VulkanImplementationWin32::ExportVkFenceToGpuFence(VkDevice vk_device,
                                                    VkFence vk_fence) {
   NOTREACHED();
   return nullptr;
+}
+
+VkSemaphore VulkanImplementationWin32::CreateExternalSemaphore(
+    VkDevice vk_device) {
+  NOTIMPLEMENTED();
+  return VK_NULL_HANDLE;
+}
+
+VkSemaphore VulkanImplementationWin32::ImportSemaphoreHandle(
+    VkDevice vk_device,
+    SemaphoreHandle handle) {
+  NOTIMPLEMENTED();
+  return VK_NULL_HANDLE;
+}
+
+SemaphoreHandle VulkanImplementationWin32::GetSemaphoreHandle(
+    VkDevice vk_device,
+    VkSemaphore vk_semaphore) {
+  return SemaphoreHandle();
+}
+
+VkExternalMemoryHandleTypeFlagBits
+VulkanImplementationWin32::GetExternalImageHandleType() {
+  return VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_BIT;
 }
 
 }  // namespace gpu

@@ -7,8 +7,6 @@
 
 #include <stdint.h>
 
-class PrefService;
-
 namespace autofill {
 
 class PersonalDataManager;
@@ -20,8 +18,10 @@ namespace payments {
 // if the customer ID was not found. If |should_log_validity| is true, will
 // report on the validity state of the customer ID in PaymentsCustomerData.
 int64_t GetBillingCustomerId(PersonalDataManager* personal_data_manager,
-                             PrefService* pref_service,
                              bool should_log_validity = false);
+
+// Returns if the customer has an existing Google payments account.
+bool HasGooglePaymentsAccount(PersonalDataManager* personal_data_manager);
 
 }  // namespace payments
 }  // namespace autofill

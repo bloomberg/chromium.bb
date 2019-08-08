@@ -7,7 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -24,7 +24,7 @@ TEST_F(ArcMigrationGuideNotificationTest, BatteryPercent) {
   TestingProfile profile;
 
   // Set a high battery state.
-  chromeos::PowerManagerClient::Initialize();
+  chromeos::PowerManagerClient::InitializeFake();
   auto* power_manager = chromeos::FakePowerManagerClient::Get();
   power_manager::PowerSupplyProperties props = *power_manager->GetLastStatus();
   props.set_battery_percent(99);

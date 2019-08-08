@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/intent_helper/open_url_delegate.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace arc {

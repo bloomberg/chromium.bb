@@ -71,16 +71,16 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void InitAsChild(gfx::NativeView parent_view) override {}
   void SetSize(const gfx::Size& size) override {}
   void SetBounds(const gfx::Rect& rect) override {}
-  gfx::NativeView GetNativeView() const override;
+  gfx::NativeView GetNativeView() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   ui::TextInputClient* GetTextInputClient() override;
-  bool HasFocus() const override;
+  bool HasFocus() override;
   void Show() override;
   void Hide() override;
   bool IsShowing() override;
   void WasUnOccluded() override;
   void WasOccluded() override;
-  gfx::Rect GetViewBounds() const override;
+  gfx::Rect GetViewBounds() override;
 #if defined(OS_MACOSX)
   void SetActive(bool active) override;
   void ShowDefinitionForSelection() override {}
@@ -242,21 +242,23 @@ class TestRenderViewHost
   int opener_frame_route_id() const { return opener_frame_route_id_; }
 
   // RenderWidgetHost overrides (same value, but in the Mock* type)
-  MockRenderProcessHost* GetProcess() const override;
+  MockRenderProcessHost* GetProcess() override;
 
   bool CreateTestRenderView(const base::string16& frame_name,
                             int opener_frame_route_id,
                             int proxy_route_id,
                             bool window_was_created_with_opener) override;
 
-  // RenderViewHost overrides --------------------------------------------------
-
+  // RenderViewHost:
   bool CreateRenderView(int opener_frame_route_id,
                         int proxy_route_id,
                         const base::UnguessableToken& devtools_frame_token,
                         const FrameReplicationState& replicated_frame_state,
                         bool window_was_created_with_opener) override;
   void OnWebkitPreferencesChanged() override;
+
+  // RenderViewHostImpl:
+  bool IsTestRenderViewHost() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, FilterNavigate);

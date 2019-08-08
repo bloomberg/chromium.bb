@@ -76,7 +76,7 @@ class ProxyResolverWinHttp : public ProxyResolver {
 
 ProxyResolverWinHttp::ProxyResolverWinHttp(
     const scoped_refptr<PacFileData>& script_data)
-    : session_handle_(NULL),
+    : session_handle_(nullptr),
       pac_url_(script_data->type() == PacFileData::TYPE_AUTO_DETECT
                    ? GURL("http://wpad/wpad.dat")
                    : script_data->url()) {}
@@ -186,11 +186,9 @@ int ProxyResolverWinHttp::GetProxyForURL(const GURL& query_url,
 
 bool ProxyResolverWinHttp::OpenWinHttpSession() {
   DCHECK(!session_handle_);
-  session_handle_ = WinHttpOpen(NULL,
-                                WINHTTP_ACCESS_TYPE_NO_PROXY,
-                                WINHTTP_NO_PROXY_NAME,
-                                WINHTTP_NO_PROXY_BYPASS,
-                                0);
+  session_handle_ =
+      WinHttpOpen(nullptr, WINHTTP_ACCESS_TYPE_NO_PROXY, WINHTTP_NO_PROXY_NAME,
+                  WINHTTP_NO_PROXY_BYPASS, 0);
   if (!session_handle_)
     return false;
 
@@ -207,7 +205,7 @@ bool ProxyResolverWinHttp::OpenWinHttpSession() {
 void ProxyResolverWinHttp::CloseWinHttpSession() {
   if (session_handle_) {
     WinHttpCloseHandle(session_handle_);
-    session_handle_ = NULL;
+    session_handle_ = nullptr;
   }
 }
 

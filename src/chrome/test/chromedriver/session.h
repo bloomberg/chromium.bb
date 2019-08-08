@@ -26,9 +26,9 @@ static const char kDismiss[] = "dismiss";
 static const char kDismissAndNotify[] = "dismiss and notify";
 static const char kIgnore[] = "ignore";
 
-// Controls whether ChromeDriver operates in W3C mode (when true) or legacy
-// mode (when false) by default.
-static const bool kW3CDefault = false;
+// Controls whether ChromeDriver operates in W3C mode (when true) by default
+// or legacy mode (when false).
+static const bool kW3CDefault = true;
 
 namespace base {
 class DictionaryValue;
@@ -125,6 +125,8 @@ struct Session {
   std::vector<std::unique_ptr<CommandListener>> command_listeners;
   bool strict_file_interactability;
   std::string unhandled_prompt_behavior;
+  int click_count;
+  base::TimeTicks mouse_click_timestamp;
 };
 
 Session* GetThreadLocalSession();

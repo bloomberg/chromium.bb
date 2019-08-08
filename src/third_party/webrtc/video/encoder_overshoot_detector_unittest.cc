@@ -39,22 +39,27 @@ class EncoderOvershootDetectorTest : public ::testing::Test {
     if (rtc::TimeMillis() == 0) {
       // Encode a first frame which by definition has no overuse factor.
       detector_.OnEncodedFrame(frame_size_bytes, rtc::TimeMillis());
-      clock_.AdvanceTimeMicros(rtc::kNumMicrosecsPerSec /
-                               target_framerate_fps_);
+      clock_.AdvanceTime(TimeDelta::seconds(1) / target_framerate_fps_);
     }
 
     int64_t runtime_us = 0;
     while (runtime_us < test_duration_ms * 1000) {
       detector_.OnEncodedFrame(frame_size_bytes, rtc::TimeMillis());
       runtime_us += rtc::kNumMicrosecsPerSec / target_framerate_fps_;
-      clock_.AdvanceTimeMicros(rtc::kNumMicrosecsPerSec /
-                               target_framerate_fps_);
+      clock_.AdvanceTime(TimeDelta::seconds(1) / target_framerate_fps_);
     }
 
-    absl::optional<double> utilization_factor =
-        detector_.GetUtilizationFactor(rtc::TimeMillis());
-    EXPECT_NEAR(utilization_factor.value_or(-1), expected_utilization_factor,
-                allowed_error);
+    // At constant utilization, both network and media utilization should be
+    // close to expected.
+    const absl::optional<double> network_utilization_factor =
+        detector_.GetNetworkRateUtilizationFactor(rtc::TimeMillis());
+    EXPECT_NEAR(network_utilization_factor.value_or(-1),
+                expected_utilization_factor, allowed_error);
+
+    const absl::optional<double> media_utilization_factor =
+        detector_.GetMediaRateUtilizationFactor(rtc::TimeMillis());
+    EXPECT_NEAR(media_utilization_factor.value_or(-1),
+                expected_utilization_factor, allowed_error);
   }
 
   static constexpr int64_t kWindowSizeMs = 3000;
@@ -71,11 +76,13 @@ TEST_F(EncoderOvershootDetectorTest, NoUtilizationIfNoRate) {
                           rtc::TimeMillis());
 
   // No data points, can't determine overshoot rate.
-  EXPECT_FALSE(detector_.GetUtilizationFactor(rtc::TimeMillis()).has_value());
+  EXPECT_FALSE(
+      detector_.GetNetworkRateUtilizationFactor(rtc::TimeMillis()).has_value());
 
   detector_.OnEncodedFrame(frame_size_bytes, rtc::TimeMillis());
-  clock_.AdvanceTimeMicros(rtc::kNumMicrosecsPerMillisec * time_interval_ms);
-  EXPECT_TRUE(detector_.GetUtilizationFactor(rtc::TimeMillis()).has_value());
+  clock_.AdvanceTime(TimeDelta::ms(time_interval_ms));
+  EXPECT_TRUE(
+      detector_.GetNetworkRateUtilizationFactor(rtc::TimeMillis()).has_value());
 }
 
 TEST_F(EncoderOvershootDetectorTest, OptimalSize) {
@@ -139,15 +146,20 @@ TEST_F(EncoderOvershootDetectorTest, PartialOvershoot) {
   int i = 0;
   while (runtime_us < kWindowSizeMs * rtc::kNumMicrosecsPerMillisec) {
     runtime_us += rtc::kNumMicrosecsPerSec / target_framerate_fps_;
-    clock_.AdvanceTimeMicros(rtc::kNumMicrosecsPerSec / target_framerate_fps_);
+    clock_.AdvanceTime(TimeDelta::seconds(1) / target_framerate_fps_);
     int frame_size_bytes = (i++ % 4 < 2) ? (ideal_frame_size_bytes * 120) / 100
                                          : (ideal_frame_size_bytes * 80) / 100;
     detector_.OnEncodedFrame(frame_size_bytes, rtc::TimeMillis());
   }
 
-  absl::optional<double> utilization_factor =
-      detector_.GetUtilizationFactor(rtc::TimeMillis());
-  EXPECT_NEAR(utilization_factor.value_or(-1), 1.05, 0.01);
-}
+  // Expect 5% overshoot for network rate, see above.
+  const absl::optional<double> network_utilization_factor =
+      detector_.GetNetworkRateUtilizationFactor(rtc::TimeMillis());
+  EXPECT_NEAR(network_utilization_factor.value_or(-1), 1.05, 0.01);
 
+  // Expect media rate to be on average correct.
+  const absl::optional<double> media_utilization_factor =
+      detector_.GetMediaRateUtilizationFactor(rtc::TimeMillis());
+  EXPECT_NEAR(media_utilization_factor.value_or(-1), 1.00, 0.01);
+}
 }  // namespace webrtc

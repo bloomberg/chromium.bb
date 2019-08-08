@@ -4,7 +4,10 @@
 
 #include "content/browser/log_console_message.h"
 
+#include "base/feature_list.h"
 #include "base/logging.h"
+#include "build/build_config.h"
+#include "content/public/common/content_features.h"
 
 namespace content {
 
@@ -47,6 +50,11 @@ void LogConsoleMessage(int32_t level,
   // the same way as we treat log messages from native code.
   if (is_off_the_record && !is_builtin_component)
     return;
+
+#if defined(OS_ANDROID)
+  if (!base::FeatureList::IsEnabled(features::kLogJsConsoleMessages))
+    return;
+#endif  // OS_ANDROID
 
   logging::LogMessage("CONSOLE", line_number, resolved_level).stream()
       << "\"" << message << "\", source: " << source_id << " (" << line_number

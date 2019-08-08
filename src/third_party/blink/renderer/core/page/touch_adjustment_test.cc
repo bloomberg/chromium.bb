@@ -31,7 +31,7 @@ class MockChromeClient : public EmptyChromeClient {
 class TouchAdjustmentTest : public RenderingTest {
  protected:
   TouchAdjustmentTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()),
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
         chrome_client_(MakeGarbageCollected<MockChromeClient>()) {}
 
   LocalFrame& GetFrame() const { return *GetDocument().GetFrame(); }
@@ -50,6 +50,7 @@ class TouchAdjustmentTest : public RenderingTest {
   }
 
   const LayoutSize max_touch_area_dip_unscaled = LayoutSize(32, 32);
+  const LayoutSize min_touch_area_dip_unscaled = LayoutSize(20, 20);
 
  private:
   Persistent<MockChromeClient> chrome_client_;
@@ -100,6 +101,27 @@ TEST_F(TouchAdjustmentTest, AdjustmentRangeUpperboundScale) {
   GetPage().SetDeviceScaleFactorDeprecated(0.5);
   result = GetHitTestRectForAdjustment(GetFrame(), touch_area);
   EXPECT_EQ(result, max_touch_area_dip_unscaled);
+}
+
+TEST_F(TouchAdjustmentTest, AdjustmentRangeLowerboundScale) {
+  // touch_area is set to 0 to always lower than minimal range.
+  LayoutSize touch_area(0, 0);
+  LayoutSize result;
+
+  // Browser zoom without dsf change is not changing the size.
+  SetZoomAndScale(1 /* dsf */, 2 /* browser_zoom */, 1 /* page_scale */);
+  result = GetHitTestRectForAdjustment(GetFrame(), touch_area);
+  EXPECT_EQ(result, min_touch_area_dip_unscaled);
+
+  // touch_area is in physical pixel, should change with dsf change.
+  SetZoomAndScale(2 /* dsf */, 1 /* browser_zoom */, 1 /* page_scale */);
+  result = GetHitTestRectForAdjustment(GetFrame(), touch_area);
+  EXPECT_EQ(result, min_touch_area_dip_unscaled * 2.f);
+
+  // Adjustment range is changed with page scale.
+  SetZoomAndScale(1 /* dsf */, 1 /* browser_zoom */, 2 /* page_scale */);
+  result = GetHitTestRectForAdjustment(GetFrame(), touch_area);
+  EXPECT_EQ(result, min_touch_area_dip_unscaled * (1.f / 2));
 }
 
 }  // namespace blink

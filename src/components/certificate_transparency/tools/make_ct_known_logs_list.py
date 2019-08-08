@@ -4,6 +4,8 @@
 # found in the LICENSE file.
 """Generate a C++ file containing information on all accepted CT logs."""
 
+from __future__ import print_function
+
 import base64
 import hashlib
 import json
@@ -35,7 +37,10 @@ def _write_disqualified_log_info_struct_definition(f):
 
 def _split_and_hexify_binary_data(bin_data):
     """Pretty-prints, in hex, the given bin_data."""
-    hex_data = "".join(["\\x%.2x" % ord(c) for c in bin_data])
+    if sys.version_info.major == 2:
+      hex_data = "".join(["\\x%.2x" % ord(c) for c in bin_data])
+    else:
+      hex_data = "".join(["\\x%.2x" % c for c in bin_data])
     # line_width % 4 must be 0 to avoid splitting the hex-encoded data
     # across '\' which will escape the quotation marks.
     line_width = 68
@@ -81,7 +86,7 @@ def _get_log_ids_for_operator(logs, operator_id):
         # case into consideration if it ever happens.
         assert(len(log["operated_by"]) == 1)
         if operator_id == log["operated_by"][0]:
-            log_key = base64.decodestring(log["key"])
+            log_key = base64.b64decode(log["key"])
             log_ids.append(hashlib.sha256(log_key).digest())
     return log_ids
 
@@ -101,7 +106,7 @@ def _escape_c_string(s):
 
 def _to_loginfo_struct(log):
     """Converts the given log to a CTLogInfo initialization code."""
-    log_key = base64.decodestring(log["key"])
+    log_key = base64.b64decode(log["key"])
     split_hex_key = _split_and_hexify_binary_data(log_key)
     s = "    {"
     s += "\n     ".join(split_hex_key)
@@ -121,7 +126,7 @@ def _get_log_definitions(logs):
 
 
 def _to_disqualified_loginfo_struct(log):
-    log_key = base64.decodestring(log["key"])
+    log_key = base64.b64decode(log["key"])
     log_id = hashlib.sha256(log_key).digest()
     s = "    {"
     s += "\n     ".join(_split_and_hexify_binary_data(log_id))
@@ -145,7 +150,7 @@ def _sorted_disqualified_logs(all_logs):
     return sorted(
             filter(_is_log_disqualified, all_logs),
             key=lambda l: hashlib.sha256(
-                base64.decodestring(l["key"])).digest())
+                base64.b64decode(l["key"])).digest())
 
 
 def _write_qualifying_logs_loginfo(f, qualifying_logs):

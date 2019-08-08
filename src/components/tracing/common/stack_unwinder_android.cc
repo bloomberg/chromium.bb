@@ -92,7 +92,7 @@ class UnwindHelper {
                const tracing::StackUnwinderAndroid* unwinder,
                uintptr_t original_sp,
                size_t stack_size,
-               base::NativeStackSampler::StackBuffer* stack_buffer,
+               base::StackSampler::StackBuffer* stack_buffer,
                const void** out_trace,
                size_t max_depth)
       : use_libunwind_(use_libunwind),
@@ -120,7 +120,7 @@ class UnwindHelper {
   size_t Unwind(uintptr_t original_sp,
                 unw_context_t* context,
                 const ucontext_t& signal_context,
-                base::NativeStackSampler::StackBuffer* stack_buffer) {
+                base::StackSampler::StackBuffer* stack_buffer) {
     const uintptr_t new_stack_top = initial_sp_;
     // Set the frame to the return frame from signal handler.
     current_ip_ = signal_context.uc_mcontext.arm_pc;
@@ -312,11 +312,11 @@ class UnwindHelper {
   }
 
   void RewritePointersAndGetMarkers(
-      base::NativeStackSampler::StackBuffer* stack_buffer,
+      base::StackSampler::StackBuffer* stack_buffer,
       uintptr_t original_sp,
       size_t stack_size) {
     jni_markers_.clear();
-    uintptr_t* new_stack = reinterpret_cast<uintptr_t*>(stack_buffer->buffer());
+    uintptr_t* new_stack = stack_buffer->buffer();
     constexpr uint32_t marker_l =
         jni_generator::kJniStackMarkerValue & 0xFFFFFFFF;
     constexpr uint32_t marker_r = jni_generator::kJniStackMarkerValue >> 32;
@@ -398,7 +398,7 @@ struct HandlerParams {
   // The context of the return function from signal context.
   ucontext_t* ucontext;
   // Buffer to copy the stack segment.
-  base::NativeStackSampler::StackBuffer* stack_buffer;
+  base::StackSampler::StackBuffer* stack_buffer;
   size_t* stack_size;
 };
 
@@ -536,7 +536,7 @@ size_t StackUnwinderAndroid::TraceStack(const void** out_trace,
 
 size_t StackUnwinderAndroid::TraceStack(
     base::PlatformThreadId tid,
-    base::NativeStackSampler::StackBuffer* stack_buffer,
+    base::StackSampler::StackBuffer* stack_buffer,
     const void** out_trace,
     size_t max_depth) const {
   // Stops the thread with given tid with a signal handler. The signal handler
@@ -579,7 +579,7 @@ bool StackUnwinderAndroid::IsAddressMapped(uintptr_t pc) const {
 
 bool StackUnwinderAndroid::SuspendThreadAndRecordStack(
     base::PlatformThreadId tid,
-    base::NativeStackSampler::StackBuffer* stack_buffer,
+    base::StackSampler::StackBuffer* stack_buffer,
     uintptr_t* sp,
     size_t* stack_size,
     unw_context_t* context,

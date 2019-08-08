@@ -176,7 +176,9 @@
 <translation id="6941933287844615239">descargar archivos multimedia</translation>
 <translation id="6981594929165378967">inserción</translation>
 <translation id="6989848892321993519">Aumenta la longitud de este texto a <ph name="MIN_CHARACTERS" /> caracteres o más (actualmente, el texto tiene 1 carácter).</translation>
+<translation id="7033340931668032222">arriba o abajo para subir o bajar el volumen</translation>
 <translation id="709897737746224366">Utiliza un formato que coincida con el solicitado</translation>
+<translation id="7118469954320184356">No hay ninguna descripción disponible.</translation>
 <translation id="7139483182332611405">prefacio</translation>
 <translation id="7263440858009898357">Selecciona un elemento de la lista</translation>
 <translation id="727747134524199931">encabezado de columna</translation>
@@ -226,6 +228,7 @@
 <translation id="8550857728288566671">símbolo gráfico</translation>
 <translation id="8583702881314752957">lista de definiciones</translation>
 <translation id="8597182159515967513">cabecera</translation>
+<translation id="8603553056539299761">izquierda o derecha para ir hacia delante o hacia atrás</translation>
 <translation id="860475260694818407">índice</translation>
 <translation id="8613126697340063924">reproducción de control remoto</translation>
 <translation id="862370744433916922">subtítulo</translation>

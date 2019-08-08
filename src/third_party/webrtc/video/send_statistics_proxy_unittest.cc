@@ -10,11 +10,13 @@
 
 #include "video/send_statistics_proxy.h"
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "system_wrappers/include/metrics.h"
 #include "test/field_trial.h"
 #include "test/gtest.h"
@@ -314,6 +316,15 @@ TEST_F(SendStatisticsProxyTest, OnEncodedFrameTimeMeasured) {
   VideoSendStream::Stats stats = statistics_proxy_->GetStats();
   EXPECT_EQ(kEncodeTimeMs, stats.avg_encode_time_ms);
   EXPECT_EQ(encode_usage_percent, stats.encode_usage_percent);
+}
+
+TEST_F(SendStatisticsProxyTest, TotalEncodeTimeIncreasesPerFrameMeasured) {
+  const int kEncodeUsagePercent = 0;  // Don't care for this test.
+  EXPECT_EQ(0u, statistics_proxy_->GetStats().total_encode_time_ms);
+  statistics_proxy_->OnEncodedFrameTimeMeasured(10, kEncodeUsagePercent);
+  EXPECT_EQ(10u, statistics_proxy_->GetStats().total_encode_time_ms);
+  statistics_proxy_->OnEncodedFrameTimeMeasured(20, kEncodeUsagePercent);
+  EXPECT_EQ(30u, statistics_proxy_->GetStats().total_encode_time_ms);
 }
 
 TEST_F(SendStatisticsProxyTest, OnSendEncodedImageIncreasesFramesEncoded) {
@@ -1685,10 +1696,8 @@ TEST_F(SendStatisticsProxyTest, GetStatsReportsTargetMediaBitrate) {
 
 TEST_F(SendStatisticsProxyTest, NoSubstreams) {
   uint32_t excluded_ssrc =
-      std::max(
-          *std::max_element(config_.rtp.ssrcs.begin(), config_.rtp.ssrcs.end()),
-          *std::max_element(config_.rtp.rtx.ssrcs.begin(),
-                            config_.rtp.rtx.ssrcs.end())) +
+      std::max(*absl::c_max_element(config_.rtp.ssrcs),
+               *absl::c_max_element(config_.rtp.rtx.ssrcs)) +
       1;
   // From RtcpStatisticsCallback.
   RtcpStatistics rtcp_stats;

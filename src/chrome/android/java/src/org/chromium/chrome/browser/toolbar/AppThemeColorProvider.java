@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
 
-import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
@@ -15,15 +13,16 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider.IncognitoStateObserver;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 
 /** A ThemeColorProvider for the app theme (incognito or standard theming). */
 public class AppThemeColorProvider extends ThemeColorProvider implements IncognitoStateObserver {
-    /** Primary color for light mode. */
-    private final int mLightPrimaryColor;
+    /** Primary color for standard mode. */
+    private final int mStandardPrimaryColor;
 
-    /** Primary color for dark mode. */
-    private final int mDarkPrimaryColor;
+    /** Primary color for incognito mode. */
+    private final int mIncognitoPrimaryColor;
 
     /** Used to know when incognito mode is entered or exited. */
     private IncognitoStateProvider mIncognitoStateProvider;
@@ -47,10 +46,8 @@ public class AppThemeColorProvider extends ThemeColorProvider implements Incogni
         super(context);
 
         mActivityContext = context;
-        mLightPrimaryColor = ApiCompatibilityUtils.getColor(
-                context.getResources(), R.color.modern_primary_color);
-        mDarkPrimaryColor = ApiCompatibilityUtils.getColor(
-                context.getResources(), R.color.incognito_modern_primary_color);
+        mStandardPrimaryColor = ColorUtils.getDefaultThemeColor(context.getResources(), false);
+        mIncognitoPrimaryColor = ColorUtils.getDefaultThemeColor(context.getResources(), true);
 
         mOverviewModeObserver = new EmptyOverviewModeObserver() {
             @Override
@@ -88,11 +85,13 @@ public class AppThemeColorProvider extends ThemeColorProvider implements Incogni
         final boolean isHorizontalTabSwitcherEnabled =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
         final boolean isTabGridEnabled = FeatureUtilities.isGridTabSwitcherEnabled();
-        final boolean shouldUseDarkBackground = mIsIncognito
+        final boolean shouldUseIncognitoBackground = mIsIncognito
                 && (isAccessibilityEnabled || isHorizontalTabSwitcherEnabled || isTabGridEnabled
                         || !mIsOverviewVisible);
 
-        updatePrimaryColor(shouldUseDarkBackground ? mDarkPrimaryColor : mLightPrimaryColor, false);
+        updatePrimaryColor(
+                shouldUseIncognitoBackground ? mIncognitoPrimaryColor : mStandardPrimaryColor,
+                false);
     }
 
     @Override

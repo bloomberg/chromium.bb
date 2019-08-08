@@ -34,7 +34,7 @@ bool AllowCrossRendererResourceLoad(const GURL& url,
 
   // This logic is performed for main frame requests in
   // ExtensionNavigationThrottle::WillStartRequest.
-  if (child_id != -1 || resource_type != content::RESOURCE_TYPE_MAIN_FRAME) {
+  if (child_id != -1 || resource_type != content::ResourceType::kMainFrame) {
     // Extensions with webview: allow loading certain resources by guest
     // renderers with privileged partition IDs as specified in owner's extension
     // the manifest file.
@@ -81,10 +81,10 @@ bool AllowCrossRendererResourceLoad(const GURL& url,
 
   // Navigating the main frame to an extension URL is allowed, even if not
   // explicitly listed as web_accessible_resource.
-  if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
+  if (resource_type == content::ResourceType::kMainFrame) {
     *allowed = true;
     return true;
-  } else if (resource_type == content::RESOURCE_TYPE_SUB_FRAME) {
+  } else if (resource_type == content::ResourceType::kSubFrame) {
     // When navigating in subframe, allow if it is the same origin
     // as the top-level frame. This can only be the case if the subframe
     // request is coming from the extension process.

@@ -39,8 +39,8 @@
         <attr name="floatLabelHint" format="reference|string" />
     </declare-styleable>
 
-    <declare-styleable name="EmptyAlertEditText">
-        <attr name="alertMessage" format="string" />
+    <declare-styleable name="BookmarkTextInputLayout">
+        <attr name="emptyErrorMessage" format="string" />
     </declare-styleable>
 
     <declare-styleable name="PaddedFrameLayout">
@@ -63,6 +63,7 @@
 
     <declare-styleable name="RadioButtonWithDescription">
         <attr name="titleText" format="string" />
+        <attr name="descriptionText" format="string" />
     </declare-styleable>
 
     <declare-styleable name="SpinnerPreference">
@@ -84,11 +85,7 @@
         <attr name="chromeDrawableTint" format="color"/>
     </declare-styleable>
 
-    <declare-styleable name="AsyncViewStub">
-        <!-- Supply an identifier for the layout resource to inflate when the AsyncViewStub
-             becomes visible or when forced to do so. The layout resource must be a
-             valid reference to a layout. -->
-        <attr name="layout" format="reference" />
-        <attr name="autoInflate" format="boolean" />
+    <declare-styleable name="TileGridLayout">
+        <attr name="minHorizontalSpacing" format="dimension"/>
     </declare-styleable>
 </resources>

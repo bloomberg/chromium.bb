@@ -36,8 +36,6 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
     {CompositingReason::kActiveBackdropFilterAnimation,
      "activeBackdropFilterAnimation",
      "Has an active accelerated backdrop filter animation or transition"},
-    {CompositingReason::kTransitionProperty, "transitionProperty",
-     "Has an acceleratable transition property (active or inactive)"},
     {CompositingReason::kScrollDependentPosition, "scrollDependentPosition",
      "Is fixed or sticky position"},
     {CompositingReason::kOverflowScrollingTouch, "overflowScrollingTouch",
@@ -48,8 +46,12 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
      "Has clipping ancestor"},
     {CompositingReason::kVideoOverlay, "videoOverlay",
      "Is overlay controls for video"},
-    {CompositingReason::kWillChangeCompositingHint, "willChange",
-     "Has a will-change compositing hint"},
+    {CompositingReason::kWillChangeTransform, "willChangeTransform",
+     "Has a will-change: transform compositing hint"},
+    {CompositingReason::kWillChangeOpacity, "willChangeOpacity",
+     "Has a will-change: opacity compositing hint"},
+    {CompositingReason::kWillChangeOther, "willChangeOther",
+     "Has a will-change compositing hint other than transform and opacity"},
     {CompositingReason::kBackdropFilter, "backdropFilter",
      "Has a backdrop filter"},
     {CompositingReason::kRootScroller, "rootScroller",
@@ -103,10 +105,9 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
     {CompositingReason::kIsolateCompositedDescendants,
      "isolateCompositedDescendants",
      "Should isolate descendants to apply a blend effect"},
-    {CompositingReason::kPositionFixedOrStickyWithCompositedDescendants,
-     "positionFixedOrStickyWithCompositedDescendants"
-     "Is a position:fixed or position:sticky element with composited "
-     "descendants"},
+    {CompositingReason::kPositionFixedWithCompositedDescendants,
+     "positionFixedWithCompositedDescendants"
+     "Is a position:fixed element with composited descendants"},
     {CompositingReason::kRoot, "root", "Is the root layer"},
     {CompositingReason::kLayerForAncestorClip, "layerForAncestorClip",
      "Secondary layer, applies a clip due to a sibling in the compositing "

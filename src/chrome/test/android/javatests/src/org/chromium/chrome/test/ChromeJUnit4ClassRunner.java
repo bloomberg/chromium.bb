@@ -11,24 +11,27 @@ import android.text.TextUtils;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.vr.ndk.base.DaydreamApi;
+import com.google.vr.ndk.base.GvrApi;
 
 import org.junit.rules.TestRule;
 import org.junit.runners.model.InitializationError;
 
 import org.chromium.base.CommandLine;
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.ContextUtils;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.test.BaseTestResult.PreTestHook;
 import org.chromium.base.test.util.RestrictionSkipCheck;
 import org.chromium.base.test.util.SkipCheck;
 import org.chromium.chrome.browser.ChromeVersionInfo;
-import org.chromium.chrome.browser.vr.VrModuleProvider;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.policy.test.annotations.Policies;
 
 import java.util.List;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -66,22 +69,34 @@ public class ChromeJUnit4ClassRunner extends ContentJUnit4ClassRunner {
         }
 
         private boolean isDaydreamReady() {
-            return VrModuleProvider.getDelegate().isDaydreamReadyDevice();
+            // We normally check things like this through VrShellDelegate. However, with the
+            // introduction of Dynamic Feature Modules (DFMs), we have tests that expect the VR
+            // DFM to not be loaded. Using the normal approach (VrModuleProvider.getDelegate())
+            // causes the DFM to be loaded, which we don't want done before the test starts. So,
+            // access the Daydream API directly.
+            return DaydreamApi.isDaydreamReadyPlatform(ContextUtils.getApplicationContext());
         }
 
         private boolean isDaydreamViewPaired() {
             if (!isDaydreamReady()) {
                 return false;
             }
-
-            // isDaydreamCurrentViewer() creates a concrete instance of DaydreamApi,
-            // which can only be done on the main thread
+            // We need to ensure that the DaydreamApi instance is created on the main thread.
+            DaydreamApi daydreamApi;
             try {
-                return ThreadUtils.runOnUiThreadBlocking(
-                        VrModuleProvider.getDelegate()::isDaydreamCurrentViewer);
-            } catch (CancellationException | ExecutionException | IllegalArgumentException e) {
+                daydreamApi = TestThreadUtils.runOnUiThreadBlocking(
+                        () -> { return DaydreamApi.create(ContextUtils.getApplicationContext()); });
+            } catch (ExecutionException e) {
                 return false;
             }
+            int viewerType;
+            // Getting the current viewer type may result in a disk write in VrCore, so allow that
+            // to prevent StrictMode errors.
+            try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
+                viewerType = daydreamApi.getCurrentViewerType();
+            }
+            daydreamApi.close();
+            return viewerType == GvrApi.ViewerType.DAYDREAM;
         }
 
         private boolean isOnStandaloneVrDevice() {
@@ -149,6 +164,9 @@ public class ChromeJUnit4ClassRunner extends ContentJUnit4ClassRunner {
             if (TextUtils.equals(
                         restriction, ChromeRestriction.RESTRICTION_TYPE_VR_SETTINGS_SERVICE)) {
                 return !isVrSettingsServiceEnabled();
+            }
+            if (TextUtils.equals(restriction, ChromeRestriction.RESTRICTION_TYPE_REQUIRES_TOUCH)) {
+                return FeatureUtilities.isNoTouchModeEnabled();
             }
             return false;
         }

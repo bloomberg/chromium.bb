@@ -23,7 +23,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
@@ -47,6 +46,7 @@ import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
@@ -87,12 +87,9 @@ public class BookmarkTest {
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityFromLauncher();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mBookmarkModel = new BookmarkModel(
-                        mActivityTestRule.getActivity().getActivityTab().getProfile());
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mBookmarkModel = new BookmarkModel(
+                    mActivityTestRule.getActivity().getActivityTab().getProfile());
         });
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mTestPage = mTestServer.getURL(TEST_PAGE_URL_GOOGLE);
@@ -101,7 +98,7 @@ public class BookmarkTest {
 
     private void readPartnerBookmarks() throws InterruptedException {
         // Do not read partner bookmarks in setUp(), so that the lazy reading is covered.
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> PartnerBookmarksShim.kickOffReading(mActivityTestRule.getActivity()));
         BookmarkTestUtil.waitForBookmarkModelLoaded();
     }
@@ -132,7 +129,7 @@ public class BookmarkTest {
     }
 
     private boolean isItemPresentInBookmarkList(final String expectedTitle) {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 for (int i = 0; i < mItemsContainer.getAdapter().getItemCount(); i++) {
@@ -162,19 +159,16 @@ public class BookmarkTest {
                 mActivityTestRule.getActivity(), R.id.bookmark_this_page_id);
         BookmarkTestUtil.waitForBookmarkModelLoaded();
         // All actions with BookmarkModel needs to run on UI thread.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                long bookmarkIdLong =
-                        mActivityTestRule.getActivity().getActivityTab().getUserBookmarkId();
-                BookmarkId id = new BookmarkId(bookmarkIdLong, BookmarkType.NORMAL);
-                Assert.assertTrue("The test page is not added as bookmark: ",
-                        mBookmarkModel.doesBookmarkExist(id));
-                BookmarkItem item = mBookmarkModel.getBookmarkById(id);
-                Assert.assertEquals(mBookmarkModel.getDefaultFolder(), item.getParentId());
-                Assert.assertEquals(mTestPage, item.getUrl());
-                Assert.assertEquals(TEST_PAGE_TITLE_GOOGLE, item.getTitle());
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            long bookmarkIdLong =
+                    mActivityTestRule.getActivity().getActivityTab().getUserBookmarkId();
+            BookmarkId id = new BookmarkId(bookmarkIdLong, BookmarkType.NORMAL);
+            Assert.assertTrue("The test page is not added as bookmark: ",
+                    mBookmarkModel.doesBookmarkExist(id));
+            BookmarkItem item = mBookmarkModel.getBookmarkById(id);
+            Assert.assertEquals(mBookmarkModel.getDefaultFolder(), item.getParentId());
+            Assert.assertEquals(mTestPage, item.getUrl());
+            Assert.assertEquals(TEST_PAGE_TITLE_GOOGLE, item.getTitle());
         });
     }
 
@@ -231,7 +225,7 @@ public class BookmarkTest {
         final BookmarkActionBar toolbar = ((BookmarkManager) delegate).getToolbarForTests();
 
         // Open the "Mobile bookmarks" folder.
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> delegate.openFolder(mBookmarkModel.getMobileFolderId()));
 
         // Check that we are in the mobile bookmarks folder.
@@ -241,7 +235,7 @@ public class BookmarkTest {
         Assert.assertFalse(toolbar.getMenu().findItem(R.id.edit_menu_id).isVisible());
 
         // Open the new test folder.
-        ThreadUtils.runOnUiThreadBlocking(() -> delegate.openFolder(testFolder));
+        TestThreadUtils.runOnUiThreadBlocking(() -> delegate.openFolder(testFolder));
 
         // Check that we are in the editable test folder.
         Assert.assertEquals(TEST_FOLDER_TITLE, toolbar.getTitle());
@@ -250,7 +244,7 @@ public class BookmarkTest {
         Assert.assertTrue(toolbar.getMenu().findItem(R.id.edit_menu_id).isVisible());
 
         // Call BookmarkActionBar#onClick() to activate the navigation button.
-        ThreadUtils.runOnUiThreadBlocking(() -> toolbar.onClick(toolbar));
+        TestThreadUtils.runOnUiThreadBlocking(() -> toolbar.onClick(toolbar));
 
         // Check that we are back in the mobile folder
         Assert.assertEquals("Mobile bookmarks", toolbar.getTitle());
@@ -259,7 +253,7 @@ public class BookmarkTest {
         Assert.assertFalse(toolbar.getMenu().findItem(R.id.edit_menu_id).isVisible());
 
         // Call BookmarkActionBar#onClick() to activate the navigation button.
-        ThreadUtils.runOnUiThreadBlocking(() -> toolbar.onClick(toolbar));
+        TestThreadUtils.runOnUiThreadBlocking(() -> toolbar.onClick(toolbar));
 
         // Check that we are in the root folder.
         Assert.assertEquals("Bookmarks", toolbar.getTitle());
@@ -283,14 +277,14 @@ public class BookmarkTest {
         final BookmarkDelegate delegate = adapter.getDelegateForTesting();
 
         // Open the default folder where these bookmarks were created.
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> delegate.openFolder(mBookmarkModel.getDefaultFolder()));
 
         Assert.assertEquals(BookmarkUIState.STATE_FOLDER, delegate.getCurrentState());
         Assert.assertEquals(
                 "Wrong number of items before starting search.", 3, adapter.getItemCount());
 
-        ThreadUtils.runOnUiThreadBlocking(delegate::openSearchUI);
+        TestThreadUtils.runOnUiThreadBlocking(delegate::openSearchUI);
 
         Assert.assertEquals(BookmarkUIState.STATE_SEARCHING, delegate.getCurrentState());
         Assert.assertEquals(
@@ -313,7 +307,7 @@ public class BookmarkTest {
         Assert.assertEquals("Wrong number of items after searching for non-existent item.", 0,
                 mItemsContainer.getAdapter().getItemCount());
 
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> ((BookmarkManager) delegate).getToolbarForTests().hideSearchView());
         Assert.assertEquals("Wrong number of items after closing search UI.", 3,
                 mItemsContainer.getAdapter().getItemCount());
@@ -338,16 +332,15 @@ public class BookmarkTest {
                 "Wrong number of items before starting search.", 3, adapter.getItemCount());
 
         // Start searching without entering a query.
-        ThreadUtils.runOnUiThreadBlocking(manager::openSearchUI);
+        TestThreadUtils.runOnUiThreadBlocking(manager::openSearchUI);
         Assert.assertEquals("Wrong state, should be searching", BookmarkUIState.STATE_SEARCHING,
                 manager.getCurrentState());
 
         // Select the folder and delete it.
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> manager.getSelectionDelegate().toggleSelectionForItem(adapter.getItem(0)));
-        ThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> manager.getToolbarForTests().onMenuItemClick(
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> manager.getToolbarForTests().onMenuItemClick(
                                 manager.getToolbarForTests().getMenu().findItem(
                                         R.id.selection_mode_delete_menu_id)));
 
@@ -358,7 +351,7 @@ public class BookmarkTest {
                 "Wrong number of items before starting search.", 2, adapter.getItemCount());
 
         // Start searching, enter a query.
-        ThreadUtils.runOnUiThreadBlocking(manager::openSearchUI);
+        TestThreadUtils.runOnUiThreadBlocking(manager::openSearchUI);
         Assert.assertEquals("Wrong state, should be searching", BookmarkUIState.STATE_SEARCHING,
                 manager.getCurrentState());
         searchBookmarks("Google");
@@ -375,7 +368,8 @@ public class BookmarkTest {
                 mItemsContainer.getAdapter().getItemCount());
 
         // Undo the deletion.
-        ThreadUtils.runOnUiThreadBlocking(() -> manager.getUndoControllerForTests().onAction(null));
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> manager.getUndoControllerForTests().onAction(null));
 
         // The user should still be searching, and the bookmark should reappear.
         Assert.assertEquals("Wrong state, should be searching", BookmarkUIState.STATE_SEARCHING,
@@ -397,7 +391,7 @@ public class BookmarkTest {
 
         mRenderTestRule.render(manager.getView(), "bookmark_manager_one_folder");
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             BookmarkRow itemView = (BookmarkRow) manager.getRecyclerViewForTests()
                                            .findViewHolderForAdapterPosition(0)
                                            .itemView;
@@ -408,7 +402,7 @@ public class BookmarkTest {
 
         mRenderTestRule.render(manager.getView(), "bookmark_manager_folder_selected");
 
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> manager.getSelectionDelegate().toggleSelectionForItem(adapter.getItem(0)));
 
         mRenderTestRule.render(manager.getView(), "bookmark_manager_one_folder");
@@ -429,7 +423,7 @@ public class BookmarkTest {
 
         final BookmarkActionBar toolbar = mManager.getToolbarForTests();
 
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> toolbar.onMenuItemClick(toolbar.getMenu().findItem(R.id.close_menu_id)));
 
         activityDestroyedCallback.waitForCallback(0);
@@ -458,7 +452,7 @@ public class BookmarkTest {
      * @return The unique view, if one exists. Throws an exception if one doesn't exist.
      */
     private static View getViewWithText(final ViewGroup viewGroup, final String expectedText) {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<View>() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<View>() {
             @Override
             public View call() throws Exception {
                 ArrayList<View> outViews = new ArrayList<>();
@@ -480,23 +474,23 @@ public class BookmarkTest {
     private BookmarkId addBookmark(final String title, final String url)
             throws InterruptedException, ExecutionException {
         readPartnerBookmarks();
-        return ThreadUtils.runOnUiThreadBlocking(
+        return TestThreadUtils.runOnUiThreadBlocking(
                 () -> mBookmarkModel.addBookmark(mBookmarkModel.getDefaultFolder(), 0, title, url));
     }
 
     private BookmarkId addFolder(final String title)
             throws InterruptedException, ExecutionException {
         readPartnerBookmarks();
-        return ThreadUtils.runOnUiThreadBlocking(
+        return TestThreadUtils.runOnUiThreadBlocking(
                 () -> mBookmarkModel.addFolder(mBookmarkModel.getDefaultFolder(), 0, title));
     }
 
     private void removeBookmark(final BookmarkId bookmarkId) {
-        ThreadUtils.runOnUiThreadBlocking(() -> mBookmarkModel.deleteBookmark(bookmarkId));
+        TestThreadUtils.runOnUiThreadBlocking(() -> mBookmarkModel.deleteBookmark(bookmarkId));
     }
 
     private void searchBookmarks(final String query) {
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> ((BookmarkItemsAdapter) mItemsContainer.getAdapter()).search(query));
     }
 }

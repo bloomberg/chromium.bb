@@ -94,6 +94,12 @@ AutofillProfileSyncableService::FromWebDataService(
 AutofillProfileSyncableService::AutofillProfileSyncableService()
     : webdata_backend_(nullptr), scoped_observer_(this) {}
 
+void AutofillProfileSyncableService::WaitUntilReadyToSync(
+    base::OnceClosure done) {
+  // Not used in the legacy directory-based architecture.
+  NOTREACHED();
+}
+
 syncer::SyncMergeResult
 AutofillProfileSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
@@ -602,33 +608,21 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
 
 void AutofillProfileSyncableService::ActOnChange(
      const AutofillProfileChange& change) {
-  DCHECK(
-      (change.type() == AutofillProfileChange::REMOVE &&
-       !change.data_model()) ||
-      (change.type() != AutofillProfileChange::REMOVE && change.data_model()));
+  DCHECK(change.data_model());
   DCHECK(sync_processor_);
 
-  if (change.data_model() &&
-      change.data_model()->record_type() != AutofillProfile::LOCAL_PROFILE) {
+  if (change.data_model()->record_type() != AutofillProfile::LOCAL_PROFILE) {
     return;
   }
 
   // TODO(crbug.com/904390): Remove when the investigation is over.
   bool is_converted_from_server = false;
-  if (change.type() == AutofillProfileChange::REMOVE) {
-    // The profile is not available any more so we cannot compare its value,
-    // instead we use a rougher test based on the id - whether it is a local
-    // GUID or a server id. As a result, it has a different semantics compared
-    // to AddOrUpdate.
-    is_converted_from_server = !base::IsValidGUID(change.key());
-  } else {
-    // |webdata_backend_|, used by GetAutofillTable() may be null in unit-tests.
-    if (webdata_backend_ != nullptr) {
-      std::vector<std::unique_ptr<AutofillProfile>> server_profiles;
-      GetAutofillTable()->GetServerProfiles(&server_profiles);
-      is_converted_from_server = IsLocalProfileEqualToServerProfile(
-          server_profiles, *change.data_model(), app_locale_);
-    }
+  // |webdata_backend_|, used by GetAutofillTable() may be null in unit-tests.
+  if (webdata_backend_ != nullptr) {
+    std::vector<std::unique_ptr<AutofillProfile>> server_profiles;
+    GetAutofillTable()->GetServerProfiles(&server_profiles);
+    is_converted_from_server = IsLocalProfileEqualToServerProfile(
+        server_profiles, *change.data_model(), app_locale_);
   }
 
   syncer::SyncChangeList new_changes;
@@ -668,13 +662,10 @@ void AutofillProfileSyncableService::ActOnChange(
       break;
     }
     case AutofillProfileChange::REMOVE: {
-      // Removals have no data_model() so this change can still be for a
-      // SERVER_PROFILE. Rule it out by a lookup in profiles_map_.
       if (profiles_map_.find(change.key()) != profiles_map_.end()) {
-        AutofillProfile empty_profile(change.key(), std::string());
         new_changes.push_back(
             syncer::SyncChange(FROM_HERE, syncer::SyncChange::ACTION_DELETE,
-                               CreateData(empty_profile)));
+                               CreateData(*(change.data_model()))));
         profiles_map_.erase(change.key());
         // TODO(crbug.com/904390): Remove when the investigation is over.
         ReportAutofillProfileDeleteOrigin(

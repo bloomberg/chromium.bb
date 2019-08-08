@@ -64,6 +64,7 @@
 #include "third_party/blink/renderer/core/xml/parser/xml_document_parser_scope.h"
 #include "third_party/blink/renderer/core/xml/parser/xml_parser_input.h"
 #include "third_party/blink/renderer/core/xmlns_names.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
@@ -459,7 +460,7 @@ bool XMLDocumentParser::ParseDocumentFragment(
     return true;
   }
 
-  XMLDocumentParser* parser = XMLDocumentParser::Create(
+  auto* parser = MakeGarbageCollected<XMLDocumentParser>(
       fragment, context_element, parser_content_policy);
   bool well_formed = parser->AppendFragmentSource(chunk);
 
@@ -577,7 +578,7 @@ static bool ShouldAllowExternalLoad(const KURL& url) {
           XMLDocumentParserScope::current_document_->Url().ElidedString() +
           ". Domains, protocols and ports must match.\n";
       XMLDocumentParserScope::current_document_->AddConsoleMessage(
-          ConsoleMessage::Create(kSecurityMessageSource,
+          ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
                                  mojom::ConsoleMessageLevel::kError, message));
     }
     return false;
@@ -736,9 +737,10 @@ XMLDocumentParser::XMLDocumentParser(Document& document,
       requesting_script_(false),
       finish_called_(false),
       xml_errors_(&document),
-      script_runner_(frame_view ? XMLParserScriptRunner::Create(this)
-                                : nullptr),  // Don't execute scripts for
-                                             // documents without frames.
+      script_runner_(frame_view
+                         ? MakeGarbageCollected<XMLParserScriptRunner>(this)
+                         : nullptr),  // Don't execute scripts for
+                                      // documents without frames.
       script_start_position_(TextPosition::BelowRangePosition()),
       parsing_fragment_(false) {
   // This is XML being used as a document resource.
@@ -1645,9 +1647,9 @@ bool XMLDocumentParser::AppendFragmentSource(const String& chunk) {
   // XMLDocumentParserQt has a similar check (m_stream.error() ==
   // QXmlStreamReader::PrematureEndOfDocumentError) in doEnd(). Check if all
   // the chunk has been processed.
-  long bytes_processed = xmlByteConsumed(Context());
+  int64_t bytes_processed = xmlByteConsumed(Context());
   if (bytes_processed == -1 ||
-      static_cast<unsigned long>(bytes_processed) != chunk_as_utf8.length()) {
+      bytes_processed != static_cast<int64_t>(chunk_as_utf8.length())) {
     // FIXME: I don't believe we can hit this case without also having seen
     // an error or a null byte. If we hit this DCHECK, we've found a test
     // case which demonstrates the need for this code.

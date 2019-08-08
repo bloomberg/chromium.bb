@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -96,14 +97,6 @@ class NonResumingBackgroundTabNavigationThrottle
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NonResumingBackgroundTabNavigationThrottle);
-};
-
-class TabStripModelSimpleDelegate : public TestTabStripModelDelegate {
- public:
-  TabStripModelSimpleDelegate() = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TabStripModelSimpleDelegate);
 };
 
 enum TestIndicies {
@@ -423,90 +416,6 @@ TEST_F(TabManagerTest, IsInternalPage) {
   // Prefix matches are included.
   EXPECT_TRUE(
       TabManager::IsInternalPage(GURL("chrome://settings/fakeSetting")));
-}
-
-TEST_F(TabManagerTest, DefaultTimeToPurgeInCorrectRange) {
-  base::TimeDelta time_to_purge =
-      tab_manager_->GetTimeToPurge(TabManager::kDefaultMinTimeToPurge,
-                                   TabManager::kDefaultMinTimeToPurge * 4);
-  EXPECT_GE(time_to_purge, base::TimeDelta::FromMinutes(1));
-  EXPECT_LE(time_to_purge, base::TimeDelta::FromMinutes(4));
-}
-
-TEST_F(TabManagerTest, ShouldPurgeAtDefaultTime) {
-  auto window = std::make_unique<TestBrowserWindow>();
-  Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
-  params.window = window.get();
-  auto browser = std::make_unique<Browser>(params);
-  TabStripModel* tab_strip = browser->tab_strip_model();
-
-  std::unique_ptr<WebContents> test_contents = CreateWebContents();
-  WebContents* raw_test_contents = test_contents.get();
-  tab_strip->AppendWebContents(std::move(test_contents), /*foreground=*/true);
-
-  tab_manager_->GetWebContentsData(raw_test_contents)->set_is_purged(false);
-  tab_manager_->GetWebContentsData(raw_test_contents)
-      ->SetLastInactiveTime(NowTicks());
-  tab_manager_->GetWebContentsData(raw_test_contents)
-      ->set_time_to_purge(base::TimeDelta::FromMinutes(1));
-
-  // Wait 1 minute and verify that the tab is still not to be purged.
-  task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(1));
-  EXPECT_FALSE(tab_manager_->ShouldPurgeNow(raw_test_contents));
-
-  // Wait another 1 second and verify that it should be purged now .
-  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
-  EXPECT_TRUE(tab_manager_->ShouldPurgeNow(raw_test_contents));
-
-  tab_manager_->GetWebContentsData(raw_test_contents)->set_is_purged(true);
-  tab_manager_->GetWebContentsData(raw_test_contents)
-      ->SetLastInactiveTime(NowTicks());
-
-  // Wait 1 day and verify that the tab is still be purged.
-  task_runner_->FastForwardBy(base::TimeDelta::FromHours(24));
-  EXPECT_FALSE(tab_manager_->ShouldPurgeNow(raw_test_contents));
-
-  // Tabs with a committed URL must be closed explicitly to avoid DCHECK errors.
-  tab_strip->CloseAllTabs();
-}
-
-TEST_F(TabManagerTest, ActivateTabResetPurgeState) {
-  auto window = std::make_unique<TestBrowserWindow>();
-  Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
-  params.window = window.get();
-  auto browser = std::make_unique<Browser>(params);
-  TabStripModel* tabstrip = browser->tab_strip_model();
-
-  std::unique_ptr<WebContents> tab1 = CreateWebContents();
-  std::unique_ptr<WebContents> tab2 = CreateWebContents();
-  WebContents* raw_tab2 = tab2.get();
-  tabstrip->AppendWebContents(std::move(tab1), true);
-  tabstrip->AppendWebContents(std::move(tab2), false);
-
-  tab_manager_->GetWebContentsData(raw_tab2)->SetLastInactiveTime(NowTicks());
-  static_cast<content::MockRenderProcessHost*>(
-      raw_tab2->GetMainFrame()->GetProcess())
-      ->set_is_process_backgrounded(true);
-  EXPECT_TRUE(raw_tab2->GetMainFrame()->GetProcess()->IsProcessBackgrounded());
-
-  // Initially PurgeAndSuspend state should be NOT_PURGED.
-  EXPECT_FALSE(tab_manager_->GetWebContentsData(raw_tab2)->is_purged());
-  tab_manager_->GetWebContentsData(raw_tab2)->set_time_to_purge(
-      base::TimeDelta::FromMinutes(1));
-  task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(2));
-  tab_manager_->PurgeBackgroundedTabsIfNeeded();
-  // Since tab2 is kept inactive and background for more than time-to-purge,
-  // tab2 should be purged.
-  EXPECT_TRUE(tab_manager_->GetWebContentsData(raw_tab2)->is_purged());
-
-  // Activate tab2. Tab2's PurgeAndSuspend state should be NOT_PURGED.
-  tabstrip->ActivateTabAt(1, {TabStripModel::GestureType::kOther});
-  EXPECT_FALSE(tab_manager_->GetWebContentsData(raw_tab2)->is_purged());
-
-  // Tabs with a committed URL must be closed explicitly to avoid DCHECK errors.
-  tabstrip->CloseAllTabs();
 }
 
 // Data race on Linux. http://crbug.com/787842

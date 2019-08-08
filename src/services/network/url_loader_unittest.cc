@@ -421,8 +421,12 @@ class URLLoaderTest : public testing::Test {
       options |= mojom::kURLLoadOptionSendSSLInfoForCertificateError;
 
     std::unique_ptr<TestNetworkServiceClient> network_service_client;
-    if (allow_file_uploads_)
+    if (allow_file_uploads_) {
       network_service_client = std::make_unique<TestNetworkServiceClient>();
+      network_service_client->set_upload_files_invalid(upload_files_invalid_);
+      network_service_client->set_ignore_last_upload_file(
+          ignore_last_upload_file_);
+    }
 
     if (request_body_)
       request.request_body = request_body_;
@@ -574,6 +578,14 @@ class URLLoaderTest : public testing::Test {
     DCHECK(!ran_);
     allow_file_uploads_ = true;
   }
+  void set_upload_files_invalid(bool upload_files_invalid) {
+    DCHECK(!ran_);
+    upload_files_invalid_ = upload_files_invalid;
+  }
+  void set_ignore_last_upload_file(bool ignore_last_upload_file) {
+    DCHECK(!ran_);
+    ignore_last_upload_file_ = ignore_last_upload_file;
+  }
   void set_sniff() {
     DCHECK(!ran_);
     sniff_ = true;
@@ -695,6 +707,8 @@ class URLLoaderTest : public testing::Test {
 
   // Options applied to the created request in Load().
   bool allow_file_uploads_ = false;
+  bool upload_files_invalid_ = false;
+  bool ignore_last_upload_file_ = false;
   bool sniff_ = false;
   bool send_ssl_with_response_ = false;
   bool send_ssl_for_cert_error_ = false;
@@ -1391,7 +1405,77 @@ TEST_F(URLLoaderTest, UploadTwoFiles) {
   EXPECT_EQ(expected_body1 + expected_body2, response_body);
 }
 
+TEST_F(URLLoaderTest, UploadTwoBatchesOfFiles) {
+  allow_file_uploads();
+  base::FilePath file_path = GetTestFilePath("simple_page.html");
+
+  std::string expected_body;
+  size_t num_files = 2 * kMaxFileUploadRequestsPerBatch;
+  for (size_t i = 0; i < num_files; ++i) {
+    std::string tmp_expected_body;
+    ASSERT_TRUE(base::ReadFileToString(file_path, &tmp_expected_body))
+        << "File not found: " << file_path.value();
+    expected_body += tmp_expected_body;
+  }
+
+  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
+  for (size_t i = 0; i < num_files; ++i) {
+    request_body->AppendFileRange(
+        file_path, 0, std::numeric_limits<uint64_t>::max(), base::Time());
+  }
+  set_request_body(std::move(request_body));
+
+  std::string response_body;
+  EXPECT_EQ(net::OK, Load(test_server()->GetURL("/echo"), &response_body));
+  EXPECT_EQ(expected_body, response_body);
+}
+
+TEST_F(URLLoaderTest, UploadTwoBatchesOfFilesWithRespondInvalidFile) {
+  allow_file_uploads();
+  set_upload_files_invalid(true);
+  base::FilePath file_path = GetTestFilePath("simple_page.html");
+
+  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
+  size_t num_files = 2 * kMaxFileUploadRequestsPerBatch;
+  for (size_t i = 0; i < num_files; ++i) {
+    request_body->AppendFileRange(
+        file_path, 0, std::numeric_limits<uint64_t>::max(), base::Time());
+  }
+  set_request_body(std::move(request_body));
+
+  EXPECT_EQ(net::ERR_ACCESS_DENIED, Load(test_server()->GetURL("/echo")));
+}
+
+TEST_F(URLLoaderTest, UploadTwoBatchesOfFilesWithRespondDifferentNumOfFiles) {
+  allow_file_uploads();
+  set_ignore_last_upload_file(true);
+  base::FilePath file_path = GetTestFilePath("simple_page.html");
+
+  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
+  size_t num_files = 2 * kMaxFileUploadRequestsPerBatch;
+  for (size_t i = 0; i < num_files; ++i) {
+    request_body->AppendFileRange(
+        file_path, 0, std::numeric_limits<uint64_t>::max(), base::Time());
+  }
+  set_request_body(std::move(request_body));
+
+  EXPECT_EQ(net::ERR_FAILED, Load(test_server()->GetURL("/echo")));
+}
+
 TEST_F(URLLoaderTest, UploadInvalidFile) {
+  allow_file_uploads();
+  set_upload_files_invalid(true);
+  base::FilePath file_path = GetTestFilePath("simple_page.html");
+
+  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
+  request_body->AppendFileRange(
+      file_path, 0, std::numeric_limits<uint64_t>::max(), base::Time());
+  set_request_body(std::move(request_body));
+
+  EXPECT_EQ(net::ERR_ACCESS_DENIED, Load(test_server()->GetURL("/echo")));
+}
+
+TEST_F(URLLoaderTest, UploadFileWithoutNetworkServiceClient) {
   // Don't call allow_file_uploads();
   base::FilePath file_path = GetTestFilePath("simple_page.html");
 
@@ -2192,7 +2276,7 @@ class MockNetworkServiceClient : public mojom::NetworkServiceClient {
       const GURL& url,
       const GURL& site_for_cookies,
       bool first_auth_attempt,
-      const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+      const net::AuthChallengeInfo& auth_info,
       int32_t resource_type,
       const base::Optional<network::ResourceResponseHead>& head,
       mojom::AuthChallengeResponderPtr auth_challenge_responder) override {
@@ -3000,6 +3084,81 @@ TEST_F(URLLoaderTest, ClientAuthCertificateWithInvalidSignature) {
   EXPECT_EQ(1, private_key_ptr->sign_count());
   EXPECT_EQ(net::ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED,
             client()->completion_status().error_code);
+}
+
+TEST_F(URLLoaderTest, BlockAllCookies) {
+  MockNetworkServiceClient network_service_client;
+
+  GURL site_for_cookies("http://www.example.com.test/");
+  GURL first_party_url(site_for_cookies);
+  GURL third_party_url("http://www.some.other.origin.test/");
+
+  ResourceRequest request = CreateResourceRequest("GET", first_party_url);
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = kProcessId;
+  params.is_corb_enabled = false;
+  std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
+      context(), &network_service_client,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionBlockAllCookies, request,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+
+  EXPECT_FALSE(url_loader->AllowCookies(first_party_url, site_for_cookies));
+  EXPECT_FALSE(url_loader->AllowCookies(third_party_url, site_for_cookies));
+}
+
+TEST_F(URLLoaderTest, BlockOnlyThirdPartyCookies) {
+  MockNetworkServiceClient network_service_client;
+
+  GURL site_for_cookies("http://www.example.com.test/");
+  GURL first_party_url(site_for_cookies);
+  GURL third_party_url("http://www.some.other.origin.test/");
+
+  ResourceRequest request = CreateResourceRequest("GET", first_party_url);
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = kProcessId;
+  params.is_corb_enabled = false;
+  std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
+      context(), &network_service_client,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionBlockThirdPartyCookies,
+      request, client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
+      &params, 0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+
+  EXPECT_TRUE(url_loader->AllowCookies(first_party_url, site_for_cookies));
+  EXPECT_FALSE(url_loader->AllowCookies(third_party_url, site_for_cookies));
+}
+
+TEST_F(URLLoaderTest, AllowAllCookies) {
+  MockNetworkServiceClient network_service_client;
+
+  GURL site_for_cookies("http://www.example.com.test/");
+  GURL first_party_url(site_for_cookies);
+  GURL third_party_url("http://www.some.other.origin.test/");
+
+  ResourceRequest request = CreateResourceRequest("GET", first_party_url);
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = kProcessId;
+  params.is_corb_enabled = false;
+  std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
+      context(), &network_service_client,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+
+  EXPECT_TRUE(url_loader->AllowCookies(first_party_url, site_for_cookies));
+  EXPECT_TRUE(url_loader->AllowCookies(third_party_url, site_for_cookies));
 }
 #endif  // !defined(OS_IOS)
 

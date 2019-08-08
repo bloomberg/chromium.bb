@@ -6,17 +6,20 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_RIGID_TRANSFORM_H_
 
 #include <memory>
-#include <utility>
 
-#include "third_party/blink/renderer/core/geometry/dom_point_init.h"
-#include "third_party/blink/renderer/core/geometry/dom_point_read_only.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
 namespace blink {
 
-class XRRigidTransform : public ScriptWrappable {
+class DOMPointInit;
+class DOMPointReadOnly;
+class TransformationMatrix;
+
+// MODULES_EXPORT is required for unit tests using XRRigidTransform (currently
+// just xr_rigid_transform_test.cc) to build without linker errors.
+class MODULES_EXPORT XRRigidTransform : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -29,9 +32,12 @@ class XRRigidTransform : public ScriptWrappable {
   XRRigidTransform(DOMPointInit*, DOMPointInit*);
   static XRRigidTransform* Create(DOMPointInit*, DOMPointInit*);
 
+  ~XRRigidTransform() override = default;
+
   DOMPointReadOnly* position() const { return position_; }
   DOMPointReadOnly* orientation() const { return orientation_; }
   DOMFloat32Array* matrix();
+  XRRigidTransform* inverse();
 
   TransformationMatrix InverseTransformMatrix();
   TransformationMatrix TransformMatrix();  // copies matrix_
@@ -45,6 +51,7 @@ class XRRigidTransform : public ScriptWrappable {
   Member<DOMPointReadOnly> position_;
   Member<DOMPointReadOnly> orientation_;
   std::unique_ptr<TransformationMatrix> matrix_;
+  std::unique_ptr<TransformationMatrix> inv_matrix_;
 };
 
 }  // namespace blink

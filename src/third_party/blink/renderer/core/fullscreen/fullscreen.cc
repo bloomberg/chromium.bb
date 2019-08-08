@@ -239,8 +239,9 @@ bool AllowedToRequestFullscreen(Document& document) {
   String message = ExceptionMessages::FailedToExecute(
       "requestFullscreen", "Element",
       "API can only be initiated by a user gesture.");
-  document.AddConsoleMessage(ConsoleMessage::Create(
-      kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
+  document.AddConsoleMessage(
+      ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                             mojom::ConsoleMessageLevel::kWarning, message));
 
   return false;
 }
@@ -578,7 +579,7 @@ ScriptPromise Fullscreen::RequestFullscreen(Element& pending,
   if (script_state) {
     // We should only be creating promises for unprefixed variants.
     DCHECK_EQ(Fullscreen::RequestType::kUnprefixed, request_type);
-    resolver = ScriptPromiseResolver::Create(script_state);
+    resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   }
 
   bool for_cross_process_descendant =
@@ -789,7 +790,7 @@ ScriptPromise Fullscreen::ExitFullscreen(Document& doc,
   }
 
   if (script_state)
-    resolver = ScriptPromiseResolver::Create(script_state);
+    resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
   // 3. Let |resize| be false.
   bool resize = false;

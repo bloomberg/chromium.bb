@@ -25,10 +25,6 @@ class CORE_EXPORT TrustedTypePolicyFactory final : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(TrustedTypePolicyFactory);
 
  public:
-  static TrustedTypePolicyFactory* Create(ExecutionContext* context) {
-    return MakeGarbageCollected<TrustedTypePolicyFactory>(context);
-  }
-
   explicit TrustedTypePolicyFactory(ExecutionContext*);
 
   // TrustedTypePolicyFactory.idl
@@ -57,7 +53,7 @@ class CORE_EXPORT TrustedTypePolicyFactory final : public ScriptWrappable,
   const WrapperTypeInfo* GetWrapperTypeInfoFromScriptValue(ScriptState*,
                                                            const ScriptValue&);
 
-  HeapHashMap<String, TraceWrapperMember<TrustedTypePolicy>> policy_map_;
+  HeapHashMap<String, Member<TrustedTypePolicy>> policy_map_;
 
   bool hadAssignmentError = false;
 };

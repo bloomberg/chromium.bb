@@ -158,13 +158,10 @@ class OmniboxEditModel {
   // either the user is not editing or the edit does not have focus.
   bool ResetDisplayTexts();
 
-  // Returns the URL corresponding to the permanent text.
-  GURL PermanentURL() const;
-
   // Returns the permanent display text for the current page and Omnibox state.
   base::string16 GetPermanentDisplayText() const;
 
-  // Sets the user_text_ to |text|.
+  // Sets the user_text_ to |text|. Also enters user-input-in-progress mode.
   void SetUserText(const base::string16& text);
 
   // If the omnibox is currently displaying elided text, this method will
@@ -411,7 +408,8 @@ class OmniboxEditModel {
   // Virtual for testing.
   virtual bool PopupIsOpen() const;
 
-  // Called whenever user_text_ should change.
+  // An internal method to set the user text. Notably, this differs from
+  // SetUserText because it does not change the user-input-in-progress state.
   void InternalSetUserText(const base::string16& text);
 
   // Conversion between user text and display text. User text is the text the
@@ -514,7 +512,10 @@ class OmniboxEditModel {
   bool user_input_in_progress_;
 
   // The text that the user has entered.  This does not include inline
-  // autocomplete text that has not yet been accepted.
+  // autocomplete text that has not yet been accepted.  |user_text_| can
+  // contain a string without |user_input_in_progress_| being true.
+  // For instance, this is the case when the user has unelided a URL without
+  // modifying its contents.
   base::string16 user_text_;
 
   // We keep track of when the user last focused on the omnibox.
@@ -567,11 +568,6 @@ class OmniboxEditModel {
   // and the popup is closed and "goog" is replaced by the permanent display
   // URL, which is the URL of the current page.
   //
-  // original_url_ is only valid when there is temporary text, and is used as
-  // the unique identifier of the originally selected item.  Thus, if the user
-  // arrows to a different item with the same text, we can still distinguish
-  // them and not revert all the way to the permanent display URL.
-  //
   // original_user_text_with_keyword_ tracks the user_text_ before keywords are
   // removed. When accepting a keyword (from either a default match or another
   // lower in the dropdown), the user_text_ is destructively trimmed of its 1st
@@ -581,7 +577,6 @@ class OmniboxEditModel {
   // original_user_text_with_keyword_ is null if a keyword has not been
   // accepted.
   bool has_temporary_text_;
-  GURL original_url_;
   base::string16 original_user_text_with_keyword_;
 
   // When the user's last action was to paste, we disallow inline autocomplete

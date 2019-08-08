@@ -114,24 +114,5 @@ def GetBootImage(output_dir, target_arch):
   return image_dest_path
 
 
-def GetNodeName(output_dir):
-  """Returns the cached Zircon node name, or generates one if it doesn't
-  already exist. The node name is used by Discover to find the prior
-  deployment on the LAN."""
-
-  nodename_file = os.path.join(output_dir, 'nodename')
-  if not os.path.exists(nodename_file):
-    nodename = uuid.uuid4()
-    f = open(nodename_file, 'w')
-    f.write(str(nodename))
-    f.flush()
-    f.close()
-    return str(nodename)
-  else:
-    f = open(nodename_file, 'r')
-    return f.readline()
-
-
 def GetKernelArgs(output_dir):
-  return ['devmgr.epoch=%d' % time.time(),
-          'zircon.nodename=' + GetNodeName(output_dir)]
+  return ['devmgr.epoch=%d' % time.time()]

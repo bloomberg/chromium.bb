@@ -30,9 +30,8 @@ public class SuggestionListProperties {
             SUGGESTION_MODELS = new WritableObjectPropertyKey<>(true);
 
     /** Whether the suggestion list should have a dark background. */
-    public static final WritableBooleanPropertyKey USE_DARK_BACKGROUND =
-            new WritableBooleanPropertyKey();
+    public static final WritableBooleanPropertyKey IS_INCOGNITO = new WritableBooleanPropertyKey();
 
     public static final PropertyKey[] ALL_KEYS =
-            new PropertyKey[] {VISIBLE, EMBEDDER, SUGGESTION_MODELS, USE_DARK_BACKGROUND};
+            new PropertyKey[] {VISIBLE, EMBEDDER, SUGGESTION_MODELS, IS_INCOGNITO};
 }

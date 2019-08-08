@@ -82,8 +82,10 @@ public class SectionTitleViewHolder extends ListItemViewHolder implements ListMe
         mTitle.setVisibility((sectionItem.showTitle ? View.VISIBLE : View.GONE));
         if (mMore != null) mMore.setVisibility(sectionItem.showMenu ? View.VISIBLE : View.GONE);
 
-        mHasMultipleItems = sectionItem.items.size() > 1;
-        mCanSelectItems = !getCompletedItems(sectionItem.items).isEmpty();
+        if (sectionItem.items != null) {
+            mHasMultipleItems = sectionItem.items.size() > 1;
+            mCanSelectItems = !getCompletedItems(sectionItem.items).isEmpty();
+        }
 
         if (sectionItem.showMenu && mMore != null) {
             assert sectionItem.items.size() > 0;

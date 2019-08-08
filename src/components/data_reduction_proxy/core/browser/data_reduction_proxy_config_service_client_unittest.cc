@@ -18,6 +18,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -28,6 +29,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
@@ -83,10 +85,18 @@ namespace data_reduction_proxy {
 
 class DataReductionProxyConfigServiceClientTest : public testing::Test {
  protected:
-  DataReductionProxyConfigServiceClientTest()
+  DataReductionProxyConfigServiceClientTest(
+      bool enable_aggressive_config_fetch_feature = false)
       : test_shared_url_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {
+    if (enable_aggressive_config_fetch_feature) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kDataReductionProxyAggressiveConfigFetch);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kDataReductionProxyAggressiveConfigFetch);
+    }
     // TODO(tonikitoo): Do a clean up pass to remove unneeded class members
     // once the URLFetcher->SimpleURLLoader switch stabalizes.
     // This includes |context_|, |context_storage_|, |mock_socket_factory_|,
@@ -151,39 +161,34 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     // Set up the various test ClientConfigs.
     ClientConfig config = CreateConfig(
         kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
-        ProxyServer_ProxyScheme_HTTPS, "origin.net", 443, ProxyServer::CORE,
-        ProxyServer_ProxyScheme_HTTP, "fallback.net", 80,
-        ProxyServer::UNSPECIFIED_TYPE, 0.5f, false);
+        ProxyServer_ProxyScheme_HTTPS, "origin.net", 443,
+        ProxyServer_ProxyScheme_HTTP, "fallback.net", 80, 0.5f, false);
     config.SerializeToString(&config_);
     encoded_config_ = EncodeConfig(config);
 
     ClientConfig previous_config = CreateConfig(
         kOldSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
-        ProxyServer_ProxyScheme_HTTPS, "old.origin.net", 443, ProxyServer::CORE,
-        ProxyServer_ProxyScheme_HTTP, "old.fallback.net", 80,
-        ProxyServer::UNSPECIFIED_TYPE, 0.0f, false);
+        ProxyServer_ProxyScheme_HTTPS, "old.origin.net", 443,
+        ProxyServer_ProxyScheme_HTTP, "old.fallback.net", 80, 0.0f, false);
     previous_config.SerializeToString(&previous_config_);
 
     ClientConfig persisted = CreateConfig(
         kPersistedSessionKey, kConfigRefreshDurationSeconds, 0,
-        ProxyServer_ProxyScheme_HTTPS, "persisted.net", 443, ProxyServer::CORE,
-        ProxyServer_ProxyScheme_HTTP, "persisted.net", 80,
-        ProxyServer::UNSPECIFIED_TYPE, 0.0f, false);
+        ProxyServer_ProxyScheme_HTTPS, "persisted.net", 443,
+        ProxyServer_ProxyScheme_HTTP, "persisted.net", 80, 0.0f, false);
     loaded_config_ = EncodeConfig(persisted);
 
     ClientConfig zero_reporting_fraction_config = CreateConfig(
         kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
-        ProxyServer_ProxyScheme_HTTPS, "origin.net", 443, ProxyServer::CORE,
-        ProxyServer_ProxyScheme_HTTP, "origin.net", 0,
-        ProxyServer::UNSPECIFIED_TYPE, 0.0f, false);
+        ProxyServer_ProxyScheme_HTTPS, "origin.net", 443,
+        ProxyServer_ProxyScheme_HTTP, "origin.net", 0, 0.0f, false);
     zero_reporting_fraction_encoded_config_ =
         EncodeConfig(zero_reporting_fraction_config);
 
     ClientConfig one_reporting_fraction_config =
         CreateConfig(kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
-                     ProxyServer_ProxyScheme_HTTPS, "", 443, ProxyServer::CORE,
-                     ProxyServer_ProxyScheme_HTTP, "", 0,
-                     ProxyServer::UNSPECIFIED_TYPE, 1.0f, false);
+                     ProxyServer_ProxyScheme_HTTPS, "", 443,
+                     ProxyServer_ProxyScheme_HTTP, "", 0, 1.0f, false);
     one_reporting_fraction_encoded_config_ =
         EncodeConfig(one_reporting_fraction_config);
 
@@ -192,25 +197,22 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     // set.
     ClientConfig empty_reporting_fraction_config = CreateConfig(
         kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
-        ProxyServer_ProxyScheme_HTTPS, "origin.net", 443, ProxyServer::CORE,
-        ProxyServer_ProxyScheme_HTTP, "origin.net", 0,
-        ProxyServer::UNSPECIFIED_TYPE, -1.0f, false);
+        ProxyServer_ProxyScheme_HTTPS, "origin.net", 443,
+        ProxyServer_ProxyScheme_HTTP, "origin.net", 0, -1.0f, false);
     empty_reporting_fraction_encoded_config_ =
         EncodeConfig(empty_reporting_fraction_config);
 
     ClientConfig half_reporting_fraction_config = CreateConfig(
         kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
-        ProxyServer_ProxyScheme_HTTPS, "origin.net", 443, ProxyServer::CORE,
-        ProxyServer_ProxyScheme_HTTP, "origin.net", 0,
-        ProxyServer::UNSPECIFIED_TYPE, 0.5f, false);
+        ProxyServer_ProxyScheme_HTTPS, "origin.net", 443,
+        ProxyServer_ProxyScheme_HTTP, "origin.net", 0, 0.5f, false);
     half_reporting_fraction_encoded_config_ =
         EncodeConfig(half_reporting_fraction_config);
 
-    ClientConfig ignore_black_list_config = CreateConfig(
-        kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
-        ProxyServer_ProxyScheme_HTTPS, "origin.net", 443, ProxyServer::CORE,
-        ProxyServer_ProxyScheme_HTTP, "origin.net", 0,
-        ProxyServer::UNSPECIFIED_TYPE, 0.5f, true);
+    ClientConfig ignore_black_list_config =
+        CreateConfig(kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
+                     ProxyServer_ProxyScheme_HTTPS, "origin.net", 443,
+                     ProxyServer_ProxyScheme_HTTP, "origin.net", 0, 0.5f, true);
     ignore_black_list_encoded_config_ = EncodeConfig(ignore_black_list_config);
 
     ClientConfig no_proxies_config;
@@ -246,16 +248,13 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
   void VerifyRemoteSuccess(bool expect_secure_proxies) {
     std::vector<DataReductionProxyServer> expected_http_proxies;
     if (expect_secure_proxies) {
-      expected_http_proxies.push_back(DataReductionProxyServer(
-          net::ProxyServer(net::ProxyServer::SCHEME_HTTPS,
-                           net::HostPortPair("origin.net", 443),
-                           true /* is_trusted_proxy */),
-          ProxyServer::CORE));
+      expected_http_proxies.push_back(DataReductionProxyServer(net::ProxyServer(
+          net::ProxyServer::SCHEME_HTTPS, net::HostPortPair("origin.net", 443),
+          true /* is_trusted_proxy */)));
     }
-    expected_http_proxies.push_back(DataReductionProxyServer(
-        net::ProxyServer::FromURI(kSuccessFallback,
-                                  net::ProxyServer::SCHEME_HTTP),
-        ProxyServer::UNSPECIFIED_TYPE));
+    expected_http_proxies.push_back(
+        DataReductionProxyServer(net::ProxyServer::FromURI(
+            kSuccessFallback, net::ProxyServer::SCHEME_HTTP)));
 
     EXPECT_EQ(base::TimeDelta::FromSeconds(kConfigRefreshDurationSeconds),
               config_client()->GetDelay());
@@ -277,10 +276,10 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
                     ->proxies_for_http()
                     .at(0)
                     .IsCoreProxy());
-    EXPECT_FALSE(test_context_->mutable_config_values()
-                     ->proxies_for_http()
-                     .at(1)
-                     .IsCoreProxy());
+    EXPECT_TRUE(test_context_->mutable_config_values()
+                    ->proxies_for_http()
+                    .at(1)
+                    .IsCoreProxy());
     EXPECT_TRUE(test_context_->mutable_config_values()
                     ->proxies_for_http()
                     .at(0)
@@ -296,12 +295,10 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     expected_http_proxies.push_back(DataReductionProxyServer(
         net::ProxyServer(net::ProxyServer::SCHEME_HTTPS,
                          net::HostPortPair("old.origin.net", 443),
-                         true /* is_trusted_proxy */),
-        ProxyServer::CORE));
-    expected_http_proxies.push_back(DataReductionProxyServer(
-        net::ProxyServer::FromURI(kOldSuccessFallback,
-                                  net::ProxyServer::SCHEME_HTTP),
-        ProxyServer::UNSPECIFIED_TYPE));
+                         true /* is_trusted_proxy */)));
+    expected_http_proxies.push_back(
+        DataReductionProxyServer(net::ProxyServer::FromURI(
+            kOldSuccessFallback, net::ProxyServer::SCHEME_HTTP)));
 
     EXPECT_EQ(base::TimeDelta::FromSeconds(kConfigRefreshDurationSeconds),
               config_client()->GetDelay());
@@ -311,19 +308,16 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     EXPECT_EQ(kOldSuccessSessionKey, request_options()->GetSecureSession());
 
     // Verify that the data reduction proxy servers are correctly set.
-    // The first proxy must have type CORE. The second proxy must have type
-    // UNSPECIFIED_TYPE since these are the types specified in the encoded
-    // configs.
     ASSERT_EQ(
         2U, test_context_->mutable_config_values()->proxies_for_http().size());
     EXPECT_TRUE(test_context_->mutable_config_values()
                     ->proxies_for_http()
                     .at(0)
                     .IsCoreProxy());
-    EXPECT_FALSE(test_context_->mutable_config_values()
-                     ->proxies_for_http()
-                     .at(1)
-                     .IsCoreProxy());
+    EXPECT_TRUE(test_context_->mutable_config_values()
+                    ->proxies_for_http()
+                    .at(1)
+                    .IsCoreProxy());
   }
 
   void VerifySuccessWithLoadedConfig(bool expect_secure_proxies) {
@@ -332,32 +326,27 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
       expected_http_proxies.push_back(DataReductionProxyServer(
           net::ProxyServer(net::ProxyServer::SCHEME_HTTPS,
                            net::HostPortPair("persisted.net", 443),
-                           true /* is_trusted_proxy */),
-          ProxyServer::CORE));
+                           true /* is_trusted_proxy */)));
     }
-    expected_http_proxies.push_back(DataReductionProxyServer(
-        net::ProxyServer::FromURI(kPersistedFallback,
-                                  net::ProxyServer::SCHEME_HTTP),
-        ProxyServer::UNSPECIFIED_TYPE));
+    expected_http_proxies.push_back(
+        DataReductionProxyServer(net::ProxyServer::FromURI(
+            kPersistedFallback, net::ProxyServer::SCHEME_HTTP)));
     EXPECT_EQ(DataReductionProxyServer::ConvertToNetProxyServers(
                   expected_http_proxies),
               GetConfiguredProxiesForHttp());
     EXPECT_EQ(kPersistedSessionKey, request_options()->GetSecureSession());
 
     // Verify that the data reduction proxy servers are correctly set.
-    // The first proxy must have type CORE. The second proxy must have type
-    // UNSPECIFIED_TYPE since these are the types specified in the encoded
-    // configs.
     ASSERT_EQ(
         2U, test_context_->mutable_config_values()->proxies_for_http().size());
     EXPECT_TRUE(test_context_->mutable_config_values()
                     ->proxies_for_http()
                     .at(0)
                     .IsCoreProxy());
-    EXPECT_FALSE(test_context_->mutable_config_values()
-                     ->proxies_for_http()
-                     .at(1)
-                     .IsCoreProxy());
+    EXPECT_TRUE(test_context_->mutable_config_values()
+                    ->proxies_for_http()
+                    .at(1)
+                    .IsCoreProxy());
   }
 
   TestDataReductionProxyConfigServiceClient* config_client() {
@@ -445,6 +434,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   base::test::ScopedTaskEnvironment task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<net::TestURLRequestContext> context_;
@@ -529,7 +519,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, EnsureBackoff) {
   config_client()->RetrieveConfig();
   RunUntilIdle();
   EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
-  EXPECT_EQ(base::TimeDelta::FromSeconds(20), config_client()->GetDelay());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(30), config_client()->GetDelay());
 
 #if defined(OS_ANDROID)
   EXPECT_FALSE(config_client()->foreground_fetch_pending());
@@ -539,7 +529,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, EnsureBackoff) {
   config_client()->RetrieveConfig();
   RunUntilIdle();
   EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
-  EXPECT_EQ(base::TimeDelta::FromSeconds(40), config_client()->GetDelay());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(90), config_client()->GetDelay());
   EXPECT_TRUE(persisted_config().empty());
   EXPECT_TRUE(persisted_config_retrieval_time().is_null());
 
@@ -604,13 +594,10 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
 #endif
 
   std::vector<DataReductionProxyServer> http_proxies;
-  http_proxies.push_back(DataReductionProxyServer(
-      net::ProxyServer::FromURI(kSuccessOrigin, net::ProxyServer::SCHEME_HTTP),
-      ProxyServer::CORE));
-  http_proxies.push_back(DataReductionProxyServer(
-      net::ProxyServer::FromURI(kSuccessFallback,
-                                net::ProxyServer::SCHEME_HTTP),
-      ProxyServer::CORE));
+  http_proxies.push_back(DataReductionProxyServer(net::ProxyServer::FromURI(
+      kSuccessOrigin, net::ProxyServer::SCHEME_HTTP)));
+  http_proxies.push_back(DataReductionProxyServer(net::ProxyServer::FromURI(
+      kSuccessFallback, net::ProxyServer::SCHEME_HTTP)));
 
   // Secure check failed.
   TestingPrefServiceSimple test_prefs;
@@ -641,7 +628,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   config_client()->RetrieveConfig();
   RunUntilIdle();
   EXPECT_EQ(1, config_client()->failed_attempts_before_success());
-  EXPECT_EQ(base::TimeDelta::FromSeconds(20), config_client()->GetDelay());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(30), config_client()->GetDelay());
   EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   EXPECT_TRUE(request_options()->GetSecureSession().empty());
 
@@ -686,8 +673,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChange) {
     }
 
     // Verify that the backoff increased exponentially.
-    EXPECT_EQ(base::TimeDelta::FromSeconds(320),
-              config_client()->GetDelay());  // 320 = 20 * 2^(5-1)
+    EXPECT_EQ(base::TimeDelta::FromSeconds(2430),
+              config_client()->GetDelay());  // 2430 = 30 * 3^(5-1)
     EXPECT_EQ(kFailureCount, config_client()->GetBackoffErrorCount());
 
     // IP address change should reset.
@@ -729,8 +716,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   }
 
   // Verify that the backoff increased exponentially.
-  EXPECT_EQ(base::TimeDelta::FromSeconds(320),
-            config_client()->GetDelay());  // 320 = 20 * 2^(5-1)
+  EXPECT_EQ(base::TimeDelta::FromSeconds(2430),
+            config_client()->GetDelay());  // 2430 = 30 * 3^(5-1)
   EXPECT_EQ(kFailureCount, config_client()->GetBackoffErrorCount());
 
   // IP address change should reset.
@@ -748,13 +735,10 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   VerifyRemoteSuccess(true);
 
   std::vector<DataReductionProxyServer> http_proxies;
-  http_proxies.push_back(DataReductionProxyServer(
-      net::ProxyServer::FromURI(kSuccessOrigin, net::ProxyServer::SCHEME_HTTP),
-      ProxyServer::CORE));
-  http_proxies.push_back(DataReductionProxyServer(
-      net::ProxyServer::FromURI(kSuccessFallback,
-                                net::ProxyServer::SCHEME_HTTP),
-      ProxyServer::CORE));
+  http_proxies.push_back(DataReductionProxyServer(net::ProxyServer::FromURI(
+      kSuccessOrigin, net::ProxyServer::SCHEME_HTTP)));
+  http_proxies.push_back(DataReductionProxyServer(net::ProxyServer::FromURI(
+      kSuccessFallback, net::ProxyServer::SCHEME_HTTP)));
 
   // Secure check failed.
   TestingPrefServiceSimple test_prefs;
@@ -1258,9 +1242,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest, ApplyClientConfigOverride) {
   std::string encoded_config;
   ClientConfig config = CreateConfig(
       override_key, kConfigRefreshDurationSeconds, 0,
-      ProxyServer_ProxyScheme_HTTPS, "origin.net", 443, ProxyServer::CORE,
-      ProxyServer_ProxyScheme_HTTP, "fallback.net", 80,
-      ProxyServer::UNSPECIFIED_TYPE, 0.5f, false);
+      ProxyServer_ProxyScheme_HTTPS, "origin.net", 443,
+      ProxyServer_ProxyScheme_HTTP, "fallback.net", 80, 0.5f, false);
   config.SerializeToString(&encoded_config);
   base::Base64Encode(encoded_config, &encoded_config);
 
@@ -1465,12 +1448,12 @@ TEST_F(DataReductionProxyConfigServiceClientTest, FetchConfigOnForeground) {
     EXPECT_FALSE(config_client()->foreground_fetch_pending());
     histogram_tester.ExpectTotalCount(
         "DataReductionProxy.ConfigService.FetchLatency", 0);
-    EXPECT_EQ(base::TimeDelta::FromSeconds(20), config_client()->GetDelay());
+    EXPECT_EQ(base::TimeDelta::FromSeconds(30), config_client()->GetDelay());
     config_client()->TriggerApplicationStatusToForeground();
     RunUntilIdle();
     histogram_tester.ExpectTotalCount(
         "DataReductionProxy.ConfigService.FetchLatency", 0);
-    EXPECT_EQ(base::TimeDelta::FromSeconds(20), config_client()->GetDelay());
+    EXPECT_EQ(base::TimeDelta::FromSeconds(30), config_client()->GetDelay());
   }
 
   {
@@ -1498,6 +1481,55 @@ TEST_F(DataReductionProxyConfigServiceClientTest, FetchConfigOnForeground) {
     VerifyRemoteSuccess(true);
   }
 }
+
+class DataReductionProxyAggressiveConfigServiceClientTest
+    : public DataReductionProxyConfigServiceClientTest {
+ public:
+  DataReductionProxyAggressiveConfigServiceClientTest()
+      : DataReductionProxyConfigServiceClientTest(true) {}
+};
+
+TEST_F(DataReductionProxyAggressiveConfigServiceClientTest,
+       AggressiveFetchConfigOnBackground) {
+  Init(true);
+  SetDataReductionProxyEnabled(true, true);
+
+  // Tests that config fetch failures while Chromium is in background, trigger
+  // refetches while still in background, and no refetch happens Chromium
+  // comes to foreground, when the aggressive client config fetch feature is
+  // enabled.
+  base::HistogramTester histogram_tester;
+  AddMockFailure();
+  AddMockFailure();
+  AddMockSuccess();
+  config_client()->set_application_state_background(true);
+  config_client()->RetrieveConfig();
+  RunUntilIdle();
+  // Three fetches are triggered in background without any backoff. First two
+  // fail, while the third succeeds.
+  EXPECT_EQ(base::TimeDelta::FromSeconds(0),
+            config_client()->GetBackoffTimeUntilRelease());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(kConfigRefreshDurationSeconds),
+            config_client()->GetDelay());
+  EXPECT_FALSE(config_client()->foreground_fetch_pending());
+  histogram_tester.ExpectTotalCount(
+      "DataReductionProxy.ConfigService.FetchLatency", 1);
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.ConfigService.FetchFailedAttemptsBeforeSuccess", 2,
+      1);
+
+  // No new fetch should happen when Chromium comes to foreground.
+  config_client()->set_application_state_background(false);
+  config_client()->TriggerApplicationStatusToForeground();
+  RunUntilIdle();
+  EXPECT_FALSE(config_client()->foreground_fetch_pending());
+  histogram_tester.ExpectTotalCount(
+      "DataReductionProxy.ConfigService.FetchLatency", 1);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(kConfigRefreshDurationSeconds),
+            config_client()->GetDelay());
+  VerifyRemoteSuccess(true);
+}
+
 #endif
 
 }  // namespace data_reduction_proxy

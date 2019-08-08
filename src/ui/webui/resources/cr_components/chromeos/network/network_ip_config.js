@@ -4,8 +4,7 @@
 
 /**
  * @fileoverview Polymer element for displaying the IP Config properties for
- * a network state. TODO(stevenjb): Allow editing of static IP configurations
- * when 'editable' is true.
+ * a network state.
  */
 Polymer({
   is: 'network-ip-config',
@@ -21,14 +20,6 @@ Polymer({
     networkProperties: {
       type: Object,
       observer: 'networkPropertiesChanged_',
-    },
-
-    /**
-     * Whether or not the IP Address can be edited.
-     */
-    editable: {
-      type: Boolean,
-      value: false,
     },
 
     /**
@@ -112,24 +103,14 @@ Polymer({
 
   /**
    * Checks whether IP address config type can be changed.
-   * @param {boolean} editable
    * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean} true only if 'IPAddressConfigType' as well as all other
    * IP address config related fields are editable.
    * @private
    */
-  canChangeIPConfigType_: function(editable, networkProperties) {
-    if (!editable) {
-      return false;
-    }
-    const controlledProps = [
-      'IPAddressConfigType', 'StaticIPConfig.IPAddress',
-      'StaticIPConfig.RoutingPrefix', 'StaticIPConfig.Gateway'
-    ];
-
-    return controlledProps.every(
-        setting =>
-            !this.isNetworkPolicyPathEnforced(networkProperties, setting));
+  canChangeIPConfigType_: function(networkProperties) {
+    return !this.isNetworkPolicyPathEnforced(
+        networkProperties, 'IPAddressConfigType');
   },
 
   /** @private */
@@ -222,17 +203,32 @@ Polymer({
   },
 
   /**
+   * @param {string} path path to a property inside of |networkProperties|
+   * dictionary.
+   * @return {string|undefined} Edit type to be used in network-property-list
+   * for the given path.
+   * @private
+   */
+  getIPFieldEditType_: function(path) {
+    return this.networkProperties &&
+            this.isNetworkPolicyPathEnforced(this.networkProperties, path) ?
+        undefined :
+        'String';
+  },
+
+  /**
    * @return {Object} An object with the edit type for each editable field.
    * @private
    */
   getIPEditFields_: function() {
-    if (!this.editable || this.automatic_) {
+    if (this.automatic_ || !this.networkProperties) {
       return {};
     }
     return {
-      'ipv4.IPAddress': 'String',
-      'ipv4.RoutingPrefix': 'String',
-      'ipv4.Gateway': 'String'
+      'ipv4.IPAddress': this.getIPFieldEditType_('StaticIPConfig.IPAddress'),
+      'ipv4.RoutingPrefix':
+          this.getIPFieldEditType_('StaticIPConfig.RoutingPrefix'),
+      'ipv4.Gateway': this.getIPFieldEditType_('StaticIPConfig.Gateway')
     };
   },
 

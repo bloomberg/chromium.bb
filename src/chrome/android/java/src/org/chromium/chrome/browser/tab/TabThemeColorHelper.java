@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tab;
 
+import android.graphics.Color;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.UserData;
@@ -21,6 +22,12 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
 
     private int mDefaultColor;
     private int mColor;
+
+    /**
+     * The default background color used for {@link #mTab} if the associate web content doesn't
+     * specify a background color.
+     */
+    private int mDefaultBackgroundColor;
 
     /** Whether or not the default color is used. */
     private boolean mIsDefaultColorUsed;
@@ -50,10 +57,16 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
         return get(tab).mIsDefaultColorUsed;
     }
 
+    /** @return Whether background color of the specified {@link Tab}. */
+    public static int getBackgroundColor(Tab tab) {
+        return get(tab).getBackgroundColor();
+    }
+
     private TabThemeColorHelper(Tab tab) {
         mTab = tab;
         mDefaultColor = calculateDefaultColor();
         mColor = calculateThemeColor(false);
+        updateDefaultBackgroundColor();
         tab.addObserver(this);
     }
 
@@ -67,10 +80,9 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
                 mTab.getContext().getResources(), mTab.isIncognito());
     }
 
-    void updateFromTabState(TabState state) {
-        mIsDefaultColorUsed = !state.hasThemeColor();
-        mColor = mIsDefaultColorUsed ? getDefaultColor() : state.getThemeColor();
-        updateIfNeeded(false);
+    private void updateDefaultBackgroundColor() {
+        mDefaultBackgroundColor =
+                ColorUtils.getPrimaryBackgroundColor(mTab.getContext().getResources(), false);
     }
 
     /**
@@ -127,13 +139,6 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
     }
 
     /**
-     * @return Whether the theme color for this tab is the default color.
-     */
-    public boolean isDefaultColor() {
-        return mTab.isNativePage() || mDefaultColor == getColor();
-    }
-
-    /**
      * @return The default theme color for this tab.
      */
     @VisibleForTesting
@@ -149,7 +154,32 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
         return mColor;
     }
 
+    /**
+     * Returns the background color of the associate web content of {@link #mTab}, or the default
+     * background color if the web content background color is not specified (i.e. transparent).
+     * See native WebContentsAndroid#GetBackgroundColor.
+     * @return The background color of {@link #mTab}.
+     */
+    public int getBackgroundColor() {
+        if (mTab.isNativePage()) return mTab.getNativePage().getBackgroundColor();
+
+        final int backgroundColor = mTab.getWebContents() != null
+                ? mTab.getWebContents().getBackgroundColor()
+                : Color.TRANSPARENT;
+        return backgroundColor == Color.TRANSPARENT ? mDefaultBackgroundColor : backgroundColor;
+    }
+
     // TabObserver
+
+    @Override
+    public void onInitialized(Tab tab, TabState tabState) {
+        if (tabState == null) return;
+
+        // Update from TabState.
+        mIsDefaultColorUsed = !tabState.hasThemeColor();
+        mColor = mIsDefaultColorUsed ? getDefaultColor() : tabState.getThemeColor();
+        updateIfNeeded(false);
+    }
 
     @Override
     public void onSSLStateUpdated(Tab tab) {
@@ -185,6 +215,7 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
     @Override
     public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
         updateDefaultColor();
+        updateDefaultBackgroundColor();
     }
 
     @Override

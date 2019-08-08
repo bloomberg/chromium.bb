@@ -44,13 +44,10 @@ class PLATFORM_EXPORT V0CustomElementBinding {
   USING_FAST_MALLOC(V0CustomElementBinding);
 
  public:
-  static std::unique_ptr<V0CustomElementBinding> Create(
-      v8::Isolate*,
-      v8::Local<v8::Object> prototype);
+  V0CustomElementBinding(v8::Isolate*, v8::Local<v8::Object> prototype);
   ~V0CustomElementBinding();
 
  private:
-  V0CustomElementBinding(v8::Isolate*, v8::Local<v8::Object> prototype);
   ScopedPersistent<v8::Object> prototype_;
 };
 

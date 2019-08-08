@@ -21,6 +21,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "content/browser/scheduler/browser_task_executor.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/content_browser_client.h"
 
@@ -252,6 +253,11 @@ BrowserThread::GetTaskRunnerForThread(ID identifier) {
   DCHECK(globals.task_runners[identifier]);
 
   return globals.task_runners[identifier];
+}
+
+// static
+void BrowserThread::RunAllPendingTasksOnThreadForTesting(ID identifier) {
+  BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(identifier);
 }
 
 }  // namespace content

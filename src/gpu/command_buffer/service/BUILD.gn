@@ -108,6 +108,8 @@ target(link_target_type, "gles2_sources") {
 
   sources = [
     "abstract_texture.h",
+    "abstract_texture_impl_shared_context_state.cc",
+    "abstract_texture_impl_shared_context_state.h",
     "buffer_manager.cc",
     "buffer_manager.h",
     "client_service_map.h",
@@ -257,11 +259,16 @@ target(link_target_type, "gles2_sources") {
     "webgpu_cmd_validation_implementation_autogen.h",
     "webgpu_decoder.cc",
     "webgpu_decoder.h",
-    "webgpu_decoder_impl.cc",
-    "webgpu_decoder_impl.h",
     "wrapped_sk_image.cc",
     "wrapped_sk_image.h",
   ]
+
+  if (use_dawn) {
+    sources += [
+      "webgpu_decoder_impl.cc",
+      "webgpu_decoder_impl.h",
+    ]
+  }
 
   configs += [
     "//build/config:precompiled_headers",
@@ -281,6 +288,7 @@ target(link_target_type, "gles2_sources") {
     "//gpu/command_buffer/common:raster_sources",
     "//gpu/command_buffer/common:webgpu_sources",
     "//skia",
+    "//third_party/dawn/src/dawn:dawn_headers",
   ]
   deps = [
     ":disk_cache_proto",
@@ -304,8 +312,13 @@ target(link_target_type, "gles2_sources") {
     "//ui/gfx/geometry",
     "//ui/gfx/ipc/color",
     "//ui/gl",
+    "//ui/gl:buildflags",
     "//ui/gl/init",
   ]
+
+  if (use_dawn) {
+    deps += [ "//third_party/dawn:libdawn_native" ]
+  }
 
   if (enable_vulkan) {
     deps += [
@@ -313,7 +326,7 @@ target(link_target_type, "gles2_sources") {
       "//gpu/vulkan",
     ]
 
-    if (is_linux) {
+    if (is_linux || is_fuchsia) {
       sources += [
         "external_vk_image_backing.cc",
         "external_vk_image_backing.h",

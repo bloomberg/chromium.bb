@@ -4,7 +4,6 @@
 
 #include "chrome/browser/apps/platform_apps/platform_app_launch.h"
 
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
@@ -43,12 +42,6 @@ bool GetAppLaunchContainer(Profile* profile,
   // preference is set, launch as a window.
   extensions::LaunchContainer launch_container = extensions::GetLaunchContainer(
       extensions::ExtensionPrefs::Get(profile), app);
-
-  if (!extensions::util::IsNewBookmarkAppsEnabled() &&
-      !extensions::HasPreferredLaunchContainer(
-          extensions::ExtensionPrefs::Get(profile), app)) {
-    launch_container = extensions::LAUNCH_CONTAINER_WINDOW;
-  }
 
   *out_app = app;
   *out_launch_container = launch_container;

@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/app_launcher_login_handler.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/buildflags.h"
@@ -51,6 +51,7 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/native_theme/native_theme.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -134,7 +135,9 @@ std::string GetNewTabBackgroundTilingCSS(
 }  // namespace
 
 NTPResourceCache::NTPResourceCache(Profile* profile)
-    : profile_(profile), is_swipe_tracking_from_scroll_events_enabled_(false) {
+    : profile_(profile),
+      is_swipe_tracking_from_scroll_events_enabled_(false),
+      theme_observer_(this) {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(profile)));
@@ -150,6 +153,8 @@ NTPResourceCache::NTPResourceCache(Profile* profile)
   profile_pref_change_registrar_.Add(prefs::kSignInPromoShowNTPBubble,
                                      callback);
   profile_pref_change_registrar_.Add(prefs::kHideWebStoreIcon, callback);
+
+  theme_observer_.Add(ui::NativeTheme::GetInstanceForNativeUi());
 }
 
 NTPResourceCache::~NTPResourceCache() {}
@@ -230,6 +235,11 @@ void NTPResourceCache::Observe(int type,
   Invalidate();
 }
 
+void NTPResourceCache::OnNativeThemeUpdated(ui::NativeTheme* updated_theme) {
+  DCHECK_EQ(updated_theme, ui::NativeTheme::GetInstanceForNativeUi());
+  Invalidate();
+}
+
 void NTPResourceCache::OnPreferenceChanged() {
   // A change occurred to one of the preferences we care about, so flush the
   // cache.
@@ -244,6 +254,7 @@ void NTPResourceCache::Invalidate() {
   new_tab_html_ = nullptr;
   new_tab_incognito_css_ = nullptr;
   new_tab_css_ = nullptr;
+  new_tab_guest_html_ = nullptr;
 }
 
 void NTPResourceCache::CreateNewTabIncognitoHTML() {
@@ -338,6 +349,8 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
       l10n_util::GetStringUTF16(guest_tab_link_ids));
   localized_strings.SetString("learnMoreLink", guest_tab_link);
 
+  SetDarkKey(&localized_strings);
+
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, &localized_strings);
 
@@ -391,6 +404,8 @@ void NTPResourceCache::CreateNewTabHTML() {
                            GetLocalizedString(IDS_APP_CONTEXT_MENU_SHOW_INFO));
   load_time_data.SetString("appcreateshortcut",
                            GetLocalizedString(IDS_NEW_TAB_APP_CREATE_SHORTCUT));
+  load_time_data.SetString("appinstalllocally",
+                           GetLocalizedString(IDS_NEW_TAB_APP_INSTALL_LOCALLY));
   load_time_data.SetString("appDefaultPageName",
                            GetLocalizedString(IDS_APP_DEFAULT_PAGE_NAME));
   load_time_data.SetString(
@@ -439,12 +454,6 @@ void NTPResourceCache::CreateNewTabHTML() {
   load_time_data.SetBoolean("showWebStoreIcon",
                             !prefs->GetBoolean(prefs::kHideWebStoreIcon));
 
-  load_time_data.SetBoolean("enableNewBookmarkApps",
-                            extensions::util::IsNewBookmarkAppsEnabled());
-
-  load_time_data.SetBoolean("canHostedAppsOpenInWindows",
-                            extensions::util::CanHostedAppsOpenInWindows());
-
   load_time_data.SetBoolean("canShowAppInfoDialog",
                             CanShowAppInfoDialog());
 
@@ -460,6 +469,8 @@ void NTPResourceCache::CreateNewTabHTML() {
   load_time_data.SetBoolean(
       "isUserSignedIn",
       IdentityManagerFactory::GetForProfile(profile_)->HasPrimaryAccount());
+
+  SetDarkKey(&load_time_data);
 
   // Load the new tab page appropriate for this build.
   base::StringPiece new_tab_html(
@@ -537,6 +548,8 @@ void NTPResourceCache::CreateNewTabCSS() {
   // Colors.
   substitutions["colorBackground"] =
       color_utils::SkColorToRgbaString(color_background);
+  substitutions["colorLink"] = color_utils::SkColorToRgbString(
+      GetThemeColor(tp, ThemeProperties::COLOR_NTP_LINK));
   substitutions["backgroundBarDetached"] = GetNewTabBackgroundCSS(tp, false);
   substitutions["backgroundBarAttached"] = GetNewTabBackgroundCSS(tp, true);
   substitutions["backgroundTiling"] = GetNewTabBackgroundTilingCSS(tp);
@@ -573,4 +586,12 @@ void NTPResourceCache::CreateNewTabCSS() {
   std::string css_string =
       ui::ReplaceTemplateExpressions(new_tab_theme_css, substitutions);
   new_tab_css_ = base::RefCountedString::TakeString(&css_string);
+}
+
+void NTPResourceCache::SetDarkKey(base::Value* dict) {
+  DCHECK(dict && dict->is_dict());
+  bool use_dark =
+      base::FeatureList::IsEnabled(features::kWebUIDarkMode) &&
+      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled();
+  dict->SetKey("dark", base::Value(use_dark ? "dark" : ""));
 }

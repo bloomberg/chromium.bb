@@ -37,21 +37,22 @@
 #include "net/socket/socket_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_scoped_task_environment.h"
-#include "net/third_party/quic/core/crypto/crypto_protocol.h"
-#include "net/third_party/quic/core/crypto/quic_decrypter.h"
-#include "net/third_party/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quic/core/http/spdy_utils.h"
-#include "net/third_party/quic/core/quic_connection.h"
-#include "net/third_party/quic/core/tls_client_handshaker.h"
-#include "net/third_party/quic/platform/api/quic_arraysize.h"
-#include "net/third_party/quic/platform/api/quic_string_piece.h"
-#include "net/third_party/quic/platform/api/quic_text_utils.h"
-#include "net/third_party/quic/test_tools/crypto_test_utils.h"
-#include "net/third_party/quic/test_tools/mock_clock.h"
-#include "net/third_party/quic/test_tools/mock_random.h"
-#include "net/third_party/quic/test_tools/quic_connection_peer.h"
-#include "net/third_party/quic/test_tools/quic_spdy_session_peer.h"
-#include "net/third_party/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
+#include "net/third_party/quiche/src/quic/core/crypto/null_decrypter.h"
+#include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
+#include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
+#include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
+#include "net/third_party/quiche/src/quic/core/quic_connection.h"
+#include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_arraysize.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
+#include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
+#include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
+#include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
+#include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
+#include "net/third_party/quiche/src/quic/test_tools/quic_spdy_session_peer.h"
+#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -501,6 +502,11 @@ class BidirectionalStreamQuicImplTest
         true /* owns_writer */, quic::Perspective::IS_CLIENT,
         quic::test::SupportedVersions(
             quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO, version_)));
+    if (connection_->version().KnowsWhichDecrypterToUse()) {
+      connection_->InstallDecrypter(quic::ENCRYPTION_FORWARD_SECURE,
+                                    quic::QuicMakeUnique<quic::NullDecrypter>(
+                                        quic::Perspective::IS_CLIENT));
+    }
     base::TimeTicks dns_end = base::TimeTicks::Now();
     base::TimeTicks dns_start = dns_end - base::TimeDelta::FromMilliseconds(1);
 
@@ -819,14 +825,14 @@ class BidirectionalStreamQuicImplTest
     return quic::test::GetNthClientInitiatedBidirectionalStreamId(version_, n);
   }
 
-  quic::QuicString ConstructDataHeader(size_t body_len) {
+  std::string ConstructDataHeader(size_t body_len) {
     if (version_ != quic::QUIC_VERSION_99) {
       return "";
     }
     quic::HttpEncoder encoder;
     std::unique_ptr<char[]> buffer;
     auto header_length = encoder.SerializeDataFrameHeader(body_len, &buffer);
-    return quic::QuicString(buffer.get(), header_length);
+    return std::string(buffer.get(), header_length);
   }
 
  protected:
@@ -919,7 +925,7 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
   const char kResponseBody[] = "Hello world!";
   // Server sends data.
-  quic::QuicString header = ConstructDataHeader(strlen(kResponseBody));
+  std::string header = ConstructDataHeader(strlen(kResponseBody));
   ProcessPacket(ConstructServerDataPacket(3, !kIncludeVersion, !kFin, 0,
                                           header + kResponseBody));
   EXPECT_EQ(12, cb.WaitForResult());
@@ -1053,8 +1059,8 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
   AddWrite(ConstructInitialSettingsPacket(1, &header_stream_offset));
   const char kBody1[] = "here are some data";
   const char kBody2[] = "data keep coming";
-  quic::QuicString header = ConstructDataHeader(strlen(kBody1));
-  quic::QuicString header2 = ConstructDataHeader(strlen(kBody2));
+  std::string header = ConstructDataHeader(strlen(kBody1));
+  std::string header2 = ConstructDataHeader(strlen(kBody2));
   std::vector<std::string> two_writes = {kBody1, kBody2};
   AddWrite(ConstructRequestHeadersPacketInner(
       2, GetNthClientInitiatedBidirectionalStreamId(0), !kFin, DEFAULT_PRIORITY,
@@ -1072,9 +1078,9 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
   const char kBody3[] = "hello there";
   const char kBody4[] = "another piece of small data";
   const char kBody5[] = "really small";
-  quic::QuicString header3 = ConstructDataHeader(strlen(kBody3));
-  quic::QuicString header4 = ConstructDataHeader(strlen(kBody4));
-  quic::QuicString header5 = ConstructDataHeader(strlen(kBody5));
+  std::string header3 = ConstructDataHeader(strlen(kBody3));
+  std::string header4 = ConstructDataHeader(strlen(kBody4));
+  std::string header5 = ConstructDataHeader(strlen(kBody5));
   quic::QuicStreamOffset data_offset =
       strlen(kBody1) + strlen(kBody2) + header.length() + header2.length();
   if (version_ != quic::QUIC_VERSION_99) {
@@ -1136,7 +1142,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
   const char kResponseBody[] = "Hello world!";
-  quic::QuicString header6 = ConstructDataHeader(strlen(kResponseBody));
+  std::string header6 = ConstructDataHeader(strlen(kResponseBody));
   // Server sends data.
   ProcessPacket(ConstructServerDataPacket(3, !kIncludeVersion, !kFin, 0,
                                           header6 + kResponseBody));
@@ -1193,7 +1199,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   quic::QuicStreamOffset header_stream_offset = 0;
   AddWrite(ConstructInitialSettingsPacket(1, &header_stream_offset));
   const char kBody1[] = "here are some data";
-  quic::QuicString header = ConstructDataHeader(strlen(kBody1));
+  std::string header = ConstructDataHeader(strlen(kBody1));
   if (version_ == quic::QUIC_VERSION_99) {
     AddWrite(ConstructRequestHeadersAndMultipleDataFramesPacket(
         2, !kFin, DEFAULT_PRIORITY, &header_stream_offset,
@@ -1207,7 +1213,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   // Ack server's data packet.
   AddWrite(ConstructClientAckPacket(3, 3, 1, 2));
   const char kBody2[] = "really small";
-  quic::QuicString header2 = ConstructDataHeader(strlen(kBody2));
+  std::string header2 = ConstructDataHeader(strlen(kBody2));
   quic::QuicStreamOffset data_offset = strlen(kBody1) + header.length();
   if (version_ == quic::QUIC_VERSION_99) {
     AddWrite(ConstructClientMultipleDataFramesPacket(
@@ -1260,7 +1266,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
   const char kResponseBody[] = "Hello world!";
   // Server sends data.
-  quic::QuicString header3 = ConstructDataHeader(strlen(kResponseBody));
+  std::string header3 = ConstructDataHeader(strlen(kResponseBody));
   ProcessPacket(ConstructServerDataPacket(3, !kIncludeVersion, !kFin, 0,
                                           header3 + kResponseBody));
 
@@ -1310,8 +1316,8 @@ TEST_P(BidirectionalStreamQuicImplTest,
   AddWrite(ConstructInitialSettingsPacket(1, &header_stream_offset));
   const char kBody1[] = "here are some data";
   const char kBody2[] = "data keep coming";
-  quic::QuicString header = ConstructDataHeader(strlen(kBody1));
-  quic::QuicString header2 = ConstructDataHeader(strlen(kBody2));
+  std::string header = ConstructDataHeader(strlen(kBody1));
+  std::string header2 = ConstructDataHeader(strlen(kBody2));
 
   if (version_ == quic::QUIC_VERSION_99) {
     AddWrite(ConstructRequestHeadersAndMultipleDataFramesPacket(
@@ -1328,9 +1334,9 @@ TEST_P(BidirectionalStreamQuicImplTest,
   const char kBody3[] = "hello there";
   const char kBody4[] = "another piece of small data";
   const char kBody5[] = "really small";
-  quic::QuicString header3 = ConstructDataHeader(strlen(kBody3));
-  quic::QuicString header4 = ConstructDataHeader(strlen(kBody4));
-  quic::QuicString header5 = ConstructDataHeader(strlen(kBody5));
+  std::string header3 = ConstructDataHeader(strlen(kBody3));
+  std::string header4 = ConstructDataHeader(strlen(kBody4));
+  std::string header5 = ConstructDataHeader(strlen(kBody5));
   quic::QuicStreamOffset data_offset =
       strlen(kBody1) + strlen(kBody2) + header.length() + header2.length();
   if (version_ == quic::QUIC_VERSION_99) {
@@ -1387,7 +1393,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
   const char kResponseBody[] = "Hello world!";
-  quic::QuicString header6 = ConstructDataHeader(strlen(kResponseBody));
+  std::string header6 = ConstructDataHeader(strlen(kResponseBody));
   // Server sends data.
   ProcessPacket(ConstructServerDataPacket(3, !kIncludeVersion, !kFin, 0,
                                           header6 + kResponseBody));
@@ -1519,7 +1525,7 @@ TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
   AddWrite(ConstructRequestHeadersPacketInner(
       2, GetNthClientInitiatedBidirectionalStreamId(0), !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
-  quic::QuicString header = ConstructDataHeader(strlen(kUploadData));
+  std::string header = ConstructDataHeader(strlen(kUploadData));
   if (version_ == quic::QUIC_VERSION_99) {
     AddWrite(ConstructClientMultipleDataFramesPacket(3, kIncludeVersion, kFin,
                                                      0, {header, kUploadData}));
@@ -1571,7 +1577,7 @@ TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
   const char kResponseBody[] = "Hello world!";
-  quic::QuicString header2 = ConstructDataHeader(strlen(kResponseBody));
+  std::string header2 = ConstructDataHeader(strlen(kResponseBody));
   // Server sends data.
   ProcessPacket(ConstructServerDataPacket(3, !kIncludeVersion, !kFin, 0,
                                           header2 + kResponseBody));
@@ -1612,7 +1618,7 @@ TEST_P(BidirectionalStreamQuicImplTest, EarlyDataOverrideRequest) {
   AddWrite(ConstructRequestHeadersPacketInner(
       2, GetNthClientInitiatedBidirectionalStreamId(0), !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
-  quic::QuicString header = ConstructDataHeader(strlen(kUploadData));
+  std::string header = ConstructDataHeader(strlen(kUploadData));
   if (version_ == quic::QUIC_VERSION_99) {
     AddWrite(ConstructClientMultipleDataFramesPacket(3, kIncludeVersion, kFin,
                                                      0, {header, kUploadData}));
@@ -1666,7 +1672,7 @@ TEST_P(BidirectionalStreamQuicImplTest, EarlyDataOverrideRequest) {
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
   const char kResponseBody[] = "Hello world!";
   // Server sends data.
-  quic::QuicString header2 = ConstructDataHeader(strlen(kResponseBody));
+  std::string header2 = ConstructDataHeader(strlen(kResponseBody));
   ProcessPacket(ConstructServerDataPacket(3, !kIncludeVersion, !kFin, 0,
                                           header2 + kResponseBody));
 
@@ -1707,7 +1713,7 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
       2, GetNthClientInitiatedBidirectionalStreamId(0), !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
 
-  quic::QuicString header = ConstructDataHeader(strlen(kUploadData));
+  std::string header = ConstructDataHeader(strlen(kUploadData));
   if (version_ != quic::QUIC_VERSION_99) {
     AddWrite(ConstructAckAndDataPacket(3, !kIncludeVersion, 2, 1, 2, !kFin, 0,
                                        kUploadData, &client_maker_));
@@ -1744,9 +1750,9 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
   // Server sends the response headers.
   spdy::SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
   size_t spdy_response_headers_frame_length;
-  ProcessPacket(
-      ConstructResponseHeadersPacket(2, !kFin, std::move(response_headers),
-                                     &spdy_response_headers_frame_length, 0));
+  ProcessPacket(ConstructResponseHeadersPacket(
+      2, !kFin, std::move(response_headers),
+      &spdy_response_headers_frame_length, nullptr));
 
   delegate->WaitUntilNextCallback(kOnHeadersReceived);
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
@@ -1763,7 +1769,7 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   const char kResponseBody[] = "Hello world!";
 
-  quic::QuicString header2 = ConstructDataHeader(strlen(kResponseBody));
+  std::string header2 = ConstructDataHeader(strlen(kResponseBody));
   // Server sends a data packet.
   ProcessPacket(ConstructAckAndDataPacket(3, !kIncludeVersion, 2, 1, 1, !kFin,
                                           0, header2 + kResponseBody,
@@ -2117,9 +2123,9 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamAfterReadData) {
   // Server sends the response headers.
   spdy::SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
   size_t spdy_response_headers_frame_length;
-  ProcessPacket(
-      ConstructResponseHeadersPacket(2, !kFin, std::move(response_headers),
-                                     &spdy_response_headers_frame_length, 0));
+  ProcessPacket(ConstructResponseHeadersPacket(
+      2, !kFin, std::move(response_headers),
+      &spdy_response_headers_frame_length, nullptr));
 
   delegate->WaitUntilNextCallback(kOnHeadersReceived);
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
@@ -2235,7 +2241,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnDataRead) {
   int rv = delegate->ReadData(cb.callback());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   const char kResponseBody[] = "Hello world!";
-  quic::QuicString header = ConstructDataHeader(strlen(kResponseBody));
+  std::string header = ConstructDataHeader(strlen(kResponseBody));
   // Server sends data.
   ProcessPacket(ConstructServerDataPacket(3, !kIncludeVersion, !kFin, 0,
                                           header + kResponseBody));
@@ -2256,7 +2262,7 @@ TEST_P(BidirectionalStreamQuicImplTest, AsyncFinRead) {
   AddWrite(ConstructRequestHeadersPacketInner(
       2, GetNthClientInitiatedBidirectionalStreamId(0), !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
-  quic::QuicString header = ConstructDataHeader(strlen(kBody));
+  std::string header = ConstructDataHeader(strlen(kBody));
   if (version_ == quic::QUIC_VERSION_99) {
     AddWrite(ConstructClientMultipleDataFramesPacket(3, kIncludeVersion, kFin,
                                                      0, {header, kBody}));
@@ -2310,7 +2316,7 @@ TEST_P(BidirectionalStreamQuicImplTest, AsyncFinRead) {
   int rv = delegate->ReadData(cb.callback());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   const char kResponseBody[] = "Hello world!";
-  quic::QuicString header2 = ConstructDataHeader(strlen(kResponseBody));
+  std::string header2 = ConstructDataHeader(strlen(kResponseBody));
 
   // Server sends data with the fin set, which should result in the stream
   // being closed and hence no RST_STREAM will be sent.
@@ -2372,7 +2378,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
   const char kResponseBody[] = "Hello world!";
 
   // Server sends data.
-  quic::QuicString header = ConstructDataHeader(strlen(kResponseBody));
+  std::string header = ConstructDataHeader(strlen(kResponseBody));
   ProcessPacket(ConstructServerDataPacket(3, !kIncludeVersion, !kFin, 0,
                                           header + kResponseBody));
 

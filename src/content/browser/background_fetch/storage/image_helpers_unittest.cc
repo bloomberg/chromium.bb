@@ -15,7 +15,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
-
 namespace background_fetch {
 
 namespace {
@@ -88,5 +87,4 @@ TEST(BackgroundFetchImageHelpers, SerializeRoundTrip) {
 }  // namespace
 
 }  // namespace background_fetch
-
 }  // namespace content

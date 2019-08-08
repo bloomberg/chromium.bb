@@ -14,11 +14,16 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "pdf/buildflags.h"
+#include "printing/buildflags/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
 #if BUILDFLAG(ENABLE_PDF)
 #include "pdf/pdf_features.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#include "chrome/common/chrome_features.h"
 #endif
 
 // To add a new component to this API, simply:
@@ -120,6 +125,11 @@ void AddAdditionalDataForPdf(base::DictionaryValue* dict) {
   dict->SetKey("pdfAnnotationsEnabled",
                base::Value(base::FeatureList::IsEnabled(
                    chrome_pdf::features::kPDFAnnotations)));
+#endif
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  dict->SetKey("newPrintPreviewLayoutEnabled",
+               base::Value(base::FeatureList::IsEnabled(
+                   features::kNewPrintPreviewLayout)));
 #endif
 }
 

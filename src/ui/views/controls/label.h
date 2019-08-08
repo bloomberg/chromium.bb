@@ -189,6 +189,9 @@ class VIEWS_EXPORT Label : public View,
   // Get the text as displayed to the user, respecting the obscured flag.
   base::string16 GetDisplayTextForTesting();
 
+  // Get the text direction, as displayed to the user.
+  base::i18n::TextDirection GetTextDirectionForTesting();
+
   // Returns true if the label can be made selectable. For example, links do not
   // support text selection.
   // Subclasses should override this function in case they want to selectively
@@ -228,8 +231,7 @@ class VIEWS_EXPORT Label : public View,
   bool CanProcessEventsWithinSubtree() const override;
   WordLookupClient* GetWordLookupClient() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
+  base::string16 GetTooltipText(const gfx::Point& p) const override;
 
  protected:
   // Create a single RenderText instance to actually be painted.

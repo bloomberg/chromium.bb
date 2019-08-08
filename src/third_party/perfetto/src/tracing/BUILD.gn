@@ -45,6 +45,7 @@ source_set("tracing") {
     "core/inode_file_config.cc",
     "core/null_trace_writer.cc",
     "core/null_trace_writer.h",
+    "core/observable_events.cc",
     "core/packet_stream_validator.cc",
     "core/packet_stream_validator.h",
     "core/patch_list.h",
@@ -113,10 +114,10 @@ source_set("unittests") {
   # has no Windows implementation.
   if (!is_win) {
     sources += [
-      "core/service_impl_unittest.cc",
       "core/shared_memory_arbiter_impl_unittest.cc",
       "core/startup_trace_writer_unittest.cc",
       "core/trace_writer_impl_unittest.cc",
+      "core/tracing_service_impl_unittest.cc",
       "test/fake_producer_endpoint.h",
       "test/mock_consumer.cc",
       "test/mock_consumer.h",
@@ -151,30 +152,6 @@ if (perfetto_build_standalone || perfetto_build_with_android) {
     ]
     sources = [
       "api_impl/consumer_api_test.cc",
-    ]
-  }
-
-  # IPC transport: only consumer side
-  # TODO(fmayer): Remove duplication between this and ipc.
-  source_set("ipc_consumer") {
-    public_deps = [
-      "../../include/perfetto/tracing/core",
-      "../../include/perfetto/tracing/ipc",
-    ]
-    sources = [
-      "ipc/consumer/consumer_ipc_client_impl.cc",
-      "ipc/consumer/consumer_ipc_client_impl.h",
-      "ipc/default_socket.cc",
-      "ipc/default_socket.h",
-      "ipc/posix_shared_memory.cc",
-      "ipc/posix_shared_memory.h",
-    ]
-    deps = [
-      ":tracing",
-      "../../gn:default_deps",
-      "../../protos/perfetto/ipc",
-      "../base",
-      "../ipc",
     ]
   }
 

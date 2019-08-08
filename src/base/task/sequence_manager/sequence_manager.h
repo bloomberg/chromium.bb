@@ -65,9 +65,40 @@ class SequenceManager {
     // so we are making Settings move-only in preparation.
     Settings(Settings&& move_from) noexcept = default;
 
-    MessageLoop::Type message_loop_type = MessageLoop::Type::TYPE_DEFAULT;
+    MessageLoop::Type message_loop_type = MessageLoop::TYPE_DEFAULT;
     bool randomised_sampling_enabled = false;
     const TickClock* clock = DefaultTickClock::GetInstance();
+
+#if DCHECK_IS_ON()
+    // TODO(alexclarke): Consider adding command line flags to control these.
+    enum class TaskLogging {
+      kNone,
+      kEnabled,
+      kEnabledWithBacktrace,
+    };
+    TaskLogging task_execution_logging = TaskLogging::kNone;
+
+    // If true PostTask will emit a debug log.
+    bool log_post_task = false;
+
+    // If true debug logs will be emitted when a delayed task becomes eligible
+    // to run.
+    bool log_task_delay_expiry = false;
+
+    // Scheduler policy induced raciness is an area of concern. This lets us
+    // apply an extra delay per priority for cross thread posting.
+    TimeDelta
+        per_priority_cross_thread_task_delay[TaskQueue::kQueuePriorityCount];
+
+    // Like the above but for same thread posting.
+    TimeDelta
+        per_priority_same_thread_task_delay[TaskQueue::kQueuePriorityCount];
+
+    // If not zero this seeds a PRNG used by the task selection logic to choose
+    // a random TaskQueue for a given priority rather than the TaskQueue with
+    // the oldest EnqueueOrder.
+    int random_task_selection_seed = 0;
+#endif  // DCHECK_IS_ON()
 
     DISALLOW_COPY_AND_ASSIGN(Settings);
   };
@@ -78,12 +109,6 @@ class SequenceManager {
   // only be called once. Note that CreateSequenceManagerOnCurrentThread()
   // performs this initialization automatically.
   virtual void BindToCurrentThread() = 0;
-
-  // Finishes the initialization for a SequenceManager created via
-  // CreateUnboundSequenceManager(nullptr). Must not be called in any other
-  // circumstances. Note it's assumed |message_loop| outlives the
-  // SequenceManager.
-  virtual void BindToMessageLoop(MessageLoopBase* message_loop_base) = 0;
 
   // Finishes the initialization for a SequenceManager created via
   // CreateUnboundSequenceManagerWithPump(). Must not be called in any other
@@ -135,8 +160,7 @@ class SequenceManager {
   // Enables crash keys that can be set in the scope of a task which help
   // to identify the culprit if upcoming work results in a crash.
   // Key names must be thread-specific to avoid races and corrupted crash dumps.
-  virtual void EnableCrashKeys(const char* file_name_crash_key,
-                               const char* function_name_crash_key) = 0;
+  virtual void EnableCrashKeys(const char* async_stack_crash_key) = 0;
 
   // Returns the metric recording configuration for the current SequenceManager.
   virtual const MetricRecordingSettings& GetMetricRecordingSettings() const = 0;
@@ -196,6 +220,12 @@ CreateSequenceManagerOnCurrentThreadWithPump(
 // initialized on the current thread and then needs to be bound and initialized
 // on the target thread by calling one of the Bind*() methods.
 BASE_EXPORT std::unique_ptr<SequenceManager> CreateUnboundSequenceManager(
+    SequenceManager::Settings settings = SequenceManager::Settings());
+
+// Create a SequenceManager that runs on top of |task_runner|.
+// TODO(alexclarke): Change |task_runner| to a SequencedTaskRunner.
+BASE_EXPORT std::unique_ptr<SequenceManager> CreateFunneledSequenceManager(
+    scoped_refptr<SingleThreadTaskRunner> task_runner,
     SequenceManager::Settings settings = SequenceManager::Settings());
 
 }  // namespace sequence_manager

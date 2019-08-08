@@ -52,620 +52,620 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
     CSSPropertyID unresolved_property) {
   switch (unresolved_property) {
     // Begin at 2, because 1 is reserved for totalPagesMeasuredCSSSampleId.
-    case CSSPropertyColor:
+    case CSSPropertyID::kColor:
       return 2;
-    case CSSPropertyDirection:
+    case CSSPropertyID::kDirection:
       return 3;
-    case CSSPropertyDisplay:
+    case CSSPropertyID::kDisplay:
       return 4;
-    case CSSPropertyFont:
+    case CSSPropertyID::kFont:
       return 5;
-    case CSSPropertyFontFamily:
+    case CSSPropertyID::kFontFamily:
       return 6;
-    case CSSPropertyFontSize:
+    case CSSPropertyID::kFontSize:
       return 7;
-    case CSSPropertyFontStyle:
+    case CSSPropertyID::kFontStyle:
       return 8;
-    case CSSPropertyFontVariant:
+    case CSSPropertyID::kFontVariant:
       return 9;
-    case CSSPropertyFontWeight:
+    case CSSPropertyID::kFontWeight:
       return 10;
-    case CSSPropertyTextRendering:
+    case CSSPropertyID::kTextRendering:
       return 11;
-    case CSSPropertyAliasWebkitFontFeatureSettings:
+    case CSSPropertyID::kAliasWebkitFontFeatureSettings:
       return 12;
-    case CSSPropertyFontKerning:
+    case CSSPropertyID::kFontKerning:
       return 13;
-    case CSSPropertyWebkitFontSmoothing:
+    case CSSPropertyID::kWebkitFontSmoothing:
       return 14;
-    case CSSPropertyFontVariantLigatures:
+    case CSSPropertyID::kFontVariantLigatures:
       return 15;
-    case CSSPropertyWebkitLocale:
+    case CSSPropertyID::kWebkitLocale:
       return 16;
-    case CSSPropertyWebkitTextOrientation:
+    case CSSPropertyID::kWebkitTextOrientation:
       return 17;
-    case CSSPropertyWebkitWritingMode:
+    case CSSPropertyID::kWebkitWritingMode:
       return 18;
-    case CSSPropertyZoom:
+    case CSSPropertyID::kZoom:
       return 19;
-    case CSSPropertyLineHeight:
+    case CSSPropertyID::kLineHeight:
       return 20;
-    case CSSPropertyBackground:
+    case CSSPropertyID::kBackground:
       return 21;
-    case CSSPropertyBackgroundAttachment:
+    case CSSPropertyID::kBackgroundAttachment:
       return 22;
-    case CSSPropertyBackgroundClip:
+    case CSSPropertyID::kBackgroundClip:
       return 23;
-    case CSSPropertyBackgroundColor:
+    case CSSPropertyID::kBackgroundColor:
       return 24;
-    case CSSPropertyBackgroundImage:
+    case CSSPropertyID::kBackgroundImage:
       return 25;
-    case CSSPropertyBackgroundOrigin:
+    case CSSPropertyID::kBackgroundOrigin:
       return 26;
-    case CSSPropertyBackgroundPosition:
+    case CSSPropertyID::kBackgroundPosition:
       return 27;
-    case CSSPropertyBackgroundPositionX:
+    case CSSPropertyID::kBackgroundPositionX:
       return 28;
-    case CSSPropertyBackgroundPositionY:
+    case CSSPropertyID::kBackgroundPositionY:
       return 29;
-    case CSSPropertyBackgroundRepeat:
+    case CSSPropertyID::kBackgroundRepeat:
       return 30;
-    case CSSPropertyBackgroundRepeatX:
+    case CSSPropertyID::kBackgroundRepeatX:
       return 31;
-    case CSSPropertyBackgroundRepeatY:
+    case CSSPropertyID::kBackgroundRepeatY:
       return 32;
-    case CSSPropertyBackgroundSize:
+    case CSSPropertyID::kBackgroundSize:
       return 33;
-    case CSSPropertyBorder:
+    case CSSPropertyID::kBorder:
       return 34;
-    case CSSPropertyBorderBottom:
+    case CSSPropertyID::kBorderBottom:
       return 35;
-    case CSSPropertyBorderBottomColor:
+    case CSSPropertyID::kBorderBottomColor:
       return 36;
-    case CSSPropertyBorderBottomLeftRadius:
+    case CSSPropertyID::kBorderBottomLeftRadius:
       return 37;
-    case CSSPropertyBorderBottomRightRadius:
+    case CSSPropertyID::kBorderBottomRightRadius:
       return 38;
-    case CSSPropertyBorderBottomStyle:
+    case CSSPropertyID::kBorderBottomStyle:
       return 39;
-    case CSSPropertyBorderBottomWidth:
+    case CSSPropertyID::kBorderBottomWidth:
       return 40;
-    case CSSPropertyBorderCollapse:
+    case CSSPropertyID::kBorderCollapse:
       return 41;
-    case CSSPropertyBorderColor:
+    case CSSPropertyID::kBorderColor:
       return 42;
-    case CSSPropertyBorderImage:
+    case CSSPropertyID::kBorderImage:
       return 43;
-    case CSSPropertyBorderImageOutset:
+    case CSSPropertyID::kBorderImageOutset:
       return 44;
-    case CSSPropertyBorderImageRepeat:
+    case CSSPropertyID::kBorderImageRepeat:
       return 45;
-    case CSSPropertyBorderImageSlice:
+    case CSSPropertyID::kBorderImageSlice:
       return 46;
-    case CSSPropertyBorderImageSource:
+    case CSSPropertyID::kBorderImageSource:
       return 47;
-    case CSSPropertyBorderImageWidth:
+    case CSSPropertyID::kBorderImageWidth:
       return 48;
-    case CSSPropertyBorderLeft:
+    case CSSPropertyID::kBorderLeft:
       return 49;
-    case CSSPropertyBorderLeftColor:
+    case CSSPropertyID::kBorderLeftColor:
       return 50;
-    case CSSPropertyBorderLeftStyle:
+    case CSSPropertyID::kBorderLeftStyle:
       return 51;
-    case CSSPropertyBorderLeftWidth:
+    case CSSPropertyID::kBorderLeftWidth:
       return 52;
-    case CSSPropertyBorderRadius:
+    case CSSPropertyID::kBorderRadius:
       return 53;
-    case CSSPropertyBorderRight:
+    case CSSPropertyID::kBorderRight:
       return 54;
-    case CSSPropertyBorderRightColor:
+    case CSSPropertyID::kBorderRightColor:
       return 55;
-    case CSSPropertyBorderRightStyle:
+    case CSSPropertyID::kBorderRightStyle:
       return 56;
-    case CSSPropertyBorderRightWidth:
+    case CSSPropertyID::kBorderRightWidth:
       return 57;
-    case CSSPropertyBorderSpacing:
+    case CSSPropertyID::kBorderSpacing:
       return 58;
-    case CSSPropertyBorderStyle:
+    case CSSPropertyID::kBorderStyle:
       return 59;
-    case CSSPropertyBorderTop:
+    case CSSPropertyID::kBorderTop:
       return 60;
-    case CSSPropertyBorderTopColor:
+    case CSSPropertyID::kBorderTopColor:
       return 61;
-    case CSSPropertyBorderTopLeftRadius:
+    case CSSPropertyID::kBorderTopLeftRadius:
       return 62;
-    case CSSPropertyBorderTopRightRadius:
+    case CSSPropertyID::kBorderTopRightRadius:
       return 63;
-    case CSSPropertyBorderTopStyle:
+    case CSSPropertyID::kBorderTopStyle:
       return 64;
-    case CSSPropertyBorderTopWidth:
+    case CSSPropertyID::kBorderTopWidth:
       return 65;
-    case CSSPropertyBorderWidth:
+    case CSSPropertyID::kBorderWidth:
       return 66;
-    case CSSPropertyBottom:
+    case CSSPropertyID::kBottom:
       return 67;
-    case CSSPropertyBoxShadow:
+    case CSSPropertyID::kBoxShadow:
       return 68;
-    case CSSPropertyBoxSizing:
+    case CSSPropertyID::kBoxSizing:
       return 69;
-    case CSSPropertyCaptionSide:
+    case CSSPropertyID::kCaptionSide:
       return 70;
-    case CSSPropertyClear:
+    case CSSPropertyID::kClear:
       return 71;
-    case CSSPropertyClip:
+    case CSSPropertyID::kClip:
       return 72;
-    case CSSPropertyAliasWebkitClipPath:
+    case CSSPropertyID::kAliasWebkitClipPath:
       return 73;
-    case CSSPropertyContent:
+    case CSSPropertyID::kContent:
       return 74;
-    case CSSPropertyCounterIncrement:
+    case CSSPropertyID::kCounterIncrement:
       return 75;
-    case CSSPropertyCounterReset:
+    case CSSPropertyID::kCounterReset:
       return 76;
-    case CSSPropertyCursor:
+    case CSSPropertyID::kCursor:
       return 77;
-    case CSSPropertyEmptyCells:
+    case CSSPropertyID::kEmptyCells:
       return 78;
-    case CSSPropertyFloat:
+    case CSSPropertyID::kFloat:
       return 79;
-    case CSSPropertyFontStretch:
+    case CSSPropertyID::kFontStretch:
       return 80;
-    case CSSPropertyHeight:
+    case CSSPropertyID::kHeight:
       return 81;
-    case CSSPropertyImageRendering:
+    case CSSPropertyID::kImageRendering:
       return 82;
-    case CSSPropertyLeft:
+    case CSSPropertyID::kLeft:
       return 83;
-    case CSSPropertyLetterSpacing:
+    case CSSPropertyID::kLetterSpacing:
       return 84;
-    case CSSPropertyListStyle:
+    case CSSPropertyID::kListStyle:
       return 85;
-    case CSSPropertyListStyleImage:
+    case CSSPropertyID::kListStyleImage:
       return 86;
-    case CSSPropertyListStylePosition:
+    case CSSPropertyID::kListStylePosition:
       return 87;
-    case CSSPropertyListStyleType:
+    case CSSPropertyID::kListStyleType:
       return 88;
-    case CSSPropertyMargin:
+    case CSSPropertyID::kMargin:
       return 89;
-    case CSSPropertyMarginBottom:
+    case CSSPropertyID::kMarginBottom:
       return 90;
-    case CSSPropertyMarginLeft:
+    case CSSPropertyID::kMarginLeft:
       return 91;
-    case CSSPropertyMarginRight:
+    case CSSPropertyID::kMarginRight:
       return 92;
-    case CSSPropertyMarginTop:
+    case CSSPropertyID::kMarginTop:
       return 93;
-    case CSSPropertyMaxHeight:
+    case CSSPropertyID::kMaxHeight:
       return 94;
-    case CSSPropertyMaxWidth:
+    case CSSPropertyID::kMaxWidth:
       return 95;
-    case CSSPropertyMinHeight:
+    case CSSPropertyID::kMinHeight:
       return 96;
-    case CSSPropertyMinWidth:
+    case CSSPropertyID::kMinWidth:
       return 97;
-    case CSSPropertyOpacity:
+    case CSSPropertyID::kOpacity:
       return 98;
-    case CSSPropertyOrphans:
+    case CSSPropertyID::kOrphans:
       return 99;
-    case CSSPropertyOutline:
+    case CSSPropertyID::kOutline:
       return 100;
-    case CSSPropertyOutlineColor:
+    case CSSPropertyID::kOutlineColor:
       return 101;
-    case CSSPropertyOutlineOffset:
+    case CSSPropertyID::kOutlineOffset:
       return 102;
-    case CSSPropertyOutlineStyle:
+    case CSSPropertyID::kOutlineStyle:
       return 103;
-    case CSSPropertyOutlineWidth:
+    case CSSPropertyID::kOutlineWidth:
       return 104;
-    case CSSPropertyOverflow:
+    case CSSPropertyID::kOverflow:
       return 105;
-    case CSSPropertyOverflowWrap:
+    case CSSPropertyID::kOverflowWrap:
       return 106;
-    case CSSPropertyOverflowX:
+    case CSSPropertyID::kOverflowX:
       return 107;
-    case CSSPropertyOverflowY:
+    case CSSPropertyID::kOverflowY:
       return 108;
-    case CSSPropertyPadding:
+    case CSSPropertyID::kPadding:
       return 109;
-    case CSSPropertyPaddingBottom:
+    case CSSPropertyID::kPaddingBottom:
       return 110;
-    case CSSPropertyPaddingLeft:
+    case CSSPropertyID::kPaddingLeft:
       return 111;
-    case CSSPropertyPaddingRight:
+    case CSSPropertyID::kPaddingRight:
       return 112;
-    case CSSPropertyPaddingTop:
+    case CSSPropertyID::kPaddingTop:
       return 113;
-    case CSSPropertyPage:
+    case CSSPropertyID::kPage:
       return 114;
-    case CSSPropertyPageBreakAfter:
+    case CSSPropertyID::kPageBreakAfter:
       return 115;
-    case CSSPropertyPageBreakBefore:
+    case CSSPropertyID::kPageBreakBefore:
       return 116;
-    case CSSPropertyPageBreakInside:
+    case CSSPropertyID::kPageBreakInside:
       return 117;
-    case CSSPropertyPointerEvents:
+    case CSSPropertyID::kPointerEvents:
       return 118;
-    case CSSPropertyPosition:
+    case CSSPropertyID::kPosition:
       return 119;
-    case CSSPropertyQuotes:
+    case CSSPropertyID::kQuotes:
       return 120;
-    case CSSPropertyResize:
+    case CSSPropertyID::kResize:
       return 121;
-    case CSSPropertyRight:
+    case CSSPropertyID::kRight:
       return 122;
-    case CSSPropertySize:
+    case CSSPropertyID::kSize:
       return 123;
-    case CSSPropertySrc:
+    case CSSPropertyID::kSrc:
       return 124;
-    case CSSPropertySpeak:
+    case CSSPropertyID::kSpeak:
       return 125;
-    case CSSPropertyTableLayout:
+    case CSSPropertyID::kTableLayout:
       return 126;
-    case CSSPropertyTabSize:
+    case CSSPropertyID::kTabSize:
       return 127;
-    case CSSPropertyTextAlign:
+    case CSSPropertyID::kTextAlign:
       return 128;
-    case CSSPropertyTextDecoration:
+    case CSSPropertyID::kTextDecoration:
       return 129;
-    case CSSPropertyTextIndent:
+    case CSSPropertyID::kTextIndent:
       return 130;
     /* Removed CSSPropertyTextLineThrough* - 131-135 */
-    case CSSPropertyTextOverflow:
+    case CSSPropertyID::kTextOverflow:
       return 136;
     /* Removed CSSPropertyTextOverline* - 137-141 */
-    case CSSPropertyTextShadow:
+    case CSSPropertyID::kTextShadow:
       return 142;
-    case CSSPropertyTextTransform:
+    case CSSPropertyID::kTextTransform:
       return 143;
     /* Removed CSSPropertyTextUnderline* - 144-148 */
-    case CSSPropertyTop:
+    case CSSPropertyID::kTop:
       return 149;
-    case CSSPropertyTransition:
+    case CSSPropertyID::kTransition:
       return 150;
-    case CSSPropertyTransitionDelay:
+    case CSSPropertyID::kTransitionDelay:
       return 151;
-    case CSSPropertyTransitionDuration:
+    case CSSPropertyID::kTransitionDuration:
       return 152;
-    case CSSPropertyTransitionProperty:
+    case CSSPropertyID::kTransitionProperty:
       return 153;
-    case CSSPropertyTransitionTimingFunction:
+    case CSSPropertyID::kTransitionTimingFunction:
       return 154;
-    case CSSPropertyUnicodeBidi:
+    case CSSPropertyID::kUnicodeBidi:
       return 155;
-    case CSSPropertyUnicodeRange:
+    case CSSPropertyID::kUnicodeRange:
       return 156;
-    case CSSPropertyVerticalAlign:
+    case CSSPropertyID::kVerticalAlign:
       return 157;
-    case CSSPropertyVisibility:
+    case CSSPropertyID::kVisibility:
       return 158;
-    case CSSPropertyWhiteSpace:
+    case CSSPropertyID::kWhiteSpace:
       return 159;
-    case CSSPropertyWidows:
+    case CSSPropertyID::kWidows:
       return 160;
-    case CSSPropertyWidth:
+    case CSSPropertyID::kWidth:
       return 161;
-    case CSSPropertyWordBreak:
+    case CSSPropertyID::kWordBreak:
       return 162;
-    case CSSPropertyWordSpacing:
+    case CSSPropertyID::kWordSpacing:
       return 163;
-    case CSSPropertyAliasWordWrap:
+    case CSSPropertyID::kAliasWordWrap:
       return 164;
-    case CSSPropertyZIndex:
+    case CSSPropertyID::kZIndex:
       return 165;
-    case CSSPropertyAliasWebkitAnimation:
+    case CSSPropertyID::kAliasWebkitAnimation:
       return 166;
-    case CSSPropertyAliasWebkitAnimationDelay:
+    case CSSPropertyID::kAliasWebkitAnimationDelay:
       return 167;
-    case CSSPropertyAliasWebkitAnimationDirection:
+    case CSSPropertyID::kAliasWebkitAnimationDirection:
       return 168;
-    case CSSPropertyAliasWebkitAnimationDuration:
+    case CSSPropertyID::kAliasWebkitAnimationDuration:
       return 169;
-    case CSSPropertyAliasWebkitAnimationFillMode:
+    case CSSPropertyID::kAliasWebkitAnimationFillMode:
       return 170;
-    case CSSPropertyAliasWebkitAnimationIterationCount:
+    case CSSPropertyID::kAliasWebkitAnimationIterationCount:
       return 171;
-    case CSSPropertyAliasWebkitAnimationName:
+    case CSSPropertyID::kAliasWebkitAnimationName:
       return 172;
-    case CSSPropertyAliasWebkitAnimationPlayState:
+    case CSSPropertyID::kAliasWebkitAnimationPlayState:
       return 173;
-    case CSSPropertyAliasWebkitAnimationTimingFunction:
+    case CSSPropertyID::kAliasWebkitAnimationTimingFunction:
       return 174;
-    case CSSPropertyWebkitAppearance:
+    case CSSPropertyID::kWebkitAppearance:
       return 175;
     // CSSPropertyWebkitAspectRatio was 176
-    case CSSPropertyAliasWebkitBackfaceVisibility:
+    case CSSPropertyID::kAliasWebkitBackfaceVisibility:
       return 177;
-    case CSSPropertyAliasWebkitBackgroundClip:
+    case CSSPropertyID::kAliasWebkitBackgroundClip:
       return 178;
     // case CSSPropertyWebkitBackgroundComposite: return 179;
-    case CSSPropertyAliasWebkitBackgroundOrigin:
+    case CSSPropertyID::kAliasWebkitBackgroundOrigin:
       return 180;
-    case CSSPropertyAliasWebkitBackgroundSize:
+    case CSSPropertyID::kAliasWebkitBackgroundSize:
       return 181;
-    case CSSPropertyAliasWebkitBorderAfter:
+    case CSSPropertyID::kAliasWebkitBorderAfter:
       return 182;
-    case CSSPropertyAliasWebkitBorderAfterColor:
+    case CSSPropertyID::kAliasWebkitBorderAfterColor:
       return 183;
-    case CSSPropertyAliasWebkitBorderAfterStyle:
+    case CSSPropertyID::kAliasWebkitBorderAfterStyle:
       return 184;
-    case CSSPropertyAliasWebkitBorderAfterWidth:
+    case CSSPropertyID::kAliasWebkitBorderAfterWidth:
       return 185;
-    case CSSPropertyAliasWebkitBorderBefore:
+    case CSSPropertyID::kAliasWebkitBorderBefore:
       return 186;
-    case CSSPropertyAliasWebkitBorderBeforeColor:
+    case CSSPropertyID::kAliasWebkitBorderBeforeColor:
       return 187;
-    case CSSPropertyAliasWebkitBorderBeforeStyle:
+    case CSSPropertyID::kAliasWebkitBorderBeforeStyle:
       return 188;
-    case CSSPropertyAliasWebkitBorderBeforeWidth:
+    case CSSPropertyID::kAliasWebkitBorderBeforeWidth:
       return 189;
-    case CSSPropertyAliasWebkitBorderEnd:
+    case CSSPropertyID::kAliasWebkitBorderEnd:
       return 190;
-    case CSSPropertyAliasWebkitBorderEndColor:
+    case CSSPropertyID::kAliasWebkitBorderEndColor:
       return 191;
-    case CSSPropertyAliasWebkitBorderEndStyle:
+    case CSSPropertyID::kAliasWebkitBorderEndStyle:
       return 192;
-    case CSSPropertyAliasWebkitBorderEndWidth:
+    case CSSPropertyID::kAliasWebkitBorderEndWidth:
       return 193;
     // CSSPropertyWebkitBorderFit was 194
-    case CSSPropertyWebkitBorderHorizontalSpacing:
+    case CSSPropertyID::kWebkitBorderHorizontalSpacing:
       return 195;
-    case CSSPropertyWebkitBorderImage:
+    case CSSPropertyID::kWebkitBorderImage:
       return 196;
-    case CSSPropertyAliasWebkitBorderRadius:
+    case CSSPropertyID::kAliasWebkitBorderRadius:
       return 197;
-    case CSSPropertyAliasWebkitBorderStart:
+    case CSSPropertyID::kAliasWebkitBorderStart:
       return 198;
-    case CSSPropertyAliasWebkitBorderStartColor:
+    case CSSPropertyID::kAliasWebkitBorderStartColor:
       return 199;
-    case CSSPropertyAliasWebkitBorderStartStyle:
+    case CSSPropertyID::kAliasWebkitBorderStartStyle:
       return 200;
-    case CSSPropertyAliasWebkitBorderStartWidth:
+    case CSSPropertyID::kAliasWebkitBorderStartWidth:
       return 201;
-    case CSSPropertyWebkitBorderVerticalSpacing:
+    case CSSPropertyID::kWebkitBorderVerticalSpacing:
       return 202;
-    case CSSPropertyWebkitBoxAlign:
+    case CSSPropertyID::kWebkitBoxAlign:
       return 203;
-    case CSSPropertyWebkitBoxDirection:
+    case CSSPropertyID::kWebkitBoxDirection:
       return 204;
-    case CSSPropertyWebkitBoxFlex:
+    case CSSPropertyID::kWebkitBoxFlex:
       return 205;
     // CSSPropertyWebkitBoxFlexGroup was 206
     // CSSPropertyWebkitBoxLines was 207
-    case CSSPropertyWebkitBoxOrdinalGroup:
+    case CSSPropertyID::kWebkitBoxOrdinalGroup:
       return 208;
-    case CSSPropertyWebkitBoxOrient:
+    case CSSPropertyID::kWebkitBoxOrient:
       return 209;
-    case CSSPropertyWebkitBoxPack:
+    case CSSPropertyID::kWebkitBoxPack:
       return 210;
-    case CSSPropertyWebkitBoxReflect:
+    case CSSPropertyID::kWebkitBoxReflect:
       return 211;
-    case CSSPropertyAliasWebkitBoxShadow:
+    case CSSPropertyID::kAliasWebkitBoxShadow:
       return 212;
     // CSSPropertyWebkitColumnAxis was 214
-    case CSSPropertyWebkitColumnBreakAfter:
+    case CSSPropertyID::kWebkitColumnBreakAfter:
       return 215;
-    case CSSPropertyWebkitColumnBreakBefore:
+    case CSSPropertyID::kWebkitColumnBreakBefore:
       return 216;
-    case CSSPropertyWebkitColumnBreakInside:
+    case CSSPropertyID::kWebkitColumnBreakInside:
       return 217;
-    case CSSPropertyAliasWebkitColumnCount:
+    case CSSPropertyID::kAliasWebkitColumnCount:
       return 218;
-    case CSSPropertyAliasWebkitColumnGap:
+    case CSSPropertyID::kAliasWebkitColumnGap:
       return 219;
     // CSSPropertyWebkitColumnProgression was 220
-    case CSSPropertyAliasWebkitColumnRule:
+    case CSSPropertyID::kAliasWebkitColumnRule:
       return 221;
-    case CSSPropertyAliasWebkitColumnRuleColor:
+    case CSSPropertyID::kAliasWebkitColumnRuleColor:
       return 222;
-    case CSSPropertyAliasWebkitColumnRuleStyle:
+    case CSSPropertyID::kAliasWebkitColumnRuleStyle:
       return 223;
-    case CSSPropertyAliasWebkitColumnRuleWidth:
+    case CSSPropertyID::kAliasWebkitColumnRuleWidth:
       return 224;
-    case CSSPropertyAliasWebkitColumnSpan:
+    case CSSPropertyID::kAliasWebkitColumnSpan:
       return 225;
-    case CSSPropertyAliasWebkitColumnWidth:
+    case CSSPropertyID::kAliasWebkitColumnWidth:
       return 226;
-    case CSSPropertyAliasWebkitColumns:
+    case CSSPropertyID::kAliasWebkitColumns:
       return 227;
-    // 228 was CSSPropertyWebkitBoxDecorationBreak (duplicated due to #ifdef).
-    // 229 was CSSPropertyWebkitFilter (duplicated due to #ifdef).
-    case CSSPropertyAlignContent:
+    // 228 was CSSPropertyID::kWebkitBoxDecorationBreak (duplicated due to
+    // #ifdef). 229 was CSSPropertyWebkitFilter (duplicated due to #ifdef).
+    case CSSPropertyID::kAlignContent:
       return 230;
-    case CSSPropertyAlignItems:
+    case CSSPropertyID::kAlignItems:
       return 231;
-    case CSSPropertyAlignSelf:
+    case CSSPropertyID::kAlignSelf:
       return 232;
-    case CSSPropertyFlex:
+    case CSSPropertyID::kFlex:
       return 233;
-    case CSSPropertyFlexBasis:
+    case CSSPropertyID::kFlexBasis:
       return 234;
-    case CSSPropertyFlexDirection:
+    case CSSPropertyID::kFlexDirection:
       return 235;
-    case CSSPropertyFlexFlow:
+    case CSSPropertyID::kFlexFlow:
       return 236;
-    case CSSPropertyFlexGrow:
+    case CSSPropertyID::kFlexGrow:
       return 237;
-    case CSSPropertyFlexShrink:
+    case CSSPropertyID::kFlexShrink:
       return 238;
-    case CSSPropertyFlexWrap:
+    case CSSPropertyID::kFlexWrap:
       return 239;
-    case CSSPropertyJustifyContent:
+    case CSSPropertyID::kJustifyContent:
       return 240;
-    case CSSPropertyWebkitFontSizeDelta:
+    case CSSPropertyID::kWebkitFontSizeDelta:
       return 241;
-    case CSSPropertyGridTemplateColumns:
+    case CSSPropertyID::kGridTemplateColumns:
       return 242;
-    case CSSPropertyGridTemplateRows:
+    case CSSPropertyID::kGridTemplateRows:
       return 243;
-    case CSSPropertyGridColumnStart:
+    case CSSPropertyID::kGridColumnStart:
       return 244;
-    case CSSPropertyGridColumnEnd:
+    case CSSPropertyID::kGridColumnEnd:
       return 245;
-    case CSSPropertyGridRowStart:
+    case CSSPropertyID::kGridRowStart:
       return 246;
-    case CSSPropertyGridRowEnd:
+    case CSSPropertyID::kGridRowEnd:
       return 247;
-    case CSSPropertyGridColumn:
+    case CSSPropertyID::kGridColumn:
       return 248;
-    case CSSPropertyGridRow:
+    case CSSPropertyID::kGridRow:
       return 249;
-    case CSSPropertyGridAutoFlow:
+    case CSSPropertyID::kGridAutoFlow:
       return 250;
-    case CSSPropertyWebkitHighlight:
+    case CSSPropertyID::kWebkitHighlight:
       return 251;
-    case CSSPropertyWebkitHyphenateCharacter:
+    case CSSPropertyID::kWebkitHyphenateCharacter:
       return 252;
     // case CSSPropertyWebkitLineBoxContain: return 257;
     // case CSSPropertyWebkitLineAlign: return 258;
-    case CSSPropertyWebkitLineBreak:
+    case CSSPropertyID::kWebkitLineBreak:
       return 259;
-    case CSSPropertyWebkitLineClamp:
+    case CSSPropertyID::kWebkitLineClamp:
       return 260;
     // case CSSPropertyWebkitLineGrid: return 261;
     // case CSSPropertyWebkitLineSnap: return 262;
-    case CSSPropertyAliasWebkitLogicalWidth:
+    case CSSPropertyID::kAliasWebkitLogicalWidth:
       return 263;
-    case CSSPropertyAliasWebkitLogicalHeight:
+    case CSSPropertyID::kAliasWebkitLogicalHeight:
       return 264;
-    case CSSPropertyWebkitMarginAfterCollapse:
+    case CSSPropertyID::kWebkitMarginAfterCollapse:
       return 265;
-    case CSSPropertyWebkitMarginBeforeCollapse:
+    case CSSPropertyID::kWebkitMarginBeforeCollapse:
       return 266;
-    case CSSPropertyWebkitMarginBottomCollapse:
+    case CSSPropertyID::kWebkitMarginBottomCollapse:
       return 267;
-    case CSSPropertyWebkitMarginTopCollapse:
+    case CSSPropertyID::kWebkitMarginTopCollapse:
       return 268;
-    case CSSPropertyWebkitMarginCollapse:
+    case CSSPropertyID::kWebkitMarginCollapse:
       return 269;
-    case CSSPropertyAliasWebkitMarginAfter:
+    case CSSPropertyID::kAliasWebkitMarginAfter:
       return 270;
-    case CSSPropertyAliasWebkitMarginBefore:
+    case CSSPropertyID::kAliasWebkitMarginBefore:
       return 271;
-    case CSSPropertyAliasWebkitMarginEnd:
+    case CSSPropertyID::kAliasWebkitMarginEnd:
       return 272;
-    case CSSPropertyAliasWebkitMarginStart:
+    case CSSPropertyID::kAliasWebkitMarginStart:
       return 273;
     // CSSPropertyWebkitMarquee was 274.
     // CSSPropertyInternalMarquee* were 275-279.
-    case CSSPropertyWebkitMask:
+    case CSSPropertyID::kWebkitMask:
       return 280;
-    case CSSPropertyWebkitMaskBoxImage:
+    case CSSPropertyID::kWebkitMaskBoxImage:
       return 281;
-    case CSSPropertyWebkitMaskBoxImageOutset:
+    case CSSPropertyID::kWebkitMaskBoxImageOutset:
       return 282;
-    case CSSPropertyWebkitMaskBoxImageRepeat:
+    case CSSPropertyID::kWebkitMaskBoxImageRepeat:
       return 283;
-    case CSSPropertyWebkitMaskBoxImageSlice:
+    case CSSPropertyID::kWebkitMaskBoxImageSlice:
       return 284;
-    case CSSPropertyWebkitMaskBoxImageSource:
+    case CSSPropertyID::kWebkitMaskBoxImageSource:
       return 285;
-    case CSSPropertyWebkitMaskBoxImageWidth:
+    case CSSPropertyID::kWebkitMaskBoxImageWidth:
       return 286;
-    case CSSPropertyWebkitMaskClip:
+    case CSSPropertyID::kWebkitMaskClip:
       return 287;
-    case CSSPropertyWebkitMaskComposite:
+    case CSSPropertyID::kWebkitMaskComposite:
       return 288;
-    case CSSPropertyWebkitMaskImage:
+    case CSSPropertyID::kWebkitMaskImage:
       return 289;
-    case CSSPropertyWebkitMaskOrigin:
+    case CSSPropertyID::kWebkitMaskOrigin:
       return 290;
-    case CSSPropertyWebkitMaskPosition:
+    case CSSPropertyID::kWebkitMaskPosition:
       return 291;
-    case CSSPropertyWebkitMaskPositionX:
+    case CSSPropertyID::kWebkitMaskPositionX:
       return 292;
-    case CSSPropertyWebkitMaskPositionY:
+    case CSSPropertyID::kWebkitMaskPositionY:
       return 293;
-    case CSSPropertyWebkitMaskRepeat:
+    case CSSPropertyID::kWebkitMaskRepeat:
       return 294;
-    case CSSPropertyWebkitMaskRepeatX:
+    case CSSPropertyID::kWebkitMaskRepeatX:
       return 295;
-    case CSSPropertyWebkitMaskRepeatY:
+    case CSSPropertyID::kWebkitMaskRepeatY:
       return 296;
-    case CSSPropertyWebkitMaskSize:
+    case CSSPropertyID::kWebkitMaskSize:
       return 297;
-    case CSSPropertyAliasWebkitMaxLogicalWidth:
+    case CSSPropertyID::kAliasWebkitMaxLogicalWidth:
       return 298;
-    case CSSPropertyAliasWebkitMaxLogicalHeight:
+    case CSSPropertyID::kAliasWebkitMaxLogicalHeight:
       return 299;
-    case CSSPropertyAliasWebkitMinLogicalWidth:
+    case CSSPropertyID::kAliasWebkitMinLogicalWidth:
       return 300;
-    case CSSPropertyAliasWebkitMinLogicalHeight:
+    case CSSPropertyID::kAliasWebkitMinLogicalHeight:
       return 301;
     // WebkitNbspMode has been deleted, was return 302;
-    case CSSPropertyOrder:
+    case CSSPropertyID::kOrder:
       return 303;
-    case CSSPropertyAliasWebkitPaddingAfter:
+    case CSSPropertyID::kAliasWebkitPaddingAfter:
       return 304;
-    case CSSPropertyAliasWebkitPaddingBefore:
+    case CSSPropertyID::kAliasWebkitPaddingBefore:
       return 305;
-    case CSSPropertyAliasWebkitPaddingEnd:
+    case CSSPropertyID::kAliasWebkitPaddingEnd:
       return 306;
-    case CSSPropertyAliasWebkitPaddingStart:
+    case CSSPropertyID::kAliasWebkitPaddingStart:
       return 307;
-    case CSSPropertyAliasWebkitPerspective:
+    case CSSPropertyID::kAliasWebkitPerspective:
       return 308;
-    case CSSPropertyAliasWebkitPerspectiveOrigin:
+    case CSSPropertyID::kAliasWebkitPerspectiveOrigin:
       return 309;
-    case CSSPropertyWebkitPerspectiveOriginX:
+    case CSSPropertyID::kWebkitPerspectiveOriginX:
       return 310;
-    case CSSPropertyWebkitPerspectiveOriginY:
+    case CSSPropertyID::kWebkitPerspectiveOriginY:
       return 311;
-    case CSSPropertyWebkitPrintColorAdjust:
+    case CSSPropertyID::kWebkitPrintColorAdjust:
       return 312;
-    case CSSPropertyWebkitRtlOrdering:
+    case CSSPropertyID::kWebkitRtlOrdering:
       return 313;
-    case CSSPropertyWebkitRubyPosition:
+    case CSSPropertyID::kWebkitRubyPosition:
       return 314;
-    case CSSPropertyWebkitTextCombine:
+    case CSSPropertyID::kWebkitTextCombine:
       return 315;
-    case CSSPropertyWebkitTextDecorationsInEffect:
+    case CSSPropertyID::kWebkitTextDecorationsInEffect:
       return 316;
-    case CSSPropertyWebkitTextEmphasis:
+    case CSSPropertyID::kWebkitTextEmphasis:
       return 317;
-    case CSSPropertyWebkitTextEmphasisColor:
+    case CSSPropertyID::kWebkitTextEmphasisColor:
       return 318;
-    case CSSPropertyWebkitTextEmphasisPosition:
+    case CSSPropertyID::kWebkitTextEmphasisPosition:
       return 319;
-    case CSSPropertyWebkitTextEmphasisStyle:
+    case CSSPropertyID::kWebkitTextEmphasisStyle:
       return 320;
-    case CSSPropertyWebkitTextFillColor:
+    case CSSPropertyID::kWebkitTextFillColor:
       return 321;
-    case CSSPropertyWebkitTextSecurity:
+    case CSSPropertyID::kWebkitTextSecurity:
       return 322;
-    case CSSPropertyWebkitTextStroke:
+    case CSSPropertyID::kWebkitTextStroke:
       return 323;
-    case CSSPropertyWebkitTextStrokeColor:
+    case CSSPropertyID::kWebkitTextStrokeColor:
       return 324;
-    case CSSPropertyWebkitTextStrokeWidth:
+    case CSSPropertyID::kWebkitTextStrokeWidth:
       return 325;
-    case CSSPropertyAliasWebkitTransform:
+    case CSSPropertyID::kAliasWebkitTransform:
       return 326;
-    case CSSPropertyAliasWebkitTransformOrigin:
+    case CSSPropertyID::kAliasWebkitTransformOrigin:
       return 327;
-    case CSSPropertyWebkitTransformOriginX:
+    case CSSPropertyID::kWebkitTransformOriginX:
       return 328;
-    case CSSPropertyWebkitTransformOriginY:
+    case CSSPropertyID::kWebkitTransformOriginY:
       return 329;
-    case CSSPropertyWebkitTransformOriginZ:
+    case CSSPropertyID::kWebkitTransformOriginZ:
       return 330;
-    case CSSPropertyAliasWebkitTransformStyle:
+    case CSSPropertyID::kAliasWebkitTransformStyle:
       return 331;
-    case CSSPropertyAliasWebkitTransition:
+    case CSSPropertyID::kAliasWebkitTransition:
       return 332;
-    case CSSPropertyAliasWebkitTransitionDelay:
+    case CSSPropertyID::kAliasWebkitTransitionDelay:
       return 333;
-    case CSSPropertyAliasWebkitTransitionDuration:
+    case CSSPropertyID::kAliasWebkitTransitionDuration:
       return 334;
-    case CSSPropertyAliasWebkitTransitionProperty:
+    case CSSPropertyID::kAliasWebkitTransitionProperty:
       return 335;
-    case CSSPropertyAliasWebkitTransitionTimingFunction:
+    case CSSPropertyID::kAliasWebkitTransitionTimingFunction:
       return 336;
-    case CSSPropertyWebkitUserDrag:
+    case CSSPropertyID::kWebkitUserDrag:
       return 337;
-    case CSSPropertyWebkitUserModify:
+    case CSSPropertyID::kWebkitUserModify:
       return 338;
-    case CSSPropertyAliasWebkitUserSelect:
+    case CSSPropertyID::kAliasWebkitUserSelect:
       return 339;
     // case CSSPropertyWebkitFlowInto: return 340;
     // case CSSPropertyWebkitFlowFrom: return 341;
@@ -674,94 +674,95 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
     // case CSSPropertyWebkitRegionBreakBefore: return 344;
     // case CSSPropertyWebkitRegionBreakInside: return 345;
     // case CSSPropertyShapeInside: return 346;
-    case CSSPropertyShapeOutside:
+    case CSSPropertyID::kShapeOutside:
       return 347;
-    case CSSPropertyShapeMargin:
+    case CSSPropertyID::kShapeMargin:
       return 348;
     // case CSSPropertyShapePadding: return 349;
     // case CSSPropertyWebkitWrapFlow: return 350;
     // case CSSPropertyWebkitWrapThrough: return 351;
     // CSSPropertyWebkitWrap was 352.
-    // 353 was CSSPropertyWebkitTapHighlightColor (duplicated due to #ifdef).
-    // 354 was CSSPropertyWebkitAppRegion (duplicated due to #ifdef).
-    case CSSPropertyClipPath:
+    // 353 was CSSPropertyID::kWebkitTapHighlightColor (duplicated due to
+    // #ifdef). 354 was CSSPropertyID::kWebkitAppRegion (duplicated due to
+    // #ifdef).
+    case CSSPropertyID::kClipPath:
       return 355;
-    case CSSPropertyClipRule:
+    case CSSPropertyID::kClipRule:
       return 356;
-    case CSSPropertyMask:
+    case CSSPropertyID::kMask:
       return 357;
     // CSSPropertyEnableBackground has been removed, was return 358;
-    case CSSPropertyFilter:
+    case CSSPropertyID::kFilter:
       return 359;
-    case CSSPropertyFloodColor:
+    case CSSPropertyID::kFloodColor:
       return 360;
-    case CSSPropertyFloodOpacity:
+    case CSSPropertyID::kFloodOpacity:
       return 361;
-    case CSSPropertyLightingColor:
+    case CSSPropertyID::kLightingColor:
       return 362;
-    case CSSPropertyStopColor:
+    case CSSPropertyID::kStopColor:
       return 363;
-    case CSSPropertyStopOpacity:
+    case CSSPropertyID::kStopOpacity:
       return 364;
-    case CSSPropertyColorInterpolation:
+    case CSSPropertyID::kColorInterpolation:
       return 365;
-    case CSSPropertyColorInterpolationFilters:
+    case CSSPropertyID::kColorInterpolationFilters:
       return 366;
     // case CSSPropertyColorProfile: return 367;
-    case CSSPropertyColorRendering:
+    case CSSPropertyID::kColorRendering:
       return 368;
-    case CSSPropertyFill:
+    case CSSPropertyID::kFill:
       return 369;
-    case CSSPropertyFillOpacity:
+    case CSSPropertyID::kFillOpacity:
       return 370;
-    case CSSPropertyFillRule:
+    case CSSPropertyID::kFillRule:
       return 371;
-    case CSSPropertyMarker:
+    case CSSPropertyID::kMarker:
       return 372;
-    case CSSPropertyMarkerEnd:
+    case CSSPropertyID::kMarkerEnd:
       return 373;
-    case CSSPropertyMarkerMid:
+    case CSSPropertyID::kMarkerMid:
       return 374;
-    case CSSPropertyMarkerStart:
+    case CSSPropertyID::kMarkerStart:
       return 375;
-    case CSSPropertyMaskType:
+    case CSSPropertyID::kMaskType:
       return 376;
-    case CSSPropertyShapeRendering:
+    case CSSPropertyID::kShapeRendering:
       return 377;
-    case CSSPropertyStroke:
+    case CSSPropertyID::kStroke:
       return 378;
-    case CSSPropertyStrokeDasharray:
+    case CSSPropertyID::kStrokeDasharray:
       return 379;
-    case CSSPropertyStrokeDashoffset:
+    case CSSPropertyID::kStrokeDashoffset:
       return 380;
-    case CSSPropertyStrokeLinecap:
+    case CSSPropertyID::kStrokeLinecap:
       return 381;
-    case CSSPropertyStrokeLinejoin:
+    case CSSPropertyID::kStrokeLinejoin:
       return 382;
-    case CSSPropertyStrokeMiterlimit:
+    case CSSPropertyID::kStrokeMiterlimit:
       return 383;
-    case CSSPropertyStrokeOpacity:
+    case CSSPropertyID::kStrokeOpacity:
       return 384;
-    case CSSPropertyStrokeWidth:
+    case CSSPropertyID::kStrokeWidth:
       return 385;
-    case CSSPropertyAlignmentBaseline:
+    case CSSPropertyID::kAlignmentBaseline:
       return 386;
-    case CSSPropertyBaselineShift:
+    case CSSPropertyID::kBaselineShift:
       return 387;
-    case CSSPropertyDominantBaseline:
+    case CSSPropertyID::kDominantBaseline:
       return 388;
     // CSSPropertyGlyphOrientationHorizontal has been removed, was return 389;
     // CSSPropertyGlyphOrientationVertical has been removed, was return 390;
     // CSSPropertyKerning has been removed, was return 391;
-    case CSSPropertyTextAnchor:
+    case CSSPropertyID::kTextAnchor:
       return 392;
-    case CSSPropertyVectorEffect:
+    case CSSPropertyID::kVectorEffect:
       return 393;
-    case CSSPropertyWritingMode:
+    case CSSPropertyID::kWritingMode:
       return 394;
 // CSSPropertyWebkitSvgShadow has been removed, was return 395;
 // CSSPropertyWebkitCursorVisibility has been removed, was return 396;
-// CSSPropertyImageOrientation has been removed, was return 397;
+// CSSPropertyID::kImageOrientation has been removed, was return 397;
 // CSSPropertyImageResolution has been removed, was return 398;
 #if defined(ENABLE_CSS_COMPOSITING) && ENABLE_CSS_COMPOSITING
     case CSSPropertyWebkitBlendMode:
@@ -769,460 +770,460 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
     case CSSPropertyWebkitBackgroundBlendMode:
       return 400;
 #endif
-    case CSSPropertyTextDecorationLine:
+    case CSSPropertyID::kTextDecorationLine:
       return 401;
-    case CSSPropertyTextDecorationStyle:
+    case CSSPropertyID::kTextDecorationStyle:
       return 402;
-    case CSSPropertyTextDecorationColor:
+    case CSSPropertyID::kTextDecorationColor:
       return 403;
-    case CSSPropertyTextAlignLast:
+    case CSSPropertyID::kTextAlignLast:
       return 404;
-    case CSSPropertyTextUnderlinePosition:
+    case CSSPropertyID::kTextUnderlinePosition:
       return 405;
-    case CSSPropertyMaxZoom:
+    case CSSPropertyID::kMaxZoom:
       return 406;
-    case CSSPropertyMinZoom:
+    case CSSPropertyID::kMinZoom:
       return 407;
-    case CSSPropertyOrientation:
+    case CSSPropertyID::kOrientation:
       return 408;
-    case CSSPropertyUserZoom:
+    case CSSPropertyID::kUserZoom:
       return 409;
     // CSSPropertyWebkitDashboardRegion was 410.
     // CSSPropertyWebkitOverflowScrolling was 411.
-    case CSSPropertyWebkitAppRegion:
+    case CSSPropertyID::kWebkitAppRegion:
       return 412;
-    case CSSPropertyAliasWebkitFilter:
+    case CSSPropertyID::kAliasWebkitFilter:
       return 413;
-    case CSSPropertyWebkitBoxDecorationBreak:
+    case CSSPropertyID::kWebkitBoxDecorationBreak:
       return 414;
-    case CSSPropertyWebkitTapHighlightColor:
+    case CSSPropertyID::kWebkitTapHighlightColor:
       return 415;
-    case CSSPropertyBufferedRendering:
+    case CSSPropertyID::kBufferedRendering:
       return 416;
-    case CSSPropertyGridAutoRows:
+    case CSSPropertyID::kGridAutoRows:
       return 417;
-    case CSSPropertyGridAutoColumns:
+    case CSSPropertyID::kGridAutoColumns:
       return 418;
-    case CSSPropertyBackgroundBlendMode:
+    case CSSPropertyID::kBackgroundBlendMode:
       return 419;
-    case CSSPropertyMixBlendMode:
+    case CSSPropertyID::kMixBlendMode:
       return 420;
-    case CSSPropertyTouchAction:
+    case CSSPropertyID::kTouchAction:
       return 421;
-    case CSSPropertyGridArea:
+    case CSSPropertyID::kGridArea:
       return 422;
-    case CSSPropertyGridTemplateAreas:
+    case CSSPropertyID::kGridTemplateAreas:
       return 423;
-    case CSSPropertyAnimation:
+    case CSSPropertyID::kAnimation:
       return 424;
-    case CSSPropertyAnimationDelay:
+    case CSSPropertyID::kAnimationDelay:
       return 425;
-    case CSSPropertyAnimationDirection:
+    case CSSPropertyID::kAnimationDirection:
       return 426;
-    case CSSPropertyAnimationDuration:
+    case CSSPropertyID::kAnimationDuration:
       return 427;
-    case CSSPropertyAnimationFillMode:
+    case CSSPropertyID::kAnimationFillMode:
       return 428;
-    case CSSPropertyAnimationIterationCount:
+    case CSSPropertyID::kAnimationIterationCount:
       return 429;
-    case CSSPropertyAnimationName:
+    case CSSPropertyID::kAnimationName:
       return 430;
-    case CSSPropertyAnimationPlayState:
+    case CSSPropertyID::kAnimationPlayState:
       return 431;
-    case CSSPropertyAnimationTimingFunction:
+    case CSSPropertyID::kAnimationTimingFunction:
       return 432;
-    case CSSPropertyObjectFit:
+    case CSSPropertyID::kObjectFit:
       return 433;
-    case CSSPropertyPaintOrder:
+    case CSSPropertyID::kPaintOrder:
       return 434;
-    case CSSPropertyMaskSourceType:
+    case CSSPropertyID::kMaskSourceType:
       return 435;
-    case CSSPropertyIsolation:
+    case CSSPropertyID::kIsolation:
       return 436;
-    case CSSPropertyObjectPosition:
+    case CSSPropertyID::kObjectPosition:
       return 437;
     // case CSSPropertyInternalCallback: return 438;
-    case CSSPropertyShapeImageThreshold:
+    case CSSPropertyID::kShapeImageThreshold:
       return 439;
-    case CSSPropertyColumnFill:
+    case CSSPropertyID::kColumnFill:
       return 440;
-    case CSSPropertyTextJustify:
+    case CSSPropertyID::kTextJustify:
       return 441;
     // CSSPropertyTouchActionDelay was 442
-    case CSSPropertyJustifySelf:
+    case CSSPropertyID::kJustifySelf:
       return 443;
-    case CSSPropertyScrollBehavior:
+    case CSSPropertyID::kScrollBehavior:
       return 444;
-    case CSSPropertyWillChange:
+    case CSSPropertyID::kWillChange:
       return 445;
-    case CSSPropertyTransform:
+    case CSSPropertyID::kTransform:
       return 446;
-    case CSSPropertyTransformOrigin:
+    case CSSPropertyID::kTransformOrigin:
       return 447;
-    case CSSPropertyTransformStyle:
+    case CSSPropertyID::kTransformStyle:
       return 448;
-    case CSSPropertyPerspective:
+    case CSSPropertyID::kPerspective:
       return 449;
-    case CSSPropertyPerspectiveOrigin:
+    case CSSPropertyID::kPerspectiveOrigin:
       return 450;
-    case CSSPropertyBackfaceVisibility:
+    case CSSPropertyID::kBackfaceVisibility:
       return 451;
-    case CSSPropertyGridTemplate:
+    case CSSPropertyID::kGridTemplate:
       return 452;
-    case CSSPropertyGrid:
+    case CSSPropertyID::kGrid:
       return 453;
-    case CSSPropertyAll:
+    case CSSPropertyID::kAll:
       return 454;
-    case CSSPropertyJustifyItems:
+    case CSSPropertyID::kJustifyItems:
       return 455;
     // CSSPropertyMotionPath was 457.
     // CSSPropertyAliasMotionOffset was 458.
     // CSSPropertyAliasMotionRotation was 459.
     // CSSPropertyMotion was 460.
-    case CSSPropertyX:
+    case CSSPropertyID::kX:
       return 461;
-    case CSSPropertyY:
+    case CSSPropertyID::kY:
       return 462;
-    case CSSPropertyRx:
+    case CSSPropertyID::kRx:
       return 463;
-    case CSSPropertyRy:
+    case CSSPropertyID::kRy:
       return 464;
-    case CSSPropertyFontSizeAdjust:
+    case CSSPropertyID::kFontSizeAdjust:
       return 465;
-    case CSSPropertyCx:
+    case CSSPropertyID::kCx:
       return 466;
-    case CSSPropertyCy:
+    case CSSPropertyID::kCy:
       return 467;
-    case CSSPropertyR:
+    case CSSPropertyID::kR:
       return 468;
-    case CSSPropertyAliasEpubCaptionSide:
+    case CSSPropertyID::kAliasEpubCaptionSide:
       return 469;
-    case CSSPropertyAliasEpubTextCombine:
+    case CSSPropertyID::kAliasEpubTextCombine:
       return 470;
-    case CSSPropertyAliasEpubTextEmphasis:
+    case CSSPropertyID::kAliasEpubTextEmphasis:
       return 471;
-    case CSSPropertyAliasEpubTextEmphasisColor:
+    case CSSPropertyID::kAliasEpubTextEmphasisColor:
       return 472;
-    case CSSPropertyAliasEpubTextEmphasisStyle:
+    case CSSPropertyID::kAliasEpubTextEmphasisStyle:
       return 473;
-    case CSSPropertyAliasEpubTextOrientation:
+    case CSSPropertyID::kAliasEpubTextOrientation:
       return 474;
-    case CSSPropertyAliasEpubTextTransform:
+    case CSSPropertyID::kAliasEpubTextTransform:
       return 475;
-    case CSSPropertyAliasEpubWordBreak:
+    case CSSPropertyID::kAliasEpubWordBreak:
       return 476;
-    case CSSPropertyAliasEpubWritingMode:
+    case CSSPropertyID::kAliasEpubWritingMode:
       return 477;
-    case CSSPropertyAliasWebkitAlignContent:
+    case CSSPropertyID::kAliasWebkitAlignContent:
       return 478;
-    case CSSPropertyAliasWebkitAlignItems:
+    case CSSPropertyID::kAliasWebkitAlignItems:
       return 479;
-    case CSSPropertyAliasWebkitAlignSelf:
+    case CSSPropertyID::kAliasWebkitAlignSelf:
       return 480;
-    case CSSPropertyAliasWebkitBorderBottomLeftRadius:
+    case CSSPropertyID::kAliasWebkitBorderBottomLeftRadius:
       return 481;
-    case CSSPropertyAliasWebkitBorderBottomRightRadius:
+    case CSSPropertyID::kAliasWebkitBorderBottomRightRadius:
       return 482;
-    case CSSPropertyAliasWebkitBorderTopLeftRadius:
+    case CSSPropertyID::kAliasWebkitBorderTopLeftRadius:
       return 483;
-    case CSSPropertyAliasWebkitBorderTopRightRadius:
+    case CSSPropertyID::kAliasWebkitBorderTopRightRadius:
       return 484;
-    case CSSPropertyAliasWebkitBoxSizing:
+    case CSSPropertyID::kAliasWebkitBoxSizing:
       return 485;
-    case CSSPropertyAliasWebkitFlex:
+    case CSSPropertyID::kAliasWebkitFlex:
       return 486;
-    case CSSPropertyAliasWebkitFlexBasis:
+    case CSSPropertyID::kAliasWebkitFlexBasis:
       return 487;
-    case CSSPropertyAliasWebkitFlexDirection:
+    case CSSPropertyID::kAliasWebkitFlexDirection:
       return 488;
-    case CSSPropertyAliasWebkitFlexFlow:
+    case CSSPropertyID::kAliasWebkitFlexFlow:
       return 489;
-    case CSSPropertyAliasWebkitFlexGrow:
+    case CSSPropertyID::kAliasWebkitFlexGrow:
       return 490;
-    case CSSPropertyAliasWebkitFlexShrink:
+    case CSSPropertyID::kAliasWebkitFlexShrink:
       return 491;
-    case CSSPropertyAliasWebkitFlexWrap:
+    case CSSPropertyID::kAliasWebkitFlexWrap:
       return 492;
-    case CSSPropertyAliasWebkitJustifyContent:
+    case CSSPropertyID::kAliasWebkitJustifyContent:
       return 493;
-    case CSSPropertyAliasWebkitOpacity:
+    case CSSPropertyID::kAliasWebkitOpacity:
       return 494;
-    case CSSPropertyAliasWebkitOrder:
+    case CSSPropertyID::kAliasWebkitOrder:
       return 495;
-    case CSSPropertyAliasWebkitShapeImageThreshold:
+    case CSSPropertyID::kAliasWebkitShapeImageThreshold:
       return 496;
-    case CSSPropertyAliasWebkitShapeMargin:
+    case CSSPropertyID::kAliasWebkitShapeMargin:
       return 497;
-    case CSSPropertyAliasWebkitShapeOutside:
+    case CSSPropertyID::kAliasWebkitShapeOutside:
       return 498;
-    case CSSPropertyScrollSnapType:
+    case CSSPropertyID::kScrollSnapType:
       return 499;
     // CSSPropertyScrollSnapPointsX was 500.
     // CSSPropertyScrollSnapPointsY was 501.
     // CSSPropertyScrollSnapCoordinate was 502.
     // CSSPropertyScrollSnapDestination was 503.
-    case CSSPropertyTranslate:
+    case CSSPropertyID::kTranslate:
       return 504;
-    case CSSPropertyRotate:
+    case CSSPropertyID::kRotate:
       return 505;
-    case CSSPropertyScale:
+    case CSSPropertyID::kScale:
       return 506;
-    case CSSPropertyImageOrientation:
+    case CSSPropertyID::kImageOrientation:
       return 507;
-    case CSSPropertyBackdropFilter:
+    case CSSPropertyID::kBackdropFilter:
       return 508;
-    case CSSPropertyTextCombineUpright:
+    case CSSPropertyID::kTextCombineUpright:
       return 509;
-    case CSSPropertyTextOrientation:
+    case CSSPropertyID::kTextOrientation:
       return 510;
-    case CSSPropertyGridColumnGap:
+    case CSSPropertyID::kGridColumnGap:
       return 511;
-    case CSSPropertyGridRowGap:
+    case CSSPropertyID::kGridRowGap:
       return 512;
-    case CSSPropertyGridGap:
+    case CSSPropertyID::kGridGap:
       return 513;
-    case CSSPropertyFontFeatureSettings:
+    case CSSPropertyID::kFontFeatureSettings:
       return 514;
-    case CSSPropertyVariable:
+    case CSSPropertyID::kVariable:
       return 515;
-    case CSSPropertyFontDisplay:
+    case CSSPropertyID::kFontDisplay:
       return 516;
-    case CSSPropertyContain:
+    case CSSPropertyID::kContain:
       return 517;
-    case CSSPropertyD:
+    case CSSPropertyID::kD:
       return 518;
-    case CSSPropertyLineHeightStep:
+    case CSSPropertyID::kLineHeightStep:
       return 519;
-    case CSSPropertyBreakAfter:
+    case CSSPropertyID::kBreakAfter:
       return 520;
-    case CSSPropertyBreakBefore:
+    case CSSPropertyID::kBreakBefore:
       return 521;
-    case CSSPropertyBreakInside:
+    case CSSPropertyID::kBreakInside:
       return 522;
-    case CSSPropertyColumnCount:
+    case CSSPropertyID::kColumnCount:
       return 523;
-    case CSSPropertyColumnGap:
+    case CSSPropertyID::kColumnGap:
       return 524;
-    case CSSPropertyColumnRule:
+    case CSSPropertyID::kColumnRule:
       return 525;
-    case CSSPropertyColumnRuleColor:
+    case CSSPropertyID::kColumnRuleColor:
       return 526;
-    case CSSPropertyColumnRuleStyle:
+    case CSSPropertyID::kColumnRuleStyle:
       return 527;
-    case CSSPropertyColumnRuleWidth:
+    case CSSPropertyID::kColumnRuleWidth:
       return 528;
-    case CSSPropertyColumnSpan:
+    case CSSPropertyID::kColumnSpan:
       return 529;
-    case CSSPropertyColumnWidth:
+    case CSSPropertyID::kColumnWidth:
       return 530;
-    case CSSPropertyColumns:
+    case CSSPropertyID::kColumns:
       return 531;
     // CSSPropertyApplyAtRule was 532.
-    case CSSPropertyFontVariantCaps:
+    case CSSPropertyID::kFontVariantCaps:
       return 533;
-    case CSSPropertyHyphens:
+    case CSSPropertyID::kHyphens:
       return 534;
-    case CSSPropertyFontVariantNumeric:
+    case CSSPropertyID::kFontVariantNumeric:
       return 535;
-    case CSSPropertyTextSizeAdjust:
+    case CSSPropertyID::kTextSizeAdjust:
       return 536;
-    case CSSPropertyAliasWebkitTextSizeAdjust:
+    case CSSPropertyID::kAliasWebkitTextSizeAdjust:
       return 537;
-    case CSSPropertyOverflowAnchor:
+    case CSSPropertyID::kOverflowAnchor:
       return 538;
-    case CSSPropertyUserSelect:
+    case CSSPropertyID::kUserSelect:
       return 539;
-    case CSSPropertyOffsetDistance:
+    case CSSPropertyID::kOffsetDistance:
       return 540;
-    case CSSPropertyOffsetPath:
+    case CSSPropertyID::kOffsetPath:
       return 541;
     // CSSPropertyOffsetRotation was 542.
-    case CSSPropertyOffset:
+    case CSSPropertyID::kOffset:
       return 543;
-    case CSSPropertyOffsetAnchor:
+    case CSSPropertyID::kOffsetAnchor:
       return 544;
-    case CSSPropertyOffsetPosition:
+    case CSSPropertyID::kOffsetPosition:
       return 545;
     // CSSPropertyTextDecorationSkip was 546.
-    case CSSPropertyCaretColor:
+    case CSSPropertyID::kCaretColor:
       return 547;
-    case CSSPropertyOffsetRotate:
+    case CSSPropertyID::kOffsetRotate:
       return 548;
-    case CSSPropertyFontVariationSettings:
+    case CSSPropertyID::kFontVariationSettings:
       return 549;
-    case CSSPropertyInlineSize:
+    case CSSPropertyID::kInlineSize:
       return 550;
-    case CSSPropertyBlockSize:
+    case CSSPropertyID::kBlockSize:
       return 551;
-    case CSSPropertyMinInlineSize:
+    case CSSPropertyID::kMinInlineSize:
       return 552;
-    case CSSPropertyMinBlockSize:
+    case CSSPropertyID::kMinBlockSize:
       return 553;
-    case CSSPropertyMaxInlineSize:
+    case CSSPropertyID::kMaxInlineSize:
       return 554;
-    case CSSPropertyMaxBlockSize:
+    case CSSPropertyID::kMaxBlockSize:
       return 555;
-    case CSSPropertyLineBreak:
+    case CSSPropertyID::kLineBreak:
       return 556;
-    case CSSPropertyPlaceContent:
+    case CSSPropertyID::kPlaceContent:
       return 557;
-    case CSSPropertyPlaceItems:
+    case CSSPropertyID::kPlaceItems:
       return 558;
-    case CSSPropertyTransformBox:
+    case CSSPropertyID::kTransformBox:
       return 559;
-    case CSSPropertyPlaceSelf:
+    case CSSPropertyID::kPlaceSelf:
       return 560;
-    case CSSPropertyScrollSnapAlign:
+    case CSSPropertyID::kScrollSnapAlign:
       return 561;
-    case CSSPropertyScrollPadding:
+    case CSSPropertyID::kScrollPadding:
       return 562;
-    case CSSPropertyScrollPaddingTop:
+    case CSSPropertyID::kScrollPaddingTop:
       return 563;
-    case CSSPropertyScrollPaddingRight:
+    case CSSPropertyID::kScrollPaddingRight:
       return 564;
-    case CSSPropertyScrollPaddingBottom:
+    case CSSPropertyID::kScrollPaddingBottom:
       return 565;
-    case CSSPropertyScrollPaddingLeft:
+    case CSSPropertyID::kScrollPaddingLeft:
       return 566;
-    case CSSPropertyScrollPaddingBlock:
+    case CSSPropertyID::kScrollPaddingBlock:
       return 567;
-    case CSSPropertyScrollPaddingBlockStart:
+    case CSSPropertyID::kScrollPaddingBlockStart:
       return 568;
-    case CSSPropertyScrollPaddingBlockEnd:
+    case CSSPropertyID::kScrollPaddingBlockEnd:
       return 569;
-    case CSSPropertyScrollPaddingInline:
+    case CSSPropertyID::kScrollPaddingInline:
       return 570;
-    case CSSPropertyScrollPaddingInlineStart:
+    case CSSPropertyID::kScrollPaddingInlineStart:
       return 571;
-    case CSSPropertyScrollPaddingInlineEnd:
+    case CSSPropertyID::kScrollPaddingInlineEnd:
       return 572;
-    case CSSPropertyScrollMargin:
+    case CSSPropertyID::kScrollMargin:
       return 573;
-    case CSSPropertyScrollMarginTop:
+    case CSSPropertyID::kScrollMarginTop:
       return 574;
-    case CSSPropertyScrollMarginRight:
+    case CSSPropertyID::kScrollMarginRight:
       return 575;
-    case CSSPropertyScrollMarginBottom:
+    case CSSPropertyID::kScrollMarginBottom:
       return 576;
-    case CSSPropertyScrollMarginLeft:
+    case CSSPropertyID::kScrollMarginLeft:
       return 577;
-    case CSSPropertyScrollMarginBlock:
+    case CSSPropertyID::kScrollMarginBlock:
       return 578;
-    case CSSPropertyScrollMarginBlockStart:
+    case CSSPropertyID::kScrollMarginBlockStart:
       return 579;
-    case CSSPropertyScrollMarginBlockEnd:
+    case CSSPropertyID::kScrollMarginBlockEnd:
       return 580;
-    case CSSPropertyScrollMarginInline:
+    case CSSPropertyID::kScrollMarginInline:
       return 581;
-    case CSSPropertyScrollMarginInlineStart:
+    case CSSPropertyID::kScrollMarginInlineStart:
       return 582;
-    case CSSPropertyScrollMarginInlineEnd:
+    case CSSPropertyID::kScrollMarginInlineEnd:
       return 583;
-    case CSSPropertyScrollSnapStop:
+    case CSSPropertyID::kScrollSnapStop:
       return 584;
-    case CSSPropertyOverscrollBehavior:
+    case CSSPropertyID::kOverscrollBehavior:
       return 585;
-    case CSSPropertyOverscrollBehaviorX:
+    case CSSPropertyID::kOverscrollBehaviorX:
       return 586;
-    case CSSPropertyOverscrollBehaviorY:
+    case CSSPropertyID::kOverscrollBehaviorY:
       return 587;
-    case CSSPropertyFontVariantEastAsian:
+    case CSSPropertyID::kFontVariantEastAsian:
       return 588;
-    case CSSPropertyTextDecorationSkipInk:
+    case CSSPropertyID::kTextDecorationSkipInk:
       return 589;
-    case CSSPropertyScrollCustomization:
+    case CSSPropertyID::kScrollCustomization:
       return 590;
-    case CSSPropertyRowGap:
+    case CSSPropertyID::kRowGap:
       return 591;
-    case CSSPropertyGap:
+    case CSSPropertyID::kGap:
       return 592;
-    case CSSPropertyViewportFit:
+    case CSSPropertyID::kViewportFit:
       return 593;
-    case CSSPropertyMarginBlockStart:
+    case CSSPropertyID::kMarginBlockStart:
       return 594;
-    case CSSPropertyMarginBlockEnd:
+    case CSSPropertyID::kMarginBlockEnd:
       return 595;
-    case CSSPropertyMarginInlineStart:
+    case CSSPropertyID::kMarginInlineStart:
       return 596;
-    case CSSPropertyMarginInlineEnd:
+    case CSSPropertyID::kMarginInlineEnd:
       return 597;
-    case CSSPropertyPaddingBlockStart:
+    case CSSPropertyID::kPaddingBlockStart:
       return 598;
-    case CSSPropertyPaddingBlockEnd:
+    case CSSPropertyID::kPaddingBlockEnd:
       return 599;
-    case CSSPropertyPaddingInlineStart:
+    case CSSPropertyID::kPaddingInlineStart:
       return 600;
-    case CSSPropertyPaddingInlineEnd:
+    case CSSPropertyID::kPaddingInlineEnd:
       return 601;
-    case CSSPropertyBorderBlockEndColor:
+    case CSSPropertyID::kBorderBlockEndColor:
       return 602;
-    case CSSPropertyBorderBlockEndStyle:
+    case CSSPropertyID::kBorderBlockEndStyle:
       return 603;
-    case CSSPropertyBorderBlockEndWidth:
+    case CSSPropertyID::kBorderBlockEndWidth:
       return 604;
-    case CSSPropertyBorderBlockStartColor:
+    case CSSPropertyID::kBorderBlockStartColor:
       return 605;
-    case CSSPropertyBorderBlockStartStyle:
+    case CSSPropertyID::kBorderBlockStartStyle:
       return 606;
-    case CSSPropertyBorderBlockStartWidth:
+    case CSSPropertyID::kBorderBlockStartWidth:
       return 607;
-    case CSSPropertyBorderInlineEndColor:
+    case CSSPropertyID::kBorderInlineEndColor:
       return 608;
-    case CSSPropertyBorderInlineEndStyle:
+    case CSSPropertyID::kBorderInlineEndStyle:
       return 609;
-    case CSSPropertyBorderInlineEndWidth:
+    case CSSPropertyID::kBorderInlineEndWidth:
       return 610;
-    case CSSPropertyBorderInlineStartColor:
+    case CSSPropertyID::kBorderInlineStartColor:
       return 611;
-    case CSSPropertyBorderInlineStartStyle:
+    case CSSPropertyID::kBorderInlineStartStyle:
       return 612;
-    case CSSPropertyBorderInlineStartWidth:
+    case CSSPropertyID::kBorderInlineStartWidth:
       return 613;
-    case CSSPropertyBorderBlockStart:
+    case CSSPropertyID::kBorderBlockStart:
       return 614;
-    case CSSPropertyBorderBlockEnd:
+    case CSSPropertyID::kBorderBlockEnd:
       return 615;
-    case CSSPropertyBorderInlineStart:
+    case CSSPropertyID::kBorderInlineStart:
       return 616;
-    case CSSPropertyBorderInlineEnd:
+    case CSSPropertyID::kBorderInlineEnd:
       return 617;
-    case CSSPropertyMarginBlock:
+    case CSSPropertyID::kMarginBlock:
       return 618;
-    case CSSPropertyMarginInline:
+    case CSSPropertyID::kMarginInline:
       return 619;
-    case CSSPropertyPaddingBlock:
+    case CSSPropertyID::kPaddingBlock:
       return 620;
-    case CSSPropertyPaddingInline:
+    case CSSPropertyID::kPaddingInline:
       return 621;
-    case CSSPropertyBorderBlockColor:
+    case CSSPropertyID::kBorderBlockColor:
       return 622;
-    case CSSPropertyBorderBlockStyle:
+    case CSSPropertyID::kBorderBlockStyle:
       return 623;
-    case CSSPropertyBorderBlockWidth:
+    case CSSPropertyID::kBorderBlockWidth:
       return 624;
-    case CSSPropertyBorderInlineColor:
+    case CSSPropertyID::kBorderInlineColor:
       return 625;
-    case CSSPropertyBorderInlineStyle:
+    case CSSPropertyID::kBorderInlineStyle:
       return 626;
-    case CSSPropertyBorderInlineWidth:
+    case CSSPropertyID::kBorderInlineWidth:
       return 627;
-    case CSSPropertyBorderBlock:
+    case CSSPropertyID::kBorderBlock:
       return 628;
-    case CSSPropertyBorderInline:
+    case CSSPropertyID::kBorderInline:
       return 629;
-    case CSSPropertyInsetBlockStart:
+    case CSSPropertyID::kInsetBlockStart:
       return 630;
-    case CSSPropertyInsetBlockEnd:
+    case CSSPropertyID::kInsetBlockEnd:
       return 631;
-    case CSSPropertyInsetBlock:
+    case CSSPropertyID::kInsetBlock:
       return 632;
-    case CSSPropertyInsetInlineStart:
+    case CSSPropertyID::kInsetInlineStart:
       return 633;
-    case CSSPropertyInsetInlineEnd:
+    case CSSPropertyID::kInsetInlineEnd:
       return 634;
-    case CSSPropertyInsetInline:
+    case CSSPropertyID::kInsetInline:
       return 635;
-    case CSSPropertyInset:
+    case CSSPropertyID::kInset:
       return 636;
     // 1. Add new features above this line (don't change the assigned numbers of
     // the existing items).
@@ -1231,7 +1232,7 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
     // value.
     // 3. Run the update_use_counter_css.py script in
     // chromium/src/tools/metrics/histograms to update the UMA histogram names.
-    case CSSPropertyInvalid:
+    case CSSPropertyID::kInvalid:
       NOTREACHED();
       return 0;
   }
@@ -1420,7 +1421,7 @@ void UseCounter::AddObserver(Observer* observer) {
 
 bool UseCounter::IsCounted(Document& document, const String& string) {
   CSSPropertyID unresolved_property = unresolvedCSSPropertyID(string);
-  if (unresolved_property == CSSPropertyInvalid)
+  if (unresolved_property == CSSPropertyID::kInvalid)
     return false;
   DocumentLoader* loader = document.Loader();
   return loader ? loader->GetUseCounter().IsCounted(unresolved_property)
@@ -1451,7 +1452,8 @@ void UseCounter::ReportAndTraceMeasurementByCSSSampleId(int sample_id,
 void UseCounter::Count(CSSParserMode css_parser_mode,
                        CSSPropertyID property,
                        const LocalFrame* source_frame) {
-  DCHECK(isCSSPropertyIDWithName(property) || property == CSSPropertyVariable);
+  DCHECK(isCSSPropertyIDWithName(property) ||
+         property == CSSPropertyID::kVariable);
 
   if (!IsUseCounterEnabledForMode(css_parser_mode) || mute_count_)
     return;
@@ -1479,7 +1481,7 @@ bool UseCounter::IsCountedAnimatedCSS(CSSPropertyID unresolved_property) {
 bool UseCounter::IsCountedAnimatedCSS(Document& document,
                                       const String& string) {
   CSSPropertyID unresolved_property = unresolvedCSSPropertyID(string);
-  if (unresolved_property == CSSPropertyInvalid)
+  if (unresolved_property == CSSPropertyID::kInvalid)
     return false;
   DocumentLoader* loader = document.Loader();
   return loader
@@ -1496,7 +1498,8 @@ void UseCounter::CountAnimatedCSS(const Document& document,
 
 void UseCounter::CountAnimatedCSS(CSSPropertyID property,
                                   const LocalFrame* source_frame) {
-  DCHECK(isCSSPropertyIDWithName(property) || property == CSSPropertyVariable);
+  DCHECK(isCSSPropertyIDWithName(property) ||
+         property == CSSPropertyID::kVariable);
 
   if (mute_count_)
     return;

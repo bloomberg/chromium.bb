@@ -56,7 +56,7 @@ bool StringToScrollOffset(String scroll_offset, CSSPrimitiveValue** result) {
     return false;
 
   // We support 'auto', but for simplicity just store it as nullptr.
-  *result = value->IsIdentifierValue() ? nullptr : ToCSSPrimitiveValue(value);
+  *result = DynamicTo<CSSPrimitiveValue>(value);
   return true;
 }
 
@@ -128,18 +128,23 @@ ScrollTimeline::ScrollTimeline(Element* scroll_source,
       time_range_(time_range),
       fill_(fill) {}
 
-double ScrollTimeline::currentTime(bool& is_null) {
-  is_null = true;
-
-  // 1. If scrollSource is null, does not currently have a CSS layout box, or if
-  // its layout box is not a scroll container, return an unresolved time value.
+bool ScrollTimeline::IsActive() const {
   LayoutBox* layout_box = resolved_scroll_source_
                               ? resolved_scroll_source_->GetLayoutBox()
                               : nullptr;
-  if (!layout_box || !layout_box->HasOverflowClip()) {
+  return layout_box && layout_box->HasOverflowClip();
+}
+
+double ScrollTimeline::currentTime(bool& is_null) {
+  is_null = true;
+
+  // 1. If scroll timeline is inactive, return an unresolved time value.
+  // https://github.com/WICG/scroll-animations/issues/31
+  // https://wicg.github.io/scroll-animations/#current-time-algorithm
+  if (!IsActive()) {
     return std::numeric_limits<double>::quiet_NaN();
   }
-
+  LayoutBox* layout_box = resolved_scroll_source_->GetLayoutBox();
   // 2. Otherwise, let current scroll offset be the current scroll offset of
   // scrollSource in the direction specified by orientation.
 

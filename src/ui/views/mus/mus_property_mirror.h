@@ -16,7 +16,7 @@ namespace views {
 // Facilitates copying mus client window properties to their mash frame windows.
 class VIEWS_MUS_EXPORT MusPropertyMirror {
  public:
-  virtual ~MusPropertyMirror() {}
+  virtual ~MusPropertyMirror() = default;
 
   // Called when a property with the given |key| has changed for |window|.
   // |window| is what mus clients get when calling |widget->GetNativeWindow()|.

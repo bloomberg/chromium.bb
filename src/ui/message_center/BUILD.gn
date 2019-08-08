@@ -121,6 +121,8 @@ jumbo_component("message_center") {
         "views/popup_alignment_delegate.h",
         "views/proportional_image_view.cc",
         "views/proportional_image_view.h",
+        "views/relative_time_formatter.cc",
+        "views/relative_time_formatter.h",
         "views/slide_out_controller.cc",
         "views/slide_out_controller.h",
       ]
@@ -223,7 +225,9 @@ if (enable_message_center) {
       sources += [
         "views/bounded_label_unittest.cc",
         "views/message_popup_collection_unittest.cc",
+        "views/notification_header_view_unittest.cc",
         "views/notification_view_md_unittest.cc",
+        "views/relative_time_formatter_unittest.cc",
         "views/slide_out_controller_unittest.cc",
       ]
       if (!is_chromeos) {
@@ -237,6 +241,7 @@ if (enable_message_center) {
         # fonts used by bounded_label_unittest.cc.
         "//ui/compositor",
         "//ui/display",
+        "//ui/strings",
         "//ui/views",
         "//ui/views:test_support",
       ]

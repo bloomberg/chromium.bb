@@ -151,7 +151,8 @@ void OfflinePageUtilsTest::SetUp() {
 
   // Set up the factory for testing.
   OfflinePageModelFactory::GetInstance()->SetTestingFactoryAndUse(
-      &profile_, base::BindRepeating(&BuildTestOfflinePageModel));
+      profile_.GetProfileKey(),
+      base::BindRepeating(&BuildTestOfflinePageModel));
   RunUntilIdle();
 
   RequestCoordinatorFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -338,7 +339,12 @@ TEST_F(OfflinePageUtilsTest, CheckDuplicateDownloads) {
   EXPECT_EQ(OfflinePageUtils::DuplicateCheckResult::NOT_FOUND, result);
 }
 
-TEST_F(OfflinePageUtilsTest, ScheduleDownload) {
+#if defined(DISABLE_OFFLINE_PAGES_TOUCHLESS)
+#define MAYBE_ScheduleDownload DISABLED_ScheduleDownload
+#else
+#define MAYBE_ScheduleDownload ScheduleDownload
+#endif
+TEST_F(OfflinePageUtilsTest, MAYBE_ScheduleDownload) {
   // Pre-check.
   ASSERT_EQ(0, FindRequestByNamespaceAndURL(kDownloadNamespace, kTestPage1Url));
   ASSERT_EQ(1, FindRequestByNamespaceAndURL(kDownloadNamespace, kTestPage3Url));

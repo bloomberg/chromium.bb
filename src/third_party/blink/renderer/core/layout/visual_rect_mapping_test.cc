@@ -18,7 +18,7 @@ class VisualRectMappingTest : public PaintTestConfigurations,
                               public RenderingTest {
  public:
   VisualRectMappingTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()) {}
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
  protected:
   LayoutView& GetLayoutView() const { return *GetDocument().GetLayoutView(); }
@@ -126,7 +126,7 @@ TEST_P(VisualRectMappingTest, LayoutText) {
     </div>
   )HTML");
 
-  auto* container = ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   auto* text = GetLayoutObjectByElementId("text")->SlowFirstChild();
 
   container->SetScrollTop(LayoutUnit(50));
@@ -159,8 +159,7 @@ TEST_P(VisualRectMappingTest, LayoutInline) {
     </div>
   )HTML");
 
-  LayoutBlock* container =
-      ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   LayoutObject* leaf = container->LastChild();
 
   container->SetScrollTop(LayoutUnit(50));
@@ -200,10 +199,9 @@ TEST_P(VisualRectMappingTest, LayoutView) {
       "<span><img style='width: 20px; height: 100px'></span>text text text");
   UpdateAllLifecyclePhasesForTest();
 
-  LayoutBlock* frame_container =
-      ToLayoutBlock(GetLayoutObjectByElementId("frameContainer"));
-  LayoutBlock* frame_body =
-      ToLayoutBlock(ChildDocument().body()->GetLayoutObject());
+  auto* frame_container =
+      To<LayoutBlock>(GetLayoutObjectByElementId("frameContainer"));
+  auto* frame_body = To<LayoutBlock>(ChildDocument().body()->GetLayoutObject());
   LayoutText* frame_text = ToLayoutText(frame_body->LastChild());
 
   // This case involves clipping: frame height is 50, y-coordinate of result
@@ -248,8 +246,8 @@ TEST_P(VisualRectMappingTest, LayoutViewSubpixelRounding) {
 
   UpdateAllLifecyclePhasesForTest();
 
-  LayoutBlock* frame_container =
-      ToLayoutBlock(GetLayoutObjectByElementId("frameContainer"));
+  auto* frame_container =
+      To<LayoutBlock>(GetLayoutObjectByElementId("frameContainer"));
   LayoutObject* target =
       ChildDocument().getElementById("target")->GetLayoutObject();
   LayoutRect rect(0, 0, 100, 100);
@@ -275,11 +273,10 @@ TEST_P(VisualRectMappingTest, LayoutViewDisplayNone) {
       "<div style='width:100px;height:100px;'></div>");
   UpdateAllLifecyclePhasesForTest();
 
-  LayoutBlock* frame_container =
-      ToLayoutBlock(GetLayoutObjectByElementId("frameContainer"));
-  LayoutBlock* frame_body =
-      ToLayoutBlock(ChildDocument().body()->GetLayoutObject());
-  LayoutBlock* frame_div = ToLayoutBlock(frame_body->LastChild());
+  auto* frame_container =
+      To<LayoutBlock>(GetLayoutObjectByElementId("frameContainer"));
+  auto* frame_body = To<LayoutBlock>(ChildDocument().body()->GetLayoutObject());
+  auto* frame_div = To<LayoutBlock>(frame_body->LastChild());
 
   // This part is copied from the LayoutView test, just to ensure that the
   // mapped rect is valid before display:none is set on the iframe.
@@ -293,10 +290,10 @@ TEST_P(VisualRectMappingTest, LayoutViewDisplayNone) {
   EXPECT_EQ(rect, LayoutRect(4, 13, 20, 37));
 
   Element* frame_element = GetDocument().getElementById("frame");
-  frame_element->SetInlineStyleProperty(CSSPropertyDisplay, "none");
+  frame_element->SetInlineStyleProperty(CSSPropertyID::kDisplay, "none");
   UpdateAllLifecyclePhasesForTest();
 
-  frame_body = ToLayoutBlock(ChildDocument().body()->GetLayoutObject());
+  frame_body = To<LayoutBlock>(ChildDocument().body()->GetLayoutObject());
   EXPECT_EQ(nullptr, frame_body);
 }
 
@@ -308,7 +305,7 @@ TEST_P(VisualRectMappingTest, SelfFlippedWritingMode) {
     </div>
   )HTML");
 
-  LayoutBlock* target = ToLayoutBlock(GetLayoutObjectByElementId("target"));
+  auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
   LayoutRect local_visual_rect = target->LocalVisualRect();
   // -40 = -box_shadow_offset_x(40) (with target's top-right corner as the
   // origin)
@@ -341,7 +338,7 @@ TEST_P(VisualRectMappingTest, ContainerFlippedWritingMode) {
     </div>
   )HTML");
 
-  LayoutBlock* target = ToLayoutBlock(GetLayoutObjectByElementId("target"));
+  auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
   LayoutRect target_local_visual_rect = target->LocalVisualRect();
   // -40 = -box_shadow_offset_x(40) (with target's top-right corner as the
   // origin)
@@ -355,8 +352,7 @@ TEST_P(VisualRectMappingTest, ContainerFlippedWritingMode) {
   // This rect is in physical coordinates of target.
   EXPECT_EQ(LayoutRect(0, 0, 140, 110), rect);
 
-  LayoutBlock* container =
-      ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   rect = target_local_visual_rect;
   target->FlipForWritingMode(rect);
   EXPECT_TRUE(target->MapToVisualRectInAncestorSpace(container, rect));
@@ -389,15 +385,14 @@ TEST_P(VisualRectMappingTest, ContainerOverflowScroll) {
     </div>
   )HTML");
 
-  LayoutBlock* container =
-      ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   EXPECT_EQ(LayoutUnit(), container->ScrollTop());
   EXPECT_EQ(LayoutUnit(), container->ScrollLeft());
   container->SetScrollTop(LayoutUnit(7));
   container->SetScrollLeft(LayoutUnit(8));
   UpdateAllLifecyclePhasesForTest();
 
-  LayoutBlock* target = ToLayoutBlock(GetLayoutObjectByElementId("target"));
+  auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
   LayoutRect target_local_visual_rect = target->LocalVisualRect();
   // 140 = width(100) + box_shadow_offset_x(40)
   // 110 = height(90) + box_shadow_offset_y(20)
@@ -448,8 +443,7 @@ TEST_P(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll) {
     </div>
   )HTML");
 
-  LayoutBlock* container =
-      ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   EXPECT_EQ(LayoutUnit(), container->ScrollTop());
   // The initial scroll offset is to the left-most because of flipped blocks
   // writing mode.
@@ -460,7 +454,7 @@ TEST_P(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll) {
   container->SetScrollLeft(LayoutUnit(142));
   UpdateAllLifecyclePhasesForTest();
 
-  LayoutBlock* target = ToLayoutBlock(GetLayoutObjectByElementId("target"));
+  auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
   LayoutRect target_local_visual_rect = target->LocalVisualRect();
   // -40 = -box_shadow_offset_x(40) (with target's top-right corner as the
   // origin)
@@ -526,15 +520,14 @@ TEST_P(VisualRectMappingTest, ContainerOverflowHidden) {
     </div>
   )HTML");
 
-  LayoutBlock* container =
-      ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   EXPECT_EQ(LayoutUnit(), container->ScrollTop());
   EXPECT_EQ(LayoutUnit(), container->ScrollLeft());
   container->SetScrollTop(LayoutUnit(27));
   container->SetScrollLeft(LayoutUnit(28));
   UpdateAllLifecyclePhasesForTest();
 
-  LayoutBlock* target = ToLayoutBlock(GetLayoutObjectByElementId("target"));
+  auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
   LayoutRect target_local_visual_rect = target->LocalVisualRect();
   // 140 = width(100) + box_shadow_offset_x(40)
   // 110 = height(90) + box_shadow_offset_y(20)
@@ -560,8 +553,7 @@ TEST_P(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowHidden) {
     </div>
   )HTML");
 
-  LayoutBlock* container =
-      ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   EXPECT_EQ(LayoutUnit(), container->ScrollTop());
   // The initial scroll offset is to the left-most because of flipped blocks
   // writing mode.
@@ -571,7 +563,7 @@ TEST_P(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowHidden) {
   container->SetScrollLeft(LayoutUnit(82));  // Scroll to the right by 8 pixels.
   UpdateAllLifecyclePhasesForTest();
 
-  LayoutBlock* target = ToLayoutBlock(GetLayoutObjectByElementId("target"));
+  auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
   LayoutRect target_local_visual_rect = target->LocalVisualRect();
   // -40 = -box_shadow_offset_x(40) (with target's top-right corner as the
   // origin)
@@ -604,8 +596,7 @@ TEST_P(VisualRectMappingTest, ContainerAndTargetDifferentFlippedWritingMode) {
     </div>
   )HTML");
 
-  LayoutBlock* container =
-      ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   EXPECT_EQ(LayoutUnit(), container->ScrollTop());
   // The initial scroll offset is to the left-most because of flipped blocks
   // writing mode.
@@ -616,7 +607,7 @@ TEST_P(VisualRectMappingTest, ContainerAndTargetDifferentFlippedWritingMode) {
       LayoutUnit(142));  // Scroll to the right by 8 pixels.
   UpdateAllLifecyclePhasesForTest();
 
-  LayoutBlock* target = ToLayoutBlock(GetLayoutObjectByElementId("target"));
+  auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
   LayoutRect target_local_visual_rect = target->LocalVisualRect();
   // 140 = width(100) + box_shadow_offset_x(40)
   // 110 = height(90) + box_shadow_offset_y(20)
@@ -656,13 +647,13 @@ TEST_P(VisualRectMappingTest,
     </div>
   )HTML");
 
-  LayoutBlock* scroller = ToLayoutBlock(GetLayoutObjectByElementId("scroller"));
+  auto* scroller = To<LayoutBlock>(GetLayoutObjectByElementId("scroller"));
   scroller->SetScrollTop(LayoutUnit(77));
   scroller->SetScrollLeft(LayoutUnit(88));
   UpdateAllLifecyclePhasesForTest();
 
-  LayoutBlock* normal_flow =
-      ToLayoutBlock(GetLayoutObjectByElementId("normal-flow"));
+  auto* normal_flow =
+      To<LayoutBlock>(GetLayoutObjectByElementId("normal-flow"));
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     EXPECT_EQ(scroller, &normal_flow->ContainerForPaintInvalidation());
 
@@ -671,11 +662,11 @@ TEST_P(VisualRectMappingTest,
   LayoutRect rect = normal_flow_visual_rect;
   EXPECT_TRUE(normal_flow->MapToVisualRectInAncestorSpace(scroller, rect));
   EXPECT_EQ(LayoutRect(0, 0, 2000, 2000), rect);
-  EXPECT_EQ(rect, normal_flow->FirstFragment().VisualRect());
+  EXPECT_EQ(EnclosingIntRect(rect), normal_flow->FirstFragment().VisualRect());
 
-  LayoutBlock* stacking_context =
-      ToLayoutBlock(GetLayoutObjectByElementId("stacking-context"));
-  LayoutBlock* absolute = ToLayoutBlock(GetLayoutObjectByElementId("absolute"));
+  auto* stacking_context =
+      To<LayoutBlock>(GetLayoutObjectByElementId("stacking-context"));
+  auto* absolute = To<LayoutBlock>(GetLayoutObjectByElementId("absolute"));
   EXPECT_EQ(stacking_context, absolute->Container());
 
   EXPECT_EQ(LayoutRect(0, 0, 50, 50), absolute->LocalVisualRect());
@@ -703,11 +694,10 @@ TEST_P(VisualRectMappingTest,
       "  </div>"
       "</div>");
 
-  LayoutBlock* stacking_context =
-      ToLayoutBlock(GetLayoutObjectByElementId("stacking-context"));
-  LayoutBlock* absolute = ToLayoutBlock(GetLayoutObjectByElementId("absolute"));
-  LayoutBlock* container =
-      ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto* stacking_context =
+      To<LayoutBlock>(GetLayoutObjectByElementId("stacking-context"));
+  auto* absolute = To<LayoutBlock>(GetLayoutObjectByElementId("absolute"));
+  auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   EXPECT_EQ(absolute->View(), &absolute->ContainerForPaintInvalidation());
   EXPECT_EQ(container, absolute->Container());
 
@@ -779,7 +769,7 @@ TEST_P(VisualRectMappingTest, FloatUnderInline) {
   } else {
     EXPECT_EQ(LayoutRect(66, 55, 33, 44), rect);
   }
-  EXPECT_EQ(rect, target->FirstFragment().VisualRect());
+  EXPECT_EQ(EnclosingIntRect(rect), target->FirstFragment().VisualRect());
 
   rect = target_visual_rect;
 
@@ -807,9 +797,8 @@ TEST_P(VisualRectMappingTest, ShouldAccountForPreserve3d) {
     </style>
     <div id='container'><div id='target'></div></div>
   )HTML");
-  LayoutBlock* container =
-      ToLayoutBlock(GetLayoutObjectByElementId("container"));
-  LayoutBlock* target = ToLayoutBlock(GetLayoutObjectByElementId("target"));
+  auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
+  auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
   LayoutRect original_rect(0, 0, 100, 100);
   // Multiply both matrices together before flattening.
   TransformationMatrix matrix = container->Layer()->CurrentTransform();
@@ -839,9 +828,8 @@ TEST_P(VisualRectMappingTest, ShouldAccountForPreserve3dNested) {
     </style>
     <div id='container'><div id='target'></div></div>
   )HTML");
-  LayoutBlock* container =
-      ToLayoutBlock(GetLayoutObjectByElementId("container"));
-  LayoutBlock* target = ToLayoutBlock(GetLayoutObjectByElementId("target"));
+  auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
+  auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
   LayoutRect original_rect(0, 0, 100, 100);
   // Multiply both matrices together before flattening.
   TransformationMatrix matrix = container->Layer()->CurrentTransform();
@@ -868,9 +856,8 @@ TEST_P(VisualRectMappingTest, ShouldAccountForPerspective) {
     </style>
     <div id='container'><div id='target'></div></div>
   )HTML");
-  LayoutBlock* container =
-      ToLayoutBlock(GetLayoutObjectByElementId("container"));
-  LayoutBlock* target = ToLayoutBlock(GetLayoutObjectByElementId("target"));
+  auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
+  auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
   LayoutRect original_rect(0, 0, 100, 100);
   TransformationMatrix matrix = container->Layer()->CurrentTransform();
   matrix.FlattenTo2d();
@@ -903,9 +890,8 @@ TEST_P(VisualRectMappingTest, ShouldAccountForPerspectiveNested) {
     </style>
     <div id='container'><div id='target'></div></div>
   )HTML");
-  LayoutBlock* container =
-      ToLayoutBlock(GetLayoutObjectByElementId("container"));
-  LayoutBlock* target = ToLayoutBlock(GetLayoutObjectByElementId("target"));
+  auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
+  auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
   LayoutRect original_rect(0, 0, 100, 100);
   TransformationMatrix matrix = container->Layer()->CurrentTransform();
   TransformationMatrix target_matrix;
@@ -942,12 +928,11 @@ TEST_P(VisualRectMappingTest, PerspectivePlusScroll) {
       <div id='spacer'></div>
     </div>
   )HTML");
-  LayoutBlock* container =
-      ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   ToElement(container->GetNode())->scrollTo(0, 5);
   UpdateAllLifecyclePhasesForTest();
 
-  LayoutBlock* target = ToLayoutBlock(GetLayoutObjectByElementId("target"));
+  auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
   LayoutRect originalRect(0, 0, 100, 100);
   TransformationMatrix transform;
   target->GetTransformFromContainer(

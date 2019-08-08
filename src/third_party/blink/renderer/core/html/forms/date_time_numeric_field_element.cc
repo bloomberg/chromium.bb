@@ -70,8 +70,9 @@ DateTimeNumericFieldElement::DateTimeNumericFieldElement(
     if (dir == WTF::unicode::kLeftToRight ||
         dir == WTF::unicode::kEuropeanNumber ||
         dir == WTF::unicode::kArabicNumber) {
-      SetInlineStyleProperty(CSSPropertyUnicodeBidi, CSSValueBidiOverride);
-      SetInlineStyleProperty(CSSPropertyDirection, CSSValueLtr);
+      SetInlineStyleProperty(CSSPropertyID::kUnicodeBidi,
+                             CSSValueID::kBidiOverride);
+      SetInlineStyleProperty(CSSPropertyID::kDirection, CSSValueID::kLtr);
     }
   }
 }

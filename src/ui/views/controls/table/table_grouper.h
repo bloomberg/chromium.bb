@@ -22,9 +22,9 @@ class VIEWS_EXPORT TableGrouper {
   virtual void GetGroupRange(int model_index, GroupRange* range) = 0;
 
  protected:
-  virtual ~TableGrouper() {}
+  virtual ~TableGrouper() = default;
 };
 
-}
+}  // namespace views
 
 #endif  // UI_VIEWS_CONTROLS_TABLE_GROUP_TABLE_VIEW_H_

@@ -13,6 +13,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
@@ -30,7 +31,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.CardViewHolder;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
@@ -79,8 +79,7 @@ public class SuggestionsRecyclerView extends RecyclerView {
     /** The ui config for this view. */
     private UiConfig mUiConfig;
 
-    /** The context menu manager for this view. */
-    private ContextMenuManager mContextMenuManager;
+    private Runnable mCloseContextMenuCallback;
 
     private boolean mIsCardBeingSwiped;
 
@@ -88,8 +87,13 @@ public class SuggestionsRecyclerView extends RecyclerView {
         this(context, null);
     }
 
-    @SuppressWarnings("RestrictTo")
     public SuggestionsRecyclerView(Context context, AttributeSet attrs) {
+        this(context, attrs, new LinearLayoutManager(context));
+    }
+
+    @SuppressWarnings("RestrictTo")
+    protected SuggestionsRecyclerView(
+            Context context, AttributeSet attrs, LinearLayoutManager layoutManager) {
         super(new ContextThemeWrapper(context, R.style.NewTabPageRecyclerView), attrs);
 
         Resources res = getContext().getResources();
@@ -110,14 +114,20 @@ public class SuggestionsRecyclerView extends RecyclerView {
                         return retVal;
                     }
                 });
-        mLayoutManager = new LinearLayoutManager(getContext());
-        setLayoutManager(mLayoutManager);
+        mLayoutManager = layoutManager;
+        setLayoutManager(layoutManager);
         setHasFixedSize(true);
 
         ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchCallbacks());
         helper.attachToRecyclerView(this);
 
         addOnScrollListener(new SuggestionsMetrics.ScrollEventReporter());
+
+        // Work around https://crbug.com/943873 where default focus highlight shows up after
+        // toggling dark mode.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            setDefaultFocusHighlightEnabled(false);
+        }
     }
 
     public boolean isFirstItemVisible() {
@@ -130,6 +140,18 @@ public class SuggestionsRecyclerView extends RecyclerView {
      */
     public void setTouchEnabled(boolean enabled) {
         mTouchEnabled = enabled;
+    }
+
+    /**
+     * Returns the approximate adapter position that the user has scrolled to. The purpose of this
+     * value is that it can be stored and later retrieved to restore a scroll position that is
+     * familiar to the user, showing (part of) the same content the user was previously looking at.
+     * This position is valid for that purpose regardless of device orientation changes. Note that
+     * if the underlying data has changed in the meantime, different content would be shown for this
+     * position.
+     */
+    public int getScrollPosition() {
+        return getLinearLayoutManager().findFirstVisibleItemPosition();
     }
 
     /**
@@ -195,7 +217,7 @@ public class SuggestionsRecyclerView extends RecyclerView {
         if (mUiConfig != null) mUiConfig.updateDisplayStyle();
 
         // Close the Context Menu as it may have moved (https://crbug.com/642688).
-        if (mContextMenuManager != null) mContextMenuManager.closeContextMenu();
+        if (mCloseContextMenuCallback != null) mCloseContextMenuCallback.run();
     }
 
     @Override
@@ -208,9 +230,9 @@ public class SuggestionsRecyclerView extends RecyclerView {
         super.onLayout(changed, l, t, r, b);
     }
 
-    public void init(UiConfig uiConfig, ContextMenuManager contextMenuManager) {
+    public void init(UiConfig uiConfig, Runnable closeContextMenuCallback) {
         mUiConfig = uiConfig;
-        mContextMenuManager = contextMenuManager;
+        mCloseContextMenuCallback = closeContextMenuCallback;
     }
 
     public NewTabPageAdapter getNewTabPageAdapter() {

@@ -10,7 +10,7 @@
 #include <stdint.h>
 
 #include "base/memory/weak_ptr.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/network_change_notifier.h"
 #include "net/log/net_log_with_source.h"

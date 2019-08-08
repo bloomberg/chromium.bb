@@ -5,7 +5,6 @@
 #ifndef CC_TREES_PROXY_MAIN_H_
 #define CC_TREES_PROXY_MAIN_H_
 
-#include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/trees/proxy.h"
@@ -33,8 +32,10 @@ class CC_EXPORT ProxyMain : public Proxy {
  public:
   ProxyMain(LayerTreeHost* layer_tree_host,
             TaskRunnerProvider* task_runner_provider);
-
+  ProxyMain(const ProxyMain&) = delete;
   ~ProxyMain() override;
+
+  ProxyMain& operator=(const ProxyMain&) = delete;
 
   // Commits between the main and impl threads are processed through a pipeline
   // with the following stages. For efficiency we can early out at any stage if
@@ -87,7 +88,6 @@ class CC_EXPORT ProxyMain : public Proxy {
   void SetNeedsRedraw(const gfx::Rect& damage_rect) override;
   void SetNextCommitWaitsForActivation() override;
   bool RequestedAnimatePending() override;
-  void NotifyInputThrottledUntilCommit() override;
   void SetDeferMainFrameUpdate(bool defer_main_frame_update) override;
   void StartDeferringCommits(base::TimeDelta timeout) override;
   void StopDeferringCommits() override;
@@ -166,8 +166,6 @@ class CC_EXPORT ProxyMain : public Proxy {
   base::WeakPtrFactory<ProxyMain> frame_sink_bound_weak_factory_;
 
   base::WeakPtrFactory<ProxyMain> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProxyMain);
 };
 
 }  // namespace cc

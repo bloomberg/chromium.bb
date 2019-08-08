@@ -26,8 +26,8 @@ namespace {
 // TestAXTreeSourceViews provides a root with a default tree ID.
 class TestAXTreeSourceViews : public AXTreeSourceViews {
  public:
-  TestAXTreeSourceViews(AXAuraObjWrapper* root)
-      : AXTreeSourceViews(root, ui::AXTreeID::CreateNewAXTreeID()) {}
+  TestAXTreeSourceViews(AXAuraObjWrapper* root, AXAuraObjCache* cache)
+      : AXTreeSourceViews(root, ui::AXTreeID::CreateNewAXTreeID(), cache) {}
 
   ~TestAXTreeSourceViews() override = default;
 
@@ -79,11 +79,11 @@ class AXTreeSourceViewsTest : public ViewsTestBase {
 };
 
 TEST_F(AXTreeSourceViewsTest, Basics) {
-  AXAuraObjCache* cache = AXAuraObjCache::GetInstance();
+  AXAuraObjCache cache;
 
   // Start the tree at the Widget's contents view.
-  AXAuraObjWrapper* root = cache->GetOrCreate(widget_->GetContentsView());
-  TestAXTreeSourceViews tree(root);
+  AXAuraObjWrapper* root = cache.GetOrCreate(widget_->GetContentsView());
+  TestAXTreeSourceViews tree(root, &cache);
   EXPECT_EQ(root, tree.GetRoot());
 
   // The root has no parent.
@@ -98,9 +98,9 @@ TEST_F(AXTreeSourceViewsTest, Basics) {
   AXAuraObjWrapper* label1 = children[0];
   AXAuraObjWrapper* label2 = children[1];
   AXAuraObjWrapper* textfield = children[2];
-  EXPECT_EQ(label1, cache->GetOrCreate(label1_));
-  EXPECT_EQ(label2, cache->GetOrCreate(label2_));
-  EXPECT_EQ(textfield, cache->GetOrCreate(textfield_));
+  EXPECT_EQ(label1, cache.GetOrCreate(label1_));
+  EXPECT_EQ(label2, cache.GetOrCreate(label2_));
+  EXPECT_EQ(textfield, cache.GetOrCreate(textfield_));
 
   // The parents is correct.
   EXPECT_EQ(root, tree.GetParent(label1));
@@ -134,14 +134,14 @@ TEST_F(AXTreeSourceViewsTest, Basics) {
 }
 
 TEST_F(AXTreeSourceViewsTest, GetTreeDataWithFocus) {
-  AXAuraObjCache* cache = AXAuraObjCache::GetInstance();
-  TestAXTreeSourceViews tree(cache->GetOrCreate(widget_.get()));
+  AXAuraObjCache cache;
+  TestAXTreeSourceViews tree(cache.GetOrCreate(widget_.get()), &cache);
   textfield_->RequestFocus();
 
   ui::AXTreeData tree_data;
   tree.GetTreeData(&tree_data);
   EXPECT_TRUE(tree_data.loaded);
-  EXPECT_EQ(cache->GetID(textfield_), tree_data.focus_id);
+  EXPECT_EQ(cache.GetID(textfield_), tree_data.focus_id);
 }
 
 TEST_F(AXTreeSourceViewsTest, IgnoredView) {
@@ -149,9 +149,9 @@ TEST_F(AXTreeSourceViewsTest, IgnoredView) {
   ignored_view->GetViewAccessibility().OverrideIsIgnored(true);
   widget_->GetContentsView()->AddChildView(ignored_view);
 
-  AXAuraObjCache* cache = AXAuraObjCache::GetInstance();
-  TestAXTreeSourceViews tree(cache->GetOrCreate(widget_.get()));
-  EXPECT_FALSE(tree.IsValid(cache->GetOrCreate(ignored_view)));
+  AXAuraObjCache cache;
+  TestAXTreeSourceViews tree(cache.GetOrCreate(widget_.get()), &cache);
+  EXPECT_FALSE(tree.IsValid(cache.GetOrCreate(ignored_view)));
 }
 
 }  // namespace

@@ -17,27 +17,24 @@ ImageProvider::ScopedResult::ScopedResult(DecodedDrawImage image,
                                           DestructionCallback callback)
     : image_(std::move(image)), destruction_callback_(std::move(callback)) {}
 
-ImageProvider::ScopedResult::ScopedResult(const PaintRecord* record,
+ImageProvider::ScopedResult::ScopedResult(sk_sp<PaintRecord> record,
                                           DestructionCallback callback)
-    : record_(record), destruction_callback_(std::move(callback)) {
+    : record_(std::move(record)), destruction_callback_(std::move(callback)) {
   DCHECK(!destruction_callback_.is_null());
 }
 
 ImageProvider::ScopedResult::ScopedResult(ScopedResult&& other)
     : image_(std::move(other.image_)),
-      record_(other.record_),
-      destruction_callback_(std::move(other.destruction_callback_)) {
-  other.record_ = nullptr;
-}
+      record_(std::move(other.record_)),
+      destruction_callback_(std::move(other.destruction_callback_)) {}
 
 ImageProvider::ScopedResult& ImageProvider::ScopedResult::operator=(
     ScopedResult&& other) {
   DestroyDecode();
 
   image_ = std::move(other.image_);
-  record_ = other.record_;
+  record_ = std::move(other.record_);
   destruction_callback_ = std::move(other.destruction_callback_);
-  other.record_ = nullptr;
   return *this;
 }
 

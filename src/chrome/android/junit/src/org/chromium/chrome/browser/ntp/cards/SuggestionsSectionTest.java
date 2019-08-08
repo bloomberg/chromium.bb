@@ -159,9 +159,9 @@ public class SuggestionsSectionTest {
         assertEquals(ItemViewType.HEADER, section.getItemViewType(0));
         assertEquals(Collections.emptySet(), section.getItemDismissalGroup(0));
         assertEquals(ItemViewType.STATUS, section.getItemViewType(1));
-        assertEquals(setOf(1, 2), section.getItemDismissalGroup(1));
+        assertEquals(Collections.emptySet(), section.getItemDismissalGroup(1));
         assertEquals(ItemViewType.ACTION, section.getItemViewType(2));
-        assertEquals(setOf(1, 2), section.getItemDismissalGroup(2));
+        assertEquals(Collections.emptySet(), section.getItemDismissalGroup(2));
 
         // With snippets.
         section.appendSuggestions(snippets, /* keepSectionSize = */ true,
@@ -179,10 +179,10 @@ public class SuggestionsSectionTest {
         section.setHeaderVisibility(false);
 
         assertEquals(ItemViewType.STATUS, section.getItemViewType(0));
-        assertEquals(setOf(0, 1), section.getItemDismissalGroup(0));
+        assertEquals(Collections.emptySet(), section.getItemDismissalGroup(0));
 
         assertEquals(ItemViewType.ACTION, section.getItemViewType(1));
-        assertEquals(setOf(0, 1), section.getItemDismissalGroup(1));
+        assertEquals(Collections.emptySet(), section.getItemDismissalGroup(1));
     }
 
     @Test
@@ -191,7 +191,7 @@ public class SuggestionsSectionTest {
         SuggestionsSection section = createSectionWithFetchAction(false);
 
         assertEquals(ItemViewType.STATUS, section.getItemViewType(1));
-        assertEquals(Collections.singleton(1), section.getItemDismissalGroup(1));
+        assertEquals(Collections.emptySet(), section.getItemDismissalGroup(1));
     }
 
     @Test
@@ -201,7 +201,7 @@ public class SuggestionsSectionTest {
         section.setHeaderVisibility(false);
 
         assertEquals(ItemViewType.STATUS, section.getItemViewType(0));
-        assertEquals(Collections.singleton(0), section.getItemDismissalGroup(0));
+        assertEquals(Collections.emptySet(), section.getItemDismissalGroup(0));
     }
 
     @Test
@@ -320,21 +320,6 @@ public class SuggestionsSectionTest {
         assertEquals(3, section.getItemCount());
         assertEquals(ItemViewType.STATUS, section.getItemViewType(1));
         assertEquals(ItemViewType.ACTION, section.getItemViewType(2));
-    }
-
-    @Test
-    @Feature({"Ntp"})
-    public void testDismissSection() {
-        SuggestionsSection section = createSectionWithFetchAction(false);
-        section.setStatus(CategoryStatus.AVAILABLE);
-        Mockito.<ListObserver>reset(mObserver);
-        assertEquals(2, section.getItemCount());
-
-        @SuppressWarnings("unchecked")
-        Callback<String> callback = mock(Callback.class);
-        section.dismissItem(1, callback);
-        verify(mDelegate).dismissSection(section);
-        verify(callback).onResult(section.getHeaderText());
     }
 
     @Test
@@ -527,23 +512,6 @@ public class SuggestionsSectionTest {
 
     @Test
     @Feature({"Ntp"})
-    public void testViewAllAction() {
-        // When all the actions are enabled, ViewAll always has the priority and is shown.
-
-        // Spy so that VerifyAction can check methods being called.
-        SuggestionsCategoryInfo info =
-                spy(new CategoryInfoBuilder(TEST_CATEGORY_ID)
-                                .withAction(ContentSuggestionsAdditionalAction.VIEW_ALL)
-                                .showIfEmpty()
-                                .build());
-        SuggestionsSection section = createSection(info);
-
-        assertTrue(section.getActionItemForTesting().isVisible());
-        verifyAction(section, ContentSuggestionsAdditionalAction.VIEW_ALL);
-    }
-
-    @Test
-    @Feature({"Ntp"})
     public void testFetchAction() {
         // When only FetchMore is shown when enabled.
 
@@ -591,7 +559,8 @@ public class SuggestionsSectionTest {
 
         // Tap the button
         verifyAction(section, ContentSuggestionsAdditionalAction.FETCH);
-        assertEquals(ActionItem.State.LOADING, section.getActionItemForTesting().getState());
+        assertEquals(
+                ActionItem.State.MORE_BUTTON_LOADING, section.getActionItemForTesting().getState());
 
         // Simulate receiving suggestions.
         section.setStatus(CategoryStatus.AVAILABLE);
@@ -675,7 +644,8 @@ public class SuggestionsSectionTest {
                 eq(REMOTE_TEST_CATEGORY), any(), any(), sourceOnFailureRunnable.capture());
 
         // Ensure the progress spinner is shown.
-        assertEquals(ActionItem.State.LOADING, section.getActionItemForTesting().getState());
+        assertEquals(
+                ActionItem.State.MORE_BUTTON_LOADING, section.getActionItemForTesting().getState());
 
         // Simulate a failure.
         sourceOnFailureRunnable.getValue().run();
@@ -1019,16 +989,14 @@ public class SuggestionsSectionTest {
     @Feature({"Ntp"})
     public void testGetItemDismissalGroupWithActionItem() {
         SuggestionsSection section = createSectionWithFetchAction(true);
-        assertThat(section.getItemDismissalGroup(1).size(), is(2));
-        assertThat(section.getItemDismissalGroup(1), contains(1, 2));
+        assertThat(section.getItemDismissalGroup(1).size(), is(0));
     }
 
     @Test
     @Feature({"Ntp"})
     public void testGetItemDismissalGroupWithoutActionItem() {
         SuggestionsSection section = createSectionWithFetchAction(false);
-        assertThat(section.getItemDismissalGroup(1).size(), is(1));
-        assertThat(section.getItemDismissalGroup(1), contains(1));
+        assertThat(section.getItemDismissalGroup(1).size(), is(0));
     }
 
     @Test
@@ -1091,10 +1059,6 @@ public class SuggestionsSectionTest {
         if (action != ContentSuggestionsAdditionalAction.NONE) {
             section.getActionItemForTesting().performAction(mUiDelegate, null, null);
         }
-
-        verify(section.getCategoryInfo(),
-                (action == ContentSuggestionsAdditionalAction.VIEW_ALL ? times(1) : never()))
-                .performViewAllAction(mUiDelegate.getNavigationDelegate());
 
         // noinspection unchecked -- See https://crbug.com/740162 for rationale.
         verify(mUiDelegate.getSuggestionsSource(),

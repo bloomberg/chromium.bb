@@ -38,61 +38,18 @@
 #include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_position.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 
 namespace blink {
 
 namespace {
 
-bool HasEditableStyle(const Node& node, EditableType editable_type) {
-  if (editable_type == kHasEditableAXRole) {
-    if (AXObjectCache* cache = node.GetDocument().ExistingAXObjectCache()) {
-      if (cache->RootAXEditableElement(&node))
-        return true;
-    }
-  }
-
-  return HasEditableStyle(node);
-}
-
-Element* RootEditableElement(const Node& node, EditableType editable_type) {
-  if (editable_type == kHasEditableAXRole) {
-    if (AXObjectCache* cache = node.GetDocument().ExistingAXObjectCache())
-      return const_cast<Element*>(cache->RootAXEditableElement(&node));
-  }
-
-  return RootEditableElement(node);
-}
-
-Element* RootAXEditableElementOf(const Position& position) {
-  Node* node = position.ComputeContainerNode();
-  if (!node)
-    return nullptr;
-
-  if (IsDisplayInsideTable(node))
-    node = node->parentNode();
-
-  return RootEditableElement(*node, kHasEditableAXRole);
-}
-
-bool HasAXEditableStyle(const Node& node) {
-  return HasEditableStyle(node, kHasEditableAXRole);
-}
-
-ContainerNode* HighestEditableRoot(const Position& position,
-                                   EditableType editable_type) {
-  if (editable_type == kHasEditableAXRole) {
-    return HighestEditableRoot(position, RootAXEditableElementOf,
-                               HasAXEditableStyle);
-  }
-
-  return HighestEditableRoot(position);
-}
-
-ContainerNode* HighestEditableRootOfNode(const Node& node,
-                                         EditableType editable_type) {
-  return HighestEditableRoot(FirstPositionInOrBeforeNode(node), editable_type);
+ContainerNode* HighestEditableRootOfNode(const Node& node) {
+  return HighestEditableRoot(FirstPositionInOrBeforeNode(node));
 }
 
 Node* PreviousNodeConsideringAtomicNodes(const Node& start) {
@@ -142,38 +99,68 @@ Node* NextAtomicLeafNode(const Node& start) {
   return nullptr;
 }
 
-Node* PreviousLeafWithSameEditability(const Node& node,
-                                      EditableType editable_type) {
-  const bool editable = HasEditableStyle(node, editable_type);
+Node* PreviousLeafWithSameEditability(const Node& node) {
+  const bool editable = HasEditableStyle(node);
   for (Node* runner = PreviousAtomicLeafNode(node); runner;
        runner = PreviousAtomicLeafNode(*runner)) {
-    if (editable == HasEditableStyle(*runner, editable_type))
+    if (editable == HasEditableStyle(*runner))
       return runner;
   }
   return nullptr;
 }
 
 Node* NextLeafWithGivenEditability(Node* node,
-                                   EditableType editable_type,
                                    bool editable) {
   if (!node)
     return nullptr;
 
   for (Node* runner = NextAtomicLeafNode(*node); runner;
        runner = NextAtomicLeafNode(*runner)) {
-    if (editable == HasEditableStyle(*runner, editable_type))
+    if (editable == HasEditableStyle(*runner))
       return runner;
   }
   return nullptr;
 }
+
+struct VisualOrdering;
 
 template <typename Strategy, typename Ordering>
 PositionWithAffinityTemplate<Strategy> StartPositionForLine(
     const PositionWithAffinityTemplate<Strategy>& c) {
   if (c.IsNull())
     return PositionWithAffinityTemplate<Strategy>();
+  const PositionWithAffinityTemplate<Strategy> adjusted =
+      ComputeInlineAdjustedPosition(c);
 
-  const InlineBox* inline_box = ComputeInlineBoxPosition(c).inline_box;
+  if (const LayoutBlockFlow* context =
+          NGInlineFormattingContextOf(adjusted.GetPosition())) {
+    DCHECK((std::is_same<Ordering, VisualOrdering>::value) ||
+           !RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
+        << "Logical line boundary for BidiCaretAffinity is not implemented yet";
+
+    const NGCaretPosition caret_position = ComputeNGCaretPosition(adjusted);
+    if (caret_position.IsNull()) {
+      // TODO(crbug.com/947593): Support |ComputeNGCaretPosition()| on content
+      // hidden by 'text-overflow:ellipsis' so that we always have a non-null
+      // |caret_position| here.
+      return PositionWithAffinityTemplate<Strategy>();
+    }
+    DCHECK(caret_position.fragment);
+    DCHECK(caret_position.fragment->ContainerLineBox());
+    const NGPaintFragment* line_box_paint =
+        caret_position.fragment->ContainerLineBox();
+    const NGPhysicalLineBoxFragment& line_box =
+        To<NGPhysicalLineBoxFragment>(line_box_paint->PhysicalFragment());
+    const NGPhysicalOffset start_point = line_box.LineStartPoint();
+    return FromPositionInDOMTree<Strategy>(
+        line_box_paint->PositionForPoint(start_point));
+  }
+
+  const InlineBox* inline_box =
+      adjusted.IsNotNull()
+          ? ComputeInlineBoxPositionForInlineAdjustedPosition(adjusted)
+                .inline_box
+          : nullptr;
   if (!inline_box) {
     // There are VisiblePositions at offset 0 in blocks without
     // RootInlineBoxes, like empty editable blocks and bordered blocks.
@@ -293,12 +280,9 @@ bool InSameLine(const Node& node, const VisiblePosition& visible_position) {
 }
 
 Node* FindNodeInPreviousLine(const Node& start_node,
-                             const VisiblePosition& visible_position,
-                             EditableType editable_type) {
-  for (Node* runner =
-           PreviousLeafWithSameEditability(start_node, editable_type);
-       runner;
-       runner = PreviousLeafWithSameEditability(*runner, editable_type)) {
+                             const VisiblePosition& visible_position) {
+  for (Node* runner = PreviousLeafWithSameEditability(start_node); runner;
+       runner = PreviousLeafWithSameEditability(*runner)) {
     if (!InSameLine(*runner, visible_position))
       return runner;
   }
@@ -310,16 +294,14 @@ Node* FindNodeInPreviousLine(const Node& start_node,
 // FIXME: consolidate with code in previousLinePosition.
 Position PreviousRootInlineBoxCandidatePosition(
     Node* node,
-    const VisiblePosition& visible_position,
-    EditableType editable_type) {
+    const VisiblePosition& visible_position) {
   DCHECK(visible_position.IsValid()) << visible_position;
   ContainerNode* highest_root =
-      HighestEditableRoot(visible_position.DeepEquivalent(), editable_type);
-  Node* const previous_node =
-      FindNodeInPreviousLine(*node, visible_position, editable_type);
+      HighestEditableRoot(visible_position.DeepEquivalent());
+  Node* const previous_node = FindNodeInPreviousLine(*node, visible_position);
   for (Node* runner = previous_node; runner && !runner->IsShadowRoot();
-       runner = PreviousLeafWithSameEditability(*runner, editable_type)) {
-    if (HighestEditableRootOfNode(*runner, editable_type) != highest_root)
+       runner = PreviousLeafWithSameEditability(*runner)) {
+    if (HighestEditableRootOfNode(*runner) != highest_root)
       break;
 
     const Position& candidate =
@@ -334,26 +316,22 @@ Position PreviousRootInlineBoxCandidatePosition(
 
 Position NextRootInlineBoxCandidatePosition(
     Node* node,
-    const VisiblePosition& visible_position,
-    EditableType editable_type) {
+    const VisiblePosition& visible_position) {
   DCHECK(visible_position.IsValid()) << visible_position;
   ContainerNode* highest_root =
-      HighestEditableRoot(visible_position.DeepEquivalent(), editable_type);
+      HighestEditableRoot(visible_position.DeepEquivalent());
   // TODO(xiaochengh): We probably also need to pass in the starting editability
   // to |PreviousLeafWithSameEditability|.
   const bool is_editable = HasEditableStyle(
-      *visible_position.DeepEquivalent().ComputeContainerNode(), editable_type);
-  Node* next_node =
-      NextLeafWithGivenEditability(node, editable_type, is_editable);
+      *visible_position.DeepEquivalent().ComputeContainerNode());
+  Node* next_node = NextLeafWithGivenEditability(node, is_editable);
   while (next_node && InSameLine(*next_node, visible_position)) {
-    next_node = NextLeafWithGivenEditability(next_node, kContentIsEditable,
-                                             is_editable);
+    next_node = NextLeafWithGivenEditability(next_node, is_editable);
   }
 
   for (Node* runner = next_node; runner && !runner->IsShadowRoot();
-       runner =
-           NextLeafWithGivenEditability(runner, editable_type, is_editable)) {
-    if (HighestEditableRootOfNode(*runner, editable_type) != highest_root)
+       runner = NextLeafWithGivenEditability(runner, is_editable)) {
+    if (HighestEditableRootOfNode(*runner) != highest_root)
       break;
 
     const Position& candidate =
@@ -426,8 +404,35 @@ static PositionWithAffinityTemplate<Strategy> EndPositionForLine(
     const PositionWithAffinityTemplate<Strategy>& c) {
   if (c.IsNull())
     return PositionWithAffinityTemplate<Strategy>();
+  const PositionWithAffinityTemplate<Strategy> adjusted =
+      ComputeInlineAdjustedPosition(c);
 
-  const InlineBox* inline_box = ComputeInlineBoxPosition(c).inline_box;
+  if (const LayoutBlockFlow* context =
+          NGInlineFormattingContextOf(adjusted.GetPosition())) {
+    DCHECK((std::is_same<Ordering, VisualOrdering>::value) ||
+           !RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
+        << "Logical line boundary for BidiCaretAffinity is not implemented yet";
+
+    const NGCaretPosition caret_position = ComputeNGCaretPosition(adjusted);
+    if (caret_position.IsNull()) {
+      // TODO(crbug.com/947593): Support |ComputeNGCaretPosition()| on content
+      // hidden by 'text-overflow:ellipsis' so that we always have a non-null
+      // |caret_position| here.
+      return PositionWithAffinityTemplate<Strategy>();
+    }
+    DCHECK(caret_position.fragment);
+    DCHECK(caret_position.fragment->ContainerLineBox());
+    const NGPaintFragment* line_box_paint =
+        caret_position.fragment->ContainerLineBox();
+    const NGPhysicalLineBoxFragment& line_box =
+        To<NGPhysicalLineBoxFragment>(line_box_paint->PhysicalFragment());
+    const NGPhysicalOffset end_point = line_box.LineEndPoint();
+    return FromPositionInDOMTree<Strategy>(
+        line_box_paint->PositionForPoint(end_point));
+  }
+
+  const InlineBox* inline_box =
+      adjusted.IsNotNull() ? ComputeInlineBoxPosition(c).inline_box : nullptr;
   if (!inline_box) {
     // There are VisiblePositions at offset 0 in blocks without
     // RootInlineBoxes, like empty editable blocks and bordered blocks.
@@ -694,8 +699,7 @@ bool IsLogicalEndOfLine(const VisiblePositionInFlatTree& p) {
 }
 
 VisiblePosition PreviousLinePosition(const VisiblePosition& visible_position,
-                                     LayoutUnit line_direction_point,
-                                     EditableType editable_type) {
+                                     LayoutUnit line_direction_point) {
   DCHECK(visible_position.IsValid()) << visible_position;
 
   // TODO(xiaochengh): Make all variables |const|.
@@ -721,8 +725,8 @@ VisiblePosition PreviousLinePosition(const VisiblePosition& visible_position,
   }
 
   if (!root) {
-    Position position = PreviousRootInlineBoxCandidatePosition(
-        node, visible_position, editable_type);
+    Position position =
+        PreviousRootInlineBoxCandidatePosition(node, visible_position);
     if (position.IsNotNull()) {
       const VisiblePosition candidate = CreateVisiblePosition(position);
       const InlineBox* inline_box =
@@ -754,8 +758,8 @@ VisiblePosition PreviousLinePosition(const VisiblePosition& visible_position,
   // Could not find a previous line. This means we must already be on the first
   // line. Move to the start of the content in this block, which effectively
   // moves us to the start of the line we're on.
-  Element* root_element = HasEditableStyle(*node, editable_type)
-                              ? RootEditableElement(*node, editable_type)
+  Element* root_element = HasEditableStyle(*node)
+                              ? RootEditableElement(*node)
                               : node->GetDocument().documentElement();
   if (!root_element)
     return VisiblePosition();
@@ -763,8 +767,7 @@ VisiblePosition PreviousLinePosition(const VisiblePosition& visible_position,
 }
 
 VisiblePosition NextLinePosition(const VisiblePosition& visible_position,
-                                 LayoutUnit line_direction_point,
-                                 EditableType editable_type) {
+                                 LayoutUnit line_direction_point) {
   DCHECK(visible_position.IsValid()) << visible_position;
 
   // TODO(xiaochengh): Make all variables |const|.
@@ -794,8 +797,8 @@ VisiblePosition NextLinePosition(const VisiblePosition& visible_position,
     Node* child = NodeTraversal::ChildAt(*node, p.ComputeEditingOffset());
     Node* search_start_node =
         child ? child : &NodeTraversal::LastWithinOrSelf(*node);
-    Position position = NextRootInlineBoxCandidatePosition(
-        search_start_node, visible_position, editable_type);
+    Position position =
+        NextRootInlineBoxCandidatePosition(search_start_node, visible_position);
     if (position.IsNotNull()) {
       const VisiblePosition candidate = CreateVisiblePosition(position);
       const InlineBox* inline_box =
@@ -827,8 +830,8 @@ VisiblePosition NextLinePosition(const VisiblePosition& visible_position,
   // Could not find a next line. This means we must already be on the last line.
   // Move to the end of the content in this block, which effectively moves us
   // to the end of the line we're on.
-  Element* root_element = HasEditableStyle(*node, editable_type)
-                              ? RootEditableElement(*node, editable_type)
+  Element* root_element = HasEditableStyle(*node)
+                              ? RootEditableElement(*node)
                               : node->GetDocument().documentElement();
   if (!root_element)
     return VisiblePosition();

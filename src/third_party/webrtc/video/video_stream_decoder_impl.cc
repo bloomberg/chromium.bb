@@ -11,6 +11,7 @@
 #include "video/video_stream_decoder_impl.h"
 
 #include "absl/memory/memory.h"
+#include "api/task_queue/queued_task.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/numerics/mod_ops.h"
 #include "rtc_base/time_utils.h"
@@ -18,13 +19,16 @@
 namespace webrtc {
 
 VideoStreamDecoderImpl::VideoStreamDecoderImpl(
-    VideoStreamDecoder::Callbacks* callbacks,
+    VideoStreamDecoderInterface::Callbacks* callbacks,
     VideoDecoderFactory* decoder_factory,
+    TaskQueueFactory* task_queue_factory,
     std::map<int, std::pair<SdpVideoFormat, int>> decoder_settings)
     : callbacks_(callbacks),
       decoder_factory_(decoder_factory),
       decoder_settings_(std::move(decoder_settings)),
-      bookkeeping_queue_("video_stream_decoder_bookkeeping_queue"),
+      bookkeeping_queue_(task_queue_factory->CreateTaskQueue(
+          "video_stream_decoder_bookkeeping_queue",
+          TaskQueueFactory::Priority::NORMAL)),
       decode_thread_(&DecodeLoop,
                      this,
                      "video_stream_decoder_decode_thread",
@@ -48,7 +52,7 @@ VideoStreamDecoderImpl::~VideoStreamDecoderImpl() {
 void VideoStreamDecoderImpl::OnFrame(
     std::unique_ptr<video_coding::EncodedFrame> frame) {
   if (!bookkeeping_queue_.IsCurrent()) {
-    struct OnFrameTask : rtc::QueuedTask {
+    struct OnFrameTask : QueuedTask {
       OnFrameTask(std::unique_ptr<video_coding::EncodedFrame> frame,
                   VideoStreamDecoderImpl* video_stream_decoder)
           : frame_(std::move(frame)),

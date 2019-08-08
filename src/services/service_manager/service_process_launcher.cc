@@ -25,6 +25,7 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
+#include "mojo/public/cpp/platform/features.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/invitation.h"
@@ -194,10 +195,25 @@ base::ProcessId ServiceProcessLauncher::ProcessState::LaunchInBackground(
     NOTIMPLEMENTED();
   options.handles_to_transfer = std::move(handle_passing_info);
 #elif defined(OS_POSIX)
-  handle_passing_info.push_back(std::make_pair(STDIN_FILENO, STDIN_FILENO));
-  handle_passing_info.push_back(std::make_pair(STDOUT_FILENO, STDOUT_FILENO));
-  handle_passing_info.push_back(std::make_pair(STDERR_FILENO, STDERR_FILENO));
+  const base::FileHandleMappingVector fd_mapping{
+      {STDIN_FILENO, STDIN_FILENO},
+      {STDOUT_FILENO, STDOUT_FILENO},
+      {STDERR_FILENO, STDERR_FILENO},
+  };
+#if defined(OS_MACOSX)
+  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
+    options.fds_to_remap = fd_mapping;
+    options.mach_ports_for_rendezvous = handle_passing_info;
+  } else {
+    options.fds_to_remap = handle_passing_info;
+    options.fds_to_remap.insert(options.fds_to_remap.end(), fd_mapping.begin(),
+                                fd_mapping.end());
+  }
+#else
+  handle_passing_info.insert(handle_passing_info.end(), fd_mapping.begin(),
+                             fd_mapping.end());
   options.fds_to_remap = handle_passing_info;
+#endif  // defined(OS_MACOSX)
 #endif
   DVLOG(2) << "Launching child with command line: "
            << child_command_line->GetCommandLineString();

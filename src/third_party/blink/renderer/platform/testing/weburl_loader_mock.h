@@ -21,7 +21,7 @@ class WebURLLoaderTestDelegate;
 class WebURLRequest;
 class WebURLResponse;
 
-const int kRedirectResponseOverheadBytes = 300;
+const uint32_t kRedirectResponseOverheadBytes = 300;
 
 // A simple class for mocking WebURLLoader.
 // If the WebURLLoaderMockFactory it is associated with has been configured to
@@ -59,6 +59,7 @@ class WebURLLoaderMock : public WebURLLoader {
   void SetDefersLoading(bool defer) override;
   void DidChangePriority(WebURLRequest::Priority new_priority,
                          int intra_priority_value) override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
 
   bool is_deferred() { return is_deferred_; }
   bool is_cancelled() { return !client_; }

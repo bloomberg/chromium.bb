@@ -49,23 +49,6 @@ namespace {
 const char kSingleByte[1] = {'x'};
 constexpr std::chrono::seconds kLockTimeout{1};
 
-base::Optional<base::UnixSocketRaw> Connect(const std::string& sock_name) {
-  auto sock = base::UnixSocketRaw::CreateMayFail(base::SockType::kStream);
-  if (!sock || !sock.Connect(sock_name)) {
-    PERFETTO_PLOG("Failed to connect to %s", sock_name.c_str());
-    return base::nullopt;
-  }
-  if (!sock.SetTxTimeout(kClientSockTimeoutMs)) {
-    PERFETTO_PLOG("Failed to set send timeout for %s", sock_name.c_str());
-    return base::nullopt;
-  }
-  if (!sock.SetRxTimeout(kClientSockTimeoutMs)) {
-    PERFETTO_PLOG("Failed to set receive timeout for %s", sock_name.c_str());
-    return base::nullopt;
-  }
-  return std::move(sock);
-}
-
 inline bool IsMainThread() {
   return getpid() == base::GetThreadId();
 }
@@ -98,40 +81,6 @@ int UnsetDumpable(int) {
 
 }  // namespace
 
-bool FreePage::Add(const uint64_t addr,
-                   const uint64_t sequence_number,
-                   Client* client) {
-  std::unique_lock<std::timed_mutex> l(mutex_, kLockTimeout);
-  if (!l.owns_lock())
-    return false;
-  if (free_page_.num_entries == kFreePageSize) {
-    if (!client->FlushFrees(&free_page_))
-      return false;
-    // Now that we have flushed, reset to after the header.
-    free_page_.num_entries = 0;
-  }
-  FreePageEntry& current_entry = free_page_.entries[free_page_.num_entries++];
-  current_entry.sequence_number = sequence_number;
-  current_entry.addr = addr;
-  return true;
-}
-
-bool Client::FlushFrees(FreeMetadata* free_metadata) {
-  WireMessage msg = {};
-  msg.record_type = RecordType::Free;
-  msg.free_header = free_metadata;
-  if (!SendWireMessage(&shmem_, msg)) {
-    PERFETTO_PLOG("Failed to send wire message");
-    Shutdown();
-    return false;
-  }
-  if (!sock_.Send(kSingleByte, sizeof(kSingleByte))) {
-    Shutdown();
-    return false;
-  }
-  return true;
-}
-
 const char* GetThreadStackBase() {
   pthread_attr_t attr;
   if (pthread_getattr_np(pthread_self(), &attr) != 0)
@@ -147,14 +96,35 @@ const char* GetThreadStackBase() {
   return stackaddr + stacksize;
 }
 
-Client::Client(base::Optional<base::UnixSocketRaw> sock)
-    : sampler_(8192),  // placeholder until we receive the config (within ctor)
-      main_thread_stack_base_(FindMainThreadStack()) {
-  if (!sock || !sock.value()) {
-    PERFETTO_DFATAL("Socket not connected.");
-    return;
+// static
+base::Optional<base::UnixSocketRaw> Client::ConnectToHeapprofd(
+    const std::string& sock_name) {
+  auto sock = base::UnixSocketRaw::CreateMayFail(base::SockType::kStream);
+  if (!sock || !sock.Connect(sock_name)) {
+    PERFETTO_PLOG("Failed to connect to %s", sock_name.c_str());
+    return base::nullopt;
   }
-  sock_ = std::move(sock.value());
+  if (!sock.SetTxTimeout(kClientSockTimeoutMs)) {
+    PERFETTO_PLOG("Failed to set send timeout for %s", sock_name.c_str());
+    return base::nullopt;
+  }
+  if (!sock.SetRxTimeout(kClientSockTimeoutMs)) {
+    PERFETTO_PLOG("Failed to set receive timeout for %s", sock_name.c_str());
+    return base::nullopt;
+  }
+  return std::move(sock);
+}
+
+// static
+std::shared_ptr<Client> Client::CreateAndHandshake(
+    base::UnixSocketRaw sock,
+    UnhookedAllocator<Client> unhooked_allocator) {
+  if (!sock) {
+    PERFETTO_DFATAL("Socket not connected.");
+    return nullptr;
+  }
+
+  PERFETTO_DCHECK(sock.IsBlocking());
 
   // We might be running in a process that is not dumpable (such as app
   // processes on user builds), in which case the /proc/self/mem will be chown'd
@@ -173,12 +143,12 @@ Client::Client(base::Optional<base::UnixSocketRaw> sock)
   base::ScopedFile maps(base::OpenFile("/proc/self/maps", O_RDONLY));
   if (!maps) {
     PERFETTO_DFATAL("Failed to open /proc/self/maps");
-    return;
+    return nullptr;
   }
   base::ScopedFile mem(base::OpenFile("/proc/self/mem", O_RDONLY));
   if (!mem) {
     PERFETTO_DFATAL("Failed to open /proc/self/mem");
-    return;
+    return nullptr;
   }
   // Restore original dumpability value if we overrode it.
   unset_dumpable.reset();
@@ -189,34 +159,67 @@ Client::Client(base::Optional<base::UnixSocketRaw> sock)
 
   // Send an empty record to transfer fds for /proc/self/maps and
   // /proc/self/mem.
-  if (sock_.Send(kSingleByte, sizeof(kSingleByte), fds, kHandshakeSize) !=
+  if (sock.Send(kSingleByte, sizeof(kSingleByte), fds, kHandshakeSize) !=
       sizeof(kSingleByte)) {
     PERFETTO_DFATAL("Failed to send file descriptors.");
-    return;
+    return nullptr;
   }
 
+  ClientConfiguration client_config;
   base::ScopedFile shmem_fd;
-  if (sock_.Receive(&client_config_, sizeof(client_config_), &shmem_fd, 1) !=
-      sizeof(client_config_)) {
-    PERFETTO_DFATAL("Failed to receive client config.");
-    return;
+  size_t recv = 0;
+  while (recv < sizeof(client_config)) {
+    size_t num_fds = 0;
+    base::ScopedFile* fd = nullptr;
+    if (!shmem_fd) {
+      num_fds = 1;
+      fd = &shmem_fd;
+    }
+    ssize_t rd = sock.Receive(reinterpret_cast<char*>(&client_config) + recv,
+                              sizeof(client_config) - recv, fd, num_fds);
+    if (rd == -1) {
+      PERFETTO_PLOG("Failed to receive ClientConfiguration.");
+      return nullptr;
+    }
+    if (rd == 0) {
+      PERFETTO_LOG("Server disconnected while sending ClientConfiguration.");
+      return nullptr;
+    }
+    recv += static_cast<size_t>(rd);
+  }
+
+  if (!shmem_fd) {
+    PERFETTO_DFATAL("Did not receive shmem fd.");
+    return nullptr;
   }
 
   auto shmem = SharedRingBuffer::Attach(std::move(shmem_fd));
   if (!shmem || !shmem->is_valid()) {
     PERFETTO_DFATAL("Failed to attach to shmem.");
-    return;
+    return nullptr;
   }
-  shmem_ = std::move(shmem.value());
 
-  PERFETTO_DCHECK(client_config_.interval >= 1);
-  sampler_ = Sampler(client_config_.interval);
-
-  PERFETTO_DLOG("Initialized client.");
-  inited_.store(true, std::memory_order_release);
+  PERFETTO_DCHECK(client_config.interval >= 1);
+  Sampler sampler{client_config.interval};
+  // note: the shared_ptr will retain a copy of the unhooked_allocator
+  sock.SetBlocking(false);
+  return std::allocate_shared<Client>(
+      unhooked_allocator, std::move(sock), client_config,
+      std::move(shmem.value()), std::move(sampler), FindMainThreadStack());
 }
 
-Client::Client(const std::string& sock_name) : Client(Connect(sock_name)) {}
+Client::Client(base::UnixSocketRaw sock,
+               ClientConfiguration client_config,
+               SharedRingBuffer shmem,
+               Sampler sampler,
+               const char* main_thread_stack_base)
+    : client_config_(client_config),
+      sampler_(std::move(sampler)),
+      sock_(std::move(sock)),
+      main_thread_stack_base_(main_thread_stack_base),
+      shmem_(std::move(shmem)) {
+  PERFETTO_DCHECK(!sock_.IsBlocking());
+}
 
 const char* Client::GetStackBase() {
   if (IsMainThread()) {
@@ -244,9 +247,6 @@ const char* Client::GetStackBase() {
 bool Client::RecordMalloc(uint64_t alloc_size,
                           uint64_t total_size,
                           uint64_t alloc_address) {
-  if (!inited_.load(std::memory_order_acquire)) {
-    return false;
-  }
   AllocMetadata metadata;
   const char* stackbase = GetStackBase();
   const char* stacktop = reinterpret_cast<char*>(__builtin_frame_address(0));
@@ -254,7 +254,6 @@ bool Client::RecordMalloc(uint64_t alloc_size,
 
   if (stackbase < stacktop) {
     PERFETTO_DFATAL("Stackbase >= stacktop.");
-    Shutdown();
     return false;
   }
 
@@ -275,31 +274,62 @@ bool Client::RecordMalloc(uint64_t alloc_size,
   msg.payload_size = static_cast<size_t>(stack_size);
 
   if (!SendWireMessage(&shmem_, msg)) {
-    PERFETTO_PLOG("Failed to send wire message.");
-    Shutdown();
+    PERFETTO_PLOG("Failed to write to shared ring buffer (RecordMalloc).");
     return false;
   }
-  if (sock_.Send(kSingleByte, sizeof(kSingleByte)) == -1) {
-    PERFETTO_PLOG("Failed to send wire message.");
-    Shutdown();
+  return SendControlSocketByte();
+}
+
+bool Client::RecordFree(const uint64_t alloc_address) {
+  uint64_t sequence_number =
+      1 + sequence_number_.fetch_add(1, std::memory_order_acq_rel);
+
+  std::unique_lock<std::timed_mutex> l(free_batch_lock_, kLockTimeout);
+  if (!l.owns_lock())
     return false;
+  if (free_batch_.num_entries == kFreeBatchSize) {
+    if (!FlushFreesLocked())
+      return false;
+    // Flushed the contents of the buffer, reset it for reuse.
+    free_batch_.num_entries = 0;
   }
+  FreeBatchEntry& current_entry =
+      free_batch_.entries[free_batch_.num_entries++];
+  current_entry.sequence_number = sequence_number;
+  current_entry.addr = alloc_address;
   return true;
 }
 
-bool Client::RecordFree(uint64_t alloc_address) {
-  if (!inited_.load(std::memory_order_acquire))
+bool Client::FlushFreesLocked() {
+  WireMessage msg = {};
+  msg.record_type = RecordType::Free;
+  msg.free_header = &free_batch_;
+  if (!SendWireMessage(&shmem_, msg)) {
+    PERFETTO_PLOG("Failed to write to shared ring buffer (FlushFreesLocked).");
     return false;
-  bool success = free_page_.Add(
-      alloc_address,
-      1 + sequence_number_.fetch_add(1, std::memory_order_acq_rel), this);
-  if (!success)
-    Shutdown();
-  return success;
+  }
+  return SendControlSocketByte();
 }
 
-void Client::Shutdown() {
-  inited_.store(false, std::memory_order_release);
+bool Client::IsConnected() {
+  PERFETTO_DCHECK(!sock_.IsBlocking());
+  char buf[1];
+  ssize_t recv_bytes = sock_.Receive(buf, sizeof(buf), nullptr, 0);
+  if (recv_bytes == 0)
+    return false;
+  else if (recv_bytes > 0)
+    return true;
+  return errno == EAGAIN || errno == EWOULDBLOCK;
+}
+
+bool Client::SendControlSocketByte() {
+  PERFETTO_DCHECK(!sock_.IsBlocking());
+  if (sock_.Send(kSingleByte, sizeof(kSingleByte)) == -1 && errno != EAGAIN &&
+      errno != EWOULDBLOCK) {
+    PERFETTO_PLOG("Failed to send control socket byte.");
+    return false;
+  }
+  return true;
 }
 
 }  // namespace profiling

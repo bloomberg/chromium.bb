@@ -41,7 +41,7 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
               static_cast<int32_t>(mojom::blink::FileSystemType::kMaxValue) ||
           !ReadUTF8String(&name) || !ReadUTF8String(&root_url))
         return nullptr;
-      return DOMFileSystem::Create(
+      return MakeGarbageCollected<DOMFileSystem>(
           ExecutionContext::From(GetScriptState()), name,
           static_cast<mojom::blink::FileSystemType>(raw_type), KURL(root_url));
     }
@@ -68,6 +68,9 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
       DOMRectReadOnly* bounding_box = ReadDOMRectReadOnly();
       if (!bounding_box)
         return nullptr;
+      // TODO(crbug.com/938663): add deserialization for |format|.
+      shape_detection::mojom::BarcodeFormat format =
+          shape_detection::mojom::BarcodeFormat::UNKNOWN;
       uint32_t corner_points_length;
       if (!ReadUint32(&corner_points_length))
         return nullptr;
@@ -78,7 +81,8 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
           return nullptr;
         corner_points.push_back(point);
       }
-      return DetectedBarcode::Create(raw_value, bounding_box, corner_points);
+      return DetectedBarcode::Create(raw_value, bounding_box, format,
+                                     corner_points);
     }
     case kDetectedFaceTag: {
       DOMRectReadOnly* bounding_box = ReadDOMRectReadOnly();
@@ -346,7 +350,7 @@ CryptoKey* V8ScriptValueDeserializerForModules::ReadCryptoKey() {
           key))
     return nullptr;
 
-  return CryptoKey::Create(key);
+  return MakeGarbageCollected<CryptoKey>(key);
 }
 
 bool V8ScriptValueDeserializerForModules::ReadLandmark(Landmark* landmark) {

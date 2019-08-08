@@ -61,7 +61,7 @@ class MockProxyResolver : public ProxyResolver {
     EXPECT_TRUE(worker_thread_checker_.CalledOnValidThread());
 
     EXPECT_TRUE(callback.is_null());
-    EXPECT_TRUE(request == NULL);
+    EXPECT_TRUE(request == nullptr);
 
     // Write something into |net_log| (doesn't really have any meaning.)
     net_log.BeginEvent(NetLogEventType::PAC_JAVASCRIPT_ALERT);
@@ -261,7 +261,7 @@ TEST_F(MultiThreadedProxyResolverTest, SingleThread_Basic) {
   BoundTestNetLog log0;
   ProxyInfo results0;
   rv = resolver().GetProxyForURL(GURL("http://request0"), &results0,
-                                 callback0.callback(), NULL, log0.bound());
+                                 callback0.callback(), nullptr, log0.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Wait for request 0 to finish.
@@ -283,23 +283,23 @@ TEST_F(MultiThreadedProxyResolverTest, SingleThread_Basic) {
 
   TestCompletionCallback callback1;
   ProxyInfo results1;
-  rv =
-      resolver().GetProxyForURL(GURL("http://request1"), &results1,
-                                callback1.callback(), NULL, NetLogWithSource());
+  rv = resolver().GetProxyForURL(GURL("http://request1"), &results1,
+                                 callback1.callback(), nullptr,
+                                 NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   TestCompletionCallback callback2;
   ProxyInfo results2;
-  rv =
-      resolver().GetProxyForURL(GURL("http://request2"), &results2,
-                                callback2.callback(), NULL, NetLogWithSource());
+  rv = resolver().GetProxyForURL(GURL("http://request2"), &results2,
+                                 callback2.callback(), nullptr,
+                                 NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   TestCompletionCallback callback3;
   ProxyInfo results3;
-  rv =
-      resolver().GetProxyForURL(GURL("http://request3"), &results3,
-                                callback3.callback(), NULL, NetLogWithSource());
+  rv = resolver().GetProxyForURL(GURL("http://request3"), &results3,
+                                 callback3.callback(), nullptr,
+                                 NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Wait for the requests to finish (they must finish in the order they were
@@ -345,7 +345,7 @@ TEST_F(MultiThreadedProxyResolverTest,
   ProxyInfo results1;
   BoundTestNetLog log1;
   rv = resolver().GetProxyForURL(GURL("http://request1"), &results1,
-                                 callback1.callback(), NULL, log1.bound());
+                                 callback1.callback(), nullptr, log1.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   std::unique_ptr<ProxyResolver::Request> request2;
@@ -426,9 +426,9 @@ TEST_F(MultiThreadedProxyResolverTest, SingleThread_CancelRequest) {
 
   TestCompletionCallback callback1;
   ProxyInfo results1;
-  rv =
-      resolver().GetProxyForURL(GURL("http://request1"), &results1,
-                                callback1.callback(), NULL, NetLogWithSource());
+  rv = resolver().GetProxyForURL(GURL("http://request1"), &results1,
+                                 callback1.callback(), nullptr,
+                                 NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   std::unique_ptr<ProxyResolver::Request> request2;
@@ -441,9 +441,9 @@ TEST_F(MultiThreadedProxyResolverTest, SingleThread_CancelRequest) {
 
   TestCompletionCallback callback3;
   ProxyInfo results3;
-  rv =
-      resolver().GetProxyForURL(GURL("http://request3"), &results3,
-                                callback3.callback(), NULL, NetLogWithSource());
+  rv = resolver().GetProxyForURL(GURL("http://request3"), &results3,
+                                 callback3.callback(), nullptr,
+                                 NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Cancel request0 (inprogress) and request2 (pending).
@@ -487,23 +487,23 @@ TEST_F(MultiThreadedProxyResolverTest, SingleThread_CancelRequestByDeleting) {
 
   TestCompletionCallback callback0;
   ProxyInfo results0;
-  rv =
-      resolver().GetProxyForURL(GURL("http://request0"), &results0,
-                                callback0.callback(), NULL, NetLogWithSource());
+  rv = resolver().GetProxyForURL(GURL("http://request0"), &results0,
+                                 callback0.callback(), nullptr,
+                                 NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   TestCompletionCallback callback1;
   ProxyInfo results1;
-  rv =
-      resolver().GetProxyForURL(GURL("http://request1"), &results1,
-                                callback1.callback(), NULL, NetLogWithSource());
+  rv = resolver().GetProxyForURL(GURL("http://request1"), &results1,
+                                 callback1.callback(), nullptr,
+                                 NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   TestCompletionCallback callback2;
   ProxyInfo results2;
-  rv =
-      resolver().GetProxyForURL(GURL("http://request2"), &results2,
-                                callback2.callback(), NULL, NetLogWithSource());
+  rv = resolver().GetProxyForURL(GURL("http://request2"), &results2,
+                                 callback2.callback(), nullptr,
+                                 NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Wait until request 0 reaches the worker thread.

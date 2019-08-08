@@ -1024,7 +1024,8 @@ void SavePackage::GetSerializedHtmlWithLocalLinksForFrame(
 
   // Ask target frame to serialize itself.
   target->Send(new FrameMsg_GetSerializedHtmlWithLocalLinks(
-      target->GetRoutingID(), url_to_local_path, routing_id_to_local_path));
+      target->GetRoutingID(), url_to_local_path, routing_id_to_local_path,
+      web_contents()->GetBrowserContext()->IsOffTheRecord()));
 }
 
 // Process the serialized HTML content data of a specified frame

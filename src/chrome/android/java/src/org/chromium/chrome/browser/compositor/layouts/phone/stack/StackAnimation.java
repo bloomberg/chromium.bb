@@ -6,11 +6,16 @@ package org.chromium.chrome.browser.compositor.layouts.phone.stack;
 
 import static org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.AnimatableAnimation.addAnimation;
 
+import android.animation.Animator;
+import android.animation.AnimatorSet;
 import android.support.annotation.IntDef;
+import android.util.Pair;
 import android.view.animation.Interpolator;
 
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
+import org.chromium.chrome.browser.compositor.animation.FloatProperty;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
 import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
@@ -19,6 +24,7 @@ import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
 
 /**
  * A factory that builds animations for the tab stack.
@@ -165,12 +171,11 @@ public abstract class StackAnimation {
      * @param discardRange  The range of the discard amount value.
      * @return              The resulting TabSwitcherAnimation that will animate the tabs.
      */
-    public ChromeAnimation<?> createAnimatorSetForType(@OverviewAnimationType int type, Stack stack,
-            StackTab[] tabs, int focusIndex, int sourceIndex, int spacing, float discardRange) {
+    public ChromeAnimation<?> createChromeAnimationSetForType(@OverviewAnimationType int type,
+            Stack stack, StackTab[] tabs, int focusIndex, int sourceIndex, int spacing,
+            float discardRange) {
         if (tabs == null) return null;
         switch (type) {
-            case OverviewAnimationType.ENTER_STACK:
-                return createEnterStackAnimatorSet(tabs, focusIndex, spacing);
             case OverviewAnimationType.TAB_FOCUSED:
                 return createTabFocusedAnimatorSet(tabs, focusIndex, spacing);
             case OverviewAnimationType.VIEW_MORE:
@@ -194,6 +199,34 @@ public abstract class StackAnimation {
         }
     }
 
+    /**
+     * The wrapper method responsible for delegating the animations request to the appropriate
+     * helper method.  Not all parameters are used for each request.
+     *
+     * @param type          The type of animation to be created.  This is what
+     *                      determines which helper method is called.
+     * @param stack         The current stack.
+     * @param tabs          The tabs that make up the current stack that will
+     *                      be animated.
+     * @param focusIndex    The index of the tab that is the focus of this animation.
+     * @param sourceIndex   The index of the tab that triggered this animation.
+     * @param spacing       The default spacing between the tabs.
+     * @param discardRange  The range of the discard amount value.
+     * @return              The resulting TabSwitcherAnimation that will animate the tabs.
+     */
+    public Pair<AnimatorSet, ArrayList<FloatProperty>> createAnimatorSetForType(
+            @OverviewAnimationType int type, Stack stack, StackTab[] tabs, int focusIndex,
+            int sourceIndex, int spacing, float discardRange) {
+        if (tabs == null) return null;
+        switch (type) {
+            case OverviewAnimationType.ENTER_STACK:
+                return createEnterStackAnimatorSet(
+                        tabs, focusIndex, spacing, stack.getAnimationHandler());
+            default:
+                return null;
+        }
+    }
+
     protected abstract float getScreenSizeInScrollDirection();
 
     protected abstract float getScreenPositionInScrollDirection(StackTab tab);
@@ -207,19 +240,19 @@ public abstract class StackAnimation {
     }
 
     /**
-     * Responsible for generating the animations that shows the stack
-     * being entered.
+     * Responsible for generating the animations that shows the stack being entered.
      *
      * @param tabs       The tabs that make up the stack.  These are the
      *                   tabs that will be affected by the TabSwitcherAnimation.
      * @param focusIndex The focused index.  In this case, this is the index of
      *                   the tab that was being viewed before entering the stack.
      * @param spacing    The default spacing between tabs.
-     * @return           The TabSwitcherAnimation instance that will tween the
-     *                   tabs to create the appropriate animation.
+     * @param handler    Handler for animations.
+     * @return           The Pair with AnimatorSet instance that will tween the tabs to
+     *                   create the appropriate animation and associated FloatProperty info.
      */
-    protected abstract ChromeAnimation<?> createEnterStackAnimatorSet(
-            StackTab[] tabs, int focusIndex, int spacing);
+    protected abstract Pair<AnimatorSet, ArrayList<FloatProperty>> createEnterStackAnimatorSet(
+            StackTab[] tabs, int focusIndex, int spacing, CompositorAnimationHandler handler);
 
     /**
      * Responsible for generating the animations that shows a tab being
@@ -469,5 +502,32 @@ public abstract class StackAnimation {
      */
     protected float getStaticTabPosition() {
         return mTopBrowserControlsHeight - mBorderTopHeight;
+    }
+
+    /**
+     * Helper method to create and add new {@link CompositorAnimator}
+     * to a list of {@link Animator} and add associated {@link FloatProperty} info
+     * to a list of {@link FloatProperty}
+     *
+     * @param animationList The list of {@link Animator} to add animation to
+     * @param propertyList The list of {@link FloatProperty} to add FloatProperty info to
+     * @param handler The associated handler for animations
+     * @param target Target associated with animated property
+     * @param property The property being animated
+     * @param start The starting value of the animation
+     * @param end The ending value of the animation
+     * @param duration The duration of the animation in ms
+     * @param startTime The start time in ms
+     */
+    public static <T> void addToAnimation(ArrayList<Animator> animationList,
+            ArrayList<FloatProperty> propertyList, CompositorAnimationHandler handler,
+            final T target, final FloatProperty<T> property, float start, float end, long duration,
+            long startTime) {
+        CompositorAnimator compositorAnimator =
+                CompositorAnimator.ofFloatProperty(handler, target, property, start, end, duration);
+        compositorAnimator.setStartDelay(startTime);
+
+        animationList.add(compositorAnimator);
+        propertyList.add(property);
     }
 }

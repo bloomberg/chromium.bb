@@ -45,13 +45,6 @@
 
 namespace blink {
 
-std::unique_ptr<DedicatedWorkerThread> DedicatedWorkerThread::Create(
-    ExecutionContext* parent_execution_context,
-    DedicatedWorkerObjectProxy& worker_object_proxy) {
-  return base::WrapUnique(
-      new DedicatedWorkerThread(parent_execution_context, worker_object_proxy));
-}
-
 DedicatedWorkerThread::DedicatedWorkerThread(
     ExecutionContext* parent_execution_context,
     DedicatedWorkerObjectProxy& worker_object_proxy)
@@ -60,9 +53,9 @@ DedicatedWorkerThread::DedicatedWorkerThread(
   FrameOrWorkerScheduler* scheduler =
       parent_execution_context ? parent_execution_context->GetScheduler()
                                : nullptr;
-  worker_backing_thread_ =
-      WorkerBackingThread::Create(ThreadCreationParams(GetThreadType())
-                                      .SetFrameOrWorkerScheduler(scheduler));
+  worker_backing_thread_ = std::make_unique<WorkerBackingThread>(
+      ThreadCreationParams(GetThreadType())
+          .SetFrameOrWorkerScheduler(scheduler));
 }
 
 DedicatedWorkerThread::~DedicatedWorkerThread() = default;

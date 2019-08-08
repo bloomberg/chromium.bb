@@ -17,19 +17,13 @@
 #include "chromeos/network/network_state_handler.h"
 #include "components/login/localized_values_builder.h"
 
-namespace {
-
-const char kJsScreenPath[] = "login.NetworkScreen";
-
-}  // namespace
-
 namespace chromeos {
 
 NetworkScreenHandler::NetworkScreenHandler(JSCallsContainer* js_calls_container,
                                            CoreOobeView* core_oobe_view)
     : BaseScreenHandler(kScreenId, js_calls_container),
       core_oobe_view_(core_oobe_view) {
-  set_call_js_prefix(kJsScreenPath);
+  set_user_acted_method_path("login.NetworkScreen.userActed");
   DCHECK(core_oobe_view_);
 }
 

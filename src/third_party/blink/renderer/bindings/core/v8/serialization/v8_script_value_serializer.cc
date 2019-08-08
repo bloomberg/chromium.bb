@@ -195,8 +195,8 @@ void V8ScriptValueSerializer::WriteUTF8String(const String& string) {
   // TODO(jbroman): Ideally this method would take a WTF::StringView, but the
   // StringUTF8Adaptor trick doesn't yet work with StringView.
   StringUTF8Adaptor utf8(string);
-  WriteUint32(utf8.length());
-  WriteRawBytes(utf8.Data(), utf8.length());
+  WriteUint32(utf8.size());
+  WriteRawBytes(utf8.data(), utf8.size());
 }
 
 bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
@@ -575,7 +575,7 @@ bool V8ScriptValueSerializer::WriteFile(File* file,
   if (blob_info_array_) {
     size_t index = blob_info_array_->size();
     DCHECK_LE(index, std::numeric_limits<uint32_t>::max());
-    long long size = -1;
+    uint64_t size;
     double last_modified_ms = InvalidFileTime();
     file->CaptureSnapshot(size, last_modified_ms);
     // FIXME: transition WebBlobInfo.lastModified to be milliseconds-based also.
@@ -594,11 +594,11 @@ bool V8ScriptValueSerializer::WriteFile(File* file,
     // Why this inconsistency?
     if (file->HasValidSnapshotMetadata()) {
       WriteUint32(1);
-      long long size;
+      uint64_t size;
       double last_modified_ms;
       file->CaptureSnapshot(size, last_modified_ms);
-      DCHECK_GE(size, 0);
-      WriteUint64(static_cast<uint64_t>(size));
+      DCHECK_NE(size, std::numeric_limits<uint64_t>::max());
+      WriteUint64(size);
       WriteDouble(last_modified_ms);
     } else {
       WriteUint32(0);

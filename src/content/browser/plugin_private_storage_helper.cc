@@ -437,7 +437,8 @@ void ClearPluginPrivateDataOnFileTaskRunner(
     std::set<GURL> origins_to_check;
     origins_to_check.swap(origins);
     for (const auto& origin : origins_to_check) {
-      if (origin_matcher.Run(origin, special_storage_policy.get()))
+      if (origin_matcher.Run(url::Origin::Create(origin),
+                             special_storage_policy.get()))
         origins.insert(origin);
     }
 

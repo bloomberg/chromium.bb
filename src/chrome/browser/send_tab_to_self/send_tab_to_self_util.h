@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_UTIL_H_
 #define CHROME_BROWSER_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_UTIL_H_
 
-class Browser;
 class GURL;
 class Profile;
 
@@ -16,10 +15,14 @@ class WebContents;
 namespace send_tab_to_self {
 
 // Returns true if the 'send tab to self' flag is enabled.
-bool IsFlagEnabled();
+bool IsReceivingEnabled();
 
-// Returns true if the SendTabToSelf sync datatype is enabled.
-bool IsUserSyncTypeEnabled(Profile* profile);
+// Returns true if the send-tab-to-self' and 'send-tab-to-self-show-sending-ui'
+// flags are enabled.
+bool IsSendingEnabled();
+
+// Returns true if the SendTabToSelf sync datatype is active.
+bool IsUserSyncTypeActive(Profile* profile);
 
 // Returns true if the user syncing on two or more devices.
 bool IsSyncingOnMultipleDevices(Profile* profile);
@@ -28,15 +31,15 @@ bool IsSyncingOnMultipleDevices(Profile* profile);
 //  User is viewing an HTTP or HTTPS page.
 //  User is not on a native page.
 //  User is not in Incongnito mode.
-bool IsContentRequirementsMet(GURL& gurl, Profile* profile);
+bool IsContentRequirementsMet(const GURL& gurl, Profile* profile);
 
-// Returns true if all conditions are true and shows the option onto the menu
-bool ShouldOfferFeature(Browser* browser);
+// Returns true if all conditions are true and shows the option onto the menu.
+bool ShouldOfferFeature(content::WebContents* web_contents);
 
-// Add a new entry to SendTabToSelfModel when user click "Share to my devices"
-// option
-void CreateNewEntry(content::WebContents* tab, Profile* profile);
-
+// Returns true if all conditions are true and shows the option onto the link
+// menu.
+bool ShouldOfferFeatureForLink(content::WebContents* web_contents,
+                               const GURL& link_url);
 }  // namespace send_tab_to_self
 
 #endif  // CHROME_BROWSER_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_UTIL_H_

@@ -48,7 +48,7 @@ typedef base::Callback<void(const std::string&)> ConfigStorer;
 
 // Retrieves the default net::BackoffEntry::Policy for the Data Reduction Proxy
 // configuration service client.
-const net::BackoffEntry::Policy& GetBackoffPolicy();
+net::BackoffEntry::Policy GetBackoffPolicy();
 
 // Retrieves the Data Reduction Proxy configuration from a remote service. This
 // object lives on the IO thread.
@@ -210,6 +210,7 @@ class DataReductionProxyConfigServiceClient
   ConfigStorer config_storer_;
 
   // Used to calculate the backoff time on request failures.
+  net::BackoffEntry::Policy backoff_policy_;
   net::BackoffEntry backoff_entry_;
 
   // The URL for retrieving the Data Reduction Proxy configuration.

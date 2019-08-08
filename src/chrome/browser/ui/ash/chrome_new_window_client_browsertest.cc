@@ -12,6 +12,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/settings_window_manager_observer_chromeos.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/account_id/account_id.h"
@@ -160,4 +162,29 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientWebAppBrowserTest, OpenWebApp) {
     EXPECT_EQ(app_url, contents->GetLastCommittedURL());
     EXPECT_NE(nullptr, contents->GetUserData(key));
   }
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest, OpenSettingsFromArc) {
+  class Observer : public chrome::SettingsWindowManagerObserver {
+   public:
+    void OnNewSettingsWindow(Browser* settings_browser) override {
+      ++new_settings_count_;
+    }
+    int new_settings_count_ = 0;
+  } observer;
+
+  auto* settings = chrome::SettingsWindowManager::GetInstance();
+  settings->AddObserver(&observer);
+
+  // Navigating to Wi-Fi settings opens a new settings window.
+  GURL wifi_url("chrome://settings/networks/?type=WiFi");
+  ChromeNewWindowClient::Get()->OpenUrlFromArc(wifi_url);
+  EXPECT_EQ(1, observer.new_settings_count_);
+
+  // The window loads Wi-Fi settings (not just the settings main page).
+  content::WebContents* contents =
+      GetLastActiveBrowser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(wifi_url, contents->GetVisibleURL());
+
+  settings->RemoveObserver(&observer);
 }

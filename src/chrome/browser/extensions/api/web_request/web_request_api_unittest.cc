@@ -48,6 +48,7 @@
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
 #include "extensions/common/api/web_request.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -65,6 +66,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest-message.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-forward.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/login/login_state/scoped_test_public_session_login_state.h"
@@ -106,6 +108,8 @@ constexpr const char kExampleUrl[] = "http://example.com";
 
 static void EventHandledOnIOThread(
     void* profile,
+    int worker_thread_id,
+    int64_t service_worker_version_id,
     const std::string& extension_id,
     const std::string& event_name,
     const std::string& sub_event_name,
@@ -113,7 +117,8 @@ static void EventHandledOnIOThread(
     ExtensionWebRequestEventRouter::EventResponse* response) {
   ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
       profile, extension_id, event_name, sub_event_name, request_id,
-      0 /* embedder_process_id */, 0 /* web_view_instance_id */, response);
+      0 /* render_process_id */, 0 /* web_view_instance_id */, worker_thread_id,
+      service_worker_version_id, response);
 }
 
 // Returns whether |warnings| contains an extension for |extension_id|.
@@ -166,7 +171,7 @@ std::unique_ptr<net::URLRequest> CreateRequestHelper(
   std::unique_ptr<net::URLRequest> request = context->CreateRequest(
       url, net::DEFAULT_PRIORITY, delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
   content::ResourceRequestInfo::AllocateForTesting(
-      request.get(), content::RESOURCE_TYPE_MAIN_FRAME, /*context*/ nullptr,
+      request.get(), content::ResourceType::kMainFrame, /*context*/ nullptr,
       -1 /* render_process_id */, -1 /* render_view_id */,
       -1 /* render_frame_id */, true /* is_main_frame */,
       content::ResourceInterceptPolicy::kAllowNone, false /* is_async */,
@@ -296,10 +301,12 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, extension1_id, extension1_id, events::FOR_TEST, kEventName,
       kEventName + "/1", filter, ExtraInfoSpec::BLOCKING, 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId,
       ipc_sender_factory.GetWeakPtr());
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, extension2_id, extension2_id, events::FOR_TEST, kEventName,
       kEventName + "/2", filter, ExtraInfoSpec::BLOCKING, 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId,
       ipc_sender_factory.GetWeakPtr());
 
   net::URLRequestJobFactoryImpl job_factory;
@@ -323,35 +330,35 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension1_id, base::Time::FromDoubleT(1));
     response->new_url = not_chosen_redirect_url;
-    ipc_sender_.PushTask(
-        base::Bind(&EventHandledOnIOThread,
-            &profile_, extension1_id, kEventName, kEventName + "/1",
-            request->identifier(), response));
+    ipc_sender_.PushTask(base::BindRepeating(
+        &EventHandledOnIOThread, &profile_, extensions::kMainThreadId,
+        blink::mojom::kInvalidServiceWorkerVersionId, extension1_id, kEventName,
+        kEventName + "/1", request->identifier(), response));
 
     // Extension2 response. Arrives second, and chosen because of install_time.
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension2_id, base::Time::FromDoubleT(2));
     response->new_url = redirect_url;
-    ipc_sender_.PushTask(
-        base::Bind(&EventHandledOnIOThread,
-            &profile_, extension2_id, kEventName, kEventName + "/2",
-            request->identifier(), response));
+    ipc_sender_.PushTask(base::BindRepeating(
+        &EventHandledOnIOThread, &profile_, extensions::kMainThreadId,
+        blink::mojom::kInvalidServiceWorkerVersionId, extension2_id, kEventName,
+        kEventName + "/2", request->identifier(), response));
 
     // Extension2 response to the redirected URL. Arrives first, and chosen.
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension2_id, base::Time::FromDoubleT(2));
-    ipc_sender_.PushTask(
-        base::Bind(&EventHandledOnIOThread,
-            &profile_, extension2_id, kEventName, kEventName + "/2",
-            request->identifier(), response));
+    ipc_sender_.PushTask(base::BindRepeating(
+        &EventHandledOnIOThread, &profile_, extensions::kMainThreadId,
+        blink::mojom::kInvalidServiceWorkerVersionId, extension2_id, kEventName,
+        kEventName + "/2", request->identifier(), response));
 
     // Extension1 response to the redirected URL. Arrives second, and ignored.
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension1_id, base::Time::FromDoubleT(1));
-    ipc_sender_.PushTask(
-        base::Bind(&EventHandledOnIOThread,
-            &profile_, extension1_id, kEventName, kEventName + "/1",
-            request->identifier(), response));
+    ipc_sender_.PushTask(base::BindRepeating(
+        &EventHandledOnIOThread, &profile_, extensions::kMainThreadId,
+        blink::mojom::kInvalidServiceWorkerVersionId, extension1_id, kEventName,
+        kEventName + "/1", request->identifier(), response));
 
     request->Start();
     base::RunLoop().Run();
@@ -373,35 +380,35 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension2_id, base::Time::FromDoubleT(2));
     response->new_url = redirect_url;
-    ipc_sender_.PushTask(
-        base::Bind(&EventHandledOnIOThread,
-            &profile_, extension2_id, kEventName, kEventName + "/2",
-            request2->identifier(), response));
+    ipc_sender_.PushTask(base::BindRepeating(
+        &EventHandledOnIOThread, &profile_, extensions::kMainThreadId,
+        blink::mojom::kInvalidServiceWorkerVersionId, extension2_id, kEventName,
+        kEventName + "/2", request2->identifier(), response));
 
     // Extension1 response. Arrives second, but ignored due to install_time.
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension1_id, base::Time::FromDoubleT(1));
     response->new_url = not_chosen_redirect_url;
-    ipc_sender_.PushTask(
-        base::Bind(&EventHandledOnIOThread,
-            &profile_, extension1_id, kEventName, kEventName + "/1",
-            request2->identifier(), response));
+    ipc_sender_.PushTask(base::BindRepeating(
+        &EventHandledOnIOThread, &profile_, extensions::kMainThreadId,
+        blink::mojom::kInvalidServiceWorkerVersionId, extension1_id, kEventName,
+        kEventName + "/1", request2->identifier(), response));
 
     // Extension2 response to the redirected URL. Arrives first, and chosen.
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension2_id, base::Time::FromDoubleT(2));
-    ipc_sender_.PushTask(
-        base::Bind(&EventHandledOnIOThread,
-            &profile_, extension2_id, kEventName, kEventName + "/2",
-            request2->identifier(), response));
+    ipc_sender_.PushTask(base::BindRepeating(
+        &EventHandledOnIOThread, &profile_, extensions::kMainThreadId,
+        blink::mojom::kInvalidServiceWorkerVersionId, extension2_id, kEventName,
+        kEventName + "/2", request2->identifier(), response));
 
     // Extension1 response to the redirected URL. Arrives second, and ignored.
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension1_id, base::Time::FromDoubleT(1));
-    ipc_sender_.PushTask(
-        base::Bind(&EventHandledOnIOThread,
-            &profile_, extension1_id, kEventName, kEventName + "/1",
-            request2->identifier(), response));
+    ipc_sender_.PushTask(base::BindRepeating(
+        &EventHandledOnIOThread, &profile_, extensions::kMainThreadId,
+        blink::mojom::kInvalidServiceWorkerVersionId, extension1_id, kEventName,
+        kEventName + "/1", request2->identifier(), response));
 
     request2->Start();
     base::RunLoop().Run();
@@ -414,9 +421,11 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
   }
 
   ExtensionWebRequestEventRouter::EventListener::ID id1(
-      &profile_, extension1_id, kEventName + "/1", 0, 0);
+      &profile_, extension1_id, kEventName + "/1", 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId);
   ExtensionWebRequestEventRouter::EventListener::ID id2(
-      &profile_, extension2_id, kEventName + "/2", 0, 0);
+      &profile_, extension2_id, kEventName + "/2", 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
                                                                      false);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id2,
@@ -434,10 +443,12 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, extension1_id, extension1_id, events::FOR_TEST, kEventName,
       kEventName + "/1", filter, ExtraInfoSpec::BLOCKING, 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId,
       ipc_sender_factory.GetWeakPtr());
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, extension2_id, extension2_id, events::FOR_TEST, kEventName,
       kEventName + "/2", filter, ExtraInfoSpec::BLOCKING, 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId,
       ipc_sender_factory.GetWeakPtr());
 
   GURL request_url("about:blank");
@@ -454,20 +465,20 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
   response = new ExtensionWebRequestEventRouter::EventResponse(
       extension1_id, base::Time::FromDoubleT(1));
   response->cancel = true;
-  ipc_sender_.PushTask(
-      base::Bind(&EventHandledOnIOThread,
-          &profile_, extension1_id, kEventName, kEventName + "/1",
-          request->identifier(), response));
+  ipc_sender_.PushTask(base::BindRepeating(
+      &EventHandledOnIOThread, &profile_, extensions::kMainThreadId,
+      blink::mojom::kInvalidServiceWorkerVersionId, extension1_id, kEventName,
+      kEventName + "/1", request->identifier(), response));
 
   // Extension2 response. Arrives second, but has higher precedence
   // due to its later install_time.
   response = new ExtensionWebRequestEventRouter::EventResponse(
       extension2_id, base::Time::FromDoubleT(2));
   response->new_url = redirect_url;
-  ipc_sender_.PushTask(
-      base::Bind(&EventHandledOnIOThread,
-          &profile_, extension2_id, kEventName, kEventName + "/2",
-          request->identifier(), response));
+  ipc_sender_.PushTask(base::BindRepeating(
+      &EventHandledOnIOThread, &profile_, extensions::kMainThreadId,
+      blink::mojom::kInvalidServiceWorkerVersionId, extension2_id, kEventName,
+      kEventName + "/2", request->identifier(), response));
 
   request->Start();
 
@@ -480,9 +491,11 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
   EXPECT_EQ(0U, ipc_sender_.GetNumTasks());
 
   ExtensionWebRequestEventRouter::EventListener::ID id1(
-      &profile_, extension1_id, kEventName + "/1", 0, 0);
+      &profile_, extension1_id, kEventName + "/1", 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId);
   ExtensionWebRequestEventRouter::EventListener::ID id2(
-      &profile_, extension2_id, kEventName + "/2", 0, 0);
+      &profile_, extension2_id, kEventName + "/2", 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
                                                                      false);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id2,
@@ -505,10 +518,13 @@ TEST_F(ExtensionWebRequestTest, SimulateChancelWhileBlocked) {
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, extension_id, extension_id, events::FOR_TEST, kEventName,
       kEventName + "/1", filter, ExtraInfoSpec::BLOCKING, 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId,
       ipc_sender_factory.GetWeakPtr());
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, extension_id, extension_id, events::FOR_TEST, kEventName2,
-      kEventName2 + "/1", filter, 0, 0, 0, ipc_sender_factory.GetWeakPtr());
+      kEventName2 + "/1", filter, 0, 0, 0, extensions::kMainThreadId,
+      blink::mojom::kInvalidServiceWorkerVersionId,
+      ipc_sender_factory.GetWeakPtr());
 
   GURL request_url("about:blank");
   std::unique_ptr<net::URLRequest> request = CreateRequest(request_url);
@@ -521,18 +537,18 @@ TEST_F(ExtensionWebRequestTest, SimulateChancelWhileBlocked) {
       extension_id, base::Time::FromDoubleT(1));
   GURL redirect_url("about:redirected");
   response->new_url = redirect_url;
-  ipc_sender_.PushTask(
-      base::Bind(&EventHandledOnIOThread,
-          &profile_, extension_id, kEventName, kEventName + "/1",
-          request->identifier(), response));
+  ipc_sender_.PushTask(base::BindRepeating(
+      &EventHandledOnIOThread, &profile_, extensions::kMainThreadId,
+      blink::mojom::kInvalidServiceWorkerVersionId, extension_id, kEventName,
+      kEventName + "/1", request->identifier(), response));
 
   base::RunLoop run_loop;
 
   // Extension response for OnErrorOccurred: Terminate the message loop.
-  ipc_sender_.PushTask(
-      base::Bind(base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
-                 base::ThreadTaskRunnerHandle::Get(), FROM_HERE,
-                 run_loop.QuitWhenIdleClosure()));
+  ipc_sender_.PushTask(base::BindRepeating(
+      base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
+      base::ThreadTaskRunnerHandle::Get(), FROM_HERE,
+      run_loop.QuitWhenIdleClosure()));
 
   request->Start();
   // request->Start() will have submitted OnBeforeRequest by the time we cancel.
@@ -546,9 +562,11 @@ TEST_F(ExtensionWebRequestTest, SimulateChancelWhileBlocked) {
   EXPECT_EQ(0U, ipc_sender_.GetNumTasks());
 
   ExtensionWebRequestEventRouter::EventListener::ID id1(
-      &profile_, extension_id, kEventName + "/1", 0, 0);
+      &profile_, extension_id, kEventName + "/1", 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId);
   ExtensionWebRequestEventRouter::EventListener::ID id2(
-      &profile_, extension_id, kEventName2 + "/1", 0, 0);
+      &profile_, extension_id, kEventName2 + "/1", 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
                                                                      false);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id2,
@@ -719,6 +737,7 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, extension_id, extension_id, events::FOR_TEST, kEventName,
       kEventName + "/1", filter, extra_info_spec_body, 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId,
       ipc_sender_factory.GetWeakPtr());
 
   FireURLRequestWithData(kMethodPost, kMultipart, form_1, form_2);
@@ -727,7 +746,8 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
   base::RunLoop().RunUntilIdle();
 
   ExtensionWebRequestEventRouter::EventListener::ID id1(
-      &profile_, extension_id, kEventName + "/1", 0, 0);
+      &profile_, extension_id, kEventName + "/1", 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
                                                                      false);
 
@@ -738,6 +758,7 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, extension_id, extension_id, events::FOR_TEST, kEventName,
       kEventName + "/1", filter, extra_info_spec_empty, 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId,
       ipc_sender_factory.GetWeakPtr());
 
   FireURLRequestWithData(kMethodPost, kMultipart, form_1, form_2);
@@ -749,6 +770,7 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, extension_id, extension_id, events::FOR_TEST, kEventName,
       kEventName + "/1", filter, extra_info_spec_body, 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId,
       ipc_sender_factory.GetWeakPtr());
 
   // Part 3.
@@ -809,24 +831,28 @@ TEST_F(ExtensionWebRequestTest, MinimalAccessRequestBodyData) {
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, extension_id1, extension_id1, events::FOR_TEST, kEventName,
       kEventName + "/1", filter, extra_info_spec_body, 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId,
       ipc_sender_factory.GetWeakPtr());
 
   // Extension 1 without requestBody spec.
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, extension_id1, extension_id1, events::FOR_TEST, kEventName,
       kEventName + "/2", filter, extra_info_spec_empty, 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId,
       ipc_sender_factory.GetWeakPtr());
 
   // Extension 2, without requestBody spec.
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, extension_id2, extension_id2, events::FOR_TEST, kEventName,
       kEventName + "/1", filter, extra_info_spec_empty, 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId,
       ipc_sender_factory.GetWeakPtr());
 
   // Extension 2, with requestBody spec.
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, extension_id2, extension_id2, events::FOR_TEST, kEventName,
       kEventName + "/2", filter, extra_info_spec_body, 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId,
       ipc_sender_factory.GetWeakPtr());
 
   // Only one request is sent, but more than one event will be triggered.
@@ -840,13 +866,17 @@ TEST_F(ExtensionWebRequestTest, MinimalAccessRequestBodyData) {
 
   // Clean-up
   ExtensionWebRequestEventRouter::EventListener::ID id1(
-      &profile_, extension_id1, kEventName + "/1", 0, 0);
+      &profile_, extension_id1, kEventName + "/1", 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId);
   ExtensionWebRequestEventRouter::EventListener::ID id2(
-      &profile_, extension_id1, kEventName + "/2", 0, 0);
+      &profile_, extension_id1, kEventName + "/2", 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId);
   ExtensionWebRequestEventRouter::EventListener::ID id3(
-      &profile_, extension_id2, kEventName + "/1", 0, 0);
+      &profile_, extension_id2, kEventName + "/1", 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId);
   ExtensionWebRequestEventRouter::EventListener::ID id4(
-      &profile_, extension_id2, kEventName + "/2", 0, 0);
+      &profile_, extension_id2, kEventName + "/2", 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
                                                                      false);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id2,
@@ -896,10 +926,12 @@ TEST_F(ExtensionWebRequestTest, ProperFilteringInPublicSession) {
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, extension_id1, extension_id1, events::FOR_TEST, kEventName,
       kEventName + "/1", filter, extra_info_spec_body, 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId,
       ipc_sender_factory.GetWeakPtr());
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, extension_id2, extension_id2, events::FOR_TEST, kEventName,
       kEventName + "/1", filter, extra_info_spec_body, 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId,
       ipc_sender_factory.GetWeakPtr());
 
   // Only one request is sent, but more than one event will be triggered.
@@ -913,9 +945,11 @@ TEST_F(ExtensionWebRequestTest, ProperFilteringInPublicSession) {
 
   // Clean-up
   ExtensionWebRequestEventRouter::EventListener::ID id1(
-      &profile_, extension_id1, kEventName + "/1", 0, 0);
+      &profile_, extension_id1, kEventName + "/1", 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId);
   ExtensionWebRequestEventRouter::EventListener::ID id2(
-      &profile_, extension_id2, kEventName + "/1", 0, 0);
+      &profile_, extension_id2, kEventName + "/1", 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
                                                                      false);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id2,
@@ -959,6 +993,7 @@ TEST_F(ExtensionWebRequestTest, NoAccessRequestBodyData) {
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, extension_id, extension_id, events::FOR_TEST, kEventName,
       kEventName + "/1", filter, extra_info_spec, 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId,
       ipc_sender_factory.GetWeakPtr());
 
   // The request URL can be arbitrary but must have an HTTP or HTTPS scheme.
@@ -975,7 +1010,8 @@ TEST_F(ExtensionWebRequestTest, NoAccessRequestBodyData) {
   base::RunLoop().RunUntilIdle();
 
   ExtensionWebRequestEventRouter::EventListener::ID id1(
-      &profile_, extension_id, kEventName + "/1", 0, 0);
+      &profile_, extension_id, kEventName + "/1", 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
                                                                      false);
 
@@ -994,7 +1030,7 @@ TEST_F(ExtensionWebRequestTest, NoAccessRequestBodyData) {
   EXPECT_EQ(i, ipc_sender_.sent_end());
 }
 
-// Tests that |embedder_process_id| is not relevant for adding and removing
+// Tests that |render_process_id| is not relevant for adding and removing
 // listeners with |web_view_instance_id| = 0.
 TEST_F(ExtensionWebRequestTest, AddAndRemoveListeners) {
   std::string ext_id("abcdefghijklmnopabcdefghijklmnop");
@@ -1010,11 +1046,13 @@ TEST_F(ExtensionWebRequestTest, AddAndRemoveListeners) {
   // Add two non-webview listeners.
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, ext_id, ext_id, events::FOR_TEST, kEventName, kSubEventName,
-      filter, 0, 1 /* embedder_process_id */, 0,
+      filter, 0, 1 /* render_process_id */, 0, extensions::kMainThreadId,
+      blink::mojom::kInvalidServiceWorkerVersionId,
       ipc_sender_factory.GetWeakPtr());
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, ext_id, ext_id, events::FOR_TEST, kEventName, kSubEventName,
-      filter, 0, 2 /* embedder_process_id */, 0,
+      filter, 0, 2 /* render_process_id */, 0, extensions::kMainThreadId,
+      blink::mojom::kInvalidServiceWorkerVersionId,
       ipc_sender_factory.GetWeakPtr());
   EXPECT_EQ(
       2u,
@@ -1022,8 +1060,9 @@ TEST_F(ExtensionWebRequestTest, AddAndRemoveListeners) {
           &profile_, kEventName));
 
   // Now remove the events without passing an explicit process ID.
-  ExtensionWebRequestEventRouter::EventListener::ID id1(&profile_, ext_id,
-                                                        kSubEventName, 0, 0);
+  ExtensionWebRequestEventRouter::EventListener::ID id1(
+      &profile_, ext_id, kSubEventName, 0, 0, extensions::kMainThreadId,
+      blink::mojom::kInvalidServiceWorkerVersionId);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
                                                                      false);
   EXPECT_EQ(
@@ -1050,9 +1089,11 @@ TEST_F(ExtensionWebRequestTest, BlockedRequestsAreRemoved) {
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, extension_id, extension_id, events::FOR_TEST, kEventName,
       kEventName + "/1", filter, ExtraInfoSpec::BLOCKING, 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId,
       ipc_sender_factory.GetWeakPtr());
-  ExtensionWebRequestEventRouter::EventListener::ID id(&profile_, extension_id,
-                                                       kEventName + "/1", 0, 0);
+  ExtensionWebRequestEventRouter::EventListener::ID id(
+      &profile_, extension_id, kEventName + "/1", 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId);
   ExtensionWebRequestEventRouter::EventListener* listener =
       ExtensionWebRequestEventRouter::GetInstance()->FindEventListener(id);
   ASSERT_NE(nullptr, listener);
@@ -1064,10 +1105,10 @@ TEST_F(ExtensionWebRequestTest, BlockedRequestsAreRemoved) {
   // Extension response for OnErrorOccurred: Terminate the message loop.
   {
     base::RunLoop run_loop;
-    ipc_sender_.PushTask(
-        base::Bind(base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
-                   base::ThreadTaskRunnerHandle::Get(), FROM_HERE,
-                   run_loop.QuitWhenIdleClosure()));
+    ipc_sender_.PushTask(base::BindRepeating(
+        base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
+        base::ThreadTaskRunnerHandle::Get(), FROM_HERE,
+        run_loop.QuitWhenIdleClosure()));
     request->Start();
     run_loop.Run();
   }
@@ -1082,8 +1123,9 @@ TEST_F(ExtensionWebRequestTest, BlockedRequestsAreRemoved) {
   response->cancel = true;
   ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
       &profile_, extension_id, kEventName, kEventName + "/1",
-      request->identifier(), 0 /* embedder_process_id */,
-      0 /* web_view_instance_id */, response);
+      request->identifier(), 0 /* render_process_id */,
+      0 /* web_view_instance_id */, extensions::kMainThreadId,
+      blink::mojom::kInvalidServiceWorkerVersionId, response);
   {
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
@@ -1178,17 +1220,20 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, extension1_id, extension1_id, events::FOR_TEST, kEventName,
       kEventName + "/1", filter, ExtraInfoSpec::BLOCKING, 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId,
       ipc_sender_factory.GetWeakPtr());
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, extension2_id, extension2_id, events::FOR_TEST, kEventName,
       kEventName + "/2", filter, ExtraInfoSpec::BLOCKING, 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId,
       ipc_sender_factory.GetWeakPtr());
 
   // Install one extension that observes the final headers.
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, extension3_id, extension3_id, events::FOR_TEST,
       keys::kOnSendHeadersEvent, std::string(keys::kOnSendHeadersEvent) + "/3",
-      filter, ExtraInfoSpec::REQUEST_HEADERS, 0, 0,
+      filter, ExtraInfoSpec::REQUEST_HEADERS, 0, 0, extensions::kMainThreadId,
+      blink::mojom::kInvalidServiceWorkerVersionId,
       ipc_sender_factory.GetWeakPtr());
 
   GURL request_url("http://doesnotexist/does_not_exist.html");
@@ -1229,11 +1274,12 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
     // the block of modifications for the next extension starts.
     if (i+1 == test.modification_size ||
         mod.extension_id != test.modification[i+1].extension_id) {
-      ipc_sender_.PushTask(
-          base::Bind(&EventHandledOnIOThread,
-              &profile_, mod.extension_id == 1 ? extension1_id : extension2_id,
-              kEventName, kEventName + (mod.extension_id == 1 ? "/1" : "/2"),
-              request->identifier(), response));
+      ipc_sender_.PushTask(base::BindRepeating(
+          &EventHandledOnIOThread, &profile_, extensions::kMainThreadId,
+          blink::mojom::kInvalidServiceWorkerVersionId,
+          mod.extension_id == 1 ? extension1_id : extension2_id, kEventName,
+          kEventName + (mod.extension_id == 1 ? "/1" : "/2"),
+          request->identifier(), response));
       response = NULL;
     }
   }
@@ -1306,12 +1352,15 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
   }
   EXPECT_EQ(1, num_headers_observed);
   ExtensionWebRequestEventRouter::EventListener::ID id1(
-      &profile_, extension1_id, kEventName + "/1", 0, 0);
+      &profile_, extension1_id, kEventName + "/1", 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId);
   ExtensionWebRequestEventRouter::EventListener::ID id2(
-      &profile_, extension2_id, kEventName + "/2", 0, 0);
+      &profile_, extension2_id, kEventName + "/2", 0, 0,
+      extensions::kMainThreadId, blink::mojom::kInvalidServiceWorkerVersionId);
   ExtensionWebRequestEventRouter::EventListener::ID id3(
       &profile_, extension3_id, std::string(keys::kOnSendHeadersEvent) + "/3",
-      0, 0);
+      0, 0, extensions::kMainThreadId,
+      blink::mojom::kInvalidServiceWorkerVersionId);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
                                                                      false);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id2,

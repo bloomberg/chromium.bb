@@ -48,15 +48,6 @@ class IdentityManagerFactory : public BrowserContextKeyedServiceFactory {
   // are built.
   static void EnsureFactoryAndDependeeFactoriesBuilt();
 
-  // Exposes BuildServiceInstanceFor() publicly for usage to unittests,
-  // returning an authenticated IdentityManager, useful specially in
-  // ChromeOS scenarios.
-  static std::unique_ptr<KeyedService>
-  BuildAuthenticatedServiceInstanceForTesting(const std::string& gaia_id,
-                                              const std::string& email,
-                                              const std::string& refresh_token,
-                                              content::BrowserContext* context);
-
   // Methods to register or remove observers of IdentityManager
   // creation/shutdown.
   void AddObserver(Observer* observer);
@@ -72,6 +63,8 @@ class IdentityManagerFactory : public BrowserContextKeyedServiceFactory {
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
   void BrowserContextShutdown(content::BrowserContext* profile) override;
+  void RegisterProfilePrefs(
+      user_prefs::PrefRegistrySyncable* registry) override;
 
   // List of observers. Checks that list is empty on destruction.
   base::ObserverList<Observer, /*check_empty=*/true, /*allow_reentrancy=*/false>

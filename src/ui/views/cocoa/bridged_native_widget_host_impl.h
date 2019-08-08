@@ -164,6 +164,10 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // Called when the owning Widget's Init method has completed.
   void OnWidgetInitDone();
 
+  // Redispatch a keyboard event using the widget's window's CommandDispatcher.
+  // Return true if the event is handled.
+  bool RedispatchKeyEvent(NSEvent* event);
+
   // See widget.h for documentation.
   ui::InputMethod* GetInputMethod();
 
@@ -362,6 +366,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override;
+  void UpdateVisualState() override;
 
   // ui::AcceleratedWidgetMacNSView:
   void AcceleratedWidgetCALayerParamsUpdated() override;

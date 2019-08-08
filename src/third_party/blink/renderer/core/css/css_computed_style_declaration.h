@@ -42,17 +42,11 @@ class ComputedStyle;
 class CORE_EXPORT CSSComputedStyleDeclaration final
     : public CSSStyleDeclaration {
  public:
-  static CSSComputedStyleDeclaration* Create(
-      Node* node,
-      bool allow_visited_style = false,
-      const String& pseudo_element_name = String()) {
-    return MakeGarbageCollected<CSSComputedStyleDeclaration>(
-        node, allow_visited_style, pseudo_element_name);
-  }
-
   static const Vector<const CSSProperty*>& ComputableProperties();
 
-  CSSComputedStyleDeclaration(Node*, bool allow_visited_style, const String&);
+  CSSComputedStyleDeclaration(Node*,
+                              bool allow_visited_style = false,
+                              const String& = String());
   ~CSSComputedStyleDeclaration() override;
 
   String GetPropertyValue(CSSPropertyID) const;

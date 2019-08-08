@@ -59,7 +59,7 @@ MEDIA_EXPORT extern const char
 MEDIA_EXPORT extern const char kUseFakeDeviceForMediaStream[];
 MEDIA_EXPORT extern const char kUseFileForFakeVideoCapture[];
 MEDIA_EXPORT extern const char kUseFileForFakeAudioCapture[];
-MEDIA_EXPORT extern const char kUseFakeJpegDecodeAccelerator[];
+MEDIA_EXPORT extern const char kUseFakeMjpegDecodeAccelerator[];
 MEDIA_EXPORT extern const char kDisableAcceleratedMjpegDecode[];
 
 MEDIA_EXPORT extern const char kRequireAudioHardwareForTesting[];
@@ -133,18 +133,18 @@ MEDIA_EXPORT extern const base::Feature kUseModernMediaControls;
 MEDIA_EXPORT extern const base::Feature kUseNewMediaCache;
 MEDIA_EXPORT extern const base::Feature kUseR16Texture;
 MEDIA_EXPORT extern const base::Feature kUseSurfaceLayerForVideo;
+MEDIA_EXPORT extern const base::Feature kVaapiLowPowerEncoder;
 MEDIA_EXPORT extern const base::Feature kVaapiVP8Encoder;
 MEDIA_EXPORT extern const base::Feature kVaapiVP9Encoder;
 MEDIA_EXPORT extern const base::Feature kVideoBlitColorAccuracy;
 
 #if defined(OS_ANDROID)
 MEDIA_EXPORT extern const base::Feature kMediaControlsExpandGesture;
-MEDIA_EXPORT extern const base::Feature kVideoFullscreenOrientationLock;
-MEDIA_EXPORT extern const base::Feature kVideoRotateToFullscreen;
 MEDIA_EXPORT extern const base::Feature kMediaDrmPersistentLicense;
 MEDIA_EXPORT extern const base::Feature kMediaDrmPreprovisioning;
 MEDIA_EXPORT extern const base::Feature kMediaDrmPreprovisioningAtStartup;
 MEDIA_EXPORT extern const base::Feature kAImageReaderVideoOutput;
+MEDIA_EXPORT extern const base::Feature kDisableSurfaceLayerForVideo;
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)

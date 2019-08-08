@@ -111,20 +111,6 @@ void init() {
             fragColor = texture(sampler2D(myTexture, mySampler), gl_FragCoord.xy / vec2(640.0, 480.0));
         })");
 
-    dawn::VertexAttributeDescriptor attribute;
-    attribute.shaderLocation = 0;
-    attribute.inputSlot = 0;
-    attribute.offset = 0;
-    attribute.format = dawn::VertexFormat::FloatR32G32B32A32;
-
-    dawn::VertexInputDescriptor input;
-    input.inputSlot = 0;
-    input.stride = 4 * sizeof(float);
-    input.stepMode = dawn::InputStepMode::Vertex;
-
-    auto inputState =
-        device.CreateInputStateBuilder().SetAttribute(&attribute).SetInput(&input).GetResult();
-
     auto bgl = utils::MakeBindGroupLayout(
         device, {
                     {0, dawn::ShaderStageBit::Fragment, dawn::BindingType::Sampler},
@@ -139,14 +125,17 @@ void init() {
     descriptor.layout = utils::MakeBasicPipelineLayout(device, &bgl);
     descriptor.cVertexStage.module = vsModule;
     descriptor.cFragmentStage.module = fsModule;
-    descriptor.inputState = inputState;
+    descriptor.cInputState.numAttributes = 1;
+    descriptor.cInputState.cAttributes[0].format = dawn::VertexFormat::Float4;
+    descriptor.cInputState.numInputs = 1;
+    descriptor.cInputState.cInputs[0].stride = 4 * sizeof(float);
     descriptor.depthStencilState = &descriptor.cDepthStencilState;
     descriptor.cDepthStencilState.format = dawn::TextureFormat::D32FloatS8Uint;
     descriptor.cColorStates[0]->format = GetPreferredSwapChainTextureFormat();
 
     pipeline = device.CreateRenderPipeline(&descriptor);
 
-    dawn::TextureView view = texture.CreateDefaultTextureView();
+    dawn::TextureView view = texture.CreateDefaultView();
 
     bindGroup = utils::MakeBindGroup(device, bgl, {
         {0, sampler},
@@ -161,15 +150,15 @@ void frame() {
     if (s.b >= 1.0f) {s.b = 0.0f;}
 
     dawn::Texture backbuffer = swapchain.GetNextTexture();
-    utils::ComboRenderPassDescriptor renderPass({backbuffer.CreateDefaultTextureView()},
+    utils::ComboRenderPassDescriptor renderPass({backbuffer.CreateDefaultView()},
                                                 depthStencilView);
 
-    static const uint32_t vertexBufferOffsets[1] = {0};
+    static const uint64_t vertexBufferOffsets[1] = {0};
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     {
         dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
         pass.SetPipeline(pipeline);
-        pass.SetBindGroup(0, bindGroup);
+        pass.SetBindGroup(0, bindGroup, 0, nullptr);
         pass.SetVertexBuffers(0, 1, &vertexBuffer, vertexBufferOffsets);
         pass.SetIndexBuffer(indexBuffer, 0);
         pass.DrawIndexed(3, 1, 0, 0, 0);

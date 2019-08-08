@@ -73,7 +73,7 @@ std::string DisplayPowerStateToString(chromeos::DisplayPowerState state) {
     case chromeos::DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF:
       return "INTERNAL_ON_EXTERNAL_OFF";
     default:
-      return "unknown (" + base::IntToString(state) + ")";
+      return "unknown (" + base::NumberToString(state) + ")";
   }
 }
 
@@ -118,6 +118,27 @@ int GetDisplayPower(const std::vector<DisplaySnapshot*>& displays,
 
 bool IsPhysicalDisplayType(DisplayConnectionType type) {
   return !(type & DISPLAY_CONNECTION_TYPE_NETWORK);
+}
+
+bool GetContentProtectionMethods(DisplayConnectionType type,
+                                 uint32_t* protection_mask) {
+  switch (type) {
+    case DISPLAY_CONNECTION_TYPE_NONE:
+    case DISPLAY_CONNECTION_TYPE_UNKNOWN:
+      return false;
+
+    case DISPLAY_CONNECTION_TYPE_INTERNAL:
+    case DISPLAY_CONNECTION_TYPE_VGA:
+    case DISPLAY_CONNECTION_TYPE_NETWORK:
+      *protection_mask = CONTENT_PROTECTION_METHOD_NONE;
+      return true;
+
+    case DISPLAY_CONNECTION_TYPE_DISPLAYPORT:
+    case DISPLAY_CONNECTION_TYPE_DVI:
+    case DISPLAY_CONNECTION_TYPE_HDMI:
+      *protection_mask = CONTENT_PROTECTION_METHOD_HDCP;
+      return true;
+  }
 }
 
 std::vector<float> GetDisplayZoomFactors(const ManagedDisplayMode& mode) {

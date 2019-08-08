@@ -9,7 +9,7 @@
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
-#include "chrome/browser/performance_manager/resource_coordinator_clock.h"
+#include "chrome/browser/performance_manager/performance_manager_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
@@ -18,13 +18,16 @@ class WebUIGraphDumpImplTest : public GraphTestHarness {};
 
 TEST_F(WebUIGraphDumpImplTest, Create) {
   Graph graph;
-  MockMultiplePagesWithMultipleProcessesGraph cu_graph(&graph);
+  MockMultiplePagesWithMultipleProcessesGraph mock_graph(&graph);
 
-  base::TimeTicks now = ResourceCoordinatorClock::NowTicks();
+  base::TimeTicks now = PerformanceManagerClock::NowTicks();
 
-  constexpr char kExampleUrl[] = "http://www.example.org";
-  cu_graph.page->OnMainFrameNavigationCommitted(now, 1, kExampleUrl);
-  cu_graph.other_page->OnMainFrameNavigationCommitted(now, 2, kExampleUrl);
+  const GURL kExampleUrl("http://www.example.org");
+  mock_graph.page->OnMainFrameNavigationCommitted(now, 1, kExampleUrl);
+  mock_graph.other_page->OnMainFrameNavigationCommitted(now, 2, kExampleUrl);
+
+  auto* main_frame = mock_graph.page->GetMainFrameNode();
+  main_frame->set_url(kExampleUrl);
 
   WebUIGraphDumpImpl impl(&graph);
 
@@ -49,8 +52,13 @@ TEST_F(WebUIGraphDumpImplTest, Create) {
   // Count the top-level frames as we go.
   size_t top_level_frames = 0;
   for (const auto& frame : returned_graph->frames) {
-    if (frame->parent_frame_id == 0)
+    if (frame->parent_frame_id == 0) {
       ++top_level_frames;
+
+      // The page's main frame should have an URL.
+      if (frame->id == static_cast<int64_t>(main_frame->id().id))
+        EXPECT_EQ(kExampleUrl, frame->url);
+    }
     EXPECT_NE(0u, frame->id);
     EXPECT_NE(0u, frame->process_id);
   }

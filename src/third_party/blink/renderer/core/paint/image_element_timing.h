@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_IMAGE_ELEMENT_TIMING_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_IMAGE_ELEMENT_TIMING_H_
 
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -17,6 +17,8 @@ namespace blink {
 
 class ImageResourceContent;
 class LayoutImage;
+class PropertyTreeState;
+class StyleImage;
 
 // ImageElementTiming is responsible for tracking the paint timings for <img>
 // elements for a given window.
@@ -35,54 +37,78 @@ class CORE_EXPORT ImageElementTiming final
 
   // Called when the LayoutObject has been painted. This method might queue a
   // swap promise to compute and report paint timestamps.
-  void NotifyImagePainted(const LayoutObject*,
-                          const ImageResourceContent* cached_image,
-                          const PaintLayer*);
+  void NotifyImagePainted(
+      const LayoutObject*,
+      const ImageResourceContent* cached_image,
+      const PropertyTreeState& current_paint_chunk_properties);
+
+  void NotifyBackgroundImagePainted(
+      const Node*,
+      const StyleImage* background_image,
+      const PropertyTreeState& current_paint_chunk_properties);
 
   // Called when the LayoutImage will be destroyed.
   void NotifyWillBeDestroyed(const LayoutObject*);
+
+  void NotifyBackgroundImageRemoved(const LayoutObject*,
+                                    const ImageResourceContent* image);
 
   void Trace(blink::Visitor*) override;
 
  private:
   friend class ImageElementTimingTest;
-  // Computes the intersection rect and stores the viewport rect in |viewport_|.
-  IntRect ComputeIntersectionRect(const LocalFrame*,
-                                  const LayoutObject*,
-                                  const PaintLayer*);
+
+  void NotifyImagePaintedInternal(
+      const Node*,
+      const LayoutObject&,
+      const ImageResourceContent& cached_image,
+      const PropertyTreeState& current_paint_chunk_properties);
+
+  // Computes the intersection rect.
+  FloatRect ComputeIntersectionRect(const LocalFrame*,
+                                    const LayoutObject&,
+                                    const PropertyTreeState&);
   // Checks if the element must be reported, given its elementtiming attribute
-  // and its intersection rect. Assumes that |viewport_| has been calculated,
-  // i.e. that ComputeIntersectionRect() has been called.
-  bool ShouldReportElement(const AtomicString& element_timing,
-                           const IntRect&) const;
+  // and its intersection rect.
+  bool ShouldReportElement(const LocalFrame*,
+                           const AtomicString& element_timing,
+                           const FloatRect&) const;
 
   // Callback for the swap promise. Reports paint timestamps.
-  void ReportImagePaintSwapTime(WebLayerTreeView::SwapResult,
+  void ReportImagePaintSwapTime(WebWidgetClient::SwapResult,
                                 base::TimeTicks timestamp);
 
   // Struct containing information about image element timing.
   struct ElementTimingInfo {
     ElementTimingInfo(const AtomicString& name,
-                      IntRect rect,
-                      TimeTicks response_end,
-                      const AtomicString& identifier)
+                      const FloatRect& rect,
+                      const TimeTicks& response_end,
+                      const AtomicString& identifier,
+                      const IntSize& intrinsic_size,
+                      const AtomicString& id)
         : name(name),
           rect(rect),
           response_end(response_end),
-          identifier(identifier) {}
+          identifier(identifier),
+          intrinsic_size(intrinsic_size),
+          id(id) {}
 
     AtomicString name;
-    IntRect rect;
+    FloatRect rect;
     TimeTicks response_end;
     AtomicString identifier;
+    IntSize intrinsic_size;
+    AtomicString id;
   };
   // Vector containing the element timing infos that will be reported during the
   // next swap promise callback.
   WTF::Vector<ElementTimingInfo> element_timings_;
   // Hashmap of LayoutObjects for which paint has already been notified.
   WTF::HashSet<const LayoutObject*> images_notified_;
-  // Current viewport rect, updated every time an intersection rect is computed.
-  IntRect viewport_;
+  // Hashmap of pairs of elements, background images whose paint has been
+  // observed.
+  WTF::HashSet<std::pair<const LayoutObject*, const ImageResourceContent*>>
+      background_images_notified_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageElementTiming);
 };

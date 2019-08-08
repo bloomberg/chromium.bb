@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
-#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/ui/ash/accessibility/fake_accessibility_controller.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
@@ -23,18 +22,24 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
+#include "chromeos/dbus/audio/cras_audio_client.h"
+#include "chromeos/dbus/biod/biod_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/system/fake_statistics_provider.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
-#include "media/audio/audio_manager.h"
-#include "media/audio/sounds/sounds_manager.h"
 #include "media/audio/test_audio_thread.h"
+#include "services/audio/public/cpp/sounds/audio_stream_handler.h"
+#include "services/audio/public/cpp/sounds/sounds_manager.h"
+#include "services/audio/public/cpp/sounds/test_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -46,18 +51,27 @@ class ScreenLockerUnitTest : public testing::Test {
 
   void SetUp() override {
     DBusThreadManager::Initialize();
+    BiodClient::InitializeFake();
+    CrasAudioClient::InitializeFake();
+    CryptohomeClient::InitializeFake();
 
     // MojoSystemInfoDispatcher dependency:
     bluez::BluezDBusManager::GetSetterForTesting();
 
     // Initialize SessionControllerClient and dependencies:
-    chromeos::LoginState::Initialize();
+    LoginState::Initialize();
     CHECK(testing_profile_manager_.SetUp());
     session_controller_client_ = std::make_unique<SessionControllerClient>();
     session_controller_client_->Init();
 
     // Initialize AccessibilityManager and dependencies:
-    media::SoundsManager::Create();
+    observer_ = std::make_unique<audio::TestObserver>((base::DoNothing()));
+    audio::AudioStreamHandler::SetObserverForTesting(observer_.get());
+
+    audio::SoundsManager::Create(
+        content::ServiceManagerConnection::GetForProcess()
+            ->GetConnector()
+            ->Clone());
     input_method::InputMethodManager::Initialize(
         // Owned by InputMethodManager
         new input_method::MockInputMethodManagerImpl());
@@ -77,10 +91,14 @@ class ScreenLockerUnitTest : public testing::Test {
 
   void TearDown() override {
     input_method::InputMethodManager::Shutdown();
-    media::SoundsManager::Shutdown();
-    media::AudioManager::Get()->Shutdown();
+    audio::SoundsManager::Shutdown();
     session_controller_client_.reset();
-    chromeos::LoginState::Shutdown();
+    LoginState::Shutdown();
+    CryptohomeClient::Shutdown();
+    BiodClient::Shutdown();
+    DBusThreadManager::Shutdown();
+    audio::AudioStreamHandler::SetObserverForTesting(NULL);
+    observer_.reset();
   }
 
  protected:
@@ -103,9 +121,6 @@ class ScreenLockerUnitTest : public testing::Test {
   FakeAccessibilityController fake_accessibility_controller_;
   TestAccessibilityFocusRingController
       test_accessibility_focus_ring_controller_;
-  std::unique_ptr<media::AudioManager> audio_manager_{
-      media::AudioManager::CreateForTesting(
-          std::make_unique<media::TestAudioThread>())};
   // * LoginScreenClient dependencies:
   session_manager::SessionManager session_manager_;
   TestLoginScreen test_login_screen_;
@@ -120,6 +135,7 @@ class ScreenLockerUnitTest : public testing::Test {
   TestSessionController test_session_controller_;
   std::unique_ptr<SessionControllerClient> session_controller_client_;
 
+  std::unique_ptr<audio::TestObserver> observer_;
   DISALLOW_COPY_AND_ASSIGN(ScreenLockerUnitTest);
 };
 

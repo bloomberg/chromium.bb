@@ -14,7 +14,6 @@
 #include <memory>
 
 #include "api/video/encoded_image.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "modules/video_coding/include/video_codec_interface.h"
 #include "modules/video_coding/timing.h"
 #include "rtc_base/critical_section.h"
@@ -43,12 +42,10 @@ namespace {
 
 class VideoCodingModuleImpl : public VideoCodingModule {
  public:
-  VideoCodingModuleImpl(Clock* clock,
-                        NackSender* nack_sender,
-                        KeyFrameRequestSender* keyframe_request_sender)
+  explicit VideoCodingModuleImpl(Clock* clock)
       : VideoCodingModule(),
         timing_(new VCMTiming(clock)),
-        receiver_(clock, timing_.get(), nack_sender, keyframe_request_sender) {}
+        receiver_(clock, timing_.get()) {}
 
   ~VideoCodingModuleImpl() override {}
 
@@ -74,7 +71,7 @@ class VideoCodingModuleImpl : public VideoCodingModule {
 
   int32_t RegisterReceiveCallback(
       VCMReceiveCallback* receiveCallback) override {
-    RTC_DCHECK(construction_thread_.CalledOnValidThread());
+    RTC_DCHECK(construction_thread_.IsCurrent());
     return receiver_.RegisterReceiveCallback(receiveCallback);
   }
 
@@ -85,7 +82,7 @@ class VideoCodingModuleImpl : public VideoCodingModule {
 
   int32_t RegisterPacketRequestCallback(
       VCMPacketRequestCallback* callback) override {
-    RTC_DCHECK(construction_thread_.CalledOnValidThread());
+    RTC_DCHECK(construction_thread_.IsCurrent());
     return receiver_.RegisterPacketRequestCallback(callback);
   }
 
@@ -100,7 +97,8 @@ class VideoCodingModuleImpl : public VideoCodingModule {
   }
 
   int SetReceiverRobustnessMode(ReceiverRobustness robustnessMode) override {
-    return receiver_.SetReceiverRobustnessMode(robustnessMode);
+    RTC_CHECK_EQ(robustnessMode, kHardNack);
+    return VCM_OK;
   }
 
   void SetNackSettings(size_t max_nack_list_size,
@@ -121,7 +119,7 @@ class VideoCodingModuleImpl : public VideoCodingModule {
 // new jitter buffer is in place.
 VideoCodingModule* VideoCodingModule::Create(Clock* clock) {
   RTC_DCHECK(clock);
-  return new VideoCodingModuleImpl(clock, nullptr, nullptr);
+  return new VideoCodingModuleImpl(clock);
 }
 
 }  // namespace webrtc

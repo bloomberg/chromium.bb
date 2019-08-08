@@ -138,15 +138,16 @@ class CORE_EXPORT NGLayoutInputNode {
   }
 
   bool CreatesNewFormattingContext() const {
-    return IsBlock() && box_->AvoidsFloats();
+    return IsBlock() && box_->CreatesNewFormattingContext();
   }
 
   // Returns true if this node should pass its percentage resolution block-size
   // to its children. Typically only quirks-mode, auto block-size, block nodes.
   bool UseParentPercentageResolutionBlockSizeForChildren() const {
-    if (IsBlock() && box_->IsLayoutBlock()) {
+    auto* layout_block = DynamicTo<LayoutBlock>(box_);
+    if (IsBlock() && layout_block) {
       return LayoutBoxUtils::SkipContainingBlockForPercentHeightCalculation(
-          ToLayoutBlock(box_));
+          layout_block);
     }
 
     return false;

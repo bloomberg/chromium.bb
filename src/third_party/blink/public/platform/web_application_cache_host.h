@@ -83,19 +83,32 @@ class WebApplicationCacheHost {
     WebURL manifest_url;  // Empty if there is no associated cache.
     double creation_time;
     double update_time;
-    long long total_size;
-    CacheInfo() : creation_time(0), update_time(0), total_size(0) {}
+    // Sums up the sizes of all the responses in this cache.
+    int64_t response_sizes;
+    // Sums up the padding sizes for all opaque responses in the cache.
+    int64_t padding_sizes;
+    CacheInfo()
+        : creation_time(0),
+          update_time(0),
+          response_sizes(0),
+          padding_sizes(0) {}
   };
   struct ResourceInfo {
     WebURL url;
-    long long size;
+    // Disk space consumed by this resource.
+    int64_t response_size;
+    // Padding added when the Quota API counts this resource.
+    //
+    // Non-zero only for opaque responses.
+    int64_t padding_size;
     bool is_master;
     bool is_manifest;
     bool is_explicit;
     bool is_foreign;
     bool is_fallback;
     ResourceInfo()
-        : size(0),
+        : response_size(0),
+          padding_size(0),
           is_master(false),
           is_manifest(false),
           is_explicit(false),

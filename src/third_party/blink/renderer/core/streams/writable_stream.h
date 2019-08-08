@@ -17,7 +17,6 @@ namespace blink {
 class MessagePort;
 
 // This is an implementation of the corresponding IDL interface.
-// Use TraceWrapperMember to hold a reference to an instance of this class.
 class CORE_EXPORT WritableStream : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 

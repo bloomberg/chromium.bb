@@ -34,6 +34,7 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           // kDataUriHasOctothorpe may not be recorded correctly for iframes.
           // See https://crbug.com/796173 for details.
           WebFeature::kDataUriHasOctothorpe,
+          WebFeature::kApplicationCacheInstalledButNoManifest,
           WebFeature::kApplicationCacheManifestSelectInsecureOrigin,
           WebFeature::kApplicationCacheManifestSelectSecureOrigin,
           WebFeature::kMixedContentAudio,
@@ -89,10 +90,6 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kSignedExchangeInnerResponseInMainFrame,
           WebFeature::kSignedExchangeInnerResponseInSubFrame,
           WebFeature::kWebShareShare,
-          WebFeature::kHTMLAnchorElementDownloadInSandboxWithUserGesture,
-          WebFeature::kHTMLAnchorElementDownloadInSandboxWithoutUserGesture,
-          WebFeature::kNavigationDownloadInSandboxWithUserGesture,
-          WebFeature::kNavigationDownloadInSandboxWithoutUserGesture,
           WebFeature::kDownloadInAdFrameWithUserGesture,
           WebFeature::kDownloadInAdFrameWithoutUserGesture,
           WebFeature::kOpenWebDatabase,
@@ -100,6 +97,9 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kOpenerNavigationDownloadCrossOrigin,
           WebFeature::kLinkRelPrerender,
           WebFeature::kAdClickNavigation,
+          WebFeature::kDownloadInSandboxWithoutUserGesture,
+          WebFeature::kV8HTMLVideoElement_RequestPictureInPicture_Method,
+          WebFeature::kMediaCapabilitiesDecodingInfoWithKeySystemConfig,
       }));
   return *opt_in_features;
 }

@@ -124,7 +124,7 @@ TEST(VideoCodecTestLibvpx, ChangeBitrateVP9) {
   std::vector<RateControlThresholds> rc_thresholds = {
       {5, 2, 0, 1, 0.5, 0.1, 0, 1},
       {15, 3, 0, 1, 0.5, 0.1, 0, 0},
-      {10, 2, 0, 1, 0.5, 0.1, 0, 0}};
+      {11, 2, 0, 1, 0.5, 0.1, 0, 0}};
 
   std::vector<QualityThresholds> quality_thresholds = {
       {34, 33, 0.90, 0.88}, {38, 35, 0.95, 0.91}, {35, 34, 0.93, 0.90}};
@@ -323,7 +323,7 @@ TEST(VideoCodecTestLibvpx, MAYBE_TemporalLayersVP8) {
 
 #if defined(WEBRTC_ARCH_ARM) || defined(WEBRTC_ARCH_ARM64)
   std::vector<RateControlThresholds> rc_thresholds = {
-      {10, 1, 2, 1, 0.2, 0.1, 0, 1}, {12, 2, 3, 1, 0.2, 0.1, 0, 1}};
+      {10, 1, 2.1, 1, 0.2, 0.1, 0, 1}, {12, 2, 3, 1, 0.2, 0.1, 0, 1}};
 #else
   std::vector<RateControlThresholds> rc_thresholds = {
       {5, 1, 0, 1, 0.2, 0.1, 0, 1}, {10, 2, 0, 1, 0.2, 0.1, 0, 1}};
@@ -358,7 +358,7 @@ TEST(VideoCodecTestLibvpx, MAYBE_MultiresVP8) {
   std::vector<RateProfile> rate_profiles = {{1500, 30, 0}};
 #if defined(WEBRTC_ARCH_ARM) || defined(WEBRTC_ARCH_ARM64)
   std::vector<RateControlThresholds> rc_thresholds = {
-      {3.5, 1.04, 6, 0.18, 0.14, 0.07, 0, 1}};
+      {4.1, 1.04, 6, 0.18, 0.14, 0.08, 0, 1}};
 #else
   std::vector<RateControlThresholds> rc_thresholds = {
       {5, 1, 5, 1, 0.3, 0.1, 0, 1}};

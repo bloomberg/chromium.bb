@@ -6,16 +6,14 @@
 
 #include "base/logging.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
-#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 
 namespace chromeos {
 
 KioskAutolaunchScreen::KioskAutolaunchScreen(
-    BaseScreenDelegate* base_screen_delegate,
     KioskAutolaunchScreenView* view,
     const ScreenExitCallback& exit_callback)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_KIOSK_AUTOLAUNCH),
+    : BaseScreen(OobeScreen::SCREEN_KIOSK_AUTOLAUNCH),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

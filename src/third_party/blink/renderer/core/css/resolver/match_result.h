@@ -49,7 +49,7 @@ struct CORE_EXPORT MatchedProperties {
   union {
     struct {
       unsigned link_match_type : 2;
-      unsigned whitelist_type : 2;
+      unsigned valid_property_filter : 2;
     } types_;
     // Used to make sure all memory is zero-initialized since we compute the
     // hash over the bytes of this object.
@@ -93,9 +93,10 @@ class CORE_EXPORT MatchResult {
  public:
   MatchResult() = default;
 
-  void AddMatchedProperties(const CSSPropertyValueSet* properties,
-                            unsigned link_match_type = CSSSelector::kMatchAll,
-                            PropertyWhitelistType = kPropertyWhitelistNone);
+  void AddMatchedProperties(
+      const CSSPropertyValueSet* properties,
+      unsigned link_match_type = CSSSelector::kMatchAll,
+      ValidPropertyFilter = ValidPropertyFilter::kNoFilter);
   bool HasMatchedProperties() const { return matched_properties_.size(); }
 
   void FinishAddingUARules();

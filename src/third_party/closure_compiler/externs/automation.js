@@ -31,6 +31,7 @@ chrome.automation.EventType = {
   CLICKED: 'clicked',
   DOCUMENT_SELECTION_CHANGED: 'documentSelectionChanged',
   DOCUMENT_TITLE_CHANGED: 'documentTitleChanged',
+  END_OF_TEST: 'endOfTest',
   EXPANDED_CHANGED: 'expandedChanged',
   FOCUS: 'focus',
   FOCUS_CONTEXT: 'focusContext',
@@ -301,8 +302,10 @@ chrome.automation.ActionType = {
   FOCUS: 'focus',
   GET_IMAGE_DATA: 'getImageData',
   GET_TEXT_LOCATION: 'getTextLocation',
+  HIDE_TOOLTIP: 'hideTooltip',
   HIT_TEST: 'hitTest',
   INCREMENT: 'increment',
+  INTERNAL_INVALIDATE_TREE: 'internalInvalidateTree',
   LOAD_INLINE_TEXT_BOXES: 'loadInlineTextBoxes',
   REPLACE_SELECTED_TEXT: 'replaceSelectedText',
   SCROLL_BACKWARD: 'scrollBackward',
@@ -319,6 +322,8 @@ chrome.automation.ActionType = {
   SET_SEQUENTIAL_FOCUS_NAVIGATION_STARTING_POINT: 'setSequentialFocusNavigationStartingPoint',
   SET_VALUE: 'setValue',
   SHOW_CONTEXT_MENU: 'showContextMenu',
+  SIGNAL_END_OF_TEST: 'signalEndOfTest',
+  SHOW_TOOLTIP: 'showTooltip',
 };
 
 /**
@@ -938,6 +943,48 @@ chrome.automation.AutomationNode.prototype.focusOffset;
 chrome.automation.AutomationNode.prototype.focusAffinity;
 
 /**
+ * The selection start node of the tree selection, if any.
+ * @type {(!chrome.automation.AutomationNode|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-selectionStartObject
+ */
+chrome.automation.AutomationNode.prototype.selectionStartObject;
+
+/**
+ * The selection start offset of the tree selection, if any.
+ * @type {(number|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-selectionStartOffset
+ */
+chrome.automation.AutomationNode.prototype.selectionStartOffset;
+
+/**
+ * The affinity of the tree selection start, if any.
+ * @type {(string|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-selectionStartAffinity
+ */
+chrome.automation.AutomationNode.prototype.selectionStartAffinity;
+
+/**
+ * The selection end node of the tree selection, if any.
+ * @type {(!chrome.automation.AutomationNode|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-selectionEndObject
+ */
+chrome.automation.AutomationNode.prototype.selectionEndObject;
+
+/**
+ * The selection end offset of the tree selection, if any.
+ * @type {(number|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-selectionEndOffset
+ */
+chrome.automation.AutomationNode.prototype.selectionEndOffset;
+
+/**
+ * The affinity of the tree selection end, if any.
+ * @type {(string|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-selectionEndAffinity
+ */
+chrome.automation.AutomationNode.prototype.selectionEndAffinity;
+
+/**
  * The current value for this range.
  * @type {(number|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-valueForRange
@@ -1295,23 +1342,25 @@ chrome.automation.AutomationNode.prototype.underline;
 chrome.automation.AutomationNode.prototype.lineThrough;
 
 /**
- * The font family of this node.
- * @type {string|undefined}
- */
-chrome.automation.AutomationNode.prototype.fontFamily;
-
-/**
- * The font size of this node.
- * @type {number|undefined}
- */
-chrome.automation.AutomationNode.prototype.fontSize;
-
-/**
  * Indicates whether this node is selected, unselected, or neither.
  * @type {(boolean|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-selected
  */
 chrome.automation.AutomationNode.prototype.selected;
+
+/**
+ * Indicates the font size of this node.
+ * @type {(number|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-fontSize
+ */
+chrome.automation.AutomationNode.prototype.fontSize;
+
+/**
+ * Indicates the font family.
+ * @type {string}
+ * @see https://developer.chrome.com/extensions/automation#type-fontFamily
+ */
+chrome.automation.AutomationNode.prototype.fontFamily;
 
 /**
  * Walking the tree.

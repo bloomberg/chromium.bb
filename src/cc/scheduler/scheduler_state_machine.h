@@ -10,7 +10,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/draw_result.h"
@@ -48,7 +47,10 @@ class CC_EXPORT SchedulerStateMachine {
  public:
   // settings must be valid for the lifetime of this class.
   explicit SchedulerStateMachine(const SchedulerSettings& settings);
+  SchedulerStateMachine(const SchedulerStateMachine&) = delete;
   ~SchedulerStateMachine();
+
+  SchedulerStateMachine& operator=(const SchedulerStateMachine&) = delete;
 
   enum class LayerTreeFrameSinkState {
     NONE,
@@ -442,7 +444,12 @@ class CC_EXPORT SchedulerStateMachine {
   bool next_invalidation_needs_first_draw_on_activation_ = false;
   bool should_defer_invalidation_for_fast_main_frame_ = true;
   bool begin_frame_is_animate_only_ = false;
-  bool processing_animation_worklets_for_active_tree_ = false;
+
+  // Number of async mutation cycles for the active tree that are in-flight or
+  // queued.  Can be 0, 1 or 2.
+  int processing_animation_worklets_for_active_tree_ = 0;
+  // Indicates if an aysnc mutation cycle is in-flight or queued for the pending
+  // tree.  Only one can be running or queued at any time.
   bool processing_animation_worklets_for_pending_tree_ = false;
 
   // Set to true if the main thread fails to respond with a commit or abort the
@@ -457,9 +464,6 @@ class CC_EXPORT SchedulerStateMachine {
   // If set to true, the pending tree must be drawn at least once after
   // activation before a new tree can be activated.
   bool pending_tree_needs_first_draw_on_activation_ = false;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SchedulerStateMachine);
 };
 
 }  // namespace cc

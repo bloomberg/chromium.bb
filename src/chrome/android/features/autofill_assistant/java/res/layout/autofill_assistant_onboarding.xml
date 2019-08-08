@@ -12,6 +12,7 @@
     android:orientation="vertical">
 
     <org.chromium.chrome.browser.widget.FadingEdgeScrollView
+        android:id="@+id/onboarding_scroll_view"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:layout_width="match_parent">
@@ -24,45 +25,63 @@
             android:paddingStart="24dp"
             android:paddingEnd="24dp">
 
+            <Space android:layout_width="0dp" android:layout_height="12dp"/>
+
             <!-- Image background -->
             <ImageView
+                android:id="@+id/onboarding_image"
                 tools:ignore="contentDescription"
                 android:layout_width="250dp"
-                android:layout_height="141dp"
-                android:scaleType="centerCrop"
-                android:src="@drawable/onboarding_background"
-                android:paddingBottom="15dp"/>
-
-            <!-- Title (e.g., 'Fast Checkout')-->
-            <TextView
                 android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                android:textAppearance="@style/TextAppearance.AssistantBlackTitle"
-                android:gravity="center_horizontal"
-                android:text="@string/autofill_assistant_onboarding_title" />
+                android:scaleType="centerCrop"
+                android:src="@drawable/autofill_assistant_onboarding_bg"
+                android:layout_marginTop="12dp" />
+
+            <!-- "Try Google Assistant in Chrome" -->
+            <ImageView
+                android:id="@+id/onboarding_try_assistant"
+                tools:ignore="contentDescription"
+                android:layout_width="185dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:src="@drawable/autofill_assistant_onboarding_try" />
 
             <!-- Subtitle (e.g., 'Google Assistant saves you time...')-->
-            <Space android:layout_width="0dp" android:layout_height="16dp"/>
-            <TextView
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                android:textAppearance="@style/TextAppearance.AssistantBlackBody"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
-                android:gravity="center_horizontal"
-                android:text="@string/autofill_assistant_init_message" />
-
-            <!-- Separator -->
-            <Space android:layout_width="0dp" android:layout_height="24dp"/>
             <LinearLayout
                 android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"/>
+                <!-- The subtitle takes 4/6 of the screen width. -->
+                <TextView
+                    android:id="@+id/onboarding_subtitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="4"
+                    android:layout_marginTop="24dp"
+                    android:textAppearance="@style/TextAppearance.AssistantBlackBody"
+                    android:gravity="center_horizontal"
+                    android:text="@string/autofill_assistant_init_message" />
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"/>
+            </LinearLayout>
+
+            <!-- Separator -->
+            <LinearLayout
+                android:id="@+id/onboarding_separator"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
                 android:gravity="center_horizontal"
                 android:orientation="horizontal"
                 android:weightSum="1.0">
                 <View style="@style/HorizontalDivider"
                     android:layout_width="0dp"
-                    android:layout_height="2dp"
+                    android:layout_height="1dp"
                     android:layout_weight="0.33"/>
             </LinearLayout>
             <Space android:layout_width="0dp" android:layout_height="24dp"/>
@@ -71,10 +90,7 @@
             <LinearLayout
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
                 android:paddingBottom="9dp">
-
                 <TextView
                     android:id="@+id/google_terms_message"
                     android:layout_width="wrap_content"

@@ -15,13 +15,12 @@
 #include "net/base/mime_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
+#include "third_party/blink/public/common/web_package/signed_exchange_consts.h"
 
 namespace content {
 
 namespace {
 
-constexpr char kVariantsHeader[] = "variants-04";
-constexpr char kVariantKeyHeader[] = "variant-key-04";
 constexpr char kIdentity[] = "identity";
 
 class ContentNegotiationAlgorithm {
@@ -376,8 +375,10 @@ SignedExchangeRequestMatcher::CacheBehavior(
 bool SignedExchangeRequestMatcher::MatchRequest(
     const net::HttpRequestHeaders& request_headers,
     const HeaderMap& response_headers) {
-  auto variants_found = response_headers.find(kVariantsHeader);
-  auto variant_key_found = response_headers.find(kVariantKeyHeader);
+  auto variants_found =
+      response_headers.find(blink::kSignedExchangeVariantsHeader);
+  auto variant_key_found =
+      response_headers.find(blink::kSignedExchangeVariantKeyHeader);
 
   // Step 3. If storedExchange's response's header list contains:
   // - Neither a `Variants` nor a `Variant-Key` header

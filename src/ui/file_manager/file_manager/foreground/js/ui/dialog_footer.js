@@ -163,9 +163,11 @@ DialogFooter.prototype.initFileTypeFilter = function(
 
       if (!description) {
         // Convert ['jpg', 'png'] to '*.jpg, *.png'.
-        description = fileType.extensions.map(s => {
-          return '*.' + s;
-        }).join(', ');
+        description = fileType.extensions
+                          .map(s => {
+                            return '*.' + s;
+                          })
+                          .join(', ');
       }
     }
     option.innerText = description;
@@ -182,6 +184,9 @@ DialogFooter.prototype.initFileTypeFilter = function(
     const option = document.createElement('option');
     option.innerText = str('ALL_FILES_FILTER');
     option.value = 0;
+    if (this.dialogType_ === DialogType.SELECT_SAVEAS_FILE) {
+      option.selected = true;
+    }
     this.fileTypeSelector.appendChild(option);
   }
 

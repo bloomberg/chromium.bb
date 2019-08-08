@@ -10,13 +10,13 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
-#include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -359,8 +359,7 @@ TEST(DOMWebSocketTest, isValidSubprotocolString) {
       "abcdefghijklmnopqrstuvwxyz|~";
   size_t length = strlen(kValidCharacters);
   for (size_t i = 0; i < length; ++i) {
-    String s;
-    s.append(static_cast<UChar>(kValidCharacters[i]));
+    String s(kValidCharacters + i, 1u);
     EXPECT_TRUE(DOMWebSocket::IsValidSubprotocolString(s));
   }
   for (size_t i = 0; i < 256; ++i) {
@@ -368,8 +367,8 @@ TEST(DOMWebSocketTest, isValidSubprotocolString) {
                   static_cast<char>(i)) != kValidCharacters + length) {
       continue;
     }
-    String s;
-    s.append(static_cast<UChar>(i));
+    char to_check = char{i};
+    String s(&to_check, 1u);
     EXPECT_FALSE(DOMWebSocket::IsValidSubprotocolString(s));
   }
 }

@@ -12,8 +12,9 @@ namespace chromeos {
 MockUpdateScreen::MockUpdateScreen(
     BaseScreenDelegate* base_screen_delegate,
     UpdateView* view,
+    ErrorScreen* error_screen,
     const UpdateScreen::ScreenExitCallback& exit_callback)
-    : UpdateScreen(base_screen_delegate, view, exit_callback) {}
+    : UpdateScreen(base_screen_delegate, view, error_screen, exit_callback) {}
 
 MockUpdateScreen::~MockUpdateScreen() {}
 

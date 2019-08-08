@@ -237,8 +237,7 @@ function testAddAndRemoveVolumes() {
       (model.item(4)).volumeInfo.volumeId);
 
   // Create a shortcut on the 'hoge' volume.
-  shortcutListModel.splice(
-      1, 0, new MockFileEntry(hoge, '/shortcut2'));
+  shortcutListModel.splice(1, 0, new MockFileEntry(hoge, '/shortcut2'));
 
   assertEquals(6, model.length);
   assertEquals(
@@ -522,6 +521,17 @@ function testMultipleUsbPartitionsGrouping() {
   volumeManager.volumeInfoList.remove('removable:partition4');
 
   // Check that the common root shows 3 partitions.
+  groupedUsbs = /** @type NavigationModelFakeItem */ (model.item(2));
+  assertEquals('External Drive', groupedUsbs.label);
+  assertEquals(3, groupedUsbs.entry.getUIChildren().length);
+
+  // Add an extra copy of partition3, which replaces the existing partition3
+  // and triggers NavigationListModel to recalculate.
+  volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:partition3',
+      'partition3', 'device/path/1'));
+
+  // Check that partition3 is not duplicated.
   groupedUsbs = /** @type NavigationModelFakeItem */ (model.item(2));
   assertEquals('External Drive', groupedUsbs.label);
   assertEquals(3, groupedUsbs.entry.getUIChildren().length);

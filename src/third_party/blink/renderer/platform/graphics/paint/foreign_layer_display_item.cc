@@ -17,8 +17,9 @@ namespace {
 
 class ForeignLayerDisplayItemClient final : public DisplayItemClient {
  public:
-  ForeignLayerDisplayItemClient(scoped_refptr<cc::Layer> layer)
-      : layer_(std::move(layer)) {
+  ForeignLayerDisplayItemClient(scoped_refptr<cc::Layer> layer,
+                                const FloatPoint& offset)
+      : layer_(std::move(layer)), offset_(offset) {
     Invalidate(PaintInvalidationReason::kUncacheable);
   }
 
@@ -26,25 +27,28 @@ class ForeignLayerDisplayItemClient final : public DisplayItemClient {
 
   DOMNodeId OwnerNodeId() const final { return layer_->owner_node_id(); }
 
-  LayoutRect VisualRect() const final {
-    const auto& offset = layer_->offset_to_transform_parent();
-    return LayoutRect(LayoutPoint(offset.x(), offset.y()),
-                      LayoutSize(IntSize(layer_->bounds())));
+  IntRect VisualRect() const final {
+    const auto& bounds = layer_->bounds();
+    return EnclosingIntRect(
+        FloatRect(offset_.X(), offset_.Y(), bounds.width(), bounds.height()));
   }
 
   cc::Layer* GetLayer() const { return layer_.get(); }
 
  private:
   scoped_refptr<cc::Layer> layer_;
+  FloatPoint offset_;
 };
 
 }  // anonymous namespace
 
 ForeignLayerDisplayItem::ForeignLayerDisplayItem(Type type,
-                                                 scoped_refptr<cc::Layer> layer)
-    : DisplayItem(*new ForeignLayerDisplayItemClient(std::move(layer)),
+                                                 scoped_refptr<cc::Layer> layer,
+                                                 const FloatPoint& offset)
+    : DisplayItem(*new ForeignLayerDisplayItemClient(std::move(layer), offset),
                   type,
-                  sizeof(*this)) {
+                  sizeof(*this)),
+      offset_(offset) {
   DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
          RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
   DCHECK(IsForeignLayerType(type));
@@ -70,12 +74,15 @@ bool ForeignLayerDisplayItem::Equals(const DisplayItem& other) const {
 void ForeignLayerDisplayItem::PropertiesAsJSON(JSONObject& json) const {
   DisplayItem::PropertiesAsJSON(json);
   json.SetInteger("layer", GetLayer()->id());
+  json.SetDouble("offset_x", Offset().X());
+  json.SetDouble("offset_y", Offset().Y());
 }
 #endif
 
 void RecordForeignLayer(GraphicsContext& context,
                         DisplayItem::Type type,
                         scoped_refptr<cc::Layer> layer,
+                        const FloatPoint& offset,
                         const base::Optional<PropertyTreeState>& properties) {
   PaintController& paint_controller = context.GetPaintController();
   if (paint_controller.DisplayItemConstructionIsDisabled())
@@ -89,8 +96,8 @@ void RecordForeignLayer(GraphicsContext& context,
     paint_controller.UpdateCurrentPaintChunkProperties(base::nullopt,
                                                        *properties);
   }
-  paint_controller.CreateAndAppend<ForeignLayerDisplayItem>(type,
-                                                            std::move(layer));
+  paint_controller.CreateAndAppend<ForeignLayerDisplayItem>(
+      type, std::move(layer), offset);
   if (properties) {
     paint_controller.UpdateCurrentPaintChunkProperties(base::nullopt,
                                                        *previous_properties);

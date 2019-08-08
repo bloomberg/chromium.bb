@@ -149,10 +149,6 @@ function sendQueue_(queueObject) {
  */
 var isFrameMessagingSupported_ = function() {
   // - Only secure contexts support the crypto.subtle API.
-  // - Even though iOS 10 supports window.crypto.webkitSubtle instead of
-  //   window.crypto.subtle, the AES-GCM cipher suite is not supported, so
-  //   support will only be used from the official WebCrypto API.
-  //   TODO(crbug.com/872818): Remove comment once only iOS 11+ is supported.
   return window.isSecureContext && typeof window.crypto.subtle === 'object';
 }
 

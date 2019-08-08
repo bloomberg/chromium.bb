@@ -21,7 +21,7 @@ from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import timeout_util
 from chromite.lib import tree_status
-from chromite.lib.buildstore import FakeBuildStore
+from chromite.lib.buildstore import FakeBuildStore, BuildIdentifier
 
 
 FAKE_VERSION = """
@@ -530,7 +530,9 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(build_status.SlaveStatus, 'UpdateSlaveStatus')
     self.PatchObject(build_status.SlaveStatus, 'ShouldWait', return_value=False)
     self.manager = self.BuildManager()
-    self.manager.WaitForSlavesToComplete(1, ['build_1', 'build_2'])
+    self.manager.WaitForSlavesToComplete(BuildIdentifier(cidb_id=1,
+                                                         buildbucket_id=1234),
+                                         ['build_1', 'build_2'])
 
   def testWaitForSlavesToCompleteWithTimeout(self):
     """Test WaitForSlavesToComplete raises timeout."""
@@ -540,5 +542,6 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     self.assertRaises(
         timeout_util.TimeoutError,
         self.manager.WaitForSlavesToComplete,
-        1, ['build_1', 'build_2'], timeout=1,
+        BuildIdentifier(cidb_id=1, buildbucket_id=1234),
+        ['build_1', 'build_2'], timeout=1,
         ignore_timeout_exception=False)

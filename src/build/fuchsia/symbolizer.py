@@ -9,7 +9,7 @@ import subprocess
 from common import SDK_ROOT
 
 
-def SymbolizerFilter(input_fd, build_ids_file):
+def SymbolizerFilter(input_fd, build_ids_files):
   """Symbolizes an output stream from a process.
 
   input_fd: A file descriptor of the stream to be symbolized.
@@ -21,9 +21,11 @@ def SymbolizerFilter(input_fd, build_ids_file):
                                       'llvm-build', 'Release+Asserts', 'bin',
                                       'llvm-symbolizer')
   symbolizer = os.path.join(SDK_ROOT, 'tools', 'symbolize')
-  symbolizer_cmd = [symbolizer, '-ids', build_ids_file,
+  symbolizer_cmd = [symbolizer,
                     '-ids-rel', '-llvm-symbolizer', llvm_symbolizer_path,
                     '-build-id-dir', os.path.join(SDK_ROOT, '.build-id')]
+  for build_ids_file in build_ids_files:
+    symbolizer_cmd.extend(['-ids', build_ids_file])
 
   logging.info('Running "%s".' % ' '.join(symbolizer_cmd))
   symbolizer_proc = subprocess.Popen(
@@ -32,7 +34,10 @@ def SymbolizerFilter(input_fd, build_ids_file):
       stdin=input_fd,
       close_fds=True)
 
-  for line in symbolizer_proc.stdout:
+  while True:
+    line = symbolizer_proc.stdout.readline()
+    if not line:
+      break
     yield line
 
   symbolizer_proc.wait()

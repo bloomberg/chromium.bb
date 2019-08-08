@@ -126,8 +126,10 @@ public class VrInstallUpdateInfoBarTest {
      */
     @Test
     @MediumTest
-    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testInfoBarPresentWhenVrServicesOutdated() throws InterruptedException {
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.CTA,
+            XrActivityRestriction.SupportedActivity.CCT})
+    public void
+    testInfoBarPresentWhenVrServicesOutdated() throws InterruptedException {
         infoBarTestHelper(VrCoreCompatibility.VR_OUT_OF_DATE);
     }
 
@@ -136,8 +138,10 @@ public class VrInstallUpdateInfoBarTest {
      */
     @Test
     @MediumTest
-    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testInfoBarPresentWhenVrServicesMissing() throws InterruptedException {
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.CTA,
+            XrActivityRestriction.SupportedActivity.CCT})
+    public void
+    testInfoBarPresentWhenVrServicesMissing() throws InterruptedException {
         infoBarTestHelper(VrCoreCompatibility.VR_NOT_AVAILABLE);
     }
 

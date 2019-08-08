@@ -34,6 +34,7 @@
 #include "third_party/blink/public/platform/web_audio_source_provider.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/uuid.h"
@@ -51,16 +52,8 @@ int MediaStreamComponent::GenerateUniqueId() {
   return ++g_unique_media_stream_component_id;
 }
 
-MediaStreamComponent* MediaStreamComponent::Create(MediaStreamSource* source) {
-  return MakeGarbageCollected<MediaStreamComponent>(CreateCanonicalUUIDString(),
-                                                    source);
-}
-
-MediaStreamComponent* MediaStreamComponent::Create(const String& id,
-                                                   MediaStreamSource* source) {
-  return MakeGarbageCollected<MediaStreamComponent>(id, source);
-}
-
+MediaStreamComponent::MediaStreamComponent(MediaStreamSource* source)
+    : MediaStreamComponent(CreateCanonicalUUIDString(), source) {}
 MediaStreamComponent::MediaStreamComponent(const String& id,
                                            MediaStreamSource* source)
     : source_(source), id_(id), unique_id_(GenerateUniqueId()) {
@@ -69,9 +62,7 @@ MediaStreamComponent::MediaStreamComponent(const String& id,
 }
 
 MediaStreamComponent* MediaStreamComponent::Clone() const {
-  MediaStreamComponent* cloned_component =
-      MakeGarbageCollected<MediaStreamComponent>(CreateCanonicalUUIDString(),
-                                                 Source());
+  auto* cloned_component = MakeGarbageCollected<MediaStreamComponent>(Source());
   cloned_component->SetEnabled(enabled_);
   cloned_component->SetMuted(muted_);
   cloned_component->SetContentHint(content_hint_);

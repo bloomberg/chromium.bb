@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/network/cors/preflight_controller.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -45,14 +44,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
       const OriginAccessList* origin_access_list,
       std::unique_ptr<mojom::URLLoaderFactory>
           network_loader_factory_for_testing);
-  // Used by content::ResourceMessageFilter.
-  // TODO(yhirano): Remove this once when the network service is fully enabled.
-  CorsURLLoaderFactory(
-      bool disable_web_security,
-      std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory,
-      const base::RepeatingCallback<void(int)>& preflight_finalizer,
-      const OriginAccessList* origin_access_list,
-      uint32_t process_id);
   ~CorsURLLoaderFactory() override;
 
   void OnLoaderCreated(std::unique_ptr<mojom::URLLoader> loader);
@@ -61,6 +52,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
   // Clears the bindings for this factory, but does not touch any in-progress
   // URLLoaders.
   void ClearBindings();
+
+  size_t GetActiveLoaderCount() const { return loaders_.size(); }
 
  private:
   // Implements mojom::URLLoaderFactory.
@@ -76,7 +69,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
 
   void DeleteIfNeeded();
 
-  static bool IsSane(const ResourceRequest& request);
+  static bool IsSane(const NetworkContext* context,
+                     const ResourceRequest& request);
 
   mojo::BindingSet<mojom::URLLoaderFactory> bindings_;
 
@@ -96,9 +90,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
   std::set<std::unique_ptr<mojom::URLLoader>, base::UniquePtrComparator>
       loaders_;
 
-  // Used when constructed by ResourceMessageFilter.
-  base::RepeatingCallback<void(int)> preflight_finalizer_;
-
   // Accessed by instances in |loaders_| too. Since the factory outlives them,
   // it's safe.
   const OriginAccessList* const origin_access_list_;
@@ -106,13 +97,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
   // Owns factory bound OriginAccessList that to have factory specific
   // additional allowed access list.
   std::unique_ptr<OriginAccessList> factory_bound_origin_access_list_;
-
-  // Usually |preflight_controoler_| is owned by NetworkContext, but we create
-  // own one if NetworkContext is not provided, e.g. for legacy code path.
-  // TODO(toyoshim): Remove owned controller once the network service is fully
-  // enabled.
-  PreflightController* preflight_controller_;
-  std::unique_ptr<PreflightController> owned_preflight_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(CorsURLLoaderFactory);
 };

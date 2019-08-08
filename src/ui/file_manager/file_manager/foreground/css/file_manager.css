@@ -114,8 +114,8 @@ a:focus {
 div.splitter {
   cursor: col-resize;
   flex: none;
-  margin-left: -3px;
-  margin-right: -3px;
+  margin-inline-end: -3px;
+  margin-inline-start: -3px;
   position: relative;
   width: 6px;
   z-index: 500;  /* Must be below the contextmenu (600). */
@@ -422,9 +422,7 @@ body.check-select #view-button.thumbnail {
 }
 
 #sort-button > .icon {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/sorting_white.png) 1x,
-      url(../images/files/ui/2x/sorting_white.png) 2x);
+  background-image: url(../images/files/ui/sorting_white.svg);
 }
 
 body.check-select #sort-button {
@@ -898,12 +896,12 @@ body.check-select .breadcrumbs {
 .breadcrumbs .breadcrumb-path:first-child {
   /* margin-inline-start isn't proper
      because folder names should be ltr even in RTL languages. */
-  margin-left: 8px;
+  margin-inline-start: 8px;
 }
 
 html[dir='rtl'] .breadcrumbs .breadcrumb-path:first-child {
-  margin-left: 0;
-  margin-right: 8px;
+  margin-inline-end: 8px;
+  margin-inline-start: 0;
 }
 
 .breadcrumbs .breadcrumb-path:active {
@@ -978,7 +976,7 @@ html[dir='rtl'] .breadcrumbs .separator {
       no-repeat;
   height: 16px;
   left: 50%;
-  margin-left: -8px;
+  margin-inline-start: -8px;
   margin-top: -8px;
   opacity: 0.5;
   position: absolute;
@@ -1369,7 +1367,7 @@ html[dir='rtl'] .badge {
   background-position: 5px center;
   background-repeat: no-repeat;
   background-size: 16px 16px;
-  padding-left: 26px;
+  padding-inline-start: 26px;
 }
 
 #list-container list > li[selected],
@@ -1665,7 +1663,7 @@ body.check-select #list-container list li[selected] .detail-thumbnail
 #share-sub-menu cr-menu-item,
 #tasks-menu cr-menu-item:not(.change-default) {
   background-position: left 10px center;
-  padding-left: 32px;
+  padding-inline-start: 32px;
 }
 
 #share-menu cr-menu-item[command='#share'] {
@@ -1789,7 +1787,7 @@ div.shade[fadein] {
   color: #333;
   display: none;
   left: 0;
-  padding-left: 50px;
+  padding-inline-start: 50px;
   padding-top: 20px;
   position: absolute;
   right: 0;
@@ -2071,7 +2069,7 @@ list.autocomplete-suggestions > [lead] {
 }
 
 #multi-profile-share-dialog .mail-label {
-  padding-right: 16px;
+  padding-inline-end: 16px;
 }
 
 #multi-profile-share-dialog .mail-label::after {

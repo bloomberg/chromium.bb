@@ -41,8 +41,8 @@
 #include "media/gpu/vp8_reference_frame_vector.h"
 #include "media/gpu/vp9_reference_frame_vector.h"
 
-#if defined(OS_POSIX)
-#include "media/gpu/vaapi/vaapi_picture_native_pixmap.h"
+#if defined(OS_LINUX)
+#include "media/gpu/linux/platform_video_frame_utils.h"
 #endif
 
 #define NOTIFY_ERROR(error, msg)                        \
@@ -186,11 +186,12 @@ class VaapiVideoEncodeAccelerator::VP8Accelerator
   scoped_refptr<VP8Picture> GetPicture(
       AcceleratedVideoEncoder::EncodeJob* job) override;
 
-  bool SubmitFrameParameters(
-      AcceleratedVideoEncoder::EncodeJob* job,
-      const VP8Encoder::EncodeParams& encode_params,
-      scoped_refptr<VP8Picture> pic,
-      const Vp8ReferenceFrameVector& ref_frames) override;
+  bool SubmitFrameParameters(AcceleratedVideoEncoder::EncodeJob* job,
+                             const VP8Encoder::EncodeParams& encode_params,
+                             scoped_refptr<VP8Picture> pic,
+                             const Vp8ReferenceFrameVector& ref_frames,
+                             const std::array<bool, kNumVp8ReferenceBuffers>&
+                                 ref_frames_used) override;
 
  private:
   VaapiVideoEncodeAccelerator* const vea_;
@@ -352,7 +353,13 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
       return;
   }
 
-  if (!encoder_->Initialize(config)) {
+  AcceleratedVideoEncoder::Config ave_config;
+  if (!vaapi_wrapper_->GetVAEncMaxNumOfRefFrames(
+          config.output_profile, &ave_config.max_num_ref_frames))
+    return;
+  DCHECK_GT(ave_config.max_num_ref_frames, 0u);
+
+  if (!encoder_->Initialize(config, ave_config)) {
     NOTIFY_ERROR(kInvalidArgumentError, "Failed initializing encoder");
     return;
   }
@@ -548,10 +555,8 @@ scoped_refptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
         vaapi_wrapper_, MakeGLContextCurrentCallback(), BindGLImageCallback(),
         PictureBuffer(kDummyPictureBufferId, frame->coded_size()));
     gfx::GpuMemoryBufferHandle gmb_handle;
-#if defined(OS_POSIX)
-    gmb_handle =
-        VaapiPictureNativePixmap::CreateGpuMemoryBufferHandleFromVideoFrame(
-            frame.get());
+#if defined(OS_LINUX)
+    gmb_handle = CreateGpuMemoryBufferHandle(frame.get());
 #endif
     if (gmb_handle.is_null()) {
       NOTIFY_ERROR(kPlatformFailureError,
@@ -1051,7 +1056,8 @@ bool VaapiVideoEncodeAccelerator::VP8Accelerator::SubmitFrameParameters(
     AcceleratedVideoEncoder::EncodeJob* job,
     const VP8Encoder::EncodeParams& encode_params,
     scoped_refptr<VP8Picture> pic,
-    const Vp8ReferenceFrameVector& ref_frames) {
+    const Vp8ReferenceFrameVector& ref_frames,
+    const std::array<bool, kNumVp8ReferenceBuffers>& ref_frames_used) {
   VAEncSequenceParameterBufferVP8 seq_param = {};
 
   const auto& frame_header = pic->frame_hdr;
@@ -1082,9 +1088,16 @@ bool VaapiVideoEncodeAccelerator::VP8Accelerator::SubmitFrameParameters(
                 : VA_INVALID_ID;
   pic_param.coded_buf = job->AsVaapiEncodeJob()->coded_buffer_id();
   DCHECK_NE(pic_param.coded_buf, VA_INVALID_ID);
+  pic_param.ref_flags.bits.no_ref_last =
+      !ref_frames_used[Vp8RefType::VP8_FRAME_LAST];
+  pic_param.ref_flags.bits.no_ref_gf =
+      !ref_frames_used[Vp8RefType::VP8_FRAME_GOLDEN];
+  pic_param.ref_flags.bits.no_ref_arf =
+      !ref_frames_used[Vp8RefType::VP8_FRAME_ALTREF];
 
-  if (frame_header->IsKeyframe())
+  if (frame_header->IsKeyframe()) {
     pic_param.ref_flags.bits.force_kf = true;
+  }
 
   pic_param.pic_flags.bits.frame_type = frame_header->frame_type;
   pic_param.pic_flags.bits.version = frame_header->version;

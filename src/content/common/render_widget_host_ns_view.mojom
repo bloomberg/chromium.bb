@@ -7,7 +7,7 @@ module content.mojom;
 import "content/common/native_types.mojom";
 import "content/common/input/input_handler.mojom";
 import "mojo/public/mojom/base/string16.mojom";
-import "services/ws/public/mojom/ime/ime.mojom";
+import "ui/base/ime/mojo/ime_types.mojom";
 import "ui/display/mojo/display.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -167,7 +167,7 @@ interface RenderWidgetHostNSViewClient {
   // it is the result of GetActiveWidget.
   ImeSetComposition(
       mojo_base.mojom.String16 text,
-      array<ws.mojom.ImeTextSpan> ime_text_spans,
+      array<ui.mojom.ImeTextSpan> ime_text_spans,
       gfx.mojom.Range replacement_range,
       int32 selection_start,
       int32 selection_end);
@@ -229,12 +229,6 @@ interface RenderWidgetHostNSViewClient {
   // return the result as |is_speaking|.
   [Sync]
   SyncIsSpeaking() => (bool is_speaking);
-
-  // Return in |element_token| the token for the root content AX node for this
-  // view and in |host_pid| the pid for the host process.
-  [Sync]
-  SyncGetRootAccessibilityElement() =>
-      (int64 host_pid, array<uint8> element_token);
 
   // Send the token for the NSWindow in which this NSView is being displayed.
   SetRemoteAccessibilityWindowToken(array<uint8> window_token);

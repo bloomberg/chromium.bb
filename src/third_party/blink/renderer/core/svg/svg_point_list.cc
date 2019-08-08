@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/svg/svg_animation_element.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -49,7 +50,7 @@ SVGParsingError SVGPointList::Parse(const CharType*& ptr, const CharType* end) {
         !ParseNumber(ptr, end, y, kDisallowWhitespace))
       return SVGParsingError(SVGParseStatus::kExpectedNumber, ptr - list_start);
 
-    Append(SVGPoint::Create(FloatPoint(x, y)));
+    Append(MakeGarbageCollected<SVGPoint>(FloatPoint(x, y)));
 
     if (!SkipOptionalSVGSpaces(ptr, end))
       break;

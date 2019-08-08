@@ -30,12 +30,11 @@ dawn_generator("dawn_headers_gen") {
   outputs = [
     "dawn/dawncpp.h",
     "dawn/dawn.h",
-    "dawn/dawncpp_traits.h",
   ]
 }
 
 source_set("dawn_headers") {
-  public_configs = [ "${dawn_root}/src/common:dawn_public" ]
+  all_dependent_configs = [ "${dawn_root}/src/common:dawn_public_include_dirs" ]
   deps = [
     ":dawn_headers_gen",
   ]

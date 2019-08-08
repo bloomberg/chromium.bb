@@ -10,7 +10,7 @@
 #include "ash/system/power/scoped_backlights_forced_off.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/time/tick_clock.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power/power_policy_controller.h"
 #include "ui/events/devices/input_device_manager.h"
 #include "ui/events/devices/stylus_state.h"
 #include "ui/events/event.h"
@@ -66,6 +66,11 @@ void PowerButtonDisplayController::SetBacklightsForcedOff(bool forced_off) {
   } else {
     backlights_forced_off_.reset();
   }
+
+  // Let PowerPolicyController update inactivity delays:
+  // https://crbug.com/812504
+  chromeos::PowerPolicyController::Get()
+      ->HandleBacklightsForcedOffForPowerButton(forced_off);
 
   if (forced_off)
     Shell::Get()->media_controller()->SuspendMediaSessions();

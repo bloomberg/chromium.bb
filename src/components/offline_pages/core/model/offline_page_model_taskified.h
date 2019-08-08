@@ -52,10 +52,6 @@ class SystemDownloadManager;
 class OfflinePageModelTaskified : public OfflinePageModel,
                                   public TaskQueue::Delegate {
  public:
-  // Initial delay after which a list of items for upgrade will be generated.
-  static constexpr base::TimeDelta kInitialUpgradeSelectionDelay =
-      base::TimeDelta::FromSeconds(45);
-
   // Delay between the scheduling and actual running of maintenance tasks. To
   // not cause the re-opening of the metadata store this delay should be kept
   // smaller than OfflinePageMetadataStore::kClosingDelay.
@@ -99,34 +95,19 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   void GetAllPages(MultipleOfflinePageItemCallback callback) override;
   void GetPageByOfflineId(int64_t offline_id,
                           SingleOfflinePageItemCallback callback) override;
-  void GetPageByGuid(const std::string& guid,
-                     SingleOfflinePageItemCallback callback) override;
-  void GetPagesByClientIds(const std::vector<ClientId>& client_ids,
-                           MultipleOfflinePageItemCallback callback) override;
-  void GetPagesByURL(const GURL& url,
-                     MultipleOfflinePageItemCallback callback) override;
-  void GetPagesByNamespace(const std::string& name_space,
-                           MultipleOfflinePageItemCallback callback) override;
-  void GetPagesRemovedOnCacheReset(
-      MultipleOfflinePageItemCallback callback) override;
-  void GetPagesSupportedByDownloads(
-      MultipleOfflinePageItemCallback callback) override;
-  void GetPagesByRequestOrigin(
-      const std::string& request_origin,
-      MultipleOfflinePageItemCallback callback) override;
-  void GetPageBySizeAndDigest(int64_t file_size,
-                              const std::string& digest,
-                              SingleOfflinePageItemCallback callback) override;
+  void GetPagesWithCriteria(const PageCriteria& criteria,
+                            MultipleOfflinePageItemCallback callback) override;
   void GetOfflineIdsForClientId(const ClientId& client_id,
                                 MultipleOfflineIdCallback callback) override;
-  void StoreThumbnail(const OfflinePageThumbnail& thumb) override;
-  void GetThumbnailByOfflineId(
+  void StoreThumbnail(int64_t offline_id, std::string thumbnail) override;
+  void StoreFavicon(int64_t offline_id, std::string favicon) override;
+  void GetVisualsByOfflineId(
       int64_t offline_id,
-      base::OnceCallback<void(std::unique_ptr<OfflinePageThumbnail>)> callback)
+      base::OnceCallback<void(std::unique_ptr<OfflinePageVisuals>)> callback)
       override;
-  void HasThumbnailForOfflineId(
+  void GetVisualsAvailability(
       int64_t offline_id,
-      base::OnceCallback<void(bool)> callback) override;
+      base::OnceCallback<void(VisualsAvailability)> callback) override;
   const base::FilePath& GetInternalArchiveDirectory(
       const std::string& name_space) const override;
   bool IsArchiveInInternalDir(const base::FilePath& file_path) const override;
@@ -183,8 +164,12 @@ class OfflinePageModelTaskified : public OfflinePageModel,
       DeletePageResult result,
       const std::vector<OfflinePageModel::DeletedPageInfo>& infos);
 
-  void OnStoreThumbnailDone(const OfflinePageThumbnail& thumbnail,
-                            bool success);
+  void OnStoreThumbnailDone(int64_t offline_id,
+                            bool success,
+                            std::string thumbnail);
+  void OnStoreFaviconDone(int64_t offline_id,
+                          bool success,
+                          std::string favicon);
 
   // Methods for clearing temporary pages and performing consistency checks. The
   // latter are executed only once per Chrome session.
@@ -195,12 +180,6 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   void OnPersistentPageConsistencyCheckDone(
       bool success,
       const std::vector<int64_t>& pages_deleted);
-
-  // Method for upgrade to public storage.
-  void PostSelectItemsMarkedForUpgrade();
-  void SelectItemsMarkedForUpgrade();
-  void OnSelectItemsMarkedForUpgradeDone(
-      const MultipleOfflinePageItemResult& pages_for_upgrade);
 
   // Callback for when PublishArchive has completd.
   void PublishArchiveDone(std::unique_ptr<OfflinePageArchiver> archiver,

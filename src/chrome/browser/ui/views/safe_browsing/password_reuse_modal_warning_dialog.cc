@@ -46,7 +46,8 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
     : content::WebContentsObserver(web_contents),
       done_callback_(std::move(done_callback)),
       service_(service),
-      url_(web_contents->GetLastCommittedURL()) {
+      url_(web_contents->GetLastCommittedURL()),
+      password_type_(password_type) {
   // |service| maybe NULL in tests.
   if (service_)
     service_->AddObserver(this);
@@ -131,7 +132,11 @@ base::string16 PasswordReuseModalWarningDialog::GetDialogButtonLabel(
     ui::DialogButton button) const {
   switch (button) {
     case ui::DIALOG_BUTTON_OK:
-      return l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON);
+      return l10n_util::GetStringUTF16(
+          password_type_ == safe_browsing::LoginReputationClientRequest::
+                                PasswordReuseEvent::ENTERPRISE_PASSWORD
+              ? IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON
+              : IDS_PAGE_INFO_PROTECT_ACCOUNT_BUTTON);
     case ui::DIALOG_BUTTON_CANCEL:
       return l10n_util::GetStringUTF16(
           IDS_PAGE_INFO_IGNORE_PASSWORD_WARNING_BUTTON);

@@ -84,7 +84,6 @@ class NET_EXPORT_PRIVATE MemBackendImpl final : public Backend {
   void SetPostCleanupCallback(base::OnceClosure cb);
 
   // Backend interface.
-  net::CacheType GetCacheType() const override;
   int32_t GetEntryCount() const override;
   net::Error OpenOrCreateEntry(const std::string& key,
                                net::RequestPriority request_priority,

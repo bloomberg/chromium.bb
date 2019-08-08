@@ -32,6 +32,8 @@ class PaymentRequestSpecTest : public testing::Test,
 
   void RecreateSpecWithOptionsAndDetails(mojom::PaymentOptionsPtr options,
                                          mojom::PaymentDetailsPtr details) {
+    if (!details->total)
+      details->total = mojom::PaymentItem::New();
     spec_ = std::make_unique<PaymentRequestSpec>(
         std::move(options), std::move(details),
         std::vector<mojom::PaymentMethodDataPtr>(), this, "en-US");
@@ -419,13 +421,14 @@ TEST_F(PaymentRequestSpecTest, SingleCurrencyWithDisplayItems) {
   amount->currency = "USD";
   total->amount = std::move(amount);
   details->total = std::move(total);
+  details->display_items = std::vector<mojom::PaymentItemPtr>();
 
   mojom::PaymentItemPtr display_item = mojom::PaymentItem::New();
   mojom::PaymentCurrencyAmountPtr display_amount =
       mojom::PaymentCurrencyAmount::New();
   display_amount->currency = "USD";
   display_item->amount = std::move(display_amount);
-  details->display_items.push_back(std::move(display_item));
+  details->display_items->push_back(std::move(display_item));
 
   RecreateSpecWithOptionsAndDetails(mojom::PaymentOptions::New(),
                                     std::move(details));
@@ -441,13 +444,14 @@ TEST_F(PaymentRequestSpecTest, MultipleCurrenciesWithOneDisplayItem) {
   amount->currency = "USD";
   total->amount = std::move(amount);
   details->total = std::move(total);
+  details->display_items = std::vector<mojom::PaymentItemPtr>();
 
   mojom::PaymentItemPtr display_item = mojom::PaymentItem::New();
   mojom::PaymentCurrencyAmountPtr display_amount =
       mojom::PaymentCurrencyAmount::New();
   display_amount->currency = "CAD";
   display_item->amount = std::move(display_amount);
-  details->display_items.push_back(std::move(display_item));
+  details->display_items->push_back(std::move(display_item));
 
   RecreateSpecWithOptionsAndDetails(mojom::PaymentOptions::New(),
                                     std::move(details));
@@ -464,20 +468,21 @@ TEST_F(PaymentRequestSpecTest, MultipleCurrenciesWithTwoDisplayItem) {
   amount->currency = "USD";
   total->amount = std::move(amount);
   details->total = std::move(total);
+  details->display_items = std::vector<mojom::PaymentItemPtr>();
 
   mojom::PaymentItemPtr display_item1 = mojom::PaymentItem::New();
   mojom::PaymentCurrencyAmountPtr display_amount1 =
       mojom::PaymentCurrencyAmount::New();
   display_amount1->currency = "CAD";
   display_item1->amount = std::move(display_amount1);
-  details->display_items.push_back(std::move(display_item1));
+  details->display_items->push_back(std::move(display_item1));
 
   mojom::PaymentItemPtr display_item2 = mojom::PaymentItem::New();
   mojom::PaymentCurrencyAmountPtr display_amount2 =
       mojom::PaymentCurrencyAmount::New();
   display_amount2->currency = "USD";
   display_item2->amount = std::move(display_amount2);
-  details->display_items.push_back(std::move(display_item2));
+  details->display_items->push_back(std::move(display_item2));
 
   RecreateSpecWithOptionsAndDetails(mojom::PaymentOptions::New(),
                                     std::move(details));

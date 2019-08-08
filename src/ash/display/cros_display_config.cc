@@ -409,7 +409,8 @@ void SetDisplayLayoutFromBounds(const gfx::Rect& primary_display_bounds,
 // Attempts to set the display mode for display |id|.
 mojom::DisplayConfigResult SetDisplayMode(
     int64_t id,
-    const mojom::DisplayMode& display_mode) {
+    const mojom::DisplayMode& display_mode,
+    mojom::DisplayConfigSource source) {
   display::DisplayManager* display_manager = GetDisplayManager();
 
   display::ManagedDisplayMode current_mode;
@@ -430,7 +431,7 @@ mojom::DisplayConfigResult SetDisplayMode(
     if (!Shell::Get()
              ->resolution_notification_controller()
              ->PrepareNotificationAndSetDisplayMode(
-                 id, current_mode, new_mode, base::BindOnce([]() {
+                 id, current_mode, new_mode, source, base::BindOnce([]() {
                    Shell::Get()->display_prefs()->MaybeStoreDisplayPrefs();
                  }))) {
       return mojom::DisplayConfigResult::kSetDisplayModeError;
@@ -634,6 +635,7 @@ void CrosDisplayConfig::GetDisplayUnitInfoList(
 void CrosDisplayConfig::SetDisplayProperties(
     const std::string& id,
     mojom::DisplayConfigPropertiesPtr properties,
+    mojom::DisplayConfigSource source,
     SetDisplayPropertiesCallback callback) {
   const display::Display display = GetDisplay(id);
   mojom::DisplayConfigResult result =
@@ -691,7 +693,7 @@ void CrosDisplayConfig::SetDisplayProperties(
   // will have already been applied. TODO(stevenjb): Validate the display mode
   // before applying any properties.
   if (properties->display_mode) {
-    result = SetDisplayMode(display.id(), *properties->display_mode);
+    result = SetDisplayMode(display.id(), *properties->display_mode, source);
     if (result != mojom::DisplayConfigResult::kSuccess) {
       std::move(callback).Run(result);
       return;

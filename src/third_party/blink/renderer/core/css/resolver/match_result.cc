@@ -30,6 +30,8 @@
 
 #include "third_party/blink/renderer/core/css/resolver/match_result.h"
 
+#include <type_traits>
+
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
 
@@ -46,12 +48,14 @@ void MatchedProperties::Trace(blink::Visitor* visitor) {
 void MatchResult::AddMatchedProperties(
     const CSSPropertyValueSet* properties,
     unsigned link_match_type,
-    PropertyWhitelistType property_whitelist_type) {
+    ValidPropertyFilter valid_property_filter) {
   matched_properties_.Grow(matched_properties_.size() + 1);
   MatchedProperties& new_properties = matched_properties_.back();
   new_properties.properties = const_cast<CSSPropertyValueSet*>(properties);
   new_properties.types_.link_match_type = link_match_type;
-  new_properties.types_.whitelist_type = property_whitelist_type;
+  new_properties.types_.valid_property_filter =
+      static_cast<std::underlying_type_t<ValidPropertyFilter>>(
+          valid_property_filter);
 }
 
 void MatchResult::FinishAddingUARules() {

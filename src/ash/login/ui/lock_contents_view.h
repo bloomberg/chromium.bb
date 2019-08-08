@@ -20,12 +20,13 @@
 #include "ash/login/ui/login_tooltip_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
+#include "ash/public/interfaces/login_screen.mojom.h"
 #include "ash/session/session_observer.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
-#include "chromeos/dbus/power_manager_client.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -148,10 +149,10 @@ class ASH_EXPORT LockContentsView
                                  mojom::FingerprintState state) override;
   void OnFingerprintAuthResult(const AccountId& account_id,
                                bool success) override;
-  void OnAuthEnabledForUserChanged(
+  void OnAuthEnabledForUser(const AccountId& user) override;
+  void OnAuthDisabledForUser(
       const AccountId& user,
-      bool enabled,
-      const base::Optional<base::Time>& auth_reenabled_time) override;
+      const ash::mojom::AuthDisabledDataPtr& auth_disabled_data) override;
   void OnLockScreenNoteStateChanged(mojom::TrayActionState state) override;
   void OnTapToUnlockEnabledForUserChanged(const AccountId& user,
                                           bool enabled) override;
@@ -397,6 +398,9 @@ class ASH_EXPORT LockContentsView
   // Whether a lock screen app is currently active (i.e. lock screen note action
   // state is reported as kActive by the data dispatcher).
   bool lock_screen_apps_active_ = false;
+
+  // Tracks the visibility of the OOBE dialog.
+  bool oobe_dialog_visible_ = false;
 
   // Whether the lock screen note is disabled. Used to override the actual lock
   // screen note state.

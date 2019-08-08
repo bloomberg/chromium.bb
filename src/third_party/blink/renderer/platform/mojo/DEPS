@@ -10,6 +10,7 @@ include_rules = [
     "+base/containers/span.h",
     "+base/message_loop/message_loop_current.h",
     "+base/observer_list.h",
+    "+base/strings/latin1_string_conversions.h",
     "+base/strings/string16.h",
     "+mojo/public/cpp/base/time_mojom_traits.h",
     "+mojo/public/cpp/bindings/binding.h",

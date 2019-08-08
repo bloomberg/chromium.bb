@@ -16,6 +16,7 @@
 #include <utility>
 #include <vector>
 
+#include "build/build_config.h"
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_extension.h"
 #include "third_party/base/stl_util.h"
@@ -76,43 +77,32 @@ std::pair<size_t, size_t> UTF8Decode(const char* pSrc,
   return {iSrcNum, iDstNum};
 }
 
+#if defined(WCHAR_T_IS_UTF32)
+static_assert(sizeof(wchar_t) > 2, "wchar_t is too small");
+
 void UTF16ToWChar(void* pBuffer, size_t iLength) {
   ASSERT(pBuffer);
   ASSERT(iLength > 0);
-  ASSERT(sizeof(wchar_t) > 2);
 
   uint16_t* pSrc = static_cast<uint16_t*>(pBuffer);
   wchar_t* pDst = static_cast<wchar_t*>(pBuffer);
-  for (size_t i = 0; i < iLength; i++)
-    pDst[i] = static_cast<wchar_t>(pSrc[i]);
+
+  // Perform self-intersecting copy in reverse order.
+  for (size_t i = iLength; i > 0; --i)
+    pDst[i - 1] = static_cast<wchar_t>(pSrc[i - 1]);
 }
+#endif  // defined(WCHAR_T_IS_UTF32)
 
-void SwapByteOrder(wchar_t* pStr, size_t iLength) {
-  ASSERT(pStr);
-
-  uint16_t wch;
-  if (sizeof(wchar_t) > 2) {
-    while (iLength-- > 0) {
-      wch = static_cast<uint16_t>(*pStr);
-      wch = (wch >> 8) | (wch << 8);
-      wch &= 0x00FF;
-      *pStr = wch;
-      ++pStr;
-    }
-    return;
-  }
-
+void SwapByteOrder(uint16_t* pStr, size_t iLength) {
   while (iLength-- > 0) {
-    wch = static_cast<uint16_t>(*pStr);
-    wch = (wch >> 8) | (wch << 8);
-    *pStr = wch;
-    ++pStr;
+    uint16_t wch = *pStr;
+    *pStr++ = (wch >> 8) | (wch << 8);
   }
 }
 
 }  // namespace
 
-#define BOM_MASK 0x00FFFFFF
+#define BOM_UTF8_MASK 0x00FFFFFF
 #define BOM_UTF8 0x00BFBBEF
 #define BOM_UTF16_MASK 0x0000FFFF
 #define BOM_UTF16_BE 0x0000FFFE
@@ -131,7 +121,7 @@ CFX_SeekableStreamProxy::CFX_SeekableStreamProxy(
   uint32_t bom = 0;
   ReadData(reinterpret_cast<uint8_t*>(&bom), 3);
 
-  bom &= BOM_MASK;
+  bom &= BOM_UTF8_MASK;
   if (bom == BOM_UTF8) {
     m_wBOMLength = 3;
     m_wCodePage = FX_CODEPAGE_UTF8;
@@ -206,7 +196,7 @@ size_t CFX_SeekableStreamProxy::ReadData(uint8_t* pBuffer, size_t iBufferSize) {
   return new_pos.IsValid() ? iBufferSize : 0;
 }
 
-size_t CFX_SeekableStreamProxy::ReadBlock(void* pStr, size_t size) {
+size_t CFX_SeekableStreamProxy::ReadBlock(wchar_t* pStr, size_t size) {
   if (!pStr || size == 0)
     return 0;
 
@@ -215,12 +205,13 @@ size_t CFX_SeekableStreamProxy::ReadBlock(void* pStr, size_t size) {
     size_t iBytes = size * 2;
     size_t iLen = ReadData(reinterpret_cast<uint8_t*>(pStr), iBytes);
     size = iLen / 2;
-    if (sizeof(wchar_t) > 2 && size > 0)
-      UTF16ToWChar(pStr, size);
-
     if (m_wCodePage == FX_CODEPAGE_UTF16BE)
-      SwapByteOrder(static_cast<wchar_t*>(pStr), size);
+      SwapByteOrder(reinterpret_cast<uint16_t*>(pStr), size);
 
+#if defined(WCHAR_T_IS_UTF32)
+    if (size > 0)
+      UTF16ToWChar(pStr, size);
+#endif
   } else {
     FX_FILESIZE pos = GetPosition();
     size_t iBytes = std::min(size, static_cast<size_t>(GetSize() - pos));
@@ -243,11 +234,4 @@ size_t CFX_SeekableStreamProxy::ReadBlock(void* pStr, size_t size) {
   }
 
   return size;
-}
-
-bool CFX_SeekableStreamProxy::ReadBlockAtOffset(void* pStr,
-                                                FX_FILESIZE offset,
-                                                size_t size) {
-  NOTREACHED();
-  return false;
 }

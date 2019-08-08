@@ -125,6 +125,10 @@ bool PasswordForm::HasPasswordElement() const {
                           : !password_element.empty();
 }
 
+bool PasswordForm::IsFederatedCredential() const {
+  return !federation_origin.opaque();
+}
+
 bool PasswordForm::operator==(const PasswordForm& form) const {
   return scheme == form.scheme && signon_realm == form.signon_realm &&
          origin == form.origin && action == form.action &&
@@ -216,6 +220,12 @@ base::string16 ValueElementVectorToString(
                    return p.first + base::ASCIIToUTF16("+") + p.second;
                  });
   return base::JoinString(pairs, base::ASCIIToUTF16(", "));
+}
+
+bool IsHttpAuthScheme(PasswordForm::Scheme scheme) {
+  return scheme == PasswordForm::SCHEME_BASIC ||
+         scheme == PasswordForm::SCHEME_DIGEST ||
+         scheme == PasswordForm::SCHEME_OTHER;
 }
 
 std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {

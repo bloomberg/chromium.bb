@@ -20,6 +20,7 @@ source_set("browser_state") {
     "//base",
     "//components/prefs",
     "//components/sync_preferences",
+    "//components/variations/net",
     "//ios/chrome/browser/net:net_types",
   ]
 
@@ -102,6 +103,7 @@ source_set("browser_state_impl") {
     "//ios/chrome/browser/prefs:browser_prefs",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/search_engines",
+    "//ios/chrome/browser/send_tab_to_self",
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/snapshots",
@@ -138,12 +140,14 @@ source_set("browser_state_impl") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "chrome_browser_state_unittest.cc",
     "test_chrome_browser_state_manager_unittest.cc",
   ]
   deps = [
     ":browser_state",
     ":test_support",
     "//base",
+    "//components/variations/net",
     "//ios/web/public/test",
     "//testing/gtest",
   ]
@@ -161,6 +165,7 @@ source_set("test_support") {
 
   public_deps = [
     ":browser_state",
+    ":browser_state_impl",
   ]
 
   deps = [

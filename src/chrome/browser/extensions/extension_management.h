@@ -64,11 +64,14 @@ class ExtensionManagement : public KeyedService {
   //                        and cannot be disabled.
   // * INSTALLATION_RECOMMENDED: Extension will be installed automatically but
   //                             can be disabled.
+  // * INSTALLATION_REMOVED:  Extension cannot be installed and will be
+  //                          automatically removed.
   enum InstallationMode {
     INSTALLATION_ALLOWED = 0,
     INSTALLATION_BLOCKED,
     INSTALLATION_FORCED,
     INSTALLATION_RECOMMENDED,
+    INSTALLATION_REMOVED,
   };
 
   explicit ExtensionManagement(Profile* profile);
@@ -99,6 +102,11 @@ class ExtensionManagement : public KeyedService {
 
   // Like GetForceInstallList(), but returns recommended install list instead.
   std::unique_ptr<base::DictionaryValue> GetRecommendedInstallList() const;
+
+  // Returns |true| if there is at least one extension with
+  // |INSTALLATION_ALLOWED| as installation mode. This excludes force installed
+  // extensions.
+  bool HasWhitelistedExtension() const;
 
   // Returns if an extension with id |id| is explicitly allowed by enterprise
   // policy or not.

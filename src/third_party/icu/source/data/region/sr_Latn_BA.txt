@@ -8,7 +8,6 @@ sr_Latn_BA{
         CZ{"Češka Republika"}
         DE{"Njemačka"}
         KN{"Sveti Kits i Nevis"}
-        MK{"BJR Makedonija"}
         MO{"SAR Makao"}
         PM{"Sveti Pjer i Mikelon"}
         RE{"Reunion"}
@@ -17,5 +16,8 @@ sr_Latn_BA{
         VG{"Britanska Djevičanska Ostrva"}
         VI{"Američka Djevičanska Ostrva"}
     }
-    Version{"2.1.44.88"}
+    Countries%variant{
+        MK{"BJR Makedonija"}
+    }
+    Version{"2.1.48.77"}
 }

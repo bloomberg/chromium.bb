@@ -104,6 +104,8 @@ void PrefetchImporterImpl::ImportArchive(const PrefetchArchiveInfo& archive) {
                                dest_path, archive.file_size, base::Time::Now());
   offline_page.original_url_if_different = original_url;
   offline_page.title = archive.title;
+  offline_page.snippet = archive.snippet;
+  offline_page.attribution = archive.attribution;
 
   outstanding_import_offline_ids_.emplace(archive.offline_id);
 

@@ -84,7 +84,7 @@ class PrintCompositeClient
       base::ReadOnlySharedMemoryRegion region);
 
   // Get the request or create a new one if none exists.
-  // Since printed pages always share content with it document, they share the
+  // Since printed pages always share content with its document, they share the
   // same composite request.
   mojom::PdfCompositorPtr& GetCompositeRequest(int cookie);
 

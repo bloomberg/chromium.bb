@@ -14,6 +14,7 @@ enum ResolverType {
   kResolverTypeFail,
   kResolverTypeSystem,
   kResolverTypeIPLiteral,
+  kResolverTypeDirectLookup,
 };
 
 struct Rule {
@@ -75,9 +76,17 @@ interface NetworkServiceTest {
   // Causes the next host resolve to the given hostname to crash the process.
   CrashOnResolveHost(string host);
 
+  // Causes the next CookieManager::GetCookieList call to crash.
+  CrashOnGetCookieList();
+
   // Gets the latest memory pressure level reported by the
   // MemoryPressureListener.
   [Sync]
   GetLatestMemoryPressureLevel()
       => (mojo_base.mojom.MemoryPressureLevel memory_pressure_level);
+
+  // Returns the value of an environment variable in the network service's
+  // process, or an empty string if it's not set.
+  [Sync]
+  GetEnvironmentVariableValue(string name) => (string value);
 };

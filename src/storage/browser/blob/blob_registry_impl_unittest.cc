@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
@@ -1037,6 +1038,17 @@ TEST_F(BlobRegistryImplTest, RegisterFromStream) {
 
   EXPECT_EQ(kData.length(), progress_client.total_size);
   EXPECT_GE(progress_client.call_count, 1);
+}
+
+TEST_F(BlobRegistryImplTest, DestroyWithUnfinishedStream) {
+  mojo::DataPipe pipe1, pipe2;
+  registry_->RegisterFromStream("", "", 0, std::move(pipe1.consumer_handle),
+                                nullptr, base::DoNothing());
+  registry_->RegisterFromStream("", "", 0, std::move(pipe2.consumer_handle),
+                                nullptr, base::DoNothing());
+  registry_.FlushForTesting();
+  // This test just makes sure no crash happens if we're shut down while still
+  // creating blobs from streams.
 }
 
 }  // namespace storage

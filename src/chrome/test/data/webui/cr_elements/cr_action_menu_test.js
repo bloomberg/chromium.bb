@@ -347,7 +347,7 @@ suite('CrActionMenu', function() {
     menu.close();
   });
 
-  // TODO(scottchen): fix flakiness and re-enable this test.
+  // TODO(dpapad): fix flakiness and re-enable this test.
   test.skip(
       '[auto-reposition] enables repositioning if content changes',
       function(done) {

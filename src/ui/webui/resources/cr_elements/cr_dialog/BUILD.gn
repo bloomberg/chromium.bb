@@ -12,7 +12,7 @@ js_type_check("closure_compile") {
 
 js_library("cr_dialog") {
   deps = [
-    "//third_party/polymer/v1_0/components-chromium/paper-icon-button:paper-icon-button-extracted",
+    "..:cr_container_shadow_behavior",
     "//ui/webui/resources/js:assert",
   ]
   externs_list = [ "$externs_path/web_animations.js" ]

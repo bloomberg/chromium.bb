@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/lazy_instance.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -28,6 +28,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "ipc/ipc_message.h"
 
 namespace content {
@@ -390,15 +391,18 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
                                                        GetSiteInstance()))
     return;
 
-  FrameMsg_PostMessage_Params new_params(params);
+  int32_t source_routing_id = params.source_routing_id;
+  base::string16 source_origin = params.source_origin;
+  base::string16 target_origin = params.target_origin;
+  blink::TransferableMessage message = std::move(params.message->data);
 
   // If there is a source_routing_id, translate it to the routing ID of the
   // equivalent RenderFrameProxyHost in the target process.
-  if (new_params.source_routing_id != MSG_ROUTING_NONE) {
-    RenderFrameHostImpl* source_rfh = RenderFrameHostImpl::FromID(
-        GetProcess()->GetID(), new_params.source_routing_id);
+  if (source_routing_id != MSG_ROUTING_NONE) {
+    RenderFrameHostImpl* source_rfh =
+        RenderFrameHostImpl::FromID(GetProcess()->GetID(), source_routing_id);
     if (!source_rfh) {
-      new_params.source_routing_id = MSG_ROUTING_NONE;
+      source_routing_id = MSG_ROUTING_NONE;
     } else {
       // https://crbug.com/822958: If the postMessage is going to a descendant
       // frame, ensure that any pending visual properties such as size are sent
@@ -423,6 +427,18 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
       // to the target page.
       target_rfh->delegate()->EnsureOpenerProxiesExist(source_rfh);
 
+      // Transfer user activation state in the frame tree in the browser and
+      // the non-source and non-target renderer processes when
+      // |transfer_user_activation| is true.
+      // TODO(lanwei): we should transfer user activation state only when
+      // |source_rfh| and |target_rfh| are in the same frame tree.
+      if (base::FeatureList::IsEnabled(
+              features::kUserActivationPostMessageTransfer) &&
+          message.transfer_user_activation &&
+          source_rfh->frame_tree_node()->HasTransientUserActivation()) {
+        target_rfh->frame_tree_node()->TransferUserActivationFrom(source_rfh);
+      }
+
       // If the message source is a cross-process subframe, its proxy will only
       // be created in --site-per-process mode.  If the proxy wasn't created,
       // set the source routing ID to MSG_ROUTING_NONE (see
@@ -432,16 +448,16 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
               ->render_manager()
               ->GetRenderFrameProxyHost(target_site_instance);
       if (source_proxy_in_target_site_instance) {
-        new_params.source_routing_id =
+        source_routing_id =
             source_proxy_in_target_site_instance->GetRoutingID();
       } else {
-        new_params.source_routing_id = MSG_ROUTING_NONE;
+        source_routing_id = MSG_ROUTING_NONE;
       }
     }
   }
 
-  target_rfh->Send(
-      new FrameMsg_PostMessageEvent(target_rfh->GetRoutingID(), new_params));
+  target_rfh->PostMessageEvent(source_routing_id, source_origin, target_origin,
+                               std::move(message));
 }
 
 void RenderFrameProxyHost::OnDidChangeOpener(int32_t opener_routing_id) {

@@ -4,10 +4,13 @@
 
 #include "ui/views/examples/tree_view_example.h"
 
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/tree/tree_view.h"
 #include "ui/views/controls/tree/tree_view_drawing_provider.h"
 #include "ui/views/layout/grid_layout.h"
@@ -18,8 +21,8 @@ namespace {
 
 class ExampleTreeViewDrawingProvider : public views::TreeViewDrawingProvider {
  public:
-  ExampleTreeViewDrawingProvider() {}
-  ~ExampleTreeViewDrawingProvider() override {}
+  ExampleTreeViewDrawingProvider() = default;
+  ~ExampleTreeViewDrawingProvider() override = default;
 
   base::string16 GetAuxiliaryTextForNode(views::TreeView* tree_view,
                                          ui::TreeModelNode* node) override {
@@ -45,8 +48,9 @@ TreeViewExample::TreeViewExample()
       model_(std::make_unique<NodeType>(ASCIIToUTF16("root"), 1)) {}
 
 TreeViewExample::~TreeViewExample() {
-  // Delete the view before the model.
-  tree_view_.reset();
+  // Remove the model from the view.
+  if (tree_view_)
+    tree_view_->SetModel(nullptr);
 }
 
 void TreeViewExample::CreateExampleView(View* container) {
@@ -62,12 +66,12 @@ void TreeViewExample::CreateExampleView(View* container) {
   sheep_node->Add(std::make_unique<NodeType>(ASCIIToUTF16("Sheep 1"), 1), 0);
   sheep_node->Add(std::make_unique<NodeType>(ASCIIToUTF16("Sheep 2"), 1), 1);
 
-  tree_view_ = std::make_unique<TreeView>();
-  tree_view_->set_context_menu_controller(this);
-  tree_view_->SetRootShown(false);
-  tree_view_->SetModel(&model_);
-  tree_view_->SetController(this);
-  tree_view_->SetDrawingProvider(
+  auto tree_view = std::make_unique<TreeView>();
+  tree_view->set_context_menu_controller(this);
+  tree_view->SetRootShown(false);
+  tree_view->SetModel(&model_);
+  tree_view->SetController(this);
+  tree_view->SetDrawingProvider(
       std::make_unique<ExampleTreeViewDrawingProvider>());
   add_ = new LabelButton(this, ASCIIToUTF16("Add"));
   add_->SetFocusForPlatform();
@@ -87,7 +91,9 @@ void TreeViewExample::CreateExampleView(View* container) {
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
                         1.0f, GridLayout::USE_PREF, 0, 0);
   layout->StartRow(1 /* expand */, tree_view_column);
-  layout->AddView(tree_view_->CreateParentIfNecessary());
+  tree_view_ = tree_view.get();
+  layout->AddView(
+      TreeView::CreateScrollViewWithTree(std::move(tree_view)).release());
 
   // Add control buttons horizontally.
   const int button_column = 1;
@@ -155,14 +161,15 @@ void TreeViewExample::ShowContextMenuForViewImpl(
     View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {
-  context_menu_model_.reset(new ui::SimpleMenuModel(this));
+  context_menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
   context_menu_model_->AddItem(ID_EDIT, ASCIIToUTF16("Edit"));
   context_menu_model_->AddItem(ID_REMOVE, ASCIIToUTF16("Remove"));
   context_menu_model_->AddItem(ID_ADD, ASCIIToUTF16("Add"));
-  context_menu_runner_.reset(new MenuRunner(context_menu_model_.get(), 0));
+  context_menu_runner_ =
+      std::make_unique<MenuRunner>(context_menu_model_.get(), 0);
   context_menu_runner_->RunMenuAt(source->GetWidget(), nullptr,
                                   gfx::Rect(point, gfx::Size()),
-                                  MENU_ANCHOR_TOPLEFT, source_type);
+                                  MenuAnchorPosition::kTopLeft, source_type);
 }
 
 bool TreeViewExample::IsCommandIdChecked(int command_id) const {

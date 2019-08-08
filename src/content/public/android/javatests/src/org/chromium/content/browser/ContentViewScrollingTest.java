@@ -103,6 +103,22 @@ public class ContentViewScrollingTest {
         });
     }
 
+    private void waitForScrollToPosition(final int x, final int y) {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                // Scrolling and flinging don't result in exact coordinates.
+                final int threshold = 5;
+
+                boolean xCorrect = (mCoordinates.getScrollXPixInt() < x + threshold
+                        && mCoordinates.getScrollXPixInt() > x - threshold);
+                boolean yCorrect = (mCoordinates.getScrollYPixInt() < y + threshold
+                        && mCoordinates.getScrollYPixInt() > y - threshold);
+                return xCorrect && yCorrect;
+            }
+        });
+    }
+
     private void waitForViewportInitialization() {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
@@ -201,6 +217,40 @@ public class ContentViewScrollingTest {
         // Diagonal fling to bottom-right.
         fling(-velocity, -velocity);
         waitForScroll(false, false);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Main"})
+    @RetryOnFailure
+    public void testFlingDistance() throws Throwable {
+        // Scaling the initial velocity by the device scale factor ensures that
+        // it's of sufficient magnitude for all displays densities.
+        float deviceScaleFactor = InstrumentationRegistry.getInstrumentation()
+                                          .getTargetContext()
+                                          .getResources()
+                                          .getDisplayMetrics()
+                                          .density;
+        int velocity = (int) (1000 * deviceScaleFactor);
+        // Expected total fling distance calculated by FlingCurve with initial
+        // velocity 1000.
+        int expected_dist = (int) (180 * deviceScaleFactor);
+
+        // Vertical fling to lower-left.
+        fling(0, -velocity);
+        waitForScrollToPosition(0, expected_dist);
+
+        // Horizontal fling to lower-right.
+        fling(-velocity, 0);
+        waitForScrollToPosition(expected_dist, expected_dist);
+
+        // Vertical fling to upper-right.
+        fling(0, velocity);
+        waitForScrollToPosition(expected_dist, 0);
+
+        // Horizontal fling to top-left.
+        fling(velocity, 0);
+        waitForScrollToPosition(0, 0);
     }
 
     @Test

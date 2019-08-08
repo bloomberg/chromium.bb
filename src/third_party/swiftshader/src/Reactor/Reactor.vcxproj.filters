@@ -27,6 +27,9 @@
     <ClCompile Include="LLVMReactor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LLVMReactorDebugInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="CPUID.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -37,6 +40,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Reactor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -51,6 +57,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Routine.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LLVMReactor.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LLVMReactorDebugInfo.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LLVMRoutineManager.hpp">

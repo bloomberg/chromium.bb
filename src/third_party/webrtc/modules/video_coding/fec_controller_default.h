@@ -17,7 +17,6 @@
 #include <vector>
 
 #include "api/fec_controller.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "modules/video_coding/media_opt_util.h"
 #include "rtc_base/constructor_magic.h"
 #include "rtc_base/critical_section.h"
@@ -44,8 +43,9 @@ class FecControllerDefault : public FecController {
                           uint8_t fraction_lost,
                           std::vector<bool> loss_mask_vector,
                           int64_t round_trip_time_ms) override;
-  void UpdateWithEncodedData(const size_t encoded_image_length,
-                             const FrameType encoded_image_frametype) override;
+  void UpdateWithEncodedData(
+      const size_t encoded_image_length,
+      const VideoFrameType encoded_image_frametype) override;
   bool UseLossVectorMask() override;
   float GetProtectionOverheadRateThreshold();
 

@@ -19,8 +19,8 @@
 #include "extensions/renderer/api/automation/automation_api_helper.h"
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/dispatcher.h"
-#include "extensions/renderer/extension_bindings_system.h"
-#include "extensions/renderer/renderer_messaging_service.h"
+#include "extensions/renderer/native_extension_bindings_system.h"
+#include "extensions/renderer/native_renderer_messaging_service.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -398,7 +398,7 @@ void ExtensionFrameHelper::OnExtensionValidateMessagePort(int worker_thread_id,
                                                           const PortId& id) {
   DCHECK_EQ(kMainThreadId, worker_thread_id);
   extension_dispatcher_->bindings_system()
-      ->GetMessagingService()
+      ->messaging_service()
       ->ValidateMessagePort(
           extension_dispatcher_->script_context_set_iterator(), id,
           render_frame());
@@ -412,7 +412,7 @@ void ExtensionFrameHelper::OnExtensionDispatchOnConnect(
     const ExtensionMsg_ExternalConnectionInfo& info) {
   DCHECK_EQ(kMainThreadId, worker_thread_id);
   extension_dispatcher_->bindings_system()
-      ->GetMessagingService()
+      ->messaging_service()
       ->DispatchOnConnect(extension_dispatcher_->script_context_set_iterator(),
                           target_port_id, channel_name, source, info,
                           render_frame());
@@ -422,10 +422,9 @@ void ExtensionFrameHelper::OnExtensionDeliverMessage(int worker_thread_id,
                                                      const PortId& target_id,
                                                      const Message& message) {
   DCHECK_EQ(kMainThreadId, worker_thread_id);
-  extension_dispatcher_->bindings_system()
-      ->GetMessagingService()
-      ->DeliverMessage(extension_dispatcher_->script_context_set_iterator(),
-                       target_id, message, render_frame());
+  extension_dispatcher_->bindings_system()->messaging_service()->DeliverMessage(
+      extension_dispatcher_->script_context_set_iterator(), target_id, message,
+      render_frame());
 }
 
 void ExtensionFrameHelper::OnExtensionDispatchOnDisconnect(
@@ -434,7 +433,7 @@ void ExtensionFrameHelper::OnExtensionDispatchOnDisconnect(
     const std::string& error_message) {
   DCHECK_EQ(kMainThreadId, worker_thread_id);
   extension_dispatcher_->bindings_system()
-      ->GetMessagingService()
+      ->messaging_service()
       ->DispatchOnDisconnect(
           extension_dispatcher_->script_context_set_iterator(), id,
           error_message, render_frame());

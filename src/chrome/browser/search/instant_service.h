@@ -85,6 +85,10 @@ class InstantService : public KeyedService,
   void UndoMostVisitedDeletion(const GURL& url);
   // Invoked when the Instant page wants to undo all Most Visited deletions.
   void UndoAllMostVisitedDeletions();
+  // Invoked when the Instant page wants to switch between custom links and Most
+  // Visited. Toggles between the two options each time it's called. Returns
+  // false and does nothing if the profile is using a third-party NTP.
+  bool ToggleMostVisitedOrCustomLinks();
   // Invoked when the Instant page wants to add a custom link.
   bool AddCustomLink(const GURL& url, const std::string& title);
   // Invoked when the Instant page wants to update a custom link.
@@ -96,18 +100,15 @@ class InstantService : public KeyedService,
   // Invoked when the Instant page wants to delete a custom link.
   bool DeleteCustomLink(const GURL& url);
   // Invoked when the Instant page wants to undo the previous custom link
-  // action. Returns false and does nothing if the profile is using a non-Google
-  // search provider.
+  // action. Returns false and does nothing if the profile is using a third-
+  // party NTP.
   bool UndoCustomLinkAction();
   // Invoked when the Instant page wants to delete all custom links and use Most
   // Visited sites instead. Returns false and does nothing if the profile is
-  // using a non-Google search provider. Marked virtual for mocking in tests.
+  // using a third-party NTP. Marked virtual for mocking in tests.
   virtual bool ResetCustomLinks();
 
-  // Invoked by the InstantController to update theme information for NTP.
-  //
-  // TODO(kmadhusu): Invoking this from InstantController shouldn't be
-  // necessary. Investigate more and remove this from here.
+  // Invoked to update theme information for the NTP.
   void UpdateThemeInfo();
 
   // Invoked when a background pref update is received via sync, triggering
@@ -159,6 +160,7 @@ class InstantService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, DeleteThumbnailDataIfExists);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, GetNTPTileSuggestion);
+  FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, IsCustomLinksEnabled);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, TestNoThemeInfo);
 
   // KeyedService:
@@ -174,7 +176,7 @@ class InstantService : public KeyedService,
 
   // Called when the search provider changes. Disables custom links if the
   // search provider is not Google.
-  void OnSearchProviderChanged(bool is_google);
+  void OnSearchProviderChanged();
 
   // Called when dark mode changes. Updates current theme info as necessary and
   // notifies that the theme has changed.
@@ -188,6 +190,10 @@ class InstantService : public KeyedService,
 
   void NotifyAboutMostVisitedItems();
   void NotifyAboutThemeInfo();
+
+  // Returns true if this is a Google NTP and the user has chosen to show custom
+  // links.
+  bool IsCustomLinksEnabled();
 
   void BuildThemeInfo();
 

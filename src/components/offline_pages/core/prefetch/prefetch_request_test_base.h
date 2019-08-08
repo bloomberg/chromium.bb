@@ -31,6 +31,8 @@ class PrefetchRequestTestBase : public testing::Test {
   void RespondWithNetError(int net_error);
   void RespondWithHttpError(net::HttpStatusCode http_error);
   void RespondWithData(const std::string& data);
+  void RespondWithHttpErrorAndData(net::HttpStatusCode http_error,
+                                   const std::string& data);
   network::TestURLLoaderFactory::PendingRequest* GetPendingRequest(
       size_t index = 0);
 

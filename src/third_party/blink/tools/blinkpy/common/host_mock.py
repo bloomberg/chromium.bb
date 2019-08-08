@@ -36,6 +36,7 @@ from blinkpy.common.system.system_host_mock import MockSystemHost
 from blinkpy.web_tests.builder_list import BuilderList
 from blinkpy.web_tests.port.factory import PortFactory
 from blinkpy.web_tests.port.test import add_unit_tests_to_mock_filesystem
+from blinkpy.w3c.wpt_manifest import BASE_MANIFEST_NAME
 
 
 class MockHost(MockSystemHost):
@@ -116,6 +117,5 @@ class MockHost(MockSystemHost):
         external_dir = path_finder.path_from_web_tests('external')
         filesystem.maybe_make_directory(filesystem.join(external_dir, 'wpt'))
 
-        # This filename should match the constant BASE_MANIFEST_NAME.
-        manifest_base_path = filesystem.join(external_dir, 'WPT_BASE_MANIFEST_5.json')
+        manifest_base_path = filesystem.join(external_dir, BASE_MANIFEST_NAME)
         filesystem.files[manifest_base_path] = '{"manifest": "base"}'

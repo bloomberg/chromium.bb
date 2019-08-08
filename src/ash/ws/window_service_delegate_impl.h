@@ -54,6 +54,8 @@ class WindowServiceDelegateImpl : public ws::WindowServiceDelegate {
       ws::WindowTree* tree,
       const std::string& name,
       mojo::ScopedInterfaceEndpointHandle handle) override;
+  void ConnectToImeEngine(ime::mojom::ImeEngineRequest engine_request,
+                          ime::mojom::ImeEngineClientPtr client) override;
 
  private:
   std::unique_ptr<ui::SystemInputInjector> system_input_injector_;

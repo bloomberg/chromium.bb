@@ -41,15 +41,6 @@ FEComposite::FEComposite(Filter* filter,
                          float k4)
     : FilterEffect(filter), type_(type), k1_(k1), k2_(k2), k3_(k3), k4_(k4) {}
 
-FEComposite* FEComposite::Create(Filter* filter,
-                                 const CompositeOperationType& type,
-                                 float k1,
-                                 float k2,
-                                 float k3,
-                                 float k4) {
-  return MakeGarbageCollected<FEComposite>(filter, type, k1, k2, k3, k4);
-}
-
 CompositeOperationType FEComposite::Operation() const {
   return type_;
 }

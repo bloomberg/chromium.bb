@@ -112,9 +112,10 @@ class OmniboxPopupModel {
   // matches (or there is no selection).
   void SetSelectedLineState(LineState state);
 
-  // Called when the user hits shift-delete.  This should determine if the item
-  // can be removed from history, and if so, remove it and update the popup.
-  void TryDeletingCurrentItem();
+  // Tries to erase the suggestion at |line|.  This should determine if the item
+  // at |line| can be removed from history, and if so, remove it and update the
+  // popup.
+  void TryDeletingLine(size_t line);
 
   // Returns true if the destination URL of the match is bookmarked.
   bool IsStarredMatch(const AutocompleteMatch& match) const;

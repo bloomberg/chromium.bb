@@ -52,7 +52,6 @@ schema_sources_ = [
   "page_capture.json",
   "passwords_private.idl",
   "permissions.json",
-  "preferences_private.json",
   "resources_private.idl",
   "safe_browsing_private.idl",
   "sessions.json",

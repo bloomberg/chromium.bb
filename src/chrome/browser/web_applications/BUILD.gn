@@ -13,10 +13,6 @@ source_set("web_applications") {
     "external_web_apps.h",
     "file_utils_wrapper.cc",
     "file_utils_wrapper.h",
-    "policy/web_app_policy_constants.cc",
-    "policy/web_app_policy_constants.h",
-    "policy/web_app_policy_manager.cc",
-    "policy/web_app_policy_manager.h",
     "system_web_app_manager.cc",
     "system_web_app_manager.h",
     "web_app.cc",
@@ -31,12 +27,12 @@ source_set("web_applications") {
     "web_app_install_finalizer.h",
     "web_app_install_manager.cc",
     "web_app_install_manager.h",
+    "web_app_install_task.cc",
+    "web_app_install_task.h",
     "web_app_registrar.cc",
     "web_app_registrar.h",
     "web_app_tab_helper.cc",
     "web_app_tab_helper.h",
-    "web_app_utils.cc",
-    "web_app_utils.h",
   ]
 
   deps = [
@@ -72,6 +68,10 @@ source_set("web_applications_test_support") {
     "test/test_web_app_database.h",
     "test/test_web_app_database_factory.cc",
     "test/test_web_app_database_factory.h",
+    "test/test_web_app_ui_delegate.cc",
+    "test/test_web_app_ui_delegate.h",
+    "test/test_web_app_url_loader.cc",
+    "test/test_web_app_url_loader.h",
     "test/web_app_test.cc",
     "test/web_app_test.h",
   ]
@@ -92,7 +92,7 @@ source_set("web_applications_unit_tests") {
   sources = [
     "web_app_database_unittest.cc",
     "web_app_icon_manager_unittest.cc",
-    "web_app_install_manager_unittest.cc",
+    "web_app_install_task_unittest.cc",
     "web_app_registrar_unittest.cc",
     "web_app_utils_unittest.cc",
   ]
@@ -156,6 +156,7 @@ source_set("browser_tests") {
   deps = [
     ":web_app_group",
     "//chrome/browser/web_applications/bookmark_apps:browser_tests",
+    "//chrome/browser/web_applications/components:browser_tests",
     "//chrome/browser/web_applications/extensions:browser_tests",
   ]
 }

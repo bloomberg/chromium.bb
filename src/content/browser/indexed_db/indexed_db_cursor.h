@@ -26,7 +26,7 @@ class CONTENT_EXPORT IndexedDBCursor {
   IndexedDBCursor(std::unique_ptr<IndexedDBBackingStore::Cursor> cursor,
                   indexed_db::CursorType cursor_type,
                   blink::mojom::IDBTaskType task_type,
-                  IndexedDBTransaction* transaction);
+                  base::WeakPtr<IndexedDBTransaction> transaction);
   ~IndexedDBCursor();
 
   void Advance(uint32_t count,
@@ -36,8 +36,9 @@ class CONTENT_EXPORT IndexedDBCursor {
                 std::unique_ptr<blink::IndexedDBKey> key,
                 std::unique_ptr<blink::IndexedDBKey> primary_key,
                 blink::mojom::IDBCursor::CursorContinueCallback callback);
-  void PrefetchContinue(int number_to_fetch,
-                        scoped_refptr<IndexedDBCallbacks> callbacks);
+  void PrefetchContinue(base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
+                        int number_to_fetch,
+                        blink::mojom::IDBCursor::PrefetchCallback callback);
   leveldb::Status PrefetchReset(int used_prefetches, int unused_prefetches);
 
   void OnRemoveBinding(base::OnceClosure remove_binding_cb);
@@ -70,8 +71,10 @@ class CONTENT_EXPORT IndexedDBCursor {
       blink::mojom::IDBCursor::AdvanceCallback callback,
       IndexedDBTransaction* transaction);
   leveldb::Status CursorPrefetchIterationOperation(
+      base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
+      scoped_refptr<base::SequencedTaskRunner> idb_runner,
       int number_to_fetch,
-      scoped_refptr<IndexedDBCallbacks> callbacks,
+      blink::mojom::IDBCursor::PrefetchCallback callback,
       IndexedDBTransaction* transaction);
 
  private:
@@ -79,7 +82,7 @@ class CONTENT_EXPORT IndexedDBCursor {
   indexed_db::CursorType cursor_type_;
 
   // We rely on the transaction calling Close() to clear this.
-  IndexedDBTransaction* transaction_;
+  base::WeakPtr<IndexedDBTransaction> transaction_;
 
   // Must be destroyed before transaction_.
   std::unique_ptr<IndexedDBBackingStore::Cursor> cursor_;

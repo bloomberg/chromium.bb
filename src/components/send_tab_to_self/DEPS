@@ -1,5 +1,7 @@
 include_rules = [
+  "+components/infobars",
   "+components/keyed_service/core",
   "+components/sync",
   "+components/version_info",
+  "+components/history",
 ]

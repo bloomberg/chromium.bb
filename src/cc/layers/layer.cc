@@ -8,6 +8,8 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <utility>
+#include <vector>
 
 #include "base/atomic_sequence_num.h"
 #include "base/location.h"
@@ -45,7 +47,7 @@ Layer::Inputs::Inputs(int layer_id)
       opacity(1.f),
       blend_mode(SkBlendMode::kSrcOver),
       is_root_for_isolated_group(false),
-      hit_testable_without_draws_content(false),
+      hit_testable(false),
       contents_opaque(false),
       is_drawable(false),
       double_sided(true),
@@ -55,6 +57,7 @@ Layer::Inputs::Inputs(int layer_id)
       background_color(0),
       backdrop_filter_quality(1.0f),
       corner_radii({0, 0, 0, 0}),
+      is_fast_rounded_corner(false),
       scrollable(false),
       is_scrollbar(false),
       user_scrollable_horizontal(true),
@@ -269,6 +272,27 @@ void Layer::RemoveChildOrDependent(Layer* child) {
     SetNeedsFullTreeSync();
     return;
   }
+}
+
+void Layer::ReorderChildren(LayerList* new_children_order) {
+#if DCHECK_IS_ON()
+  base::flat_set<Layer*> children_set;
+  for (const auto& child : *new_children_order) {
+    DCHECK_EQ(child->parent(), this);
+    children_set.insert(child.get());
+  }
+  for (const auto& child : inputs_.children)
+    DCHECK_GT(children_set.count(child.get()), 0u);
+#endif
+  inputs_.children = std::move(*new_children_order);
+
+  // We do not need to call SetSubtreePropertyChanged for each child here
+  // since SetSubtreePropertyChanged includes SetNeedsPushProperties, but this
+  // change is not included in properties pushing.
+  for (const auto& child : inputs_.children)
+    child->subtree_property_changed_ = true;
+
+  SetNeedsFullTreeSync();
 }
 
 void Layer::ReplaceChild(Layer* reference, scoped_refptr<Layer> new_layer) {
@@ -602,6 +626,22 @@ void Layer::SetRoundedCorner(const std::array<uint32_t, 4>& corner_radii) {
   SetPropertyTreesNeedRebuild();
 }
 
+void Layer::SetIsFastRoundedCorner(bool enable) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (inputs_.is_fast_rounded_corner == enable)
+    return;
+  inputs_.is_fast_rounded_corner = enable;
+
+  // If this layer does not have a rounded corner, then modifying this flag is
+  // going to have no effect.
+  if (!HasRoundedCorner())
+    return;
+
+  SetSubtreePropertyChanged();
+  SetNeedsCommit();
+  SetPropertyTreesNeedRebuild();
+}
+
 void Layer::SetOpacity(float opacity) {
   DCHECK(IsPropertyChangeAllowed());
   DCHECK_GE(opacity, 0.f);
@@ -701,13 +741,17 @@ void Layer::SetIsRootForIsolatedGroup(bool root) {
   SetNeedsCommit();
 }
 
-void Layer::SetHitTestableWithoutDrawsContent(bool should_hit_test) {
+void Layer::SetHitTestable(bool should_hit_test) {
   DCHECK(IsPropertyChangeAllowed());
-  if (inputs_.hit_testable_without_draws_content == should_hit_test)
+  if (inputs_.hit_testable == should_hit_test)
     return;
-  inputs_.hit_testable_without_draws_content = should_hit_test;
+  inputs_.hit_testable = should_hit_test;
   SetPropertyTreesNeedRebuild();
   SetNeedsCommit();
+}
+
+bool Layer::HitTestable() const {
+  return inputs_.hit_testable;
 }
 
 void Layer::SetContentsOpaque(bool opaque) {
@@ -1286,6 +1330,11 @@ void Layer::SetNeedsDisplayRect(const gfx::Rect& dirty_rect) {
 }
 
 bool Layer::DescendantIsFixedToContainerLayer() const {
+  // Because position constraints are not set when using layer lists (see:
+  // Layer::SetPositionConstraint), this should only be called when not using
+  // layer lists.
+  DCHECK(!layer_tree_host_ || !layer_tree_host_->IsUsingLayerLists());
+
   for (size_t i = 0; i < inputs_.children.size(); ++i) {
     if (inputs_.children[i]->inputs_.position_constraint.is_fixed_position() ||
         inputs_.children[i]->DescendantIsFixedToContainerLayer())
@@ -1307,6 +1356,11 @@ bool Layer::IsResizedByBrowserControls() const {
 }
 
 void Layer::SetIsContainerForFixedPositionLayers(bool container) {
+  // |inputs_.is_container_for_fixed_position_layers| is only used by the cc
+  // property tree builder to build property trees and is not needed when using
+  // layer lists.
+  DCHECK(!layer_tree_host_ || !layer_tree_host_->IsUsingLayerLists());
+
   if (inputs_.is_container_for_fixed_position_layers == container)
     return;
   inputs_.is_container_for_fixed_position_layers = container;
@@ -1322,6 +1376,10 @@ void Layer::SetIsContainerForFixedPositionLayers(bool container) {
 }
 
 void Layer::SetPositionConstraint(const LayerPositionConstraint& constraint) {
+  // Position constraints are only used by the cc property tree builder to build
+  // property trees and are not needed when using layer lists.
+  DCHECK(!layer_tree_host_ || !layer_tree_host_->IsUsingLayerLists());
+
   DCHECK(IsPropertyChangeAllowed());
   if (inputs_.position_constraint == constraint)
     return;
@@ -1369,8 +1427,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetScrollTreeIndex(scroll_tree_index());
   layer->SetOffsetToTransformParent(offset_to_transform_parent_);
   layer->SetDrawsContent(DrawsContent());
-  layer->SetHitTestableWithoutDrawsContent(
-      hit_testable_without_draws_content());
+  layer->SetHitTestable(HitTestable());
   // subtree_property_changed_ is propagated to all descendants while building
   // property trees. So, it is enough to check it only for the current layer.
   if (subtree_property_changed_)

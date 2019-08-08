@@ -149,7 +149,7 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
     blink::WebGestureEvent gesture_scroll_begin(
         blink::WebGestureEvent::kGestureScrollBegin,
         blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
-    gesture_scroll_begin.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
+    gesture_scroll_begin.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
     gesture_scroll_begin.data.scroll_begin.delta_hint_units =
         blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
     gesture_scroll_begin.data.scroll_begin.delta_x_hint = fling_velocity.x();
@@ -172,7 +172,7 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
     blink::WebGestureEvent gesture_fling_start(
         blink::WebGestureEvent::kGestureFlingStart,
         blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
-    gesture_fling_start.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
+    gesture_fling_start.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
     gesture_fling_start.data.fling_start.velocity_x = fling_velocity.x();
     gesture_fling_start.data.fling_start.velocity_y = fling_velocity.y();
     gesture_fling_start.SetPositionInWidget(scroll_location_in_widget);
@@ -218,7 +218,7 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
     blink::WebGestureEvent gesture_fling_start(
         blink::WebGestureEvent::kGestureFlingStart,
         blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
-    gesture_fling_start.SetSourceDevice(blink::kWebGestureDeviceTouchpad);
+    gesture_fling_start.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
     gesture_fling_start.data.fling_start.velocity_x = fling_velocity.x();
     gesture_fling_start.data.fling_start.velocity_y = fling_velocity.y();
     gesture_fling_start.SetPositionInWidget(position_in_widget);
@@ -432,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
   blink::WebGestureEvent gesture_fling_cancel(
       blink::WebGestureEvent::kGestureFlingCancel,
       blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
-  gesture_fling_cancel.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
+  gesture_fling_cancel.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
 
   const gfx::PointF location_in_widget(1, 1);
   const gfx::PointF location_in_root =

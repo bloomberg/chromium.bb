@@ -5,35 +5,30 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="cups_add_printer_dialog_elements.html">
-<link rel="import" href="cups_add_printer_dialog_util.html">
+<link rel="import" href="cups_printer_dialog_util.html">
 <link rel="import" href="cups_printer_shared_css.html">
 <link rel="import" href="cups_printers_browser_proxy.html">
-<link rel="import" href="cups_set_manufacturer_model_behavior.html">
 
 <dom-module id="settings-cups-edit-printer-dialog">
   <template>
-    <style include="cups-printer-shared">
-      /* This is needed to line up the existing PDD text with cr-input.
-         TODO(scottchen): move away from using .settings-box just for margin,
-         and then remove this hacky alignment. */
-      .last {
-        align-items: start;
-        flex-direction: column;
-      }
-    </style>
+    <style include="cups-printer-shared"> </style>
     <add-printer-dialog>
       <div slot="dialog-title">$i18n{editPrinterDialogTitle}</div>
       <div slot="dialog-body" scrollable>
         <div class="settings-box first two-line">
           <cr-input class="printer-name-input" autofocus
-              value="{{activePrinter.printerName}}"
+              id="printerName"
+              value="{{pendingPrinter_.printerName}}"
+              on-input="onPrinterInfoChange_"
               label="$i18n{printerName}"
               maxlength=64>
           </cr-input>
         </div>
         <div class="settings-box two-line">
           <cr-input label="$i18n{printerAddress}"
-              value="{{activePrinter.printerAddress}}"
+              id="printerAddress"
+              on-input="onPrinterInfoChange_"
+              value="{{pendingPrinter_.printerAddress}}"
               disabled="[[!networkProtocolActive_]]"
               maxlength=128>
           </cr-input>
@@ -43,7 +38,7 @@
             <div id="printerProtocol" class="label">$i18n{printerProtocol}</div>
             <div class="secondary">
               <select class="md-select" aria-labelledby="printerProtocol"
-                  value="[[activePrinter.printerProtocol]]"
+                  value="[[pendingPrinter_.printerProtocol]]"
                   on-change="onProtocolChange_"
                   disabled="[[!networkProtocolActive_]]">
                 <option value="ipp" disabled="[[!networkProtocolActive_]]">
@@ -75,44 +70,41 @@
           </div>
         </div>
         <div class="settings-box two-line">
-          <cr-input label="$i18n{printerQueue}"
-              value="{{activePrinter.printerQueue}}"
+          <cr-input id="printerQueue" label="$i18n{printerQueue}"
+              value="{{pendingPrinter_.printerQueue}}"
+              on-input="onPrinterInfoChange_"
               disabled="[[!networkProtocolActive_]]"
               maxlength=64>
           </cr-input>
         </div>
         <div class="settings-box two-line">
           <cr-input label="$i18n{printerURI}" readonly
-              value="[[getPrinterURI_(activePrinter)]]">
+              value="[[getPrinterURI_(pendingPrinter_)]]">
           </cr-input>
         </div>
         <div class="settings-box two-line">
           <cr-searchable-drop-down items="[[manufacturerList]]"
+              id="printerPPDManufacturer"
               label="$i18n{printerManufacturer}"
-              value="{{activePrinter.ppdManufacturer}}">
+              value="{{pendingPrinter_.ppdManufacturer}}">
           </cr-searchable-drop-down>
         </div>
         <div class="settings-box two-line">
           <cr-searchable-drop-down items="[[modelList]]"
+              id="printerPPDModel"
               label="$i18n{printerModel}"
-              value="{{activePrinter.ppdModel}}">
+              value="{{pendingPrinter_.ppdModel}}">
           </cr-searchable-drop-down>
         </div>
-        <div class="settings-box two-line last">
+        <div class="settings-box two-line">
           <cr-input class="browse-file-input" readonly tabindex="-1"
-              value="[[newUserPPD_]]" label="$i18n{selectDriver}"
+              value="[[userPPD_]]" label="$i18n{selectDriver}"
               error-message="$i18n{selectDriverErrorMessage}"
               invalid="[[invalidPPD_]]">
-            <paper-button class="browse-button" on-click="onBrowseFile_"
-                slot="suffix">
-              $i18n{selectDriverButtonText}
-            </paper-button>
           </cr-input>
-          <template is="dom-if" if="[[existingUserPPDMessage_]]">
-            <div class="secondary" id="existingUserPPD">
-              [[existingUserPPDMessage_]]
-            </div>
-          </template>
+          <paper-button class="browse-button" on-click="onBrowseFile_">
+            $i18n{selectDriverButtonText}
+          </paper-button>
         </div>
       </div>
       <div slot="dialog-buttons">
@@ -121,7 +113,8 @@
           $i18n{cancel}
         </paper-button>
         <paper-button class="action-button" on-click="onSaveTap_"
-            disabled="[[!canSavePrinter_(activePrinter.*)]]">
+            disabled="[[!canSavePrinter_(pendingPrinter_.*,
+                                         printerInfoChanged_)]]">
           $i18n{editPrinterButtonText}
         </paper-button>
       </div>

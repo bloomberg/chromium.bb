@@ -25,6 +25,7 @@
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/mime_sniffer.h"
+#include "net/base/static_cookie_policy.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/ssl/client_cert_store.h"
@@ -56,8 +57,6 @@ constexpr size_t kDefaultAllocationSize = 512 * 1024;
 // Cannot use 0, because this means "default" in
 // mojo::core::Core::CreateDataPipe
 constexpr size_t kBlockedBodyAllocationSize = 1;
-
-constexpr size_t kMaxFileUploadRequestsPerBatch = 64;
 
 // TODO: this duplicates some of PopulateResourceResponse in
 // content/browser/loader/resource_loader.cc
@@ -336,6 +335,7 @@ URLLoader::URLLoader(
                                   base::SequencedTaskRunnerHandle::Get()),
       want_raw_headers_(request.report_raw_headers),
       report_raw_headers_(false),
+      devtools_request_id_(request.devtools_request_id),
       resource_scheduler_client_(std::move(resource_scheduler_client)),
       keepalive_statistics_recorder_(std::move(keepalive_statistics_recorder)),
       network_usage_accumulator_(std::move(network_usage_accumulator)),
@@ -379,19 +379,14 @@ URLLoader::URLLoader(
   url_request_->set_attach_same_site_cookies(request.attach_same_site_cookies);
   url_request_->SetReferrer(ComputeReferrer(request.referrer));
   url_request_->set_referrer_policy(request.referrer_policy);
-  url_request_->SetExtraRequestHeaders(request.headers);
-  // X-Requested-With and X-Client-Data header must be set here to avoid
-  // breaking CORS checks. They are non-empty when the values are given by the
-  // UA code, therefore they should be ignored by CORS checks.
-  if (!request.requested_with_header.empty()) {
-    url_request_->SetExtraRequestHeaderByName(
-        "X-Requested-With", request.requested_with_header, true);
-  }
-  if (!request.client_data_header.empty()) {
-    url_request_->SetExtraRequestHeaderByName("X-Client-Data",
-                                              request.client_data_header, true);
-  }
   url_request_->set_upgrade_if_insecure(request.upgrade_if_insecure);
+
+  // |cors_excempt_headers| must be merged here to avoid breaking CORS checks.
+  // They are non-empty when the values are given by the UA code, therefore
+  // they should be ignored by CORS checks.
+  net::HttpRequestHeaders merged_headers = request.headers;
+  merged_headers.MergeFrom(request.cors_exempt_headers);
+  url_request_->SetExtraRequestHeaders(merged_headers);
 
   url_request_->SetUserData(kUserDataKey,
                             std::make_unique<UnownedPointer>(this));
@@ -588,7 +583,11 @@ void URLLoader::SetUpUpload(const ResourceRequest& request,
                             std::vector<base::File> opened_files) {
   if (error_code != net::OK) {
     DCHECK(opened_files.empty());
-    NotifyCompleted(error_code);
+    // Defer calling NotifyCompleted to make sure the URLLoader finishes
+    // initializing before getting deleted.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&URLLoader::NotifyCompleted,
+                                  base::Unretained(this), error_code));
     return;
   }
   scoped_refptr<base::SequencedTaskRunner> task_runner =
@@ -750,7 +749,7 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
 }
 
 void URLLoader::OnAuthRequired(net::URLRequest* url_request,
-                               net::AuthChallengeInfo* auth_info) {
+                               const net::AuthChallengeInfo& auth_info) {
   if (!network_service_client_) {
     OnAuthCredentials(base::nullopt);
     return;
@@ -1142,6 +1141,21 @@ void URLLoader::SetAllowReportingRawHeaders(bool allow) {
 
 uint32_t URLLoader::GetResourceType() const {
   return resource_type_;
+}
+
+bool URLLoader::AllowCookies(const GURL& url,
+                             const GURL& site_for_cookies) const {
+  net::StaticCookiePolicy::Type policy =
+      net::StaticCookiePolicy::ALLOW_ALL_COOKIES;
+  if (options_ & mojom::kURLLoadOptionBlockAllCookies) {
+    policy = net::StaticCookiePolicy::BLOCK_ALL_COOKIES;
+  } else if (options_ & mojom::kURLLoadOptionBlockThirdPartyCookies) {
+    policy = net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES;
+  } else {
+    return true;
+  }
+  return net::StaticCookiePolicy(policy).CanAccessCookies(
+             url, site_for_cookies) == net::OK;
 }
 
 // static

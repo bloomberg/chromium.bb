@@ -60,6 +60,9 @@ class UkmRecorderImpl : public UkmRecorder {
   // Disables sampling for testing purposes.
   void DisableSamplingForTesting() override;
 
+  // True if sampling is enabled.
+  bool IsSamplingEnabled() const;
+
   // Deletes stored recordings.
   void Purge();
 
@@ -148,7 +151,7 @@ class UkmRecorderImpl : public UkmRecorder {
 
     // Returns if there is already a flag for a given |event_id|. The value
     // of that flag is stored in |out_sampled_in|;
-    bool Find(uint64_t event_id, bool* out_sampled_in) const;
+    bool Find(uint64_t event_id, bool* out_sampled_in);
 
     // Returns if this record has been modified.
     bool modified() const { return modified_; }

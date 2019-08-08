@@ -4,6 +4,7 @@
 
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
+import("//ppapi/buildflags/buildflags.gni")
 import("//third_party/webrtc/webrtc.gni")
 
 # See //content/BUILD.gn for how this works.
@@ -98,6 +99,7 @@ jumbo_source_set("browser_sources") {
     "child_process_data.h",
     "child_process_launcher_utils.h",
     "child_process_security_policy.h",
+    "child_process_termination_info.cc",
     "child_process_termination_info.h",
     "clear_site_data_utils.h",
     "client_certificate_delegate.h",
@@ -107,6 +109,8 @@ jumbo_source_set("browser_sources") {
     "content_browser_client.cc",
     "content_browser_client.h",
     "cookie_store_factory.h",
+    "cors_exempt_headers.cc",
+    "cors_exempt_headers.h",
     "cors_origin_pattern_setter.cc",
     "cors_origin_pattern_setter.h",
     "delegate_to_browser_gpu_service_accelerator_factory.h",
@@ -175,6 +179,8 @@ jumbo_source_set("browser_sources") {
     "media_device_id.h",
     "media_keys_listener_manager.cc",
     "media_keys_listener_manager.h",
+    "media_player_id.cc",
+    "media_player_id.h",
     "media_request_state.h",
     "media_session.h",
     "media_stream_request.cc",
@@ -225,9 +231,6 @@ jumbo_source_set("browser_sources") {
     "picture_in_picture_window_controller.h",
     "platform_notification_context.h",
     "platform_notification_service.h",
-    "plugin_data_remover.h",
-    "plugin_service.h",
-    "plugin_service_filter.h",
     "presentation_request.cc",
     "presentation_request.h",
     "presentation_screen_availability_listener.h",
@@ -272,6 +275,7 @@ jumbo_source_set("browser_sources") {
     "serial_delegate.h",
     "service_worker_context.h",
     "service_worker_context_observer.h",
+    "service_worker_running_info.h",
     "session_storage_namespace.h",
     "session_storage_usage_info.h",
     "shared_cors_origin_access_list.h",
@@ -350,6 +354,14 @@ jumbo_source_set("browser_sources") {
     "//build/config/compiler:wexit_time_destructors",
     "//content:content_implementation",
   ]
+
+  if (enable_plugins) {
+    sources += [
+      "plugin_data_remover.h",
+      "plugin_service.h",
+      "plugin_service_filter.h",
+    ]
+  }
 
   if (rtc_use_pipewire) {
     configs +=

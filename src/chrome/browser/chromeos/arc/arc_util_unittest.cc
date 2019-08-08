@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -34,6 +33,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_oobe_configuration_client.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_prefs.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -547,26 +547,36 @@ TEST_F(ChromeArcUtilTest, AreArcAllOptInPreferencesIgnorableForProfile) {
       prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(false));
   EXPECT_FALSE(AreArcAllOptInPreferencesIgnorableForProfile(profile()));
 
-  // Backup-restore pref is set to managed/ON, and the function returns false.
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(true));
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(false));
-  EXPECT_FALSE(AreArcAllOptInPreferencesIgnorableForProfile(profile()));
-
-  // Location-service pref is set to managed/ON, and the function returns false.
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(false));
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(true));
-  EXPECT_FALSE(AreArcAllOptInPreferencesIgnorableForProfile(profile()));
-
   // Both OptIn prefs are set to managed/OFF values, and the function returns
   // true.
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(false));
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(false));
+  EXPECT_TRUE(AreArcAllOptInPreferencesIgnorableForProfile(profile()));
+
+  // Backup-restore pref is set to managed/ON, while location-service pref is
+  // set to managed/OFF, and the function returns true.
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(true));
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(false));
+  EXPECT_TRUE(AreArcAllOptInPreferencesIgnorableForProfile(profile()));
+
+  // Location-service pref is set to managed/ON, while location-service pref is
+  // set to managed/OFF, and the function returns true.
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(false));
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(true));
+  EXPECT_TRUE(AreArcAllOptInPreferencesIgnorableForProfile(profile()));
+
+  // Both OptIn prefs are set to managed/ON values, and the function returns
+  // true.
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(true));
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(true));
   EXPECT_TRUE(AreArcAllOptInPreferencesIgnorableForProfile(profile()));
 }
 
@@ -600,6 +610,8 @@ TEST_F(ChromeArcUtilTest, TermsOfServiceNegotiationNeededForAlreadyAccepted) {
   EXPECT_FALSE(IsArcTermsOfServiceOobeNegotiationNeeded());
 }
 
+// For managed user, generally no opt-in dialog is shown.
+// For OOBE user, see TermsOfServiceOobeNegotiationNeededForManagedUser test.
 TEST_F(ChromeArcUtilTest, TermsOfServiceNegotiationNeededForManagedUser) {
   base::CommandLine::ForCurrentProcess()->InitFromArgv(
       {"", "--arc-availability=officially-supported"});
@@ -607,37 +619,15 @@ TEST_F(ChromeArcUtilTest, TermsOfServiceNegotiationNeededForManagedUser) {
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::FromUserEmailGaiaId(
                         profile()->GetProfileUserName(), kTestGaiaId));
+
+  EXPECT_TRUE(IsArcTermsOfServiceNegotiationNeeded(profile()));
+
   SetProfileIsManagedForTesting(profile());
+
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcEnabled, std::make_unique<base::Value>(true));
-  EXPECT_TRUE(IsArcTermsOfServiceNegotiationNeeded(profile()));
-  EXPECT_TRUE(IsArcTermsOfServiceOobeNegotiationNeeded());
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(false));
-  EXPECT_TRUE(IsArcTermsOfServiceNegotiationNeeded(profile()));
-  EXPECT_TRUE(IsArcTermsOfServiceOobeNegotiationNeeded());
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(false));
+  EXPECT_TRUE(ShouldStartArcSilentlyForManagedProfile(profile()));
   EXPECT_FALSE(IsArcTermsOfServiceNegotiationNeeded(profile()));
-  EXPECT_FALSE(IsArcTermsOfServiceOobeNegotiationNeeded());
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(true));
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(false));
-  EXPECT_TRUE(IsArcTermsOfServiceNegotiationNeeded(profile()));
-  EXPECT_TRUE(IsArcTermsOfServiceOobeNegotiationNeeded());
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(false));
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(true));
-  EXPECT_TRUE(IsArcTermsOfServiceNegotiationNeeded(profile()));
-  EXPECT_TRUE(IsArcTermsOfServiceOobeNegotiationNeeded());
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(true));
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(true));
-  EXPECT_TRUE(IsArcTermsOfServiceNegotiationNeeded(profile()));
-  EXPECT_TRUE(IsArcTermsOfServiceOobeNegotiationNeeded());
 }
 
 TEST_F(ChromeArcUtilTest, TermsOfServiceOobeNegotiationNeededNoLogin) {
@@ -751,7 +741,7 @@ TEST_F(ArcMigrationTest, IsMigrationAllowedUnmanagedUser) {
   EXPECT_TRUE(IsArcMigrationAllowedByPolicyForProfile(profile()));
 }
 
-TEST_F(ArcMigrationTest, IsMigrationAllowedDefault_ManagedGaiaUser) {
+TEST_F(ArcMigrationTest, IsMigrationAllowedDefaultManagedUser) {
   // Don't set any value for kEcryptfsMigrationStrategy pref.
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::FromUserEmailGaiaId(
@@ -760,18 +750,6 @@ TEST_F(ArcMigrationTest, IsMigrationAllowedDefault_ManagedGaiaUser) {
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcEnabled, std::make_unique<base::Value>(true));
   EXPECT_FALSE(IsArcMigrationAllowedByPolicyForProfile(profile()));
-}
-
-TEST_F(ArcMigrationTest, IsMigrationAllowedDefault_ActiveDirectoryUser) {
-  // Don't set any value for kEcryptfsMigrationStrategy pref.
-  ScopedLogIn login(
-      GetFakeUserManager(),
-      AccountId::AdFromObjGuid("f04557de-5da2-40ce-ae9d-b8874d8da96e"),
-      user_manager::USER_TYPE_ACTIVE_DIRECTORY);
-  SetProfileIsManagedForTesting(profile());
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcEnabled, std::make_unique<base::Value>(true));
-  EXPECT_TRUE(IsArcMigrationAllowedByPolicyForProfile(profile()));
 }
 
 TEST_F(ArcMigrationTest, IsMigrationAllowedForbiddenByPolicy) {
@@ -807,18 +785,6 @@ TEST_F(ArcMigrationTest, IsMigrationAllowedWipe) {
       prefs::kArcEnabled, std::make_unique<base::Value>(true));
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kEcryptfsMigrationStrategy, std::make_unique<base::Value>(2));
-  EXPECT_TRUE(IsArcMigrationAllowedByPolicyForProfile(profile()));
-}
-
-TEST_F(ArcMigrationTest, IsMigrationAllowedAskUser) {
-  ScopedLogIn login(GetFakeUserManager(),
-                    AccountId::AdFromUserEmailObjGuid(
-                        profile()->GetProfileUserName(), kTestGaiaId));
-  SetProfileIsManagedForTesting(profile());
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcEnabled, std::make_unique<base::Value>(true));
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kEcryptfsMigrationStrategy, std::make_unique<base::Value>(3));
   EXPECT_TRUE(IsArcMigrationAllowedByPolicyForProfile(profile()));
 }
 
@@ -868,60 +834,6 @@ TEST_F(ArcMigrationTest, IsMigrationAllowedCachedValueAllowed) {
   EXPECT_TRUE(IsArcMigrationAllowedByPolicyForProfile(profile()));
 }
 
-// Defines parameters for parametrized test
-// ArcMigrationAskForEcryptfsArcUsersTest.
-struct AskForEcryptfsArcUserTestParam {
-  bool device_supported_arc;
-  bool arc_enabled;
-  bool expect_migration_allowed;
-};
-
-class ArcMigrationAskForEcryptfsArcUsersTest
-    : public ArcMigrationTest,
-      public testing::WithParamInterface<AskForEcryptfsArcUserTestParam> {
- protected:
-  ArcMigrationAskForEcryptfsArcUsersTest() {}
-  ~ArcMigrationAskForEcryptfsArcUsersTest() override {}
-};
-
-// Migration policy is 5 (kAskForEcryptfsArcUsers, EDU default).
-TEST_P(ArcMigrationAskForEcryptfsArcUsersTest,
-       IsMigrationAllowedAskForEcryptfsArcUsers) {
-  const AskForEcryptfsArcUserTestParam& param = GetParam();
-
-  ScopedLogIn login(GetFakeUserManager(),
-                    AccountId::AdFromUserEmailObjGuid(
-                        profile()->GetProfileUserName(), kTestGaiaId));
-  if (param.device_supported_arc) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kArcTransitionMigrationRequired);
-  }
-  SetProfileIsManagedForTesting(profile());
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kEcryptfsMigrationStrategy, std::make_unique<base::Value>(5));
-  profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcEnabled, std::make_unique<base::Value>(param.arc_enabled));
-  EXPECT_EQ(param.expect_migration_allowed,
-            IsArcMigrationAllowedByPolicyForProfile(profile()));
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    ArcMigrationTest,
-    ArcMigrationAskForEcryptfsArcUsersTest,
-    ::testing::Values(
-        AskForEcryptfsArcUserTestParam{true /* device_supported_arc */,
-                                       true /* arc_enabled */,
-                                       true /* expect_migration_allowed */},
-        AskForEcryptfsArcUserTestParam{true /* device_supported_arc */,
-                                       false /* arc_enabled */,
-                                       false /* expect_migration_allowed */},
-        AskForEcryptfsArcUserTestParam{false /* device_supported_arc */,
-                                       true /* arc_enabled */,
-                                       false /* expect_migration_allowed */},
-        AskForEcryptfsArcUserTestParam{false /* device_supported_arc */,
-                                       false /* arc_enabled */,
-                                       false /* expect_migration_allowed */}));
-
 class ArcOobeTest : public ChromeArcUtilTest {
  public:
   ArcOobeTest() {
@@ -955,6 +867,100 @@ class ArcOobeTest : public ChromeArcUtilTest {
 
   DISALLOW_COPY_AND_ASSIGN(ArcOobeTest);
 };
+
+TEST_F(ArcOobeTest, TermsOfServiceOobeNegotiationNeededForManagedUser) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arc-availability=officially-supported"});
+  DisableDBusForProfileManager();
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmailGaiaId(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+
+  GetFakeUserManager()->set_current_user_new(true);
+  CreateLoginDisplayHost();
+  EXPECT_TRUE(IsArcOobeOptInActive());
+
+  SetProfileIsManagedForTesting(profile());
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcEnabled, std::make_unique<base::Value>(true));
+  EXPECT_TRUE(IsArcTermsOfServiceNegotiationNeeded(profile()));
+  EXPECT_TRUE(IsArcTermsOfServiceOobeNegotiationNeeded());
+
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(false));
+  EXPECT_TRUE(IsArcTermsOfServiceNegotiationNeeded(profile()));
+  EXPECT_TRUE(IsArcTermsOfServiceOobeNegotiationNeeded());
+
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(false));
+  EXPECT_FALSE(IsArcTermsOfServiceNegotiationNeeded(profile()));
+  EXPECT_FALSE(IsArcTermsOfServiceOobeNegotiationNeeded());
+
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(true));
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(false));
+  EXPECT_FALSE(IsArcTermsOfServiceNegotiationNeeded(profile()));
+  EXPECT_FALSE(IsArcTermsOfServiceOobeNegotiationNeeded());
+
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(false));
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(true));
+  EXPECT_FALSE(IsArcTermsOfServiceNegotiationNeeded(profile()));
+  EXPECT_FALSE(IsArcTermsOfServiceOobeNegotiationNeeded());
+
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(true));
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(true));
+  EXPECT_FALSE(IsArcTermsOfServiceNegotiationNeeded(profile()));
+  EXPECT_FALSE(IsArcTermsOfServiceOobeNegotiationNeeded());
+}
+
+TEST_F(ArcOobeTest, ShouldStartArcSilentlyForManagedProfile) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arc-availability=officially-supported"});
+  DisableDBusForProfileManager();
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmailGaiaId(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+
+  GetFakeUserManager()->set_current_user_new(true);
+  CreateLoginDisplayHost();
+  EXPECT_TRUE(IsArcOobeOptInActive());
+
+  SetProfileIsManagedForTesting(profile());
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcEnabled, std::make_unique<base::Value>(true));
+  EXPECT_FALSE(ShouldStartArcSilentlyForManagedProfile(profile()));
+
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(false));
+  EXPECT_FALSE(ShouldStartArcSilentlyForManagedProfile(profile()));
+
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(false));
+  EXPECT_TRUE(ShouldStartArcSilentlyForManagedProfile(profile()));
+
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(true));
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(false));
+  EXPECT_TRUE(ShouldStartArcSilentlyForManagedProfile(profile()));
+
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(false));
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(true));
+  EXPECT_TRUE(ShouldStartArcSilentlyForManagedProfile(profile()));
+
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(true));
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(true));
+  EXPECT_TRUE(ShouldStartArcSilentlyForManagedProfile(profile()));
+}
 
 using ArcOobeOpaOptInActiveInTest = ArcOobeTest;
 

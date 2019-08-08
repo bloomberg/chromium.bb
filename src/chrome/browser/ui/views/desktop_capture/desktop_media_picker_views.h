@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker.h"
+#include "chrome/browser/ui/views/desktop_capture/desktop_media_list_controller.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -16,8 +17,6 @@ class Checkbox;
 class TabbedPane;
 }  // namespace views
 
-class DesktopMediaListView;
-class DesktopMediaSourceView;
 class DesktopMediaPickerViews;
 
 // Dialog view used for DesktopMediaPickerViews.
@@ -33,18 +32,20 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   // Called by parent (DesktopMediaPickerViews) when it's destroyed.
   void DetachParent();
 
-  // Called by DesktopMediaListView.
+  // Called by DesktopMediaListController.
   void OnSelectionChanged();
-  void OnDoubleClick();
+  void AcceptSource();
+  void AcceptSpecificSource(content::DesktopMediaID source);
+  void OnSourceListLayoutChanged();
   void SelectTab(content::DesktopMediaID::Type source_type);
 
-  // views::TabbedPaneListener overrides.
+  // views::TabbedPaneListener:
   void TabSelectedAt(int index) override;
 
-  // views::View overrides.
+  // views::View:
   gfx::Size CalculatePreferredSize() const override;
 
-  // views::DialogDelegateView overrides.
+  // views::DialogDelegateView:
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
@@ -56,19 +57,13 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   bool ShouldShowCloseButton() const override;
   void DeleteDelegate() override;
 
-  void OnMediaListRowsChanged();
-
-  DesktopMediaListView* GetMediaListViewForTesting() const;
-  DesktopMediaSourceView* GetMediaSourceViewForTesting(int index) const;
-  views::Checkbox* GetCheckboxForTesting() const;
-  int GetIndexOfSourceTypeForTesting(
-      content::DesktopMediaID::Type source_type) const;
-  views::TabbedPane* GetPaneForTesting() const;
-
-  bool IsCreatedByExtension() const { return created_by_extension_; }
-
  private:
+  friend class DesktopMediaPickerViewsTestApi;
+
   void OnSourceTypeSwitched(int index);
+
+  const DesktopMediaListController* GetSelectedController() const;
+  DesktopMediaListController* GetSelectedController();
 
   DesktopMediaPickerViews* parent_;
   ui::ModalType modality_;
@@ -78,10 +73,10 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   views::Checkbox* audio_share_checkbox_;
 
   views::TabbedPane* pane_;
-  std::vector<DesktopMediaListView*> list_views_;
+  std::vector<std::unique_ptr<DesktopMediaListController>> list_controllers_;
   std::vector<content::DesktopMediaID::Type> source_types_;
 
-  bool created_by_extension_;
+  base::Optional<content::DesktopMediaID> accepted_source_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopMediaPickerDialogView);
 };
@@ -94,7 +89,7 @@ class DesktopMediaPickerViews : public DesktopMediaPicker {
 
   void NotifyDialogResult(content::DesktopMediaID source);
 
-  // DesktopMediaPicker overrides.
+  // DesktopMediaPicker:
   void Show(const DesktopMediaPicker::Params& params,
             std::vector<std::unique_ptr<DesktopMediaList>> source_lists,
             const DoneCallback& done_callback) override;
@@ -104,6 +99,8 @@ class DesktopMediaPickerViews : public DesktopMediaPicker {
   }
 
  private:
+  friend class DesktopMediaPickerViewsTestApi;
+
   DoneCallback callback_;
 
   // The |dialog_| is owned by the corresponding views::Widget instance.

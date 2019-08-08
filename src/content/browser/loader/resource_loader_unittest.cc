@@ -96,11 +96,12 @@ class ClientCertStoreStub : public net::ClientCertStore {
 
   // net::ClientCertStore:
   void GetClientCerts(const net::SSLCertRequestInfo& cert_request_info,
-                      const ClientCertListCallback& callback) override {
+                      ClientCertListCallback callback) override {
     *requested_authorities_ = cert_request_info.cert_authorities;
     ++(*request_count_);
 
-    callback.Run(net::FakeClientCertIdentityListFromCertificateList(response_));
+    std::move(callback).Run(
+        net::FakeClientCertIdentityListFromCertificateList(response_));
   }
 
  private:
@@ -122,15 +123,14 @@ class LoaderDestroyingCertStore : public net::ClientCertStore {
         on_loader_deleted_callback_(on_loader_deleted_callback) {}
 
   // net::ClientCertStore:
-  void GetClientCerts(
-      const net::SSLCertRequestInfo& cert_request_info,
-      const ClientCertListCallback& cert_selected_callback) override {
+  void GetClientCerts(const net::SSLCertRequestInfo& cert_request_info,
+                      ClientCertListCallback cert_selected_callback) override {
     // Don't destroy |loader_| while it's on the stack.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&LoaderDestroyingCertStore::DoCallback,
-                       base::Unretained(loader_), cert_selected_callback,
-                       on_loader_deleted_callback_));
+        FROM_HERE, base::BindOnce(&LoaderDestroyingCertStore::DoCallback,
+                                  base::Unretained(loader_),
+                                  std::move(cert_selected_callback),
+                                  on_loader_deleted_callback_));
   }
 
  private:
@@ -138,10 +138,10 @@ class LoaderDestroyingCertStore : public net::ClientCertStore {
   // LoaderDestroyingCertStore (ClientCertStores are actually handles, and not
   // global cert stores).
   static void DoCallback(std::unique_ptr<ResourceLoader>* loader,
-                         const ClientCertListCallback& cert_selected_callback,
+                         ClientCertListCallback cert_selected_callback,
                          const base::Closure& on_loader_deleted_callback) {
     loader->reset();
-    cert_selected_callback.Run(net::ClientCertIdentityList());
+    std::move(cert_selected_callback).Run(net::ClientCertIdentityList());
     on_loader_deleted_callback.Run();
   }
 
@@ -435,7 +435,7 @@ class ResourceLoaderTest : public testing::Test,
 
     // A request marked as a main frame request must also belong to a main
     // frame.
-    ASSERT_TRUE((resource_type != RESOURCE_TYPE_MAIN_FRAME) ||
+    ASSERT_TRUE((resource_type != ResourceType::kMainFrame) ||
                 belongs_to_main_frame);
 
     RenderFrameHost* rfh = web_contents_->GetMainFrame();
@@ -459,7 +459,7 @@ class ResourceLoaderTest : public testing::Test,
         test_url_request_context_.CreateRequest(
             test_url, net::DEFAULT_PRIORITY, nullptr /* delegate */,
             TRAFFIC_ANNOTATION_FOR_TESTS));
-    SetUpResourceLoader(std::move(request), RESOURCE_TYPE_MAIN_FRAME, true);
+    SetUpResourceLoader(std::move(request), ResourceType::kMainFrame, true);
   }
 
   void SetUp() override {
@@ -489,7 +489,7 @@ class ResourceLoaderTest : public testing::Test,
   // ResourceLoaderDelegate:
   std::unique_ptr<LoginDelegate> CreateLoginDelegate(
       ResourceLoader* loader,
-      net::AuthChallengeInfo* auth_info) override {
+      const net::AuthChallengeInfo& auth_info) override {
     return nullptr;
   }
   bool HandleExternalProtocol(ResourceLoader* loader,
@@ -767,13 +767,13 @@ TEST_F(ClientCertResourceLoaderTest, StoreAsyncCancel) {
   SetBrowserClientForTesting(old_client);
 }
 
-// Tests that a RESOURCE_TYPE_PREFETCH request sets the LOAD_PREFETCH flag.
+// Tests that a ResourceType::kPrefetch request sets the LOAD_PREFETCH flag.
 TEST_F(ResourceLoaderTest, PrefetchFlag) {
   std::unique_ptr<net::URLRequest> request(
       test_url_request_context_.CreateRequest(
           test_async_url(), net::DEFAULT_PRIORITY, nullptr /* delegate */,
           TRAFFIC_ANNOTATION_FOR_TESTS));
-  SetUpResourceLoader(std::move(request), RESOURCE_TYPE_PREFETCH, true);
+  SetUpResourceLoader(std::move(request), ResourceType::kPrefetch, true);
 
   loader_->StartRequest();
   raw_ptr_resource_handler_->WaitUntilResponseComplete();
@@ -1593,14 +1593,14 @@ class EffectiveConnectionTypeResourceLoaderTest : public ResourceLoaderTest {
 
 // Tests that the effective connection type is set on main frame requests.
 TEST_F(EffectiveConnectionTypeResourceLoaderTest, Slow2G) {
-  VerifyEffectiveConnectionType(RESOURCE_TYPE_MAIN_FRAME, true,
+  VerifyEffectiveConnectionType(ResourceType::kMainFrame, true,
                                 net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
                                 net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 }
 
 // Tests that the effective connection type is set on main frame requests.
 TEST_F(EffectiveConnectionTypeResourceLoaderTest, 3G) {
-  VerifyEffectiveConnectionType(RESOURCE_TYPE_MAIN_FRAME, true,
+  VerifyEffectiveConnectionType(ResourceType::kMainFrame, true,
                                 net::EFFECTIVE_CONNECTION_TYPE_3G,
                                 net::EFFECTIVE_CONNECTION_TYPE_3G);
 }
@@ -1608,7 +1608,7 @@ TEST_F(EffectiveConnectionTypeResourceLoaderTest, 3G) {
 // Tests that the effective connection type is not set on requests that belong
 // to main frame.
 TEST_F(EffectiveConnectionTypeResourceLoaderTest, BelongsToMainFrame) {
-  VerifyEffectiveConnectionType(RESOURCE_TYPE_OBJECT, true,
+  VerifyEffectiveConnectionType(ResourceType::kObject, true,
                                 net::EFFECTIVE_CONNECTION_TYPE_3G,
                                 net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
 }
@@ -1616,7 +1616,7 @@ TEST_F(EffectiveConnectionTypeResourceLoaderTest, BelongsToMainFrame) {
 // Tests that the effective connection type is not set on non-main frame
 // requests.
 TEST_F(EffectiveConnectionTypeResourceLoaderTest, DoesNotBelongToMainFrame) {
-  VerifyEffectiveConnectionType(RESOURCE_TYPE_OBJECT, false,
+  VerifyEffectiveConnectionType(ResourceType::kObject, false,
                                 net::EFFECTIVE_CONNECTION_TYPE_3G,
                                 net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
 }

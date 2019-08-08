@@ -26,7 +26,6 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
@@ -36,7 +35,6 @@
 #include "content/test/test_content_browser_client.h"
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "url/gurl.h"
@@ -403,10 +401,11 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
     version_1->SetMainScriptHttpResponseInfo(
         EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
     base::Optional<blink::ServiceWorkerStatusCode> status;
+    base::RunLoop run_loop;
     context()->storage()->StoreRegistration(
         registration_.get(), version_1.get(),
-        CreateReceiverOnCurrentThread(&status));
-    base::RunLoop().RunUntilIdle();
+        ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
+    run_loop.Run();
     ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
 
     // Give the active version a controllee.
@@ -550,44 +549,20 @@ TEST_P(ServiceWorkerActivationTest, NoInflightRequest) {
 
   // Remove the controllee. Since there is an in-flight request,
   // activation should not yet happen.
-  // When S13nServiceWorker is on, the idle timer living in the renderer is
-  // requested to notify the browser the idle state ASAP.
   version_1->RemoveControllee(controllee()->client_uuid());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(version_1.get(), reg->active_version());
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-    EXPECT_TRUE(version_1_service_worker()->is_zero_idle_timer_delay());
+  // The idle timer living in the renderer is requested to notify the idle state
+  // to the browser ASAP.
+  EXPECT_TRUE(version_1_service_worker()->is_zero_idle_timer_delay());
 
   // Finish the request. Activation should happen.
   version_1->FinishRequest(inflight_request_id(), true /* was_handled */);
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    EXPECT_EQ(version_1.get(), reg->active_version());
-    RequestTermination(&version_1_client()->host());
-  }
+  EXPECT_EQ(version_1.get(), reg->active_version());
+  RequestTermination(&version_1_client()->host());
+
   TestServiceWorkerObserver observer(helper_->context_wrapper());
   observer.RunUntilActivated(version_2.get(), runner);
-  EXPECT_EQ(version_2.get(), reg->active_version());
-}
-
-// Test activation triggered by loss of controllee.
-TEST_P(ServiceWorkerActivationTest, NoControllee) {
-  // S13nServiceWorker: activation only happens when the service worker reports
-  // it's idle, so this test doesn't make sense.
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-    return;
-  scoped_refptr<ServiceWorkerRegistration> reg = registration();
-  scoped_refptr<ServiceWorkerVersion> version_1 = reg->active_version();
-  scoped_refptr<ServiceWorkerVersion> version_2 = reg->waiting_version();
-
-  // Finish the request. Since there is a controllee, activation should not yet
-  // happen.
-  version_1->FinishRequest(inflight_request_id(), true /* was_handled */);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(version_1.get(), reg->active_version());
-
-  // Remove the controllee. Activation should happen.
-  version_1->RemoveControllee(controllee()->client_uuid());
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(version_2.get(), reg->active_version());
 }
 
@@ -605,20 +580,15 @@ TEST_P(ServiceWorkerActivationTest, SkipWaitingWithInflightRequest) {
                                   skip_waiting_loop.QuitClosure());
   EXPECT_FALSE(result.has_value());
   EXPECT_EQ(version_1.get(), reg->active_version());
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-    EXPECT_TRUE(version_1_service_worker()->is_zero_idle_timer_delay());
+  EXPECT_TRUE(version_1_service_worker()->is_zero_idle_timer_delay());
 
-  // Finish the request.
-  // non-S13nServiceWorker: The service worker becomes idle.
-  // S13nServiceWorker: FinishRequest() doesn't immediately make the worker
-  // "no work" state. It needs to be notfied the idle state by
+  // Finish the request. FinishRequest() doesn't immediately make the worker
+  // reach the "no work" state. It needs to be notfied of the idle state by
   // RequestTermination().
   version_1->FinishRequest(inflight_request_id(), true /* was_handled */);
 
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    EXPECT_EQ(version_1.get(), reg->active_version());
-    RequestTermination(&version_1_client()->host());
-  }
+  EXPECT_EQ(version_1.get(), reg->active_version());
+  RequestTermination(&version_1_client()->host());
 
   // Wait until SkipWaiting resolves.
   skip_waiting_loop.Run();
@@ -640,21 +610,16 @@ TEST_P(ServiceWorkerActivationTest, SkipWaiting) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(version_1.get(), reg->active_version());
 
-  // Call skipWaiting.
-  // non-S13nServiceWorker: Activation should happen.
-  // S13nServiceWorker: Activation should happen after RequestTermination is
-  // triggered.
+  // Call skipWaiting. Activation happens after RequestTermination is triggered.
   base::Optional<bool> result;
   base::RunLoop skip_waiting_loop;
   SimulateSkipWaitingWithCallback(version_2.get(), &result,
                                   skip_waiting_loop.QuitClosure());
 
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    EXPECT_TRUE(version_1_service_worker()->is_zero_idle_timer_delay());
-    EXPECT_FALSE(result.has_value());
-    EXPECT_EQ(version_1.get(), reg->active_version());
-    RequestTermination(&version_1_client()->host());
-  }
+  EXPECT_TRUE(version_1_service_worker()->is_zero_idle_timer_delay());
+  EXPECT_FALSE(result.has_value());
+  EXPECT_EQ(version_1.get(), reg->active_version());
+  RequestTermination(&version_1_client()->host());
 
   // Wait until SkipWaiting resolves.
   skip_waiting_loop.Run();

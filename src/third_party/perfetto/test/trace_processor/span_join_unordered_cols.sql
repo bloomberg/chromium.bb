@@ -33,4 +33,4 @@ VALUES
 
 create virtual table sp using span_join(t1, t2 PARTITIONED part);
 
-select * from sp;
+select ts,dur,part,b1,b2,b3,a1,a2,a3 from sp;

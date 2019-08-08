@@ -8,30 +8,25 @@
 #include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_urls.h"
-#include "extensions/common/features/feature_provider.h"
 #include "extensions/common/manifest_handlers/sandboxed_page_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/renderer/renderer_extension_registry.h"
 #include "extensions/renderer/v8_helpers.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
-#include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_view.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -336,35 +331,6 @@ GURL ScriptContext::GetEffectiveDocumentURL(blink::WebLocalFrame* frame,
     }
   }
   return document_url;
-}
-
-ScriptContext* ScriptContext::GetContext() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return this;
-}
-
-void ScriptContext::OnResponseReceived(const std::string& name,
-                                       int request_id,
-                                       bool success,
-                                       const base::ListValue& response,
-                                       const std::string& error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  v8::HandleScope handle_scope(isolate());
-
-  v8::Local<v8::Value> argv[] = {
-      v8::Integer::New(isolate(), request_id),
-      v8::String::NewFromUtf8(isolate(), name.c_str(),
-                              v8::NewStringType::kNormal)
-          .ToLocalChecked(),
-      v8::Boolean::New(isolate(), success),
-      content::V8ValueConverter::Create()->ToV8Value(
-          &response, v8::Local<v8::Context>::New(isolate(), v8_context_)),
-      v8::String::NewFromUtf8(isolate(), error.c_str(),
-                              v8::NewStringType::kNormal)
-          .ToLocalChecked()};
-
-  module_system()->CallModuleMethodSafe("sendRequest", "handleResponse",
-                                        base::size(argv), argv);
 }
 
 bool ScriptContext::HasAPIPermission(APIPermission::ID permission) const {

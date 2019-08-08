@@ -16,15 +16,11 @@ RemoteSecurityContext::RemoteSecurityContext() : SecurityContext() {
   DCHECK(!GetSecurityOrigin());
 
   // Start with a clean slate.
-  SetContentSecurityPolicy(ContentSecurityPolicy::Create());
+  SetContentSecurityPolicy(MakeGarbageCollected<ContentSecurityPolicy>());
 
   // FIXME: Document::initSecurityContext has a few other things we may
   // eventually want here, such as enforcing a setting to
   // grantUniversalAccess().
-}
-
-RemoteSecurityContext* RemoteSecurityContext::Create() {
-  return MakeGarbageCollected<RemoteSecurityContext>();
 }
 
 void RemoteSecurityContext::Trace(blink::Visitor* visitor) {
@@ -40,12 +36,12 @@ void RemoteSecurityContext::SetReplicatedOrigin(
 
 void RemoteSecurityContext::ResetReplicatedContentSecurityPolicy() {
   DCHECK(GetSecurityOrigin());
-  SetContentSecurityPolicy(ContentSecurityPolicy::Create());
+  SetContentSecurityPolicy(MakeGarbageCollected<ContentSecurityPolicy>());
   GetContentSecurityPolicy()->SetupSelf(*GetSecurityOrigin());
 }
 
 void RemoteSecurityContext::ResetSandboxFlags() {
-  sandbox_flags_ = kSandboxNone;
+  sandbox_flags_ = WebSandboxFlags::kNone;
 }
 
 }  // namespace blink

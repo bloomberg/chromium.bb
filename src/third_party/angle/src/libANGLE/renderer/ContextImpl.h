@@ -125,7 +125,7 @@ class ContextImpl : public GLImplFactory
                                                      const GLfloat *transformValues);
 
     // Device loss
-    virtual GLenum getResetStatus() = 0;
+    virtual gl::GraphicsResetStatus getResetStatus() = 0;
 
     // Vendor and description strings.
     virtual std::string getVendorString() const        = 0;
@@ -139,6 +139,9 @@ class ContextImpl : public GLImplFactory
     // KHR_debug
     virtual void pushDebugGroup(GLenum source, GLuint id, const std::string &message) = 0;
     virtual void popDebugGroup()                                                      = 0;
+
+    // KHR_parallel_shader_compile
+    virtual void setMaxShaderCompilerThreads(GLuint count) {}
 
     // State sync with dirty bits.
     virtual angle::Result syncState(const gl::Context *context,

@@ -41,7 +41,6 @@ namespace dawn_native { namespace opengl {
 
         // Dawn API
         CommandBufferBase* CreateCommandBuffer(CommandEncoderBase* encoder) override;
-        InputStateBase* CreateInputState(InputStateBuilder* builder) override;
 
         Serial GetCompletedCommandSerial() const final override;
         Serial GetLastSubmittedCommandSerial() const final override;
@@ -50,10 +49,10 @@ namespace dawn_native { namespace opengl {
 
         ResultOrError<std::unique_ptr<StagingBufferBase>> CreateStagingBuffer(size_t size) override;
         MaybeError CopyFromStagingToBuffer(StagingBufferBase* source,
-                                           uint32_t sourceOffset,
+                                           uint64_t sourceOffset,
                                            BufferBase* destination,
-                                           uint32_t destinationOffset,
-                                           uint32_t size) override;
+                                           uint64_t destinationOffset,
+                                           uint64_t size) override;
 
       private:
         ResultOrError<BindGroupBase*> CreateBindGroupImpl(

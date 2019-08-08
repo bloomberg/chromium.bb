@@ -204,7 +204,7 @@ void MediaRouterViewsUI::UpdateModelHeader() {
   const base::string16 source_name = GetPresentationRequestSourceName();
   const base::string16 header_text =
       source_name.empty()
-          ? l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_CAST_DIALOG_TITLE)
+          ? l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_TAB_MIRROR_CAST_MODE)
           : l10n_util::GetStringFUTF16(IDS_MEDIA_ROUTER_PRESENTATION_CAST_MODE,
                                        source_name);
   model_.set_dialog_header(header_text);

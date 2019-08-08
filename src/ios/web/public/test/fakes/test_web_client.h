@@ -44,6 +44,7 @@ class TestWebClient : public web::WebClient {
                              const GURL&,
                              bool overridable,
                              const base::Callback<void(bool)>&) override;
+  UIView* GetWindowedContainer() override;
 
   // Sets |plugin_not_supported_text_|.
   void SetPluginNotSupportedText(const base::string16& text);

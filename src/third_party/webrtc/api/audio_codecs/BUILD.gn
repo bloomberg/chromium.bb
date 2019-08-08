@@ -32,7 +32,6 @@ rtc_source_set("audio_codecs_api") {
     "..:array_view",
     "..:bitrate_allocation",
     "..:scoped_refptr",
-    "../..:webrtc_common",
     "../../rtc_base:checks",
     "../../rtc_base:deprecation",
     "../../rtc_base:rtc_base_approved",
@@ -67,7 +66,10 @@ rtc_static_library("builtin_audio_decoder_factory") {
     defines += [ "WEBRTC_USE_BUILTIN_ILBC=0" ]
   }
   if (rtc_include_opus) {
-    deps += [ "opus:audio_decoder_opus" ]
+    deps += [
+      "opus:audio_decoder_multiopus",
+      "opus:audio_decoder_opus",
+    ]
     defines += [ "WEBRTC_USE_BUILTIN_OPUS=1" ]
   } else {
     defines += [ "WEBRTC_USE_BUILTIN_OPUS=0" ]

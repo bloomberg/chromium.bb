@@ -16,7 +16,6 @@
 #include "ash/public/cpp/frame_utils.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/touch_uma.h"
-#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
@@ -25,6 +24,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
@@ -229,7 +229,7 @@ BrowserNonClientFrameViewAsh::CreateInterfacePtrForTesting() {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameView:
 
-gfx::Rect BrowserNonClientFrameViewAsh::GetBoundsForTabStrip(
+gfx::Rect BrowserNonClientFrameViewAsh::GetBoundsForTabStripRegion(
     const views::View* tabstrip) const {
   if (!tabstrip)
     return gfx::Rect();
@@ -295,13 +295,8 @@ void BrowserNonClientFrameViewAsh::UpdateMinimumSize() {
   }
 }
 
-void BrowserNonClientFrameViewAsh::OnTabsMaxXChanged() {
-  BrowserNonClientFrameView::OnTabsMaxXChanged();
-  UpdateClientArea();
-}
-
 bool BrowserNonClientFrameViewAsh::CanUserExitFullscreen() const {
-  return ash::IsWindowTrustedPinned(GetFrameWindow()) ? false : true;
+  return !platform_util::IsBrowserLockedFullscreen(browser_view()->browser());
 }
 
 SkColor BrowserNonClientFrameViewAsh::GetCaptionColor(
@@ -314,7 +309,7 @@ SkColor BrowserNonClientFrameViewAsh::GetCaptionColor(
   // Hosted apps apply a theme color if specified by the extension.
   Browser* browser = browser_view()->browser();
   base::Optional<SkColor> theme_color =
-      browser->hosted_app_controller()->GetThemeColor();
+      browser->web_app_controller()->GetThemeColor();
   if (theme_color)
     active_color = views::FrameCaptionButton::GetButtonColor(*theme_color);
 
@@ -551,8 +546,11 @@ void BrowserNonClientFrameViewAsh::OnTabletModeToggled(bool enabled) {
     OnImmersiveRevealEnded();
   }
 
-  caption_button_container_->SetVisible(ShouldShowCaptionButtons());
+  const bool should_show_caption_buttons = ShouldShowCaptionButtons();
+  caption_button_container_->SetVisible(should_show_caption_buttons);
   caption_button_container_->UpdateCaptionButtonState(true /*=animate*/);
+  if (hosted_app_button_container())
+    hosted_app_button_container()->SetVisible(should_show_caption_buttons);
 
   if (enabled) {
     // Enter immersive mode if the feature is enabled and the widget is not
@@ -672,15 +670,14 @@ void BrowserNonClientFrameViewAsh::OnImmersiveRevealStarted() {
   // https://crbug.com/840242. To fix this, we'll make the caption buttons
   // temporarily children of the TopContainerView while they're all painting to
   // their layers.
-  browser_view()->top_container()->AddChildViewAt(caption_button_container_, 0);
-  if (hosted_app_button_container()) {
-    browser_view()->top_container()->AddChildViewAt(
-        hosted_app_button_container(), 0);
-  }
+  auto* container = browser_view()->top_container();
+  container->AddChildViewAt(caption_button_container_, 0);
+  if (hosted_app_button_container())
+    container->AddChildViewAt(hosted_app_button_container(), 0);
   if (back_button_)
-    browser_view()->top_container()->AddChildViewAt(back_button_, 0);
+    container->AddChildViewAt(back_button_, 0);
 
-  browser_view()->top_container()->Layout();
+  container->Layout();
 }
 
 void BrowserNonClientFrameViewAsh::OnImmersiveRevealEnded() {
@@ -741,7 +738,9 @@ int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
 }
 
 int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
-  return caption_button_container_->GetPreferredSize().width();
+  return ShouldShowCaptionButtons()
+             ? caption_button_container_->GetPreferredSize().width()
+             : 0;
 }
 
 bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
@@ -760,10 +759,18 @@ bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
 }
 
 void BrowserNonClientFrameViewAsh::OnOverviewOrSplitviewModeChanged() {
-  caption_button_container_->SetVisible(ShouldShowCaptionButtons());
+  const bool should_show_caption_buttons = ShouldShowCaptionButtons();
+  caption_button_container_->SetVisible(should_show_caption_buttons);
+  if (hosted_app_button_container())
+    hosted_app_button_container()->SetVisible(should_show_caption_buttons);
 
-  // Schedule a paint to show or hide the header.
-  SchedulePaint();
+  // The entire frame should be repainted for v1 apps, since its visibility can
+  // change (see also ShouldPaint()). Do not invoke this on normal browser
+  // windows since it does not have to repaint frame except for the caption
+  // buttons and repainting might cause stuttering of the animation. See
+  // https://crbug.com/949227.
+  if (!browser_view()->IsBrowserTypeNormal())
+    SchedulePaint();
 }
 
 std::unique_ptr<ash::FrameHeader>
@@ -785,7 +792,7 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
 
 void BrowserNonClientFrameViewAsh::SetUpForHostedApp() {
   Browser* browser = browser_view()->browser();
-  if (!browser->hosted_app_controller()->ShouldShowHostedAppButtonContainer())
+  if (!browser->web_app_controller()->ShouldShowHostedAppButtonContainer())
     return;
 
   // Add the container for extra hosted app buttons (e.g app menu button).
@@ -803,7 +810,7 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColors() {
     inactive_color = GetFrameColor(kInactive);
   } else if (browser_view()->IsBrowserTypeHostedApp()) {
     active_color =
-        browser_view()->browser()->hosted_app_controller()->GetThemeColor();
+        browser_view()->browser()->web_app_controller()->GetThemeColor();
   } else if (!browser_view()->browser()->is_app()) {
     active_color = kMdWebUiFrameColor;
   }

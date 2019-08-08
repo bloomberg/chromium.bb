@@ -122,8 +122,8 @@ class ViewEventTestBase : public views::WidgetDelegate, public testing::Test {
   views::Widget* window_;
 
  private:
-  // Callback from CreateEventTask. Stops the background thread, runs the
-  // supplied task and if there are failures invokes Done.
+  // Callback from CreateEventTask. Runs the supplied task and if there are
+  // failures invokes Done.
   void RunTestMethod(base::OnceClosure task);
 
   // The content of the Window.

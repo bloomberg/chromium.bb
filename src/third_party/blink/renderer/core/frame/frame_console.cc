@@ -60,16 +60,16 @@ bool FrameConsole::AddMessageToStorage(ConsoleMessage* console_message) {
   return true;
 }
 
-void FrameConsole::ReportMessageToClient(MessageSource source,
+void FrameConsole::ReportMessageToClient(mojom::ConsoleMessageSource source,
                                          mojom::ConsoleMessageLevel level,
                                          const String& message,
                                          SourceLocation* location) {
-  if (source == kNetworkMessageSource)
+  if (source == mojom::ConsoleMessageSource::kNetwork)
     return;
 
   String url = location->Url();
   String stack_trace;
-  if (source == kConsoleAPIMessageSource) {
+  if (source == mojom::ConsoleMessageSource::kConsoleApi) {
     if (!frame_->GetPage())
       return;
     if (frame_->GetChromeClient().ShouldReportDetailedMessageForSource(*frame_,
@@ -92,7 +92,7 @@ void FrameConsole::ReportMessageToClient(MessageSource source,
 
 void FrameConsole::ReportResourceResponseReceived(
     DocumentLoader* loader,
-    unsigned long request_identifier,
+    uint64_t request_identifier,
     const ResourceResponse& response) {
   if (!loader)
     return;
@@ -105,13 +105,14 @@ void FrameConsole::ReportResourceResponseReceived(
       String::Number(response.HttpStatusCode()) + " (" +
       response.HttpStatusText() + ')';
   ConsoleMessage* console_message = ConsoleMessage::CreateForRequest(
-      kNetworkMessageSource, mojom::ConsoleMessageLevel::kError, message,
-      response.CurrentRequestUrl().GetString(), loader, request_identifier);
+      mojom::ConsoleMessageSource::kNetwork, mojom::ConsoleMessageLevel::kError,
+      message, response.CurrentRequestUrl().GetString(), loader,
+      request_identifier);
   AddMessage(console_message);
 }
 
 void FrameConsole::DidFailLoading(DocumentLoader* loader,
-                                  unsigned long request_identifier,
+                                  uint64_t request_identifier,
                                   const ResourceError& error) {
   if (error.IsCancellation())  // Report failures only.
     return;
@@ -122,13 +123,12 @@ void FrameConsole::DidFailLoading(DocumentLoader* loader,
     message.Append(error.LocalizedDescription());
   }
   AddMessageToStorage(ConsoleMessage::CreateForRequest(
-      kNetworkMessageSource, mojom::ConsoleMessageLevel::kError,
+      mojom::ConsoleMessageSource::kNetwork, mojom::ConsoleMessageLevel::kError,
       message.ToString(), error.FailingURL(), loader, request_identifier));
 }
 
 void FrameConsole::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
-  ConsoleLoggerImplBase::Trace(visitor);
 }
 
 }  // namespace blink

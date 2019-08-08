@@ -18,6 +18,7 @@ source_set("internal") {
   ]
 
   sources = [
+    "all_download_event_notifier.cc",
     "base_file.cc",
     "base_file_win.cc",
     "download_create_info.cc",
@@ -53,6 +54,8 @@ source_set("internal") {
     "resource_downloader.h",
     "save_package_download_job.cc",
     "save_package_download_job.h",
+    "simple_download_manager.cc",
+    "simple_download_manager_coordinator.cc",
     "stream_handle_input_stream.cc",
     "url_download_handler_factory.cc",
     "url_download_request_handle.cc",

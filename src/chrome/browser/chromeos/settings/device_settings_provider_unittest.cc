@@ -19,12 +19,12 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
-#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/user_manager/fake_user_manager.h"
@@ -287,6 +287,15 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     BuildAndInstallDevicePolicy();
   }
 
+  void SetDeviceDockMacAddressSourceSetting(
+      em::DeviceDockMacAddressSourceProto::Source
+          device_dock_mac_address_source) {
+    em::DeviceDockMacAddressSourceProto* const proto =
+        device_policy_->payload().mutable_device_dock_mac_address_source();
+    proto->set_source(device_dock_mac_address_source);
+    BuildAndInstallDevicePolicy();
+  }
+
   ScopedTestingLocalState local_state_;
 
   std::unique_ptr<DeviceSettingsProvider> provider_;
@@ -344,7 +353,7 @@ TEST_F(DeviceSettingsProviderTest, InitializationTestUnowned) {
   EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*this, SettingChanged(kReleaseChannel)).Times(1);
   base::Value new_value("stable-channel");
-  provider_->Set(kReleaseChannel, new_value);
+  provider_->DoSet(kReleaseChannel, new_value);
   Mock::VerifyAndClearExpectations(this);
 
   // This shouldn't trigger a write.
@@ -387,7 +396,7 @@ TEST_F(DeviceSettingsProviderTest, SetPrefFailed) {
   // If we are not the owner no sets should work.
   base::Value value(true);
   EXPECT_CALL(*this, SettingChanged(kStatsReportingPref)).Times(1);
-  provider_->Set(kStatsReportingPref, value);
+  provider_->DoSet(kStatsReportingPref, value);
   Mock::VerifyAndClearExpectations(this);
 
   // This shouldn't trigger a write.
@@ -412,7 +421,7 @@ TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
   base::Value value(true);
   EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*this, SettingChanged(kStatsReportingPref)).Times(1);
-  provider_->Set(kStatsReportingPref, value);
+  provider_->DoSet(kStatsReportingPref, value);
   Mock::VerifyAndClearExpectations(this);
 
   // Process the store.
@@ -442,9 +451,9 @@ TEST_F(DeviceSettingsProviderTest, SetPrefTwice) {
   EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
 
   base::Value value1("beta");
-  provider_->Set(kReleaseChannel, value1);
+  provider_->DoSet(kReleaseChannel, value1);
   base::Value value2("dev");
-  provider_->Set(kReleaseChannel, value2);
+  provider_->DoSet(kReleaseChannel, value2);
 
   // Let the changes propagate through the system.
   session_manager_client_.set_device_policy(std::string());
@@ -741,6 +750,23 @@ TEST_F(DeviceSettingsProviderTest, DeviceWilcoDtcAllowedSetting) {
 
   SetDeviceWilcoDtcAllowedSetting(false);
   EXPECT_EQ(base::Value(false), *provider_->Get(kDeviceWilcoDtcAllowed));
+}
+
+TEST_F(DeviceSettingsProviderTest, DeviceDockMacAddressSourceSetting) {
+  // Policy should not be set by default
+  VerifyPolicyValue(kDeviceDockMacAddressSource, nullptr);
+
+  SetDeviceDockMacAddressSourceSetting(
+      em::DeviceDockMacAddressSourceProto::DEVICE_DOCK_MAC_ADDRESS);
+  EXPECT_EQ(base::Value(1), *provider_->Get(kDeviceDockMacAddressSource));
+
+  SetDeviceDockMacAddressSourceSetting(
+      em::DeviceDockMacAddressSourceProto::DEVICE_NIC_MAC_ADDRESS);
+  EXPECT_EQ(base::Value(2), *provider_->Get(kDeviceDockMacAddressSource));
+
+  SetDeviceDockMacAddressSourceSetting(
+      em::DeviceDockMacAddressSourceProto::DOCK_NIC_MAC_ADDRESS);
+  EXPECT_EQ(base::Value(3), *provider_->Get(kDeviceDockMacAddressSource));
 }
 
 }  // namespace chromeos

@@ -17,7 +17,6 @@
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
-#include "cc/trees/mutator_host.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
@@ -831,13 +830,10 @@ void EffectTree::UpdateHasMaskingChild(EffectNode* node,
   // Reset to false when a node is first met. We'll set the bit later
   // when we actually encounter a masking child.
   node->has_masking_child = false;
-  if (node->blend_mode == SkBlendMode::kDstIn)
+  if (node->blend_mode == SkBlendMode::kDstIn) {
+    DCHECK(parent_node->has_render_surface);
     parent_node->has_masking_child = true;
-}
-
-void EffectTree::UpdateIsMasked(EffectNode* node, EffectNode* parent_node) {
-  node->is_masked = (parent_node && parent_node->is_masked) ||
-                    node->mask_layer_id != Layer::INVALID_ID;
+  }
 }
 
 void EffectTree::UpdateSurfaceContentsScale(EffectNode* effect_node) {
@@ -916,7 +912,6 @@ void EffectTree::UpdateEffects(int id) {
   UpdateEffectChanged(node, parent_node);
   UpdateBackfaceVisibility(node, parent_node);
   UpdateHasMaskingChild(node, parent_node);
-  UpdateIsMasked(node, parent_node);
   UpdateSurfaceContentsScale(node);
 }
 
@@ -1193,6 +1188,16 @@ bool EffectTree::ClippedHitTestRegionIsRectangle(int effect_id) const {
       return false;
   }
   return true;
+}
+
+bool EffectTree::HitTestMayBeAffectedByMask(int effect_id) const {
+  const EffectNode* effect_node = Node(effect_id);
+  for (; effect_node->id != kContentsRootNodeId;
+       effect_node = Node(effect_node->target_id)) {
+    if (effect_node->has_masking_child || effect_node->is_masked)
+      return true;
+  }
+  return false;
 }
 
 void TransformTree::UpdateNodeAndAncestorsHaveIntegerTranslations(
@@ -1847,9 +1852,7 @@ void PropertyTrees::SetOuterViewportContainerBoundsDelta(
 }
 
 bool PropertyTrees::ElementIsAnimatingChanged(
-    const MutatorHost* mutator_host,
     const PropertyToElementIdMap& element_id_map,
-    ElementListType list_type,
     const PropertyAnimationState& mask,
     const PropertyAnimationState& state,
     bool check_node_existence) {
@@ -1883,9 +1886,6 @@ bool PropertyTrees::ElementIsAnimatingChanged(
           if (mask.potentially_animating[property]) {
             transform_node->has_potential_animation =
                 state.potentially_animating[property];
-            transform_node->has_only_translation_animations =
-                mutator_host->HasOnlyTranslationTransforms(element_id,
-                                                           list_type);
             transform_tree.set_needs_update(true);
             // We track transform updates specifically, whereas we
             // don't do so for opacity/filter, because whether a
@@ -1939,6 +1939,17 @@ bool PropertyTrees::ElementIsAnimatingChanged(
     }
   }
   return updated_transform;
+}
+
+void PropertyTrees::AnimationScalesChanged(ElementId element_id,
+                                           float maximum_scale,
+                                           float starting_scale) {
+  if (TransformNode* transform_node =
+          transform_tree.FindNodeFromElementId(element_id)) {
+    transform_node->maximum_animation_scale = maximum_scale;
+    transform_node->starting_animation_scale = starting_scale;
+    UpdateTransformTreeUpdateNumber();
+  }
 }
 
 void PropertyTrees::SetInnerViewportScrollBoundsDelta(
@@ -2030,28 +2041,26 @@ std::string PropertyTrees::ToString() const {
 CombinedAnimationScale PropertyTrees::GetAnimationScales(
     int transform_node_id,
     LayerTreeImpl* layer_tree_impl) {
-  if (cached_data_.animation_scales[transform_node_id].update_number !=
+  AnimationScaleData* animation_scales =
+      &cached_data_.animation_scales[transform_node_id];
+  if (animation_scales->update_number !=
       cached_data_.transform_tree_update_number) {
     if (!layer_tree_impl->settings()
              .layer_transforms_should_scale_layer_contents) {
-      cached_data_.animation_scales[transform_node_id].update_number =
+      animation_scales->update_number =
           cached_data_.transform_tree_update_number;
-      cached_data_.animation_scales[transform_node_id]
-          .combined_maximum_animation_target_scale = 0.f;
-      cached_data_.animation_scales[transform_node_id]
-          .combined_starting_animation_scale = 0.f;
+      animation_scales->combined_maximum_animation_target_scale = kNotScaled;
+      animation_scales->combined_starting_animation_scale = kNotScaled;
       return CombinedAnimationScale(
-          cached_data_.animation_scales[transform_node_id]
-              .combined_maximum_animation_target_scale,
-          cached_data_.animation_scales[transform_node_id]
-              .combined_starting_animation_scale);
+          animation_scales->combined_maximum_animation_target_scale,
+          animation_scales->combined_starting_animation_scale);
     }
 
     TransformNode* node = transform_tree.Node(transform_node_id);
     TransformNode* parent_node = transform_tree.parent(node);
     bool ancestor_is_animating_scale = false;
-    float ancestor_maximum_target_scale = 0.f;
-    float ancestor_starting_animation_scale = 0.f;
+    float ancestor_maximum_target_scale = kNotScaled;
+    float ancestor_starting_animation_scale = kNotScaled;
     if (parent_node) {
       CombinedAnimationScale combined_animation_scale =
           GetAnimationScales(parent_node->id, layer_tree_impl);
@@ -2064,14 +2073,17 @@ CombinedAnimationScale PropertyTrees::GetAnimationScales(
               .to_screen_has_scale_animation;
     }
 
-    cached_data_.animation_scales[transform_node_id]
-        .to_screen_has_scale_animation =
-        !node->has_only_translation_animations || ancestor_is_animating_scale;
+    bool node_is_animating_scale =
+        node->maximum_animation_scale != kNotScaled &&
+        node->starting_animation_scale != kNotScaled;
+
+    animation_scales->to_screen_has_scale_animation =
+        node_is_animating_scale || ancestor_is_animating_scale;
 
     // Once we've failed to compute a maximum animated scale at an ancestor, we
     // continue to fail.
-    bool failed_at_ancestor =
-        ancestor_is_animating_scale && ancestor_maximum_target_scale == 0.f;
+    bool failed_at_ancestor = ancestor_is_animating_scale &&
+                              ancestor_maximum_target_scale == kNotScaled;
 
     // Computing maximum animated scale in the presence of non-scale/translation
     // transforms isn't supported.
@@ -2084,90 +2096,46 @@ CombinedAnimationScale PropertyTrees::GetAnimationScales(
     // as another node is decreasing scale from 10 to 1. Naively combining these
     // scales would produce a scale of 100.
     bool failed_for_multiple_scale_animations =
-        ancestor_is_animating_scale && !node->has_only_translation_animations;
+        ancestor_is_animating_scale && node_is_animating_scale;
 
     if (failed_at_ancestor || failed_for_non_scale_or_translation ||
         failed_for_multiple_scale_animations) {
       // This ensures that descendants know we've failed to compute a maximum
       // animated scale.
-      cached_data_.animation_scales[transform_node_id]
-          .to_screen_has_scale_animation = true;
-
-      cached_data_.animation_scales[transform_node_id]
-          .combined_maximum_animation_target_scale = 0.f;
-      cached_data_.animation_scales[transform_node_id]
-          .combined_starting_animation_scale = 0.f;
-    } else if (!cached_data_.animation_scales[transform_node_id]
-                    .to_screen_has_scale_animation) {
-      cached_data_.animation_scales[transform_node_id]
-          .combined_maximum_animation_target_scale = 0.f;
-      cached_data_.animation_scales[transform_node_id]
-          .combined_starting_animation_scale = 0.f;
-    } else if (node->has_only_translation_animations) {
+      animation_scales->to_screen_has_scale_animation = true;
+      animation_scales->combined_maximum_animation_target_scale = kNotScaled;
+      animation_scales->combined_starting_animation_scale = kNotScaled;
+    } else if (!animation_scales->to_screen_has_scale_animation) {
+      animation_scales->combined_maximum_animation_target_scale = kNotScaled;
+      animation_scales->combined_starting_animation_scale = kNotScaled;
+    } else if (!node_is_animating_scale) {
       // An ancestor is animating scale.
       gfx::Vector2dF local_scales =
-          MathUtil::ComputeTransform2dScaleComponents(node->local, 0.f);
+          MathUtil::ComputeTransform2dScaleComponents(node->local, kNotScaled);
       float max_local_scale = std::max(local_scales.x(), local_scales.y());
-      cached_data_.animation_scales[transform_node_id]
-          .combined_maximum_animation_target_scale =
+      animation_scales->combined_maximum_animation_target_scale =
           max_local_scale * ancestor_maximum_target_scale;
-      cached_data_.animation_scales[transform_node_id]
-          .combined_starting_animation_scale =
+      animation_scales->combined_starting_animation_scale =
           max_local_scale * ancestor_starting_animation_scale;
     } else {
-      ElementListType list_type = layer_tree_impl->IsActiveTree()
-                                      ? ElementListType::ACTIVE
-                                      : ElementListType::PENDING;
+      gfx::Vector2dF ancestor_scales =
+          parent_node
+              ? MathUtil::ComputeTransform2dScaleComponents(
+                    transform_tree.ToScreen(parent_node->id), kNotScaled)
+              : gfx::Vector2dF(1.f, 1.f);
 
-      layer_tree_impl->mutator_host()->MaximumTargetScale(
-          node->element_id, list_type,
-          &cached_data_.animation_scales[transform_node_id]
-               .local_maximum_animation_target_scale);
-      layer_tree_impl->mutator_host()->AnimationStartScale(
-          node->element_id, list_type,
-          &cached_data_.animation_scales[transform_node_id]
-               .local_starting_animation_scale);
-      gfx::Vector2dF local_scales =
-          MathUtil::ComputeTransform2dScaleComponents(node->local, 0.f);
-      float max_local_scale = std::max(local_scales.x(), local_scales.y());
-
-      if (cached_data_.animation_scales[transform_node_id]
-                  .local_starting_animation_scale == 0.f ||
-          cached_data_.animation_scales[transform_node_id]
-                  .local_maximum_animation_target_scale == 0.f) {
-        cached_data_.animation_scales[transform_node_id]
-            .combined_maximum_animation_target_scale =
-            max_local_scale * ancestor_maximum_target_scale;
-        cached_data_.animation_scales[transform_node_id]
-            .combined_starting_animation_scale =
-            max_local_scale * ancestor_starting_animation_scale;
-      } else {
-        gfx::Vector2dF ancestor_scales =
-            parent_node ? MathUtil::ComputeTransform2dScaleComponents(
-                              transform_tree.ToScreen(parent_node->id), 0.f)
-                        : gfx::Vector2dF(1.f, 1.f);
-
-        float max_ancestor_scale =
-            std::max(ancestor_scales.x(), ancestor_scales.y());
-        cached_data_.animation_scales[transform_node_id]
-            .combined_maximum_animation_target_scale =
-            max_ancestor_scale *
-            cached_data_.animation_scales[transform_node_id]
-                .local_maximum_animation_target_scale;
-        cached_data_.animation_scales[transform_node_id]
-            .combined_starting_animation_scale =
-            max_ancestor_scale *
-            cached_data_.animation_scales[transform_node_id]
-                .local_starting_animation_scale;
-      }
+      float max_ancestor_scale =
+          std::max(ancestor_scales.x(), ancestor_scales.y());
+      animation_scales->combined_maximum_animation_target_scale =
+          max_ancestor_scale * node->maximum_animation_scale;
+      animation_scales->combined_starting_animation_scale =
+          max_ancestor_scale * node->starting_animation_scale;
     }
-    cached_data_.animation_scales[transform_node_id].update_number =
-        cached_data_.transform_tree_update_number;
+    animation_scales->update_number = cached_data_.transform_tree_update_number;
   }
-  return CombinedAnimationScale(cached_data_.animation_scales[transform_node_id]
-                                    .combined_maximum_animation_target_scale,
-                                cached_data_.animation_scales[transform_node_id]
-                                    .combined_starting_animation_scale);
+  return CombinedAnimationScale(
+      animation_scales->combined_maximum_animation_target_scale,
+      animation_scales->combined_starting_animation_scale);
 }
 
 void PropertyTrees::SetAnimationScalesForTesting(
@@ -2318,10 +2286,18 @@ DrawTransforms& PropertyTrees::GetDrawTransforms(int transform_id,
 
 void PropertyTrees::ResetCachedData() {
   cached_data_.transform_tree_update_number = 0;
-  cached_data_.animation_scales = std::vector<AnimationScaleData>(
-      transform_tree.nodes().size(), AnimationScaleData());
-  cached_data_.draw_transforms = std::vector<std::vector<DrawTransformData>>(
-      transform_tree.nodes().size(), std::vector<DrawTransformData>(1));
+  const auto transform_count = transform_tree.nodes().size();
+  cached_data_.animation_scales.resize(transform_count);
+  for (auto& animation_scale : cached_data_.animation_scales)
+    animation_scale.update_number = -1;
+
+  cached_data_.draw_transforms.resize(transform_count,
+                                      std::vector<DrawTransformData>(1));
+  for (auto& draw_transforms_for_id : cached_data_.draw_transforms) {
+    draw_transforms_for_id.resize(1);
+    draw_transforms_for_id[0].update_number = -1;
+    draw_transforms_for_id[0].target_id = EffectTree::kInvalidNodeId;
+  }
 }
 
 void PropertyTrees::UpdateTransformTreeUpdateNumber() {

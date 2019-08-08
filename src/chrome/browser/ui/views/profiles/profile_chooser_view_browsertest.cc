@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -37,6 +38,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/notification_service.h"
@@ -181,7 +183,7 @@ class ProfileChooserViewExtensionsTest
 
   void OpenProfileChooserViews(Browser* browser) {
     BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-    views::View* button = browser_view->toolbar()->avatar_button();
+    views::View* button = browser_view->toolbar()->GetAvatarToolbarButton();
     DCHECK(button);
 
     ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
@@ -190,14 +192,14 @@ class ProfileChooserViewExtensionsTest
   }
 
   AvatarMenu* GetProfileChooserViewAvatarMenu() {
-    return ProfileChooserView::profile_bubble_->avatar_menu_.get();
+    return current_profile_bubble()->avatar_menu_.get();
   }
 
   void ClickProfileChooserViewLockButton() {
     ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                      ui::EventTimeForNow(), 0, 0);
-    ProfileChooserView::profile_bubble_->ButtonPressed(
-        ProfileChooserView::profile_bubble_->lock_button_, e);
+    current_profile_bubble()->ButtonPressed(
+        current_profile_bubble()->lock_button_, e);
   }
 
   // Access the registry that has been prepared with at least one extension.
@@ -219,11 +221,12 @@ class ProfileChooserViewExtensionsTest
   }
 
   ProfileChooserView* current_profile_bubble() {
-    return ProfileChooserView::profile_bubble_;
+    return static_cast<ProfileChooserView*>(
+        ProfileChooserView::GetBubbleForTesting());
   }
 
   views::LabelButton* signin_current_profile_button() {
-    return ProfileChooserView::profile_bubble_->signin_current_profile_button_;
+    return current_profile_bubble()->signin_current_profile_button_;
   }
 
   int GetDiceSigninPromoShowCount() {
@@ -234,6 +237,31 @@ class ProfileChooserViewExtensionsTest
   std::unique_ptr<content::WindowedNotificationObserver> window_close_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileChooserViewExtensionsTest);
+};
+
+// TODO(crbug.com/932818): Remove this class after
+// |kAutofillEnableToolbarStatusChip| is cleaned up. Otherwise we need it
+// because the toolbar is init-ed before each test is set up. Thus need to
+// enable the feature in the general browsertest SetUp().
+class ProfileChooserViewExtensionsParamTest
+    : public ProfileChooserViewExtensionsTest,
+      public ::testing::WithParamInterface<bool> {
+ protected:
+  ProfileChooserViewExtensionsParamTest()
+      : ProfileChooserViewExtensionsTest() {}
+  ~ProfileChooserViewExtensionsParamTest() override {}
+
+  void SetUp() override {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          autofill::features::kAutofillEnableToolbarStatusChip);
+    }
+
+    ProfileChooserViewExtensionsTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // TODO(https://crbug.com/855867): This test is flaky on Windows.
@@ -448,51 +476,53 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
 }
 
 // Shows a non-signed in profile with no others.
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, InvokeUi_default) {
+IN_PROC_BROWSER_TEST_P(ProfileChooserViewExtensionsParamTest,
+                       InvokeUi_default) {
   ShowAndVerifyUi();
 }
 
 // Shows a signed in profile with no others.
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, InvokeUi_SignedIn) {
+IN_PROC_BROWSER_TEST_P(ProfileChooserViewExtensionsParamTest,
+                       InvokeUi_SignedIn) {
   ShowAndVerifyUi();
 }
 
 // Shows the |ProfileChooserView| with three different profiles.
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
+IN_PROC_BROWSER_TEST_P(ProfileChooserViewExtensionsParamTest,
                        InvokeUi_MultiProfile) {
   ShowAndVerifyUi();
 }
 
 // Shows the |ProfileChooserView| during a Guest browsing session.
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, InvokeUi_Guest) {
+IN_PROC_BROWSER_TEST_P(ProfileChooserViewExtensionsParamTest, InvokeUi_Guest) {
   ShowAndVerifyUi();
 }
 
-// TODO: Flaking test crbug.com/802374
 // Shows the |ProfileChooserView| during a Guest browsing session when the DICE
 // flag is enabled.
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, InvokeUi_DiceGuest) {
+IN_PROC_BROWSER_TEST_P(ProfileChooserViewExtensionsParamTest,
+                       InvokeUi_DiceGuest) {
   ScopedAccountConsistencyDice scoped_dice;
   ShowAndVerifyUi();
 }
 
 // Shows the manage account link, which appears when account consistency is
 // enabled for signed-in accounts.
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
+IN_PROC_BROWSER_TEST_P(ProfileChooserViewExtensionsParamTest,
                        InvokeUi_ManageAccountLink) {
   ShowAndVerifyUi();
 }
 
 // Shows the |ProfileChooserView| from a signed-in account that has a supervised
 // user profile attached.
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
+IN_PROC_BROWSER_TEST_P(ProfileChooserViewExtensionsParamTest,
                        InvokeUi_SupervisedOwner) {
   ShowAndVerifyUi();
 }
 
 // Crashes because account consistency changes:  http://crbug.com/820390
 // Shows the |ProfileChooserView| when a supervised user is the active profile.
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
+IN_PROC_BROWSER_TEST_P(ProfileChooserViewExtensionsParamTest,
                        DISABLED_InvokeUi_SupervisedUser) {
   ShowAndVerifyUi();
 }
@@ -543,3 +573,7 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, SignedInNoUsername) {
   AddAccountToProfile(browser()->profile(), "");
   OpenProfileChooserView(browser());
 }
+
+INSTANTIATE_TEST_SUITE_P(,
+                         ProfileChooserViewExtensionsParamTest,
+                         ::testing::Bool());

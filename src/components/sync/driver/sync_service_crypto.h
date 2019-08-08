@@ -44,13 +44,6 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   // Returns the actual passphrase type being used for encryption.
   PassphraseType GetPassphraseType() const;
 
-  // Returns true if encrypting all the sync data is allowed. If this method
-  // returns false, EnableEncryptEverything() should not be called.
-  bool IsEncryptEverythingAllowed() const;
-
-  // Sets whether encrypting all the sync data is allowed or not.
-  void SetEncryptEverythingAllowed(bool allowed);
-
   // Returns the current set of encrypted data types.
   ModelTypeSet GetEncryptedDataTypes() const;
 
@@ -113,9 +106,6 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
     // The current set of encrypted types. Always a superset of
     // Cryptographer::SensitiveTypes().
     ModelTypeSet encrypted_types = SyncEncryptionHandler::SensitiveTypes();
-
-    // Whether encrypting everything is allowed.
-    bool encrypt_everything_allowed = true;
 
     // Whether we want to encrypt everything.
     bool encrypt_everything = false;

@@ -101,14 +101,20 @@ PDFViewer.MATERIAL_TOOLBAR_HEIGHT = 56;
 PDFViewer.TOOLBAR_WINDOW_MIN_HEIGHT = 250;
 
 /**
- * The light-gray background color used for print preview.
+ * The background color used for print preview (--google-grey-refresh-300).
  */
-PDFViewer.LIGHT_BACKGROUND_COLOR = '0xFFCCCCCC';
+PDFViewer.PRINT_PREVIEW_BACKGROUND_COLOR = '0xFFDADCE0';
 
 /**
- * The dark-gray background color used for the regular viewer.
+ * The background color used for print preview when dark mode is enabled
+ * (--google-grey-refresh-700).
  */
-PDFViewer.DARK_BACKGROUND_COLOR = '0xFF525659';
+PDFViewer.PRINT_PREVIEW_DARK_BACKGROUND_COLOR = '0xFF5F6368';
+
+/**
+ * The background color used for the regular viewer.
+ */
+PDFViewer.BACKGROUND_COLOR = '0xFF525659';
 
 /**
  * Creates a new PDFViewer. There should only be one of these objects per
@@ -214,8 +220,7 @@ function PDFViewer(browserApi) {
   }
   this.plugin_.setAttribute('headers', headers);
 
-  const backgroundColor = PDFViewer.DARK_BACKGROUND_COLOR;
-  this.plugin_.setAttribute('background-color', backgroundColor);
+  this.plugin_.setAttribute('background-color', PDFViewer.BACKGROUND_COLOR);
   this.plugin_.setAttribute('top-toolbar-height', topToolbarHeight);
   this.plugin_.setAttribute('javascript', this.javascript_);
 
@@ -737,6 +742,16 @@ PDFViewer.prototype = {
     }
   },
 
+  /** @private */
+  sendBackgroundColorForPrintPreview_: function() {
+    this.pluginController_.postMessage({
+      type: 'backgroundColorChanged',
+      backgroundColor: document.documentElement.hasAttribute('dark') ?
+          PDFViewer.PRINT_PREVIEW_DARK_BACKGROUND_COLOR :
+          PDFViewer.PRINT_PREVIEW_BACKGROUND_COLOR,
+    });
+  },
+
   /**
    * Load a dictionary of translated strings into the UI. Used as a callback for
    * chrome.resourcesPrivate.
@@ -749,6 +764,15 @@ PDFViewer.prototype = {
     document.documentElement.lang = strings.language;
 
     loadTimeData.data = strings;
+    const isNewPrintPreview = this.isPrintPreview_ &&
+        loadTimeData.getBoolean('newPrintPreviewLayoutEnabled');
+    if (isNewPrintPreview) {
+      this.sendBackgroundColorForPrintPreview_();
+      this.toolbarManager_.reverseSideToolbar();
+    }
+    this.reverseZoomToolbar_ = isNewPrintPreview;
+    this.zoomToolbar_.newPrintPreview = isNewPrintPreview;
+
     $('toolbar').strings = strings;
     $('toolbar').pdfAnnotationsEnabled =
         loadTimeData.getBoolean('pdfAnnotationsEnabled');
@@ -849,9 +873,11 @@ PDFViewer.prototype = {
     // gives a compromise: if there is no scrollbar visible then the toolbar
     // will be half a scrollbar width further left than the spec but if there
     // is a scrollbar visible it will be half a scrollbar width further right
-    // than the spec. In RTL layout, the zoom toolbar is on the left side, but
-    // the scrollbar is still on the right, so this is not necessary.
-    if (!isRTL()) {
+    // than the spec. In RTL layout normally, and in LTR layout in Print Preview
+    // when the NewPrintPreview flag is enabled, the zoom toolbar is on the left
+    // left side, but the scrollbar is still on the right, so this is not
+    // necessary.
+    if (isRTL() === this.reverseZoomToolbar_) {
       this.zoomToolbar_.style.right =
           -verticalScrollbarWidth + (scrollbarWidth / 2) + 'px';
     }
@@ -983,6 +1009,15 @@ PDFViewer.prototype = {
         return true;
       case 'sendKeyEvent':
         this.handleKeyEvent_(DeserializeKeyEvent(message.data.keyEvent));
+        return true;
+      case 'hideToolbars':
+        this.toolbarManager_.resetKeyboardNavigationAndHideToolbars();
+        return true;
+      case 'darkModeChanged':
+        document.documentElement.toggleAttribute('dark', message.data.darkMode);
+        if (this.isPrintPreview_) {
+          this.sendBackgroundColorForPrintPreview_();
+        }
         return true;
       case 'scrollPosition':
         const position = this.viewport_.position;
@@ -1234,6 +1269,9 @@ PDFViewer.prototype = {
    * conditions.
    */
   updateAnnotationAvailable_() {
+    if (!this.toolbar_) {
+      return;
+    }
     let annotationAvailable = true;
     if (this.viewport_.getClockwiseRotations() != 0) {
       annotationAvailable = false;

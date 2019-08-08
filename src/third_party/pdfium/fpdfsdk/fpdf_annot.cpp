@@ -629,7 +629,7 @@ FPDFAnnot_CountAttachmentPoints(FPDF_ANNOTATION annot) {
   if (!FPDFAnnot_HasAttachmentPoints(annot))
     return 0;
 
-  CPDF_Dictionary* pAnnotDict =
+  const CPDF_Dictionary* pAnnotDict =
       CPDFAnnotContextFromFPDFAnnotation(annot)->GetAnnotDict();
   const CPDF_Array* pArray = GetQuadPointsArrayFromDictionary(pAnnotDict);
   return pArray ? pArray->size() / 8 : 0;
@@ -642,7 +642,7 @@ FPDFAnnot_GetAttachmentPoints(FPDF_ANNOTATION annot,
   if (!FPDFAnnot_HasAttachmentPoints(annot) || !quad_points)
     return false;
 
-  CPDF_Dictionary* pAnnotDict =
+  const CPDF_Dictionary* pAnnotDict =
       CPDFAnnotContextFromFPDFAnnotation(annot)->GetAnnotDict();
   const CPDF_Array* pArray = GetQuadPointsArrayFromDictionary(pAnnotDict);
   if (!pArray)
@@ -719,7 +719,7 @@ FPDFAnnot_SetStringValue(FPDF_ANNOTATION annot,
 FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDFAnnot_GetStringValue(FPDF_ANNOTATION annot,
                          FPDF_BYTESTRING key,
-                         void* buffer,
+                         FPDF_WCHAR* buffer,
                          unsigned long buflen) {
   CPDF_Dictionary* pAnnotDict = GetAnnotDictFromFPDFAnnotation(annot);
   if (!pAnnotDict)
@@ -792,7 +792,7 @@ FPDFAnnot_SetAP(FPDF_ANNOTATION annot,
 FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDFAnnot_GetAP(FPDF_ANNOTATION annot,
                 FPDF_ANNOT_APPEARANCEMODE appearanceMode,
-                void* buffer,
+                FPDF_WCHAR* buffer,
                 unsigned long buflen) {
   CPDF_Dictionary* pAnnotDict = GetAnnotDictFromFPDFAnnotation(annot);
   if (!pAnnotDict)
@@ -905,7 +905,7 @@ FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDFAnnot_GetOptionLabel(FPDF_FORMHANDLE hHandle,
                          FPDF_ANNOTATION annot,
                          int index,
-                         void* buffer,
+                         FPDF_WCHAR* buffer,
                          unsigned long buflen) {
   CPDFSDK_InteractiveForm* pForm = FormHandleToInteractiveForm(hHandle);
   if (!pForm)

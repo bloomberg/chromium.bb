@@ -18,7 +18,11 @@ import sys
 import tempfile
 import threading
 import traceback
-import urlparse
+
+try:
+  import urlparse
+except ImportError:  # For Py3 compatibility
+  import urllib.parse as urlparse
 
 import download_from_google_storage
 import gclient_utils
@@ -218,7 +222,8 @@ class GitWrapper(SCMWrapper):
 
   def __init__(self, url=None, *args, **kwargs):
     """Removes 'git+' fake prefix from git URL."""
-    if url.startswith('git+http://') or url.startswith('git+https://'):
+    if url and (url.startswith('git+http://') or
+                url.startswith('git+https://')):
       url = url[4:]
     SCMWrapper.__init__(self, url, *args, **kwargs)
     filter_kwargs = { 'time_throttle': 1, 'out_fh': self.out_fh }
@@ -311,7 +316,8 @@ class GitWrapper(SCMWrapper):
     if file_list is not None:
       files = self._Capture(
           ['-c', 'core.quotePath=false', 'ls-files']).splitlines()
-      file_list.extend([os.path.join(self.checkout_path, f) for f in files])
+      file_list.extend(
+          [os.path.join(self.checkout_path, f.decode()) for f in files])
 
   def _DisableHooks(self):
     hook_dir = os.path.join(self.checkout_path, '.git', 'hooks')
@@ -507,10 +513,13 @@ class GitWrapper(SCMWrapper):
       verbose = ['--verbose']
       printed_path = True
 
-    if revision.startswith('refs/branch-heads'):
-      options.with_branch_heads = True
-    if revision.startswith('refs/tags'):
-      options.with_tags = True
+    revision_ref = revision
+    if ':' in revision:
+      revision_ref, _, revision = revision.partition(':')
+
+    mirror = self._GetMirror(url, options, revision_ref)
+    if mirror:
+      url = mirror.mirror_path
 
     remote_ref = scm.GIT.RefToRemoteRef(revision, self.remote)
     if remote_ref:
@@ -524,10 +533,6 @@ class GitWrapper(SCMWrapper):
     else:
       # hash is also a tag, only make a distinction at checkout
       rev_type = "hash"
-
-    mirror = self._GetMirror(url, options)
-    if mirror:
-      url = mirror.mirror_path
 
     # If we are going to introduce a new project, there is a possibility that
     # we are syncing back to a state where the project was originally a
@@ -556,7 +561,8 @@ class GitWrapper(SCMWrapper):
       if file_list is not None:
         files = self._Capture(
             ['-c', 'core.quotePath=false', 'ls-files']).splitlines()
-        file_list.extend([os.path.join(self.checkout_path, f) for f in files])
+        file_list.extend(
+            [os.path.join(self.checkout_path, f.decode()) for f in files])
       if mirror:
         self._Capture(
             ['remote', 'set-url', '--push', 'origin', mirror.url])
@@ -589,8 +595,7 @@ class GitWrapper(SCMWrapper):
     # Skip url auto-correction if remote.origin.gclient-auto-fix-url is set.
     # This allows devs to use experimental repos which have a different url
     # but whose branch(s) are the same as official repos.
-    if (current_url.rstrip('/') != url.rstrip('/') and
-        url != 'git://foo' and
+    if (current_url.rstrip(b'/') != url.rstrip('/') and url != 'git://foo' and
         subprocess2.capture(
             ['git', 'config', 'remote.%s.gclient-auto-fix-url' % self.remote],
             cwd=self.checkout_path).strip() != 'False'):
@@ -657,14 +662,18 @@ class GitWrapper(SCMWrapper):
         raise gclient_utils.Error('Invalid Upstream: %s' % upstream_branch)
 
     self._SetFetchConfig(options)
-    self._Fetch(options, prune=options.force)
 
+    # Fetch upstream if we don't already have |revision|.
     if not scm.GIT.IsValidRevision(self.checkout_path, revision, sha_only=True):
-      # Update the remotes first so we have all the refs.
-      remote_output = scm.GIT.Capture(['remote'] + verbose + ['update'],
-              cwd=self.checkout_path)
-      if verbose:
-        self.Print(remote_output)
+      self._Fetch(options, prune=options.force)
+
+      if not scm.GIT.IsValidRevision(self.checkout_path, revision,
+                                     sha_only=True):
+        # Update the remotes first so we have all the refs.
+        remote_output = scm.GIT.Capture(['remote'] + verbose + ['update'],
+                cwd=self.checkout_path)
+        if verbose:
+          self.Print(remote_output)
 
     revision = self._AutoFetchRef(options, revision)
 
@@ -945,7 +954,7 @@ class GitWrapper(SCMWrapper):
     return os.path.join(self._root_dir,
                         'old_' + self.relpath.replace(os.sep, '_')) + '.git'
 
-  def _GetMirror(self, url, options):
+  def _GetMirror(self, url, options, revision_ref=None):
     """Get a git_cache.Mirror object for the argument url."""
     if not self.cache_dir:
       return None
@@ -955,8 +964,12 @@ class GitWrapper(SCMWrapper):
     }
     if hasattr(options, 'with_branch_heads') and options.with_branch_heads:
       mirror_kwargs['refs'].append('refs/branch-heads/*')
+    elif revision_ref and revision_ref.startswith('refs/branch-heads/'):
+      mirror_kwargs['refs'].append(revision_ref)
     if hasattr(options, 'with_tags') and options.with_tags:
       mirror_kwargs['refs'].append('refs/tags/*')
+    elif revision_ref and revision_ref.startswith('refs/tags/'):
+      mirror_kwargs['refs'].append(revision_ref)
     return git_cache.Mirror(url, **mirror_kwargs)
 
   def _UpdateMirrorIfNotContains(self, mirror, options, rev_type, revision):
@@ -1112,7 +1125,7 @@ class GitWrapper(SCMWrapper):
 
     try:
       rebase_output = scm.GIT.Capture(rebase_cmd, cwd=self.checkout_path)
-    except subprocess2.CalledProcessError, e:
+    except subprocess2.CalledProcessError as e:
       if (re.match(r'cannot rebase: you have unstaged changes', e.stderr) or
           re.match(r'cannot rebase: your index contains uncommitted changes',
                    e.stderr)):
@@ -1286,17 +1299,19 @@ class GitWrapper(SCMWrapper):
   def _Fetch(self, options, remote=None, prune=False, quiet=False,
              refspec=None):
     cfg = gclient_utils.DefaultIndexPackConfig(self.url)
-    # When a mirror is configured, it fetches only the refs/heads, and possibly
-    # the refs/branch-heads and refs/tags, but not the refs/changes. So, if
-    # we're asked to fetch a refs/changes ref from the mirror, it won't have it.
-    # This makes sure that we always fetch refs/changes directly from the
-    # repository and not from the mirror.
-    if refspec and refspec.startswith('refs/changes'):
-      remote, _ = gclient_utils.SplitUrlRevision(self.url)
-      # Make sure that we fetch the (remote) refs/changes/xx ref to the (local)
-      # refs/changes/xx ref.
-      if ':' not in refspec:
-        refspec += ':' + refspec
+    # When updating, the ref is modified to be a remote ref .
+    # (e.g. refs/heads/NAME becomes refs/remotes/REMOTE/NAME).
+    # Try to reverse that mapping.
+    original_ref = scm.GIT.RemoteRefToRef(refspec, self.remote)
+    if original_ref:
+      refspec = original_ref + ':' + refspec
+      # When a mirror is configured, it only fetches
+      # refs/{heads,branch-heads,tags}/*.
+      # If asked to fetch other refs, we must fetch those directly from the
+      # repository, and not from the mirror.
+      if not original_ref.startswith(
+          ('refs/heads/', 'refs/branch-heads/', 'refs/tags/')):
+        remote, _ = gclient_utils.SplitUrlRevision(self.url)
     fetch_cmd =  cfg + [
         'fetch',
         remote or self.remote,
@@ -1451,9 +1466,9 @@ class CipdRoot(object):
     try:
       ensure_file = None
       with tempfile.NamedTemporaryFile(
-          suffix='.ensure', delete=False) as ensure_file:
+          suffix='.ensure', delete=False, mode='w') as ensure_file:
         ensure_file.write('$ParanoidMode CheckPresence\n\n')
-        for subdir, packages in sorted(self._packages_by_subdir.iteritems()):
+        for subdir, packages in sorted(self._packages_by_subdir.items()):
           ensure_file.write('@Subdir %s\n' % subdir)
           for package in sorted(packages, key=lambda p: p.name):
             ensure_file.write('%s %s\n' % (package.name, package.version))

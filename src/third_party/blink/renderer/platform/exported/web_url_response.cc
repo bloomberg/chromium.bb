@@ -116,16 +116,15 @@ WebString WebURLResponse::MimeType() const {
   return resource_response_->MimeType();
 }
 
-void WebURLResponse::SetMIMEType(const WebString& mime_type) {
+void WebURLResponse::SetMimeType(const WebString& mime_type) {
   resource_response_->SetMimeType(mime_type);
 }
 
-long long WebURLResponse::ExpectedContentLength() const {
+int64_t WebURLResponse::ExpectedContentLength() const {
   return resource_response_->ExpectedContentLength();
 }
 
-void WebURLResponse::SetExpectedContentLength(
-    long long expected_content_length) {
+void WebURLResponse::SetExpectedContentLength(int64_t expected_content_length) {
   resource_response_->SetExpectedContentLength(expected_content_length);
 }
 
@@ -137,8 +136,8 @@ WebURLResponse::HTTPVersion WebURLResponse::HttpVersion() const {
   return static_cast<HTTPVersion>(resource_response_->HttpVersion());
 }
 
-void WebURLResponse::SetHTTPVersion(HTTPVersion version) {
-  resource_response_->SetHTTPVersion(
+void WebURLResponse::SetHttpVersion(HTTPVersion version) {
+  resource_response_->SetHttpVersion(
       static_cast<ResourceResponse::HTTPVersion>(version));
 }
 
@@ -162,43 +161,43 @@ WebString WebURLResponse::HttpStatusText() const {
   return resource_response_->HttpStatusText();
 }
 
-void WebURLResponse::SetHTTPStatusText(const WebString& http_status_text) {
-  resource_response_->SetHTTPStatusText(http_status_text);
+void WebURLResponse::SetHttpStatusText(const WebString& http_status_text) {
+  resource_response_->SetHttpStatusText(http_status_text);
 }
 
 WebString WebURLResponse::HttpHeaderField(const WebString& name) const {
   return resource_response_->HttpHeaderField(name);
 }
 
-void WebURLResponse::SetHTTPHeaderField(const WebString& name,
+void WebURLResponse::SetHttpHeaderField(const WebString& name,
                                         const WebString& value) {
-  resource_response_->SetHTTPHeaderField(name, value);
+  resource_response_->SetHttpHeaderField(name, value);
 }
 
-void WebURLResponse::AddHTTPHeaderField(const WebString& name,
+void WebURLResponse::AddHttpHeaderField(const WebString& name,
                                         const WebString& value) {
   if (name.IsNull() || value.IsNull())
     return;
 
-  resource_response_->AddHTTPHeaderField(name, value);
+  resource_response_->AddHttpHeaderField(name, value);
 }
 
-void WebURLResponse::ClearHTTPHeaderField(const WebString& name) {
-  resource_response_->ClearHTTPHeaderField(name);
+void WebURLResponse::ClearHttpHeaderField(const WebString& name) {
+  resource_response_->ClearHttpHeaderField(name);
 }
 
-void WebURLResponse::VisitHTTPHeaderFields(
+void WebURLResponse::VisitHttpHeaderFields(
     WebHTTPHeaderVisitor* visitor) const {
   const HTTPHeaderMap& map = resource_response_->HttpHeaderFields();
   for (HTTPHeaderMap::const_iterator it = map.begin(); it != map.end(); ++it)
     visitor->VisitHeader(it->key, it->value);
 }
 
-long long WebURLResponse::AppCacheID() const {
+int64_t WebURLResponse::AppCacheID() const {
   return resource_response_->AppCacheID();
 }
 
-void WebURLResponse::SetAppCacheID(long long app_cache_id) {
+void WebURLResponse::SetAppCacheID(int64_t app_cache_id) {
   resource_response_->SetAppCacheID(app_cache_id);
 }
 
@@ -325,13 +324,13 @@ network::mojom::FetchResponseType WebURLResponse::GetType() const {
   return resource_response_->GetType();
 }
 
-void WebURLResponse::SetURLListViaServiceWorker(
+void WebURLResponse::SetUrlListViaServiceWorker(
     const WebVector<WebURL>& url_list_via_service_worker) {
   Vector<KURL> url_list(url_list_via_service_worker.size());
   std::transform(url_list_via_service_worker.begin(),
                  url_list_via_service_worker.end(), url_list.begin(),
                  [](const WebURL& url) { return url; });
-  resource_response_->SetURLListViaServiceWorker(url_list);
+  resource_response_->SetUrlListViaServiceWorker(url_list);
 }
 
 bool WebURLResponse::HasUrlListViaServiceWorker() const {
@@ -376,7 +375,7 @@ void WebURLResponse::SetRemotePort(uint16_t remote_port) {
   resource_response_->SetRemotePort(remote_port);
 }
 
-void WebURLResponse::SetEncodedDataLength(long long length) {
+void WebURLResponse::SetEncodedDataLength(int64_t length) {
   resource_response_->SetEncodedDataLength(length);
 }
 

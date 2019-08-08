@@ -53,7 +53,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -94,8 +93,6 @@ Animation* Animation::Create(AnimationEffect* effect,
 Animation* Animation::Create(ExecutionContext* execution_context,
                              AnimationEffect* effect,
                              ExceptionState& exception_state) {
-  DCHECK(RuntimeEnabledFeatures::WebAnimationsAPIEnabled());
-
   Document* document = To<Document>(execution_context);
   return Create(effect, &document->Timeline(), exception_state);
 }
@@ -104,8 +101,6 @@ Animation* Animation::Create(ExecutionContext* execution_context,
                              AnimationEffect* effect,
                              AnimationTimeline* timeline,
                              ExceptionState& exception_state) {
-  DCHECK(RuntimeEnabledFeatures::WebAnimationsAPIEnabled());
-
   if (!timeline) {
     return Create(execution_context, effect, exception_state);
   }
@@ -975,8 +970,9 @@ bool Animation::Update(TimingUpdateReason reason) {
         if (GetExecutionContext() && HasEventListeners(event_type)) {
           double event_current_time = NullValue();
           pending_cancelled_event_ =
-              AnimationPlaybackEvent::Create(event_type, event_current_time,
-                                             TimelineInternal()->currentTime());
+              MakeGarbageCollected<AnimationPlaybackEvent>(
+                  event_type, event_current_time,
+                  TimelineInternal()->currentTime());
           pending_cancelled_event_->SetTarget(this);
           pending_cancelled_event_->SetCurrentTarget(this);
           timeline_->GetDocument()->EnqueueAnimationFrameEvent(
@@ -987,8 +983,9 @@ bool Animation::Update(TimingUpdateReason reason) {
         if (GetExecutionContext() && HasEventListeners(event_type)) {
           double event_current_time = CurrentTimeInternal() * 1000;
           pending_finished_event_ =
-              AnimationPlaybackEvent::Create(event_type, event_current_time,
-                                             TimelineInternal()->currentTime());
+              MakeGarbageCollected<AnimationPlaybackEvent>(
+                  event_type, event_current_time,
+                  TimelineInternal()->currentTime());
           pending_finished_event_->SetTarget(this);
           pending_finished_event_->SetCurrentTarget(this);
           timeline_->GetDocument()->EnqueueAnimationFrameEvent(

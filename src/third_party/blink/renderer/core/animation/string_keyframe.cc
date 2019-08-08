@@ -38,7 +38,7 @@ MutableCSSPropertyValueSet::SetResult StringKeyframe::SetCSSPropertyValue(
     const String& value,
     SecureContextMode secure_context_mode,
     StyleSheetContents* style_sheet_contents) {
-  DCHECK_NE(property, CSSPropertyInvalid);
+  DCHECK_NE(property, CSSPropertyID::kInvalid);
   if (CSSAnimations::IsAnimationAffectingProperty(CSSProperty::Get(property))) {
     bool did_parse = true;
     bool did_change = false;
@@ -50,7 +50,7 @@ MutableCSSPropertyValueSet::SetResult StringKeyframe::SetCSSPropertyValue(
 
 void StringKeyframe::SetCSSPropertyValue(const CSSProperty& property,
                                          const CSSValue& value) {
-  DCHECK_NE(property.PropertyID(), CSSPropertyInvalid);
+  DCHECK_NE(property.PropertyID(), CSSPropertyID::kInvalid);
   DCHECK(!CSSAnimations::IsAnimationAffectingProperty(property));
   css_property_map_->SetProperty(property.PropertyID(), value, false);
 }
@@ -60,7 +60,7 @@ void StringKeyframe::SetPresentationAttributeValue(
     const String& value,
     SecureContextMode secure_context_mode,
     StyleSheetContents* style_sheet_contents) {
-  DCHECK_NE(property.PropertyID(), CSSPropertyInvalid);
+  DCHECK_NE(property.PropertyID(), CSSPropertyID::kInvalid);
   if (!CSSAnimations::IsAnimationAffectingProperty(property)) {
     presentation_attribute_map_->SetProperty(property.PropertyID(), value,
                                              false, secure_context_mode,
@@ -83,10 +83,10 @@ PropertyHandleSet StringKeyframe::Properties() const {
     const CSSProperty& property = property_reference.Property();
     DCHECK(!property.IsShorthand())
         << "Web Animations: Encountered unexpanded shorthand CSS property ("
-        << property.PropertyID() << ").";
-    if (property.IDEquals(CSSPropertyVariable)) {
+        << static_cast<int>(property.PropertyID()) << ").";
+    if (property.IDEquals(CSSPropertyID::kVariable)) {
       properties.insert(PropertyHandle(
-          ToCSSCustomPropertyDeclaration(property_reference.Value())
+          To<CSSCustomPropertyDeclaration>(property_reference.Value())
               .GetName()));
     } else {
       properties.insert(PropertyHandle(property, false));

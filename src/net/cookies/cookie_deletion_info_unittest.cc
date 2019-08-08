@@ -86,7 +86,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchSessionControl) {
                                     /*last_access=*/base::Time::Now(),
                                     /*secure=*/false,
                                     /*httponly=*/false,
-                                    CookieSameSite::DEFAULT_MODE,
+                                    CookieSameSite::NO_RESTRICTION,
                                     CookiePriority::COOKIE_PRIORITY_DEFAULT);
 
   CanonicalCookie session_cookie(
@@ -95,7 +95,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchSessionControl) {
       /*expiration=*/base::Time(),
       /*last_access=*/base::Time::Now(),
       /*secure=*/false,
-      /*httponly=*/false, CookieSameSite::DEFAULT_MODE,
+      /*httponly=*/false, CookieSameSite::NO_RESTRICTION,
       CookiePriority::COOKIE_PRIORITY_DEFAULT);
 
   CookieDeletionInfo delete_info;
@@ -121,7 +121,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchHost) {
                                 /*last_access=*/base::Time::Now(),
                                 /*secure=*/false,
                                 /*httponly=*/false,
-                                CookieSameSite::DEFAULT_MODE,
+                                CookieSameSite::NO_RESTRICTION,
                                 CookiePriority::COOKIE_PRIORITY_DEFAULT);
 
   CanonicalCookie host_cookie("host-cookie", "host-cookie-value",
@@ -130,7 +130,8 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchHost) {
                               /*expiration=*/base::Time::Max(),
                               /*last_access=*/base::Time::Now(),
                               /*secure=*/false,
-                              /*httponly=*/false, CookieSameSite::DEFAULT_MODE,
+                              /*httponly=*/false,
+                              CookieSameSite::NO_RESTRICTION,
                               CookiePriority::COOKIE_PRIORITY_DEFAULT);
 
   EXPECT_TRUE(domain_cookie.IsDomainCookie());
@@ -160,7 +161,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchName) {
                           /*expiration=*/base::Time::Max(),
                           /*last_access=*/base::Time::Now(),
                           /*secure=*/false,
-                          /*httponly=*/false, CookieSameSite::DEFAULT_MODE,
+                          /*httponly=*/false, CookieSameSite::NO_RESTRICTION,
                           CookiePriority::COOKIE_PRIORITY_DEFAULT);
   CanonicalCookie cookie2("cookie2-name", "cookie2-value",
                           /*domain=*/".example.com", "/path",
@@ -168,7 +169,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchName) {
                           /*expiration=*/base::Time::Max(),
                           /*last_access=*/base::Time::Now(),
                           /*secure=*/false,
-                          /*httponly=*/false, CookieSameSite::DEFAULT_MODE,
+                          /*httponly=*/false, CookieSameSite::NO_RESTRICTION,
                           CookiePriority::COOKIE_PRIORITY_DEFAULT);
 
   CookieDeletionInfo delete_info;
@@ -184,7 +185,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchValue) {
                           /*expiration=*/base::Time::Max(),
                           /*last_access=*/base::Time::Now(),
                           /*secure=*/false,
-                          /*httponly=*/false, CookieSameSite::DEFAULT_MODE,
+                          /*httponly=*/false, CookieSameSite::NO_RESTRICTION,
                           CookiePriority::COOKIE_PRIORITY_DEFAULT);
   CanonicalCookie cookie2("cookie2-name", "cookie2-value",
                           /*domain=*/".example.com", "/path",
@@ -192,7 +193,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchValue) {
                           /*expiration=*/base::Time::Max(),
                           /*last_access=*/base::Time::Now(),
                           /*secure=*/false,
-                          /*httponly=*/false, CookieSameSite::DEFAULT_MODE,
+                          /*httponly=*/false, CookieSameSite::NO_RESTRICTION,
                           CookiePriority::COOKIE_PRIORITY_DEFAULT);
 
   CookieDeletionInfo delete_info;
@@ -237,7 +238,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoDomainMatchesDomain) {
         /*last_access=*/base::Time::FromDoubleT(kTestMinEpoch + 1),
         /*secure=*/false,
         /*httponly=*/false,
-        /*same_site=*/CookieSameSite::DEFAULT_MODE,
+        /*same_site=*/CookieSameSite::NO_RESTRICTION,
         /*priority=*/CookiePriority::COOKIE_PRIORITY_DEFAULT);
     return cookie;
   };
@@ -273,7 +274,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchesDomainList) {
         /*last_access=*/base::Time::Now(),
         /*secure=*/false,
         /*httponly=*/false,
-        /*same_site=*/CookieSameSite::DEFAULT_MODE,
+        /*same_site=*/CookieSameSite::NO_RESTRICTION,
         /*priority=*/CookiePriority::COOKIE_PRIORITY_DEFAULT);
     return cookie;
   };

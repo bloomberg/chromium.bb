@@ -585,6 +585,9 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
   }
 
   net::CookieOptions options;
+  // TODO(https://crbug.com/925311): Wire initiator in here properly.
+  options.set_same_site_cookie_context(net::cookie_util::ComputeSameSiteContext(
+      url, site_for_cookies, base::nullopt));
   std::unique_ptr<net::CanonicalCookie> cookie = net::CanonicalCookie::Create(
       url, cookie_line, base::Time::Now(), options);
   if (!cookie) {
@@ -613,21 +616,25 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
 
     // Pass a null callback since we don't care about when the 'set' completes.
     cookie_store->SetCanonicalCookieAsync(
-        std::move(cookie), url.scheme(), !options.exclude_httponly(),
+        std::move(cookie), url.scheme(), options,
         net::CookieStore::SetCookiesCallback());
     return;
   }
 
   // |callback| needs to be fired even if network process crashes as it's for
   // sync IPC.
-  base::OnceCallback<void(bool)> net_callback =
-      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-          base::BindOnce([](SetCookieCallback callback,
-                            bool success) { std::move(callback).Run(); },
-                         std::move(callback)),
-          false);
+  base::OnceCallback<void(net::CanonicalCookie::CookieInclusionStatus)>
+      net_callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          base::BindOnce(
+              [](SetCookieCallback callback,
+                 net::CanonicalCookie::CookieInclusionStatus success) {
+                std::move(callback).Run();
+              },
+              std::move(callback)),
+          net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR);
+
   (*GetCookieManager())
-      ->SetCanonicalCookie(*cookie, url.scheme(), !options.exclude_httponly(),
+      ->SetCanonicalCookie(*cookie, url.scheme(), options,
                            std::move(net_callback));
 }
 
@@ -687,13 +694,7 @@ void RenderFrameMessageFilter::GetCookies(int render_frame_id,
   // |callback| needs to be fired even if network process crashes as it's for
   // sync IPC.
   auto wrapped_callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-      base::BindOnce(
-          [](net::CookieStore::GetCookieListCallback callback,
-             const net::CookieList& cookies) {
-            std::move(callback).Run(cookies, net::CookieStatusList());
-          },
-          std::move(bound_callback)),
-      net::CookieList());
+      std::move(bound_callback), net::CookieList(), net::CookieStatusList());
 
   (*GetCookieManager())
       ->GetCookieList(url, options, std::move(wrapped_callback));

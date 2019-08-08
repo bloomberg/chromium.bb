@@ -4,7 +4,9 @@
 
 #include "components/signin/core/browser/account_fetcher_service.h"
 
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -18,6 +20,7 @@
 #include "components/signin/core/browser/account_info_fetcher.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/avatar_icon_util.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -65,7 +68,7 @@ void AccountFetcherService::RegisterPrefs(PrefRegistrySimple* user_prefs) {
 
 void AccountFetcherService::Initialize(
     SigninClient* signin_client,
-    OAuth2TokenService* token_service,
+    ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker_service,
     std::unique_ptr<image_fetcher::ImageDecoder> image_decoder) {
   DCHECK(signin_client);
@@ -83,6 +86,12 @@ void AccountFetcherService::Initialize(
   image_decoder_ = std::move(image_decoder);
   last_updated_ = signin_client_->GetPrefs()->GetTime(
       AccountFetcherService::kLastUpdatePref);
+
+  // Tokens may have already been loaded and we will not receive a
+  // notification-on-registration for |token_service_->AddObserver(this)| few
+  // lines above.
+  if (token_service_->AreAllCredentialsLoaded())
+    OnRefreshTokensLoaded();
 }
 
 void AccountFetcherService::Shutdown() {

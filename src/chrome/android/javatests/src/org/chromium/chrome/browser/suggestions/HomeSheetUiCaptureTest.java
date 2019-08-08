@@ -4,26 +4,21 @@
 
 package org.chromium.chrome.browser.suggestions;
 
-import static org.junit.Assert.assertNotEquals;
-
 import static org.chromium.chrome.test.BottomSheetTestRule.waitForWindowUpdates;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
-import android.support.v7.widget.RecyclerView;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ntp.NtpUiCaptureTestData;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
-import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.test.ScreenShooter;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -64,29 +59,6 @@ public class HomeSheetUiCaptureTest {
 
         mActivityRule.scrollToFirstItemOfType(ItemViewType.PROMO);
         mScreenShooter.shoot("SignInPromo_new");
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"UiCatalogue"})
-    public void testAllDismissed() {
-        NewTabPageAdapter adapter = mActivityRule.getAdapter();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            int signInPromoPosition = adapter.getFirstPositionForType(ItemViewType.PROMO);
-            assertNotEquals(signInPromoPosition, RecyclerView.NO_POSITION);
-            adapter.dismissItem(signInPromoPosition, ignored -> { });
-
-            // Dismiss all articles.
-            while (true) {
-                int articlePosition = adapter.getFirstPositionForType(ItemViewType.SNIPPET);
-                if (articlePosition == RecyclerView.NO_POSITION) break;
-                adapter.dismissItem(articlePosition, ignored -> { });
-            }
-        });
-
-        mActivityRule.scrollToFirstItemOfType(ItemViewType.ALL_DISMISSED);
-
-        mScreenShooter.shoot("All_dismissed");
     }
 
     @Test

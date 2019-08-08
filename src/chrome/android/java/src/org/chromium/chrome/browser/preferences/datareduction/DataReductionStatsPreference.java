@@ -32,6 +32,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.datareduction.DataReductionBrandingResourceProvider;
+import org.chromium.chrome.browser.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.util.FileSizeUtil;
@@ -221,7 +223,7 @@ public class DataReductionStatsPreference extends Preference {
         long time = config.getDataReductionLastUpdateTime() - days * DateUtils.DAY_IN_MILLIS;
         for (int i = history.length - days, bucket = 0; i < history.length; i++, bucket++) {
             NetworkStats.Entry entry = new NetworkStats.Entry();
-            entry.rxBytes = history[i];
+            entry.rxBytes = Math.max(history[i], 0);
             long startTime = time + (DateUtils.DAY_IN_MILLIS * bucket);
             // Spread each day's record over the first hour of the day.
             networkStatsHistory.recordData(startTime, startTime + DateUtils.HOUR_IN_MILLIS, entry);

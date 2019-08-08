@@ -30,7 +30,7 @@ class OZONE_BASE_EXPORT OverlaySurfaceCandidate {
   ~OverlaySurfaceCandidate();
   OverlaySurfaceCandidate& operator=(const OverlaySurfaceCandidate& other);
 
-  // Note that |crop_rect|, |clip_rect|, |is_clipped| and |overlay_handled| are
+  // Note that |clip_rect|, |is_clipped| and |overlay_handled| are
   // *not* used as part of the comparison.
   bool operator<(const OverlaySurfaceCandidate& other) const;
 

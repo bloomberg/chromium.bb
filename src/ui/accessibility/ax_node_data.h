@@ -167,14 +167,21 @@ struct AX_EXPORT AXNodeData {
   void SetInvalidState(ax::mojom::InvalidState invalid_state);
   ax::mojom::NameFrom GetNameFrom() const;
   void SetNameFrom(ax::mojom::NameFrom name_from);
+  ax::mojom::DescriptionFrom GetDescriptionFrom() const;
+  void SetDescriptionFrom(ax::mojom::DescriptionFrom description_from);
   ax::mojom::TextPosition GetTextPosition() const;
   void SetTextPosition(ax::mojom::TextPosition text_position);
   ax::mojom::Restriction GetRestriction() const;
   void SetRestriction(ax::mojom::Restriction restriction);
+  ax::mojom::ListStyle GetListStyle() const;
+  void SetListStyle(ax::mojom::ListStyle list_style);
   ax::mojom::TextDirection GetTextDirection() const;
   void SetTextDirection(ax::mojom::TextDirection text_direction);
   ax::mojom::ImageAnnotationStatus GetImageAnnotationStatus() const;
   void SetImageAnnotationStatus(ax::mojom::ImageAnnotationStatus status);
+
+  // Helper to determine if |GetRestriction| is either ReadOnly or Disabled
+  bool IsReadOnlyOrDisabled() const;
 
   // Return a string representation of this data, for debugging.
   virtual std::string ToString() const;

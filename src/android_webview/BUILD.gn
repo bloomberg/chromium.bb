@@ -16,11 +16,6 @@ import("//tools/grit/repack.gni")
 import("//tools/resources/generate_resource_whitelist.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 
-declare_args() {
-  # Package name of the system_webview_apk target.
-  system_webview_package_name = "com.android.webview"
-}
-
 if (enable_resource_whitelist_generation) {
   system_webview_pak_whitelist =
       "$target_gen_dir/system_webview_pak_whitelist.txt"
@@ -454,14 +449,12 @@ if (defined(android_secondary_abi_toolchain)) {
   # differentiate only by ABI. Each library has an app-bundle ("_base")
   # variant.
   if (current_toolchain == android_secondary_abi_toolchain) {
-    if (enable_64_bit_browser) {
-      # These targets are the 32-bit WebView libraries that pair with a 64-bit
-      # browser. They are suffixed with _64 because their names must mach the
-      # 64-bit browser library.
-      webview_library("monochrome_64") {
-      }
-      webview_library("monochrome_64_base") {
-      }
+    # These targets are the 32-bit WebView libraries that pair with a 64-bit
+    # browser. They are suffixed with _64 because their names must mach the
+    # 64-bit browser library.
+    webview_library("monochrome_64") {
+    }
+    webview_library("monochrome_64_base") {
     }
   } else {
     # Inverse of the others above, for the original 32-bit case.
@@ -549,8 +542,6 @@ source_set("common") {
     "browser/aw_print_manager.cc",
     "browser/aw_print_manager.h",
     "browser/aw_proxy_controller.cc",
-    "browser/aw_proxying_url_loader_factory.cc",
-    "browser/aw_proxying_url_loader_factory.h",
     "browser/aw_quota_manager_bridge.cc",
     "browser/aw_quota_manager_bridge.h",
     "browser/aw_quota_permission_context.cc",
@@ -567,8 +558,6 @@ source_set("common") {
     "browser/aw_speech_recognition_manager_delegate.h",
     "browser/aw_ssl_host_state_delegate.cc",
     "browser/aw_ssl_host_state_delegate.h",
-    "browser/aw_url_loader_throttle.cc",
-    "browser/aw_url_loader_throttle.h",
     "browser/aw_variations_seed_bridge.cc",
     "browser/aw_variations_seed_bridge.h",
     "browser/aw_variations_service_client.cc",
@@ -579,8 +568,6 @@ source_set("common") {
     "browser/aw_web_contents_view_delegate.h",
     "browser/aw_web_ui_controller_factory.cc",
     "browser/aw_web_ui_controller_factory.h",
-    "browser/command_line_helper.cc",
-    "browser/command_line_helper.h",
     "browser/cookie_manager.cc",
     "browser/cookie_manager.h",
     "browser/find_helper.cc",
@@ -603,6 +590,8 @@ source_set("common") {
     "browser/net/aw_network_change_notifier_factory.h",
     "browser/net/aw_network_delegate.cc",
     "browser/net/aw_network_delegate.h",
+    "browser/net/aw_proxy_config_monitor.cc",
+    "browser/net/aw_proxy_config_monitor.h",
     "browser/net/aw_request_interceptor.cc",
     "browser/net/aw_request_interceptor.h",
     "browser/net/aw_url_request_context_getter.cc",
@@ -617,12 +606,14 @@ source_set("common") {
     "browser/net/init_native_callback.h",
     "browser/net/input_stream_reader.cc",
     "browser/net/input_stream_reader.h",
-    "browser/net_helpers.cc",
-    "browser/net_helpers.h",
-    "browser/net_network_service/android_stream_reader_url_loader.cc",
-    "browser/net_network_service/android_stream_reader_url_loader.h",
-    "browser/net_network_service/aw_cookie_manager_wrapper.cc",
-    "browser/net_network_service/aw_cookie_manager_wrapper.h",
+    "browser/network_service/android_stream_reader_url_loader.cc",
+    "browser/network_service/android_stream_reader_url_loader.h",
+    "browser/network_service/aw_proxying_url_loader_factory.cc",
+    "browser/network_service/aw_proxying_url_loader_factory.h",
+    "browser/network_service/aw_url_loader_throttle.cc",
+    "browser/network_service/aw_url_loader_throttle.h",
+    "browser/network_service/net_helpers.cc",
+    "browser/network_service/net_helpers.h",
     "browser/permission/aw_permission_request.cc",
     "browser/permission/aw_permission_request.h",
     "browser/permission/aw_permission_request_delegate.cc",
@@ -653,6 +644,8 @@ source_set("common") {
     "browser/safe_browsing/aw_safe_browsing_whitelist_manager.h",
     "browser/safe_browsing/aw_url_checker_delegate_impl.cc",
     "browser/safe_browsing/aw_url_checker_delegate_impl.h",
+    "browser/scoped_add_feature_flags.cc",
+    "browser/scoped_add_feature_flags.h",
     "browser/state_serializer.cc",
     "browser/state_serializer.h",
     "browser/tracing/aw_trace_event_args_whitelist.cc",
@@ -663,8 +656,6 @@ source_set("common") {
     "browser/tracing/aw_tracing_delegate.h",
     "common/android_webview_message_generator.cc",
     "common/android_webview_message_generator.h",
-    "common/aw_channel.cc",
-    "common/aw_channel.h",
     "common/aw_content_client.cc",
     "common/aw_content_client.h",
     "common/aw_descriptors.h",
@@ -716,8 +707,6 @@ source_set("common") {
     "renderer/aw_websocket_handshake_throttle_provider.h",
     "renderer/print_render_frame_observer.cc",
     "renderer/print_render_frame_observer.h",
-    "utility/aw_content_utility_client.cc",
-    "utility/aw_content_utility_client.h",
   ]
 
   deps = [
@@ -726,6 +715,7 @@ source_set("common") {
     ":generate_components_strings",
     ":native_jni",
     "//android_webview/browser/gfx:gfx",
+    "//android_webview/utility",
     "//base",
     "//base/third_party/dynamic_annotations:dynamic_annotations",
     "//components/autofill/android:provider",
@@ -851,6 +841,7 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/AwFeatureList.java",
     "java/src/org/chromium/android_webview/AwFormDatabase.java",
     "java/src/org/chromium/android_webview/AwGeolocationPermissions.java",
+    "java/src/org/chromium/android_webview/AwHistogramRecorder.java",
     "java/src/org/chromium/android_webview/AwHttpAuthHandler.java",
     "java/src/org/chromium/android_webview/AwLayoutSizer.java",
     "java/src/org/chromium/android_webview/AwMetricsLogUploader.java",
@@ -940,7 +931,7 @@ android_library("android_webview_java") {
     "//device/gamepad:java",
     "//net/android:net_java",
     "//services/network/public/mojom:mojom_java",
-    "//third_party/android_deps:android_support_annotations_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/blink/public:blink_headers_java",
     "//ui/android:ui_java",
   ]
@@ -1041,7 +1032,7 @@ android_library("android_webview_platform_services_java") {
 
   deps = [
     "//base:base_java",
-    "//third_party/android_deps:android_support_annotations_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
   ]
 
   # The appropriate .class file will be loaded via a dependency to a library

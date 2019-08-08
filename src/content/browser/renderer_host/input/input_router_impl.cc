@@ -55,12 +55,19 @@ bool WasHandled(InputEventAckState state) {
   }
 }
 
-ui::WebScopedInputEvent ScaleEvent(const WebInputEvent& event, double scale) {
+std::unique_ptr<InputEvent> ScaleEvent(const WebInputEvent& event,
+                                       double scale,
+                                       const ui::LatencyInfo& latency_info) {
   std::unique_ptr<blink::WebInputEvent> event_in_viewport =
       ui::ScaleWebInputEvent(event, scale);
-  if (event_in_viewport)
-    return ui::WebScopedInputEvent(event_in_viewport.release());
-  return ui::WebInputEventTraits::Clone(event);
+  if (event_in_viewport) {
+    return std::make_unique<InputEvent>(
+        ui::WebScopedInputEvent(event_in_viewport.release()),
+        latency_info.ScaledBy(scale));
+  }
+
+  return std::make_unique<InputEvent>(ui::WebInputEventTraits::Clone(event),
+                                      latency_info);
 }
 
 }  // namespace
@@ -138,7 +145,7 @@ void InputRouterImpl::SendGestureEvent(
 
   GestureEventWithLatencyInfo gesture_event(original_gesture_event);
 
-  if (gesture_event_queue_.FlingControllerFilterEvent(gesture_event)) {
+  if (gesture_event_queue_.PassToFlingController(gesture_event)) {
     disposition_handler_->OnGestureEventAck(gesture_event,
                                             InputEventAckSource::BROWSER,
                                             INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -171,7 +178,7 @@ void InputRouterImpl::SendGestureEventWithoutQueueing(
   wheel_event_queue_.OnGestureScrollEvent(gesture_event);
 
   if (gesture_event.event.SourceDevice() ==
-      blink::kWebGestureDeviceTouchscreen) {
+      blink::WebGestureDevice::kTouchscreen) {
     if (gesture_event.event.GetType() ==
         blink::WebInputEvent::kGestureScrollBegin) {
       touch_scroll_started_sent_ = false;
@@ -235,6 +242,10 @@ base::Optional<cc::TouchAction> InputRouterImpl::AllowedTouchAction() {
   return touch_action_filter_.allowed_touch_action();
 }
 
+base::Optional<cc::TouchAction> InputRouterImpl::ActiveTouchAction() {
+  return touch_action_filter_.active_touch_action();
+}
+
 void InputRouterImpl::BindHost(mojom::WidgetInputHandlerHostRequest request,
                                bool frame_handler) {
   if (frame_handler) {
@@ -263,6 +274,19 @@ void InputRouterImpl::ProcessDeferredGestureEventQueue() {
     SendGestureEventWithoutQueueing(it, result);
   }
 }
+
+#if defined(OS_ANDROID)
+void InputRouterImpl::FallbackCursorModeLockCursor(bool left,
+                                                   bool right,
+                                                   bool up,
+                                                   bool down) {
+  client_->FallbackCursorModeLockCursor(left, right, up, down);
+}
+
+void InputRouterImpl::FallbackCursorModeSetCursorVisibility(bool visible) {
+  client_->FallbackCursorModeSetCursorVisibility(visible);
+}
+#endif
 
 void InputRouterImpl::SetTouchActionFromMain(cc::TouchAction touch_action) {
   if (compositor_touch_action_enabled_) {
@@ -507,8 +531,8 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
     return;
   }
 
-  std::unique_ptr<InputEvent> event = std::make_unique<InputEvent>(
-      ScaleEvent(input_event, device_scale_factor_), latency_info);
+  std::unique_ptr<InputEvent> event =
+      ScaleEvent(input_event, device_scale_factor_, latency_info);
   if (WebInputEventTraits::ShouldBlockEventStream(input_event)) {
     TRACE_EVENT_INSTANT0("input", "InputEventSentBlocking",
                          TRACE_EVENT_SCOPE_THREAD);
@@ -597,10 +621,8 @@ void InputRouterImpl::TouchEventHandled(
     }
   }
 
-  bool should_stop_timeout_monitor =
-      !compositor_touch_action_enabled_ ||
-      (compositor_touch_action_enabled_ &&
-       touch_action_filter_.allowed_touch_action().has_value());
+  // TODO(crbug.com/953547): find a proper way to stop the timeout monitor.
+  bool should_stop_timeout_monitor = true;
   // |touch_event_queue_| will forward to OnTouchEventAck when appropriate.
   touch_event_queue_.ProcessTouchAck(source, state, latency,
                                      touch_event.event.unique_touch_event_id,

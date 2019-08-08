@@ -63,6 +63,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_observer.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/events/test/test_event_handler.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/rect.h"
@@ -155,6 +156,49 @@ class TestEventObserver : public ui::EventObserver {
   std::unique_ptr<ui::Event> last_event_;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventObserver);
+};
+
+// Helps verify that updates to window bounds and window state are kept in sync
+// from the perspective of the WindowObserver.
+class WindowBoundsChangeVerifier : public WindowObserver {
+ public:
+  WindowBoundsChangeVerifier(aura::Window* window,
+                             ui::WindowShowState expected_state,
+                             const gfx::Rect& expected_bounds)
+      : window_(window),
+        expected_state_(expected_state),
+        expected_bounds_(expected_bounds) {
+    window->AddObserver(this);
+  }
+
+  ~WindowBoundsChangeVerifier() override { window_->RemoveObserver(this); }
+
+  // WindowObserver:
+  void OnWindowPropertyChanged(Window* window,
+                               const void* key,
+                               intptr_t old) override {
+    if (key == client::kShowStateKey)
+      Verify();
+  }
+
+  void OnWindowBoundsChanged(Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override {
+    Verify();
+  }
+
+ private:
+  void Verify() {
+    EXPECT_EQ(expected_state_, window_->GetProperty(client::kShowStateKey));
+    EXPECT_EQ(expected_bounds_, window_->bounds());
+  }
+
+  Window* window_;
+  const ui::WindowShowState expected_state_;
+  const gfx::Rect expected_bounds_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowBoundsChangeVerifier);
 };
 
 }  // namespace
@@ -525,7 +569,7 @@ TEST_F(WindowTreeClientTest, SetBoundsFailedWithPendingChange) {
           viz::LocalSurfaceId(1, base::UnguessableToken::Create()),
           base::TimeTicks::Now());
   window_tree_client()->OnWindowBoundsChanged(
-      server_id(&root_window), server_changed_bounds,
+      server_id(&root_window), server_changed_bounds, ui::SHOW_STATE_DEFAULT,
       server_changed_local_surface_id_allocation);
 
   WindowMus* root_window_mus = WindowMus::Get(&root_window);
@@ -545,8 +589,9 @@ TEST_F(WindowTreeClientTest, SetBoundsFailedWithPendingChange) {
             root_window_mus->GetLocalSurfaceIdAllocation());
 
   // Simulate server changing back to original bounds. Should take immediately.
-  window_tree_client()->OnWindowBoundsChanged(server_id(&root_window),
-                                              original_bounds, base::nullopt);
+  window_tree_client()->OnWindowBoundsChanged(
+      server_id(&root_window), original_bounds, ui::SHOW_STATE_DEFAULT,
+      base::nullopt);
   EXPECT_EQ(original_bounds, root_window.bounds());
 }
 
@@ -614,6 +659,28 @@ TEST_F(WindowTreeClientTest, SetPropertySucceeded) {
   ASSERT_TRUE(window_tree()->AckSingleChangeOfType(
       WindowTreeChangeType::PROPERTY, true));
   EXPECT_TRUE(root_window()->GetProperty(client::kAlwaysOnTopKey));
+}
+
+TEST_F(WindowTreeClientTest, SetPropertyWithSameValueDoesntCallServer) {
+  // False should be the default, and setting to false should not notify the
+  // server.
+  EXPECT_FALSE(root_window()->GetProperty(client::kAlwaysOnTopKey));
+  root_window()->SetProperty(client::kAlwaysOnTopKey, false);
+  EXPECT_EQ(
+      0u, window_tree()->GetChangeCountForType(WindowTreeChangeType::PROPERTY));
+
+  // Setting to true, twice, should notify the server only once.
+  root_window()->SetProperty(client::kAlwaysOnTopKey, true);
+  root_window()->SetProperty(client::kAlwaysOnTopKey, true);
+  EXPECT_EQ(
+      1u, window_tree()->GetChangeCountForType(WindowTreeChangeType::PROPERTY));
+  window_tree()->AckAllChanges();
+
+  // Setting back to false, twice, should notify the server only once.
+  root_window()->SetProperty(client::kAlwaysOnTopKey, false);
+  root_window()->SetProperty(client::kAlwaysOnTopKey, false);
+  EXPECT_EQ(
+      1u, window_tree()->GetChangeCountForType(WindowTreeChangeType::PROPERTY));
 }
 
 // Verifies properties are reverted if the server replied that the change
@@ -1467,6 +1534,35 @@ TEST_F(WindowTreeClientTest, OnWindowInputEventWithObserver) {
   EXPECT_EQ(ui::ET_TOUCH_PRESSED, test_event_observer.last_event()->type());
   top_level->env()->RemoveEventObserver(&test_event_observer);
 }
+
+#if defined(OS_CHROMEOS)
+// The handling of gesture recognition behavior makes sense only in ChromeOS.
+TEST_F(WindowTreeClientTest, CleanupGestureState) {
+  auto top_level = CreateTopLevel();
+  test::EventCountDelegate delegate;
+  Window window(&delegate);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  top_level->host->window()->AddChild(&window);
+  window.SetBounds(gfx::Rect(0, 0, 100, 100));
+  window.Show();
+
+  ui::TouchEvent event(
+      ui::ET_TOUCH_PRESSED, window.bounds().CenterPoint(),
+      ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+  window_tree_client()->OnWindowInputEvent(1, server_id(&window), 0,
+                                           ui::Event::Clone(event), false);
+  EXPECT_LT(0, delegate.GetGestureCountAndReset());
+  ui::GestureRecognizer* gesture_recognizer =
+      window.env()->gesture_recognizer();
+  EXPECT_EQ(&window, gesture_recognizer->GetTouchLockedTarget(event));
+
+  window_tree_client()->CleanupGestureState(
+      server_id(top_level->host->window()));
+  EXPECT_EQ(0, delegate.GetGestureCountAndReset());
+  EXPECT_FALSE(gesture_recognizer->GetTouchLockedTarget(event));
+}
+#endif
 
 // Verifies focus is reverted if the server replied that the change failed.
 TEST_F(WindowTreeClientTest, SetFocusFailed) {
@@ -2445,12 +2541,30 @@ TEST_F(WindowTreeClientTest, SetBoundsFromServerDoesntCallWindowBoundsChanged) {
   const viz::LocalSurfaceIdAllocation lsia2 =
       GenerateLocalSurfaceIdForNewTopLevel();
   window_tree_client()->OnWindowBoundsChanged(server_id(top_level), bounds,
-                                              lsia2);
+                                              ui::SHOW_STATE_DEFAULT, lsia2);
   EXPECT_EQ(0u,
             window_tree()->GetChangeCountForType(WindowTreeChangeType::BOUNDS));
   // The local surface id is updated from lsia2, so it won't match with either.
   EXPECT_NE(lsia, top_level->GetLocalSurfaceIdAllocation());
   EXPECT_EQ(lsia2, top_level->GetLocalSurfaceIdAllocation());
+}
+
+// Regression test for https://crbug.com/943509
+TEST_F(WindowTreeClientTest, SetBoundsAlsoChangesShowState) {
+  const gfx::Rect new_bounds(gfx::Rect(0, 0, 100, 100));
+  ASSERT_NE(new_bounds, root_window()->bounds());
+  root_window()->SetBounds(new_bounds);
+  EXPECT_EQ(new_bounds, root_window()->bounds());
+
+  root_window()->SetProperty(aura::client::kShowStateKey,
+                             ui::SHOW_STATE_NORMAL);
+
+  gfx::Rect maximized_bounds(0, 0, 500, 500);
+  WindowBoundsChangeVerifier verifier(root_window(), ui::SHOW_STATE_MAXIMIZED,
+                                      maximized_bounds);
+  window_tree_client()->OnWindowBoundsChanged(
+      server_id(root_window()), maximized_bounds, ui::SHOW_STATE_MAXIMIZED,
+      GenerateLocalSurfaceIdForNewTopLevel());
 }
 
 TEST_F(WindowTreeClientTestHighDPI, SetBounds) {
@@ -2459,13 +2573,28 @@ TEST_F(WindowTreeClientTestHighDPI, SetBounds) {
   root_window()->SetBounds(new_bounds);
   EXPECT_EQ(new_bounds, root_window()->bounds());
 
+  root_window()->SetProperty(aura::client::kShowStateKey,
+                             ui::SHOW_STATE_NORMAL);
+
   // Simulate the server responding with a bounds change. Server operates in
   // dips.
   const gfx::Rect server_changed_bounds(gfx::Rect(0, 0, 200, 200));
   window_tree_client()->OnWindowBoundsChanged(
-      server_id(root_window()), server_changed_bounds,
+      server_id(root_window()), server_changed_bounds, ui::SHOW_STATE_DEFAULT,
       GenerateLocalSurfaceIdForNewTopLevel());
   EXPECT_EQ(server_changed_bounds, root_window()->bounds());
+  EXPECT_EQ(ui::SHOW_STATE_NORMAL,
+            root_window()->GetProperty(aura::client::kShowStateKey));
+
+  // Simulate the server responding with a bounds change along with a state
+  // update. Both should take effect.
+  const gfx::Rect server_changed_bounds2(gfx::Rect(0, 0, 300, 200));
+  window_tree_client()->OnWindowBoundsChanged(
+      server_id(root_window()), server_changed_bounds2,
+      ui::SHOW_STATE_MAXIMIZED, GenerateLocalSurfaceIdForNewTopLevel());
+  EXPECT_EQ(server_changed_bounds2, root_window()->bounds());
+  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED,
+            root_window()->GetProperty(aura::client::kShowStateKey));
 }
 
 TEST_F(WindowTreeClientTestHighDPI, NewTopLevelWindowBounds) {
@@ -2770,6 +2899,31 @@ TEST_F(WindowTreeClientTest, PerformWindowMoveTransferEvents) {
             window_tree()->last_transfer_new());
 }
 
+TEST_F(WindowTreeClientTest, SecondPerformWindowMoveIsNotAllowed) {
+  int call_count = 0;
+  bool last_result = false;
+
+  WindowTreeHostMus* host_mus = static_cast<WindowTreeHostMus*>(host());
+  host_mus->PerformWindowMove(
+      host_mus->window(), ws::mojom::MoveLoopSource::MOUSE, gfx::Point(),
+      HTCAPTION, base::BindOnce(&OnWindowMoveDone, &call_count, &last_result));
+  EXPECT_EQ(0, call_count);
+
+  int call_count_inner = 0;
+  bool inner_result = true;
+  host_mus->PerformWindowMove(
+      host_mus->window(), ws::mojom::MoveLoopSource::MOUSE, gfx::Point(),
+      HTCAPTION,
+      base::BindOnce(&OnWindowMoveDone, &call_count_inner, &inner_result));
+  EXPECT_EQ(0, call_count);
+  EXPECT_EQ(1, call_count_inner);
+  EXPECT_FALSE(inner_result);
+
+  window_tree()->AckAllChanges();
+  EXPECT_EQ(1, call_count);
+  EXPECT_TRUE(last_result);
+}
+
 TEST_F(WindowTreeClientTest, PerformWindowMoveHandlingQueuedTouches) {
   auto top_level = CreateTopLevel();
   window_tree()->AckAllChanges();
@@ -3001,7 +3155,7 @@ TEST_F(WindowTreeClientTest, TopLevelBoundsChangeFails) {
   parent_local_surface_id_allocator_.GenerateId();
   const gfx::Rect server_changed_bounds(gfx::Rect(0, 0, 200, 200));
   window_tree_client()->OnWindowBoundsChanged(
-      server_id(root), server_changed_bounds,
+      server_id(root), server_changed_bounds, ui::SHOW_STATE_DEFAULT,
       parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation());
   const viz::LocalSurfaceId local_surface_id1 =
       root->GetLocalSurfaceIdAllocation().local_surface_id();

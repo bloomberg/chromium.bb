@@ -7,16 +7,13 @@ executable on a Target."""
 
 import common
 import hashlib
-import json
 import logging
 import multiprocessing
 import os
 import re
 import select
-import shutil
 import subprocess
 import sys
-import tempfile
 import time
 import threading
 import uuid
@@ -24,15 +21,9 @@ import uuid
 from symbolizer import SymbolizerFilter
 
 FAR = os.path.join(common.SDK_ROOT, 'tools', 'far')
-PM = os.path.join(common.SDK_ROOT, 'tools', 'pm')
-_REPO_NAME = 'chrome_runner'
 
 # Amount of time to wait for the termination of the system log output thread.
 _JOIN_TIMEOUT_SECS = 5
-
-# Amount of time to wait for Amber to complete package installation, as a
-# mitigation against hangs due to amber/network-related failures.
-_INSTALL_TIMEOUT_SECS = 5 * 60
 
 
 def _AttachKernelLogReader(target):
@@ -52,7 +43,8 @@ class MergedInputStream(object):
     assert len(streams) > 0
     self._streams = streams
     self._read_pipe, write_pipe = os.pipe()
-    self._output_stream = os.fdopen(write_pipe, 'w')
+    # Disable buffering for the stream to make sure there is no delay in logs.
+    self._output_stream = os.fdopen(write_pipe, 'w', 0)
     self._thread = threading.Thread(target=self._Run)
 
   def Start(self):
@@ -116,76 +108,6 @@ def _GetComponentUri(package_name):
                                                        package_name)
 
 
-def _UnregisterAmberRepository(target):
-  """Unregisters the Amber repository from the target."""
-
-  logging.debug('Unregistering Amber repository.')
-  target.RunCommand(['amber_ctl', 'rm_src', '-n', _REPO_NAME])
-
-  # Re-enable 'devhost' repo if it's present. This is useful for devices that
-  # were booted with 'fx serve'.
-  target.RunCommand(['amber_ctl', 'enable_src', '-n', 'devhost'], silent=True)
-
-
-def _RegisterAmberRepository(target, tuf_repo, remote_port):
-  """Configures a device to use a local TUF repository as an installation source
-  for packages.
-  |target|: The remote device to configure.
-  |tuf_repo|: The host filesystem path to the TUF repository.
-  |remote_port|: The reverse-forwarded port used to connect to instance of
-                 `pm serve` that is serving the contents of |tuf_repo|."""
-
-  # Extract the public signing key for inclusion in the config file.
-  root_keys = []
-  root_json = json.load(open(os.path.join(tuf_repo, 'repository', 'root.json'),
-                             'r'))
-  for root_key_id in root_json['signed']['roles']['root']['keyids']:
-    root_keys.append({
-        'Type': root_json['signed']['keys'][root_key_id]['keytype'],
-        'Value': root_json['signed']['keys'][root_key_id]['keyval']['public']
-    })
-
-  # "pm serve" can automatically generate a "config.json" file at query time,
-  # but the file is unusable because it specifies URLs with port
-  # numbers that are unreachable from across the port forwarding boundary.
-  # So instead, we generate our own config file with the forwarded port numbers
-  # instead.
-  config_file = open(os.path.join(tuf_repo, 'repository', 'repo_config.json'),
-                     'w')
-  json.dump({
-      'ID': _REPO_NAME,
-      'RepoURL': "http://127.0.0.1:%d" % remote_port,
-      'BlobRepoURL': "http://127.0.0.1:%d/blobs" % remote_port,
-      'RatePeriod': 10,
-      'RootKeys': root_keys,
-      'StatusConfig': {
-          'Enabled': True
-      },
-      'Auto': True
-  }, config_file)
-  config_file.close()
-
-  # Register the repo.
-  return_code = target.RunCommand(
-      [('amber_ctl rm_src -n %s; ' +
-        'amber_ctl add_src -f http://127.0.0.1:%d/repo_config.json')
-       % (_REPO_NAME, remote_port)])
-  if return_code != 0:
-    raise Exception('Error code %d when running amber_ctl.' % return_code)
-
-
-def _DrainStreamToStdout(stream, quit_event):
-  """Outputs the contents of |stream| until |quit_event| is set."""
-
-  while not quit_event.is_set():
-    rlist, _, _ = select.select([ stream ], [], [], 0.1)
-    if rlist:
-      line = rlist[0].readline()
-      if not line:
-        return
-      print line.rstrip()
-
-
 class RunPackageArgs:
   """RunPackage() configuration arguments structure.
 
@@ -211,26 +133,21 @@ class RunPackageArgs:
     return run_package_args
 
 
-def GetPackageInfo(package_path):
-  """Returns a tuple with the name and version of a package."""
+def _DrainStreamToStdout(stream, quit_event):
+  """Outputs the contents of |stream| until |quit_event| is set."""
 
-  # Query the metadata file which resides next to the package file.
-  package_info = json.load(
-      open(os.path.join(os.path.dirname(package_path), 'package')))
-  return (package_info['name'], package_info['version'])
-
-
-def PublishPackage(tuf_root, package_path):
-  """Publishes a combined FAR package to a TUF repository root."""
-
-  subprocess.check_call(
-      [PM, 'publish', '-a', '-f', package_path, '-r', tuf_root, '-vt', '-v'],
-      stderr=subprocess.STDOUT)
+  while not quit_event.is_set():
+    rlist, _, _ = select.select([ stream ], [], [], 0.1)
+    if rlist:
+      line = rlist[0].readline()
+      if not line:
+        return
+      print line.rstrip()
 
 
 def RunPackage(output_dir, target, package_path, package_name,
                package_deps, package_args, args):
-  """Copies the Fuchsia package at |package_path| to the target,
+  """Installs the Fuchsia package at |package_path| on the target,
   executes it with |package_args|, and symbolizes its output.
 
   output_dir: The path containing the build output files.
@@ -241,7 +158,6 @@ def RunPackage(output_dir, target, package_path, package_name,
   args: Structure of arguments to configure how the package will be run.
 
   Returns the exit code of the remote package process."""
-
 
   system_logger = (
       _AttachKernelLogReader(target) if args.system_logging else None)
@@ -256,37 +172,7 @@ def RunPackage(output_dir, target, package_path, package_name,
       log_output_thread.daemon = True
       log_output_thread.start()
 
-    tuf_root = tempfile.mkdtemp()
-    pm_serve_task = None
-
-    # Publish all packages to the serving TUF repository under |tuf_root|.
-    subprocess.check_call([PM, 'newrepo', '-repo', tuf_root])
-    all_packages = [package_path] + package_deps
-    for next_package_path in all_packages:
-      PublishPackage(tuf_root, next_package_path)
-
-    # Serve the |tuf_root| using 'pm serve' and configure the target to pull
-    # from it.
-    # TODO(kmarshall): Use -q to suppress pm serve output once blob push
-    # is confirmed to be running stably on bots.
-    serve_port = common.GetAvailableTcpPort()
-    pm_serve_task = subprocess.Popen(
-        [PM, 'serve', '-d', os.path.join(tuf_root, 'repository'), '-l',
-         ':%d' % serve_port, '-q'])
-    remote_port = common.ConnectPortForwardingTask(target, serve_port, 0)
-    _RegisterAmberRepository(target, tuf_root, remote_port)
-
-    # Install all packages.
-    for next_package_path in all_packages:
-      install_package_name, package_version = GetPackageInfo(next_package_path)
-      logging.info('Installing %s version %s.' %
-                   (install_package_name, package_version))
-      return_code = target.RunCommand(['amber_ctl', 'get_up', '-n',
-                                       install_package_name, '-v',
-                                       package_version],
-                                       timeout_secs=_INSTALL_TIMEOUT_SECS)
-      if return_code != 0:
-        raise Exception('Error while installing %s.' % install_package_name)
+    target.InstallPackage(package_path, package_name, package_deps)
 
     if system_logger:
       log_output_quit_event.set()
@@ -310,8 +196,11 @@ def RunPackage(output_dir, target, package_path, package_name,
       output_fd = process.stdout.fileno()
 
     # Run the log data through the symbolizer process.
-    build_ids_path = os.path.join(os.path.dirname(package_path), 'ids.txt')
-    output_stream = SymbolizerFilter(output_fd, build_ids_path)
+    build_ids_paths = map(
+        lambda package_path: os.path.join(
+            os.path.dirname(package_path), 'ids.txt'),
+        [package_path] + package_deps)
+    output_stream = SymbolizerFilter(output_fd, build_ids_paths)
 
     for next_line in output_stream:
       print next_line.rstrip()
@@ -331,10 +220,5 @@ def RunPackage(output_dir, target, package_path, package_name,
       log_output_quit_event.set()
       log_output_thread.join()
       system_logger.kill()
-
-    _UnregisterAmberRepository(target)
-    if pm_serve_task:
-      pm_serve_task.kill()
-    shutil.rmtree(tuf_root)
 
   return process.returncode

@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/hash/md5.h"
 #include "base/location.h"
-#include "base/md5.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"

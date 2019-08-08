@@ -4,6 +4,9 @@
 
 #include "chrome/browser/offline_pages/android/downloads/offline_page_share_helper.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -13,6 +16,7 @@
 #include "chrome/browser/offline_pages/offline_page_mhtml_archiver.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_model.h"
+#include "components/offline_pages/core/page_criteria.h"
 
 using OfflineItemShareInfo = offline_items_collection::OfflineItemShareInfo;
 
@@ -46,21 +50,25 @@ void OfflinePageShareHelper::GetShareInfo(const ContentId& id,
   content_id_ = id;
   result_cb_ = std::move(result_cb);
 
-  model_->GetPageByGuid(
-      content_id_.id, base::BindOnce(&OfflinePageShareHelper::OnPageGetForShare,
-                                     weak_ptr_factory_.GetWeakPtr()));
+  PageCriteria criteria;
+  criteria.guid = content_id_.id;
+  criteria.maximum_matches = 1;
+  model_->GetPagesWithCriteria(
+      criteria, base::BindOnce(&OfflinePageShareHelper::OnPageGetForShare,
+                               weak_ptr_factory_.GetWeakPtr()));
 }
 
-void OfflinePageShareHelper::OnPageGetForShare(const OfflinePageItem* page) {
-  if (!page) {
+void OfflinePageShareHelper::OnPageGetForShare(
+    const std::vector<OfflinePageItem>& pages) {
+  if (pages.empty()) {
     // Continue to share without share info.
     NotifyCompletion(ShareResult::kSuccess, nullptr);
     return;
   }
-
+  const OfflinePageItem& page = pages[0];
   bool is_suggested =
-      model_->GetPolicyController()->IsSuggested(page->client_id.name_space);
-  bool in_private_dir = model_->IsArchiveInInternalDir(page->file_path);
+      model_->GetPolicyController()->IsSuggested(page.client_id.name_space);
+  bool in_private_dir = model_->IsArchiveInInternalDir(page.file_path);
 
   // Need to publish internal page to public directory to share the file with
   // content URI instead of the web page URL.
@@ -70,7 +78,7 @@ void OfflinePageShareHelper::OnPageGetForShare(const OfflinePageItem* page) {
   }
 
   // Try to share the mhtml file if the page is in public directory.
-  NotifyCompletion(ShareResult::kSuccess, CreateShareInfo(page->file_path));
+  NotifyCompletion(ShareResult::kSuccess, CreateShareInfo(page.file_path));
 }
 
 void OfflinePageShareHelper::AcquireFileAccessPermission() {
@@ -87,16 +95,21 @@ void OfflinePageShareHelper::OnFileAccessPermissionDone(bool granted) {
   }
 
   // Retrieve the offline page again in case it's deleted.
-  model_->GetPageByGuid(
-      content_id_.id,
-      base::BindOnce(&OfflinePageShareHelper::OnPageGetForPublish,
-                     weak_ptr_factory_.GetWeakPtr()));
+  PageCriteria criteria;
+  criteria.guid = content_id_.id;
+  criteria.maximum_matches = 1;
+  model_->GetPagesWithCriteria(
+      criteria, base::BindOnce(&OfflinePageShareHelper::OnPageGetForPublish,
+                               weak_ptr_factory_.GetWeakPtr()));
 }
 
-void OfflinePageShareHelper::OnPageGetForPublish(const OfflinePageItem* page) {
+void OfflinePageShareHelper::OnPageGetForPublish(
+    const std::vector<OfflinePageItem>& pages) {
+  if (pages.empty())
+    return;
   // Publish the page.
   model_->PublishInternalArchive(
-      *page, std::make_unique<OfflinePageMHTMLArchiver>(),
+      pages[0], std::make_unique<OfflinePageMHTMLArchiver>(),
       base::BindOnce(&OfflinePageShareHelper::OnPagePublished,
                      weak_ptr_factory_.GetWeakPtr()));
 }

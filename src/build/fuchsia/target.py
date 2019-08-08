@@ -4,15 +4,44 @@
 
 import boot_data
 import common
+import json
 import logging
+import os
 import remote_cmd
+import shutil
+import subprocess
 import sys
+import tempfile
 import time
 
 
 _SHUTDOWN_CMD = ['dm', 'poweroff']
 _ATTACH_MAX_RETRIES = 10
 _ATTACH_RETRY_INTERVAL = 1
+
+_PM = os.path.join(common.SDK_ROOT, 'tools', 'pm')
+_REPO_NAME = 'chrome_runner'
+
+# Amount of time to wait for Amber to complete package installation, as a
+# mitigation against hangs due to amber/network-related failures.
+_INSTALL_TIMEOUT_SECS = 5 * 60
+
+
+def _GetPackageInfo(package_path):
+  """Returns a tuple with the name and version of a package."""
+
+  # Query the metadata file which resides next to the package file.
+  package_info = json.load(
+      open(os.path.join(os.path.dirname(package_path), 'package')))
+  return (package_info['name'], package_info['version'])
+
+
+def _PublishPackage(tuf_root, package_path):
+  """Publishes a combined FAR package to a TUF repository root."""
+
+  subprocess.check_call(
+      [_PM, 'publish', '-a', '-f', package_path, '-r', tuf_root, '-vt', '-v'],
+      stderr=subprocess.STDOUT)
 
 
 class _MapRemoteDataPathForPackage:
@@ -210,3 +239,108 @@ class Target(object):
     elif self._target_cpu == 'x64':
       return 'x86_64'
     raise Exception('Unknown target_cpu %s:' % self._target_cpu)
+
+
+  def InstallPackage(self, package_path, package_name, package_deps):
+    """Installs a package and it's dependencies on the device. If the package is
+    already installed then it will be updated to the new version.
+
+    package_path: Path to the .far file to be installed.
+    package_name: Package name.
+    package_deps: List of .far files with the packages that the main package
+                  depends on. These packages are installed or updated as well.
+    """
+    try:
+      tuf_root = tempfile.mkdtemp()
+      pm_serve_task = None
+
+      # Publish all packages to the serving TUF repository under |tuf_root|.
+      subprocess.check_call([_PM, 'newrepo', '-repo', tuf_root])
+      all_packages = [package_path] + package_deps
+      for next_package_path in all_packages:
+        _PublishPackage(tuf_root, next_package_path)
+
+      # Serve the |tuf_root| using 'pm serve' and configure the target to pull
+      # from it.
+      serve_port = common.GetAvailableTcpPort()
+      pm_serve_task = subprocess.Popen(
+          [_PM, 'serve', '-d', os.path.join(tuf_root, 'repository'), '-l',
+           ':%d' % serve_port, '-q'])
+      remote_port = common.ConnectPortForwardingTask(self, serve_port, 0)
+      self._RegisterAmberRepository(tuf_root, remote_port)
+
+      # Install all packages.
+      for next_package_path in all_packages:
+        install_package_name, package_version = \
+            _GetPackageInfo(next_package_path)
+        logging.info('Installing %s version %s.' %
+                     (install_package_name, package_version))
+        return_code = self.RunCommand(['amberctl', 'get_up', '-n',
+                                       install_package_name, '-v',
+                                       package_version],
+                                       timeout_secs=_INSTALL_TIMEOUT_SECS)
+        if return_code != 0:
+          raise Exception('Error while installing %s.' % install_package_name)
+
+    finally:
+      self._UnregisterAmberRepository()
+      if pm_serve_task:
+        pm_serve_task.kill()
+      shutil.rmtree(tuf_root)
+
+
+  def _RegisterAmberRepository(self, tuf_repo, remote_port):
+    """Configures a device to use a local TUF repository as an installation
+    source for packages.
+    |tuf_repo|: The host filesystem path to the TUF repository.
+    |remote_port|: The reverse-forwarded port used to connect to instance of
+                   `pm serve` that is serving the contents of |tuf_repo|."""
+
+    # Extract the public signing key for inclusion in the config file.
+    root_keys = []
+    root_json_path = os.path.join(tuf_repo, 'repository', 'root.json')
+    root_json = json.load(open(root_json_path, 'r'))
+    for root_key_id in root_json['signed']['roles']['root']['keyids']:
+      root_keys.append({
+          'Type': root_json['signed']['keys'][root_key_id]['keytype'],
+          'Value': root_json['signed']['keys'][root_key_id]['keyval']['public']
+      })
+
+    # "pm serve" can automatically generate a "config.json" file at query time,
+    # but the file is unusable because it specifies URLs with port
+    # numbers that are unreachable from across the port forwarding boundary.
+    # So instead, we generate our own config file with the forwarded port
+    # numbers instead.
+    config_file = open(os.path.join(tuf_repo, 'repository', 'repo_config.json'),
+                       'w')
+    json.dump({
+        'ID': _REPO_NAME,
+        'RepoURL': "http://127.0.0.1:%d" % remote_port,
+        'BlobRepoURL': "http://127.0.0.1:%d/blobs" % remote_port,
+        'RatePeriod': 10,
+        'RootKeys': root_keys,
+        'StatusConfig': {
+            'Enabled': True
+        },
+        'Auto': True
+    }, config_file)
+    config_file.close()
+
+    # Register the repo.
+    return_code = self.RunCommand(
+        [('amberctl rm_src -n %s; ' +
+          'amberctl add_src -f http://127.0.0.1:%d/repo_config.json')
+         % (_REPO_NAME, remote_port)])
+    if return_code != 0:
+      raise Exception('Error code %d when running amberctl.' % return_code)
+
+
+  def _UnregisterAmberRepository(self):
+    """Unregisters the Amber repository."""
+
+    logging.debug('Unregistering Amber repository.')
+    self.RunCommand(['amberctl', 'rm_src', '-n', _REPO_NAME])
+
+    # Re-enable 'devhost' repo if it's present. This is useful for devices that
+    # were booted with 'fx serve'.
+    self.RunCommand(['amberctl', 'enable_src', '-n', 'devhost'], silent=True)

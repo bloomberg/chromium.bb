@@ -983,7 +983,7 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
   // If the scheme is cryptographic, the SSL certificate must also be valid.
   return !security_state::IsSchemeCryptographic(lastCommittedURL) ||
          security_state::IsSslCertificateValid(
-             self.locationBarModel->GetSecurityLevel(true));
+             self.locationBarModel->GetSecurityLevel());
 }
 
 #pragma mark - PaymentRequestUIDelegate

@@ -35,6 +35,17 @@ class DisplayLockBudgetTest : public RenderingTest {
     return budget.GetCurrentBudgetMs();
   }
 
+  void ResetDeadlineForTesting(YieldingDisplayLockBudget& budget) {
+    budget.deadline_ = CurrentTimeTicks() + TimeDelta::FromMillisecondsD(
+                                                budget.GetCurrentBudgetMs());
+  }
+
+  void ResetBudget(std::unique_ptr<DisplayLockBudget> budget,
+                   DisplayLockContext* context) {
+    ASSERT_TRUE(context->update_budget_);
+    context->update_budget_ = std::move(budget);
+  }
+
  private:
   base::Optional<RuntimeEnabledFeatures::Backup> features_backup_;
 };
@@ -43,7 +54,12 @@ TEST_F(DisplayLockBudgetTest, UnyieldingBudget) {
   // Note that we're not testing the display lock here, just the budget so we
   // can do minimal work to ensure we have a context, ignoring containment and
   // other requirements.
-  SetBodyInnerHTML(R"HTML(
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      div {
+        contain: style layout;
+      }
+    </style>
     <div id="container"></div>
   )HTML");
 
@@ -57,11 +73,8 @@ TEST_F(DisplayLockBudgetTest, UnyieldingBudget) {
   ASSERT_TRUE(element->GetDisplayLockContext());
   UnyieldingDisplayLockBudget budget(element->GetDisplayLockContext());
 
-  // Since the lifecycle is clean, we don't actually need any updates.
-  EXPECT_FALSE(budget.NeedsLifecycleUpdates());
-
-  // Dirtying the element will cause us to do updates.
-  element->GetLayoutObject()->SetNeedsLayout("");
+  // When acquiring, we need to update the layout with the locked size, so we
+  // need an update.
   EXPECT_TRUE(budget.NeedsLifecycleUpdates());
 
   // Check everything twice since it shouldn't matter how many times we ask the
@@ -77,8 +90,6 @@ TEST_F(DisplayLockBudgetTest, UnyieldingBudget) {
     budget.DidPerformPhase(DisplayLockBudget::Phase::kStyle);
     budget.DidPerformPhase(DisplayLockBudget::Phase::kLayout);
     budget.DidPerformPhase(DisplayLockBudget::Phase::kPrePaint);
-    UpdateAllLifecyclePhasesForTest();
-    EXPECT_FALSE(budget.NeedsLifecycleUpdates());
   }
 }
 
@@ -87,6 +98,11 @@ TEST_F(DisplayLockBudgetTest, StrictYieldingBudget) {
   // can do minimal work to ensure we have a context, ignoring containment and
   // other requirements.
   SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        contain: style layout;
+      }
+    </style>
     <div id="container"></div>
   )HTML");
 
@@ -100,11 +116,8 @@ TEST_F(DisplayLockBudgetTest, StrictYieldingBudget) {
   ASSERT_TRUE(element->GetDisplayLockContext());
   StrictYieldingDisplayLockBudget budget(element->GetDisplayLockContext());
 
-  // Since the lifecycle is clean, we don't actually need any updates.
-  EXPECT_FALSE(budget.NeedsLifecycleUpdates());
-
-  // Dirtying the element will cause us to do updates.
-  element->GetLayoutObject()->SetNeedsLayout("");
+  // When acquiring, we need to update the layout with the locked size, so we
+  // need an update.
   EXPECT_TRUE(budget.NeedsLifecycleUpdates());
 
   {
@@ -221,7 +234,12 @@ TEST_F(DisplayLockBudgetTest,
   // Note that we're not testing the display lock here, just the budget so we
   // can do minimal work to ensure we have a context, ignoring containment and
   // other requirements.
-  SetBodyInnerHTML(R"HTML(
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      div {
+        contain: style layout;
+      }
+    </style>
     <div id="container"></div>
   )HTML");
 
@@ -235,18 +253,8 @@ TEST_F(DisplayLockBudgetTest,
   ASSERT_TRUE(element->GetDisplayLockContext());
   StrictYieldingDisplayLockBudget budget(element->GetDisplayLockContext());
 
-  // Since the lifecycle is clean, we don't actually need any updates.
-  EXPECT_FALSE(budget.NeedsLifecycleUpdates());
-
-  // Dirtying the element will cause us to do updates.
-  element->GetLayoutObject()->SetNeedsLayout("");
-  EXPECT_TRUE(budget.NeedsLifecycleUpdates());
-
-  // Cleaning the lifecycle phases makes the budget not want any more updates.
-  UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(budget.NeedsLifecycleUpdates());
-
-  element->GetLayoutObject()->SetNeedsLayout("");
+  // When acquiring, we need to update the layout with the locked size, so we
+  // need an update.
   EXPECT_TRUE(budget.NeedsLifecycleUpdates());
   budget.WillStartLifecycleUpdate();
 
@@ -270,6 +278,11 @@ TEST_F(DisplayLockBudgetTest, YieldingBudget) {
   // can do minimal work to ensure we have a context, ignoring containment and
   // other requirements.
   SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        contain: style layout;
+      }
+    </style>
     <div id="container"></div>
   )HTML");
 
@@ -285,11 +298,8 @@ TEST_F(DisplayLockBudgetTest, YieldingBudget) {
 
   WTF::ScopedMockClock clock;
 
-  // Since the lifecycle is clean, we don't actually need any updates.
-  EXPECT_FALSE(budget.NeedsLifecycleUpdates());
-
-  // Dirtying the element will cause us to do updates.
-  element->GetLayoutObject()->SetNeedsLayout("");
+  // When acquiring, we need to update the layout with the locked size, so we
+  // need an update.
   EXPECT_TRUE(budget.NeedsLifecycleUpdates());
 
   budget.WillStartLifecycleUpdate();
@@ -309,9 +319,9 @@ TEST_F(DisplayLockBudgetTest, YieldingBudget) {
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kLayout));
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kPrePaint));
 
-  // However, once we're out of budget, we will not do anything.
+  // However, once we're out of budget, we will only do the next phase.
   clock.Advance(TimeDelta::FromMillisecondsD(GetBudgetMs(budget)));
-  EXPECT_FALSE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kStyle));
+  EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kStyle));
   EXPECT_FALSE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kLayout));
   EXPECT_FALSE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kPrePaint));
 
@@ -338,15 +348,15 @@ TEST_F(DisplayLockBudgetTest, YieldingBudget) {
   // Sanity check here: the element still needs layout.
   EXPECT_TRUE(budget.NeedsLifecycleUpdates());
 
-  // Resetting the budget, and advnacing again should yield the same results as
-  // before.
+  // Resetting the budget, and advancing again should yield the same results as
+  // before, except that we will process at least one more phase.
   budget.WillStartLifecycleUpdate();
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kStyle));
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kLayout));
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kPrePaint));
   clock.Advance(TimeDelta::FromMillisecondsD(GetBudgetMs(budget) * 2));
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kStyle));
-  EXPECT_FALSE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kLayout));
+  EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kLayout));
   EXPECT_FALSE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kPrePaint));
 
   // Eventually the budget becomes essentially infinite.
@@ -360,5 +370,84 @@ TEST_F(DisplayLockBudgetTest, YieldingBudget) {
     EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kPrePaint));
     clock.Advance(TimeDelta::FromMillisecondsD(10000));
   }
+}
+
+TEST_F(DisplayLockBudgetTest, YieldingBudgetMarksNextPhase) {
+  // Note that we're not testing the display lock here, just the budget so we
+  // can do minimal work to ensure we have a context, ignoring containment and
+  // other requirements.
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      #container {
+        contain: style layout;
+      }
+    </style>
+    <div id="parent"><div id="container"><div id="child"></div></div></div>
+  )HTML");
+
+  auto* element = GetDocument().getElementById("container");
+  {
+    auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+    ScriptState::Scope scope(script_state);
+    element->getDisplayLockForBindings()->acquire(script_state, nullptr);
+  }
+  UpdateAllLifecyclePhasesForTest();
+
+  ASSERT_TRUE(element->GetDisplayLockContext());
+  ASSERT_TRUE(element->GetDisplayLockContext()->IsLocked());
+
+  auto budget_owned = base::WrapUnique(
+      new YieldingDisplayLockBudget(element->GetDisplayLockContext()));
+  ;
+  auto* budget = budget_owned.get();
+  {
+    auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+    ScriptState::Scope scope(script_state);
+    element->getDisplayLockForBindings()->update(script_state);
+    ResetBudget(std::move(budget_owned), element->GetDisplayLockContext());
+  }
+
+  WTF::ScopedMockClock clock;
+
+  // When acquiring, we need to update the layout with the locked size, so we
+  // need an update.
+  EXPECT_TRUE(budget->NeedsLifecycleUpdates());
+
+  // Dirtying the element will cause us to do updates.
+  GetDocument().getElementById("child")->SetInnerHTMLFromString("a");
+
+  auto* parent = GetDocument().getElementById("parent");
+  EXPECT_TRUE(budget->NeedsLifecycleUpdates());
+
+  budget->WillStartLifecycleUpdate();
+  // Initially all of the phase checks should return true, since we don't know
+  // which phase the system wants to process next.
+  EXPECT_TRUE(budget->ShouldPerformPhase(DisplayLockBudget::Phase::kStyle));
+  EXPECT_TRUE(budget->ShouldPerformPhase(DisplayLockBudget::Phase::kLayout));
+  EXPECT_TRUE(budget->ShouldPerformPhase(DisplayLockBudget::Phase::kPrePaint));
+
+  EXPECT_TRUE(parent->NeedsStyleRecalc() || parent->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(element->NeedsStyleRecalc() || element->ChildNeedsStyleRecalc());
+
+  clock.Advance(TimeDelta::FromMillisecondsD(GetBudgetMs(*budget) * 2));
+  EXPECT_TRUE(budget->ShouldPerformPhase(DisplayLockBudget::Phase::kStyle));
+  EXPECT_FALSE(budget->ShouldPerformPhase(DisplayLockBudget::Phase::kLayout));
+
+  GetDocument().UpdateStyleAndLayoutTree();
+
+  EXPECT_FALSE(budget->ShouldPerformPhase(DisplayLockBudget::Phase::kLayout));
+
+  EXPECT_FALSE(parent->NeedsStyleRecalc() || parent->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(element->NeedsStyleRecalc() || element->ChildNeedsStyleRecalc());
+
+  EXPECT_FALSE(parent->GetLayoutObject()->NeedsLayout());
+  EXPECT_TRUE(element->GetLayoutObject()->NeedsLayout());
+
+  ResetDeadlineForTesting(*budget);
+  budget->DidPerformPhase(DisplayLockBudget::Phase::kStyle);
+  EXPECT_TRUE(budget->ShouldPerformPhase(DisplayLockBudget::Phase::kLayout));
+
+  EXPECT_TRUE(parent->GetLayoutObject()->NeedsLayout());
+  EXPECT_TRUE(element->GetLayoutObject()->NeedsLayout());
 }
 }  // namespace blink

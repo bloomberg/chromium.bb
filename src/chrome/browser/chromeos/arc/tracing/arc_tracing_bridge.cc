@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_bridge.h"
 
-#include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -17,9 +17,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_config.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
@@ -110,7 +110,8 @@ class ArcTracingDataSource : public tracing::ProducerClient::DataSourceBase {
 
   ArcTracingDataSource()
       : DataSourceBase(tracing::mojom::kArcTraceDataSourceName),
-        perfetto_task_runner_(tracing::ProducerClient::Get()->GetTaskRunner()) {
+        perfetto_task_runner_(
+            tracing::ProducerClient::Get()->GetTaskRunner()->task_runner()) {
     tracing::ProducerClient::Get()->AddDataSource(this);
   }
 

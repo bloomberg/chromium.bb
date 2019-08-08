@@ -18,7 +18,7 @@ namespace blink {
 
 MediaControlVolumeSliderElement::MediaControlVolumeSliderElement(
     MediaControlsImpl& media_controls)
-    : MediaControlSliderElement(media_controls, kMediaIgnore) {
+    : MediaControlSliderElement(media_controls) {
   setAttribute(html_names::kMaxAttr, "1");
   setAttribute(html_names::kAriaValuemaxAttr, "100");
   setAttribute(html_names::kAriaValueminAttr, "0");

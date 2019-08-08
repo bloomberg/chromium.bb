@@ -37,7 +37,11 @@ by a child template that "extends" this file.
     <uses-permission-sdk-23 android:name="android.permission.BLUETOOTH_ADMIN"/>
     <uses-permission-sdk-23 android:name="android.permission.READ_CONTACTS"/>
     <uses-permission-sdk-23 android:name="android.permission.REORDER_TASKS"/>
-    <uses-permission-sdk-23 android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+    <!-- notouch build doesn't support downloads home and shouldn't need this permission -->
+    {% set notouch_build = notouch_build|default(0) %}
+    {% if notouch_build == "false" %}
+        <uses-permission-sdk-23 android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+    {% endif %}
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
@@ -48,9 +52,6 @@ by a child template that "extends" this file.
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
-    {% if target_sdk_version|int > 28 or target_sdk_version == "Q" %}
-        <uses-permission-sdk-23 android:name="android.permission.READ_MEDIA_IMAGES"/>
-    {% endif %}
     <uses-permission android:name="android.permission.NFC"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
@@ -132,6 +133,9 @@ by a child template that "extends" this file.
         android:largeHeap="false"
         android:manageSpaceActivity="@string/manage_space_activity"
         android:supportsRtl="true"
+        {% if (use_zygote|default(false) == 'true') %}
+        android:zygotePreloadName="org.chromium.content.app.ZygotePreload"
+        {% endif %}
         {% if backup_key is defined %}
         android:allowBackup="true"
         android:backupAgent="org.chromium.chrome.browser.ChromeBackupAgent"
@@ -182,7 +186,7 @@ by a child template that "extends" this file.
              the module installation will not automatically bring in DFM's
              manifest entries. -->
         <meta-data android:name="com.google.ar.core.min_apk_version"
-            android:value="181012000"/>
+            android:value="190310000"/>
         <activity
             android:name="com.google.ar.core.InstallActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
@@ -341,6 +345,30 @@ by a child template that "extends" this file.
             </intent-filter>
         </activity>
 
+        {% if notouch_build == "true" %}
+        <activity-alias android:name="com.google.android.apps.chrome.DinoActivity"
+            android:targetActivity="org.chromium.chrome.browser.touchless.DinoActivity"
+            android:exported="true">
+            <intent-filter android:priority="-1">
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity android:name="org.chromium.chrome.browser.touchless.DinoActivity"
+          android:theme="@style/Theme.Chromium.Activity"
+            android:icon="@mipmap/dino"
+            android:label="@string/dino_game_title"
+            android:exported="false"
+            android:persistableMode="persistNever"
+            android:launchMode="singleTask"
+            android:taskAffinity=""
+            android:noHistory="true"
+            {{ self.chrome_activity_common() }}>
+          </activity>
+        {% endif %}
+
         <activity android:name="org.chromium.chrome.browser.LauncherShortcutActivity"
             android:theme="@android:style/Theme.NoDisplay"
             android:taskAffinity=""
@@ -425,6 +453,15 @@ by a child template that "extends" this file.
             {{ self.supports_vr() }}
             {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
+        <activity android:name="org.chromium.chrome.browser.customtabs.TranslucentCustomTabActivity"
+                  android:theme="@style/Theme.Chromium.Activity.FakeTranslucent"
+                  android:exported="false"
+            {{ self.chrome_activity_common() }}
+            {{ self.supports_video_persistence() }}
+            >
+            {{ self.supports_vr() }}
+            {{ self.extra_web_rendering_activity_definitions() }}
+        </activity>
         <activity android:name="org.chromium.chrome.browser.customtabs.PaymentHandlerActivity"
             android:theme="@style/Theme.Chromium.Activity.Translucent"
             android:exported="false"
@@ -477,13 +514,22 @@ by a child template that "extends" this file.
         <!-- ChromeTabbedActivity related -->
         <activity android:name="org.chromium.chrome.browser.ChromeTabbedActivity"
             android:theme="@style/Theme.Chromium.TabbedMode"
+            {% if notouch_build == "true" %}
+            android:exported="false"
+            {% else %}
             android:exported="true"
+            {% endif %}
             android:launchMode="singleTask"
             {# We can only use blocks once in Jinja, for future substitutions we use
             self.supports_video_persistence(). #}
             {% block supports_video_persistence %}
+            {% if notouch_build == "true" %}
+            android:supportsPictureInPicture="false"
+            android:resizeableActivity="false"
+            {% else %}
             android:supportsPictureInPicture="true"
             android:resizeableActivity="true"
+            {% endif %}
             {% endblock %}
             {% block chrome_activity_common %}
             android:windowSoftInputMode="adjustResize"
@@ -509,7 +555,9 @@ by a child template that "extends" this file.
         </activity>
         <!-- TODO(crbug.com/780674): retarget .Main back to CTA for non-modern APK -->
         <activity-alias android:name="com.google.android.apps.chrome.Main"
-            {% if min_sdk_version|int < 21 %}
+            {% if notouch_build == "true" %}
+            android:targetActivity="org.chromium.chrome.browser.touchless.NoTouchActivity"
+            {% elif min_sdk_version|int < 21 %}
             android:targetActivity="org.chromium.chrome.browser.document.ChromeLauncherActivity"
             {% else %}
             android:targetActivity="org.chromium.chrome.browser.ChromeTabbedActivity"
@@ -549,7 +597,6 @@ by a child template that "extends" this file.
             {{ self.chrome_activity_common() }}>
             {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
-        {% set notouch_build = notouch_build|default(0) %}
         {% if notouch_build == "true" %}
         <activity android:name="org.chromium.chrome.browser.touchless.NoTouchActivity"
             android:theme="@style/Theme.Chromium.Activity"
@@ -604,8 +651,16 @@ by a child template that "extends" this file.
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
             android:exported="false">
         </activity>
+        {% if notouch_build == "true" %}
+        <activity-alias android:name="org.chromium.chrome.browser.preferences.Preferences"
+            android:targetActivity="org.chromium.chrome.browser.touchless.TouchlessPreferences">
+        </activity-alias>
+        <activity android:name="org.chromium.chrome.browser.touchless.TouchlessPreferences"
+            android:theme="@style/Theme.Chromium.Preferences.Touchless"
+        {% else %}
         <activity android:name="org.chromium.chrome.browser.preferences.Preferences"
             android:theme="@style/Theme.Chromium.Preferences"
+        {% endif %}
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
             android:label="@string/preferences"
             android:exported="false">
@@ -659,6 +714,15 @@ by a child template that "extends" this file.
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
         </activity>
 
+        {% if notouch_build == "true" %}
+        <activity android:name="org.chromium.chrome.browser.download.TouchlessDownloadActivity"
+            android:theme="@style/Theme.Chromium.Activity.Fullscreen"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
+            android:exported="false"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
+        </activity>
+        {% endif %}
+
         <!-- Activities for history. -->
         <activity android:name="org.chromium.chrome.browser.history.HistoryActivity"
             android:theme="@style/Theme.Chromium.Activity.Fullscreen"
@@ -686,6 +750,16 @@ by a child template that "extends" this file.
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <!-- Non-exported alias that only Chrome can launch to verify shortcut intent comes from
+             Chrome (ShortcutManager on O+ launches under the shortcut creator's uid). -->
+        <activity-alias android:name="org.chromium.chrome.browser.webapps.SecureWebAppLauncher"
+            android:targetActivity="org.chromium.chrome.browser.webapps.WebappLauncherActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="org.chromium.chrome.browser.webapps.WebappManager.ACTION_START_SECURE_WEBAPP" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
         <activity-alias android:name="com.google.android.apps.chrome.webapps.WebappManager"
             android:targetActivity="org.chromium.chrome.browser.webapps.WebappLauncherActivity">
         </activity-alias>
@@ -769,6 +843,15 @@ by a child template that "extends" this file.
             {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
         {% endfor %}
+
+        <activity android:name="org.chromium.chrome.browser.webapps.ActivateWebApkActivity"
+            android:theme="@android:style/Theme.NoDisplay"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="org.chromium.chrome.browser.webapps.ActivateWebApkActivity.ACTIVATE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
         <activity android:name="org.chromium.chrome.browser.media.router.caf.remoting.CafExpandedControllerActivity"
             android:theme="@style/Theme.Chromium.Activity"
@@ -877,13 +960,6 @@ by a child template that "extends" this file.
             </intent-filter>
             {% endif %}
         </receiver>
-
-        {% if channel in ['default'] %}
-        <!-- Not used at this point -->
-        <service android:name="org.chromium.chrome.browser.browserservices.ClearDataService"
-            android:exported="false">
-        </service>
-        {% endif %}
 
         <activity android:name="org.chromium.chrome.browser.browserservices.ClearDataDialogActivity"
             android:theme="@style/Theme.Chromium.ClearDataDialogActivity"
@@ -1105,6 +1181,8 @@ by a child template that "extends" this file.
             tools:ignore="ExportedService">
             <intent-filter>
               <action android:name="android.support.customtabs.action.CustomTabsService" />
+              <category android:name="androidx.browser.trusted.category.TrustedWebActivities"/>
+              <category android:name="androidx.browser.trusted.category.TrustedWebActivitySplashScreensV1"/>
             </intent-filter>
         </service>
         <service android:name="android.support.customtabs.PostMessageService" />
@@ -1136,6 +1214,9 @@ by a child template that "extends" this file.
             android:permission="{{ manifest_package }}.permission.CHILD_SERVICE"
             android:isolatedProcess="true"
             android:exported="{{sandboxed_service_exported|default(false)}}"
+            {% if (use_zygote|default(false) == 'true') %}
+            android:useAppZygote="true"
+            {% endif %}
             {% if (sandboxed_service_exported|default(false)) == 'true' %}
             android:externalService="true"
             tools:ignore="ExportedService"
@@ -1159,13 +1240,6 @@ android:value="true" />
             android:exported="false" />
         {% endfor %}
 
-        <receiver android:name="org.chromium.chrome.browser.download.DownloadBroadcastReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.DOWNLOAD_NOTIFICATION_CLICKED"/>
-            </intent-filter>
-        </receiver>
-
         <receiver android:name="org.chromium.chrome.browser.notifications.NotificationIntentInterceptor$Receiver"
             android:exported="false"/>
 
@@ -1174,6 +1248,13 @@ android:value="true" />
         <receiver android:name="org.chromium.chrome.browser.ntp.ContentSuggestionsNotifier$DeleteReceiver"
             android:exported="false"/>
         <receiver android:name="org.chromium.chrome.browser.ntp.ContentSuggestionsNotifier$TimeoutReceiver"
+            android:exported="false"/>
+
+        <receiver android:name="org.chromium.chrome.browser.send_tab_to_self.NotificationManager$TapReceiver"
+            android:exported="false"/>
+        <receiver android:name="org.chromium.chrome.browser.send_tab_to_self.NotificationManager$DeleteReceiver"
+            android:exported="false"/>
+        <receiver android:name="org.chromium.chrome.browser.send_tab_to_self.NotificationManager$TimeoutReceiver"
             android:exported="false"/>
 
         <receiver android:name="org.chromium.chrome.browser.offlinepages.prefetch.PrefetchedPagesNotifier$ClickReceiver"
@@ -1228,6 +1309,8 @@ android:value="true" />
         <service android:name="org.chromium.chrome.browser.tracing.TracingNotificationService"
             android:exported="false"/>
 
+        <receiver android:name="org.chromium.chrome.browser.omaha.UpdateNotificationController$UpdateNotificationReceiver"
+            android:exported="false"/>
 
         <meta-data android:name="org.chromium.content.browser.SMART_CLIP_PROVIDER"
             android:value="org.chromium.content_public.browser.SmartClipProvider"/>

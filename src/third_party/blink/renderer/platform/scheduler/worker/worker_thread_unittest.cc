@@ -119,28 +119,6 @@ TEST_F(WorkerThreadTest, TestDefaultTask) {
   completion.Wait();
 }
 
-#if defined(OS_LINUX)
-#define MAYBE_TestTaskExecutedBeforeThreadDeletion DISABLED_TestTaskExecutedBeforeThreadDeletion
-#else
-#define MAYBE_TestTaskExecutedBeforeThreadDeletion TestTaskExecutedBeforeThreadDeletion
-#endif
-TEST_F(WorkerThreadTest, MAYBE_TestTaskExecutedBeforeThreadDeletion) {
-  MockTask task;
-  base::WaitableEvent completion(
-      base::WaitableEvent::ResetPolicy::AUTOMATIC,
-      base::WaitableEvent::InitialState::NOT_SIGNALED);
-
-  EXPECT_CALL(task, Run());
-  ON_CALL(task, Run()).WillByDefault(Invoke([&completion]() {
-    completion.Signal();
-  }));
-
-  PostCrossThreadTask(
-      *thread_->GetTaskRunner(), FROM_HERE,
-      CrossThreadBind(&MockTask::Run, WTF::CrossThreadUnretained(&task)));
-  thread_.reset();
-}
-
 TEST_F(WorkerThreadTest, TestTaskObserver) {
   std::string calls;
   TestObserver observer(&calls);

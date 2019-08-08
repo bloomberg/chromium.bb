@@ -7,12 +7,16 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/storage_partition.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 MockBrowsingDataFileSystemHelper::MockBrowsingDataFileSystemHelper(
-    Profile* profile) {
-}
+    Profile* profile)
+    : BrowsingDataFileSystemHelper(
+          content::BrowserContext::GetDefaultStoragePartition(profile)
+              ->GetFileSystemContext()) {}
 
 MockBrowsingDataFileSystemHelper::~MockBrowsingDataFileSystemHelper() {
 }

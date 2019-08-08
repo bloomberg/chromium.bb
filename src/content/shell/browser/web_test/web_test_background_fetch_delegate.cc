@@ -6,22 +6,26 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/download/content/factory/download_service_factory.h"
+#include "components/download/content/factory/download_service_factory_helper.h"
 #include "components/download/public/background_service/clients.h"
 #include "components/download/public/background_service/download_metadata.h"
 #include "components/download/public/background_service/download_params.h"
 #include "components/download/public/background_service/download_service.h"
 #include "components/download/public/background_service/features.h"
+#include "components/keyed_service/core/simple_key_map.h"
+#include "components/keyed_service/core/test_simple_factory_key.h"
 #include "content/public/browser/background_fetch_description.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "ui/gfx/geometry/size.h"
@@ -244,14 +248,19 @@ void WebTestBackgroundFetchDelegate::CreateDownloadJob(
       base::test::ScopedFeatureList download_service_configuration;
       download_service_configuration.InitAndEnableFeatureWithParameters(
           download::kDownloadServiceFeature, {{"start_up_delay_ms", "0"}});
-
+      auto* url_loader_factory =
+          BrowserContext::GetDefaultStoragePartition(browser_context_)
+              ->GetURLLoaderFactoryForBrowserProcess()
+              .get();
+      SimpleFactoryKey* simple_key =
+          SimpleKeyMap::GetInstance()->GetForBrowserContext(browser_context_);
       download_service_ =
           base::WrapUnique(download::BuildInMemoryDownloadService(
-              browser_context_, std::move(clients),
-              GetNetworkConnectionTracker(), base::FilePath(),
+              simple_key, std::move(clients), GetNetworkConnectionTracker(),
+              base::FilePath(),
               BrowserContext::GetBlobStorageContext(browser_context_),
-              base::CreateSingleThreadTaskRunnerWithTraits(
-                  {BrowserThread::IO})));
+              base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
+              url_loader_factory));
     }
   }
 }

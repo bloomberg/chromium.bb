@@ -41,6 +41,7 @@ per-file buffer_format*=reveman@chromium.org
 per-file buffer_format*=dcastagna@chromium.org
 per-file buffer_format*=rjkroege@chromium.org
 per-file buffer_format*=spang@chromium.org
+per-file buffer_usage*=rjkroege@chromium.org
 per-file *buffer_types.*=reveman@chromium.org
 per-file *buffer_types.*=dcastagna@chromium.org
 per-file *buffer_types.*=rjkroege@chromium.org

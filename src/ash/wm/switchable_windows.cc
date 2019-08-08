@@ -12,8 +12,8 @@ namespace ash {
 namespace wm {
 
 const int kSwitchableWindowContainerIds[] = {
-    kShellWindowId_DefaultContainer, kShellWindowId_AlwaysOnTopContainer,
-    kShellWindowId_AppListContainer};
+    kShellWindowId_DefaultContainerDeprecated,
+    kShellWindowId_AlwaysOnTopContainer};
 
 const size_t kSwitchableWindowContainerIdsLength =
     base::size(kSwitchableWindowContainerIds);

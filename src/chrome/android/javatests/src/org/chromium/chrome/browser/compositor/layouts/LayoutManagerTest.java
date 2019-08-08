@@ -24,7 +24,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -44,6 +43,7 @@ import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModel.MockTabModelDelegate;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
 /**
@@ -504,15 +504,12 @@ public class LayoutManagerTest implements MockTabModelDelegate {
     @Before
     public void setUp() throws Exception {
         // Load the browser process.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
-                            .handleSynchronousStartup();
-                } catch (ProcessInitException e) {
-                    Assert.fail("Failed to load browser");
-                }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            try {
+                ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
+                        .handleSynchronousStartup();
+            } catch (ProcessInitException e) {
+                Assert.fail("Failed to load browser");
             }
         });
     }

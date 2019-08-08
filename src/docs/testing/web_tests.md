@@ -104,31 +104,39 @@ Example: To run the web tests with a debug build of `content_shell`, but only
 test the SVG tests and run pixel tests, you would run:
 
 ```bash
-python third_party/blink/tools/run_web_tests.py -t Default svg
+[python] third_party/blink/tools/run_web_tests.py -t Default svg
 ```
 ***
 
 As a final quick-but-less-robust alternative, you can also just use the
-content_shell executable to run specific tests by using (for Windows):
+content_shell executable to run specific tests by using (example on Windows):
 
 ```bash
-out/Default/content_shell.exe --run-web-tests --no-sandbox full_test_source_path
+out/Default/content_shell.exe --run-web-tests <url>|<full_test_source_path>|<relative_test_path>
 ```
 
 as in:
 
 ```bash
-out/Default/content_shell.exe --run-web-tests --no-sandbox \
+out/Default/content_shell.exe --run-web-tests \
     c:/chrome/src/third_party/blink/web_tests/fast/forms/001.html
+```
+or
+
+```bash
+out/Default/content_shell.exe --run-web-tests fast/forms/001.html
 ```
 
 but this requires a manual diff against expected results, because the shell
-doesn't do it for you.
+doesn't do it for you. It also just dumps the text result only (as the dump of
+pixels and audio binary data is not human readable).
+See [Running Web Tests Using the Content Shell](web_tests_in_content_shell.md]
+for more details of running `content_shell`.
 
 To see a complete list of arguments supported, run:
 
 ```bash
-python run_web_tests.py --help
+python third_party/blink/tools/run_web_tests.py --help
 ```
 
 *** note
@@ -320,12 +328,12 @@ tips for finding the problem.
       spacing or box sizes are often unimportant, especially around fonts and
       form controls. Differences in wording of JS error messages are also
       usually acceptable.
-    * `python run_web_tests.py path/to/your/test.html --full-results-html`
-      produces a page including links to the expected result, actual result,
-      and diff.
-    * Add the `--sources` option to `run_web_tests.py` to see exactly which
-      expected result it's comparing to (a file next to the test, something in
-      platform/mac/, something in platform/chromium-win/, etc.)
+    * `python run_web_tests.py path/to/your/test.html` produces a page listing
+      all test results. Those which fail their expectations will include links
+      to the expected result, actual result, and diff. These results are saved
+      to `$root_build_dir/layout-test-results`.
+        * Alternatively the `--results-directory=path/for/output/` option allows
+          you to specify an alternative directory for the output to be saved to.
     * If you're still sure it's correct, rebaseline the test (see below).
       Otherwise...
 * If you're lucky, your test is one that runs properly when you navigate to it

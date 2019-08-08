@@ -88,12 +88,12 @@ DocumentTimeline::DocumentTimeline(Document* document,
     timing_ = timing;
 
   if (Platform::Current()->IsThreadedAnimationEnabled())
-    compositor_timeline_ = CompositorAnimationTimeline::Create();
+    compositor_timeline_ = std::make_unique<CompositorAnimationTimeline>();
 
   DCHECK(document);
 }
 
-bool DocumentTimeline::IsActive() {
+bool DocumentTimeline::IsActive() const {
   return document_->GetPage();
 }
 

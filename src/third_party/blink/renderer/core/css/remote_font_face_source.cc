@@ -124,12 +124,14 @@ void RemoteFontFaceSource::NotifyFinished(Resource* resource) {
   if (font->GetStatus() == ResourceStatus::kDecodeError) {
     font_selector_->GetExecutionContext()->AddConsoleMessage(
         ConsoleMessage::Create(
-            kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
+            mojom::ConsoleMessageSource::kOther,
+            mojom::ConsoleMessageLevel::kWarning,
             "Failed to decode downloaded font: " + font->Url().ElidedString()));
     if (font->OtsParsingMessage().length() > 1) {
       font_selector_->GetExecutionContext()->AddConsoleMessage(
           ConsoleMessage::Create(
-              kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
+              mojom::ConsoleMessageSource::kOther,
+              mojom::ConsoleMessageLevel::kWarning,
               "OTS parsing error: " + font->OtsParsingMessage()));
     }
   }
@@ -279,7 +281,8 @@ void RemoteFontFaceSource::BeginLoadIfNeeded() {
     if (font->IsLowPriorityLoadingAllowedForRemoteFont()) {
       font_selector_->GetExecutionContext()->AddConsoleMessage(
           ConsoleMessage::Create(
-              kInterventionMessageSource, mojom::ConsoleMessageLevel::kInfo,
+              mojom::ConsoleMessageSource::kIntervention,
+              mojom::ConsoleMessageLevel::kInfo,
               "Slow network is detected. See "
               "https://www.chromestatus.com/feature/5636954674692096 for more "
               "details. Fallback font will be used while loading: " +

@@ -242,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
   NegotiateCall(left_tab_, right_tab_);
 
   std::set<std::string> missing_expected_stats;
-  for (const std::string& type : GetWhitelistedStatsTypes(left_tab_)) {
+  for (const std::string& type : GetMandatoryStatsTypes(left_tab_)) {
     missing_expected_stats.insert(type);
   }
   for (const std::string& type : VerifyStatsGeneratedPromise(left_tab_)) {

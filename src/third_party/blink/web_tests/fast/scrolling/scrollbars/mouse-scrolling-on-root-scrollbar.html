@@ -1,0 +1,44 @@
+<!DOCTYPE>
+<title>Clicking on a non-custom scrollbar should scroll its scroller</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/gesture-util.js"></script>
+<body style="height: 1000px; width: 1000px">
+<script>
+if (window.internals)
+    internals.settings.setScrollAnimatorEnabled(false);
+
+window.onload = () => {
+  const BUTTON_WIDTH = 15;
+  const SCROLL_CORNER = BUTTON_WIDTH;
+
+  promise_test (async () => {
+    await waitForCompositorCommit();
+
+    // Click on the Down arrow of the viewport.
+    let x = window.innerWidth - BUTTON_WIDTH / 2;
+    let y = window.innerHeight - SCROLL_CORNER - BUTTON_WIDTH / 2;
+    await mouseClickOn(x, y);
+    assert_equals(window.scrollY, 40, "Pressing the down arrow didn't scroll.");
+
+    // Click on the Up arrow of the viewport.
+    x = window.innerWidth - BUTTON_WIDTH / 2;
+    y = BUTTON_WIDTH / 2;
+	await mouseClickOn(x, y);
+    assert_equals(window.scrollY, 0, "Pressing the up arrow didn't scroll.");
+
+    // Click on the Right arrow of the viewport.
+    x = window.innerWidth - SCROLL_CORNER - BUTTON_WIDTH / 2;
+    y = window.innerHeight - BUTTON_WIDTH / 2;
+	await mouseClickOn(x, y);
+    assert_equals(window.scrollX, 40, "Pressing the right arrow didn't scroll.");
+
+    // Click on the Left arrow of the viewport.
+    x = BUTTON_WIDTH / 2;
+    y = window.innerHeight - BUTTON_WIDTH / 2;
+	await mouseClickOn(x, y);
+    assert_equals(window.scrollX, 0, "Pressing the left arrow didn't scroll.");
+  }, "Test mouse click on non-custom scrollbars.");
+}
+</script>
+</body>

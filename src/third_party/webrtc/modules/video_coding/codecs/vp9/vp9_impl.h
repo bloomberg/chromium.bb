@@ -44,13 +44,11 @@ class VP9EncoderImpl : public VP9Encoder {
                  size_t max_payload_size) override;
 
   int Encode(const VideoFrame& input_image,
-             const CodecSpecificInfo* codec_specific_info,
-             const std::vector<FrameType>* frame_types) override;
+             const std::vector<VideoFrameType>* frame_types) override;
 
   int RegisterEncodeCompleteCallback(EncodedImageCallback* callback) override;
 
-  int SetRateAllocation(const VideoBitrateAllocation& bitrate_allocation,
-                        uint32_t frame_rate) override;
+  void SetRates(const RateControlParameters& parameters) override;
 
   EncoderInfo GetEncoderInfo() const override;
 
@@ -115,7 +113,6 @@ class VP9EncoderImpl : public VP9Encoder {
   GofInfoVP9 gof_;  // Contains each frame's temporal information for
                     // non-flexible mode.
   bool force_key_frame_;
-  bool different_framerates_used_;
   size_t pics_since_key_;
   uint8_t num_temporal_layers_;
   uint8_t num_spatial_layers_;         // Number of configured SLs
@@ -125,10 +122,13 @@ class VP9EncoderImpl : public VP9Encoder {
   InterLayerPredMode inter_layer_pred_;
   bool external_ref_control_;
   const bool trusted_rate_controller_;
+  const bool dynamic_rate_settings_;
   const bool full_superframe_drop_;
+  bool dropping_only_base_layer_;
+  vpx_svc_frame_drop_t svc_drop_frame_;
   bool first_frame_in_picture_;
   VideoBitrateAllocation current_bitrate_allocation_;
-  absl::optional<VideoBitrateAllocation> requested_bitrate_allocation_;
+  absl::optional<RateControlParameters> requested_rate_settings_;
   bool ss_info_needed_;
 
   std::vector<FramerateController> framerate_controller_;
@@ -185,7 +185,6 @@ class VP9DecoderImpl : public VP9Decoder {
 
   int Decode(const EncodedImage& input_image,
              bool missing_frames,
-             const CodecSpecificInfo* codec_specific_info,
              int64_t /*render_time_ms*/) override;
 
   int RegisterDecodeCompleteCallback(DecodedImageCallback* callback) override;

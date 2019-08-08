@@ -113,7 +113,7 @@ ScriptValue IDBObjectStore::keyPath(ScriptState* script_state) const {
 DOMStringList* IDBObjectStore::indexNames() const {
   IDB_TRACE1("IDBObjectStore::indexNames", "store_name",
              metadata_->name.Utf8());
-  DOMStringList* index_names = DOMStringList::Create();
+  auto* index_names = MakeGarbageCollected<DOMStringList>();
   for (const auto& it : Metadata().indexes)
     index_names->Append(it.value->name);
   index_names->Sort();
@@ -213,7 +213,7 @@ IDBRequest* IDBObjectStore::getAll(ScriptState* script_state,
 
 IDBRequest* IDBObjectStore::getAll(ScriptState* script_state,
                                    const ScriptValue& key_range,
-                                   unsigned long max_count,
+                                   uint32_t max_count,
                                    ExceptionState& exception_state) {
   IDB_TRACE1("IDBObjectStore::getAllRequestSetup", "store_name",
              metadata_->name.Utf8());
@@ -260,7 +260,7 @@ IDBRequest* IDBObjectStore::getAllKeys(ScriptState* script_state,
 
 IDBRequest* IDBObjectStore::getAllKeys(ScriptState* script_state,
                                        const ScriptValue& key_range,
-                                       unsigned long max_count,
+                                       uint32_t max_count,
                                        ExceptionState& exception_state) {
   IDB_TRACE1("IDBObjectStore::getAllKeysRequestSetup", "store_name",
              metadata_->name.Utf8());
@@ -573,13 +573,13 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
   if (base::FeatureList::IsEnabled(kIndexedDBLargeValueWrapping))
     value_wrapper.WrapIfBiggerThan(IDBValueWrapper::kWrapThreshold);
 
-  std::unique_ptr<IDBValue> idb_value = IDBValue::Create(
-      value_wrapper.TakeWireBytes(), value_wrapper.TakeBlobInfo());
+  auto idb_value = std::make_unique<IDBValue>(value_wrapper.TakeWireBytes(),
+                                              value_wrapper.TakeBlobInfo());
 
   request->transit_blob_handles() = value_wrapper.TakeBlobDataHandles();
-  BackendDB()->Put(
-      transaction_->Id(), Id(), std::move(idb_value), IDBKey::Clone(key),
-      put_mode, request->CreateWebCallbacks().release(), std::move(index_keys));
+  transaction_->transaction_backend()->Put(
+      Id(), std::move(idb_value), IDBKey::Clone(key), put_mode,
+      request->CreateWebCallbacks().release(), std::move(index_keys));
 
   return request;
 }
@@ -694,17 +694,6 @@ namespace {
 // cursor success handlers are kept alive.
 class IndexPopulator final : public NativeEventListener {
  public:
-  static IndexPopulator* Create(
-      ScriptState* script_state,
-      IDBDatabase* database,
-      int64_t transaction_id,
-      int64_t object_store_id,
-      scoped_refptr<const IDBIndexMetadata> index_metadata) {
-    return MakeGarbageCollected<IndexPopulator>(script_state, database,
-                                                transaction_id, object_store_id,
-                                                std::move(index_metadata));
-  }
-
   IndexPopulator(ScriptState* script_state,
                  IDBDatabase* database,
                  int64_t transaction_id,
@@ -843,7 +832,8 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* script_state,
   scoped_refptr<IDBIndexMetadata> index_metadata =
       base::AdoptRef(new IDBIndexMetadata(
           name, index_id, key_path, options->unique(), options->multiEntry()));
-  IDBIndex* index = IDBIndex::Create(index_metadata, this, transaction_.Get());
+  auto* index =
+      MakeGarbageCollected<IDBIndex>(index_metadata, this, transaction_.Get());
   index_map_.Set(name, index);
   metadata_->indexes.Set(index_id, index_metadata);
 
@@ -858,7 +848,7 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* script_state,
 
   // This is kept alive by being the success handler of the request, which is in
   // turn kept alive by the owning transaction.
-  IndexPopulator* index_populator = IndexPopulator::Create(
+  auto* index_populator = MakeGarbageCollected<IndexPopulator>(
       script_state, transaction()->db(), transaction_->Id(), Id(),
       std::move(index_metadata));
   index_request->setOnsuccess(index_populator);
@@ -896,8 +886,8 @@ IDBIndex* IDBObjectStore::index(const String& name,
   scoped_refptr<IDBIndexMetadata> index_metadata =
       Metadata().indexes.at(index_id);
   DCHECK(index_metadata.get());
-  IDBIndex* index =
-      IDBIndex::Create(std::move(index_metadata), this, transaction_.Get());
+  auto* index = MakeGarbageCollected<IDBIndex>(std::move(index_metadata), this,
+                                               transaction_.Get());
   index_map_.Set(name, index);
   return index;
 }

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Targets used by tests.
+
 shared_library("empty_dll") {
   sources = [
     "empty_dll.cc",
@@ -89,18 +91,27 @@ source_set("test_pup_data") {
   sources = [
     "test_pup_data.cc",
     "test_pup_data.h",
+  ]
+
+  deps = [
+    "//base:base",
+    "//chrome/chrome_cleaner/proto:shared_pup_enums_proto",
+    "//chrome/chrome_cleaner/pup_data:pup_data_base",
+  ]
+}
+
+source_set("test_uws_catalog") {
+  # This is not testonly because it is used by the test engine, which can be
+  # used in the full executables to detect test UwS.
+  sources = [
     "test_uws_catalog.cc",
     "test_uws_catalog.h",
   ]
 
   deps = [
-    "//base:base",
-    "//chrome/chrome_cleaner/logging/proto:shared_data_proto",
-    "//chrome/chrome_cleaner/proto:shared_pup_enums_proto",
     "//chrome/chrome_cleaner/pup_data:dynamic_pup",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
     "//chrome/chrome_cleaner/pup_data:test_uws",
-    "//testing/gtest",
   ]
 }
 
@@ -114,10 +125,10 @@ source_set("test_scoped_service_handle") {
 
   deps = [
     ":test_executables",
-    ":test_strings",
     "//base",
     "//chrome/chrome_cleaner/os:cleaner_os",
     "//chrome/chrome_cleaner/os:common_os",
+    "//testing/gtest",
   ]
 }
 
@@ -138,10 +149,14 @@ source_set("test_util") {
     "file_remover_test_util.h",
     "reboot_deletion_helper.cc",
     "reboot_deletion_helper.h",
+    "scoped_process_protector.cc",
+    "scoped_process_protector.h",
     "test_file_util.cc",
     "test_file_util.h",
     "test_layered_service_provider.cc",
     "test_layered_service_provider.h",
+    "test_native_reg_util.cc",
+    "test_native_reg_util.h",
     "test_registry_util.cc",
     "test_registry_util.h",
     "test_settings_util.cc",
@@ -156,11 +171,13 @@ source_set("test_util") {
   deps = [
     ":test_pup_data",
     ":test_strings",
+    ":test_uws_catalog",
     "//base:base",
     "//base/test:test_support",
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/os:cleaner_os",
     "//chrome/chrome_cleaner/os:common_os",
+    "//chrome/chrome_cleaner/os:file_remover_api",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
     "//chrome/chrome_cleaner/scanner:matcher_util",
     "//chrome/chrome_cleaner/scanner:signature_matcher_api",
@@ -183,6 +200,8 @@ source_set("test_util") {
   ]
 }
 
+# Targets that contain tests.
+
 source_set("unittest_sources") {
   testonly = true
 
@@ -201,6 +220,8 @@ source_set("unittest_sources") {
   ]
 }
 
+# Executable targets.
+
 executable("test_process") {
   testonly = true
 
@@ -215,10 +236,8 @@ executable("test_process") {
     "//base/test:test_support",
     "//build/win:default_exe_manifest",
     "//chrome/chrome_cleaner:other_executable_definitions",
-    "//chrome/chrome_cleaner/engines:dummy_resources",
-    "//chrome/chrome_cleaner/engines:resources",
     "//chrome/chrome_cleaner/os:common_os",
-    "//chrome/chrome_cleaner/pup_data:dummy_signatures",
+    "//chrome/chrome_cleaner/settings:dummy_engine_settings",
   ]
 }
 

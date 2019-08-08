@@ -8,6 +8,8 @@
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_transaction.h"
+#include "net/dns/host_resolver.h"
+#include "net/dns/host_resolver_manager.h"
 #include "net/dns/host_resolver_proc.h"
 #include "net/http/http_stream_factory_test_util.h"
 #include "net/log/net_log.h"
@@ -48,7 +50,7 @@ class TestHostResolverProc : public HostResolverProc {
 class HttpWithDnsOverHttpsTest : public TestWithScopedTaskEnvironment {
  public:
   HttpWithDnsOverHttpsTest()
-      : resolver_(HostResolver::CreateDefaultResolverImpl(nullptr)),
+      : resolver_(HostResolver::CreateStandaloneContextResolver(nullptr)),
         request_context_(true),
         doh_server_(EmbeddedTestServer::Type::TYPE_HTTPS),
         test_server_(EmbeddedTestServer::Type::TYPE_HTTPS),
@@ -151,7 +153,8 @@ class TestHttpDelegate : public HttpStreamRequest::Delegate {
 
   void OnStreamFailed(int status,
                       const NetErrorDetails& net_error_details,
-                      const SSLConfig& used_ssl_config) override {}
+                      const SSLConfig& used_ssl_config,
+                      const ProxyInfo& used_proxy_info) override {}
 
   void OnCertificateError(int status,
                           const SSLConfig& used_ssl_config,
@@ -205,12 +208,13 @@ TEST_F(HttpWithDnsOverHttpsTest, EndToEnd) {
       &request_delegate, false, false, NetLogWithSource()));
   loop.Run();
 
-  std::string group_name(request_info.url.host() + ":" +
-                         request_info.url.port());
+  ClientSocketPool::GroupId group_id(
+      HostPortPair(request_info.url.host(), request_info.url.IntPort()),
+      ClientSocketPool::SocketType::kHttp, false /* privacy_mode */);
   EXPECT_EQ(network_session
                 ->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,
                                 ProxyServer::Direct())
-                ->IdleSocketCountInGroup(group_name),
+                ->IdleSocketCountInGroup(group_id),
             1u);
 
   // Make a request that will trigger a DoH query as well.

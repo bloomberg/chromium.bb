@@ -22,7 +22,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
@@ -263,8 +263,7 @@ bool ParseAndStoreSpec(const std::string& spec_str,
 bool Main(int argc, char** argv) {
   base::AtExitManager at_exit_manager;
   base::MessageLoopForIO message_loop;
-  base::TaskScheduler::CreateAndStartWithDefaultParams(
-      "disk_cache_memory_test");
+  base::ThreadPool::CreateAndStartWithDefaultParams("disk_cache_memory_test");
   base::CommandLine::Init(argc, argv);
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();

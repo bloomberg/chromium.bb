@@ -52,6 +52,10 @@ namespace views {
 class FullscreenHandler;
 class HWNDMessageHandlerDelegate;
 
+namespace test {
+class DesktopWindowTreeHostWinTestApi;
+}
+
 // These two messages aren't defined in winuser.h, but they are sent to windows
 // with captions. They appear to paint the window caption and frame.
 // Unfortunately if you override the standard non-client rendering as we do
@@ -60,13 +64,13 @@ class HWNDMessageHandlerDelegate;
 // window and paint the standard caption/title over the top of the custom one.
 // So we need to handle these messages in CustomFrameWindow to prevent this
 // from happening.
-const int WM_NCUAHDRAWCAPTION = 0xAE;
-const int WM_NCUAHDRAWFRAME = 0xAF;
+constexpr int WM_NCUAHDRAWCAPTION = 0xAE;
+constexpr int WM_NCUAHDRAWFRAME = 0xAF;
 
 // The HWNDMessageHandler sends this message to itself on
 // WM_WINDOWPOSCHANGING. It's used to inform the client if a
 // WM_WINDOWPOSCHANGED won't be received.
-const int WM_WINDOWSIZINGFINISHED = WM_USER;
+constexpr int WM_WINDOWSIZINGFINISHED = WM_USER;
 
 // An object that handles messages for a HWND that implements the views
 // "Custom Frame" look. The purpose of this class is to isolate the windows-
@@ -180,7 +184,9 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   bool is_translucent() const { return is_translucent_; }
 
  private:
-  typedef std::set<DWORD> TouchIDs;
+  friend class ::views::test::DesktopWindowTreeHostWinTestApi;
+
+  using TouchIDs = std::set<DWORD>;
   enum class DwmFrameState { OFF, ON };
 
   // Overridden from WindowImpl:
@@ -494,7 +500,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // Receives Windows Session Change notifications.
   void OnSessionChange(WPARAM status_code);
 
-  typedef std::vector<ui::TouchEvent> TouchEvents;
+  using TouchEvents = std::vector<ui::TouchEvent>;
   // Helper to handle the list of touch events passed in. We need this because
   // touch events on windows don't fire if we enter a modal loop in the context
   // of a touch event.

@@ -76,6 +76,8 @@ class DocumentProvider : public AutocompleteProvider {
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, IsInputLikelyURL);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, ParseDocumentSearchResults);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
+                           ProductDescriptionStringsAndAccessibleLabels);
+  FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
                            ParseDocumentSearchResultsBreakTies);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
                            ParseDocumentSearchResultsBreakTiesCascade);

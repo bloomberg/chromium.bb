@@ -4,17 +4,86 @@
 
 #include "gpu/command_buffer/service/webgpu_decoder_impl.h"
 
+#include <dawn_native/DawnNative.h>
+#include <dawn_wire/WireServer.h>
+
+#include <algorithm>
 #include <memory>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
 #include "gpu/command_buffer/common/webgpu_cmd_format.h"
 #include "gpu/command_buffer/common/webgpu_cmd_ids.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/webgpu_decoder.h"
+#include "ipc/ipc_channel.h"
 
 namespace gpu {
 namespace webgpu {
+
+namespace {
+
+constexpr size_t kMaxWireBufferSize =
+    std::min(IPC::Channel::kMaximumMessageSize,
+             static_cast<size_t>(1024 * 1024));
+
+class WireServerCommandSerializer : public dawn_wire::CommandSerializer {
+ public:
+  explicit WireServerCommandSerializer(DecoderClient* client);
+  ~WireServerCommandSerializer() override = default;
+  void* GetCmdSpace(size_t size) final;
+  bool Flush() final;
+
+ private:
+  DecoderClient* client_;
+  std::vector<uint8_t> buffer_;
+  size_t put_offset_;
+};
+
+WireServerCommandSerializer::WireServerCommandSerializer(DecoderClient* client)
+    : client_(client), buffer_(kMaxWireBufferSize), put_offset_(0) {}
+
+void* WireServerCommandSerializer::GetCmdSpace(size_t size) {
+  // TODO(enga): Handle chunking commands if size > kMaxWireBufferSize.
+  if (size > kMaxWireBufferSize) {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  // |next_offset| should never be more than kMaxWireBufferSize +
+  // kMaxWireBufferSize.
+  DCHECK_LE(put_offset_, kMaxWireBufferSize);
+  DCHECK_LE(size, kMaxWireBufferSize);
+  static_assert(base::CheckAdd(kMaxWireBufferSize, kMaxWireBufferSize)
+                    .IsValid<uint32_t>(),
+                "");
+  uint32_t next_offset = put_offset_ + size;
+
+  if (next_offset > buffer_.size()) {
+    Flush();
+    // TODO(enga): Keep track of how much command space the application is using
+    // and adjust the buffer size accordingly.
+
+    DCHECK_EQ(put_offset_, 0u);
+    next_offset = size;
+  }
+
+  uint8_t* ptr = &buffer_[put_offset_];
+  put_offset_ = next_offset;
+  return ptr;
+}
+
+bool WireServerCommandSerializer::Flush() {
+  if (put_offset_ > 0) {
+    client_->HandleReturnData(base::make_span(buffer_.data(), put_offset_));
+    put_offset_ = 0;
+  }
+  return true;
+}
+
+}  // namespace
 
 class WebGPUDecoderImpl final : public WebGPUDecoder {
  public:
@@ -23,18 +92,13 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
                     gles2::Outputter* outputter);
   ~WebGPUDecoderImpl() override;
 
+  // WebGPUDecoder implementation
+  ContextResult Initialize() override;
+
   // DecoderContext implementation.
   base::WeakPtr<DecoderContext> AsWeakPtr() override {
     NOTIMPLEMENTED();
     return nullptr;
-  }
-  ContextResult Initialize(
-      const scoped_refptr<gl::GLSurface>& surface,
-      const scoped_refptr<gl::GLContext>& context,
-      bool offscreen,
-      const gles2::DisallowedFeatures& disallowed_features,
-      const ContextCreationAttribs& attrib_helper) override {
-    return ContextResult::kSuccess;
   }
   const gles2::ContextState* GetContextState() override {
     NOTREACHED();
@@ -92,9 +156,19 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   bool HasPendingQueries() const override { return false; }
   void ProcessPendingQueries(bool did_finish) override {}
   bool HasMoreIdleWork() const override { return false; }
-  void PerformIdleWork() override { NOTREACHED(); }
-  bool HasPollingWork() const override { return false; }
-  void PerformPollingWork() override { NOTREACHED(); }
+  void PerformIdleWork() override {}
+
+  // TODO(crbug.com/940985): Optimize so that this only returns true when
+  // deviceTick is needed.
+  bool HasPollingWork() const override { return true; }
+
+  void PerformPollingWork() override {
+    DCHECK(dawn_device_);
+    DCHECK(wire_serializer_);
+    dawn_procs_.deviceTick(dawn_device_);
+    wire_serializer_->Flush();
+  }
+
   TextureBase* GetTextureBase(uint32_t client_id) override {
     NOTREACHED();
     return nullptr;
@@ -234,6 +308,14 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   // only if not returning an error.
   error::Error current_decoder_error_ = error::kNoError;
 
+  DawnDevice CreateDefaultDevice();
+
+  std::unique_ptr<WireServerCommandSerializer> wire_serializer_;
+  std::unique_ptr<dawn_native::Instance> dawn_instance_;
+  DawnProcTable dawn_procs_;
+  DawnDevice dawn_device_ = nullptr;
+  std::unique_ptr<dawn_wire::WireServer> wire_server_;
+
   DISALLOW_COPY_AND_ASSIGN(WebGPUDecoderImpl);
 };
 
@@ -260,9 +342,73 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
     DecoderClient* client,
     CommandBufferServiceBase* command_buffer_service,
     gles2::Outputter* outputter)
-    : WebGPUDecoder(client, command_buffer_service, outputter) {}
+    : WebGPUDecoder(client, command_buffer_service, outputter),
+      wire_serializer_(new WireServerCommandSerializer(client)),
+      dawn_instance_(new dawn_native::Instance()),
+      dawn_procs_(dawn_native::GetProcs()) {}
 
-WebGPUDecoderImpl::~WebGPUDecoderImpl() {}
+WebGPUDecoderImpl::~WebGPUDecoderImpl() {
+  // Reset the wire server first so all objects are destroyed before the device.
+  // TODO(enga): Handle Device/Context lost.
+  wire_server_ = nullptr;
+  if (dawn_device_ != nullptr) {
+    dawn_procs_.deviceRelease(dawn_device_);
+  }
+}
+
+ContextResult WebGPUDecoderImpl::Initialize() {
+  dawn_device_ = CreateDefaultDevice();
+  if (dawn_device_ == nullptr) {
+    return ContextResult::kFatalFailure;
+  }
+
+  wire_server_ = std::make_unique<dawn_wire::WireServer>(
+      dawn_device_, dawn_procs_, wire_serializer_.get());
+
+  return ContextResult::kSuccess;
+}
+
+DawnDevice WebGPUDecoderImpl::CreateDefaultDevice() {
+  dawn_instance_->DiscoverDefaultAdapters();
+  std::vector<dawn_native::Adapter> adapters = dawn_instance_->GetAdapters();
+
+  dawn_native::Adapter integrated_gpu_adapter = {};
+  dawn_native::Adapter cpu_adapter = {};
+  dawn_native::Adapter unknown_adapter = {};
+
+  for (dawn_native::Adapter adapter : adapters) {
+    if (adapter.GetBackendType() != dawn_native::BackendType::Null &&
+        adapter.GetBackendType() != dawn_native::BackendType::OpenGL) {
+      switch (adapter.GetDeviceType()) {
+        case dawn_native::DeviceType::DiscreteGPU:
+          // For now, we always prefer the discrete GPU
+          return adapter.CreateDevice();
+        case dawn_native::DeviceType::IntegratedGPU:
+          integrated_gpu_adapter = adapter;
+          break;
+        case dawn_native::DeviceType::CPU:
+          cpu_adapter = adapter;
+          break;
+        case dawn_native::DeviceType::Unknown:
+          unknown_adapter = adapter;
+          break;
+        default:
+          NOTREACHED();
+          break;
+      }
+    }
+  }
+  if (integrated_gpu_adapter) {
+    return integrated_gpu_adapter.CreateDevice();
+  }
+  if (cpu_adapter) {
+    return cpu_adapter.CreateDevice();
+  }
+  if (unknown_adapter) {
+    return unknown_adapter.CreateDevice();
+  }
+  return nullptr;
+}
 
 const char* WebGPUDecoderImpl::GetCommandName(unsigned int command_id) const {
   if (command_id >= kFirstWebGPUCommand && command_id < kNumCommands) {
@@ -337,9 +483,28 @@ error::Error WebGPUDecoderImpl::DoCommands(unsigned int num_commands,
   return result;
 }
 
-error::Error WebGPUDecoderImpl::HandleDummy(uint32_t immediate_data_size,
-                                            const volatile void* cmd_data) {
-  DLOG(ERROR) << "WebGPUDecoderImpl::HandleDummy";
+error::Error WebGPUDecoderImpl::HandleDawnCommands(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile webgpu::cmds::DawnCommands& c =
+      *static_cast<const volatile webgpu::cmds::DawnCommands*>(cmd_data);
+
+  uint32_t size = static_cast<uint32_t>(c.size);
+  uint32_t commands_shm_id = static_cast<uint32_t>(c.commands_shm_id);
+  uint32_t commands_shm_offset = static_cast<uint32_t>(c.commands_shm_offset);
+
+  const volatile char* shm_commands = GetSharedMemoryAs<const volatile char*>(
+      commands_shm_id, commands_shm_offset, size);
+  if (shm_commands == nullptr) {
+    return error::kOutOfBounds;
+  }
+
+  std::vector<char> commands(shm_commands, shm_commands + size);
+  if (!wire_server_->HandleCommands(commands.data(), size)) {
+    NOTREACHED();
+    return error::kLostContext;
+  }
+  wire_serializer_->Flush();
   return error::kNoError;
 }
 

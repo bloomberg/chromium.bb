@@ -49,6 +49,7 @@ const char kAnotherSwitch[] = "another-value";
     test_data = """
 // Single line string constants.
 const char kAString[] = "a-value";
+const char kNoComment[] = "no-comment";
 
 // Single line switch with a big space.
 const char kAStringWithSpace[]                      = "a-value";
@@ -63,15 +64,17 @@ const char kInvalidLineBreak[] =
     "invalid-line-break";
 """.split('\n')
     strings = java_cpp_strings.StringFileParser(test_data).Parse()
-    self.assertEqual(3, len(strings))
+    self.assertEqual(4, len(strings))
     self.assertEqual('A_STRING', strings[0].name)
     self.assertEqual('"a-value"', strings[0].value)
-    self.assertEqual('A_STRING_WITH_SPACE', strings[1].name)
-    self.assertEqual('"a-value"', strings[1].value)
+    self.assertEqual('NO_COMMENT', strings[1].name)
+    self.assertEqual('"no-comment"', strings[1].value)
+    self.assertEqual('A_STRING_WITH_SPACE', strings[2].name)
+    self.assertEqual('"a-value"', strings[2].value)
     self.assertEqual('A_STRING_WITH_A_VERY_LONG_NAME_THAT_WILL_HAVE_TO_WRAP',
-                     strings[2].name)
+                     strings[3].name)
     self.assertEqual('"a-string-with-a-very-long-name-that-will-have-to-wrap"',
-                     strings[2].value)
+                     strings[3].value)
 
   def testTemplateParsing(self):
     test_data = """

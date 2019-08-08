@@ -90,9 +90,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
       base::WaitableEvent* shutdown_event = nullptr);
   void Bind(mojom::GpuServiceRequest request);
 
-  scoped_refptr<gpu::SharedContextState> GetContextStateForGLSurface(
-      gl::GLSurface* surface);
-  scoped_refptr<gpu::SharedContextState> GetContextStateForVulkan();
+  scoped_refptr<gpu::SharedContextState> GetContextState();
 
   // Notifies the GpuHost to stop using GPU compositing. This should be called
   // in response to an error in the GPU process that occurred after
@@ -116,11 +114,11 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
       arc::mojom::VideoProtectedBufferAllocatorRequest pba_request) override;
   void CreateArcProtectedBufferManager(
       arc::mojom::ProtectedBufferManagerRequest pbm_request) override;
-#endif  // defined(OS_CHROMEOS)
-  void CreateJpegDecodeAccelerator(
-      media::mojom::JpegDecodeAcceleratorRequest jda_request) override;
   void CreateJpegEncodeAccelerator(
       media::mojom::JpegEncodeAcceleratorRequest jea_request) override;
+#endif  // defined(OS_CHROMEOS)
+  void CreateJpegDecodeAccelerator(
+      media::mojom::MjpegDecodeAcceleratorRequest jda_request) override;
   void CreateVideoEncodeAcceleratorProvider(
       media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request)
       override;
@@ -251,7 +249,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void SendCreatedChildWindow(gpu::SurfaceHandle parent_window,
                               gpu::SurfaceHandle child_window) override;
 #endif
-  void SetActiveURL(const GURL& url) override;
 
 #if defined(OS_CHROMEOS)
   void CreateArcVideoDecodeAcceleratorOnMainThread(

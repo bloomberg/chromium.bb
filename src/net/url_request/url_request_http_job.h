@@ -17,7 +17,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "net/base/auth.h"
-#include "net/base/completion_callback.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
@@ -115,7 +114,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   bool CopyFragmentOnRedirect(const GURL& location) const override;
   bool IsSafeRedirect(const GURL& location) override;
   bool NeedsAuth() override;
-  void GetAuthChallengeInfo(scoped_refptr<AuthChallengeInfo>*) override;
+  std::unique_ptr<AuthChallengeInfo> GetAuthChallengeInfo() override;
   void SetAuth(const AuthCredentials& credentials) override;
   void CancelAuth() override;
   void ContinueWithCertificate(

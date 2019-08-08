@@ -23,53 +23,21 @@ StorageColumn::StorageColumn(std::string col_name, bool hidden)
     : col_name_(col_name), hidden_(hidden) {}
 StorageColumn::~StorageColumn() = default;
 
-TsEndColumn::TsEndColumn(std::string col_name,
-                         const std::deque<int64_t>* ts_start,
-                         const std::deque<int64_t>* dur)
-    : StorageColumn(col_name, false /* hidden */),
-      ts_start_(ts_start),
-      dur_(dur) {}
-TsEndColumn::~TsEndColumn() = default;
+StringPoolAccessor::StringPoolAccessor(const std::deque<StringId>* deque,
+                                       const StringPool* string_pool)
+    : deque_(deque), string_pool_(string_pool) {}
+StringPoolAccessor::~StringPoolAccessor() = default;
 
-void TsEndColumn::ReportResult(sqlite3_context* ctx, uint32_t row) const {
-  int64_t add = (*ts_start_)[row] + (*dur_)[row];
-  sqlite3_result_int64(ctx, static_cast<sqlite3_int64>(add));
-}
+TsEndAccessor::TsEndAccessor(const std::deque<int64_t>* ts,
+                             const std::deque<int64_t>* dur)
+    : ts_(ts), dur_(dur) {}
+TsEndAccessor::~TsEndAccessor() = default;
 
-TsEndColumn::Bounds TsEndColumn::BoundFilter(int, sqlite3_value*) const {
-  Bounds bounds;
-  bounds.max_idx = static_cast<uint32_t>(ts_start_->size());
-  return bounds;
-}
+RowIdAccessor::RowIdAccessor(TableId table_id) : table_id_(table_id) {}
+RowIdAccessor::~RowIdAccessor() = default;
 
-void TsEndColumn::Filter(int op,
-                         sqlite3_value* value,
-                         FilteredRowIndex* index) const {
-  auto predicate = sqlite_utils::CreateNumericPredicate<int64_t>(op, value);
-  index->FilterRows([this, &predicate](uint32_t row) {
-    return predicate((*ts_start_)[row] + (*dur_)[row]);
-  });
-}
-
-TsEndColumn::Comparator TsEndColumn::Sort(
-    const QueryConstraints::OrderBy& ob) const {
-  if (ob.desc) {
-    return [this](uint32_t f, uint32_t s) {
-      int64_t a = (*ts_start_)[f] + (*dur_)[f];
-      int64_t b = (*ts_start_)[s] + (*dur_)[s];
-      return sqlite_utils::CompareValuesDesc(a, b);
-    };
-  }
-  return [this](uint32_t f, uint32_t s) {
-    int64_t a = (*ts_start_)[f] + (*dur_)[f];
-    int64_t b = (*ts_start_)[s] + (*dur_)[s];
-    return sqlite_utils::CompareValuesAsc(a, b);
-  };
-}
-
-IdColumn::IdColumn(std::string column_name, TableId table_id)
-    : StorageColumn(std::move(column_name), false), table_id_(table_id) {}
-IdColumn::~IdColumn() = default;
+RowAccessor::RowAccessor() = default;
+RowAccessor::~RowAccessor() = default;
 
 }  // namespace trace_processor
 }  // namespace perfetto

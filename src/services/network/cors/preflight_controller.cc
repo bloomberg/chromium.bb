@@ -27,6 +27,11 @@ namespace cors {
 
 namespace {
 
+int RetrieveCacheFlags(int load_flags) {
+  return load_flags & (net::LOAD_VALIDATE_CACHE | net::LOAD_BYPASS_CACHE |
+                       net::LOAD_DISABLE_CACHE);
+}
+
 base::Optional<std::string> GetHeaderString(
     const scoped_refptr<net::HttpResponseHeaders>& headers,
     const std::string& header_name) {
@@ -81,6 +86,7 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
 
   preflight_request->fetch_credentials_mode =
       mojom::FetchCredentialsMode::kOmit;
+  preflight_request->load_flags = RetrieveCacheFlags(request.load_flags);
   preflight_request->load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
   preflight_request->load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
   preflight_request->load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
@@ -107,10 +113,6 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
   preflight_request->headers.SetHeader(
       net::HttpRequestHeaders::kOrigin,
       (tainted ? url::Origin() : *request.request_initiator).Serialize());
-
-  // TODO(toyoshim): Remove the following line once the network service is
-  // enabled by default.
-  preflight_request->skip_service_worker = true;
 
   // TODO(toyoshim): Should not matter, but at this moment, it hits a sanity
   // check in ResourceDispatcherHostImpl if |resource_type| isn't set.
@@ -176,57 +178,6 @@ base::Optional<CorsErrorStatus> CheckPreflightResult(
       original_request.headers, original_request.is_revalidating);
 }
 
-// TODO(toyoshim): Remove this class once the Network Service is enabled.
-// This wrapper class is used to tell the actual request's |request_id| to call
-// CreateLoaderAndStart() for the legacy implementation that requires the ID
-// to be unique while SimpleURLLoader always set it to 0.
-class WrappedLegacyURLLoaderFactory final : public mojom::URLLoaderFactory {
- public:
-  static WrappedLegacyURLLoaderFactory* GetSharedInstance() {
-    static base::NoDestructor<WrappedLegacyURLLoaderFactory> factory;
-    return &*factory;
-  }
-
-  ~WrappedLegacyURLLoaderFactory() override = default;
-
-  void SetFactoryAndRequestId(mojom::URLLoaderFactory* factory,
-                              int32_t request_id) {
-    factory_ = factory;
-    request_id_ = request_id;
-  }
-
-  void CheckIdle() {
-    DCHECK(!factory_);
-    DCHECK_EQ(0, request_id_);
-  }
-
-  // mojom::URLLoaderFactory:
-  void CreateLoaderAndStart(::network::mojom::URLLoaderRequest loader,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& request,
-                            ::network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
-    factory_->CreateLoaderAndStart(std::move(loader), routing_id, request_id_,
-                                   options, request, std::move(client),
-                                   traffic_annotation);
-    factory_ = nullptr;
-    request_id_ = 0;
-  }
-
-  void Clone(mojom::URLLoaderFactoryRequest factory) override {
-    // Should not be called because retry logic is disabled to use
-    // SimpleURLLoader. Could not work correctly by design.
-    NOTREACHED();
-  }
-
- private:
-  mojom::URLLoaderFactory* factory_ = nullptr;
-  int32_t request_id_ = 0;
-};
-
 }  // namespace
 
 class PreflightController::PreflightLoader final {
@@ -235,18 +186,16 @@ class PreflightController::PreflightLoader final {
                   CompletionCallback completion_callback,
                   const ResourceRequest& request,
                   bool tainted,
-                  const net::NetworkTrafficAnnotationTag& annotation_tag,
-                  base::OnceCallback<void()> preflight_finalizer)
+                  const net::NetworkTrafficAnnotationTag& annotation_tag)
       : controller_(controller),
         completion_callback_(std::move(completion_callback)),
         original_request_(request),
-        tainted_(tainted),
-        preflight_finalizer_(std::move(preflight_finalizer)) {
+        tainted_(tainted) {
     loader_ = SimpleURLLoader::Create(CreatePreflightRequest(request, tainted),
                                       annotation_tag);
   }
 
-  void Request(mojom::URLLoaderFactory* loader_factory, int32_t request_id) {
+  void Request(mojom::URLLoaderFactory* loader_factory) {
     DCHECK(loader_);
 
     loader_->SetOnRedirectCallback(base::BindRepeating(
@@ -254,17 +203,11 @@ class PreflightController::PreflightLoader final {
     loader_->SetOnResponseStartedCallback(base::BindRepeating(
         &PreflightLoader::HandleResponseHeader, base::Unretained(this)));
 
-    // TODO(toyoshim): Stop using WrappedLegacyURLLoaderFactory once the Network
-    // Service is enabled by default. This is a workaround to use an allowed
-    // request_id in the legacy URLLoaderFactory.
-    WrappedLegacyURLLoaderFactory::GetSharedInstance()->SetFactoryAndRequestId(
-        loader_factory, request_id);
     loader_->DownloadToString(
-        WrappedLegacyURLLoaderFactory::GetSharedInstance(),
+        loader_factory,
         base::BindOnce(&PreflightLoader::HandleResponseBody,
                        base::Unretained(this)),
         0);
-    WrappedLegacyURLLoaderFactory::GetSharedInstance()->CheckIdle();
   }
 
  private:
@@ -308,9 +251,8 @@ class PreflightController::PreflightLoader final {
           CheckPreflightResult(result.get(), original_request_);
     }
 
-    // TODO(toyoshim): Check the spec if we cache |result| regardless of
-    // following checks.
-    if (!detected_error_status) {
+    if (!(original_request_.load_flags & net::LOAD_DISABLE_CACHE) &&
+        !detected_error_status) {
       controller_->AppendToCache(*original_request_.request_initiator,
                                  original_request_.url, std::move(result));
     }
@@ -341,8 +283,6 @@ class PreflightController::PreflightLoader final {
 
   void FinalizeLoader() {
     DCHECK(loader_);
-    if (preflight_finalizer_)
-      std::move(preflight_finalizer_).Run();
     loader_.reset();
   }
 
@@ -363,11 +303,6 @@ class PreflightController::PreflightLoader final {
   const ResourceRequest original_request_;
 
   const bool tainted_;
-
-  // This is needed because we sometimes need to cancel the preflight loader
-  // synchronously.
-  // TODO(yhirano): Remove this when the network service is fully enabled.
-  base::OnceCallback<void()> preflight_finalizer_;
 
   DISALLOW_COPY_AND_ASSIGN(PreflightLoader);
 };
@@ -398,15 +333,13 @@ PreflightController::~PreflightController() = default;
 
 void PreflightController::PerformPreflightCheck(
     CompletionCallback callback,
-    int32_t request_id,
     const ResourceRequest& request,
     bool tainted,
     const net::NetworkTrafficAnnotationTag& annotation_tag,
-    mojom::URLLoaderFactory* loader_factory,
-    base::OnceCallback<void()> preflight_finalizer) {
+    mojom::URLLoaderFactory* loader_factory) {
   DCHECK(request.request_initiator);
 
-  if (!request.is_external_request &&
+  if (!RetrieveCacheFlags(request.load_flags) && !request.is_external_request &&
       cache_.CheckIfRequestCanSkipPreflight(
           request.request_initiator->Serialize(), request.url,
           request.fetch_credentials_mode, request.method, request.headers,
@@ -416,9 +349,12 @@ void PreflightController::PerformPreflightCheck(
   }
 
   auto emplaced_pair = loaders_.emplace(std::make_unique<PreflightLoader>(
-      this, std::move(callback), request, tainted, annotation_tag,
-      std::move(preflight_finalizer)));
-  (*emplaced_pair.first)->Request(loader_factory, request_id);
+      this, std::move(callback), request, tainted, annotation_tag));
+  (*emplaced_pair.first)->Request(loader_factory);
+}
+
+size_t PreflightController::ReportAndGatherCacheSizeMetric() {
+  return cache_.ReportAndGatherSizeMetric();
 }
 
 void PreflightController::RemoveLoader(PreflightLoader* loader) {

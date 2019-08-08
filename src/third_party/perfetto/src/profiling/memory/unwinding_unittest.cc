@@ -70,17 +70,11 @@ TEST(UnwindingTest, FileDescriptorMapsParse) {
   ASSERT_EQ(map_info->name, "[stack]");
 }
 
-#if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
-#define MAYBE_DoUnwind DoUnwind
-#else
-#define MAYBE_DoUnwind DISABLED_DoUnwind
-#endif
-
 // This is needed because ASAN thinks copying the whole stack is a buffer
 // underrun.
 void __attribute__((noinline))
 UnsafeMemcpy(void* dst, const void* src, size_t n)
-    __attribute__((no_sanitize("address"))) {
+    __attribute__((no_sanitize("address", "hwaddress"))) {
   const uint8_t* from = reinterpret_cast<const uint8_t*>(src);
   uint8_t* to = reinterpret_cast<uint8_t*>(dst);
   for (size_t i = 0; i < n; ++i)
@@ -94,6 +88,7 @@ struct RecordMemory {
 
 RecordMemory __attribute__((noinline)) GetRecord(WireMessage* msg) {
   std::unique_ptr<AllocMetadata> metadata(new AllocMetadata);
+  *metadata = {};
 
   const char* stackbase = GetThreadStackBase();
   const char* stacktop = reinterpret_cast<char*>(__builtin_frame_address(0));
@@ -122,7 +117,13 @@ RecordMemory __attribute__((noinline)) GetRecord(WireMessage* msg) {
   return {std::move(payload), std::move(metadata)};
 }
 
-// TODO(fmayer): Investigate why this fails out of tree.
+// TODO(rsavitski): Investigate TSAN unwinding.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_DoUnwind DISABLED_DoUnwind
+#else
+#define MAYBE_DoUnwind DoUnwind
+#endif
+
 TEST(UnwindingTest, MAYBE_DoUnwind) {
   base::ScopedFile proc_maps(base::OpenFile("/proc/self/maps", O_RDONLY));
   base::ScopedFile proc_mem(base::OpenFile("/proc/self/mem", O_RDONLY));
@@ -134,7 +135,7 @@ TEST(UnwindingTest, MAYBE_DoUnwind) {
   AllocRecord out;
   ASSERT_TRUE(DoUnwind(&msg, &metadata, &out));
   int st;
-  std::unique_ptr<char> demangled(abi::__cxa_demangle(
+  std::unique_ptr<char, base::FreeDeleter> demangled(abi::__cxa_demangle(
       out.frames[0].frame.function_name.c_str(), nullptr, nullptr, &st));
   ASSERT_EQ(st, 0);
   ASSERT_STREQ(demangled.get(),

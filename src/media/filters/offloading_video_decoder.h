@@ -27,6 +27,16 @@ class CancellationHelper;
 // and Reset() does not need to wait for |reset_cb| to return.
 class MEDIA_EXPORT OffloadableVideoDecoder : public VideoDecoder {
  public:
+  enum class OffloadState {
+    kOffloaded,  // Indicates the VideoDecoder is being used with
+                 // OffloadingVideoDecoder and that callbacks provided to
+                 // VideoDecoder methods should not be bound to the current
+                 // loop.
+
+    kNormal,  // Indicates the VideoDecoder is being used as a normal
+              // VideoDecoder, meaning callbacks should always be asynchronous.
+  };
+
   ~OffloadableVideoDecoder() override {}
 
   // Called by the OffloadingVideoDecoder when closing the decoder and switching

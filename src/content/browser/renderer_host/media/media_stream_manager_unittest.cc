@@ -65,6 +65,7 @@ typedef media::FakeAudioManager AudioManagerPlatform;
 namespace {
 
 const char kMockSalt[] = "";
+const char kFakeDeviceIdPrefix[] = "fake_device_id_";
 
 // This class mocks the audio manager and overrides some methods to ensure that
 // we can run our tests on the buildbots.
@@ -88,7 +89,7 @@ class MockAudioManager : public AudioManagerPlatform {
     for (size_t i = 0; i < num_input_devices_; i++) {
       device_names->push_back(media::AudioDeviceName(
           std::string("fake_device_name_") + base::NumberToString(i),
-          std::string("fake_device_id_") + base::NumberToString(i)));
+          std::string(kFakeDeviceIdPrefix) + base::NumberToString(i)));
     }
   }
 
@@ -103,7 +104,7 @@ class MockAudioManager : public AudioManagerPlatform {
     for (size_t i = 0; i < num_output_devices_; i++) {
       device_names->push_back(media::AudioDeviceName(
           std::string("fake_device_name_") + base::NumberToString(i),
-          std::string("fake_device_id_") + base::NumberToString(i)));
+          std::string(kFakeDeviceIdPrefix) + base::NumberToString(i)));
     }
   }
 
@@ -685,6 +686,37 @@ TEST_F(MediaStreamManagerTest, DesktopCaptureDeviceChanged) {
   media_stream_manager_->StopStreamDevice(render_process_id, render_frame_id,
                                           requester_id, video_device.id,
                                           video_device.session_id);
+}
+
+TEST_F(MediaStreamManagerTest, GetMediaDeviceIDForHMAC) {
+  const char kSalt[] = "my salt";
+  const url::Origin kOrigin = url::Origin::Create(GURL("http://example.com"));
+  const std::string kExistingRawDeviceId =
+      std::string(kFakeDeviceIdPrefix) + "0";
+  const std::string kExistingHmacDeviceId =
+      MediaStreamManager::GetHMACForMediaDeviceID(kSalt, kOrigin,
+                                                  kExistingRawDeviceId);
+
+  MediaStreamManager::GetMediaDeviceIDForHMAC(
+      blink::MEDIA_DEVICE_AUDIO_CAPTURE, kSalt, kOrigin, kExistingHmacDeviceId,
+      base::SequencedTaskRunnerHandle::Get(),
+      base::BindOnce(
+          [](const std::string& expected_raw_device_id,
+             const base::Optional<std::string>& raw_device_id) {
+            ASSERT_TRUE(raw_device_id.has_value());
+            EXPECT_EQ(*raw_device_id, expected_raw_device_id);
+          },
+          kExistingRawDeviceId));
+  base::RunLoop().RunUntilIdle();
+
+  const std::string kNonexistingHmacDeviceId = "does not exist";
+  MediaStreamManager::GetMediaDeviceIDForHMAC(
+      blink::MEDIA_DEVICE_AUDIO_CAPTURE, kSalt, kOrigin,
+      kNonexistingHmacDeviceId, base::SequencedTaskRunnerHandle::Get(),
+      base::BindOnce([](const base::Optional<std::string>& raw_device_id) {
+        EXPECT_FALSE(raw_device_id.has_value());
+      }));
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace content

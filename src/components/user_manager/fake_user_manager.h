@@ -32,6 +32,8 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
       const AccountId& account_id,
       bool is_affiliated);
 
+  void set_local_state(PrefService* local_state) { local_state_ = local_state; }
+
   // UserManager overrides.
   const user_manager::UserList& GetUsers() const override;
   user_manager::UserList GetUsersAllowedForMultiProfile() const override;
@@ -142,6 +144,9 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
 
  protected:
   user_manager::User* primary_user_;
+
+  // Can be set by set_local_state().
+  PrefService* local_state_ = nullptr;
 
   // If set this is the active user. If empty, the first created user is the
   // active user.

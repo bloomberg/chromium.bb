@@ -35,15 +35,6 @@ declare_args() {
 }
 
 declare_args() {
-  # Controls whether the ARCore SDK is packaged into the APK.
-  # It is not used for bundle builds.
-  # TODO(crbug.com/920424): Remove this variable once it is no longer necessary.
-  # TODO(crbug.com/843374): AR should not depend on |enable_vr|.
-  package_arcore = enable_vr && is_android && !is_chromecast &&
-                   (current_cpu == "arm" || current_cpu == "arm64") &&
-                   (android_channel == "default" ||
-                    android_channel == "canary" || android_channel == "dev")
-
   # Controls inclusion of code for ARCore that must be identical across configs.
   # Once crbug.com/920424 is resolved, this will exactly control whether ARCore
   # is supported.
@@ -56,18 +47,13 @@ declare_args() {
   # in the browser process.
   enable_isolated_xr_service =
       enable_oculus_vr || enable_openvr || enable_windows_mr
-}
-
-declare_args() {
-  # Whether to create a VR/AR module when building bundles. If false, VR/AR code
-  # will become part of the base module.
-  modularize_vr = enable_vr
-  modularize_ar = enable_arcore
 
   # When true, portions of VR's native code are included in the VR DFM.
   modularize_vr_native = false
-}
 
-if (modularize_vr_native) {
-  assert(modularize_vr)
+  # Whether to create AR module as an asynchronous DFM.
+  async_ar = false
+
+  # Whether to create VR module as an asynchronous DFM.
+  async_vr = false
 }

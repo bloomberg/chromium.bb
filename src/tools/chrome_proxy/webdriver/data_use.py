@@ -26,7 +26,7 @@ class DataUseAscription(IntegrationTest):
       t.LoadURL('http://check.googlezip.net/test.html')
       responses = t.GetHTTPResponses()
       for response in responses:
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
 
       # Load the extension page and verify the host appears in data use list.
       t.LoadURL('chrome-extension://pfmgfdlgomnbgkofeojodiodmgpgmkac/'

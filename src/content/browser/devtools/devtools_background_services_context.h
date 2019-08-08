@@ -17,6 +17,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "content/browser/devtools/devtools_background_services.pb.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/content_export.h"
@@ -42,9 +44,22 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContext
   using GetLoggedBackgroundServiceEventsCallback = base::OnceCallback<void(
       std::vector<devtools::proto::BackgroundServiceEvent>)>;
 
+  class EventObserver : public base::CheckedObserver {
+   public:
+    // Notifies observers of the logged event.
+    virtual void OnEventReceived(
+        const devtools::proto::BackgroundServiceEvent& event) = 0;
+    virtual void OnRecordingStateChanged(
+        bool should_record,
+        devtools::proto::BackgroundService service) = 0;
+  };
+
   DevToolsBackgroundServicesContext(
       BrowserContext* browser_context,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
+
+  void AddObserver(EventObserver* observer);
+  void RemoveObserver(const EventObserver* observer);
 
   // Enables recording mode for |service|. This is capped at 3 days in case
   // developers forget to switch it off.
@@ -58,13 +73,13 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContext
 
   // Queries all logged events for |service| and returns them in sorted order
   // (by timestamp). |callback| is called with an empty vector if there was an
-  // error. Must be called from the IO thread.
+  // error. Must be called from the UI thread.
   void GetLoggedBackgroundServiceEvents(
       devtools::proto::BackgroundService service,
       GetLoggedBackgroundServiceEventsCallback callback);
 
   // Clears all logged events related to |service|.
-  // Must be called from the IO thread.
+  // Must be called from the UI thread.
   void ClearLoggedBackgroundServiceEvents(
       devtools::proto::BackgroundService service);
 
@@ -85,10 +100,25 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContext
   friend class base::RefCountedThreadSafe<DevToolsBackgroundServicesContext>;
   ~DevToolsBackgroundServicesContext();
 
+  // Whether |service| has an expiration time and it was exceeded.
+  bool IsRecordingExpired(devtools::proto::BackgroundService service);
+
+  void GetLoggedBackgroundServiceEventsOnIO(
+      devtools::proto::BackgroundService service,
+      GetLoggedBackgroundServiceEventsCallback callback);
+
   void DidGetUserData(
       GetLoggedBackgroundServiceEventsCallback callback,
       const std::vector<std::pair<int64_t, std::string>>& user_data,
       blink::ServiceWorkerStatusCode status);
+
+  void ClearLoggedBackgroundServiceEventsOnIO(
+      devtools::proto::BackgroundService service);
+
+  void NotifyEventObservers(
+      const devtools::proto::BackgroundServiceEvent& event);
+
+  void OnRecordingTimeExpired(devtools::proto::BackgroundService service);
 
   BrowserContext* browser_context_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
@@ -99,6 +129,8 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContext
   // accessed from the IO thread.
   std::array<base::Time, devtools::proto::BackgroundService_ARRAYSIZE>
       expiration_times_;
+
+  base::ObserverList<EventObserver> observers_;
 
   base::WeakPtrFactory<DevToolsBackgroundServicesContext> weak_ptr_factory_;
 

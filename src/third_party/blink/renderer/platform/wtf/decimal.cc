@@ -127,6 +127,8 @@ Decimal SpecialValueHandler::Value() const {
 
 // This class is used for 128 bit unsigned integer arithmetic.
 class UInt128 {
+  STACK_ALLOCATED();
+
  public:
   UInt128(uint64_t low, uint64_t high) : high_(high), low_(low) {}
 

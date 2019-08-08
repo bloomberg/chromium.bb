@@ -73,6 +73,11 @@ jumbo_static_library("browser") {
     "form_saver_impl.cc",
     "form_saver_impl.h",
     "form_submission_observer.h",
+    "generation/password_requirements_spec_fetcher.h",
+    "generation/password_requirements_spec_fetcher_impl.cc",
+    "generation/password_requirements_spec_fetcher_impl.h",
+    "generation/password_requirements_spec_printer.cc",
+    "generation/password_requirements_spec_printer.h",
     "http_password_store_migrator.cc",
     "http_password_store_migrator.h",
     "import/csv_reader.cc",
@@ -109,8 +114,10 @@ jumbo_static_library("browser") {
     "password_form_metrics_recorder.cc",
     "password_form_metrics_recorder.h",
     "password_form_user_action.h",
-    "password_generation_manager.cc",
-    "password_generation_manager.h",
+    "password_generation_frame_helper.cc",
+    "password_generation_frame_helper.h",
+    "password_generation_state.cc",
+    "password_generation_state.h",
     "password_list_sorter.cc",
     "password_list_sorter.h",
     "password_manager.cc",
@@ -158,8 +165,6 @@ jumbo_static_library("browser") {
     "statistics_table.h",
     "store_metrics_reporter.cc",
     "store_metrics_reporter.h",
-    "suppressed_form_fetcher.cc",
-    "suppressed_form_fetcher.h",
     "sync/password_data_type_controller.cc",
     "sync/password_data_type_controller.h",
     "sync/password_model_type_controller.cc",
@@ -205,11 +210,11 @@ jumbo_static_library("browser") {
   ]
   deps = [
     ":hash_password_manager",
+    ":password_generator",
     ":password_hash_data",
     ":proto",
     "//base:i18n",
     "//components/autofill/core/browser",
-    "//components/autofill/core/browser:password_generator",
     "//components/autofill/core/browser/proto",
     "//components/autofill/core/common",
     "//components/favicon/core",
@@ -263,6 +268,19 @@ jumbo_static_library("browser") {
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+}
+
+static_library("password_generator") {
+  sources = [
+    "generation/password_generator.cc",
+    "generation/password_generator.h",
+  ]
+  public_deps = [
+    "//components/autofill/core/browser/proto",
+  ]
+  deps = [
+    "//base",
+  ]
 }
 
 if (is_android) {
@@ -413,6 +431,8 @@ source_set("unit_tests") {
     "export/password_manager_exporter_unittest.cc",
     "form_fetcher_impl_unittest.cc",
     "form_saver_impl_unittest.cc",
+    "generation/password_generator_unittest.cc",
+    "generation/password_requirements_spec_fetcher_unittest.cc",
     "http_password_store_migrator_unittest.cc",
     "import/csv_reader_unittest.cc",
     "import/password_csv_reader_unittest.cc",
@@ -427,7 +447,8 @@ source_set("unit_tests") {
     "password_form_filling_unittest.cc",
     "password_form_manager_unittest.cc",
     "password_form_metrics_recorder_unittest.cc",
-    "password_generation_manager_unittest.cc",
+    "password_generation_frame_helper_unittest.cc",
+    "password_generation_state_unittest.cc",
     "password_hash_data_unittest.cc",
     "password_list_sorter_unittest.cc",
     "password_manager_metrics_recorder_unittest.cc",
@@ -444,7 +465,6 @@ source_set("unit_tests") {
     "sql_table_builder_unittest.cc",
     "statistics_table_unittest.cc",
     "store_metrics_reporter_unittest.cc",
-    "suppressed_form_fetcher_unittest.cc",
     "sync/password_sync_bridge_unittest.cc",
     "sync/password_syncable_service_unittest.cc",
     "sync_credentials_filter_unittest.cc",
@@ -477,6 +497,7 @@ source_set("unit_tests") {
 
   deps = [
     ":hash_password_manager",
+    ":password_generator",
     ":password_hash_data",
     ":test_support",
     ":unit_tests_bundle_data",
@@ -546,6 +567,17 @@ if (use_libfuzzer) {
       ":proto",
       "//base:base",
       "//base:i18n",
+      "//third_party/libprotobuf-mutator",
+    ]
+  }
+
+  fuzzer_test("password_generator_proto_fuzzer") {
+    sources = [
+      "generation/password_generator_proto_fuzzer.cc",
+    ]
+    deps = [
+      ":password_generator",
+      "//components/autofill/core/browser/proto",
       "//third_party/libprotobuf-mutator",
     ]
   }

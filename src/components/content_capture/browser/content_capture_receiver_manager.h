@@ -50,6 +50,8 @@ class ContentCaptureReceiverManager : public content::WebContentsObserver,
   // content::WebContentsObserver:
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
+  void ReadyToCommitNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   size_t GetFrameMapSizeForTesting() const { return frame_map_.size(); }
 
@@ -66,13 +68,15 @@ class ContentCaptureReceiverManager : public content::WebContentsObserver,
   // Invoked when the given |session| was removed.
   virtual void DidRemoveSession(const ContentCaptureSession& session) = 0;
 
+  virtual bool ShouldCapture(const GURL& url) = 0;
+
  private:
   friend class ContentCaptureReceiverManagerHelper;
 
   // Builds ContentCaptureSession and returns in |session|, |ancestor_only|
   // specifies if only ancestor should be returned in |session|.
   void BuildContentCaptureSession(
-      const ContentCaptureReceiver& content_capture_receiver,
+      ContentCaptureReceiver* content_capture_receiver,
       bool ancestor_only,
       ContentCaptureSession* session);
 

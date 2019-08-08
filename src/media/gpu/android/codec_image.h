@@ -76,6 +76,10 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
     return phase_ == Phase::kInFrontBuffer;
   }
 
+  // Whether the TextureOwner's texture is in the front buffer and bound to the
+  // latest image.
+  bool was_tex_image_bound() const { return was_tex_image_bound_; }
+
   // Whether this image is backed by a texture owner.
   bool is_texture_owner_backed() const { return !!texture_owner_; }
 
@@ -144,6 +148,7 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
   PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb_;
 
   DestructionCb destruction_cb_;
+  bool was_tex_image_bound_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CodecImage);
 };

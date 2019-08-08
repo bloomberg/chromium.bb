@@ -12,6 +12,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
+import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.components.sync.AndroidSyncSettings;
 
@@ -1348,17 +1349,6 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Logs that the conditions are right to force the translation one-box, and whether it
-     * was actually forced or not.
-     * @param didForceTranslate Whether the translation onebox was forced.
-     */
-    public static void logTranslateOnebox(boolean didForceTranslate) {
-        int code = didForceTranslate ? ForceTranslate.DID_FORCE : ForceTranslate.WOULD_FORCE;
-        RecordHistogram.recordEnumeratedHistogram(
-                "Search.ContextualSearchShouldTranslate", code, ForceTranslate.NUM_ENTRIES);
-    }
-
-    /**
      * Logs that whether or not the conditions are met to perform a translation.
      * @param isConditionMet Whether the translation conditions were met.
      */
@@ -1441,6 +1431,16 @@ public class ContextualSearchUma {
                 "Search.ContextualSearchQuickActions.Clicked."
                         + getLabelForQuickActionCategory(quickActionCategory),
                  wasClicked);
+    }
+
+    /**
+     * Logs the primary CoCa {@link CardTag} for a recent resolve, including {@codeCardTag.CT_NONE}
+     * when no card or tag, and {@codeCardTag.CT_OTHER} when it's one we do not recognize.
+     * @param cardTagEnum The primary CoCa card Tag for the result.
+     */
+    public static void logCardTag(@CardTag int cardTagEnum) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Search.ContextualSearch.CardTag", cardTagEnum, CardTag.NUM_ENTRIES);
     }
 
     /**

@@ -50,7 +50,7 @@ class DiscoverModulePinSetupHandler : public DiscoverHandler {
 DiscoverModulePinSetupHandler::DiscoverModulePinSetupHandler(
     base::WeakPtr<DiscoverModulePinSetup> module,
     JSCallsContainer* js_calls_container)
-    : DiscoverHandler(DiscoverModulePinSetup::kModuleName, js_calls_container),
+    : DiscoverHandler(js_calls_container),
       module_(module),
       weak_factory_(this) {}
 

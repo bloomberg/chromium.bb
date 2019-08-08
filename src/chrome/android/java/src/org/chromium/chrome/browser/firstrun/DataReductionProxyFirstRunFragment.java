@@ -14,9 +14,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.datareduction.DataReductionBrandingResourceProvider;
+import org.chromium.chrome.browser.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.preferences.datareduction.DataReductionBrandingResourceProvider;
-import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoUtils;
 
 /**
  * The First Run Experience fragment that allows the user to opt in to Data Saver.

@@ -17,7 +17,7 @@
 #include "SkMipMap.h"
 #include "SkRectPriv.h"
 #include "effects/GrBicubicEffect.h"
-#include "effects/GrSimpleTextureEffect.h"
+#include "effects/generated/GrSimpleTextureEffect.h"
 #include "effects/GrTextureDomain.h"
 
 sk_sp<GrTextureProxy> GrTextureProducer::CopyOnGpu(GrRecordingContext* context,
@@ -229,11 +229,12 @@ std::unique_ptr<GrFragmentProcessor> GrTextureProducer::createFragmentProcessorF
             GrTextureDomain::Mode wrapMode = fDomainNeedsDecal ? GrTextureDomain::kDecal_Mode
                                          : GrTextureDomain::kClamp_Mode;
             return GrBicubicEffect::Make(std::move(proxy), textureMatrix, kClampClamp,
-                                         wrapMode, wrapMode,
+                                         wrapMode, wrapMode, this->alphaType(),
                                          kDomain_DomainMode == domainMode ? &domain : nullptr);
         } else {
             return GrBicubicEffect::Make(std::move(proxy), textureMatrix,
-                                         fDomainNeedsDecal ? kDecalDecal : kClampClamp);
+                                         fDomainNeedsDecal ? kDecalDecal : kClampClamp,
+                                         this->alphaType());
         }
     }
 }

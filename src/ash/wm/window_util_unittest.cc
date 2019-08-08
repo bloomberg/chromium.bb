@@ -7,6 +7,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/wm_event.h"
 #include "ui/aura/window.h"
 #include "ui/display/screen.h"
 #include "ui/wm/core/window_util.h"
@@ -21,6 +22,31 @@ std::string GetAdjustedBounds(const gfx::Rect& visible,
   AdjustBoundsToEnsureMinimumWindowVisibility(visible, &to_be_adjusted);
   return to_be_adjusted.ToString();
 }
+
+class FakeWindowState : public WindowState::State {
+ public:
+  explicit FakeWindowState() = default;
+  ~FakeWindowState() override = default;
+
+  // WindowState::State overrides:
+  void OnWMEvent(WindowState* window_state, const WMEvent* event) override {
+    if (event->type() == WM_EVENT_MINIMIZE)
+      was_visible_on_minimize_ = window_state->window()->IsVisible();
+  }
+  mojom::WindowStateType GetType() const override {
+    return mojom::WindowStateType::NORMAL;
+  }
+  void AttachState(WindowState* window_state,
+                   WindowState::State* previous_state) override {}
+  void DetachState(WindowState* window_state) override {}
+
+  bool was_visible_on_minimize() { return was_visible_on_minimize_; }
+
+ private:
+  bool was_visible_on_minimize_ = true;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeWindowState);
+};
 
 }  // namespace
 
@@ -174,6 +200,20 @@ TEST_F(WindowUtilTest, RemoveTransientDescendants) {
   window_list.push_back(descendant3.get());
   RemoveTransientDescendants(&window_list);
   EXPECT_EQ(3u, window_list.size());
+}
+
+TEST_F(WindowUtilTest,
+       HideAndMaybeMinimizeWithoutAnimationMinimizesArcWindowsBeforeHiding) {
+  auto window = CreateTestWindow();
+  auto* state = new FakeWindowState();
+  GetWindowState(window.get())
+      ->SetStateObject(std::unique_ptr<WindowState::State>(state));
+
+  std::vector<aura::Window*> windows = {window.get()};
+  HideAndMaybeMinimizeWithoutAnimation(windows, /*minimize=*/true);
+
+  EXPECT_FALSE(window->IsVisible());
+  EXPECT_TRUE(state->was_visible_on_minimize());
 }
 
 }  // namespace wm

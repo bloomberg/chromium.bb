@@ -16,14 +16,13 @@
 #include "content/browser/background_fetch/background_fetch_test_base.h"
 #include "content/browser/background_fetch/background_fetch_test_data_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
-
-using ::testing::ElementsAre;
 
 namespace content {
 
@@ -81,8 +80,12 @@ class BackgroundFetchSchedulerTest : public BackgroundFetchTestBase {
     delegate_proxy_ =
         std::make_unique<BackgroundFetchDelegateProxy>(browser_context());
 
+    auto* background_fetch_context =
+        static_cast<StoragePartitionImpl*>(storage_partition())
+            ->GetBackgroundFetchContext();
     scheduler_ = std::make_unique<BackgroundFetchScheduler>(
-        data_manager_.get(), nullptr, delegate_proxy_.get(),
+        background_fetch_context, data_manager_.get(), nullptr,
+        delegate_proxy_.get(), devtools_context().get(),
         embedded_worker_test_helper()->context_wrapper());
   }
 

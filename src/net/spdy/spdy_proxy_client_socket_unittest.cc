@@ -86,41 +86,23 @@ static const char kRedirectUrl[] = "https://example.com/";
 base::WeakPtr<SpdySession> CreateSpdyProxySession(
     HttpNetworkSession* http_session,
     SpdySessionDependencies* session_deps,
-    const SpdySessionKey& key) {
+    const SpdySessionKey& key,
+    const CommonConnectJobParams* common_connect_job_params) {
   EXPECT_FALSE(http_session->spdy_session_pool()->FindAvailableSession(
       key, true /* enable_ip_based_pooling */, false /* is_websocket */,
       NetLogWithSource()));
 
   auto transport_params = base::MakeRefCounted<TransportSocketParams>(
-      key.host_port_pair(), false /* disable_resolver_cache */,
-      OnHostResolutionCallback());
+      key.host_port_pair(), OnHostResolutionCallback());
 
   SSLConfig ssl_config;
   auto ssl_params = base::MakeRefCounted<SSLSocketParams>(
       transport_params, nullptr, nullptr, key.host_port_pair(), ssl_config,
       key.privacy_mode());
   TestConnectJobDelegate connect_job_delegate;
-  SSLConnectJob connect_job(
-      MEDIUM,
-      CommonConnectJobParams(
-          SocketTag(), session_deps->socket_factory.get(),
-          session_deps->host_resolver.get(), nullptr /* proxy_delegate */,
-          SSLClientSocketContext(session_deps->cert_verifier.get(),
-                                 session_deps->channel_id_service.get(),
-                                 session_deps->transport_security_state.get(),
-                                 session_deps->cert_transparency_verifier.get(),
-                                 session_deps->ct_policy_enforcer.get(),
-                                 nullptr /* ssl_client_session_cache_arg */),
-          SSLClientSocketContext(session_deps->cert_verifier.get(),
-                                 session_deps->channel_id_service.get(),
-                                 session_deps->transport_security_state.get(),
-                                 session_deps->cert_transparency_verifier.get(),
-                                 session_deps->ct_policy_enforcer.get(),
-                                 nullptr /* ssl_client_session_cache_arg */),
-          nullptr /* socket_performance_watcher_factory */,
-          nullptr /* network_quality_estimator */, session_deps->net_log,
-          nullptr /* websocket_endpoint_lock_manager */),
-      ssl_params, &connect_job_delegate, nullptr /* net_log */);
+  SSLConnectJob connect_job(MEDIUM, SocketTag(), common_connect_job_params,
+                            ssl_params, &connect_job_delegate,
+                            nullptr /* net_log */);
   connect_job_delegate.StartJobExpectingResult(&connect_job, OK,
                                                false /* expect_sync_result */);
 
@@ -216,12 +198,14 @@ class SpdyProxyClientSocketTest : public PlatformTest,
   HostPortPair endpoint_host_port_pair_;
   ProxyServer proxy_;
   SpdySessionKey endpoint_spdy_session_key_;
+  std::unique_ptr<CommonConnectJobParams> common_connect_job_params_;
+  SSLSocketDataProvider ssl_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyProxyClientSocketTest);
 };
 
 SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
-    : read_buf_(NULL),
+    : read_buf_(nullptr),
       connect_data_(SYNCHRONOUS, OK),
       user_agent_(kUserAgent),
       url_(kRequestUrl),
@@ -232,7 +216,8 @@ SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
                                  proxy_,
                                  PRIVACY_MODE_DISABLED,
                                  SpdySessionKey::IsProxySession::kFalse,
-                                 SocketTag()) {
+                                 SocketTag()),
+      ssl_(SYNCHRONOUS, OK) {
   session_deps_.net_log = net_log_.bound().net_log();
 }
 
@@ -258,23 +243,25 @@ void SpdyProxyClientSocketTest::Initialize(base::span<const MockRead> reads,
   data_->set_connect_data(connect_data_);
   session_deps_.socket_factory->AddSocketDataProvider(data_.get());
 
-  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
-  ssl.ssl_info.cert =
+  ssl_.ssl_info.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
-  ASSERT_TRUE(ssl.ssl_info.cert);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+  ASSERT_TRUE(ssl_.ssl_info.cert);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_);
 
   session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
+  common_connect_job_params_ = std::make_unique<CommonConnectJobParams>(
+      session_->CreateCommonConnectJobParams());
 
   // Creates the SPDY session and stream.
   spdy_session_ = CreateSpdyProxySession(session_.get(), &session_deps_,
-                                         endpoint_spdy_session_key_);
+                                         endpoint_spdy_session_key_,
+                                         common_connect_job_params_.get());
 
   base::WeakPtr<SpdyStream> spdy_stream(
       CreateStreamSynchronously(
           SPDY_BIDIRECTIONAL_STREAM, spdy_session_, url_, LOWEST,
           net_log_.bound()));
-  ASSERT_TRUE(spdy_stream.get() != NULL);
+  ASSERT_TRUE(spdy_stream.get() != nullptr);
 
   // Create the SpdyProxyClientSocket.
   sock_ = std::make_unique<SpdyProxyClientSocket>(
@@ -307,7 +294,7 @@ void SpdyProxyClientSocketTest::AssertConnectFails(int result) {
 
 void SpdyProxyClientSocketTest::AssertConnectionEstablished() {
   const HttpResponseInfo* response = sock_->GetConnectResponseInfo();
-  ASSERT_TRUE(response != NULL);
+  ASSERT_TRUE(response != nullptr);
   ASSERT_EQ(200, response->headers->response_code());
 }
 
@@ -522,7 +509,7 @@ TEST_P(SpdyProxyClientSocketTest, ConnectWithAuthRequested) {
   AssertConnectFails(ERR_PROXY_AUTH_REQUESTED);
 
   const HttpResponseInfo* response = sock_->GetConnectResponseInfo();
-  ASSERT_TRUE(response != NULL);
+  ASSERT_TRUE(response != nullptr);
   ASSERT_EQ(407, response->headers->response_code());
 }
 
@@ -563,7 +550,7 @@ TEST_P(SpdyProxyClientSocketTest, ConnectRedirects) {
   AssertConnectFails(ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT);
 
   const HttpResponseInfo* response = sock_->GetConnectResponseInfo();
-  ASSERT_TRUE(response != NULL);
+  ASSERT_TRUE(response != nullptr);
 
   const HttpResponseHeaders* headers = response->headers.get();
   ASSERT_EQ(302, headers->response_code());
@@ -1162,10 +1149,10 @@ TEST_P(SpdyProxyClientSocketTest, ReadOnDisconnectSocketReturnsNotConnected) {
 
   if (use_read_if_ready()) {
     ASSERT_EQ(ERR_SOCKET_NOT_CONNECTED,
-              sock_->ReadIfReady(NULL, 1, CompletionOnceCallback()));
+              sock_->ReadIfReady(nullptr, 1, CompletionOnceCallback()));
   } else {
     ASSERT_EQ(ERR_SOCKET_NOT_CONNECTED,
-              sock_->Read(NULL, 1, CompletionOnceCallback()));
+              sock_->Read(nullptr, 1, CompletionOnceCallback()));
   }
 
   // Let the RST_STREAM write while |rst| is in-scope.
@@ -1198,11 +1185,11 @@ TEST_P(SpdyProxyClientSocketTest, ReadOnClosedSocketReturnsBufferedData) {
   ASSERT_EQ(kLen1, sock_->Read(buf.get(), kLen1, CompletionOnceCallback()));
   ASSERT_EQ(std::string(kMsg1, kLen1), std::string(buf->data(), kLen1));
 
-  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionOnceCallback()));
-  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionOnceCallback()));
+  ASSERT_EQ(0, sock_->Read(nullptr, 1, CompletionOnceCallback()));
+  ASSERT_EQ(0, sock_->Read(nullptr, 1, CompletionOnceCallback()));
   sock_->Disconnect();
   ASSERT_EQ(ERR_SOCKET_NOT_CONNECTED,
-            sock_->Read(NULL, 1, CompletionOnceCallback()));
+            sock_->Read(nullptr, 1, CompletionOnceCallback()));
 }
 
 // Calling Write() on a closed socket is an error
@@ -1480,7 +1467,7 @@ class DeleteSockCallback : public TestCompletionCallbackBase {
 
  private:
   void OnComplete(int result) {
-    sock_->reset(NULL);
+    sock_->reset(nullptr);
     SetResult(result);
   }
 

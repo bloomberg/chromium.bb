@@ -13,6 +13,8 @@
 #include "components/autofill_assistant/browser/actions/action.h"
 
 namespace autofill_assistant {
+class ClientStatus;
+
 // An action to perform a mouse left button click on a given element on Web,
 // which is implemented as a touch tap on Mobile.
 class ClickAction : public Action {
@@ -27,8 +29,9 @@ class ClickAction : public Action {
 
   void OnWaitForElement(ActionDelegate* delegate,
                         ProcessActionCallback callback,
+                        const Selector& selector,
                         bool element_found);
-  void OnClick(ProcessActionCallback callback, bool status);
+  void OnClick(ProcessActionCallback callback, const ClientStatus& status);
 
   base::WeakPtrFactory<ClickAction> weak_ptr_factory_;
 

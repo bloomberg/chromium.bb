@@ -13,6 +13,7 @@
 #include "base/task/post_task.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_navigation_handle_core.h"
+#include "content/browser/data_url_loader_factory.h"
 #include "content/browser/file_url_loader_factory.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
@@ -58,9 +59,9 @@ void WorkerScriptFetchInitiator::Start(
     CompletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(storage_partition);
-  DCHECK(resource_type == RESOURCE_TYPE_WORKER ||
-         resource_type == RESOURCE_TYPE_SHARED_WORKER)
-      << resource_type;
+  DCHECK(resource_type == ResourceType::kWorker ||
+         resource_type == ResourceType::kSharedWorker)
+      << static_cast<int>(resource_type);
 
   BrowserContext* browser_context = storage_partition->browser_context();
   ResourceContext* resource_context =
@@ -93,8 +94,9 @@ void WorkerScriptFetchInitiator::Start(
     // (https://crbug.com/715632)
     resource_request = std::make_unique<network::ResourceRequest>();
     resource_request->url = script_url;
+    resource_request->site_for_cookies = script_url;
     resource_request->request_initiator = request_initiator;
-    resource_request->resource_type = resource_type;
+    resource_request->resource_type = static_cast<int>(resource_type);
 
     AddAdditionalRequestHeaders(resource_request.get(), browser_context);
   }
@@ -129,6 +131,8 @@ WorkerScriptFetchInitiator::CreateFactoryBundle(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ContentBrowserClient::NonNetworkURLLoaderFactoryMap non_network_factories;
+  non_network_factories[url::kDataScheme] =
+      std::make_unique<DataURLLoaderFactory>();
   GetContentClient()
       ->browser()
       ->RegisterNonNetworkSubresourceURLLoaderFactories(
@@ -213,9 +217,11 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
   }
 
   // Set Fetch metadata headers if necessary.
-  if ((base::FeatureList::IsEnabled(features::kSecMetadata) ||
-       base::CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kEnableExperimentalWebPlatformFeatures)) &&
+  bool experimental_features_enabled =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures);
+  if ((base::FeatureList::IsEnabled(network::features::kFetchMetadata) ||
+       experimental_features_enabled) &&
       IsOriginSecure(resource_request->url)) {
     // The worker's origin can be different from the constructor's origin, for
     // example, when the worker created from the extension.
@@ -226,13 +232,18 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
             url::Origin::Create(resource_request->url))) {
       site_value = "same-origin";
     }
-    resource_request->headers.SetHeaderIfMissing("Sec-Fetch-Dest",
-                                                 "sharedworker");
     resource_request->headers.SetHeaderIfMissing("Sec-Fetch-Site",
                                                  site_value.c_str());
     resource_request->headers.SetHeaderIfMissing("Sec-Fetch-Mode",
                                                  "same-origin");
-    resource_request->headers.SetHeaderIfMissing("Sec-Fetch-User", "?F");
+    // We don't set `Sec-Fetch-User` for subresource requests.
+
+    if (base::FeatureList::IsEnabled(
+            network::features::kFetchMetadataDestination) ||
+        experimental_features_enabled) {
+      resource_request->headers.SetHeaderIfMissing("Sec-Fetch-Dest",
+                                                   "sharedworker");
+    }
   }
 }
 

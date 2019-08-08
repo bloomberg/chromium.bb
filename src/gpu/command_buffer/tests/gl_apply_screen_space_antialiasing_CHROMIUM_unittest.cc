@@ -50,11 +50,11 @@ class GLApplyScreenSpaceAntialiasingCHROMIUMTest : public testing::Test {
       return;
     }
 
-    // Antialiasing won't be enabled if framebuffer CMAA is disabled via GPU
-    // driver workarounds 'disable_framebuffer_cmaa'.
-    available_ = !gl_.workarounds().disable_framebuffer_cmaa;
+    // Antialiasing will be enabled if framebuffer CMAA is enabled via GPU
+    // driver workarounds 'use_framebuffer_cmaa'.
+    available_ = gl_.workarounds().use_framebuffer_cmaa;
     if (!available_) {
-      LOG(INFO) << "'disable_framebuffer_cmaa' workaround applied. "
+      LOG(INFO) << "'use_framebuffer_cmaa' workaround not applied. "
                    "Skipping test...";
       return;
     }

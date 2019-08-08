@@ -321,7 +321,10 @@ TEST_F(OneGoogleBarLoaderImplTest, MirrorAccountConsistencyNotRequired) {
   EXPECT_TRUE(last_request_headers().GetHeader(signin::kChromeConnectedHeader,
                                                &header_value));
   // mode = PROFILE_MODE_DEFAULT
-  EXPECT_EQ("mode=0,enable_account_consistency=false", header_value);
+  EXPECT_EQ(
+      "mode=0,enable_account_consistency=false,"
+      "consistency_enabled_by_default=false",
+      header_value);
 #else
   // On not Chrome OS, the X-Chrome-Connected header must not be present.
   EXPECT_FALSE(
@@ -356,11 +359,33 @@ TEST_F(OneGoogleBarLoaderImplWithMirrorAccountConsistencyTest,
   EXPECT_TRUE(last_request_headers().GetHeader(signin::kChromeConnectedHeader,
                                                &header_value));
   // mode = PROFILE_MODE_INCOGNITO_DISABLED | PROFILE_MODE_ADD_ACCOUNT_DISABLED
-  EXPECT_EQ("mode=3,enable_account_consistency=true", header_value);
+  EXPECT_EQ(
+      "mode=3,enable_account_consistency=true,"
+      "consistency_enabled_by_default=false",
+      header_value);
 #else
   // This is not a valid case (mirror account consistency can only be required
   // on Chrome OS). This ensures in this case nothing happens.
   EXPECT_FALSE(
       last_request_headers().HasHeader(signin::kChromeConnectedHeader));
 #endif
+}
+
+TEST_F(OneGoogleBarLoaderImplTest, ParsesLanguageCode) {
+  SetUpResponseWithData(R"json({"update": { "language_code": "en-US", "ogb": {
+  "html": { "private_do_not_access_or_else_safe_html_wrapped_value": "" },
+  "page_hooks": {}
+  }}})json");
+
+  base::MockCallback<OneGoogleBarLoader::OneGoogleCallback> callback;
+  one_google_bar_loader()->Load(callback.Get());
+
+  base::Optional<OneGoogleBarData> data;
+  base::RunLoop loop;
+  EXPECT_CALL(callback, Run(OneGoogleBarLoader::Status::OK, _))
+      .WillOnce(DoAll(SaveArg<1>(&data), Quit(&loop)));
+  loop.Run();
+
+  ASSERT_TRUE(data.has_value());
+  EXPECT_THAT(data->language_code, Eq("en-US"));
 }

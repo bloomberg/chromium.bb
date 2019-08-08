@@ -8,6 +8,8 @@
 #include <cmath>
 #include <utility>
 
+#include "third_party/blink/renderer/core/geometry/dom_point_init.h"
+#include "third_party/blink/renderer/core/geometry/dom_point_read_only.h"
 #include "third_party/blink/renderer/modules/xr/xr_rigid_transform.h"
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -16,6 +18,7 @@
 #include "ui/gfx/geometry/vector3d_f.h"
 
 namespace blink {
+
 XRRay::XRRay(std::unique_ptr<TransformationMatrix> matrix) {
   Set(std::move(matrix));
 }
@@ -97,7 +100,7 @@ DOMFloat32Array* XRRay::matrix() {
     // (0,0,0) with direction (0,0,-1) into ray originating at |origin_| with
     // direction |direction_|.
 
-    matrix_ = TransformationMatrix::Create();
+    matrix_ = std::make_unique<TransformationMatrix>();
 
     // Translation from 0 to |origin_| is simply translation by |origin_|.
     matrix_->Translate3d(origin_->x(), origin_->y(), origin_->z());

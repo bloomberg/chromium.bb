@@ -76,11 +76,7 @@ void SetFlagFromCheckbox(Checkbox* checkbox, int* flags, int flag) {
 // TextExample's content view, which draws stylized string.
 class TextExample::TextExampleView : public View {
  public:
-  TextExampleView()
-    : text_(base::ASCIIToUTF16(kShortText)),
-      flags_(0),
-      elide_(gfx::NO_ELIDE) {
-  }
+  TextExampleView() : text_(base::ASCIIToUTF16(kShortText)) {}
 
   void OnPaint(gfx::Canvas* canvas) override {
     View::OnPaint(canvas);
@@ -121,10 +117,10 @@ class TextExample::TextExampleView : public View {
   base::string16 text_;
 
   // Text flags for passing to |DrawStringRect()|.
-  int flags_;
+  int flags_ = 0;
 
   // The eliding, fading, or truncating behavior.
-  gfx::ElideBehavior elide_;
+  gfx::ElideBehavior elide_ = gfx::NO_ELIDE;
 
   DISALLOW_COPY_AND_ASSIGN(TextExampleView);
 };

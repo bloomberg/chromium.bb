@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -99,7 +100,7 @@ bool IndentOutdentCommand::TryIndentingAsListItem(const Position& start,
   if (editing_state->IsAborted())
     return false;
 
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   // We should clone all the children of the list item for indenting purposes.
   // However, in case the current selection does not encompass all its children,
@@ -135,7 +136,7 @@ bool IndentOutdentCommand::TryIndentingAsListItem(const Position& start,
       return false;
   }
 
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
   DCHECK(new_list);
   if (previous_list && CanMergeLists(*previous_list, *new_list)) {
     MergeIdenticalElements(previous_list, new_list, editing_state);
@@ -143,7 +144,7 @@ bool IndentOutdentCommand::TryIndentingAsListItem(const Position& start,
       return false;
   }
 
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
   if (next_list && CanMergeLists(*new_list, *next_list)) {
     MergeIdenticalElements(new_list, next_list, editing_state);
     if (editing_state->IsAborted())
@@ -174,7 +175,7 @@ void IndentOutdentCommand::IndentIntoBlockquote(const Position& start,
           ? start.ComputeContainerNode()
           : SplitTreeToNode(start.ComputeContainerNode(), element_to_split_to);
 
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
   VisiblePosition start_of_contents = CreateVisiblePosition(start);
   if (!target_blockquote) {
     // Create a new blockquote and insert it as a child of the root editable
@@ -192,7 +193,7 @@ void IndentOutdentCommand::IndentIntoBlockquote(const Position& start,
       InsertNodeBefore(target_blockquote, outer_block, editing_state);
     if (editing_state->IsAborted())
       return;
-    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetDocument().UpdateStyleAndLayout();
     start_of_contents = VisiblePosition::InParentAfterNode(*target_blockquote);
   }
 
@@ -218,15 +219,15 @@ void IndentOutdentCommand::OutdentParagraph(EditingState* editing_state) {
 
   // Use InsertListCommand to remove the selection from the list
   if (IsHTMLOListElement(*enclosing_element)) {
-    ApplyCommandToComposite(InsertListCommand::Create(
+    ApplyCommandToComposite(MakeGarbageCollected<InsertListCommand>(
                                 GetDocument(), InsertListCommand::kOrderedList),
                             editing_state);
     return;
   }
   if (IsHTMLUListElement(*enclosing_element)) {
     ApplyCommandToComposite(
-        InsertListCommand::Create(GetDocument(),
-                                  InsertListCommand::kUnorderedList),
+        MakeGarbageCollected<InsertListCommand>(
+            GetDocument(), InsertListCommand::kUnorderedList),
         editing_state);
     return;
   }
@@ -269,23 +270,23 @@ void IndentOutdentCommand::OutdentParagraph(EditingState* editing_state) {
       }
     }
 
-    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetDocument().UpdateStyleAndLayout();
     visible_start_of_paragraph =
         CreateVisiblePosition(visible_start_of_paragraph.DeepEquivalent());
     if (visible_start_of_paragraph.IsNotNull() &&
         !IsStartOfParagraph(visible_start_of_paragraph)) {
-      InsertNodeAt(HTMLBRElement::Create(GetDocument()),
+      InsertNodeAt(MakeGarbageCollected<HTMLBRElement>(GetDocument()),
                    visible_start_of_paragraph.DeepEquivalent(), editing_state);
       if (editing_state->IsAborted())
         return;
     }
 
-    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetDocument().UpdateStyleAndLayout();
     visible_end_of_paragraph =
         CreateVisiblePosition(visible_end_of_paragraph.DeepEquivalent());
     if (visible_end_of_paragraph.IsNotNull() &&
         !IsEndOfParagraph(visible_end_of_paragraph))
-      InsertNodeAt(HTMLBRElement::Create(GetDocument()),
+      InsertNodeAt(MakeGarbageCollected<HTMLBRElement>(GetDocument()),
                    visible_end_of_paragraph.DeepEquivalent(), editing_state);
     return;
   }
@@ -325,7 +326,7 @@ void IndentOutdentCommand::OutdentParagraph(EditingState* editing_state) {
               : visible_start_of_paragraph.DeepEquivalent().AnchorNode());
     }
 
-    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetDocument().UpdateStyleAndLayout();
 
     // Re-canonicalize visible{Start,End}OfParagraph, make them valid again
     // after DOM change.
@@ -347,12 +348,12 @@ void IndentOutdentCommand::OutdentParagraph(EditingState* editing_state) {
       EndOfParagraph(visible_end_of_paragraph);
   if (start_of_paragraph_to_move.IsNull() || end_of_paragraph_to_move.IsNull())
     return;
-  HTMLBRElement* placeholder = HTMLBRElement::Create(GetDocument());
+  auto* placeholder = MakeGarbageCollected<HTMLBRElement>(GetDocument());
   InsertNodeBefore(placeholder, split_blockquote_node, editing_state);
   if (editing_state->IsAborted())
     return;
 
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
   start_of_paragraph_to_move = CreateVisiblePosition(
       start_of_paragraph_to_move.ToPositionWithAffinity());
   end_of_paragraph_to_move =
@@ -408,7 +409,7 @@ void IndentOutdentCommand::OutdentRegion(
     if (end_after_selection.IsNotNull() && !end_after_selection.IsConnected())
       break;
 
-    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetDocument().UpdateStyleAndLayout();
     if (end_of_next_paragraph.IsNotNull() &&
         !end_of_next_paragraph.IsConnected()) {
       end_of_current_paragraph =

@@ -58,25 +58,22 @@ cr.define('onboarding_ntp_background_test', function() {
     });
 
     test('test displaying default and custom background', function() {
-      const options = testElement.shadowRoot.querySelectorAll(
-          '.ntp-background-grid-button');
+      const options = testElement.shadowRoot.querySelectorAll('.option');
       assertEquals(3, options.length);
 
       // the first option should be the 'Default' option
       assertEquals(
-          options[0].querySelector('.ntp-background-title').innerText,
-          'Default');
+          options[0].querySelector('.option-name').innerText, 'Default');
 
       for (let i = 0; i < backgrounds.length; i++) {
         assertEquals(
-            options[i + 1].querySelector('.ntp-background-title').innerText,
+            options[i + 1].querySelector('.option-name').innerText,
             backgrounds[i].title);
       }
     });
 
     test('test previewing a background and going back to default', function() {
-      const options = testElement.shadowRoot.querySelectorAll(
-          '.ntp-background-grid-button');
+      const options = testElement.shadowRoot.querySelectorAll('.option');
 
       options[1].click();
       return testNtpBackgroundProxy.whenCalled('preloadImage').then(() => {
@@ -98,8 +95,7 @@ cr.define('onboarding_ntp_background_test', function() {
     });
 
     test('test activating a background', function() {
-      const options = testElement.shadowRoot.querySelectorAll(
-          '.ntp-background-grid-button');
+      const options = testElement.shadowRoot.querySelectorAll('.option');
 
       options[1].click();
       assertFalse(options[0].hasAttribute('active'));
@@ -109,8 +105,7 @@ cr.define('onboarding_ntp_background_test', function() {
 
     test('test setting the background when hitting next', function() {
       // select the first non-default option and hit 'Next'
-      const options = testElement.shadowRoot.querySelectorAll(
-          '.ntp-background-grid-button');
+      const options = testElement.shadowRoot.querySelectorAll('.option');
       options[1].click();
       testElement.$$('.action-button').click();
       return Promise
@@ -123,12 +118,42 @@ cr.define('onboarding_ntp_background_test', function() {
           });
     });
 
-    test('test metrics for selection an option and skipping', function() {
-      const options = testElement.shadowRoot.querySelectorAll(
-          '.ntp-background-grid-button');
+    test('test metrics for selecting an option and skipping', function() {
+      const options = testElement.shadowRoot.querySelectorAll('.option');
       options[1].click();
       testElement.$.skipButton.click();
       return testMetricsProxy.whenCalled('recordChoseAnOptionAndChoseSkip');
+    });
+
+    test(
+        'test metrics for when there is an error previewing the background',
+        function() {
+          testNtpBackgroundProxy.setPreloadImageSuccess(false);
+          const options = testElement.shadowRoot.querySelectorAll('.option');
+          options[1].click();
+          return testNtpBackgroundProxy.whenCalled(
+              'recordBackgroundImageFailedToLoad');
+        });
+
+    test(
+        `test metrics aren't sent when previewing the background is a success`,
+        function() {
+          testNtpBackgroundProxy.setPreloadImageSuccess(true);
+          const options = testElement.shadowRoot.querySelectorAll('.option');
+          options[1].click();
+          return testNtpBackgroundProxy.whenCalled('preloadImage').then(() => {
+            assertEquals(
+                0,
+                testNtpBackgroundProxy.getCallCount(
+                    'recordBackgroundImageFailedToLoad'));
+          });
+        });
+
+    test('test metrics for load times of background images', function() {
+      testNtpBackgroundProxy.setPreloadImageSuccess(true);
+      const options = testElement.shadowRoot.querySelectorAll('.option');
+      options[1].click();
+      return testNtpBackgroundProxy.whenCalled('recordBackgroundImageLoadTime');
     });
 
     test('test metrics for doing nothing and navigating away', function() {
@@ -143,8 +168,7 @@ cr.define('onboarding_ntp_background_test', function() {
 
     test('test clearing the background when default is selected', function() {
       // select the default option and hit 'Next'
-      const options = testElement.shadowRoot.querySelectorAll(
-          '.ntp-background-grid-button');
+      const options = testElement.shadowRoot.querySelectorAll('.option');
       options[0].click();
       testElement.$$('.action-button').click();
       return testNtpBackgroundProxy.whenCalled('clearBackground');

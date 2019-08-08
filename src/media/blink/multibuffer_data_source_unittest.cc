@@ -520,7 +520,7 @@ TEST_F(MultibufferDataSourceTest, Range_SupportedButReturned200) {
   Initialize(kHttpUrl, true);
   EXPECT_CALL(host_, SetTotalBytes(response_generator_->content_length()));
   WebURLResponse response = response_generator_->Generate200();
-  response.SetHTTPHeaderField(WebString::FromUTF8("Accept-Ranges"),
+  response.SetHttpHeaderField(WebString::FromUTF8("Accept-Ranges"),
                               WebString::FromUTF8("bytes"));
   Respond(response);
 
@@ -743,7 +743,7 @@ TEST_F(MultibufferDataSourceTest,
       response_generator_->GeneratePartial206(0, kDataSize - 1);
   response1.SetWasFetchedViaServiceWorker(true);
   std::vector<blink::WebURL> url_list = {GURL(kHttpUrl)};
-  response1.SetURLListViaServiceWorker(url_list);
+  response1.SetUrlListViaServiceWorker(url_list);
   WebURLResponse response2 =
       response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
   // The origin URL of response1 and response2 are same. So no error should
@@ -758,7 +758,7 @@ TEST_F(MultibufferDataSourceTest,
       response_generator_->GeneratePartial206(0, kDataSize - 1);
   response1.SetWasFetchedViaServiceWorker(true);
   std::vector<blink::WebURL> url_list = {GURL(kHttpDifferentPathUrl)};
-  response1.SetURLListViaServiceWorker(url_list);
+  response1.SetUrlListViaServiceWorker(url_list);
   WebURLResponse response2 =
       response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
   // The origin URL of response1 and response2 are same. So no error should
@@ -773,7 +773,7 @@ TEST_F(MultibufferDataSourceTest,
       response_generator_->GeneratePartial206(0, kDataSize - 1);
   response1.SetWasFetchedViaServiceWorker(true);
   std::vector<blink::WebURL> url_list = {GURL(kHttpDifferentOriginUrl)};
-  response1.SetURLListViaServiceWorker(url_list);
+  response1.SetUrlListViaServiceWorker(url_list);
   WebURLResponse response2 =
       response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
   // The origin URL of response1 and response2 are different. So an error should
@@ -788,7 +788,7 @@ TEST_F(MultibufferDataSourceTest,
       response_generator_->GeneratePartial206(0, kDataSize - 1);
   response1.SetWasFetchedViaServiceWorker(true);
   std::vector<blink::WebURL> url_list = {GURL(kHttpDifferentOriginUrl)};
-  response1.SetURLListViaServiceWorker(url_list);
+  response1.SetUrlListViaServiceWorker(url_list);
   WebURLResponse response2 =
       response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
   // The origin URL of response1 and response2 are different, but a CORS check
@@ -1448,7 +1448,7 @@ TEST_F(MultibufferDataSourceTest, LengthKnownAtEOF) {
   Initialize(kHttpUrl, true);
   // Server responds without content-length.
   WebURLResponse response = response_generator_->Generate200();
-  response.ClearHTTPHeaderField(WebString::FromUTF8("Content-Length"));
+  response.ClearHttpHeaderField(WebString::FromUTF8("Content-Length"));
   response.SetExpectedContentLength(kPositionNotSpecified);
   Respond(response);
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));
@@ -1476,7 +1476,7 @@ TEST_F(MultibufferDataSourceTest, FileSizeLessThanBlockSize) {
   GURL gurl(kHttpUrl);
   blink::WebURLResponse response(gurl);
   response.SetHttpStatusCode(200);
-  response.SetHTTPHeaderField(
+  response.SetHttpHeaderField(
       WebString::FromUTF8("Content-Length"),
       WebString::FromUTF8(base::NumberToString(kDataSize / 2)));
   response.SetExpectedContentLength(kDataSize / 2);
@@ -1599,7 +1599,7 @@ TEST_F(MultibufferDataSourceTest, EtagTest) {
   EXPECT_CALL(host_, SetTotalBytes(response_generator_->content_length()));
   WebURLResponse response = response_generator_->Generate206(0);
   const std::string etag("\"arglebargle glop-glyf?\"");
-  response.SetHTTPHeaderField(WebString::FromUTF8("Etag"),
+  response.SetHttpHeaderField(WebString::FromUTF8("Etag"),
                               WebString::FromUTF8(etag));
   Respond(response);
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));

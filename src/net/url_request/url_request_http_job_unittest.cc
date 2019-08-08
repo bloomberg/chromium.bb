@@ -231,7 +231,6 @@ TEST(URLRequestHttpJobWithProxy, TestFailureWithoutProxy) {
 
   EXPECT_THAT(delegate.request_status(), IsError(ERR_CONNECTION_RESET));
   EXPECT_EQ(ProxyServer::Direct(), request->proxy_server());
-  EXPECT_FALSE(request->was_fetched_via_proxy());
   EXPECT_EQ(0, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes), request->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads), request->GetTotalReceivedBytes());
@@ -283,7 +282,6 @@ TEST(URLRequestHttpJobWithProxy, TestSuccessfulWithOneProxy) {
   // When request fails due to proxy connection errors, the proxy server should
   // still be set on the |request|.
   EXPECT_EQ(proxy_server, request->proxy_server());
-  EXPECT_FALSE(request->was_fetched_via_proxy());
   EXPECT_EQ(0, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes), request->GetTotalSentBytes());
   EXPECT_EQ(0, request->GetTotalReceivedBytes());
@@ -336,7 +334,6 @@ TEST(URLRequestHttpJobWithProxy,
 
   EXPECT_THAT(delegate.request_status(), IsOk());
   EXPECT_EQ(ProxyServer::Direct(), request->proxy_server());
-  EXPECT_FALSE(request->was_fetched_via_proxy());
   EXPECT_EQ(12, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes), request->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads), request->GetTotalReceivedBytes());

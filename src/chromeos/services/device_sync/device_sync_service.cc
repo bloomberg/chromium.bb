@@ -19,12 +19,14 @@ DeviceSyncService::DeviceSyncService(
     identity::IdentityManager* identity_manager,
     gcm::GCMDriver* gcm_driver,
     const GcmDeviceInfoProvider* gcm_device_info_provider,
+    ClientAppMetadataProvider* client_app_metadata_provider,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     service_manager::mojom::ServiceRequest request)
     : service_binding_(this, std::move(request)),
       identity_manager_(identity_manager),
       gcm_driver_(gcm_driver),
       gcm_device_info_provider_(gcm_device_info_provider),
+      client_app_metadata_provider_(client_app_metadata_provider),
       url_loader_factory_(std::move(url_loader_factory)) {}
 
 DeviceSyncService::~DeviceSyncService() {
@@ -40,8 +42,8 @@ void DeviceSyncService::OnStart() {
 
   device_sync_ = DeviceSyncImpl::Factory::Get()->BuildInstance(
       identity_manager_, gcm_driver_, service_binding_.GetConnector(),
-      gcm_device_info_provider_, url_loader_factory_,
-      std::make_unique<base::OneShotTimer>());
+      gcm_device_info_provider_, client_app_metadata_provider_,
+      url_loader_factory_, std::make_unique<base::OneShotTimer>());
 
   registry_.AddInterface(base::Bind(&DeviceSyncBase::BindRequest,
                                     base::Unretained(device_sync_.get())));

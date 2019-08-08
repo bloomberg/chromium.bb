@@ -28,11 +28,11 @@ IOSSecurityStateTabHelper::IOSSecurityStateTabHelper(web::WebState* web_state)
 
 IOSSecurityStateTabHelper::~IOSSecurityStateTabHelper() {}
 
-void IOSSecurityStateTabHelper::GetSecurityInfo(
-    security_state::SecurityInfo* result) const {
-  security_state::GetSecurityInfo(GetVisibleSecurityState(),
-                                  false /* used policy installed certificate */,
-                                  base::Bind(&web::IsOriginSecure), result);
+security_state::SecurityLevel IOSSecurityStateTabHelper::GetSecurityLevel()
+    const {
+  return security_state::GetSecurityLevel(
+      *GetVisibleSecurityState(), false /* used policy installed certificate */,
+      base::BindRepeating(&web::IsOriginSecure));
 }
 
 std::unique_ptr<security_state::VisibleSecurityState>

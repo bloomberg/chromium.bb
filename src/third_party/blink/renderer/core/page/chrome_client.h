@@ -28,13 +28,14 @@
 #include "base/gtest_prod_util.h"
 #include "base/optional.h"
 #include "cc/input/event_listener_properties.h"
+#include "cc/input/overscroll_behavior.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
@@ -159,8 +160,7 @@ class CORE_EXPORT ChromeClient
   Page* CreateWindow(LocalFrame*,
                      const FrameLoadRequest&,
                      const WebWindowFeatures&,
-                     NavigationPolicy,
-                     SandboxFlags,
+                     WebSandboxFlags,
                      const FeaturePolicy::FeatureState&,
                      const SessionStorageNamespaceId&);
   virtual void Show(NavigationPolicy) = 0;
@@ -168,17 +168,24 @@ class CORE_EXPORT ChromeClient
   // All the parameters should be in viewport space. That is, if an event
   // scrolls by 10 px, but due to a 2X page scale we apply a 5px scroll to the
   // root frame, all of which is handled as overscroll, we should return 10px
-  // as the overscrollDelta.
+  // as the |overscroll_delta|.
   virtual void DidOverscroll(const FloatSize& overscroll_delta,
                              const FloatSize& accumulated_overscroll,
                              const FloatPoint& position_in_viewport,
-                             const FloatSize& velocity_in_viewport,
-                             const cc::OverscrollBehavior&) = 0;
+                             const FloatSize& velocity_in_viewport) = 0;
+
+  // Set the browser's behavior when overscroll happens, e.g. whether to glow
+  // or navigate. This may only be called for the main frame, and takes it as
+  // reference to make it clear that callers may only call this while a local
+  // main frame is present and the values do not persist between instances of
+  // local main frames.
+  virtual void SetOverscrollBehavior(LocalFrame& main_frame,
+                                     const cc::OverscrollBehavior&) = 0;
 
   virtual bool ShouldReportDetailedMessageForSource(LocalFrame&,
                                                     const String& source) = 0;
   virtual void AddMessageToConsole(LocalFrame*,
-                                   MessageSource,
+                                   mojom::ConsoleMessageSource,
                                    mojom::ConsoleMessageLevel,
                                    const String& message,
                                    unsigned line_number,
@@ -233,6 +240,7 @@ class CORE_EXPORT ChromeClient
   virtual bool DoubleTapToZoomEnabled() const { return false; }
 
   virtual void ContentsSizeChanged(LocalFrame*, const IntSize&) const = 0;
+  // Call during pinch gestures, or when page-scale changes on main-frame load.
   virtual void PageScaleFactorChanged() const {}
   virtual float ClampPageScaleFactorToLimits(float scale) const {
     return scale;
@@ -366,8 +374,6 @@ class CORE_EXPORT ChromeClient
 
   virtual void DidUpdateBrowserControls() const {}
 
-  virtual void SetOverscrollBehavior(const cc::OverscrollBehavior&) {}
-
   virtual void RegisterPopupOpeningObserver(PopupOpeningObserver*) = 0;
   virtual void UnregisterPopupOpeningObserver(PopupOpeningObserver*) = 0;
   virtual void NotifyPopupOpeningObservers() const = 0;
@@ -383,6 +389,21 @@ class CORE_EXPORT ChromeClient
                              base::OnceCallback<void(bool)> callback) {
     std::move(callback).Run(false);
   }
+
+  // The |callback| will be fired when the corresponding renderer frame for the
+  // |frame| is submitted (still called "swapped") to the display compositor
+  // (either with DidSwap or DidNotSwap).
+  virtual void NotifySwapTime(LocalFrame& frame,
+                              WebWidgetClient::ReportTimeCallback callback) {}
+
+  virtual void FallbackCursorModeLockCursor(LocalFrame* frame,
+                                            bool left,
+                                            bool right,
+                                            bool up,
+                                            bool down) = 0;
+
+  virtual void FallbackCursorModeSetCursorVisibility(LocalFrame* frame,
+                                                     bool visible) = 0;
 
   virtual void Trace(blink::Visitor*);
 
@@ -403,8 +424,7 @@ class CORE_EXPORT ChromeClient
   virtual Page* CreateWindowDelegate(LocalFrame*,
                                      const FrameLoadRequest&,
                                      const WebWindowFeatures&,
-                                     NavigationPolicy,
-                                     SandboxFlags,
+                                     WebSandboxFlags,
                                      const FeaturePolicy::FeatureState&,
                                      const SessionStorageNamespaceId&) = 0;
 

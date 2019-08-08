@@ -72,6 +72,8 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
   bool opt_out_occurred_ = false;
   bool origin_opt_out_occurred_ = false;
   bool save_data_enabled_ = false;
+  bool previews_likely_ = false;
+  CoinFlipHoldbackResult coin_flip_result_ = CoinFlipHoldbackResult::kNotSet;
   base::Optional<base::TimeDelta> navigation_restart_penalty_ = base::nullopt;
 
   SEQUENCE_CHECKER(sequence_checker_);

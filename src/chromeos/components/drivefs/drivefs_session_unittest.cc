@@ -76,7 +76,7 @@ TEST_F(DriveFsDiskMounterTest, MountUnmount) {
                       chromeos::MOUNT_TYPE_NETWORK_STORAGE,
                       {}});
   EXPECT_CALL(disk_manager_, UnmountPath(kExpectedMountPath,
-                                         chromeos::UNMOUNT_OPTIONS_NONE, _));
+                                         chromeos::UNMOUNT_OPTIONS_LAZY, _));
   mounter.reset();
 }
 
@@ -91,7 +91,7 @@ TEST_F(DriveFsDiskMounterTest, DestroyAfterMounted) {
                       chromeos::MOUNT_TYPE_NETWORK_STORAGE,
                       {}});
   EXPECT_CALL(disk_manager_, UnmountPath(kExpectedMountPath,
-                                         chromeos::UNMOUNT_OPTIONS_NONE, _));
+                                         chromeos::UNMOUNT_OPTIONS_LAZY, _));
 }
 
 TEST_F(DriveFsDiskMounterTest, DestroyBeforeMounted) {

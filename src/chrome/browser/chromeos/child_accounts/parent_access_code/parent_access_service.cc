@@ -30,6 +30,7 @@ ParentAccessService::ParentAccessService(
     : config_source_(std::move(config_source)),
       clock_(base::DefaultClock::GetInstance()) {
   CreateValidators(config_source_->GetConfigSet());
+  DCHECK(LoginScreenClient::Get());
   LoginScreenClient::Get()->SetParentAccessDelegate(this);
 }
 

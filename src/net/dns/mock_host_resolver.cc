@@ -11,6 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
@@ -28,6 +29,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/host_cache.h"
+#include "net/url_request/url_request_context.h"
 
 #if defined(OS_WIN)
 #include "net/base/winsock_init.h"
@@ -613,6 +615,38 @@ void MockHostResolverBase::RemoveCancelledListener(MdnsListenerImpl* listener) {
   listeners_.erase(listener);
 }
 
+MockHostResolverFactory::MockHostResolverFactory(
+    scoped_refptr<RuleBasedHostResolverProc> rules,
+    bool use_caching,
+    int cache_invalidation_num)
+    : rules_(std::move(rules)),
+      use_caching_(use_caching),
+      cache_invalidation_num_(cache_invalidation_num) {}
+
+MockHostResolverFactory::~MockHostResolverFactory() = default;
+
+std::unique_ptr<HostResolver> MockHostResolverFactory::CreateResolver(
+    HostResolverManager* manager,
+    base::StringPiece host_mapping_rules,
+    bool enable_caching) {
+  DCHECK(host_mapping_rules.empty());
+
+  // Explicit new to access private constructor.
+  auto resolver = base::WrapUnique(new MockHostResolverBase(
+      enable_caching && use_caching_, cache_invalidation_num_));
+  if (rules_)
+    resolver->set_rules(rules_.get());
+  return resolver;
+}
+
+std::unique_ptr<HostResolver> MockHostResolverFactory::CreateStandaloneResolver(
+    NetLog* net_log,
+    const HostResolver::Options& options,
+    base::StringPiece host_mapping_rules,
+    bool enable_caching) {
+  return CreateResolver(nullptr, host_mapping_rules, enable_caching);
+}
+
 //-----------------------------------------------------------------------------
 
 RuleBasedHostResolverProc::Rule::Rule(ResolverType resolver_type,
@@ -829,7 +863,7 @@ void RuleBasedHostResolverProc::AddRuleInternal(const Rule& rule) {
 }
 
 RuleBasedHostResolverProc* CreateCatchAllHostResolverProc() {
-  RuleBasedHostResolverProc* catchall = new RuleBasedHostResolverProc(NULL);
+  RuleBasedHostResolverProc* catchall = new RuleBasedHostResolverProc(nullptr);
   // Note that IPv6 lookups fail.
   catchall->AddIPLiteralRule("*", "127.0.0.1", "localhost");
 

@@ -23,8 +23,9 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.cached_image_fetcher.CachedImageFetcher;
-import org.chromium.chrome.browser.cached_image_fetcher.InMemoryCachedImageFetcher;
+import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
+import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
+import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
 import org.chromium.chrome.browser.suggestions.ThumbnailGradient;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
@@ -43,7 +44,7 @@ public class FeedImageLoader implements ImageLoaderApi {
     private static final String OVERLAY_IMAGE_DIRECTION_END = "end";
 
     private Context mActivityContext;
-    private CachedImageFetcher mCachedImageFetcher;
+    private ImageFetcher mImageFetcher;
 
     /**
      * Creates a FeedImageLoader for fetching image for the current user.
@@ -52,16 +53,15 @@ public class FeedImageLoader implements ImageLoaderApi {
      */
     public FeedImageLoader(Context activityContext, DiscardableReferencePool referencePool) {
         mActivityContext = activityContext;
-        if (SysUtils.isLowEndDevice()) {
-            mCachedImageFetcher = CachedImageFetcher.getInstance();
-        } else {
-            mCachedImageFetcher = new InMemoryCachedImageFetcher(referencePool);
-        }
+        mImageFetcher = ImageFetcherFactory.createImageFetcher(SysUtils.isLowEndDevice()
+                        ? ImageFetcherConfig.DISK_CACHE_ONLY
+                        : ImageFetcherConfig.IN_MEMORY_WITH_DISK_CACHE,
+                referencePool);
     }
 
     public void destroy() {
-        mCachedImageFetcher.destroy();
-        mCachedImageFetcher = null;
+        mImageFetcher.destroy();
+        mImageFetcher = null;
     }
 
     @Override
@@ -83,7 +83,7 @@ public class FeedImageLoader implements ImageLoaderApi {
      */
     private void loadDrawableWithIter(
             Iterator<String> urlsIter, int widthPx, int heightPx, Consumer<Drawable> consumer) {
-        if (!urlsIter.hasNext() || mCachedImageFetcher == null) {
+        if (!urlsIter.hasNext() || mImageFetcher == null) {
             // Post to ensure callback is not run synchronously.
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> consumer.accept(null));
             return;
@@ -168,13 +168,12 @@ public class FeedImageLoader implements ImageLoaderApi {
 
     @VisibleForTesting
     protected void fetchImage(String url, int width, int height, Callback<Bitmap> callback) {
-        mCachedImageFetcher.fetchImage(
-                url, CachedImageFetcher.FEED_UMA_CLIENT_NAME, width, height, callback);
+        mImageFetcher.fetchImage(url, ImageFetcher.FEED_UMA_CLIENT_NAME, width, height, callback);
     }
 
     @VisibleForTesting
-    FeedImageLoader(Context activityContext, CachedImageFetcher cachedImageFetcher) {
+    FeedImageLoader(Context activityContext, ImageFetcher imageFetcher) {
         mActivityContext = activityContext;
-        mCachedImageFetcher = cachedImageFetcher;
+        mImageFetcher = imageFetcher;
     }
 }

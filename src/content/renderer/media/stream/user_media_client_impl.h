@@ -62,7 +62,8 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
   bool IsCapturing() override;
 
   // RenderFrameObserver override
-  void WillCommitProvisionalLoad() override;
+  void ReadyToCommitNavigation(
+      blink::WebDocumentLoader* document_loader) override;
 
   void SetMediaDevicesDispatcherForTesting(
       blink::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher);

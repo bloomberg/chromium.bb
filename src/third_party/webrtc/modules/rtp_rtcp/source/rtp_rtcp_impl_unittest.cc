@@ -22,6 +22,7 @@
 #include "modules/rtp_rtcp/source/rtcp_packet/nack.h"
 #include "modules/rtp_rtcp/source/rtp_packet_received.h"
 #include "modules/rtp_rtcp/source/rtp_rtcp_impl.h"
+#include "modules/rtp_rtcp/source/rtp_sender_video.h"
 #include "rtc_base/rate_limiter.h"
 #include "test/gmock.h"
 #include "test/gtest.h"
@@ -59,9 +60,7 @@ class SendTransport : public Transport {
         clock_(nullptr),
         delay_ms_(0),
         rtp_packets_sent_(0),
-        rtcp_packets_sent_(0),
-        keepalive_payload_type_(0),
-        num_keepalive_sent_(0) {}
+        rtcp_packets_sent_(0) {}
 
   void SetRtpRtcpModule(ModuleRtpRtcpImpl* receiver) { receiver_ = receiver; }
   void SimulateNetworkDelay(int64_t delay_ms, SimulatedClock* clock) {
@@ -75,8 +74,6 @@ class SendTransport : public Transport {
     std::unique_ptr<RtpHeaderParser> parser(RtpHeaderParser::Create());
     EXPECT_TRUE(parser->Parse(static_cast<const uint8_t*>(data), len, &header));
     ++rtp_packets_sent_;
-    if (header.payloadType == keepalive_payload_type_)
-      ++num_keepalive_sent_;
     last_rtp_header_ = header;
     return true;
   }
@@ -93,10 +90,6 @@ class SendTransport : public Transport {
     ++rtcp_packets_sent_;
     return true;
   }
-  void SetKeepalivePayloadType(uint8_t payload_type) {
-    keepalive_payload_type_ = payload_type;
-  }
-  size_t NumKeepaliveSent() { return num_keepalive_sent_; }
   size_t NumRtcpSent() { return rtcp_packets_sent_; }
   ModuleRtpRtcpImpl* receiver_;
   SimulatedClock* clock_;
@@ -105,8 +98,6 @@ class SendTransport : public Transport {
   size_t rtcp_packets_sent_;
   RTPHeader last_rtp_header_;
   std::vector<uint16_t> last_nack_list_;
-  uint8_t keepalive_payload_type_;
-  size_t num_keepalive_sent_;
 };
 
 class RtpRtcpModule : public RtcpPacketTypeCounterObserver {
@@ -126,7 +117,6 @@ class RtpRtcpModule : public RtcpPacketTypeCounterObserver {
   RtcpRttStatsTestImpl rtt_stats_;
   std::unique_ptr<ModuleRtpRtcpImpl> impl_;
   uint32_t remote_ssrc_;
-  RtpKeepAliveConfig keepalive_config_;
   int rtcp_report_interval_ms_ = 0;
 
   void SetRemoteSsrc(uint32_t ssrc) {
@@ -156,12 +146,6 @@ class RtpRtcpModule : public RtcpPacketTypeCounterObserver {
   std::vector<uint16_t> LastNackListSent() {
     return transport_.last_nack_list_;
   }
-  void SetKeepaliveConfigAndReset(const RtpKeepAliveConfig& config) {
-    keepalive_config_ = config;
-    // Need to create a new module impl, since it's configured at creation.
-    CreateModuleImpl();
-    transport_.SetKeepalivePayloadType(config.payload_type);
-  }
   void SetRtcpReportIntervalAndReset(int rtcp_report_interval_ms) {
     rtcp_report_interval_ms_ = rtcp_report_interval_ms;
     CreateModuleImpl();
@@ -176,7 +160,6 @@ class RtpRtcpModule : public RtcpPacketTypeCounterObserver {
     config.receive_statistics = receive_statistics_.get();
     config.rtcp_packet_type_counter_observer = this;
     config.rtt_stats = &rtt_stats_;
-    config.keepalive_config = keepalive_config_;
     config.rtcp_report_interval_ms = rtcp_report_interval_ms_;
 
     impl_.reset(new ModuleRtpRtcpImpl(config));
@@ -248,9 +231,9 @@ class RtpRtcpImplTest : public ::testing::Test {
 
     const uint8_t payload[100] = {0};
     EXPECT_TRUE(module->impl_->OnSendingRtpFrame(0, 0, codec_.plType, true));
-    EXPECT_TRUE(sender->SendVideo(kVideoFrameKey, codec_.plType, 0, 0, payload,
-                                  sizeof(payload), nullptr, &rtp_video_header,
-                                  0));
+    EXPECT_TRUE(sender->SendVideo(VideoFrameType::kVideoFrameKey, codec_.plType,
+                                  0, 0, payload, sizeof(payload), nullptr,
+                                  &rtp_video_header, 0));
   }
 
   void IncomingRtcpNack(const RtpRtcpModule* module, uint16_t sequence_number) {
@@ -566,60 +549,6 @@ TEST_F(RtpRtcpImplTest, UniqueNackRequests) {
   EXPECT_EQ(8U, sender_.RtcpReceived().nack_requests);
   EXPECT_EQ(6U, sender_.RtcpReceived().unique_nack_requests);
   EXPECT_EQ(75, sender_.RtcpReceived().UniqueNackRequestsInPercent());
-}
-
-TEST_F(RtpRtcpImplTest, SendsKeepaliveAfterTimout) {
-  const int kTimeoutMs = 1500;
-
-  RtpKeepAliveConfig config;
-  config.timeout_interval_ms = kTimeoutMs;
-
-  // Recreate sender impl with new configuration, and redo setup.
-  sender_.SetKeepaliveConfigAndReset(config);
-  SetUp();
-
-  // Initial process call.
-  sender_.impl_->Process();
-  EXPECT_EQ(0U, sender_.transport_.NumKeepaliveSent());
-
-  // After one time, a single keep-alive packet should be sent.
-  clock_.AdvanceTimeMilliseconds(kTimeoutMs);
-  sender_.impl_->Process();
-  EXPECT_EQ(1U, sender_.transport_.NumKeepaliveSent());
-
-  // Process for the same timestamp again, no new packet should be sent.
-  sender_.impl_->Process();
-  EXPECT_EQ(1U, sender_.transport_.NumKeepaliveSent());
-
-  // Move ahead to the last ms before a keep-alive is expected, no action.
-  clock_.AdvanceTimeMilliseconds(kTimeoutMs - 1);
-  sender_.impl_->Process();
-  EXPECT_EQ(1U, sender_.transport_.NumKeepaliveSent());
-
-  // Move the final ms, timeout relative last KA. Should create new keep-alive.
-  clock_.AdvanceTimeMilliseconds(1);
-  sender_.impl_->Process();
-  EXPECT_EQ(2U, sender_.transport_.NumKeepaliveSent());
-
-  // Move ahead to the last ms before Christmas.
-  clock_.AdvanceTimeMilliseconds(kTimeoutMs - 1);
-  sender_.impl_->Process();
-  EXPECT_EQ(2U, sender_.transport_.NumKeepaliveSent());
-
-  // Send actual payload data, no keep-alive expected.
-  SendFrame(&sender_, sender_video_.get(), 0);
-  sender_.impl_->Process();
-  EXPECT_EQ(2U, sender_.transport_.NumKeepaliveSent());
-
-  // Move ahead as far as possible again, timeout now relative payload. No KA.
-  clock_.AdvanceTimeMilliseconds(kTimeoutMs - 1);
-  sender_.impl_->Process();
-  EXPECT_EQ(2U, sender_.transport_.NumKeepaliveSent());
-
-  // Timeout relative payload, send new keep-alive.
-  clock_.AdvanceTimeMilliseconds(1);
-  sender_.impl_->Process();
-  EXPECT_EQ(3U, sender_.transport_.NumKeepaliveSent());
 }
 
 TEST_F(RtpRtcpImplTest, ConfigurableRtcpReportInterval) {

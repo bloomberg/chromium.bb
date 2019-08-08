@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/test/test_app_window_icon_observer.h"
 
-#include "base/md5.h"
+#include "base/hash/md5.h"
 #include "base/run_loop.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "ui/aura/client/aura_constants.h"

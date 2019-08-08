@@ -13,11 +13,11 @@
 #include <set>
 #include <string>
 
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
-#include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_states.h"
 #include "net/base/net_export.h"
@@ -123,7 +123,8 @@ class NET_EXPORT HttpStreamFactory {
 
   friend class HttpStreamFactoryPeer;
 
-  using JobControllerSet = std::set<std::unique_ptr<JobController>>;
+  using JobControllerSet =
+      std::set<std::unique_ptr<JobController>, base::UniquePtrComparator>;
 
   url::SchemeHostPort RewriteHost(const url::SchemeHostPort& server);
 

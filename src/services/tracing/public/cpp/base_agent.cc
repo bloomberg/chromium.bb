@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/trace_event/trace_log.h"
 #include "services/tracing/public/cpp/traced_process_impl.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 
@@ -36,6 +37,13 @@ void BaseAgent::GetCategories(std::set<std::string>* category_set) {}
 
 void BaseAgent::Disconnect() {
   binding_.Close();
+
+  // If we get disconnected it means the tracing service went down, most likely
+  // due to the process dying. In that case, stop any tracing in progress.
+  if (base::trace_event::TraceLog::GetInstance()->IsEnabled()) {
+    base::trace_event::TraceLog::GetInstance()->CancelTracing(
+        base::trace_event::TraceLog::OutputCallback());
+  }
 }
 
 void BaseAgent::StartTracing(const std::string& config,
@@ -49,11 +57,6 @@ void BaseAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {}
 void BaseAgent::RequestBufferStatus(
     Agent::RequestBufferStatusCallback callback) {
   std::move(callback).Run(0 /* capacity */, 0 /* count */);
-}
-
-void BaseAgent::WaitForTracingEnabled(
-    Agent::WaitForTracingEnabledCallback callback) {
-  std::move(callback).Run();
 }
 
 bool BaseAgent::IsBoundForTesting() const {

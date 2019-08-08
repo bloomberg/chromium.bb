@@ -90,7 +90,7 @@ inline StyleRuleList* ElementRuleCollector::EnsureStyleRuleList() {
 
 inline StaticCSSRuleList* ElementRuleCollector::EnsureRuleList() {
   if (!css_rule_list_)
-    css_rule_list_ = StaticCSSRuleList::Create();
+    css_rule_list_ = MakeGarbageCollected<StaticCSSRuleList>();
   return css_rule_list_.Get();
 }
 
@@ -327,7 +327,7 @@ void ElementRuleCollector::SortAndTransferMatchedRules() {
     const RuleData* rule_data = matched_rules_[i].GetRuleData();
     result_.AddMatchedProperties(
         &rule_data->Rule()->Properties(), rule_data->LinkMatchType(),
-        rule_data->PropertyWhitelist(matching_ua_rules_));
+        rule_data->GetValidPropertyFilter(matching_ua_rules_));
   }
 }
 
@@ -349,7 +349,7 @@ void ElementRuleCollector::DidMatchRule(
       return;
     if ((dynamic_pseudo == kPseudoIdBefore ||
          dynamic_pseudo == kPseudoIdAfter) &&
-        !rule_data->Rule()->Properties().HasProperty(CSSPropertyContent))
+        !rule_data->Rule()->Properties().HasProperty(CSSPropertyID::kContent))
       return;
     style_->SetHasPseudoStyle(dynamic_pseudo);
   } else {

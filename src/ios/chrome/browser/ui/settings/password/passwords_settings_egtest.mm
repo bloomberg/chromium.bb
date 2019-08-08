@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <EarlGrey/EarlGrey.h>
 #include <TargetConditionals.h>
 
 #include <utility>
@@ -63,7 +64,6 @@ using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::SetUpAndReturnMockReauthenticationModule;
 using chrome_test_util::SetUpAndReturnMockReauthenticationModuleForExport;
 using chrome_test_util::TurnSettingsSwitchOn;
-using web::test::ElementSelector;
 
 namespace {
 
@@ -288,17 +288,11 @@ class TestStoreConsumer : public password_manager::PasswordStoreConsumer {
   const std::vector<autofill::PasswordForm>& GetStoreResults() {
     results_.clear();
     ResetObtained();
-    GetPasswordStore()->GetAutofillableLogins(this);
-    bool responded = base::test::ios::WaitUntilConditionOrTimeout(1.0, ^bool {
+    GetPasswordStore()->GetAllLogins(this);
+    bool responded = base::test::ios::WaitUntilConditionOrTimeout(2.0, ^bool {
       return !AreObtainedReset();
     });
     GREYAssert(responded, @"Obtaining fillable items took too long.");
-    AppendObtainedToResults();
-    GetPasswordStore()->GetBlacklistLogins(this);
-    responded = base::test::ios::WaitUntilConditionOrTimeout(2.0, ^bool {
-      return !AreObtainedReset();
-    });
-    GREYAssert(responded, @"Obtaining blacklisted items took too long.");
     AppendObtainedToResults();
     return results_;
   }
@@ -1511,7 +1505,7 @@ PasswordForm CreateSampleFormWithIndex(int index) {
                                    chrome_test_util::GetCurrentWebState())]
       performAction:web::WebViewTapElement(
                         chrome_test_util::GetCurrentWebState(),
-                        ElementSelector::ElementSelectorId("password"))];
+                        [ElementSelector selectorWithElementID:"password"])];
 
   // Wait until the keyboard shows up before tapping.
   id<GREYMatcher> showAll = grey_allOf(

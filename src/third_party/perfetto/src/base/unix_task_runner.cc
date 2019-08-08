@@ -65,11 +65,14 @@ void UnixTaskRunner::Run() {
 }
 
 void UnixTaskRunner::Quit() {
-  {
-    std::lock_guard<std::mutex> lock(lock_);
-    quit_ = true;
-  }
+  std::lock_guard<std::mutex> lock(lock_);
+  quit_ = true;
   WakeUp();
+}
+
+bool UnixTaskRunner::QuitCalled() {
+  std::lock_guard<std::mutex> lock(lock_);
+  return quit_;
 }
 
 bool UnixTaskRunner::IsIdleForTesting() {

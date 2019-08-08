@@ -16,7 +16,7 @@
 namespace views {
 
 AXViewObjWrapper::AXViewObjWrapper(AXAuraObjCache* aura_obj_cache, View* view)
-    : aura_obj_cache_(aura_obj_cache), view_(view) {
+    : AXAuraObjWrapper(aura_obj_cache), view_(view) {
   if (view->GetWidget())
     aura_obj_cache_->GetOrCreate(view->GetWidget());
   view->AddObserver(this);
@@ -56,17 +56,15 @@ void AXViewObjWrapper::GetChildren(
     return;
 
   // TODO(dtseng): Need to handle |Widget| child of |View|.
-  for (int i = 0; i < view_->child_count(); ++i) {
-    if (!view_->child_at(i)->visible())
-      continue;
-
-    AXAuraObjWrapper* child = aura_obj_cache_->GetOrCreate(view_->child_at(i));
-    out_children->push_back(child);
+  for (View* child : view_->children()) {
+    if (child->visible())
+      out_children->push_back(aura_obj_cache_->GetOrCreate(child));
   }
 
   for (int i = 0; i < view_accessibility.virtual_child_count(); ++i) {
-    out_children->push_back(
-        view_accessibility.virtual_child_at(i)->GetWrapper());
+    AXVirtualView* child =
+        const_cast<AXVirtualView*>(view_accessibility.virtual_child_at(i));
+    out_children->push_back(child->GetOrCreateWrapper(aura_obj_cache_));
   }
 }
 
@@ -74,8 +72,22 @@ void AXViewObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   if (!view_)
     return;
 
-  view_->GetViewAccessibility().GetAccessibleNodeData(out_node_data);
+  ViewAccessibility& view_accessibility = view_->GetViewAccessibility();
+
+  view_accessibility.GetAccessibleNodeData(out_node_data);
   out_node_data->id = GetUniqueId();
+
+  if (view_accessibility.GetNextFocus()) {
+    out_node_data->AddIntAttribute(
+        ax::mojom::IntAttribute::kNextFocusId,
+        aura_obj_cache_->GetID(view_accessibility.GetNextFocus()));
+  }
+
+  if (view_accessibility.GetPreviousFocus()) {
+    out_node_data->AddIntAttribute(
+        ax::mojom::IntAttribute::kPreviousFocusId,
+        aura_obj_cache_->GetID(view_accessibility.GetPreviousFocus()));
+  }
 }
 
 int32_t AXViewObjWrapper::GetUniqueId() const {

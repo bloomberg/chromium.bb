@@ -36,7 +36,7 @@ class ParseError(Exception):
 
 
 class Expectation(object):
-    def __init__(self, reason, test, tags, results,
+    def __init__(self, reason, test, tags, results, lineno,
                  retry_on_failure=False):
         """Constructor for expectations.
 
@@ -56,11 +56,13 @@ class Expectation(object):
         self._test = test
         self._tags = frozenset(tags)
         self._results = frozenset(results)
+        self._lineno = lineno
         self.should_retry_on_failure = retry_on_failure
 
     def __eq__(self, other):
         return (self.reason == other.reason and self.test == other.test
-                and self.tags == other.tags and self.results == other.results)
+                and self.tags == other.tags and self.results == other.results
+                and self.lineno == other.lineno)
 
     @property
     def reason(self):
@@ -78,6 +80,9 @@ class Expectation(object):
     def results(self):
         return self._results
 
+    @property
+    def lineno(self):
+        return self._lineno
 
 class TaggedTestListParser(object):
     """Parses lists of tests and expectations for them.
@@ -160,9 +165,10 @@ class TaggedTestListParser(object):
                     tag_set = set(
                         line[len(self.TAG_TOKEN):right_bracket].split())
                 tag_sets_intersection.update(
-                    (t for t in tag_set if t in self._tag_to_tag_set))
+                    (t for t in tag_set if t.lower() in self._tag_to_tag_set))
                 self.tag_sets.append(tag_set)
-                self._tag_to_tag_set.update({tg: id(tag_set) for tg in tag_set})
+                self._tag_to_tag_set.update(
+                    {tg.lower(): id(tag_set) for tg in tag_set})
             elif line.startswith('#') or not line:
                 # Ignore, it is just a comment or empty.
                 lineno += 1
@@ -189,11 +195,10 @@ class TaggedTestListParser(object):
 
         # Unused group is optional trailing comment.
         reason, raw_tags, test, raw_results, _ = match.groups()
-        tags = raw_tags.split() if raw_tags else []
+        tags = [raw_tag.lower() for raw_tag in raw_tags.split()] if raw_tags else []
         tag_set_ids = set()
-
         for t in tags:
-            if not t in self._tag_to_tag_set:
+            if not t in  self._tag_to_tag_set:
                 raise ParseError(lineno, 'Unknown tag "%s"' % t)
             else:
                 tag_set_ids.add(self._tag_to_tag_set[t])
@@ -203,7 +208,7 @@ class TaggedTestListParser(object):
                          'part of the same tag set')
             tags_by_tag_set_id = defaultdict(list)
             for t in tags:
-                tags_by_tag_set_id[self._tag_to_tag_set[t]].append(t)
+              tags_by_tag_set_id[self._tag_to_tag_set[t]].append(t)
             for tag_intersection in tags_by_tag_set_id.values():
                 error_msg += ('\n  - Tags %s are part of the same tag set' %
                               _group_to_string(sorted(tag_intersection)))
@@ -224,13 +229,17 @@ class TaggedTestListParser(object):
             except KeyError:
                 raise ParseError(lineno, 'Unknown result type "%s"' % r)
 
-        return Expectation(reason, test, tags, results, retry_on_failure)
+        # Tags from tag groups will be stored in lower case in the Expectation
+        # instance. These tags will be compared to the tags passed in to
+        # the Runner instance which are also stored in lower case.
+        return Expectation(
+            reason, test, tags, results, lineno, retry_on_failure)
 
 
 class TestExpectations(object):
 
     def __init__(self, tags):
-        self.tags = tags
+        self.tags = [tag.lower() for tag in tags]
 
         # Expectations may either refer to individual tests, or globs of
         # tests. Each test (or glob) may have multiple sets of tags and

@@ -32,7 +32,7 @@
 #include "rtc_base/experiments/rate_control_settings.h"
 #include "rtc_base/race_checker.h"
 #include "rtc_base/rate_statistics.h"
-#include "rtc_base/sequenced_task_checker.h"
+#include "rtc_base/synchronization/sequence_checker.h"
 #include "rtc_base/task_queue.h"
 #include "video/encoder_bitrate_adjuster.h"
 #include "video/frame_encode_timer.h"
@@ -81,7 +81,11 @@ class VideoStreamEncoder : public VideoStreamEncoderInterface,
 
   void SendKeyFrame() override;
 
-  void OnBitrateUpdated(uint32_t bitrate_bps,
+  void OnLossNotification(
+      const VideoEncoder::LossNotification& loss_notification) override;
+
+  void OnBitrateUpdated(DataRate target_bitrate,
+                        DataRate target_headroom,
                         uint8_t fraction_lost,
                         int64_t round_trip_time_ms) override;
 
@@ -106,6 +110,24 @@ class VideoStreamEncoder : public VideoStreamEncoderInterface,
     int height;
     bool is_texture;
     int pixel_count() const { return width * height; }
+  };
+
+  struct EncoderRateSettings : public VideoEncoder::RateControlParameters {
+    EncoderRateSettings();
+    EncoderRateSettings(const VideoBitrateAllocation& bitrate,
+                        double framerate_fps,
+                        DataRate bandwidth_allocation,
+                        DataRate encoder_target);
+    bool operator==(const EncoderRateSettings& rhs) const;
+    bool operator!=(const EncoderRateSettings& rhs) const;
+
+    // This is the scalar target bitrate before the VideoBitrateAllocator, i.e.
+    // the |target_bitrate| argument of the OnBitrateUpdated() method. This is
+    // needed because the bitrate allocator may truncate the total bitrate and a
+    // later call to the same allocator instance, e.g.
+    // |using last_encoder_rate_setings_->bitrate.get_sum_bps()|, may trick it
+    // into thinking the available bitrate has decreased since the last call.
+    DataRate encoder_target;
   };
 
   void ConfigureEncoderOnTaskQueue(VideoEncoderConfig config,
@@ -139,12 +161,15 @@ class VideoStreamEncoder : public VideoStreamEncoderInterface,
   void TraceFrameDropStart();
   void TraceFrameDropEnd();
 
-  VideoBitrateAllocation GetBitrateAllocationAndNotifyObserver(
-      const uint32_t target_bitrate_bps,
-      uint32_t framerate_fps) RTC_RUN_ON(&encoder_queue_);
+  // Returns a copy of |rate_settings| with the |bitrate| field updated using
+  // the current VideoBitrateAllocator, and notifies any listeners of the new
+  // allocation.
+  EncoderRateSettings UpdateBitrateAllocationAndNotifyObserver(
+      const EncoderRateSettings& rate_settings) RTC_RUN_ON(&encoder_queue_);
+
   uint32_t GetInputFramerateFps() RTC_RUN_ON(&encoder_queue_);
-  void SetEncoderRates(const VideoBitrateAllocation& bitrate_allocation,
-                       uint32_t framerate_fps) RTC_RUN_ON(&encoder_queue_);
+  void SetEncoderRates(const EncoderRateSettings& rate_settings)
+      RTC_RUN_ON(&encoder_queue_);
 
   // Class holding adaptation information.
   class AdaptCounter final {
@@ -241,7 +266,8 @@ class VideoStreamEncoder : public VideoStreamEncoderInterface,
   int crop_height_ RTC_GUARDED_BY(&encoder_queue_);
   uint32_t encoder_start_bitrate_bps_ RTC_GUARDED_BY(&encoder_queue_);
   size_t max_data_payload_length_ RTC_GUARDED_BY(&encoder_queue_);
-  uint32_t last_observed_bitrate_bps_ RTC_GUARDED_BY(&encoder_queue_);
+  absl::optional<EncoderRateSettings> last_encoder_rate_settings_
+      RTC_GUARDED_BY(&encoder_queue_);
   bool encoder_paused_and_dropped_frame_ RTC_GUARDED_BY(&encoder_queue_);
   Clock* const clock_;
   // Counters used for deciding if the video resolution or framerate is
@@ -289,12 +315,10 @@ class VideoStreamEncoder : public VideoStreamEncoderInterface,
       RTC_GUARDED_BY(&encoder_queue_);
   absl::optional<int64_t> last_parameters_update_ms_
       RTC_GUARDED_BY(&encoder_queue_);
+  absl::optional<int64_t> last_encode_info_ms_ RTC_GUARDED_BY(&encoder_queue_);
 
   VideoEncoder::EncoderInfo encoder_info_ RTC_GUARDED_BY(&encoder_queue_);
   VideoEncoderFactory::CodecInfo codec_info_ RTC_GUARDED_BY(&encoder_queue_);
-  VideoBitrateAllocation last_bitrate_allocation_
-      RTC_GUARDED_BY(&encoder_queue_);
-  uint32_t last_framerate_fps_ RTC_GUARDED_BY(&encoder_queue_);
   VideoCodec send_codec_ RTC_GUARDED_BY(&encoder_queue_);
 
   FrameDropper frame_dropper_ RTC_GUARDED_BY(&encoder_queue_);
@@ -315,7 +339,7 @@ class VideoStreamEncoder : public VideoStreamEncoderInterface,
 
   // TODO(sprang): Change actually support keyframe per simulcast stream, or
   // turn this into a simple bool |pending_keyframe_request_|.
-  std::vector<FrameType> next_frame_types_ RTC_GUARDED_BY(&encoder_queue_);
+  std::vector<VideoFrameType> next_frame_types_ RTC_GUARDED_BY(&encoder_queue_);
 
   FrameEncodeTimer frame_encoder_timer_;
 

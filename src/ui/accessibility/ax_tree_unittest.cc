@@ -91,6 +91,8 @@ class TestAXTreeObserver : public AXTreeObserver {
 
   void OnNodeChanged(AXTree* tree, AXNode* node) override {
     changed_ids_.push_back(node->id());
+    if (call_posinset_and_setsize)
+      AssertPosinsetAndSetsizeZero(node);
   }
 
   void OnAtomicUpdateFinished(AXTree* tree,
@@ -210,6 +212,12 @@ class TestAXTreeObserver : public AXTreeObserver {
   }
   const std::vector<std::string>& attribute_change_log() {
     return attribute_change_log_;
+  }
+
+  bool call_posinset_and_setsize = false;
+  void AssertPosinsetAndSetsizeZero(AXNode* node) {
+    ASSERT_EQ(0, node->GetPosInSet());
+    ASSERT_EQ(0, node->GetSetSize());
   }
 
  private:
@@ -1395,6 +1403,50 @@ TEST(AXTreeTest, SkipIgnoredNodes) {
   EXPECT_EQ(1, root->GetUnignoredChildAtIndex(0)->GetUnignoredParent()->id());
 }
 
+TEST(AXTreeTest, TestRecursionUnignoredChildCount) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(5);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].child_ids = {2, 3};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].AddState(ax::mojom::State::kIgnored);
+  tree_update.nodes[1].child_ids = {4};
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].AddState(ax::mojom::State::kIgnored);
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].child_ids = {5};
+  tree_update.nodes[3].AddState(ax::mojom::State::kIgnored);
+  tree_update.nodes[4].id = 5;
+  AXTree tree(tree_update);
+
+  AXNode* root = tree.root();
+  EXPECT_EQ(2, root->child_count());
+  EXPECT_EQ(1, root->GetUnignoredChildCount());
+  EXPECT_EQ(5, root->GetUnignoredChildAtIndex(0)->id());
+  AXNode* unignored = tree.GetFromId(5);
+  EXPECT_EQ(0, unignored->GetUnignoredChildCount());
+}
+
+TEST(AXTreeTest, NullUnignoredChildren) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(3);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].child_ids = {2, 3};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].AddState(ax::mojom::State::kIgnored);
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].AddState(ax::mojom::State::kIgnored);
+  AXTree tree(tree_update);
+
+  AXNode* root = tree.root();
+  EXPECT_EQ(2, root->child_count());
+  EXPECT_EQ(0, root->GetUnignoredChildCount());
+  EXPECT_EQ(nullptr, root->GetUnignoredChildAtIndex(0));
+  EXPECT_EQ(nullptr, root->GetUnignoredChildAtIndex(1));
+}
+
 TEST(AXTreeTest, ChildTreeIds) {
   ui::AXTreeID tree_id_1 = ui::AXTreeID::CreateNewAXTreeID();
   ui::AXTreeID tree_id_2 = ui::AXTreeID::CreateNewAXTreeID();
@@ -2298,6 +2350,37 @@ TEST(AXTreeTest, TestSetSizePosInSetFlatTreeLevelsOnly) {
   EXPECT_EQ(item1_level1->GetSetSize(), 3);
   AXNode* ordered_set = tree.GetFromId(1);
   EXPECT_EQ(ordered_set->GetSetSize(), 3);
+}
+
+// Tests that GetPosInSet and GetSetSize work while a tree is being
+// unserialized.
+TEST(AXTreeTest, TestSetSizePosInSetSubtreeDeleted) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(3);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].role = ax::mojom::Role::kTree;
+  initial_state.nodes[0].child_ids = {2, 3};
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].role = ax::mojom::Role::kTreeItem;
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].role = ax::mojom::Role::kTreeItem;
+  AXTree tree(initial_state);
+
+  // This should work normally.
+  AXNode* item = tree.GetFromId(3);
+  EXPECT_EQ(item->GetPosInSet(), 2);
+  EXPECT_EQ(item->GetSetSize(), 2);
+
+  // Use test observer to assert posinset and setsize are 0.
+  TestAXTreeObserver test_observer(&tree);
+  test_observer.call_posinset_and_setsize = true;
+  // Remove item from tree.
+  AXTreeUpdate tree_update = initial_state;
+  tree_update.nodes.resize(1);
+  tree_update.nodes[0].child_ids = {2};
+
+  ASSERT_TRUE(tree.Unserialize(tree_update));
 }
 
 }  // namespace ui

@@ -66,12 +66,12 @@ PageRequestSummary CreatePageRequestSummary(
 
 content::mojom::ResourceLoadInfoPtr CreateResourceLoadInfo(
     const std::string& url,
-    content::ResourceType resource_type = content::RESOURCE_TYPE_MAIN_FRAME,
+    content::ResourceType resource_type = content::ResourceType::kMainFrame,
     bool always_access_network = false);
 
 content::mojom::ResourceLoadInfoPtr CreateResourceLoadInfoWithRedirects(
     const std::vector<std::string>& redirect_chain,
-    content::ResourceType resource_type = content::RESOURCE_TYPE_MAIN_FRAME);
+    content::ResourceType resource_type = content::ResourceType::kMainFrame);
 
 PreconnectPrediction CreatePreconnectPrediction(
     std::string host,

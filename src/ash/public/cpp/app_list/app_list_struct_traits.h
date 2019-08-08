@@ -25,8 +25,8 @@ struct EnumTraits<ash::mojom::AppListState, ash::AppListState> {
         return ash::mojom::AppListState::kStateApps;
       case ash::AppListState::kStateSearchResults:
         return ash::mojom::AppListState::kStateSearchResults;
-      case ash::AppListState::kStateStart:
-        return ash::mojom::AppListState::kStateStart;
+      case ash::AppListState::kStateStart_DEPRECATED:
+        return ash::mojom::AppListState::kStateStart_DEPRECATED;
       case ash::AppListState::kStateEmbeddedAssistant:
         return ash::mojom::AppListState::kStateEmbeddedAssistant;
       case ash::AppListState::kInvalidState:
@@ -45,8 +45,8 @@ struct EnumTraits<ash::mojom::AppListState, ash::AppListState> {
       case ash::mojom::AppListState::kStateSearchResults:
         *out = ash::AppListState::kStateSearchResults;
         return true;
-      case ash::mojom::AppListState::kStateStart:
-        *out = ash::AppListState::kStateStart;
+      case ash::mojom::AppListState::kStateStart_DEPRECATED:
+        *out = ash::AppListState::kStateStart_DEPRECATED;
         return true;
       case ash::mojom::AppListState::kStateEmbeddedAssistant:
         *out = ash::AppListState::kStateEmbeddedAssistant;

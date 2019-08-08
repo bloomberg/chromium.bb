@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #import "base/numerics/safe_conversions.h"
@@ -44,10 +45,12 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
-#import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "ios/chrome/browser/url_loading/url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/browser/web_state_list/web_state_opener.h"
@@ -896,7 +899,14 @@ const int kRecentlyClosedTabsSectionIndex = 0;
       base::UserMetricsAction("MobileRecentTabManagerRecentTabOpened"));
   new_tab_page_uma::RecordAction(
       self.browserState, new_tab_page_uma::ACTION_OPENED_RECENTLY_CLOSED_ENTRY);
-  RestoreTab(entry->id, self.restoredTabDisposition, self.browserState);
+
+  // If RecentTabs is being displayed from incognito, the resulting tab will
+  // open in the corresponding normal BVC. Change the disposition to avoid
+  // clobbering any tabs.
+  WindowOpenDisposition disposition =
+      self.isIncognito ? WindowOpenDisposition::NEW_FOREGROUND_TAB
+                       : self.restoredTabDisposition;
+  RestoreTab(entry->id, disposition, self.browserState);
   [self.presentationDelegate showActiveRegularTabFromRecentTabs];
 }
 
@@ -1031,20 +1041,23 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 }
 
 - (void)openTabsFromSessionSectionIdentifier:(NSInteger)sectionIdentifier {
+  base::RecordAction(base::UserMetricsAction(
+      "MobileRecentTabManagerOpenAllTabsFromOtherDevice"));
   NSInteger section =
       [self.tableViewModel sectionForSectionIdentifier:sectionIdentifier];
   synced_sessions::DistantSession const* session =
       [self sessionForSection:section];
   for (auto const& tab : session->tabs) {
-    OpenNewTabCommand* command =
-        [[OpenNewTabCommand alloc] initWithURL:tab->virtual_url
-                                      referrer:web::Referrer()
-                                   inIncognito:[self isIncognito]
-                                  inBackground:YES
-                                      appendTo:kLastTab];
-
-    [self.loader webPageOrderedOpen:command];
+    UrlLoadParams params = UrlLoadParams::InNewTab(tab->virtual_url);
+    params.SetInBackground(YES);
+    params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+    params.load_strategy = self.loadStrategy;
+    params.in_incognito = self.isIncognito;
+    UrlLoadingServiceFactory::GetForBrowserState(_browserState)->Load(params);
   }
+  UMA_HISTOGRAM_COUNTS_100(
+      "Mobile.RecentTabsManager.TotalTabsFromOtherDevicesOpenAll",
+      session->tabs.size());
   [self.presentationDelegate showActiveRegularTabFromRecentTabs];
 }
 
@@ -1114,11 +1127,19 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 }
 
 - (void)showSyncSettings {
-  [self.dispatcher showSyncSettingsFromViewController:self];
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    [self.dispatcher showGoogleServicesSettingsFromViewController:self];
+  } else {
+    [self.dispatcher showSyncSettingsFromViewController:self];
+  }
 }
 
 - (void)showSyncPassphraseSettings {
   [self.dispatcher showSyncPassphraseSettingsFromViewController:self];
+}
+
+- (void)showGoogleServicesSettings {
+  [self.dispatcher showGoogleServicesSettingsFromViewController:self];
 }
 
 #pragma mark - SigninPresenter

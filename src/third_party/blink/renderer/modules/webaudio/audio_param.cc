@@ -159,8 +159,9 @@ float AudioParamHandler::Value() {
   float v = IntrinsicValue();
   if (GetDeferredTaskHandler().IsAudioThread()) {
     bool has_value;
-    float timeline_value = timeline_.ValueForContextTime(
-        DestinationHandler(), v, has_value, MinValue(), MaxValue());
+    float timeline_value;
+    std::tie(has_value, timeline_value) = timeline_.ValueForContextTime(
+        DestinationHandler(), v, MinValue(), MaxValue());
 
     if (has_value)
       v = timeline_value;
@@ -187,9 +188,9 @@ bool AudioParamHandler::Smooth() {
   // If values have been explicitly scheduled on the timeline, then use the
   // exact value.  Smoothing effectively is performed by the timeline.
   bool use_timeline_value = false;
-  float value =
-      timeline_.ValueForContextTime(DestinationHandler(), IntrinsicValue(),
-                                    use_timeline_value, MinValue(), MaxValue());
+  float value;
+  std::tie(use_timeline_value, value) = timeline_.ValueForContextTime(
+      DestinationHandler(), IntrinsicValue(), MinValue(), MaxValue());
 
   float smoothed_value = timeline_.SmoothedValue();
   if (smoothed_value == value) {
@@ -253,8 +254,9 @@ void AudioParamHandler::CalculateFinalValues(float* values,
     // Calculate control-rate (k-rate) intrinsic value.
     bool has_value;
     float value = IntrinsicValue();
-    float timeline_value = timeline_.ValueForContextTime(
-        DestinationHandler(), value, has_value, MinValue(), MaxValue());
+    float timeline_value;
+    std::tie(has_value, timeline_value) = timeline_.ValueForContextTime(
+        DestinationHandler(), value, MinValue(), MaxValue());
 
     if (has_value)
       value = timeline_value;
@@ -301,14 +303,6 @@ void AudioParamHandler::CalculateTimelineValues(float* values,
   SetIntrinsicValue(timeline_.ValuesForFrameRange(
       start_frame, end_frame, IntrinsicValue(), values, number_of_values,
       sample_rate, sample_rate, MinValue(), MaxValue()));
-}
-
-int AudioParamHandler::ComputeQHistogramValue(float new_value) const {
-  // For the Q value, assume a useful range is [0, 25] and that 0.25 dB
-  // resolution is good enough.  Then, we can map the floating point Q value (in
-  // dB) to an integer just by multipling by 4 and rounding.
-  new_value = clampTo(new_value, 0.0, 25.0);
-  return static_cast<int>(4 * new_value + 0.5);
 }
 
 // ----------------------------------------------------------------
@@ -375,7 +369,8 @@ float AudioParam::value() const {
 void AudioParam::WarnIfOutsideRange(const String& param_method, float value) {
   if (value < minValue() || value > maxValue()) {
     Context()->GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kWarning,
         Handler().GetParamName() + "." + param_method + " " +
             String::Number(value) + " outside nominal range [" +
             String::Number(minValue()) + ", " + String::Number(maxValue()) +

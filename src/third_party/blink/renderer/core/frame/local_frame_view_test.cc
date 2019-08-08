@@ -51,7 +51,7 @@ class AnimationMockChromeClient : public EmptyChromeClient {
 class LocalFrameViewTest : public RenderingTest {
  protected:
   LocalFrameViewTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()),
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
         chrome_client_(MakeGarbageCollected<AnimationMockChromeClient>()) {
     EXPECT_CALL(GetAnimationMockChromeClient(), AttachRootGraphicsLayer(_, _))
         .Times(AnyNumber());
@@ -290,7 +290,7 @@ TEST_F(LocalFrameViewSimTest, FragmentNavChangesFocusWhileRenderingBlocked) {
 
   // We're still waiting on the stylesheet to load so the load event shouldn't
   // yet dispatch and rendering is deferred.
-  ASSERT_FALSE(GetDocument().IsRenderingReady());
+  ASSERT_FALSE(GetDocument().HaveRenderBlockingResourcesLoaded());
   EXPECT_FALSE(GetDocument().IsLoadCompleted());
 
   // Click on the anchor element. This will cause a synchronous same-document
@@ -309,7 +309,7 @@ TEST_F(LocalFrameViewSimTest, FragmentNavChangesFocusWhileRenderingBlocked) {
   // Force a layout.
   anchor->style()->setProperty(&GetDocument(), "display", "block", String(),
                                ASSERT_NO_EXCEPTION);
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   EXPECT_EQ(GetDocument().body(), GetDocument().ActiveElement())
       << "Active element changed due to layout while rendering is blocked";
@@ -349,7 +349,7 @@ TEST_F(LocalFrameViewSimTest, ForcedLayoutWithIncompleteSVGChildFrame) {
   // Mark the top-level document for layout and then force layout. This will
   // cause the layout tree in the <object> object to be built.
   GetDocument().View()->SetNeedsLayout();
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   svg_resource.Finish();
 }

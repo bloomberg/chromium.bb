@@ -62,19 +62,16 @@ TEST_P(AnimatedLayersTest, updateLayerShouldFlattenTransformWithAnimations) {
   EXPECT_FALSE(
       mutator->HasTickingKeyframeModelForTesting(cc_layer->element_id()));
 
-  std::unique_ptr<CompositorFloatAnimationCurve> curve =
-      CompositorFloatAnimationCurve::Create();
+  auto curve = std::make_unique<CompositorFloatAnimationCurve>();
   curve->AddKeyframe(
       CompositorFloatKeyframe(0.0, 0.0,
                               *CubicBezierTimingFunction::Preset(
                                   CubicBezierTimingFunction::EaseType::EASE)));
-  std::unique_ptr<CompositorKeyframeModel> float_keyframe_model(
-      CompositorKeyframeModel::Create(
-          *curve, compositor_target_property::OPACITY, 0, 0));
+  auto float_keyframe_model(std::make_unique<CompositorKeyframeModel>(
+      *curve, compositor_target_property::OPACITY, 0, 0));
   int keyframe_model_id = float_keyframe_model->Id();
 
-  std::unique_ptr<CompositorAnimationTimeline> compositor_timeline =
-      CompositorAnimationTimeline::Create();
+  auto compositor_timeline = std::make_unique<CompositorAnimationTimeline>();
   AnimationForTesting animation;
 
   cc::AnimationHost* host = layers_.animation_host();

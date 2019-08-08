@@ -39,7 +39,6 @@ rtc_static_library("common_video") {
   ]
 
   deps = [
-    "..:webrtc_common",
     "../api:scoped_refptr",
     "../api/task_queue",
     "../api/video:encoded_image",
@@ -47,9 +46,10 @@ rtc_static_library("common_video") {
     "../api/video:video_bitrate_allocator",
     "../api/video:video_frame",
     "../api/video:video_frame_i420",
+    "../api/video_codecs:bitstream_parser_api",
     "../media:rtc_h264_profile_id",
+    "../rtc_base",
     "../rtc_base:checks",
-    "../rtc_base:rtc_base",
     "../rtc_base:rtc_task_queue",
     "../rtc_base:safe_minmax",
     "../system_wrappers:metrics",
@@ -95,9 +95,8 @@ if (rtc_include_tests) {
       "../api/video:video_frame_i010",
       "../api/video:video_frame_i420",
       "../media:rtc_h264_profile_id",
-      "../modules/video_capture:video_capture",
+      "../rtc_base",
       "../rtc_base:checks",
-      "../rtc_base:rtc_base",
       "../rtc_base:rtc_base_approved",
       "../rtc_base:rtc_base_tests_utils",
       "../test:fileutils",
@@ -105,7 +104,7 @@ if (rtc_include_tests) {
       "../test:test_support",
       "../test:video_test_common",
       "//testing/gtest",
-      "//third_party/abseil-cpp/absl/memory:memory",
+      "//third_party/abseil-cpp/absl/memory",
       "//third_party/libyuv",
     ]
 

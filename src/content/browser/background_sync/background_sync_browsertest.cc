@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
@@ -158,17 +157,10 @@ class BackgroundSyncBrowserTest : public ContentBrowserTest {
 
   WebContents* web_contents() { return shell_->web_contents(); }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // TODO(jkarlin): Remove this once background sync is no longer
-    // experimental.
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-  }
-
   void SetUpOnMainThread() override {
-    https_server_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
-    https_server_->ServeFilesFromSourceDirectory("content/test/data");
+    https_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
+    https_server_->ServeFilesFromSourceDirectory(GetTestDataFilePath());
     ASSERT_TRUE(https_server_->Start());
 
     SetIncognitoMode(false);
@@ -322,7 +314,7 @@ bool BackgroundSyncBrowserTest::RegisterFromCrossOriginFrame(
     std::string* script_result) {
   // Start a second https server to use as a second origin.
   net::EmbeddedTestServer alt_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  alt_server.ServeFilesFromSourceDirectory("content/test/data");
+  alt_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
   EXPECT_TRUE(alt_server.Start());
 
   GURL url = alt_server.GetURL(frame_url);

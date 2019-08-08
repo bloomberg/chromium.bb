@@ -16,6 +16,7 @@
 #include "components/services/patch/public/interfaces/constants.mojom.h"
 #include "components/update_client/component_patcher_operation.h"
 #include "components/update_client/component_patcher_unittest.h"
+#include "components/update_client/patch/patch_impl.h"
 #include "components/update_client/test_installer.h"
 #include "components/update_client/update_client_errors.h"
 #include "courgette/courgette.h"
@@ -150,16 +151,16 @@ TEST_F(ComponentPatcherOperationTest, CheckCourgetteOperation) {
   command_args->SetString("input", "binary_input.bin");
   command_args->SetString("patch", "binary_courgette_patch.bin");
 
-  // The operation needs a connector to access the PatchService.
+  // The operation needs a Patcher to access the PatchService.
   service_manager::TestConnectorFactory connector_factory;
   patch::PatchService patch_service(
       connector_factory.RegisterInstance(patch::mojom::kServiceName));
-  std::unique_ptr<service_manager::Connector> connector =
-      connector_factory.CreateConnector();
+  scoped_refptr<Patcher> patcher = base::MakeRefCounted<PatchChromiumFactory>(
+                                       connector_factory.CreateConnector())
+                                       ->Create();
 
   TestCallback callback;
-  scoped_refptr<DeltaUpdateOp> op =
-      CreateDeltaUpdateOp("courgette", connector.get());
+  scoped_refptr<DeltaUpdateOp> op = CreateDeltaUpdateOp("courgette", patcher);
   op->Run(command_args.get(), input_dir_.GetPath(), unpack_dir_.GetPath(),
           installer_.get(),
           base::BindOnce(&TestCallback::Set, base::Unretained(&callback)));
@@ -190,16 +191,16 @@ TEST_F(ComponentPatcherOperationTest, CheckBsdiffOperation) {
   command_args->SetString("input", "binary_input.bin");
   command_args->SetString("patch", "binary_bsdiff_patch.bin");
 
-  // The operation needs a connector to access the PatchService.
+  // The operation needs a Patcher to access the PatchService.
   service_manager::TestConnectorFactory connector_factory;
   patch::PatchService patch_service(
       connector_factory.RegisterInstance(patch::mojom::kServiceName));
-  std::unique_ptr<service_manager::Connector> connector =
-      connector_factory.CreateConnector();
+  scoped_refptr<Patcher> patcher = base::MakeRefCounted<PatchChromiumFactory>(
+                                       connector_factory.CreateConnector())
+                                       ->Create();
 
   TestCallback callback;
-  scoped_refptr<DeltaUpdateOp> op =
-      CreateDeltaUpdateOp("bsdiff", connector.get());
+  scoped_refptr<DeltaUpdateOp> op = CreateDeltaUpdateOp("bsdiff", patcher);
   op->Run(command_args.get(), input_dir_.GetPath(), unpack_dir_.GetPath(),
           installer_.get(),
           base::BindOnce(&TestCallback::Set, base::Unretained(&callback)));

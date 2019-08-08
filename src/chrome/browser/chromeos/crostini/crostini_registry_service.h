@@ -139,10 +139,9 @@ class CrostiniRegistryService : public KeyedService {
   //
   // First try to return a desktop file id matching the |window_startup_id|.
   //
-  // If the given window app id is not for Crostini (i.e. Arc++), returns an
-  // empty string. If we can uniquely identify a registry entry, returns the
-  // crostini app id for that. Otherwise, returns the string pointed to by
-  // |window_app_id|, prefixed by "crostini:".
+  // If the app id is empty, returns empty string. If we can uniquely identify
+  // a registry entry, returns the crostini app id for that. Otherwise, returns
+  // the string pointed to by |window_app_id|, prefixed by "crostini:".
   //
   // As the window app id is derived from fields set by the app itself, it is
   // possible for an app to masquerade as a different app.

@@ -38,8 +38,8 @@ void AppendBreakTokenToString(const NGBreakToken* token,
   string_builder->Append(token->ToString());
   string_builder->Append("\n");
 
-  if (token->Type() == NGBreakToken::kBlockBreakToken) {
-    const auto children = ToNGBlockBreakToken(token)->ChildBreakTokens();
+  if (auto* block_break_token = DynamicTo<NGBlockBreakToken>(token)) {
+    const auto children = block_break_token->ChildBreakTokens();
     for (const auto* child : children)
       AppendBreakTokenToString(child, string_builder, indent + 2);
   }

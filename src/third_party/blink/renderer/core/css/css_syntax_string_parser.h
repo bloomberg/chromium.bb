@@ -8,6 +8,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer_input_stream.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -17,6 +18,8 @@ class CSSTokenizerInputStream;
 //
 // https://drafts.css-houdini.org/css-properties-values-api-1/#parsing-syntax
 class CORE_EXPORT CSSSyntaxStringParser {
+  STACK_ALLOCATED();
+
  public:
   explicit CSSSyntaxStringParser(const String&);
 

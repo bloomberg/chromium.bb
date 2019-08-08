@@ -69,9 +69,6 @@ class ChromeFeaturesServiceProvider
                          dbus::ExportedObject::ResponseSender response_sender);
   void IsUsbguardEnabled(dbus::MethodCall* method_call,
                          dbus::ExportedObject::ResponseSender response_sender);
-  void IsShillSandboxingEnabled(
-      dbus::MethodCall* method_call,
-      dbus::ExportedObject::ResponseSender response_sender);
 
   // Keep this last so that all weak pointers will be invalidated at the
   // beginning of destruction.

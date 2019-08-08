@@ -5,7 +5,9 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 
 #include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/editing/editing_behavior.h"
@@ -29,7 +31,10 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 
 namespace blink {
 
@@ -48,7 +53,7 @@ class TapEventBuilder : public WebGestureEvent {
       : WebGestureEvent(WebInputEvent::kGestureTap,
                         WebInputEvent::kNoModifiers,
                         CurrentTimeTicks(),
-                        kWebGestureDeviceTouchscreen) {
+                        WebGestureDevice::kTouchscreen) {
     SetPositionInWidget(position);
     SetPositionInScreen(position);
     data.tap.tap_count = tap_count;
@@ -64,7 +69,7 @@ class TapDownEventBuilder : public WebGestureEvent {
       : WebGestureEvent(WebInputEvent::kGestureTapDown,
                         WebInputEvent::kNoModifiers,
                         CurrentTimeTicks(),
-                        kWebGestureDeviceTouchscreen) {
+                        WebGestureDevice::kTouchscreen) {
     SetPositionInWidget(position);
     SetPositionInScreen(position);
     data.tap_down.width = 5;
@@ -79,7 +84,7 @@ class ShowPressEventBuilder : public WebGestureEvent {
       : WebGestureEvent(WebInputEvent::kGestureShowPress,
                         WebInputEvent::kNoModifiers,
                         CurrentTimeTicks(),
-                        kWebGestureDeviceTouchscreen) {
+                        WebGestureDevice::kTouchscreen) {
     SetPositionInWidget(position);
     SetPositionInScreen(position);
     data.show_press.width = 5;
@@ -94,7 +99,7 @@ class LongPressEventBuilder : public WebGestureEvent {
       : WebGestureEvent(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         CurrentTimeTicks(),
-                        kWebGestureDeviceTouchscreen) {
+                        WebGestureDevice::kTouchscreen) {
     SetPositionInWidget(position);
     SetPositionInScreen(position);
     data.long_press.width = 5;
@@ -362,7 +367,7 @@ TEST_F(EventHandlerTest, HitOnTextShowsIBeam) {
   SetHtmlInnerHTML("blabla");
   Node* const text = GetDocument().body()->firstChild();
   HitTestLocation location(
-      text->GetLayoutObject()->FirstFragment().VisualRect().Center());
+      text->GetLayoutObject()->AbsoluteBoundingBoxRect().Center());
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
@@ -376,7 +381,7 @@ TEST_F(EventHandlerTest, HitOnUserSelectNoneDoesNotShowIBeam) {
   SetHtmlInnerHTML("<span style='user-select: none'>blabla</span>");
   Node* const text = GetDocument().body()->firstChild()->firstChild();
   HitTestLocation location(
-      text->GetLayoutObject()->FirstFragment().VisualRect().Center());
+      text->GetLayoutObject()->AbsoluteBoundingBoxRect().Center());
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
@@ -393,7 +398,7 @@ TEST_F(EventHandlerTest, ShadowChildCanOverrideUserSelectNone) {
 
   Node* const text = shadow_root->getElementById("bla")->firstChild();
   HitTestLocation location(
-      text->GetLayoutObject()->FirstFragment().VisualRect().Center());
+      text->GetLayoutObject()->AbsoluteBoundingBoxRect().Center());
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
@@ -411,7 +416,7 @@ TEST_F(EventHandlerTest, UserSelectAllCanOverrideUserSelectNone) {
   Node* const text =
       GetDocument().body()->firstChild()->firstChild()->firstChild();
   HitTestLocation location(
-      text->GetLayoutObject()->FirstFragment().VisualRect().Center());
+      text->GetLayoutObject()->AbsoluteBoundingBoxRect().Center());
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
@@ -429,7 +434,7 @@ TEST_F(EventHandlerTest, UserSelectNoneCanOverrideUserSelectAll) {
   Node* const text =
       GetDocument().body()->firstChild()->firstChild()->firstChild();
   HitTestLocation location(
-      text->GetLayoutObject()->FirstFragment().VisualRect().Center());
+      text->GetLayoutObject()->AbsoluteBoundingBoxRect().Center());
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
@@ -447,7 +452,7 @@ TEST_F(EventHandlerTest, UserSelectTextCanOverrideUserSelectNone) {
   Node* const text =
       GetDocument().body()->firstChild()->firstChild()->firstChild();
   HitTestLocation location(
-      text->GetLayoutObject()->FirstFragment().VisualRect().Center());
+      text->GetLayoutObject()->AbsoluteBoundingBoxRect().Center());
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
@@ -464,7 +469,7 @@ TEST_F(EventHandlerTest, UserSelectNoneCanOverrideUserSelectText) {
       "</div>");
   Node* const text = GetDocument().body()->firstChild()->firstChild()->firstChild();
   HitTestLocation location(
-      text->GetLayoutObject()->FirstFragment().VisualRect().Center());
+      text->GetLayoutObject()->AbsoluteBoundingBoxRect().Center());
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
@@ -481,7 +486,7 @@ TEST_F(EventHandlerTest, ShadowChildCanOverrideUserSelectText) {
 
   Node* const text = shadow_root->getElementById("bla")->firstChild();
   HitTestLocation location(
-      text->GetLayoutObject()->FirstFragment().VisualRect().Center());
+      text->GetLayoutObject()->AbsoluteBoundingBoxRect().Center());
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
@@ -496,7 +501,7 @@ TEST_F(EventHandlerTest, InputFieldsCanStartSelection) {
   auto* const field = ToHTMLInputElement(GetDocument().body()->firstChild());
   Element* const text = field->InnerEditorElement();
   HitTestLocation location(
-      text->GetLayoutObject()->FirstFragment().VisualRect().Center());
+      text->GetLayoutObject()->AbsoluteBoundingBoxRect().Center());
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
@@ -516,7 +521,7 @@ TEST_F(EventHandlerTest, ReadOnlyInputDoesNotInheritUserSelect) {
   Node* const text = input->InnerEditorElement()->firstChild();
 
   HitTestLocation location(
-      text->GetLayoutObject()->FirstFragment().VisualRect().Center());
+      text->GetLayoutObject()->AbsoluteBoundingBoxRect().Center());
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
@@ -530,7 +535,7 @@ TEST_F(EventHandlerTest, ImagesCannotStartSelection) {
   SetHtmlInnerHTML("<img>");
   Element* const img = ToElement(GetDocument().body()->firstChild());
   HitTestLocation location(
-      img->GetLayoutObject()->FirstFragment().VisualRect().Center());
+      img->GetLayoutObject()->AbsoluteBoundingBoxRect().Center());
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
@@ -544,7 +549,7 @@ TEST_F(EventHandlerTest, AnchorTextCannotStartSelection) {
   SetHtmlInnerHTML("<a href='bala'>link text</a>");
   Node* const link = GetDocument().body()->firstChild();
   HitTestLocation location(
-      link->GetLayoutObject()->FirstFragment().VisualRect().Center());
+      link->GetLayoutObject()->AbsoluteBoundingBoxRect().Center());
   HitTestResult result =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
@@ -570,7 +575,7 @@ TEST_F(EventHandlerTest, EditableAnchorTextCanStartSelection) {
   SetHtmlInnerHTML("<a contenteditable='true' href='bala'>editable link</a>");
   Node* const link = GetDocument().body()->firstChild();
   HitTestLocation location(
-      link->GetLayoutObject()->FirstFragment().VisualRect().Center());
+      link->GetLayoutObject()->AbsoluteBoundingBoxRect().Center());
   HitTestResult result =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location);
@@ -587,6 +592,22 @@ TEST_F(EventHandlerTest, EditableAnchorTextCanStartSelection) {
                 .GetCursor()
                 .GetType(),
             Cursor::Type::kIBeam);  // An I-beam signals editability.
+}
+
+TEST_F(EventHandlerTest, implicitSend) {
+  SetHtmlInnerHTML("<button>abc</button>");
+  GetDocument().GetSettings()->SetSpatialNavigationEnabled(true);
+
+  WebKeyboardEvent e{WebInputEvent::kRawKeyDown, WebInputEvent::kNoModifiers,
+                     WebInputEvent::GetStaticTimeStampForTests()};
+  e.dom_code = static_cast<int>(ui::DomCode::ARROW_DOWN);
+  e.dom_key = ui::DomKey::ARROW_DOWN;
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+
+  // TODO(crbug.com/949766) Should cleanup these magic numbers.
+  e.dom_code = 0;
+  e.dom_key = 0x00200310;
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
 }
 
 // Regression test for http://crbug.com/641403 to verify we use up-to-date
@@ -1123,8 +1144,7 @@ TEST_F(EventHandlerSimTest, MouseLeaveIFrameResets) {
       GetDocument().GetFrame()->GetEventHandler().IsMousePositionUnknown());
   auto* child_frame =
       ToHTMLIFrameElement(GetDocument().getElementById("frame"));
-  child_frame->contentDocument()
-      ->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  child_frame->contentDocument()->UpdateStyleAndLayout();
   EXPECT_TRUE(GetDocument().GetFrame()->Tree().FirstChild());
   EXPECT_FALSE(To<LocalFrame>(GetDocument().GetFrame()->Tree().FirstChild())
                    ->GetEventHandler()
@@ -1254,9 +1274,10 @@ TEST_F(EventHandlerSimTest, TapActiveInFrame) {
   EXPECT_FALSE(iframe_doc->GetActiveElement());
 }
 
-// Test that the hover is updated at the next begin frame after the scroll ends.
-TEST_F(EventHandlerSimTest, TestUpdateHoverAfterScrollAtBeginFrame) {
-  RuntimeEnabledFeatures::SetNoHoverDuringScrollEnabled(true);
+// Test that the hover is updated at the next begin frame after the compositor
+// scroll ends.
+TEST_F(EventHandlerSimTest, TestUpdateHoverAfterCompositorScrollAtBeginFrame) {
+  RuntimeEnabledFeatures::SetUpdateHoverFromScrollAtBeginFrameEnabled(true);
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1320,11 +1341,12 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterScrollAtBeginFrame) {
   EXPECT_EQ("hover over me", element2.InnerHTML().Utf8());
   EXPECT_EQ("hover over me", element3.InnerHTML().Utf8());
 
-  // Do a compositor scroll and set |scroll_gesture_did_end| to be true.
+  // Do a compositor scroll and set |hover_needs_update_at_scroll_end| to be
+  // true in WebViewImpl.
   LocalFrameView* frame_view = GetDocument().View();
   frame_view->LayoutViewport()->DidScroll(FloatPoint(0, 500));
   WebView().MainFrameWidget()->ApplyViewportChanges(
-      {gfx::ScrollOffset(), gfx::Vector2dF(), 1.0f, 0,
+      {gfx::ScrollOffset(), gfx::Vector2dF(), 1.0f, false, 0,
        cc::BrowserControlsState::kBoth, true});
   ASSERT_EQ(500, frame_view->LayoutViewport()->GetScrollOffset().Height());
   EXPECT_EQ("currently hovered", element1.InnerHTML().Utf8());
@@ -1336,6 +1358,370 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterScrollAtBeginFrame) {
   EXPECT_EQ("was hovered", element1.InnerHTML().Utf8());
   EXPECT_EQ("currently hovered", element2.InnerHTML().Utf8());
   EXPECT_EQ("hover over me", element3.InnerHTML().Utf8());
+}
+
+// Test that the hover is updated at the next begin frame after the main thread
+// scroll ends.
+TEST_F(EventHandlerSimTest, TestUpdateHoverAfterMainThreadScrollAtBeginFrame) {
+  RuntimeEnabledFeatures::SetUpdateHoverFromScrollAtBeginFrameEnabled(true);
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body, html {
+        margin: 0;
+      }
+      div {
+        height: 300px;
+        width: 100%;
+      }
+    </style>
+    <body>
+    <div class="hoverme" id="line1">hover over me</div>
+    <div class="hoverme" id="line2">hover over me</div>
+    <div class="hoverme" id="line3">hover over me</div>
+    <div class="hoverme" id="line4">hover over me</div>
+    <div class="hoverme" id="line5">hover over me</div>
+    </body>
+    <script>
+      let array = document.getElementsByClassName('hoverme');
+      for (let element of array) {
+        element.addEventListener('mouseover', function (e) {
+          this.innerHTML = "currently hovered";
+        });
+        element.addEventListener('mouseout', function (e) {
+          this.innerHTML = "was hovered";
+        });
+      }
+    </script>
+  )HTML");
+  Compositor().BeginFrame();
+
+  // Set mouse position and active web view.
+  WebMouseEvent mouse_down_event(WebMouseEvent::kMouseDown, WebFloatPoint(1, 1),
+                                 WebFloatPoint(1, 1),
+                                 WebPointerProperties::Button::kLeft, 1,
+                                 WebInputEvent::Modifiers::kLeftButtonDown,
+                                 WebInputEvent::GetStaticTimeStampForTests());
+  mouse_down_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
+      mouse_down_event);
+
+  WebMouseEvent mouse_up_event(
+      WebInputEvent::kMouseUp, WebFloatPoint(1, 1), WebFloatPoint(1, 1),
+      WebPointerProperties::Button::kLeft, 1, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests());
+  mouse_up_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(
+      mouse_up_event);
+
+  WebView().MainFrameWidget()->SetFocus(true);
+  WebView().SetIsActive(true);
+
+  WebElement element1 = GetDocument().getElementById("line1");
+  WebElement element2 = GetDocument().getElementById("line2");
+  WebElement element3 = GetDocument().getElementById("line3");
+  EXPECT_EQ("currently hovered", element1.InnerHTML().Utf8());
+  EXPECT_EQ("hover over me", element2.InnerHTML().Utf8());
+  EXPECT_EQ("hover over me", element3.InnerHTML().Utf8());
+
+  // Send scroll gesture events which will set
+  // |hover_needs_update_at_scroll_end_| to be true in ScrollManager.
+  WebGestureEvent scroll_begin_event(
+      WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests(),
+      blink::WebGestureDevice::kTouchpad);
+  WebGestureEvent scroll_update_event(
+      WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests(),
+      blink::WebGestureDevice::kTouchpad);
+  scroll_update_event.data.scroll_update.delta_y = -500;
+  WebGestureEvent scroll_end_event(WebInputEvent::kGestureScrollEnd,
+                                   WebInputEvent::kNoModifiers,
+                                   WebInputEvent::GetStaticTimeStampForTests(),
+                                   blink::WebGestureDevice::kTouchpad);
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(scroll_begin_event));
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(scroll_update_event));
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(scroll_end_event));
+  LocalFrameView* frame_view = GetDocument().View();
+  ASSERT_EQ(500, frame_view->LayoutViewport()->GetScrollOffset().Height());
+  EXPECT_EQ("currently hovered", element1.InnerHTML().Utf8());
+  EXPECT_EQ("hover over me", element2.InnerHTML().Utf8());
+  EXPECT_EQ("hover over me", element3.InnerHTML().Utf8());
+
+  // The fake mouse move event is dispatched at the begin frame to update hover.
+  Compositor().BeginFrame();
+  EXPECT_EQ("was hovered", element1.InnerHTML().Utf8());
+  EXPECT_EQ("currently hovered", element2.InnerHTML().Utf8());
+  EXPECT_EQ("hover over me", element3.InnerHTML().Utf8());
+}
+
+TEST_F(EventHandlerSimTest, LargeCustomCursorIntersectsViewport) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  SimSubresourceRequest cursor_request("https://example.com/100x100.png",
+                                       "image/png");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      R"HTML(
+        <!DOCTYPE html>
+        <style>
+        div {
+          width: 300px;
+          height: 100px;
+          cursor: url('100x100.png') 100 100, auto;
+        }
+        </style>
+        <div>foo</div>
+      )HTML");
+
+  scoped_refptr<SharedBuffer> img =
+      test::ReadFromFile(test::CoreTestDataPath("notifications/100x100.png"));
+  cursor_request.Complete(img->CopyAs<Vector<char>>());
+
+  Compositor().BeginFrame();
+
+  // Move the cursor so no part of it intersects the viewport.
+  {
+    WebMouseEvent mouse_move_event(
+        WebMouseEvent::kMouseMove, WebFloatPoint(101, 101),
+        WebFloatPoint(101, 101), WebPointerProperties::Button::kNoButton, 0, 0,
+        WebInputEvent::GetStaticTimeStampForTests());
+    mouse_move_event.SetFrameScale(1);
+    GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+        mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+
+    const Cursor& cursor =
+        GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
+    EXPECT_EQ(Cursor::Type::kCustom, cursor.GetType());
+  }
+
+  // Now, move the cursor so that it intersects the visual viewport. The cursor
+  // should be removed.
+  {
+    WebMouseEvent mouse_move_event(
+        WebMouseEvent::kMouseMove, WebFloatPoint(99, 99), WebFloatPoint(99, 99),
+        WebPointerProperties::Button::kNoButton, 0, 0,
+        WebInputEvent::GetStaticTimeStampForTests());
+    mouse_move_event.SetFrameScale(1);
+    GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+        mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+
+    const Cursor& cursor =
+        GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
+    EXPECT_EQ(Cursor::Type::kPointer, cursor.GetType());
+  }
+}
+
+TEST_F(EventHandlerSimTest, SmallCustomCursorIntersectsViewport) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  SimSubresourceRequest cursor_request("https://example.com/48x48.png",
+                                       "image/png");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      R"HTML(
+        <!DOCTYPE html>
+        <style>
+        div {
+          width: 300px;
+          height: 100px;
+          cursor: -webkit-image-set(url('48x48.png') 2x) 24 24, auto;
+        }
+        </style>
+        <div>foo</div>
+      )HTML");
+
+  scoped_refptr<SharedBuffer> img =
+      test::ReadFromFile(test::CoreTestDataPath("notifications/48x48.png"));
+  cursor_request.Complete(img->CopyAs<Vector<char>>());
+
+  Compositor().BeginFrame();
+
+  // Move the cursor so no part of it intersects the viewport.
+  {
+    WebMouseEvent mouse_move_event(
+        WebMouseEvent::kMouseMove, WebFloatPoint(25, 25), WebFloatPoint(25, 25),
+        WebPointerProperties::Button::kNoButton, 0, 0,
+        WebInputEvent::GetStaticTimeStampForTests());
+    mouse_move_event.SetFrameScale(1);
+    GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+        mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+
+    const Cursor& cursor =
+        GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
+    EXPECT_EQ(Cursor::Type::kCustom, cursor.GetType());
+  }
+
+  // Now, move the cursor so that it intersects the visual viewport. The cursor
+  // should not be removed because it is below
+  // kMaximumCursorSizeWithoutFallback.
+  {
+    WebMouseEvent mouse_move_event(
+        WebMouseEvent::kMouseMove, WebFloatPoint(23, 23), WebFloatPoint(23, 23),
+        WebPointerProperties::Button::kNoButton, 0, 0,
+        WebInputEvent::GetStaticTimeStampForTests());
+    mouse_move_event.SetFrameScale(1);
+    GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+        mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+
+    const Cursor& cursor =
+        GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
+    EXPECT_EQ(Cursor::Type::kCustom, cursor.GetType());
+  }
+}
+
+TEST_F(EventHandlerSimTest, NeverExposeKeyboardEvent) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  GetDocument().GetSettings()->SetDontSendKeyEventsToJavascript(true);
+  GetDocument().GetSettings()->SetScrollAnimatorEnabled(false);
+  GetDocument().GetSettings()->SetWebAppScope(GetDocument().Url());
+  GetDocument().View()->SetDisplayMode(kWebDisplayModeFullscreen);
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      height: 10000px;
+    }
+    </style>
+    Last event: <br>
+    <p id='log'>no event</p>
+    <input id="input1" type="text">
+
+    <script>
+      document.addEventListener('keydown', (e) => {
+        let log = document.getElementById('log');
+        log.innerText = 'keydown cancelable=' + e.cancelable;
+      });
+      document.addEventListener('keyup', (e) => {
+        let log = document.getElementById('log');
+        log.innerText = 'keyup cancelable=' + e.cancelable;
+      });
+    </script>
+  )HTML");
+  Compositor().BeginFrame();
+
+  WebElement element = GetDocument().getElementById("log");
+  WebKeyboardEvent e{WebInputEvent::kRawKeyDown, WebInputEvent::kNoModifiers,
+                     WebInputEvent::GetStaticTimeStampForTests()};
+  e.windows_key_code = VKEY_DOWN;
+  // TODO(crbug.com/949766) Should cleanup these magic number.
+  e.dom_key = 0x00200309;
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_EQ("no event", element.InnerHTML().Utf8());
+
+  e.SetType(WebInputEvent::kKeyUp);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_EQ("no event", element.InnerHTML().Utf8());
+
+  e.SetType(WebInputEvent::kKeyDown);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_EQ("no event", element.InnerHTML().Utf8());
+
+  e.SetType(WebInputEvent::kKeyUp);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_EQ("no event", element.InnerHTML().Utf8());
+
+  // TODO(crbug.com/949766) Should cleanup these magic number.
+  e.dom_key = 0x00200310;
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_NE("no event", element.InnerHTML().Utf8());
+
+  e.SetType(WebInputEvent::kKeyUp);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_NE("no event", element.InnerHTML().Utf8());
+
+  e.SetType(WebInputEvent::kKeyDown);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_NE("no event", element.InnerHTML().Utf8());
+
+  e.SetType(WebInputEvent::kKeyUp);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_NE("no event", element.InnerHTML().Utf8());
+}
+
+TEST_F(EventHandlerSimTest, NotExposeKeyboardEvent) {
+  GetDocument().GetSettings()->SetDontSendKeyEventsToJavascript(true);
+  GetDocument().GetSettings()->SetScrollAnimatorEnabled(false);
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      height: 10000px;
+    }
+    </style>
+    Last event: <br>
+    <p id='log'>no event</p>
+    <input id="input1" type="text">
+
+    <script>
+      document.addEventListener('keydown', (e) => {
+        let log = document.getElementById('log');
+        log.innerText = 'keydown cancelable=' + e.cancelable;
+      });
+      document.addEventListener('keyup', (e) => {
+        let log = document.getElementById('log');
+        log.innerText = 'keyup cancelable=' + e.cancelable;
+      });
+    </script>
+  )HTML");
+  Compositor().BeginFrame();
+
+  WebElement element = GetDocument().getElementById("log");
+  WebKeyboardEvent e{WebInputEvent::kRawKeyDown, WebInputEvent::kNoModifiers,
+                     WebInputEvent::GetStaticTimeStampForTests()};
+  e.windows_key_code = VKEY_DOWN;
+  // TODO(crbug.com/949766) Should cleanup these magic number.
+  e.dom_key = 0x00200309;
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_EQ("no event", element.InnerHTML().Utf8());
+
+  e.SetType(WebInputEvent::kKeyUp);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_EQ("no event", element.InnerHTML().Utf8());
+
+  e.SetType(WebInputEvent::kKeyDown);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_EQ("no event", element.InnerHTML().Utf8());
+
+  e.SetType(WebInputEvent::kKeyUp);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_EQ("no event", element.InnerHTML().Utf8());
+
+  // Key send to js but not cancellable.
+  e.dom_key = 0x00400031;
+  e.SetType(WebInputEvent::kRawKeyDown);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_EQ("keydown cancelable=false", element.InnerHTML().Utf8());
+
+  e.SetType(WebInputEvent::kKeyUp);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_EQ("keyup cancelable=false", element.InnerHTML().Utf8());
+
+  // Key send to js and cancellable in editor.
+  WebElement input = GetDocument().getElementById("input1");
+  GetDocument().SetFocusedElement(
+      input.Unwrap<Element>(),
+      FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));
+
+  e.SetType(WebInputEvent::kRawKeyDown);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(e);
+  EXPECT_EQ("keydown cancelable=true", element.InnerHTML().Utf8());
+
+  // Arrow key caused scroll down in post event dispatch process. Ensure page
+  // scrolled.
+  ScrollableArea* scrollable_area = GetDocument().View()->LayoutViewport();
+  EXPECT_GT(scrollable_area->ScrollOffsetInt().Height(), 0);
 }
 
 }  // namespace blink

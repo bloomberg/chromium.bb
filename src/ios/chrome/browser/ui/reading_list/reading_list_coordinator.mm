@@ -33,6 +33,7 @@
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/table_view/table_view_presentation_controller.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -364,25 +365,19 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
   // Use a referrer with a specific URL to signal that this entry should not be
   // taken into account for the Most Visited tiles.
   if (newTab) {
-    web::Referrer referrer = web::Referrer(GURL(kReadingListReferrerURL),
-                                           web::ReferrerPolicyDefault);
-    OpenNewTabCommand* command =
-        [[OpenNewTabCommand alloc] initWithURL:loadURL
-                                    virtualURL:entryURL
-                                      referrer:referrer
-                                   inIncognito:incognito
-                                  inBackground:NO
-                                      appendTo:kLastTab];
+    UrlLoadParams params = UrlLoadParams::InNewTab(loadURL, entryURL);
+    params.in_incognito = incognito;
+    params.web_params.referrer = web::Referrer(GURL(kReadingListReferrerURL),
+                                               web::ReferrerPolicyDefault);
     UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-        ->OpenUrlInNewTab(command);
+        ->Load(params);
   } else {
-    web::NavigationManager::WebLoadParams params(loadURL);
-    params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-    params.referrer = web::Referrer(GURL(kReadingListReferrerURL),
-                                    web::ReferrerPolicyDefault);
-    ChromeLoadParams chromeParams(params);
+    UrlLoadParams params = UrlLoadParams::InCurrentTab(loadURL);
+    params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+    params.web_params.referrer = web::Referrer(GURL(kReadingListReferrerURL),
+                                               web::ReferrerPolicyDefault);
     UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-        ->LoadUrlInCurrentTab(chromeParams);
+        ->Load(params);
   }
 
   [self stop];

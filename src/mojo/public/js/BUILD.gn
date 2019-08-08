@@ -126,3 +126,9 @@ grit("resources") {
     "//mojo/public/mojom/base:base_js",
   ]
 }
+
+group("tests") {
+  deps = [
+    "//mojo/public/js/test:compile_test",
+  ]
+}

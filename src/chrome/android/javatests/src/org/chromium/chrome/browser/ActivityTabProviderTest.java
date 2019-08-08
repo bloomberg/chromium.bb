@@ -16,7 +16,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -29,6 +28,7 @@ import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -51,7 +51,7 @@ public class ActivityTabProviderTest {
         public TestActivityTabTabObserver(ActivityTabProvider provider) {
             super(provider);
             mObserverMoveHelper = new CallbackHelper();
-            mObservedTab = provider.getActivityTab();
+            mObservedTab = provider.get();
         }
 
         @Override
@@ -121,13 +121,15 @@ public class ActivityTabProviderTest {
         assertEquals("The activity tab should be the model's selected tab.", getModelSelectedTab(),
                 mActivityTab);
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mActivity.getLayoutManager().showOverview(false));
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mActivity.getLayoutManager().showOverview(false));
         mActivityTabChangedHelper.waitForCallback(1);
         assertEquals("Entering the tab switcher should have triggered the event once.", 2,
                 mActivityTabChangedHelper.getCallCount());
         assertEquals("The activity tab should be null.", null, mActivityTab);
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mActivity.getLayoutManager().hideOverview(false));
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mActivity.getLayoutManager().hideOverview(false));
         mActivityTabChangedHelper.waitForCallback(2);
         assertEquals("Exiting the tab switcher should have triggered the event once.", 3,
                 mActivityTabChangedHelper.getCallCount());
@@ -175,7 +177,7 @@ public class ActivityTabProviderTest {
                 mActivityTab);
 
         int callCount = mActivityTabChangedHelper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Select the original tab without switching layouts.
             mActivity.getTabModelSelector().getCurrentModel().setIndex(
                     0, TabSelectionType.FROM_USER);
@@ -192,7 +194,7 @@ public class ActivityTabProviderTest {
     @Feature({"ActivityTabObserver"})
     public void testTriggerOnLastTabClosed() throws InterruptedException, TimeoutException {
         int callCount = mActivityTabChangedHelper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mActivity.getTabModelSelector().closeTab(getModelSelectedTab()); });
         mActivityTabChangedHelper.waitForCallback(callCount);
 
@@ -221,7 +223,7 @@ public class ActivityTabProviderTest {
         Tab activityTabBefore = mActivityTab;
 
         int callCount = mActivityTabChangedHelper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mActivity.getTabModelSelector().closeTab(startingTab); });
 
         assertEquals("The activity tab should not have changed.", activityTabBefore, mActivityTab);
@@ -269,10 +271,10 @@ public class ActivityTabProviderTest {
 
         int sceneChangeCount = sceneChangeHelper.getCallCount();
         if (inSwitcher) {
-            ThreadUtils.runOnUiThreadBlocking(
+            TestThreadUtils.runOnUiThreadBlocking(
                     () -> mActivity.getLayoutManager().showOverview(true));
         } else {
-            ThreadUtils.runOnUiThreadBlocking(
+            TestThreadUtils.runOnUiThreadBlocking(
                     () -> mActivity.getLayoutManager().hideOverview(true));
         }
         sceneChangeHelper.waitForCallback(sceneChangeCount);

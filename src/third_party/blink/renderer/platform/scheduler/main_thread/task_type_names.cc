@@ -111,6 +111,8 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "MainThreadTaskQueueControl";
     case TaskType::kMainThreadTaskQueueCleanup:
       return "MainThreadTaskQueueCleanup";
+    case TaskType::kMainThreadTaskQueueMemoryPurge:
+      return "MainThreadTaskQueueMemoryPurge";
     case TaskType::kInternalIntersectionObserver:
       return "InternalIntersectionObserver";
     case TaskType::kCompositorThreadTaskQueueDefault:
@@ -129,6 +131,8 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "InternalTranslation";
     case TaskType::kInternalContentCapture:
       return "InternalContentCapture";
+    case TaskType::kInternalNavigation:
+      return "InternalNavigation";
     case TaskType::kCount:
       return "Count";
   }

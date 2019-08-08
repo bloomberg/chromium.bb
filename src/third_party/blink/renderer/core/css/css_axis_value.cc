@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
+namespace cssvalue {
 
 CSSAxisValue::CSSAxisValue(CSSValueID axis_name)
     : CSSValueList(kAxisClass, kSpaceSeparator), axis_name_(axis_name) {
@@ -16,15 +17,15 @@ CSSAxisValue::CSSAxisValue(CSSValueID axis_name)
   double y = 0;
   double z = 0;
   switch (axis_name) {
-    case CSSValueX:
+    case CSSValueID::kX:
       x = 1;
       break;
 
-    case CSSValueY:
+    case CSSValueID::kY:
       y = 1;
       break;
 
-    case CSSValueZ:
+    case CSSValueID::kZ:
       z = 1;
       break;
 
@@ -37,17 +38,18 @@ CSSAxisValue::CSSAxisValue(CSSValueID axis_name)
 }
 
 CSSAxisValue::CSSAxisValue(double x, double y, double z)
-    : CSSValueList(kAxisClass, kSpaceSeparator), axis_name_(CSSValueInvalid) {
+    : CSSValueList(kAxisClass, kSpaceSeparator),
+      axis_name_(CSSValueID::kInvalid) {
   // Normalize axis that are parallel to x, y or z axis.
   if (x > 0 && y == 0 && z == 0) {
     x = 1;
-    axis_name_ = CSSValueX;
+    axis_name_ = CSSValueID::kX;
   } else if (x == 0 && y > 0 && z == 0) {
     y = 1;
-    axis_name_ = CSSValueY;
+    axis_name_ = CSSValueID::kY;
   } else if (x == 0 && y == 0 && z > 0) {
     z = 1;
-    axis_name_ = CSSValueZ;
+    axis_name_ = CSSValueID::kZ;
   }
   Append(*CSSPrimitiveValue::Create(x, CSSPrimitiveValue::UnitType::kNumber));
   Append(*CSSPrimitiveValue::Create(y, CSSPrimitiveValue::UnitType::kNumber));
@@ -56,7 +58,7 @@ CSSAxisValue::CSSAxisValue(double x, double y, double z)
 
 String CSSAxisValue::CustomCSSText() const {
   StringBuilder result;
-  if (axis_name_ != CSSValueInvalid) {
+  if (IsValidCSSValueID(axis_name_)) {
     result.Append(AtomicString(getValueName(axis_name_)));
   } else {
     result.Append(CSSValueList::CustomCSSText());
@@ -65,15 +67,16 @@ String CSSAxisValue::CustomCSSText() const {
 }
 
 double CSSAxisValue::X() const {
-  return ToCSSPrimitiveValue(Item(0)).GetDoubleValue();
+  return To<CSSPrimitiveValue>(Item(0)).GetDoubleValue();
 }
 
 double CSSAxisValue::Y() const {
-  return ToCSSPrimitiveValue(Item(1)).GetDoubleValue();
+  return To<CSSPrimitiveValue>(Item(1)).GetDoubleValue();
 }
 
 double CSSAxisValue::Z() const {
-  return ToCSSPrimitiveValue(Item(2)).GetDoubleValue();
+  return To<CSSPrimitiveValue>(Item(2)).GetDoubleValue();
 }
 
+}  // namespace cssvalue
 }  // namespace blink

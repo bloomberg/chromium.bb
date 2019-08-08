@@ -14,14 +14,12 @@
 #include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/mru_features.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/tab_features.h"
-#include "chrome/browser/resource_coordinator/tab_ranker/window_features.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/tabs/window_activity_watcher.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
@@ -110,8 +108,7 @@ class TabActivityWatcher::WebContentsData
     backgrounded_time_ = replaced_tab.backgrounded_time_;
 
     // Copy the replaced tab's stats.
-    tab_metrics_.page_metrics = replaced_tab.tab_metrics_.page_metrics;
-    tab_metrics_.page_transition = replaced_tab.tab_metrics_.page_transition;
+    page_metrics_ = replaced_tab.page_metrics_;
 
     // Record previous ukm_source_id from the |replaced_tab|.
     previous_ukm_source_id_ = replaced_tab.ukm_source_id_;
@@ -191,7 +188,6 @@ class TabActivityWatcher::WebContentsData
   explicit WebContentsData(content::WebContents* web_contents)
       : WebContentsObserver(web_contents) {
     DCHECK(!web_contents->GetBrowserContext()->IsOffTheRecord());
-    tab_metrics_.web_contents = web_contents;
     web_contents->GetRenderViewHost()->GetWidget()->AddInputEventObserver(this);
 
     creation_time_ = NowTicks();
@@ -244,7 +240,7 @@ class TabActivityWatcher::WebContentsData
     foregrounded_time_ = NowTicks();
     creation_time_ = NowTicks();
 
-    tab_metrics_.page_metrics.num_reactivations++;
+    page_metrics_.num_reactivations++;
   }
 
   // content::WebContentsObserver:
@@ -275,10 +271,10 @@ class TabActivityWatcher::WebContentsData
     navigation_time_ = navigation_handle->NavigationStart();
 
     // Reset the per-page data.
-    tab_metrics_.page_metrics = {};
+    page_metrics_ = {};
 
     // Update navigation info.
-    tab_metrics_.page_transition = navigation_handle->GetPageTransition();
+    page_metrics_.page_transition = navigation_handle->GetPageTransition();
   }
 
   // Logs metrics for the tab when it stops loading instead of immediately
@@ -344,11 +340,11 @@ class TabActivityWatcher::WebContentsData
   // content::RenderWidgetHost::InputEventObserver:
   void OnInputEvent(const blink::WebInputEvent& event) override {
     if (blink::WebInputEvent::IsMouseEventType(event.GetType()))
-      tab_metrics_.page_metrics.mouse_event_count++;
+      page_metrics_.mouse_event_count++;
     else if (blink::WebInputEvent::IsKeyboardEventType(event.GetType()))
-      tab_metrics_.page_metrics.key_event_count++;
+      page_metrics_.key_event_count++;
     else if (blink::WebInputEvent::IsTouchEventType(event.GetType()))
-      tab_metrics_.page_metrics.touch_event_count++;
+      page_metrics_.touch_event_count++;
   }
 
   // Iterates through tabstrips to determine the index of |contents| in
@@ -403,27 +399,25 @@ class TabActivityWatcher::WebContentsData
 
   // Returns the tabfeatures of current tab by combining TabMetrics,
   // WindowFeatures and MRUFeatures.
+  // TODO(charleszhao): refactor TabMetricsLogger::GetTabFeatures to return a
+  // full TabFeatures instead of a partial TabFeatures.
   base::Optional<tab_ranker::TabFeatures> GetTabFeatures(
       const tab_ranker::MRUFeatures& mru = tab_ranker::MRUFeatures()) {
-    const Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-    if (!browser)
-      return base::nullopt;
 
     // For tab features.
-    tab_ranker::TabFeatures tab = TabMetricsLogger::GetTabFeatures(
-        browser, tab_metrics_, NowTicks() - backgrounded_time_);
+    base::Optional<tab_ranker::TabFeatures> tab =
+        TabMetricsLogger::GetTabFeatures(page_metrics_, web_contents());
+    if (!tab.has_value())
+      return tab;
 
-    // For window features.
-    tab_ranker::WindowFeatures window =
-        WindowActivityWatcher::CreateWindowFeatures(browser);
-    tab.window_is_active = window.is_active;
-    tab.window_show_state = window.show_state;
-    tab.window_tab_count = window.tab_count;
-    tab.window_type = window.type;
+    tab->time_from_backgrounded =
+        backgrounded_time_.is_null()
+            ? 0
+            : (NowTicks() - backgrounded_time_).InMilliseconds();
 
     // For mru features.
-    tab.mru_index = mru.index;
-    tab.total_tab_count = mru.total;
+    tab->mru_index = mru.index;
+    tab->total_tab_count = mru.total;
     return tab;
   }
 
@@ -476,8 +470,8 @@ class TabActivityWatcher::WebContentsData
   // The last navigation time associated with this tab.
   base::TimeTicks navigation_time_;
 
-  // Stores current stats for the tab.
-  TabMetricsLogger::TabMetrics tab_metrics_;
+  // Stores current page stats for the tab.
+  TabMetricsLogger::PageMetrics page_metrics_;
 
   // Set to true when the WebContents has been detached from its tab.
   bool is_detached_ = false;
@@ -512,10 +506,6 @@ TabActivityWatcher::TabActivityWatcher()
     : tab_metrics_logger_(std::make_unique<TabMetricsLogger>()),
       browser_tab_strip_tracker_(this, this, this) {
   browser_tab_strip_tracker_.Init();
-
-  // TabMetrics UKMs reference WindowMetrics UKM entries, so ensure the
-  // WindowActivityWatcher is initialized.
-  WindowActivityWatcher::GetInstance();
 }
 
 TabActivityWatcher::~TabActivityWatcher() = default;
@@ -605,6 +595,7 @@ void TabActivityWatcher::OnTabStripModelChanged(
       break;
     }
     case TabStripModelChange::kMoved:
+    case TabStripModelChange::kGroupChanged:
     case TabStripModelChange::kSelectionOnly:
       break;
   }

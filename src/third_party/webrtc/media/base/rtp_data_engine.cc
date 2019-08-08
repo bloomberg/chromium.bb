@@ -56,6 +56,7 @@ static const DataCodec* FindCodecByName(const std::vector<DataCodec>& codecs,
 RtpDataMediaChannel::RtpDataMediaChannel(const MediaConfig& config)
     : DataMediaChannel(config) {
   Construct();
+  SetPreferredDscp(rtc::DSCP_AF41);
 }
 
 void RtpDataMediaChannel::Construct() {
@@ -193,20 +194,20 @@ bool RtpDataMediaChannel::RemoveRecvStream(uint32_t ssrc) {
   return true;
 }
 
-void RtpDataMediaChannel::OnPacketReceived(rtc::CopyOnWriteBuffer* packet,
+void RtpDataMediaChannel::OnPacketReceived(rtc::CopyOnWriteBuffer packet,
                                            int64_t /* packet_time_us */) {
   RtpHeader header;
-  if (!GetRtpHeader(packet->cdata(), packet->size(), &header)) {
+  if (!GetRtpHeader(packet.cdata(), packet.size(), &header)) {
     return;
   }
 
   size_t header_length;
-  if (!GetRtpHeaderLen(packet->cdata(), packet->size(), &header_length)) {
+  if (!GetRtpHeaderLen(packet.cdata(), packet.size(), &header_length)) {
     return;
   }
   const char* data =
-      packet->cdata<char>() + header_length + sizeof(kReservedSpace);
-  size_t data_len = packet->size() - header_length - sizeof(kReservedSpace);
+      packet.cdata<char>() + header_length + sizeof(kReservedSpace);
+  size_t data_len = packet.size() - header_length - sizeof(kReservedSpace);
 
   if (!receiving_) {
     RTC_LOG(LS_WARNING) << "Not receiving packet " << header.ssrc << ":"
@@ -329,10 +330,6 @@ bool RtpDataMediaChannel::SendData(const SendDataParams& params,
     *result = SDR_SUCCESS;
   }
   return true;
-}
-
-rtc::DiffServCodePoint RtpDataMediaChannel::PreferredDscp() const {
-  return rtc::DSCP_AF41;
 }
 
 }  // namespace cricket

@@ -17,6 +17,7 @@ import android.text.format.DateUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.webapps.WebApkInfo;
 
@@ -123,6 +124,25 @@ public class WebApkUma {
 
     private static final long WEBAPK_EXTRA_INSTALLATION_SPACE_BYTES =
             100 * (long) ConversionUtils.BYTES_PER_MEGABYTE; // 100 MB
+
+    /** Makes recordings that were deferred in order to not load native. */
+    public static void recordDeferredUma() {
+        ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance();
+        int numUninstalls =
+                preferenceManager.readInt(ChromePreferenceManager.WEBAPK_NUMBER_OF_UNINSTALLS);
+        if (numUninstalls == 0) return;
+
+        for (int i = 0; i < numUninstalls; ++i) {
+            RecordHistogram.recordBooleanHistogram("WebApk.Uninstall.Browser", true);
+        }
+        preferenceManager.writeInt(ChromePreferenceManager.WEBAPK_NUMBER_OF_UNINSTALLS, 0);
+    }
+
+    /** Sets WebAPK uninstall to be recorded next time that native is loaded. */
+    public static void deferRecordWebApkUninstalled() {
+        ChromePreferenceManager.getInstance().incrementInt(
+                ChromePreferenceManager.WEBAPK_NUMBER_OF_UNINSTALLS);
+    }
 
     /**
      * Records the time point when a request to update a WebAPK is sent to the WebAPK Server.

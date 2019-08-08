@@ -18,13 +18,13 @@ import org.junit.Assert;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity2;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Locale;
 import java.util.concurrent.Callable;
@@ -127,17 +127,14 @@ public class MultiWindowTestHelper {
      */
     @TargetApi(Build.VERSION_CODES.N)
     public static void moveActivityToFront(final Activity activity) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Context context = ContextUtils.getApplicationContext();
-                ActivityManager activityManager =
-                        (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-                for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
-                    if (activity.getTaskId() == task.getTaskInfo().id) {
-                        task.moveToFront();
-                        break;
-                    }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Context context = ContextUtils.getApplicationContext();
+            ActivityManager activityManager =
+                    (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+            for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
+                if (activity.getTaskId() == task.getTaskInfo().id) {
+                    task.moveToFront();
+                    break;
                 }
             }
         });

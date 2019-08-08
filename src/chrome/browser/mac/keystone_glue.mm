@@ -73,7 +73,7 @@ NSString* SystemBrandFilePath(version_info::Channel channel) {
   return [file stringByStandardizingPath];
 }
 
-// Adaptor for scheduling an Objective-C method call in TaskScheduler.
+// Adaptor for scheduling an Objective-C method call in ThreadPool.
 class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
  public:
 
@@ -132,9 +132,6 @@ class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
 
 // Called when Keystone registration completes.
 - (void)registrationComplete:(NSNotification*)notification;
-
-// Set the registration active and pass profile count parameters.
-- (void)setRegistrationActive;
 
 // Called periodically to announce activity by pinging the Keystone server.
 - (void)markActive:(NSTimer*)timer;
@@ -269,6 +266,22 @@ NSString* const kVersionKey = @"KSVersion";
                selector:@selector(installUpdateComplete:)
                    name:ksr::KSRegistrationStartUpdateNotification
                  object:nil];
+
+    // Set up the watcher for the staging key, for new-style updating. Use a
+    // long polling time, as this isn't user-blocking, and it doesn't poll on
+    // >=10.12 anyway.
+    const NSTimeInterval kPollingTime = 60 * 60;  // 1 hour
+    stagingKeyWatcher_.reset(
+        [[CrStagingKeyWatcher alloc] initWithPollingTime:kPollingTime]);
+    [stagingKeyWatcher_ setStagingKeyChangedObserver:^(BOOL stagingKeySet) {
+      if (stagingKeySet) {
+        // If the staging key is set, then there is a process waiting for Chrome
+        // to quit, to allow it to switch out the binary on disk. Because
+        // there's nothing for Chrome to do here except restart to allow the
+        // installation, use |kAutoupdateInstalled| to ask the user to restart.
+        [self updateStatus:kAutoupdateInstalled version:nil error:nil];
+      }
+    }];
   }
 
   return self;
@@ -492,43 +505,10 @@ NSString* const kVersionKey = @"KSVersion";
 
 - (void)setRegistrationActive {
   DCHECK(registration_);
-
   registrationActive_ = YES;
-
-  // During startup, numProfiles_ defaults to 0.
-  if (!numProfiles_) {
-    [registration_ setActive];
-    return;
-  }
-
-  NSError* reportingError = nil;
-
-  KSReportingAttribute* numAccountsAttr =
-      [ksUnsignedReportingAttributeClass_
-          reportingAttributeWithValue:numProfiles_
-                                 name:@"_NumAccounts"
-                      aggregationType:kKSReportingAggregationSum
-                                error:&reportingError];
-  if (reportingError != nil)
-    VLOG(1) << [reportingError localizedDescription];
-  reportingError = nil;
-
-  KSReportingAttribute* numSignedInAccountsAttr =
-      [ksUnsignedReportingAttributeClass_
-          reportingAttributeWithValue:numSignedInProfiles_
-                                 name:@"_NumSignedIn"
-                      aggregationType:kKSReportingAggregationSum
-                                error:&reportingError];
-  if (reportingError != nil)
-    VLOG(1) << [reportingError localizedDescription];
-  reportingError = nil;
-
-  NSArray* profileCountsInformation =
-      [NSArray arrayWithObjects:numAccountsAttr, numSignedInAccountsAttr, nil];
-
-  if (![registration_ setActiveWithReportingAttributes:profileCountsInformation
-                                                 error:&reportingError]) {
-    VLOG(1) << [reportingError localizedDescription];
+  NSError* setActiveError = nil;
+  if (![registration_ setActiveWithError:&setActiveError]) {
+    VLOG(1) << [setActiveError localizedDescription];
   }
 }
 
@@ -717,6 +697,9 @@ NSString* const kVersionKey = @"KSVersion";
   if (updateSuccessfullyInstalled_) {
     // If an update was successfully installed and this object saw it happen,
     // then don't even bother comparing versions.
+    status = kAutoupdateInstalled;
+  } else if ([stagingKeyWatcher_ isStagingKeySet]) {
+    // If there's a staging key, then the update will happen on restart.
     status = kAutoupdateInstalled;
   } else {
     NSString* currentVersion = base::SysUTF8ToNSString(chrome::kChromeVersion);
@@ -1177,14 +1160,6 @@ NSString* const kVersionKey = @"KSVersion";
     tagSuffix = [tagSuffix stringByAppendingString:@"-full"];
   }
   return tagSuffix;
-}
-
-
-- (void)updateProfileCountsWithNumProfiles:(uint32_t)profiles
-                       numSignedInProfiles:(uint32_t)signedInProfiles {
-  numProfiles_ = profiles;
-  numSignedInProfiles_ = signedInProfiles;
-  [self setRegistrationActive];
 }
 
 @end  // @implementation KeystoneGlue

@@ -318,11 +318,15 @@ class CookieStoreManagerTest
   bool SetCanonicalCookie(const net::CanonicalCookie& cookie) {
     base::RunLoop run_loop;
     bool success = false;
+    net::CookieOptions options;
+    options.set_include_httponly();
     cookie_manager_->SetCanonicalCookie(
-        cookie, "https", /* can_modify_httponly = */ true,
+        cookie, "https", options,
         base::BindOnce(
-            [](base::RunLoop* run_loop, bool* success, bool service_success) {
-              *success = success;
+            [](base::RunLoop* run_loop, bool* success,
+               net::CanonicalCookie::CookieInclusionStatus service_success) {
+              *success = (service_success ==
+                          net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
               run_loop->Quit();
             },
             &run_loop, &success));

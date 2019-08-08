@@ -10,18 +10,30 @@
  */
 function CrostiniImpl() {
   /**
-   * True if crostini is enabled.
-   * @private {boolean}
+   * True if VM is enabled.
+   * @private {Object<boolean>}
    */
-  this.enabled_ = false;
+  this.enabled_ = {};
 
   /**
-   * Maintains a list of paths shared with the crostini container.
-   * Keyed by entry.toURL().
-   * @private @dict {!Object<boolean>}
+   * Maintains a list of paths shared with VMs.
+   * Keyed by entry.toURL(), maps to list of VMs.
+   * @private @dict {!Object<!Array<string>>}
    */
   this.shared_paths_ = {};
 }
+
+/**
+ * Default Crostini VM is 'termina'.
+ * @const
+ */
+CrostiniImpl.DEFAULT_VM = 'termina';
+
+/**
+ * Plugin VM 'PluginVm'.
+ * @const
+ */
+CrostiniImpl.PLUGIN_VM = 'PluginVm';
 
 /**
  * Keep in sync with histograms.xml:FileBrowserCrostiniSharedPathsDepth
@@ -47,8 +59,8 @@ CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE = new Map([
   [VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT, 'DriveComputers'],
   [VolumeManagerCommon.RootType.COMPUTER, 'DriveComputers'],
   [VolumeManagerCommon.RootType.DRIVE, 'MyDrive'],
-  [VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT, 'TeamDrive'],
-  [VolumeManagerCommon.RootType.TEAM_DRIVE, 'TeamDrive'],
+  [VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT, 'TeamDrive'],
+  [VolumeManagerCommon.RootType.SHARED_DRIVE, 'TeamDrive'],
 ]);
 
 /**
@@ -74,19 +86,21 @@ CrostiniImpl.prototype.listen = function() {
 };
 
 /**
- * Set from feature 'crostini-files'.
+ * Set whether the specified VM is enabled.
+ * @param {string} vmName
  * @param {boolean} enabled
  */
-CrostiniImpl.prototype.setEnabled = function(enabled) {
-  this.enabled_ = enabled;
+CrostiniImpl.prototype.setEnabled = function(vmName, enabled) {
+  this.enabled_[vmName] = enabled;
 };
 
 /**
  * Returns true if crostini is enabled.
+ * @param {string} vmName
  * @return {boolean}
  */
-CrostiniImpl.prototype.isEnabled = function() {
-  return this.enabled_;
+CrostiniImpl.prototype.isEnabled = function(vmName) {
+  return this.enabled_[vmName];
 };
 
 /**
@@ -101,18 +115,27 @@ CrostiniImpl.prototype.getRoot_ = function(entry) {
 };
 
 /**
- * Registers an entry as a shared path.
+ * Registers an entry as a shared path for the specified VM.
+ * @param {string} vmName
  * @param {!Entry} entry
  */
-CrostiniImpl.prototype.registerSharedPath = function(entry) {
+CrostiniImpl.prototype.registerSharedPath = function(vmName, entry) {
   const url = entry.toURL();
   // Remove any existing paths that are children of the new path.
-  for (let path in this.shared_paths_) {
+  // These paths will still be shared as a result of a parent path being
+  // shared, but if the parent is unshared in the future, these children
+  // paths should not remain.
+  for (const [path, vms] of Object.entries(this.shared_paths_)) {
     if (path.startsWith(url)) {
-      delete this.shared_paths_[path];
+      this.unregisterSharedPath_(vmName, path);
     }
   }
-  this.shared_paths_[url] = true;
+  const vms = this.shared_paths_[url];
+  if (this.shared_paths_[url]) {
+    this.shared_paths_[url].push(vmName);
+  } else {
+    this.shared_paths_[url] = [vmName];
+  }
 
   // Record UMA.
   const root = this.getRoot_(entry);
@@ -125,11 +148,30 @@ CrostiniImpl.prototype.registerSharedPath = function(entry) {
 };
 
 /**
- * Unregisters entry as a shared path.
+ * Unregisters path as a shared path from the specified VM.
+ * @param {string} vmName
+ * @param {string} path
+ * @private
+ */
+CrostiniImpl.prototype.unregisterSharedPath_ = function(vmName, path) {
+  const vms = this.shared_paths_[path];
+  if (vms) {
+    const newVms = vms.filter(vm => vm != vmName);
+    if (newVms.length > 0) {
+      this.shared_paths_[path] = newVms;
+    } else {
+      delete this.shared_paths_[path];
+    }
+  }
+};
+
+/**
+ * Unregisters entry as a shared path from the specified VM.
+ * @param {string} vmName
  * @param {!Entry} entry
  */
-CrostiniImpl.prototype.unregisterSharedPath = function(entry) {
-  delete this.shared_paths_[entry.toURL()];
+CrostiniImpl.prototype.unregisterSharedPath = function(vmName, entry) {
+  this.unregisterSharedPath_(vmName, entry.toURL());
 };
 
 /**
@@ -140,22 +182,23 @@ CrostiniImpl.prototype.unregisterSharedPath = function(entry) {
 CrostiniImpl.prototype.onChange_ = function(event) {
   if (event.eventType === 'share') {
     for (const entry of event.entries) {
-      this.registerSharedPath(entry);
+      this.registerSharedPath(event.vmName, entry);
     }
   } else if (event.eventType === 'unshare') {
     for (const entry of event.entries) {
-      this.unregisterSharedPath(entry);
+      this.unregisterSharedPath(event.vmName, entry);
     }
   }
 };
 
 /**
- * Returns true if entry is shared.
+ * Returns true if entry is shared with the specified VM.
+ * @param {string} vmName
  * @param {!Entry} entry
  * @return {boolean} True if path is shared either by a direct
  *   share or from one of its ancestor directories.
  */
-CrostiniImpl.prototype.isPathShared = function(entry) {
+CrostiniImpl.prototype.isPathShared = function(vmName, entry) {
   // Check path and all ancestor directories.
   let path = entry.toURL();
   let root = path;
@@ -164,21 +207,24 @@ CrostiniImpl.prototype.isPathShared = function(entry) {
   }
 
   while (path.length > root.length) {
-    if (this.shared_paths_[path]) {
+    const vms = this.shared_paths_[path];
+    if (vms && vms.includes(vmName)) {
       return true;
     }
     path = path.substring(0, path.lastIndexOf('/'));
   }
-  return !!this.shared_paths_[root];
+  const rootVms = this.shared_paths_[root];
+  return !!rootVms && rootVms.includes(vmName);
 };
 
 /**
- * Returns true if entry can be shared with Crostini.
+ * Returns true if entry can be shared with the specified VM.
+ * @param {string} vmName
  * @param {!Entry} entry
  * @param {boolean} persist If path is to be persisted.
  */
-CrostiniImpl.prototype.canSharePath = function(entry, persist) {
-  if (!this.enabled_) {
+CrostiniImpl.prototype.canSharePath = function(vmName, entry, persist) {
+  if (!this.enabled_[vmName]) {
     return false;
   }
 
@@ -194,6 +240,13 @@ CrostiniImpl.prototype.canSharePath = function(entry, persist) {
   if (root === VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT ||
       (root === VolumeManagerCommon.RootType.COMPUTER &&
        entry.fullPath.split('/').length <= 3)) {
+    return false;
+  }
+
+  // TODO(crbug.com/958840): Sharing Play files root is disallowed until
+  // we can ensure it will not also share Downloads.
+  if (root === VolumeManagerCommon.RootType.ANDROID_FILES &&
+      entry.fullPath === '/') {
     return false;
   }
 

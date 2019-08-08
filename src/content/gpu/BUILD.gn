@@ -103,16 +103,7 @@ target(link_target_type, "gpu_sources") {
     deps += [ "//media/mojo/services" ]
   }
 
-  if (is_win) {
-    configs += [
-      "//third_party/khronos:khronos_headers",
-      "//third_party/wtl:wtl_includes",
-    ]
-    libs = [ "setupapi.lib" ]
-    deps += [ "//sandbox" ]
-  }
-
-  if (is_linux || is_mac) {
+  if (is_linux || is_mac || is_win) {
     deps += [ "//sandbox" ]
   }
 

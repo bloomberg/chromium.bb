@@ -5,6 +5,7 @@
 /net/http/*.pins  text eol=lf
 
 # Force LF checkout for all source files
+*.bin binary
 *.c text eol=lf
 *.cc text eol=lf
 *.cpp text eol=lf

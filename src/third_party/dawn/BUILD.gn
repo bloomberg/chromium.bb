@@ -50,7 +50,7 @@ source_set("libdawn_native_headers") {
   public_deps = [
     "${dawn_root}/src/dawn:dawn_headers",
   ]
-  public_configs = [ "${dawn_root}/src/common:dawn_public" ]
+  all_dependent_configs = [ "${dawn_root}/src/common:dawn_public_include_dirs" ]
   sources = [
     "src/include/dawn_native/DawnNative.h",
     "src/include/dawn_native/dawn_native_export.h",
@@ -92,8 +92,6 @@ source_set("libdawn_native_sources") {
     "src/dawn_native/BindGroupLayout.h",
     "src/dawn_native/Buffer.cpp",
     "src/dawn_native/Buffer.h",
-    "src/dawn_native/Builder.cpp",
-    "src/dawn_native/Builder.h",
     "src/dawn_native/CommandAllocator.cpp",
     "src/dawn_native/CommandAllocator.h",
     "src/dawn_native/CommandBuffer.cpp",
@@ -121,8 +119,6 @@ source_set("libdawn_native_sources") {
     "src/dawn_native/FenceSignalTracker.cpp",
     "src/dawn_native/FenceSignalTracker.h",
     "src/dawn_native/Forward.h",
-    "src/dawn_native/InputState.cpp",
-    "src/dawn_native/InputState.h",
     "src/dawn_native/Instance.cpp",
     "src/dawn_native/Instance.h",
     "src/dawn_native/ObjectBase.cpp",
@@ -184,8 +180,6 @@ source_set("libdawn_native_sources") {
       "src/dawn_native/d3d12/DeviceD3D12.cpp",
       "src/dawn_native/d3d12/DeviceD3D12.h",
       "src/dawn_native/d3d12/Forward.h",
-      "src/dawn_native/d3d12/InputStateD3D12.cpp",
-      "src/dawn_native/d3d12/InputStateD3D12.h",
       "src/dawn_native/d3d12/NativeSwapChainImplD3D12.cpp",
       "src/dawn_native/d3d12/NativeSwapChainImplD3D12.h",
       "src/dawn_native/d3d12/PipelineLayoutD3D12.cpp",
@@ -235,8 +229,6 @@ source_set("libdawn_native_sources") {
       "src/dawn_native/metal/DeviceMTL.h",
       "src/dawn_native/metal/DeviceMTL.mm",
       "src/dawn_native/metal/Forward.h",
-      "src/dawn_native/metal/InputStateMTL.h",
-      "src/dawn_native/metal/InputStateMTL.mm",
       "src/dawn_native/metal/PipelineLayoutMTL.h",
       "src/dawn_native/metal/PipelineLayoutMTL.mm",
       "src/dawn_native/metal/QueueMTL.h",
@@ -279,8 +271,6 @@ source_set("libdawn_native_sources") {
       "src/dawn_native/opengl/DeviceGL.cpp",
       "src/dawn_native/opengl/DeviceGL.h",
       "src/dawn_native/opengl/Forward.h",
-      "src/dawn_native/opengl/InputStateGL.cpp",
-      "src/dawn_native/opengl/InputStateGL.h",
       "src/dawn_native/opengl/PersistentPipelineStateGL.cpp",
       "src/dawn_native/opengl/PersistentPipelineStateGL.h",
       "src/dawn_native/opengl/PipelineGL.cpp",
@@ -326,8 +316,6 @@ source_set("libdawn_native_sources") {
       "src/dawn_native/vulkan/FencedDeleter.cpp",
       "src/dawn_native/vulkan/FencedDeleter.h",
       "src/dawn_native/vulkan/Forward.h",
-      "src/dawn_native/vulkan/InputStateVk.cpp",
-      "src/dawn_native/vulkan/InputStateVk.h",
       "src/dawn_native/vulkan/MemoryAllocator.cpp",
       "src/dawn_native/vulkan/MemoryAllocator.h",
       "src/dawn_native/vulkan/NativeSwapChainImplVk.cpp",
@@ -405,36 +393,18 @@ dawn_component("libdawn_native") {
 # libdawn_wire
 ###############################################################################
 
-# Public libdawn_wire headers so they can be publically visible for
-# dependencies of libdawn_wire
-source_set("libdawn_wire_headers") {
-  public_deps = [
-    "${dawn_root}/src/dawn:dawn_headers",
-  ]
-  public_configs = [ "${dawn_root}/src/common:dawn_public" ]
-  sources = [
-    "src/include/dawn_wire/Wire.h",
-    "src/include/dawn_wire/WireClient.h",
-    "src/include/dawn_wire/WireServer.h",
-    "src/include/dawn_wire/dawn_wire_export.h",
-  ]
-}
-
 dawn_generator("libdawn_wire_gen") {
   target = "dawn_wire"
   outputs = [
-    "dawn_wire/TypeTraits_autogen.h",
     "dawn_wire/WireCmd_autogen.h",
     "dawn_wire/WireCmd_autogen.cpp",
     "dawn_wire/client/ApiObjects_autogen.h",
     "dawn_wire/client/ApiProcs_autogen.cpp",
     "dawn_wire/client/ApiProcs_autogen.h",
     "dawn_wire/client/ClientBase_autogen.h",
-    "dawn_wire/client/ClientDoers_autogen.cpp",
     "dawn_wire/client/ClientHandlers_autogen.cpp",
     "dawn_wire/client/ClientPrototypes_autogen.inl",
     "dawn_wire/server/ServerBase_autogen.h",
-    "dawn_wire/server/ServerCallbacks_autogen.cpp",
     "dawn_wire/server/ServerDoers_autogen.cpp",
     "dawn_wire/server/ServerHandlers_autogen.cpp",
     "dawn_wire/server/ServerPrototypes_autogen.inl",
@@ -446,8 +416,8 @@ dawn_component("libdawn_wire") {
 
   deps = [
     ":libdawn_wire_gen",
-    ":libdawn_wire_headers",
     "${dawn_root}/src/common",
+    "${dawn_root}/src/dawn_wire:libdawn_wire_headers",
   ]
 
   configs = [ "${dawn_root}/src/common:dawn_internal" ]
@@ -480,7 +450,7 @@ dawn_component("libdawn_wire") {
 
   # Make headers publically visible
   public_deps = [
-    ":libdawn_wire_headers",
+    "${dawn_root}/src/dawn_wire:libdawn_wire_headers",
   ]
 }
 
@@ -606,6 +576,7 @@ test("dawn_unittests") {
     "src/tests/unittests/validation/PushConstantsValidationTests.cpp",
     "src/tests/unittests/validation/QueueSubmitValidationTests.cpp",
     "src/tests/unittests/validation/RenderPassDescriptorValidationTests.cpp",
+    "src/tests/unittests/validation/RenderPassValidationTests.cpp",
     "src/tests/unittests/validation/RenderPipelineValidationTests.cpp",
     "src/tests/unittests/validation/ShaderModuleValidationTests.cpp",
     "src/tests/unittests/validation/TextureValidationTests.cpp",
@@ -616,8 +587,9 @@ test("dawn_unittests") {
     "src/tests/unittests/wire/WireArgumentTests.cpp",
     "src/tests/unittests/wire/WireBasicTests.cpp",
     "src/tests/unittests/wire/WireBufferMappingTests.cpp",
-    "src/tests/unittests/wire/WireCallbackTests.cpp",
+    "src/tests/unittests/wire/WireErrorCallbackTests.cpp",
     "src/tests/unittests/wire/WireFenceTests.cpp",
+    "src/tests/unittests/wire/WireInjectTextureTests.cpp",
     "src/tests/unittests/wire/WireOptionalTests.cpp",
     "src/tests/unittests/wire/WireTest.cpp",
     "src/tests/unittests/wire/WireTest.h",
@@ -655,17 +627,19 @@ test("dawn_end2end_tests") {
     "src/tests/end2end/BasicTests.cpp",
     "src/tests/end2end/BindGroupTests.cpp",
     "src/tests/end2end/BufferTests.cpp",
+    "src/tests/end2end/ClipSpaceTests.cpp",
     "src/tests/end2end/ColorStateTests.cpp",
     "src/tests/end2end/ComputeCopyStorageBufferTests.cpp",
     "src/tests/end2end/CopyTests.cpp",
     "src/tests/end2end/DebugMarkerTests.cpp",
     "src/tests/end2end/DepthStencilStateTests.cpp",
-    "src/tests/end2end/DestroyBufferTests.cpp",
+    "src/tests/end2end/DestroyTests.cpp",
     "src/tests/end2end/DrawIndexedTests.cpp",
     "src/tests/end2end/DrawTests.cpp",
     "src/tests/end2end/FenceTests.cpp",
     "src/tests/end2end/IndexFormatTests.cpp",
     "src/tests/end2end/InputStateTests.cpp",
+    "src/tests/end2end/MultisampledRenderingTests.cpp",
     "src/tests/end2end/PrimitiveTopologyTests.cpp",
     "src/tests/end2end/PushConstantTests.cpp",
     "src/tests/end2end/RenderPassLoadOpTests.cpp",

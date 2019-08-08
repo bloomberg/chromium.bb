@@ -30,7 +30,7 @@ void TestDataSource::WritePacketBigly() {
   payload.get()[kLargeMessageSize - 1] = 0;
 
   std::unique_ptr<perfetto::TraceWriter> writer =
-      producer_client_->CreateTraceWriter(target_buffer_);
+      producer_client_->CreateTraceWriter(config_.target_buffer());
   CHECK(writer);
 
   writer->NewTracePacket()->set_for_testing()->set_str(payload.get(),
@@ -41,11 +41,11 @@ void TestDataSource::StartTracing(
     ProducerClient* producer_client,
     const perfetto::DataSourceConfig& data_source_config) {
   producer_client_ = producer_client;
-  target_buffer_ = data_source_config.target_buffer();
+  config_ = data_source_config;
 
   if (send_packet_count_ > 0) {
     std::unique_ptr<perfetto::TraceWriter> writer =
-        producer_client_->CreateTraceWriter(target_buffer_);
+        producer_client_->CreateTraceWriter(config_.target_buffer());
     CHECK(writer);
 
     for (size_t i = 0; i < send_packet_count_; i++) {
@@ -82,8 +82,10 @@ void MockProducerClient::SetupDataSource(const std::string& data_source_name) {
 
 void MockProducerClient::StartDataSource(
     uint64_t id,
-    const perfetto::DataSourceConfig& data_source_config) {
-  ProducerClient::StartDataSource(id, std::move(data_source_config));
+    const perfetto::DataSourceConfig& data_source_config,
+    StartDataSourceCallback callback) {
+  ProducerClient::StartDataSource(id, std::move(data_source_config),
+                                  std::move(callback));
 
   if (client_enabled_callback_) {
     std::move(client_enabled_callback_).Run();
@@ -182,11 +184,13 @@ void MockConsumer::OnTraceStats(bool /*success*/, const perfetto::TraceStats&) {
 }
 
 MockProducerHost::MockProducerHost(
+    const std::string& producer_name,
     const std::string& data_source_name,
     perfetto::TracingService* service,
     MockProducerClient* producer_client,
     base::OnceClosure datasource_registered_callback)
-    : datasource_registered_callback_(
+    : producer_name_(producer_name),
+      datasource_registered_callback_(
           std::move(datasource_registered_callback)) {
   auto on_mojo_connected_callback =
       [](MockProducerClient* producer_client,
@@ -239,13 +243,13 @@ void MockProducerHost::OnMessagepipesReadyCallback(
     perfetto::TracingService* perfetto_service,
     mojom::ProducerClientPtr producer_client_pipe,
     mojom::ProducerHostRequest producer_host_pipe) {
-  Initialize(std::move(producer_client_pipe), perfetto_service,
-             kPerfettoProducerName);
+  Initialize(std::move(producer_client_pipe), perfetto_service, producer_name_);
   binding_ = std::make_unique<mojo::Binding<mojom::ProducerHost>>(
       this, std::move(producer_host_pipe));
 }
 
-MockProducer::MockProducer(const std::string& data_source_name,
+MockProducer::MockProducer(const std::string& producer_name,
+                           const std::string& data_source_name,
                            perfetto::TracingService* service,
                            base::OnceClosure on_datasource_registered,
                            base::OnceClosure on_tracing_started,
@@ -254,7 +258,7 @@ MockProducer::MockProducer(const std::string& data_source_name,
       num_packets, std::move(on_tracing_started));
 
   producer_host_ = std::make_unique<MockProducerHost>(
-      data_source_name, service, producer_client_.get(),
+      producer_name, data_source_name, service, producer_client_.get(),
       std::move(on_datasource_registered));
 }
 
@@ -263,7 +267,7 @@ MockProducer::~MockProducer() {
 }
 
 void MockProducer::WritePacketBigly(base::OnceClosure on_write_complete) {
-  producer_client_->GetTaskRunner()->PostTaskAndReply(
+  producer_client_->GetTaskRunner()->task_runner()->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&TestDataSource::WritePacketBigly,
                      base::Unretained(producer_client_->data_source())),

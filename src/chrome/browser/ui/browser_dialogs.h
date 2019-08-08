@@ -112,16 +112,24 @@ void ShowBookmarkAppDialog(content::WebContents* web_contents,
 // user interaction.
 void SetAutoAcceptBookmarkAppDialogForTesting(bool auto_accept);
 
-// Shows the PWA installation confirmation bubble.
+// Shows the PWA installation confirmation modal dialog.
 //
 // |web_app_info| is the WebApplicationInfo to be installed.
 void ShowPWAInstallDialog(content::WebContents* web_contents,
                           const WebApplicationInfo& web_app_info,
                           AppInstallationAcceptanceCallback callback);
 
-// Sets whether |ShowPWAInstallDialog| should accept immediately without any
-// user interaction.
-void SetAutoAcceptPWAInstallDialogForTesting(bool auto_accept);
+// Shows the PWA installation confirmation bubble anchored off the PWA install
+// icon in the omnibox.
+//
+// |web_app_info| is the WebApplicationInfo to be installed.
+void ShowPWAInstallBubble(content::WebContents* web_contents,
+                          const WebApplicationInfo& web_app_info,
+                          AppInstallationAcceptanceCallback callback);
+
+// Sets whether |ShowPWAInstallDialog| and |ShowPWAInstallBubble| should accept
+// immediately without any user interaction.
+void SetAutoAcceptPWAInstallConfirmationForTesting(bool auto_accept);
 
 #if defined(OS_MACOSX)
 
@@ -138,7 +146,7 @@ void ShowUpdateChromeDialogViews(gfx::NativeWindow parent);
 
 // Creates a toolkit-views based LoginHandler (e.g. HTTP-Auth dialog).
 std::unique_ptr<LoginHandler> CreateLoginHandlerViews(
-    net::AuthChallengeInfo* auth_info,
+    const net::AuthChallengeInfo& auth_info,
     content::WebContents* web_contents,
     LoginAuthRequiredCallback auth_required_callback);
 
@@ -263,7 +271,7 @@ enum class DialogIdentifier {
   CROSTINI_UPGRADE = 89,
   HATS_BUBBLE = 90,
   CROSTINI_APP_RESTART = 91,
-  INCOGNITO_WINDOW_COUNTER = 92,
+  INCOGNITO_WINDOW_COUNT = 92,
   CROSTINI_APP_UNINSTALLER = 93,
   CROSTINI_CONTAINER_UPGRADE = 94,
   // Add values above this line with a corresponding label in

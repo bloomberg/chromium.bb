@@ -105,7 +105,7 @@ class SVGScriptElement final : public SVGElement,
 
   bool have_fired_load_ = false;
 
-  TraceWrapperMember<ScriptLoader> loader_;
+  Member<ScriptLoader> loader_;
 };
 
 }  // namespace blink

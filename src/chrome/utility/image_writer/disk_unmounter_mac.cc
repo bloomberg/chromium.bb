@@ -18,7 +18,7 @@ namespace image_writer {
 
 DiskUnmounterMac::DiskUnmounterMac() : cf_thread_("ImageWriterDiskArb") {
   base::Thread::Options options;
-  options.message_pump_factory = base::Bind(&CreateMessagePump);
+  options.message_loop_type = base::MessageLoop::TYPE_UI;
 
   cf_thread_.StartWithOptions(options);
 }
@@ -85,11 +85,6 @@ void DiskUnmounterMac::DiskUnmounted(DADiskRef disk,
 
   disk_unmounter->original_thread_->PostTask(
       FROM_HERE, disk_unmounter->success_continuation_);
-}
-
-// static
-std::unique_ptr<base::MessagePump> DiskUnmounterMac::CreateMessagePump() {
-  return std::unique_ptr<base::MessagePump>(new base::MessagePumpCFRunLoop);
 }
 
 void DiskUnmounterMac::UnmountOnWorker(const std::string& device_path) {

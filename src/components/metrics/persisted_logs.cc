@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/hash/sha1.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/timer/elapsed_timer.h"

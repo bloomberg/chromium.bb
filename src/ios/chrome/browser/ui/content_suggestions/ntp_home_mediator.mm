@@ -17,7 +17,6 @@
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
-#import "ios/chrome/browser/ui/chrome_load_params.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -34,13 +33,14 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_consumer.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
-#import "ios/chrome/browser/ui/location_bar_notification_names.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_notification_names.h"
 #include "ios/chrome/browser/ui/ntp/metrics.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -229,15 +229,14 @@ const char kNTPHelpURL[] =
   self.suggestionsService->user_classifier()->OnEvent(
       ntp_snippets::UserClassifier::Metric::SUGGESTIONS_USED);
 
-  web::NavigationManager::WebLoadParams params(suggestionItem.URL);
   // Use a referrer with a specific URL to mark this entry as coming from
   // ContentSuggestions.
-  params.referrer =
+  UrlLoadParams params = UrlLoadParams::InCurrentTab(suggestionItem.URL);
+  params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  params.web_params.referrer =
       web::Referrer(GURL(ntp_snippets::GetContentSuggestionsReferrerURL()),
                     web::ReferrerPolicyDefault);
-  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  ChromeLoadParams chromeParams(params);
-  _urlLoadingService->LoadUrlInCurrentTab(chromeParams);
+  _urlLoadingService->Load(params);
   [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_SUGGESTION];
 }
 
@@ -269,6 +268,9 @@ const char kNTPHelpURL[] =
         [self.dispatcher showHistory];
         base::RecordAction(base::UserMetricsAction("MobileNTPShowHistory"));
         break;
+      case NTPCollectionShortcutTypeCount:
+        NOTREACHED();
+        break;
     }
     return;
   }
@@ -278,16 +280,19 @@ const char kNTPHelpURL[] =
 
   [self logMostVisitedOpening:mostVisitedItem atIndex:mostVisitedIndex];
 
-  web::NavigationManager::WebLoadParams params(mostVisitedItem.URL);
-  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  ChromeLoadParams chromeParams(params);
-  _urlLoadingService->LoadUrlInCurrentTab(chromeParams);
+  UrlLoadParams params = UrlLoadParams::InCurrentTab(mostVisitedItem.URL);
+  params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  _urlLoadingService->Load(params);
 }
 
 - (void)displayContextMenuForSuggestion:(CollectionViewItem*)item
                                 atPoint:(CGPoint)touchLocation
                             atIndexPath:(NSIndexPath*)indexPath
                         readLaterAction:(BOOL)readLaterAction {
+  // Unfocus the omnibox as the omnibox can disappear when choosing some
+  // options. See crbug.com/928237.
+  [self.dispatcher cancelOmniboxEdit];
+
   ContentSuggestionsItem* suggestionsItem =
       base::mac::ObjCCastStrict<ContentSuggestionsItem>(item);
 
@@ -316,6 +321,11 @@ const char kNTPHelpURL[] =
   if ([item isKindOfClass:[ContentSuggestionsMostVisitedActionItem class]]) {
     return;
   }
+
+  // Unfocus the omnibox as the omnibox can disappear when choosing some
+  // options. See crbug.com/928237.
+  [self.dispatcher cancelOmniboxEdit];
+
   ContentSuggestionsMostVisitedItem* mostVisitedItem =
       base::mac::ObjCCastStrict<ContentSuggestionsMostVisitedItem>(item);
   self.alertCoordinator = [ContentSuggestionsAlertFactory
@@ -342,13 +352,9 @@ const char kNTPHelpURL[] =
   [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_PROMO];
 
   if (notificationPromo->IsURLPromo()) {
-    OpenNewTabCommand* command =
-        [[OpenNewTabCommand alloc] initWithURL:notificationPromo->url()
-                                      referrer:web::Referrer()
-                                   inIncognito:NO
-                                  inBackground:NO
-                                      appendTo:kCurrentTab];
-    _urlLoadingService->OpenUrlInNewTab(command);
+    UrlLoadParams params = UrlLoadParams::InNewTab(notificationPromo->url());
+    params.append_to = kCurrentTab;
+    _urlLoadingService->Load(params);
     return;
   }
 
@@ -367,9 +373,7 @@ const char kNTPHelpURL[] =
       NewTabPageTabHelper::FromWebState(self.webState);
   if (NTPHelper && NTPHelper->IgnoreLoadRequests())
     return;
-  GURL URL(kNTPHelpURL);
-  ChromeLoadParams params(URL);
-  _urlLoadingService->LoadUrlInCurrentTab(params);
+  _urlLoadingService->Load(UrlLoadParams::InCurrentTab(GURL(kNTPHelpURL)));
   [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_LEARN_MORE];
 }
 
@@ -544,19 +548,12 @@ const char kNTPHelpURL[] =
                 incognito:(BOOL)incognito
               originPoint:(CGPoint)originPoint {
   // Open the tab in background if it is non-incognito only.
-  OpenNewTabCommand* command =
-      [[OpenNewTabCommand alloc] initWithURL:URL
-                                    referrer:web::Referrer()
-                                 inIncognito:incognito
-                                inBackground:!incognito
-                                    appendTo:kCurrentTab];
-  command.originPoint = originPoint;
-  if (incognito) {
-    // Unfocus the omnibox if the new page should be opened in incognito to
-    // prevent staying stuck.
-    [self.dispatcher cancelOmniboxEdit];
-  }
-  _urlLoadingService->OpenUrlInNewTab(command);
+  UrlLoadParams params = UrlLoadParams::InNewTab(URL);
+  params.SetInBackground(!incognito);
+  params.in_incognito = incognito;
+  params.append_to = kCurrentTab;
+  params.origin_point = originPoint;
+  _urlLoadingService->Load(params);
 }
 
 // Logs a histogram due to a Most Visited item being opened.

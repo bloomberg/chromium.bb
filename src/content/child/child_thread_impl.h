@@ -145,6 +145,10 @@ class CONTENT_EXPORT ChildThreadImpl
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   void SetIPCLoggingEnabled(bool enable) override;
 #endif
+  void RunService(
+      const std::string& service_name,
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver) override;
+
   void OnChildControlRequest(mojom::ChildControlRequest);
 
   virtual bool OnControlMessageReceived(const IPC::Message& msg);

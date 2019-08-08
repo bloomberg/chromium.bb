@@ -66,6 +66,15 @@ struct SharedMemoryLimits {
     return limits;
   }
 
+  static SharedMemoryLimits ForWebGPUContext() {
+    // Most WebGPU commands are sent via transfer buffer, so we use a smaller
+    // command buffer.
+    SharedMemoryLimits limits;
+    limits.command_buffer_size = 64 * 1024;
+
+    return limits;
+  }
+
 #if defined(OS_ANDROID)
   static SharedMemoryLimits ForDisplayCompositor(const gfx::Size& screen_size) {
     DCHECK(!screen_size.IsEmpty());

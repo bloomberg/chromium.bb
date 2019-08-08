@@ -12,11 +12,11 @@ import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.NO_INS
 
 import android.support.test.filters.MediumTest;
 
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
@@ -24,6 +24,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.TestPay;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -34,6 +36,10 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PaymentRequestPaymentAppTest {
+    // Disable animations to reduce flakiness.
+    @ClassRule
+    public static DisableAnimationsTestRule sNoAnimationsRule = new DisableAnimationsTestRule();
+
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule =
             new PaymentRequestTestRule("payment_request_bobpay_test.html");
@@ -97,7 +103,7 @@ public class PaymentRequestPaymentAppTest {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        ThreadUtils.runOnUiThreadBlocking(() -> app.respond());
+        TestThreadUtils.runOnUiThreadBlocking(() -> app.respond());
         mPaymentRequestTestRule.expectResultContains(
                 new String[] {"show() rejected", "Request cancelled"});
     }
@@ -118,7 +124,7 @@ public class PaymentRequestPaymentAppTest {
                     callback.onAllPaymentAppsCreated();
                 });
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getShowFailed());
-        ThreadUtils.runOnUiThreadBlocking(() -> app.respond());
+        TestThreadUtils.runOnUiThreadBlocking(() -> app.respond());
         mPaymentRequestTestRule.expectResultContains(
                 new String[] {"show() rejected", "The payment method", "not supported"});
     }

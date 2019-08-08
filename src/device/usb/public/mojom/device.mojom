@@ -46,11 +46,34 @@ enum UsbTransferType {
   INTERRUPT,
 };
 
+enum UsbSynchronizationType {
+  NONE = 0,
+  ASYNCHRONOUS,
+  ADAPTIVE,
+  SYNCHRONOUS,
+};
+
+enum UsbUsageType {
+  // Isochronous endpoint usages.
+  DATA = 0,
+  FEEDBACK,
+  EXPLICIT_FEEDBACK,
+  // Interrupt endpoint usages.
+  PERIODIC,
+  NOTIFICATION,
+  // Not currently defined by any spec.
+  RESERVED,
+};
+
 struct UsbEndpointInfo {
   uint8 endpoint_number;
   UsbTransferDirection direction;
   UsbTransferType type;
   uint32 packet_size;
+  UsbSynchronizationType synchronization_type;
+  UsbUsageType usage_type;
+  uint8 polling_interval;
+  array<uint8> extra_data;
 };
 
 struct UsbAlternateInterfaceInfo {
@@ -60,6 +83,7 @@ struct UsbAlternateInterfaceInfo {
   uint8 protocol_code;
   mojo_base.mojom.String16? interface_name;
   array<UsbEndpointInfo> endpoints;
+  array<uint8> extra_data;
 };
 
 struct UsbInterfaceInfo {
@@ -70,7 +94,11 @@ struct UsbInterfaceInfo {
 struct UsbConfigurationInfo {
   uint8 configuration_value;
   mojo_base.mojom.String16? configuration_name;
+  bool self_powered;
+  bool remote_wakeup;
+  uint8 maximum_power;
   array<UsbInterfaceInfo> interfaces;
+  array<uint8> extra_data;
 };
 
 struct UsbDeviceInfo {

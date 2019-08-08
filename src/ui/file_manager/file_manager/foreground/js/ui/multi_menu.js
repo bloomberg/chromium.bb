@@ -104,6 +104,14 @@ cr.define('cr.ui', () => {
     currentMenu: null,
 
     /**
+     * Padding used when restricting menu height when the window is too small
+     * to show the entire menu.
+     * @type {number}
+     * @private
+     */
+    menuEndGap_: 18,  // padding on cr.menu + 2px
+
+    /**
      * Checks if the menu(s) should be closed based on the target of a mouse
      * click or a touch event target.
      * @param {Event} e The event object.
@@ -145,11 +153,12 @@ cr.define('cr.ui', () => {
       }
       style.top = itemRect.top + 'px';
       // Size the subMenu to fit inside the height of the viewport
-      const menuEndGap = 18;  // padding on cr.menu + 2px
       // Always set the maximum height so that expanding the window
       // allows the menu height to grow crbug/934207
-      style.maxHeight = (viewportHeight - itemRect.top - menuEndGap) + 'px';
-      if ((itemRect.top + childRect.height + menuEndGap) > viewportHeight) {
+      style.maxHeight =
+          (viewportHeight - itemRect.top - this.menuEndGap_) + 'px';
+      if ((itemRect.top + childRect.height + this.menuEndGap_) >
+          viewportHeight) {
         style.overflowY = 'scroll';
       } else {
         style.overflowY = 'auto';
@@ -188,6 +197,7 @@ cr.define('cr.ui', () => {
         this.positionSubMenu_(item, subMenu);
         subMenu.show();
         subMenu.parentMenuItem = item;
+        this.moveSelectionToSubMenu_(subMenu);
       }
     },
 
@@ -234,6 +244,7 @@ cr.define('cr.ui', () => {
       this.menu.selectedItem = null;
       this.currentMenu = subMenu;
       subMenu.selectedIndex = 0;
+      subMenu.focusSelectedItem();
     },
 
     /**
@@ -245,6 +256,7 @@ cr.define('cr.ui', () => {
       subMenu.selectedItem = null;
       this.currentMenu = this.menu;
       this.menu.selectedItem = subMenu.parentMenuItem;
+      this.menu.focusSelectedItem();
     },
 
     /**
@@ -551,13 +563,34 @@ cr.define('cr.ui', () => {
     },
 
     /**
-     * Positions the menu below the menu button. At this point we do not use any
-     * advanced positioning logic to ensure the menu fits in the viewport.
+     * Positions the menu below the menu button. We check the menu fits
+     * in the viewport, and enable scrolling if required.
      * @private
      */
     positionMenu_: function() {
       positionPopupAroundElement(
           this, this.menu, this.anchorType, this.invertLeftRight);
+      // Check if menu is larger than the viewport and adjust its height
+      // and enable scrolling if so. Note: style.bottom would have been set to
+      // 0.
+      const viewportHeight = window.innerHeight;
+      const menuRect = this.menu.getBoundingClientRect();
+      const style = this.menu.style;
+      // Make sure the top of the menu is in the viewport.
+      let top = menuRect.top;
+      if (top < 0) {
+        top = 0;
+      }
+      // Limit the height to fit in the viewport.
+      style.maxHeight = (viewportHeight - top - this.menuEndGap_) + 'px';
+      // Make the menu scrollable if needed.
+      if ((top + menuRect.height + this.menuEndGap_) > viewportHeight) {
+        style.overflowY = 'scroll';
+        style.top = '0';
+        style.bottom = 'auto';
+      } else {
+        style.overflowY = 'auto';
+      }
     },
 
     /**
@@ -569,6 +602,10 @@ cr.define('cr.ui', () => {
         case 'ArrowUp':
           if (!this.respondToArrowKeys) {
             break;
+          }
+          // Hide any showing sub-menu if we're moving in the parent
+          if (this.currentMenu === this.menu) {
+            this.hideSubMenu_();
           }
         case 'Enter':
         case ' ':

@@ -91,30 +91,32 @@ struct SerialPortControlSignals {
 // Discovers and enumerates serial devices available to the host.
 interface SerialPortManager {
   GetDevices() => (array<SerialPortInfo> devices);
-  GetPort(mojo_base.mojom.UnguessableToken token, SerialPort& port_request);
+
+  // Creates a SerialPort instance attached to the port represented by |token|.
+  // When the pipe passed in |port_request| is closed the optional pipe passed
+  // in |watcher| will also be closed.
+  GetPort(mojo_base.mojom.UnguessableToken token,
+          SerialPort& port_request,
+          SerialPortConnectionWatcher? watcher);
 };
 
 // Performs asynchronous I/O on serial devices.
 interface SerialPort {
   // Initiates an Open of the device then returns result.
   Open(SerialConnectionOptions options,
+       handle<data_pipe_consumer> in_stream,
        handle<data_pipe_producer> out_stream,
        associated SerialPortClient client) => (bool success);
 
-  // Performs a Write operation then returns written data and the result.
-  // Note that the Write may succeed partially, means that even if |error|
-  // indicates an error other than NONE, |bytes_written| bytes have already been
-  // written although it may be <= size of |data|. Behavior is undefined if this
-  // is called while a Write is already pending.
-  Write(array<uint8> data) => (uint32 bytes_written, SerialSendError error);
+  // Try to clear existing send error and reconnect the data pipe for send.
+  // This is supposed to be called after SerialPortClient#OnSendError is
+  // notified.
+  ClearSendError(handle<data_pipe_consumer> consumer);
 
   // Try to clear existing read error and reconnect the data pipe for read.
   // This is supposed to be called after SerialPortClient#OnReadError is
   // notified.
   ClearReadError(handle<data_pipe_producer> producer);
-
-  // Attempts to cancel a pending write operation.
-  CancelWrite(SerialSendError reason);
 
   // Flushes input and output buffers.
   Flush() => (bool success);
@@ -142,4 +144,8 @@ interface SerialPort {
 
 interface SerialPortClient {
   OnReadError(SerialReceiveError error);
+  OnSendError(SerialSendError error);
+};
+
+interface SerialPortConnectionWatcher {
 };

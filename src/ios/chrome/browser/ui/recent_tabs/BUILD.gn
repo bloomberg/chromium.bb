@@ -31,6 +31,7 @@ source_set("recent_tabs") {
     "//ios/chrome/browser/ui/ntp",
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/browser/url_loading",
     "//services/identity/public/cpp",
     "//ui/base",
   ]
@@ -125,8 +126,10 @@ source_set("eg_tests") {
     ":recent_tabs_ui",
     "//base/test:test_support",
     "//components/strings",
+    "//ios/chrome/app:app_internal",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/authentication:eg_test_support",
     "//ios/chrome/browser/ui/history:history_ui",
     "//ios/chrome/browser/ui/table_view",

@@ -266,11 +266,11 @@ void WebRequestProxyingWebSocket::OnClosingHandshake() {
 }
 
 void WebRequestProxyingWebSocket::OnAuthRequired(
-    const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+    const net::AuthChallengeInfo& auth_info,
     const scoped_refptr<net::HttpResponseHeaders>& headers,
     const net::IPEndPoint& remote_endpoint,
     OnAuthRequiredCallback callback) {
-  if (!auth_info || !callback) {
+  if (!callback) {
     OnError(net::ERR_FAILED);
     return;
   }
@@ -468,7 +468,7 @@ void WebRequestProxyingWebSocket::OnAuthRequiredComplete(
 }
 
 void WebRequestProxyingWebSocket::OnHeadersReceivedCompleteForAuth(
-    scoped_refptr<net::AuthChallengeInfo> auth_info,
+    const net::AuthChallengeInfo& auth_info,
     int rv) {
   if (rv != net::OK) {
     OnError(rv);
@@ -481,7 +481,7 @@ void WebRequestProxyingWebSocket::OnHeadersReceivedCompleteForAuth(
       base::BindRepeating(&WebRequestProxyingWebSocket::OnAuthRequiredComplete,
                           weak_factory_.GetWeakPtr());
   auto auth_rv = ExtensionWebRequestEventRouter::GetInstance()->OnAuthRequired(
-      browser_context_, info_map_, &info_.value(), *auth_info,
+      browser_context_, info_map_, &info_.value(), auth_info,
       std::move(continuation), &auth_credentials_);
   PauseIncomingMethodCallProcessing();
   if (auth_rv == net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_IO_PENDING)

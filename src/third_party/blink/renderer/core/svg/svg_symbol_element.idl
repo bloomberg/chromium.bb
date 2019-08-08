@@ -28,4 +28,4 @@
 interface SVGSymbolElement : SVGElement {
 };
 
-SVGSymbolElement implements SVGFitToViewBox;
+SVGSymbolElement includes SVGFitToViewBox;

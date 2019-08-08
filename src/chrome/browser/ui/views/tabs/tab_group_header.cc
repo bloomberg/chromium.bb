@@ -5,9 +5,11 @@
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
@@ -19,7 +21,7 @@
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
 
-TabGroupHeader::TabGroupHeader() {
+TabGroupHeader::TabGroupHeader(const base::string16& group_title) {
   // TODO(crbug.com/905491): Call TabStyle::GetContentsInsets.
   constexpr gfx::Insets kPlaceholderInsets = gfx::Insets(2, 10);
   SetBorder(views::CreateEmptyBorder(kPlaceholderInsets));
@@ -31,14 +33,14 @@ TabGroupHeader::TabGroupHeader() {
       .SetMainAxisAlignment(views::LayoutAlignment::kStart)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
 
-  // TODO(crbug.com/905491): Get title from TabGroupData::title().
-  auto* title = new views::Label(base::ASCIIToUTF16("Placeholder Title"));
+  auto title = std::make_unique<views::Label>(group_title);
   title->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
   title->SetElideBehavior(gfx::FADE_TAIL);
-  AddChildView(title);
-  layout->SetFlexForView(title, views::FlexSpecification::ForSizeRule(
-                                    views::MinimumFlexSizeRule::kScaleToZero,
-                                    views::MaximumFlexSizeRule::kUnbounded));
+  auto* title_ptr = AddChildView(std::move(title));
+  layout->SetFlexForView(title_ptr,
+                         views::FlexSpecification::ForSizeRule(
+                             views::MinimumFlexSizeRule::kScaleToZero,
+                             views::MaximumFlexSizeRule::kUnbounded));
 
   auto* group_menu_button =
       views::CreateVectorImageButton(/*listener*/ nullptr);

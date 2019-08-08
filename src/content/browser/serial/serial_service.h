@@ -19,7 +19,8 @@ namespace content {
 class RenderFrameHost;
 class SerialChooser;
 
-class SerialService : public blink::mojom::SerialService {
+class SerialService : public blink::mojom::SerialService,
+                      public device::mojom::SerialPortConnectionWatcher {
  public:
   explicit SerialService(RenderFrameHost* render_frame_host);
   ~SerialService() override;
@@ -30,18 +31,26 @@ class SerialService : public blink::mojom::SerialService {
   void GetPorts(GetPortsCallback callback) override;
   void RequestPort(std::vector<blink::mojom::SerialPortFilterPtr> filters,
                    RequestPortCallback callback) override;
+  void GetPort(const base::UnguessableToken& token,
+               device::mojom::SerialPortRequest request) override;
 
  private:
   void FinishGetPorts(GetPortsCallback callback,
                       std::vector<device::mojom::SerialPortInfoPtr> ports);
   void FinishRequestPort(RequestPortCallback callback,
                          device::mojom::SerialPortInfoPtr port);
+  void OnWatcherConnectionError();
+  void DecrementActiveFrameCount();
 
   RenderFrameHost* const render_frame_host_;
   mojo::BindingSet<blink::mojom::SerialService> bindings_;
 
   // The last shown serial port chooser UI.
   std::unique_ptr<SerialChooser> chooser_;
+
+  // Each pipe here watches a connection created by GetPort() in order to notify
+  // the WebContentsImpl when an active connection indicator should be shown.
+  mojo::BindingSet<device::mojom::SerialPortConnectionWatcher> watchers_;
 
   base::WeakPtrFactory<SerialService> weak_factory_{this};
 

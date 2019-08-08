@@ -78,7 +78,7 @@ public class SyncAccountSwitcher
                 .then((Void argument) -> {
                     // Once signed out, clear the last signed in user and wipe data if needed.
                     SigninManager.get().clearLastSignedInUser();
-                    return SigninManager.wipeSyncUserDataIfRequired(wipeData);
+                    return SyncUserDataWiper.wipeSyncUserDataIfRequired(wipeData);
                 })
                 .then((Void argument) -> {
                     // Once the data has been wiped (if needed), sign in to the next account.

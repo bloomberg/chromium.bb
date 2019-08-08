@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import glob
 import os
 import sys
@@ -244,8 +246,8 @@ def PrepareInput():
   no_rmfileglobs = options.no_rmfileglobs
   if options.config in configs:
     if options.verbose:
-      print 'Using config', options.config,
-      print ' ==>', configs[options.config]
+      print('Using config', options.config, end=' ')
+      print(' ==>', configs[options.config])
     linkfiles.extend(configs[options.config].linkfiles)
     linkfileglobs.extend(configs[options.config].linkfileglobs)
     rmfiles.extend(configs[options.config].rmfiles)
@@ -281,19 +283,19 @@ def PrepareInput():
   for file in set(rmfiles) - set(no_rmfiles):
     try:
       if options.verbose:
-        print 'Unlink', file
+        print('Unlink', file)
       os.unlink(file)
     except OSError:
       if options.verbose:
-        print "Warning: couldn't remove", file
+        print("Warning: couldn't remove", file)
   for file in linkfiles:
     try:
       if options.verbose:
-        print 'Symlink', file
+        print('Symlink', file)
       os.symlink(file, os.path.basename(file))
     except OSError:
       if options.verbose:
-        print "Warning: couldn't symlink", file
+        print("Warning: couldn't symlink", file)
   return 0
 
 if __name__ == '__main__':

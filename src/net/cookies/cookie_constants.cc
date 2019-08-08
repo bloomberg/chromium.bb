@@ -17,7 +17,9 @@ const char kPriorityHigh[] = "high";
 
 const char kSameSiteLax[] = "lax";
 const char kSameSiteStrict[] = "strict";
-const char kSameSiteDefault[] = "default";
+const char kSameSiteNone[] = "none";
+const char kSameSiteExtended[] = "extended";
+const char kSameSiteUnspecified[] = "unspecified";
 
 }  // namespace
 
@@ -54,8 +56,12 @@ std::string CookieSameSiteToString(CookieSameSite same_site) {
       return kSameSiteLax;
     case CookieSameSite::STRICT_MODE:
       return kSameSiteStrict;
-    case CookieSameSite::DEFAULT_MODE:
-      return kSameSiteDefault;
+    case CookieSameSite::NO_RESTRICTION:
+      return kSameSiteNone;
+    case CookieSameSite::EXTENDED_MODE:
+      return kSameSiteExtended;
+    case CookieSameSite::UNSPECIFIED:
+      return kSameSiteUnspecified;
   }
   return "INVALID";
 }
@@ -65,7 +71,7 @@ CookieSameSite StringToCookieSameSite(const std::string& same_site) {
     return CookieSameSite::LAX_MODE;
   if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteStrict))
     return CookieSameSite::STRICT_MODE;
-  return CookieSameSite::DEFAULT_MODE;
+  return CookieSameSite::NO_RESTRICTION;
 }
 
 }  // namespace net

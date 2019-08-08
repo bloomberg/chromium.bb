@@ -16,7 +16,6 @@
 #include "components/autofill/core/browser/webdata/autofill_wallet_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_components_factory_impl.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
@@ -81,8 +80,7 @@ WebViewSyncClient::WebViewSyncClient(WebViewBrowserState* browser_state)
       browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
 
   component_factory_.reset(new browser_sync::ProfileSyncComponentsFactoryImpl(
-      this, version_info::Channel::UNKNOWN,
-      prefs::kSavingBrowserHistoryDisabled,
+      this, version_info::Channel::STABLE, prefs::kSavingBrowserHistoryDisabled,
       base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
       db_thread_, profile_web_data_service_, account_web_data_service_,
       password_store_,
@@ -123,6 +121,11 @@ history::HistoryService* WebViewSyncClient::GetHistoryService() {
 }
 
 sync_sessions::SessionSyncService* WebViewSyncClient::GetSessionSyncService() {
+  return nullptr;
+}
+
+send_tab_to_self::SendTabToSelfSyncService*
+WebViewSyncClient::GetSendTabToSelfSyncService() {
   return nullptr;
 }
 
@@ -230,6 +233,10 @@ WebViewSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
 syncer::SyncApiComponentFactory*
 WebViewSyncClient::GetSyncApiComponentFactory() {
   return component_factory_.get();
+}
+
+syncer::SyncTypePreferenceProvider* WebViewSyncClient::GetPreferenceProvider() {
+  return nullptr;
 }
 
 }  // namespace ios_web_view

@@ -33,6 +33,8 @@
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
+#include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
@@ -91,11 +93,6 @@ AXNodeObject::AXNodeObject(Node* node, AXObjectCacheImpl& ax_object_cache)
       native_role_(ax::mojom::Role::kUnknown),
       node_(node) {}
 
-AXNodeObject* AXNodeObject::Create(Node* node,
-                                   AXObjectCacheImpl& ax_object_cache) {
-  return MakeGarbageCollected<AXNodeObject>(node, ax_object_cache);
-}
-
 AXNodeObject::~AXNodeObject() {
   DCHECK(!node_);
 }
@@ -131,22 +128,52 @@ AXObject* AXNodeObject::ActiveDescendant() {
   return ax_descendant;
 }
 
-bool AXNodeObject::ComputeAccessibilityIsIgnored(
-    IgnoredReasons* ignored_reasons) const {
-#if DCHECK_IS_ON()
-  // Double-check that an AXObject is never accessed before
-  // it's been initialized.
-  DCHECK(initialized_);
-#endif
+bool HasAriaAttribute(Element* element) {
+  if (!element)
+    return false;
 
+  AttributeCollection attributes = element->AttributesWithoutUpdate();
+  for (const Attribute& attr : attributes) {
+    // Attributes cache their uppercase names.
+    if (attr.GetName().LocalNameUpper().StartsWith("ARIA-"))
+      return true;
+  }
+
+  return false;
+}
+
+AXObjectInclusion AXNodeObject::ShouldIncludeBasedOnSemantics(
+    IgnoredReasons* ignored_reasons) const {
   // If this element is within a parent that cannot have children, it should not
   // be exposed.
   if (IsDescendantOfLeafNode()) {
     if (ignored_reasons)
       ignored_reasons->push_back(
           IgnoredReason(kAXAncestorIsLeafNode, LeafNodeAncestor()));
-    return true;
+    return kIgnoreObject;
   }
+
+  if (RoleValue() == ax::mojom::Role::kIgnored) {
+    if (ignored_reasons)
+      ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
+    return kIgnoreObject;
+  }
+
+  if (HasInheritedPresentationalRole()) {
+    if (ignored_reasons) {
+      const AXObject* inherits_from = InheritsPresentationalRoleFrom();
+      if (inherits_from == this) {
+        ignored_reasons->push_back(IgnoredReason(kAXPresentational));
+      } else {
+        ignored_reasons->push_back(
+            IgnoredReason(kAXInheritsPresentation, inherits_from));
+      }
+    }
+    return kIgnoreObject;
+  }
+
+  if (IsTableLikeRole() || IsTableRowLikeRole() || IsTableCellLikeRole())
+    return kIncludeObject;
 
   // Ignore labels that are already referenced by a control.
   AXObject* control_object = CorrespondingControlForLabelElement();
@@ -164,24 +191,175 @@ bool AXNodeObject::ComputeAccessibilityIsIgnored(
 
       ignored_reasons->push_back(IgnoredReason(kAXLabelFor, control_object));
     }
-    return true;
+    return kIgnoreObject;
+  }
+
+  if (CanSetFocusAttribute() && GetNode() && !IsHTMLBodyElement(GetNode()))
+    return kIncludeObject;
+
+  if (IsLink() || IsInPageLinkTarget())
+    return kIncludeObject;
+
+  // A click handler might be placed on an otherwise ignored non-empty block
+  // element, e.g. a div. We shouldn't ignore such elements because if an AT
+  // sees the |ax::mojom::DefaultActionVerb::kClickAncestor|, it will look for
+  // the clickable ancestor and it expects to find one.
+  if (IsClickable())
+    return kIncludeObject;
+
+  if (IsHeading() || IsLandmarkRelated())
+    return kIncludeObject;
+
+  // Header and footer tags may also be exposed as landmark roles but not
+  // always.
+  if (GetNode() &&
+      (GetNode()->HasTagName(kHeaderTag) || GetNode()->HasTagName(kFooterTag)))
+    return kIncludeObject;
+
+  // All controls are accessible.
+  if (IsControl())
+    return kIncludeObject;
+
+  // Anything with an explicit ARIA role should be included.
+  if (AriaRoleAttribute() != ax::mojom::Role::kUnknown)
+    return kIncludeObject;
+
+  // Anything with CSS alt should be included.
+  // Note: this is duplicated from AXLayoutObject because CSS alt text may apply
+  // to both Elements and pseudo-elements.
+  base::Optional<String> alt_text = GetCSSAltText(GetNode());
+  if (alt_text && !alt_text->IsEmpty())
+    return kIncludeObject;
+
+  // Don't ignore labels, because they serve as TitleUIElements.
+  Node* node = GetNode();
+  if (IsHTMLLabelElement(node))
+    return kIncludeObject;
+
+  // Anything that is content editable should not be ignored.
+  // However, one cannot just call node->hasEditableStyle() since that will ask
+  // if its parents are also editable. Only the top level content editable
+  // region should be exposed.
+  if (HasContentEditableAttributeSet())
+    return kIncludeObject;
+
+  static const std::set<ax::mojom::Role> always_included_computed_roles = {
+      ax::mojom::Role::kAbbr,
+      ax::mojom::Role::kBlockquote,
+      ax::mojom::Role::kContentDeletion,
+      ax::mojom::Role::kContentInsertion,
+      ax::mojom::Role::kDetails,
+      ax::mojom::Role::kDialog,
+      ax::mojom::Role::kFigcaption,
+      ax::mojom::Role::kFigure,
+      ax::mojom::Role::kListItem,
+      ax::mojom::Role::kMark,
+      ax::mojom::Role::kMath,
+      ax::mojom::Role::kMeter,
+      ax::mojom::Role::kProgressIndicator,
+      ax::mojom::Role::kRuby,
+      ax::mojom::Role::kSplitter,
+      ax::mojom::Role::kTime,
+  };
+
+  if (always_included_computed_roles.find(RoleValue()) !=
+      always_included_computed_roles.end())
+    return kIncludeObject;
+
+  // If this element has aria attributes on it, it should not be ignored.
+  if (HasGlobalARIAAttribute())
+    return kIncludeObject;
+
+  if (IsImage())
+    return kIncludeObject;
+
+  // Using the title or accessibility description (so we
+  // check if there's some kind of accessible name for the element)
+  // to decide an element's visibility is not as definitive as
+  // previous checks, so this should remain as one of the last.
+  //
+  // These checks are simplified in the interest of execution speed;
+  // for example, any element having an alt attribute will make it
+  // not ignored, rather than just images.
+  if (HasAriaAttribute(GetElement()) || !GetAttribute(kAltAttr).IsEmpty() ||
+      !GetAttribute(kTitleAttr).IsEmpty())
+    return kIncludeObject;
+
+  // <span> tags are inline tags and not meant to convey information if they
+  // have no other ARIA information on them. If we don't ignore them, they may
+  // emit signals expected to come from their parent.
+  if (node && IsHTMLSpanElement(node)) {
+    if (ignored_reasons)
+      ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
+    return kIgnoreObject;
+  }
+
+  return kDefaultBehavior;
+}
+
+base::Optional<String> AXNodeObject::GetCSSAltText(Node* node) {
+  if (!node || !node->GetComputedStyle() ||
+      !node->GetComputedStyle()->GetContentData()) {
+    return base::nullopt;
+  }
+
+  const ComputedStyle* style = node->GetComputedStyle();
+  if (node->IsPseudoElement()) {
+    for (const ContentData* content_data = style->GetContentData();
+         content_data; content_data = content_data->Next()) {
+      if (content_data->IsAltText())
+        return To<AltTextContentData>(content_data)->GetText();
+    }
+    return base::nullopt;
+  }
+
+  // If the content property is used on a non-pseudo element, match the
+  // behaviour of LayoutObject::CreateObject and only honour the style if
+  // there is exactly one piece of content, which is an image.
+  const ContentData* content_data = style->GetContentData();
+  if (content_data && content_data->IsImage() && content_data->Next() &&
+      content_data->Next()->IsAltText()) {
+    return To<AltTextContentData>(content_data->Next())->GetText();
+  }
+
+  return base::nullopt;
+}
+
+bool AXNodeObject::ComputeAccessibilityIsIgnored(
+    IgnoredReasons* ignored_reasons) const {
+#if DCHECK_IS_ON()
+  // Double-check that an AXObject is never accessed before
+  // it's been initialized.
+  DCHECK(initialized_);
+#endif
+  if (GetLayoutObject()) {
+    if (role_ == ax::mojom::Role::kUnknown) {
+      if (ignored_reasons)
+        ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
+      return true;
+    }
+    return false;
   }
 
   Element* element = GetNode()->IsElementNode() ? ToElement(GetNode())
                                                 : GetNode()->parentElement();
-  if (!GetLayoutObject() && (!element || !element->IsInCanvasSubtree()) &&
-      !AOMPropertyOrARIAAttributeIsFalse(AOMBooleanProperty::kHidden)) {
-    if (ignored_reasons)
-      ignored_reasons->push_back(IgnoredReason(kAXNotRendered));
+  if (!element)
     return true;
+
+  if (element->IsInCanvasSubtree())
+    return ShouldIncludeBasedOnSemantics(ignored_reasons) == kIgnoreObject;
+
+  if (AOMPropertyOrARIAAttributeIsFalse(AOMBooleanProperty::kHidden))
+    return false;
+
+  if (element->HasDisplayContentsStyle()) {
+    if (ShouldIncludeBasedOnSemantics(ignored_reasons) == kIncludeObject)
+      return false;
   }
 
-  if (role_ == ax::mojom::Role::kUnknown) {
-    if (ignored_reasons)
-      ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
-    return true;
-  }
-  return false;
+  if (ignored_reasons)
+    ignored_reasons->push_back(IgnoredReason(kAXNotRendered));
+  return true;
 }
 
 static bool IsListElement(Node* node) {
@@ -316,9 +494,9 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
     return ax::mojom::Role::kDetails;
 
   if (IsHTMLSummaryElement(*GetNode())) {
-    ContainerNode* parent = FlatTreeTraversal::Parent(*GetNode());
+    ContainerNode* parent = LayoutTreeBuilderTraversal::Parent(*GetNode());
     if (parent && IsHTMLSlotElement(parent))
-      parent = FlatTreeTraversal::Parent(*parent);
+      parent = LayoutTreeBuilderTraversal::Parent(*parent);
     if (parent && IsHTMLDetailsElement(parent))
       return ax::mojom::Role::kDisclosureTriangle;
     return ax::mojom::Role::kUnknown;
@@ -666,13 +844,15 @@ static Element* SiblingWithAriaRole(String role, Node* node) {
   if (!parent)
     return nullptr;
 
-  for (Element* sibling = ElementTraversal::FirstChild(*parent); sibling;
-       sibling = ElementTraversal::NextSibling(*sibling)) {
+  for (Node* sibling = LayoutTreeBuilderTraversal::FirstChild(*parent); sibling;
+       sibling = LayoutTreeBuilderTraversal::NextSibling(*sibling)) {
+    if (!sibling->IsElementNode())
+      continue;
     const AtomicString& sibling_aria_role =
-        AccessibleNode::GetPropertyOrARIAAttribute(sibling,
+        AccessibleNode::GetPropertyOrARIAAttribute(ToElement(sibling),
                                                    AOMStringProperty::kRole);
     if (EqualIgnoringASCIICase(sibling_aria_role, role))
-      return sibling;
+      return ToElement(sibling);
   }
 
   return nullptr;
@@ -1607,8 +1787,14 @@ KURL AXNodeObject::Url() const {
   if (IsWebArea() && GetDocument())
     return GetDocument()->Url();
 
-  if (IsImage() && IsHTMLImageElement(GetNode()))
-    return ToHTMLImageElement(*GetNode()).Src();
+  if (IsImage() && IsHTMLImageElement(GetNode())) {
+    // Using ImageSourceURL handles both src and srcset.
+    String source_url = ToHTMLImageElement(*GetNode()).ImageSourceURL();
+    String stripped_image_source_url =
+        StripLeadingAndTrailingHTMLSpaces(source_url);
+    if (!stripped_image_source_url.IsEmpty())
+      return GetDocument()->CompleteURL(stripped_image_source_url);
+  }
 
   if (IsInputImage())
     return ToHTMLInputElement(GetNode())->Src();
@@ -1667,11 +1853,9 @@ ax::mojom::Role AXNodeObject::AriaRoleAttribute() const {
 static LayoutBlockFlow* NonInlineBlockFlow(LayoutObject* object) {
   LayoutObject* current = object;
   while (current) {
-    if (current->IsLayoutBlockFlow()) {
-      LayoutBlockFlow* block_flow = ToLayoutBlockFlow(current);
-      if (!block_flow->IsAtomicInlineLevel())
-        return block_flow;
-    }
+    auto* block_flow = DynamicTo<LayoutBlockFlow>(current);
+    if (block_flow && !block_flow->IsAtomicInlineLevel())
+      return block_flow;
     current = current->Parent();
   }
 
@@ -2031,9 +2215,12 @@ void AXNodeObject::GetRelativeBounds(AXObject** out_container,
     }
   }
 
-  // If it's in a canvas but doesn't have an explicit rect, get the bounding
-  // rect of its children.
-  if (GetNode()->parentElement()->IsInCanvasSubtree()) {
+  Element* element = GetElement();
+  // If it's in a canvas but doesn't have an explicit rect, or has display:
+  // contents set, get the bounding rect of its children.
+  if ((GetNode()->parentElement() &&
+       GetNode()->parentElement()->IsInCanvasSubtree()) ||
+      (element && element->HasDisplayContentsStyle())) {
     Vector<FloatRect> rects;
     for (Node& child : NodeTraversal::ChildrenOf(*GetNode())) {
       if (child.IsHTMLElement()) {
@@ -2079,17 +2266,7 @@ static Node* GetParentNodeForComputeParent(Node* node) {
   if (!node)
     return nullptr;
 
-  Node* parent_node = nullptr;
-
-  // Skip over <optgroup> and consider the <select> the immediate parent of an
-  // <option>.
-  if (auto* option = ToHTMLOptionElementOrNull(node))
-    parent_node = option->OwnerSelectElement();
-
-  if (!parent_node)
-    parent_node = node->parentNode();
-
-  return parent_node;
+  return LayoutTreeBuilderTraversal::Parent(*node);
 }
 
 AXObject* AXNodeObject::ComputeParent() const {
@@ -2111,7 +2288,7 @@ AXObject* AXNodeObject::RawFirstChild() const {
   if (!GetNode())
     return nullptr;
 
-  Node* first_child = GetNode()->firstChild();
+  Node* first_child = LayoutTreeBuilderTraversal::FirstChild(*GetNode());
 
   if (!first_child)
     return nullptr;
@@ -2123,7 +2300,7 @@ AXObject* AXNodeObject::RawNextSibling() const {
   if (!GetNode())
     return nullptr;
 
-  Node* next_sibling = GetNode()->nextSibling();
+  Node* next_sibling = LayoutTreeBuilderTraversal::NextSibling(*GetNode());
   if (!next_sibling)
     return nullptr;
 
@@ -2140,31 +2317,35 @@ void AXNodeObject::AddChildren() {
   DCHECK(!have_children_);
   have_children_ = true;
 
-  // The only time we add children from the DOM tree to a node with a
-  // layoutObject is when it's a canvas.
-  if (GetLayoutObject() && !IsHTMLCanvasElement(*node_))
-    return;
-
   AXObjectVector owned_children;
   ComputeAriaOwnsChildren(owned_children);
 
-  for (Node& child : NodeTraversal::ChildrenOf(*node_)) {
-    AXObject* child_obj = AXObjectCache().GetOrCreate(&child);
+  AddListMarker();
+
+  for (Node* child = LayoutTreeBuilderTraversal::FirstChild(*node_); child;
+       child = LayoutTreeBuilderTraversal::NextSibling(*child)) {
+    AXObject* child_obj = AXObjectCache().GetOrCreate(child);
     if (child_obj && !AXObjectCache().IsAriaOwned(child_obj))
       AddChild(child_obj);
   }
 
+  AddHiddenChildren();
+  AddImageMapChildren();
+  AddInlineTextBoxChildren(false);
+  AddAccessibleNodeChildren();
+
   for (const auto& owned_child : owned_children)
     AddChild(owned_child);
 
-  for (const auto& child : children_)
-    child->SetParent(this);
-
-  AddAccessibleNodeChildren();
+  for (const auto& child : children_) {
+    if (!child->CachedParentObject())
+      child->SetParent(this);
+  }
 }
 
 void AXNodeObject::AddChild(AXObject* child) {
-  InsertChild(child, children_.size());
+  unsigned index = children_.size();
+  InsertChild(child, index);
 }
 
 void AXNodeObject::InsertChild(AXObject* child, unsigned index) {
@@ -2183,8 +2364,8 @@ void AXNodeObject::InsertChild(AXObject* child, unsigned index) {
     wtf_size_t length = children.size();
     for (wtf_size_t i = 0; i < length; ++i)
       children_.insert(index + i, children[i]);
-  } else {
-    DCHECK_EQ(child->ParentObject(), this);
+  } else if (!child->IsMenuListOption()) {
+    // MenuListOptions must only added in AXMenuListPopup::AddChildren
     children_.insert(index, child);
   }
 }
@@ -3379,6 +3560,19 @@ String AXNodeObject::Placeholder(ax::mojom::NameFrom name_from) const {
       GetAOMPropertyOrARIAAttribute(AOMStringProperty::kPlaceholder);
   if (!aria_placeholder.IsEmpty())
     return aria_placeholder;
+
+  return String();
+}
+
+String AXNodeObject::Title(ax::mojom::NameFrom name_from) const {
+  if (name_from == ax::mojom::NameFrom::kTitle)
+    return String();
+
+  if (const auto* element = GetElement()) {
+    String title = element->title();
+    if (!title.IsEmpty())
+      return title;
+  }
 
   return String();
 }

@@ -57,7 +57,8 @@ class ResolutionNotificationControllerTest : public AshTestBase {
   void SetDisplayResolutionAndNotifyWithResolution(
       const display::Display& display,
       const gfx::Size& new_resolution,
-      const gfx::Size& actual_new_resolution) {
+      const gfx::Size& actual_new_resolution,
+      mojom::DisplayConfigSource source = mojom::DisplayConfigSource::kUser) {
     const display::ManagedDisplayInfo& info =
         display_manager()->GetDisplayInfo(display.id());
     display::ManagedDisplayMode old_mode(
@@ -68,7 +69,7 @@ class ResolutionNotificationControllerTest : public AshTestBase {
         old_mode.native(), old_mode.device_scale_factor());
 
     EXPECT_TRUE(controller()->PrepareNotificationAndSetDisplayMode(
-        display.id(), old_mode, new_mode,
+        display.id(), old_mode, new_mode, source,
         base::BindOnce(&ResolutionNotificationControllerTest::OnAccepted,
                        base::Unretained(this))));
 
@@ -89,10 +90,12 @@ class ResolutionNotificationControllerTest : public AshTestBase {
     base::RunLoop().RunUntilIdle();
   }
 
-  void SetDisplayResolutionAndNotify(const display::Display& display,
-                                     const gfx::Size& new_resolution) {
+  void SetDisplayResolutionAndNotify(
+      const display::Display& display,
+      const gfx::Size& new_resolution,
+      mojom::DisplayConfigSource source = mojom::DisplayConfigSource::kUser) {
     SetDisplayResolutionAndNotifyWithResolution(display, new_resolution,
-                                                new_resolution);
+                                                new_resolution, source);
   }
 
   static base::string16 GetNotificationMessage() {
@@ -181,6 +184,25 @@ TEST_F(ResolutionNotificationControllerTest, Basic) {
   EXPECT_TRUE(display_manager()->GetSelectedModeForDisplayId(id2, &mode));
   EXPECT_EQ("250x250", mode.size().ToString());
   EXPECT_EQ(59.0, mode.refresh_rate());
+}
+
+// Check that notification is not shown when changes are forced by policy.
+TEST_F(ResolutionNotificationControllerTest, ForcedByPolicy) {
+  UpdateDisplay("300x300#300x300%57|200x200%58,250x250#250x250%59|200x200%60");
+  int64_t id2 = display_manager()->GetSecondaryDisplay().id();
+  ASSERT_EQ(0, accept_count());
+  EXPECT_FALSE(IsNotificationVisible());
+
+  // Changes the resolution and apply the result.
+  SetDisplayResolutionAndNotify(display_manager()->GetSecondaryDisplay(),
+                                gfx::Size(200, 200),
+                                mojom::DisplayConfigSource::kPolicy);
+  EXPECT_FALSE(IsNotificationVisible());
+  EXPECT_FALSE(IsScreenLayoutObserverNotificationVisible());
+  display::ManagedDisplayMode mode;
+  EXPECT_TRUE(display_manager()->GetSelectedModeForDisplayId(id2, &mode));
+  EXPECT_EQ("200x200", mode.size().ToString());
+  EXPECT_EQ(60.0, mode.refresh_rate());
 }
 
 TEST_F(ResolutionNotificationControllerTest, ClickMeansAccept) {

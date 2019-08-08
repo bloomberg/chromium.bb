@@ -4,11 +4,19 @@
 
 #include "components/unified_consent/feature.h"
 
+#include "build/build_config.h"
+
 namespace unified_consent {
 
 // base::Feature definition.
-const base::Feature kUnifiedConsent{"UnifiedConsent",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kUnifiedConsent {
+  "UnifiedConsent",
+#if defined(OS_CHROMEOS) || defined(OS_IOS) || defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 bool IsUnifiedConsentFeatureEnabled() {
   return base::FeatureList::IsEnabled(kUnifiedConsent);

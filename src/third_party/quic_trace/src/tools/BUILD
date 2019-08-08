@@ -18,8 +18,20 @@ cc_binary(
     name = "quic_trace_to_time_sequence_gnuplot",
     srcs = ["quic_trace_to_time_sequence_gnuplot.cc"],
     deps = [
-        "//external:gflags",
         "//lib:quic_trace_cc_proto",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/container:flat_hash_set",
+    ],
+)
+
+cc_binary(
+    name = "transform_quic_trace",
+    srcs = ["transform_quic_trace.cc"],
+    deps = [
+        "//lib:quic_trace_cc_proto",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_google_protobuf//:protobuf",
     ],
 )
 

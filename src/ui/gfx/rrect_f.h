@@ -30,10 +30,7 @@ class GEOMETRY_SKIA_EXPORT RRectF {
       : RRectF(x, y, width, height, radius, radius) {}
   // Sets all x radii to x_rad, and all y radii to y_rad. If one of x_rad or
   // y_rad are zero, sets ALL radii to zero.
-  RRectF(float x, float y, float width, float height, float x_rad, float y_rad)
-      : skrrect_(SkRRect::MakeRectXY(SkRect::MakeXYWH(x, y, width, height),
-                                     x_rad,
-                                     y_rad)) {}
+  RRectF(float x, float y, float width, float height, float x_rad, float y_rad);
   // Directly sets all four corners.
   RRectF(float x,
          float y,

@@ -6,13 +6,12 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/logging.h"
 #include "chrome/browser/send_tab_to_self/receiving_ui_handler.h"
 #include "chrome/browser/send_tab_to_self/receiving_ui_handler_registry.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
-
-class Profile;
 
 namespace send_tab_to_self {
 
@@ -22,8 +21,7 @@ SendTabToSelfClientService::SendTabToSelfClientService(
   model_ = model;
   model_->AddObserver(this);
 
-  registry_ = ReceivingUiHandlerRegistry::GetInstance();
-  registry_->InstantiatePlatformSpecificHandlers(profile);
+  SetupHandlerRegistry(profile);
 }
 
 SendTabToSelfClientService::~SendTabToSelfClientService() {
@@ -32,22 +30,32 @@ SendTabToSelfClientService::~SendTabToSelfClientService() {
 }
 
 void SendTabToSelfClientService::SendTabToSelfModelLoaded() {
-  // Do nothing for now
+  // TODO(crbug.com/949756): Push changes that happened before the model was
+  // loaded.
 }
 
 void SendTabToSelfClientService::EntriesAddedRemotely(
     const std::vector<const SendTabToSelfEntry*>& new_entries) {
-  // TODO(tgupta):Figure out whether it is better to pass in one entry at
-  // a time or to pass all the entries at once.
-  for (std::unique_ptr<ReceivingUiHandler>& handler :
-       registry_->GetHandlers()) {
-    handler->DisplayNewEntry(new_entries[0]);
+  for (const std::unique_ptr<ReceivingUiHandler>& handler : GetHandlers()) {
+    handler->DisplayNewEntries(new_entries);
   }
 }
 
 void SendTabToSelfClientService::EntriesRemovedRemotely(
     const std::vector<std::string>& guids) {
-  // Do nothing for now
+  for (const std::unique_ptr<ReceivingUiHandler>& handler : GetHandlers()) {
+    handler->DismissEntries(guids);
+  }
+}
+
+void SendTabToSelfClientService::SetupHandlerRegistry(Profile* profile) {
+  registry_ = ReceivingUiHandlerRegistry::GetInstance();
+  registry_->InstantiatePlatformSpecificHandlers(profile);
+}
+
+const std::vector<std::unique_ptr<ReceivingUiHandler>>&
+SendTabToSelfClientService::GetHandlers() const {
+  return registry_->GetHandlers();
 }
 
 }  // namespace send_tab_to_self

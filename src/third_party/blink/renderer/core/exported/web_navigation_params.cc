@@ -111,7 +111,7 @@ void WebNavigationParams::FillStaticResponse(WebNavigationParams* params,
                                              WebString text_encoding,
                                              base::span<const char> data) {
   params->response = WebURLResponse(params->url);
-  params->response.SetMIMEType(mime_type);
+  params->response.SetMimeType(mime_type);
   params->response.SetTextEncodingName(text_encoding);
   FillBodyLoader(params, data);
 }

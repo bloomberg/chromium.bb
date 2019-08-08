@@ -8,6 +8,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.os.Build;
@@ -33,6 +34,7 @@ import org.chromium.android_webview.AwAutofillProvider;
 import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwSettings;
+import org.chromium.android_webview.AwSwitches;
 import org.chromium.android_webview.ResourcesContextWrapperFactory;
 import org.chromium.android_webview.ScopedSysTraceEvent;
 import org.chromium.android_webview.WebViewChromiumRunQueue;
@@ -286,7 +288,17 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             }
             if (multiProcess) {
                 CommandLine cl = CommandLine.getInstance();
-                cl.appendSwitch("webview-sandboxed-renderer");
+                cl.appendSwitch(AwSwitches.WEBVIEW_SANDBOXED_RENDERER);
+            }
+
+            int applicationFlags = ContextUtils.getApplicationContext().getApplicationInfo().flags;
+            boolean isAppDebuggable = (applicationFlags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+            boolean isOsDebuggable = BuildInfo.isDebugAndroid();
+            // Enable logging JS console messages in system logs only if the app is debuggable or
+            // it's a debugable android build.
+            if (isAppDebuggable || isOsDebuggable) {
+                CommandLine cl = CommandLine.getInstance();
+                cl.appendSwitch(AwSwitches.WEBVIEW_LOG_JS_CONSOLE_MESSAGES);
             }
 
             ThreadUtils.setWillOverrideUiThread(true);
@@ -449,6 +461,10 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                     @Override
                     public Uri getSafeBrowsingPrivacyPolicyUrl() {
                         return sharedStatics.getSafeBrowsingPrivacyPolicyUrl();
+                    }
+
+                    public boolean isMultiProcessEnabled() {
+                        return sharedStatics.isMultiProcessEnabled();
                     }
                 };
             }

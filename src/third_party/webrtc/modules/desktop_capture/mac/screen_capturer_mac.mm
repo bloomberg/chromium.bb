@@ -13,6 +13,7 @@
 #include "modules/desktop_capture/mac/screen_capturer_mac.h"
 
 #include "modules/desktop_capture/mac/desktop_frame_provider.h"
+#include "modules/desktop_capture/mac/window_list_utils.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/constructor_magic.h"
 #include "rtc_base/logging.h"
@@ -75,11 +76,7 @@ CFArrayRef CreateWindowListWithExclusion(CGWindowID window_to_exclude) {
     CFDictionaryRef window =
         reinterpret_cast<CFDictionaryRef>(CFArrayGetValueAtIndex(all_windows, i));
 
-    CFNumberRef id_ref =
-        reinterpret_cast<CFNumberRef>(CFDictionaryGetValue(window, kCGWindowNumber));
-
-    CGWindowID id;
-    CFNumberGetValue(id_ref, kCFNumberIntType, &id);
+    CGWindowID id = GetWindowId(window);
     if (id == window_to_exclude) {
       found = true;
       continue;
@@ -156,11 +153,11 @@ ScreenCapturerMac::ScreenCapturerMac(
       desktop_config_monitor_(desktop_config_monitor),
       desktop_frame_provider_(allow_iosurface) {
   RTC_LOG(LS_INFO) << "Allow IOSurface: " << allow_iosurface;
-  thread_checker_.DetachFromThread();
+  thread_checker_.Detach();
 }
 
 ScreenCapturerMac::~ScreenCapturerMac() {
-  RTC_DCHECK(thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(thread_checker_.IsCurrent());
   ReleaseBuffers();
   UnregisterRefreshAndMoveHandlers();
 }
@@ -179,7 +176,7 @@ void ScreenCapturerMac::ReleaseBuffers() {
 }
 
 void ScreenCapturerMac::Start(Callback* callback) {
-  RTC_DCHECK(thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(thread_checker_.IsCurrent());
   RTC_DCHECK(!callback_);
   RTC_DCHECK(callback);
   TRACE_EVENT_INSTANT1(
@@ -196,7 +193,7 @@ void ScreenCapturerMac::Start(Callback* callback) {
 }
 
 void ScreenCapturerMac::CaptureFrame() {
-  RTC_DCHECK(thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(thread_checker_.IsCurrent());
   TRACE_EVENT0("webrtc", "creenCapturerMac::CaptureFrame");
   int64_t capture_start_time_nanos = rtc::TimeNanos();
 
@@ -440,7 +437,7 @@ void ScreenCapturerMac::ScreenConfigurationChanged() {
 }
 
 bool ScreenCapturerMac::RegisterRefreshAndMoveHandlers() {
-  RTC_DCHECK(thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(thread_checker_.IsCurrent());
   desktop_config_ = desktop_config_monitor_->desktop_configuration();
   for (const auto& config : desktop_config_.displays) {
     size_t pixel_width = config.pixel_bounds.width();
@@ -453,7 +450,7 @@ bool ScreenCapturerMac::RegisterRefreshAndMoveHandlers() {
                                                      uint64_t display_time,
                                                      IOSurfaceRef frame_surface,
                                                      CGDisplayStreamUpdateRef updateRef) {
-      RTC_DCHECK(thread_checker_.CalledOnValidThread());
+      RTC_DCHECK(thread_checker_.IsCurrent());
       if (status == kCGDisplayStreamFrameStatusStopped) return;
 
       // Only pay attention to frame updates.
@@ -494,7 +491,7 @@ bool ScreenCapturerMac::RegisterRefreshAndMoveHandlers() {
 }
 
 void ScreenCapturerMac::UnregisterRefreshAndMoveHandlers() {
-  RTC_DCHECK(thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(thread_checker_.IsCurrent());
 
   for (CGDisplayStreamRef stream : display_streams_) {
     CFRunLoopSourceRef source = CGDisplayStreamGetRunLoopSource(stream);

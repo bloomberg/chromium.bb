@@ -69,7 +69,7 @@ void ImeOnFocusTest::SendGestureTap(WebView* web_view, IntPoint client_point) {
   WebGestureEvent web_gesture_event(WebInputEvent::kGestureTap,
                                     WebInputEvent::kNoModifiers,
                                     WebInputEvent::GetStaticTimeStampForTests(),
-                                    kWebGestureDeviceTouchscreen);
+                                    WebGestureDevice::kTouchscreen);
   // GestureTap is only ever from touch screens.
   web_gesture_event.SetPositionInWidget(FloatPoint(client_point));
   web_gesture_event.SetPositionInScreen(FloatPoint(client_point));

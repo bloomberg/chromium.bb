@@ -6,11 +6,14 @@
 
 #include <Psapi.h>
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/test/base/interactive_test_utils_aura.h"
+#include "chrome/test/base/process_lineage_win.h"
+#include "chrome/test/base/save_desktop_snapshot_win.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/base/win/foreground_helper.h"
@@ -50,23 +53,32 @@ bool ShowAndFocusNativeWindow(gfx::NativeWindow window) {
     return true;
 
   wchar_t window_title[256];
-  std::wstring path_str;
+  GetWindowText(foreground_window, window_title, base::size(window_title));
+
+  base::string16 lineage_str;
   if (foreground_window) {
     DWORD process_id = 0;
     GetWindowThreadProcessId(foreground_window, &process_id);
-    HANDLE process_handle = OpenProcess(
-        PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, process_id);
-    if (process_handle) {
-      wchar_t path[MAX_PATH];
-      if (GetModuleFileNameEx(process_handle, NULL, path, MAX_PATH))
-        path_str = path;
-      CloseHandle(process_handle);
+    ProcessLineage lineage = ProcessLineage::Create(process_id);
+    if (!lineage.IsEmpty()) {
+      lineage_str = STRING16_LITERAL(", process lineage: ");
+      lineage_str.append(lineage.ToString());
     }
   }
-  GetWindowText(foreground_window, window_title, base::size(window_title));
   LOG(ERROR) << "ShowAndFocusNativeWindow failed. foreground window: "
-             << foreground_window << ", title: " << window_title << ", path: "
-             << path_str;
+             << foreground_window << ", title: " << window_title << lineage_str;
+
+  const base::FilePath output_dir =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+          kSnapshotOutputDir);
+  if (!output_dir.empty()) {
+    base::FilePath snapshot_file = SaveDesktopSnapshot(output_dir);
+    if (!snapshot_file.empty()) {
+      LOG(ERROR) << "Screenshot saved to file: \"" << snapshot_file.value()
+                 << "\"";
+    }
+  }
+
   return false;
 }
 

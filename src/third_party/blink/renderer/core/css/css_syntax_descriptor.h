@@ -24,13 +24,6 @@ class CORE_EXPORT CSSSyntaxDescriptor {
     return syntax_components_.size() == 1 &&
            syntax_components_[0].GetType() == CSSSyntaxType::kTokenStream;
   }
-  bool HasUrlSyntax() const {
-    for (const CSSSyntaxComponent& component : syntax_components_) {
-      if (component.GetType() == CSSSyntaxType::kUrl)
-        return true;
-    }
-    return false;
-  }
   const Vector<CSSSyntaxComponent>& Components() const {
     return syntax_components_;
   }

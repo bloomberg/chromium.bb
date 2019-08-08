@@ -6,7 +6,7 @@ import("//build/config/sanitizers/sanitizers.gni")
 
 # Determine whetner fuzzer_test targets are built.
 does_fuzzer_test_compile =
-    !disable_libfuzzer && (use_fuzzing_engine || use_drfuzz || is_linux)
+    !disable_libfuzzer && (use_fuzzing_engine || is_linux)
 
 static_library("form_parsing") {
   sources = [

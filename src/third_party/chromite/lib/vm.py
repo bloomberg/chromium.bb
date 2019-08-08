@@ -16,7 +16,6 @@ import shutil
 import socket
 
 from chromite.cli.cros import cros_chrome_sdk
-from chromite.lib import cache
 from chromite.lib import commandline
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -225,53 +224,6 @@ class VM(device.Device):
     """Cleanup vm_dir."""
     osutils.RmDir(self.vm_dir, ignore_missing=True, sudo=self.use_sudo)
 
-  def _GetCachePath(self, cache_name):
-    """Return path to cache.
-
-    Args:
-      cache_name: Name of cache.
-
-    Returns:
-      File path of cache.
-    """
-    return os.path.join(self.cache_dir,
-                        cros_chrome_sdk.COMMAND_NAME,
-                        cache_name)
-
-  @memoize.MemoizedSingleCall
-  def _SDKVersion(self):
-    """Determine SDK version.
-
-    Check the environment if we're in the SDK shell, and failing that, look at
-    the misc cache.
-
-    Returns:
-      SDK version.
-    """
-    sdk_version = os.environ.get(cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV)
-    if not sdk_version and self.board:
-      misc_cache = cache.DiskCache(self._GetCachePath(
-          cros_chrome_sdk.SDKFetcher.MISC_CACHE))
-      with misc_cache.Lookup((self.board, 'latest')) as ref:
-        if ref.Exists(lock=True):
-          sdk_version = osutils.ReadFile(ref.path).strip()
-    return sdk_version
-
-  def _CachePathForKey(self, key):
-    """Get cache path for key.
-
-    Args:
-      key: cache key.
-    """
-    tarball_cache = cache.TarballCache(self._GetCachePath(
-        cros_chrome_sdk.SDKFetcher.TARBALL_CACHE))
-    if self.board and self._SDKVersion():
-      cache_key = (self.board, self._SDKVersion(), key)
-      with tarball_cache.Lookup(cache_key) as ref:
-        if ref.Exists():
-          return ref.path
-    return None
-
   @memoize.MemoizedSingleCall
   def QemuVersion(self):
     """Determine QEMU version.
@@ -312,7 +264,8 @@ class VM(device.Device):
 
     # Check SDK cache.
     if not self.qemu_path:
-      qemu_dir = self._CachePathForKey(cros_chrome_sdk.SDKFetcher.QEMU_BIN_PATH)
+      qemu_dir = cros_chrome_sdk.SDKFetcher.GetCachePath(
+          cros_chrome_sdk.SDKFetcher.QEMU_BIN_PATH, self.cache_dir, self.board)
       if qemu_dir:
         qemu_path = os.path.join(qemu_dir, qemu_exe_path)
         if os.path.isfile(qemu_path):
@@ -352,7 +305,8 @@ class VM(device.Device):
 
   def _GetCacheVMImagePath(self):
     """Get path of a cached VM image."""
-    cache_path = self._CachePathForKey(constants.VM_IMAGE_TAR)
+    cache_path = cros_chrome_sdk.SDKFetcher.GetCachePath(
+        constants.VM_IMAGE_TAR, self.cache_dir, self.board)
     if cache_path:
       vm_image = os.path.join(cache_path, constants.VM_IMAGE_BIN)
       if os.path.isfile(vm_image):

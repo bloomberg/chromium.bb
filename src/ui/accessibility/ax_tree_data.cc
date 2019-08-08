@@ -48,6 +48,8 @@ std::string AXTreeData::ToString() const {
 
   if (sel_anchor_object_id != -1) {
     result +=
+        (sel_is_backward ? " sel_is_backward=true" : " sel_is_backward=false");
+    result +=
         " sel_anchor_object_id=" + base::NumberToString(sel_anchor_object_id);
     result += " sel_anchor_offset=" + base::NumberToString(sel_anchor_offset);
     result += " sel_anchor_affinity=";

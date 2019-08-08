@@ -681,8 +681,7 @@ bool CleanerLoggingService::AllExpectedRemovalsConfirmed() const {
       if (removal_status != REMOVAL_STATUS_REMOVED &&
           removal_status != REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL &&
           removal_status != REMOVAL_STATUS_NOT_FOUND &&
-          removal_status != REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL_FALLBACK &&
-          removal_status != REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION) {
+          removal_status != REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL_FALLBACK) {
         return false;
       }
     }

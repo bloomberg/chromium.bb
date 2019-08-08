@@ -43,6 +43,10 @@ void U2fSignOperation::Start() {
   }
 }
 
+void U2fSignOperation::Cancel() {
+  canceled_ = true;
+}
+
 void U2fSignOperation::TrySign() {
   DispatchDeviceRequest(
       ConvertToU2fSignCommand(request(), app_param_type_, key_handle()),
@@ -52,6 +56,10 @@ void U2fSignOperation::TrySign() {
 
 void U2fSignOperation::OnSignResponseReceived(
     base::Optional<std::vector<uint8_t>> device_response) {
+  if (canceled_) {
+    return;
+  }
+
   auto result = apdu::ApduResponse::Status::SW_WRONG_DATA;
   const auto apdu_response =
       device_response
@@ -134,6 +142,10 @@ void U2fSignOperation::TryFakeEnrollment() {
 
 void U2fSignOperation::OnEnrollmentResponseReceived(
     base::Optional<std::vector<uint8_t>> device_response) {
+  if (canceled_) {
+    return;
+  }
+
   auto result = apdu::ApduResponse::Status::SW_WRONG_DATA;
   if (device_response) {
     const auto apdu_response =

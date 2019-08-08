@@ -121,6 +121,14 @@ class SplitVariationsCmdUnittest(unittest.TestCase):
     data = split_variations_cmd.ParseVariationsCmdFromString(input_string)
     self._testSplitVariationsCmdHelper(data)
 
+  def testSplitVariationsCmdNoFurtherSplit(self):
+    input_string = (
+        '--force-fieldtrials="*Trial2/Enabled/" '
+        '--enable-features="FeatureA<FeatureA" '
+        '--disable-features="FeatureC<FeatureC"')
+    splits = split_variations_cmd.SplitVariationsCmdFromString(input_string)
+    self.assertEqual(1, len(splits))
+
 
 if __name__ == '__main__':
   unittest.main()

@@ -101,7 +101,7 @@ void ServiceWorker::postMessage(ScriptState* script_state,
 }
 
 ScriptPromise ServiceWorker::InternalsTerminate(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   host_->TerminateForTesting(
       WTF::Bind([](ScriptPromiseResolver* resolver) { resolver->Resolve(); },

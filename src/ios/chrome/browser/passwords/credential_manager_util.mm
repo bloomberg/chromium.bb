@@ -29,9 +29,7 @@ security_state::SecurityLevel GetSecurityLevelForWebState(
   if (!client) {
     return security_state::NONE;
   }
-  security_state::SecurityInfo result;
-  client->GetSecurityInfo(&result);
-  return result.security_level;
+  return client->GetSecurityLevel();
 }
 
 }  // namespace

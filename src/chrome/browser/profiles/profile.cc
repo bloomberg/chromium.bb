@@ -8,6 +8,7 @@
 
 #include "base/path_service.h"
 #include "build/build_config.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/net/profile_network_context_service.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/pref_names.h"
-#include "components/browser_sync/browser_sync_switches.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/language/core/browser/pref_names.h"
@@ -24,6 +24,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -129,6 +130,14 @@ PrefService* Profile::GetReadOnlyOffTheRecordPrefs() {
   return GetOffTheRecordPrefs();
 }
 
+policy::SchemaRegistryService* Profile::GetPolicySchemaRegistryService() {
+  return nullptr;
+}
+
+policy::UserCloudPolicyManager* Profile::GetUserCloudPolicyManager() {
+  return nullptr;
+}
+
 Profile::Delegate::~Delegate() {
 }
 
@@ -184,7 +193,6 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
                                std::string());
 #endif
 
-  registry->RegisterBooleanPref(prefs::kDataSaverEnabled, false);
   data_reduction_proxy::RegisterSyncableProfilePrefs(registry);
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
@@ -227,6 +235,14 @@ std::string Profile::GetDebugName() {
     name = "UnknownProfile";
   }
   return name;
+}
+
+bool Profile::IsRegularProfile() const {
+  return GetProfileType() == REGULAR_PROFILE;
+}
+
+bool Profile::IsIncognito() const {
+  return GetProfileType() == INCOGNITO_PROFILE;
 }
 
 bool Profile::IsGuestSession() const {
@@ -321,3 +337,10 @@ double Profile::GetDefaultZoomLevelForProfile() {
       ->GetDefaultZoomLevel();
 }
 #endif  // !defined(OS_ANDROID)
+
+void Profile::Wipe() {
+  content::BrowserContext::GetBrowsingDataRemover(this)->Remove(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::WIPE_PROFILE,
+      ChromeBrowsingDataRemoverDelegate::ALL_ORIGIN_TYPES);
+}

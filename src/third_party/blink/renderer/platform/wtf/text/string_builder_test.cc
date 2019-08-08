@@ -163,7 +163,7 @@ TEST(StringBuilderTest, ToString) {
   // the StringBuilder.
   String string1 = builder.ToString();
   EXPECT_EQ(String("0123456789abcdefghijklmnopqrstuvwxyzABC"), string1);
-  string1.append("DEF");
+  string1 = string1 + "DEF";
   EXPECT_EQ(String("0123456789abcdefghijklmnopqrstuvwxyzABC"),
             builder.ToString());
   EXPECT_EQ(String("0123456789abcdefghijklmnopqrstuvwxyzABCDEF"), string1);

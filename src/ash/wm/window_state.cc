@@ -194,7 +194,8 @@ bool WindowState::HasDelegate() const {
 }
 
 void WindowState::SetDelegate(std::unique_ptr<WindowStateDelegate> delegate) {
-  DCHECK(!delegate_.get());
+  DCHECK((!delegate_.get() && !!delegate.get()) ||
+         (!!delegate_.get() && !delegate.get()));
   delegate_ = std::move(delegate);
 }
 
@@ -364,7 +365,7 @@ void WindowState::OnWMEvent(const WMEvent* event) {
 }
 
 void WindowState::SaveCurrentBoundsForRestore() {
-  gfx::Rect bounds_in_screen = window_->bounds();
+  gfx::Rect bounds_in_screen = window_->GetTargetBounds();
   ::wm::ConvertRectToScreen(window_->parent(), &bounds_in_screen);
   SetRestoreBoundsInScreen(bounds_in_screen);
 }
@@ -550,7 +551,7 @@ WindowState::WindowState(aura::Window* window)
       ignore_property_change_(false),
       current_state_(new DefaultState(ToWindowStateType(GetShowState()))) {
   window_->AddObserver(this);
-  UpdatePipState(mojom::WindowStateType::DEFAULT);
+  OnPrePipStateChange(mojom::WindowStateType::DEFAULT);
 }
 
 bool WindowState::GetAlwaysOnTop() const {
@@ -623,13 +624,24 @@ void WindowState::NotifyPreStateTypeChange(
     mojom::WindowStateType old_window_state_type) {
   for (auto& observer : observer_list_)
     observer.OnPreWindowStateTypeChange(this, old_window_state_type);
-  UpdatePipState(old_window_state_type);
+  OnPrePipStateChange(old_window_state_type);
 }
 
 void WindowState::NotifyPostStateTypeChange(
     mojom::WindowStateType old_window_state_type) {
   for (auto& observer : observer_list_)
     observer.OnPostWindowStateTypeChange(this, old_window_state_type);
+  OnPostPipStateChange(old_window_state_type);
+}
+
+void WindowState::OnPostPipStateChange(
+    mojom::WindowStateType old_window_state_type) {
+  if (old_window_state_type == mojom::WindowStateType::PIP) {
+    // The animation type may be FADE_OUT_SLIDE_IN at this point, which we don't
+    // want it to be anymore if the window is not PIP anymore.
+    ::wm::SetWindowVisibilityAnimationType(
+        window_, ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
+  }
 }
 
 void WindowState::SetBoundsDirect(const gfx::Rect& bounds) {
@@ -664,6 +676,10 @@ void WindowState::SetBoundsConstrained(const gfx::Rect& bounds) {
 
 void WindowState::SetBoundsDirectAnimated(const gfx::Rect& bounds,
                                           base::TimeDelta duration) {
+  if (::wm::WindowAnimationsDisabled(window_)) {
+    SetBoundsDirect(bounds);
+    return;
+  }
   ui::Layer* layer = window_->layer();
   ui::ScopedLayerAnimationSettings slide_settings(layer->GetAnimator());
   slide_settings.SetPreemptionStrategy(
@@ -683,8 +699,9 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds,
   }
 
   // If the window already has a transform in place, do not use the cross fade
-  // animation, set the bounds directly instead.
-  if (!window_->layer()->GetTargetTransform().IsIdentity()) {
+  // animation, set the bounds directly instead, or animation is disabled.
+  if (!window_->layer()->GetTargetTransform().IsIdentity() ||
+      ::wm::WindowAnimationsDisabled(window_)) {
     SetBoundsDirect(new_bounds);
     return;
   }
@@ -703,7 +720,8 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds,
   CrossFadeAnimation(window_, std::move(old_layer_owner), animation_type);
 }
 
-void WindowState::UpdatePipState(mojom::WindowStateType old_window_state_type) {
+void WindowState::OnPrePipStateChange(
+    mojom::WindowStateType old_window_state_type) {
   auto* widget = views::Widget::GetWidgetForNativeWindow(window());
   if (IsPip()) {
     // widget may not exit in some unit tests.

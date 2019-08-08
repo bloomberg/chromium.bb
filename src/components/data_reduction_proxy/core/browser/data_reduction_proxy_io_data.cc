@@ -25,14 +25,13 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_protocol.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
-#include "net/url_request/http_user_agent_settings.h"
-#include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -135,7 +134,8 @@ void DataReductionProxyIOData::ShutdownOnUIThread() {
 }
 
 void DataReductionProxyIOData::SetDataReductionProxyService(
-    base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service) {
+    base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service,
+    const std::string& user_agent) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   service_ = data_reduction_proxy_service;
   url_request_context_getter_ = service_->url_request_context_getter();
@@ -144,15 +144,16 @@ void DataReductionProxyIOData::SetDataReductionProxyService(
   // before the Initialize task can be executed. The task is only created as
   // part of class initialization.
   if (io_task_runner_->BelongsToCurrentThread()) {
-    InitializeOnIOThread();
+    InitializeOnIOThread(user_agent);
     return;
   }
   io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&DataReductionProxyIOData::InitializeOnIOThread,
-                                base::Unretained(this)));
+                                base::Unretained(this), user_agent));
 }
 
-void DataReductionProxyIOData::InitializeOnIOThread() {
+void DataReductionProxyIOData::InitializeOnIOThread(
+    const std::string& user_agent) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(network_properties_manager_);
 
@@ -163,8 +164,8 @@ void DataReductionProxyIOData::InitializeOnIOThread() {
   config_->InitializeOnIOThread(
       url_loader_factory,
       base::BindRepeating(&DataReductionProxyIOData::CreateCustomProxyConfig,
-                          base::Unretained(this)),
-      network_properties_manager_.get());
+                          base::Unretained(this), true),
+      network_properties_manager_.get(), user_agent);
   bypass_stats_->InitializeOnIOThread();
   proxy_delegate_->InitializeOnIOThread(this);
   if (config_client_)
@@ -380,23 +381,24 @@ void DataReductionProxyIOData::OnProxyConfigUpdated() {
 
 network::mojom::CustomProxyConfigPtr
 DataReductionProxyIOData::CreateCustomProxyConfig(
+    bool is_warmup_url,
     const std::vector<DataReductionProxyServer>& proxies_for_http) const {
   auto config = network::mojom::CustomProxyConfig::New();
-  config->rules =
-      configurator_
-          ->CreateProxyConfig(true /* probe_url_config */,
-                              config_->GetNetworkPropertiesManager(),
-                              proxies_for_http)
-          .proxy_rules();
-
-  // Set an alternate proxy list to be used for media requests which only
-  // contains proxies supporting the media resource type.
-  net::ProxyList media_proxies;
-  for (const auto& proxy : proxies_for_http) {
-    if (proxy.SupportsResourceType(ResourceTypeProvider::CONTENT_TYPE_MEDIA))
-      media_proxies.AddProxyServer(proxy.proxy_server());
+  if (params::IsIncludedInHoldbackFieldTrial()) {
+    config->rules =
+        configurator_
+            ->CreateProxyConfig(is_warmup_url,
+                                config_->GetNetworkPropertiesManager(),
+                                std::vector<DataReductionProxyServer>())
+            .proxy_rules();
+  } else {
+    config->rules =
+        configurator_
+            ->CreateProxyConfig(is_warmup_url,
+                                config_->GetNetworkPropertiesManager(),
+                                proxies_for_http)
+            .proxy_rules();
   }
-  config->alternate_proxy_list = media_proxies;
 
   net::EffectiveConnectionType type = GetEffectiveConnectionType();
   if (type > net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
@@ -408,6 +410,10 @@ DataReductionProxyIOData::CreateCustomProxyConfig(
 
   request_options_->AddRequestHeader(&config->post_cache_headers,
                                      base::nullopt);
+
+  config->assume_https_proxies_support_quic = true;
+  config->can_use_proxy_on_http_url_redirect_cycles = false;
+
   return config;
 }
 
@@ -415,8 +421,10 @@ void DataReductionProxyIOData::UpdateCustomProxyConfig() {
   if (!proxy_config_client_)
     return;
 
-  proxy_config_client_->OnCustomProxyConfigUpdated(
-      CreateCustomProxyConfig(config_->GetProxiesForHttp()));
+  proxy_config_client_->OnCustomProxyConfigUpdated(CreateCustomProxyConfig(
+      !base::FeatureList::IsEnabled(
+          features::kDataReductionProxyDisableProxyFailedWarmup),
+      config_->GetProxiesForHttp()));
 }
 
 void DataReductionProxyIOData::UpdateThrottleConfig() {

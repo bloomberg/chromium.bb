@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.payments.mojom.PaymentCurrencyAmount;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
@@ -172,6 +173,19 @@ public abstract class PaymentInstrument extends EditableOption {
             Map<String, PaymentMethodData> methodDataMap, PaymentItem total,
             List<PaymentItem> displayItems, Map<String, PaymentDetailsModifier> modifiers,
             InstrumentDetailsCallback callback);
+
+    /**
+     * Update the payment information in response to payment method change event.
+     *
+     * @param total The updated total amount. The total amount can be null if there is no change to
+     *              the total amount or if merchant encountered an error in
+     *              |onPaymentMethodChange(methodName, stringifiedDetails)| call.
+     * @param error A human-readable error message that explains why merchant could not process the
+     *              |onPaymentMethodChange(methodName, stringifiedDetails)| call. The error message
+     *              can be null if there're no errors.
+     */
+    public void onPaymentDetailsUpdate(
+            @Nullable PaymentCurrencyAmount total, @Nullable String error) {}
 
     /**
      * Abort invocation of the payment app.

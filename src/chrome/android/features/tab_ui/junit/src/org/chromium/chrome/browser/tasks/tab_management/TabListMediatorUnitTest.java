@@ -187,7 +187,7 @@ public class TabListMediatorUnitTest {
                 .get(TabProperties.TAB_CLOSED_LISTENER)
                 .run(mModel.get(1).get(TabProperties.TAB_ID));
 
-        verify(mTabModel).closeTab(eq(mTab2), eq(false), eq(false), eq(true));
+        verify(mTabModel).closeTab(eq(mTab2), eq(null), eq(false), eq(false), eq(true));
     }
 
     @Test

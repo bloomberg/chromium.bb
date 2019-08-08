@@ -85,7 +85,7 @@ void StereoPannerHandler::Initialize() {
   if (IsInitialized())
     return;
 
-  stereo_panner_ = StereoPanner::Create(Context()->sampleRate());
+  stereo_panner_ = std::make_unique<StereoPanner>(Context()->sampleRate());
 
   AudioHandler::Initialize();
 }
@@ -105,7 +105,7 @@ void StereoPannerHandler::SetChannelCount(unsigned channel_count,
   } else {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
-        ExceptionMessages::IndexOutsideRange<unsigned long>(
+        ExceptionMessages::IndexOutsideRange<uint32_t>(
             "channelCount", channel_count, 1,
             ExceptionMessages::kInclusiveBound, 2,
             ExceptionMessages::kInclusiveBound));

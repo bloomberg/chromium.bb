@@ -2,7 +2,6 @@
 <script src="../resources/gc.js"></script>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <!--
 
@@ -13,7 +12,7 @@ Spec: https://wicg.github.io/aom/spec/
 -->
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     assert_true(internals.runtimeFlags.accessibilityObjectModelEnabled);
 }, "Make sure that Accessibility Object Model is enabled");
 </script>
@@ -26,7 +25,7 @@ test_after_layout_and_paint(function(t) {
 <label id="l4">L4</label>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var input = document.getElementById("input");
     var axInput = accessibilityController.accessibleElementById("input");
     assert_equals(axInput.name, "L1 L2");
@@ -69,7 +68,7 @@ test_after_layout_and_paint(function(t) {
 <input id="input3" aria-describedby="l1 l2">
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var input = document.getElementById("input3");
     var axInput = accessibilityController.accessibleElementById("input3");
     assert_equals(axInput.description, "L1 L2");
@@ -117,7 +116,7 @@ test_after_layout_and_paint(function(t) {
 <div id="console"></div>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var axTab1 = accessibilityController.accessibleElementById("tablist_1").childAtIndex(0);
     var axPanel1 = accessibilityController.accessibleElementById("panel_1");
     var axPanel2 = accessibilityController.accessibleElementById("panel_2");
@@ -158,7 +157,7 @@ test_after_layout_and_paint(function(t) {
 <div id="console"></div>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     var axItem1 = accessibilityController.accessibleElementById("item1");
     var axItem2 = accessibilityController.accessibleElementById("item2");
     var axItem3 = accessibilityController.accessibleElementById("item3");
@@ -201,7 +200,7 @@ test_after_layout_and_paint(function(t) {
 </div>
 
 <script>
-test_after_layout_and_paint(function(t)
+test(function(t)
 {
     var axList1 = accessibilityController.accessibleElementById("list1");
     assert_equals(axList1.role, "AXRole: AXListBox");

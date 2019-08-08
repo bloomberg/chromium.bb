@@ -176,7 +176,9 @@
 <translation id="6941933287844615239">lataa media</translation>
 <translation id="6981594929165378967">lisäys</translation>
 <translation id="6989848892321993519">Pidennä tämä teksti vähintään <ph name="MIN_CHARACTERS" /> merkkiin (tällä hetkellä käytössä 1 merkki).</translation>
+<translation id="7033340931668032222">ylös ja alas, niin voit muuttaa äänenvoimakkuutta</translation>
 <translation id="709897737746224366">Käytä pyydettyä muotoilua.</translation>
+<translation id="7118469954320184356">Ei kuvausta saatavilla</translation>
 <translation id="7139483182332611405">johdanto</translation>
 <translation id="7263440858009898357">Valitse kohde luettelosta.</translation>
 <translation id="727747134524199931">sarakkeen otsikko</translation>
@@ -226,6 +228,7 @@
 <translation id="8550857728288566671">grafiikkasymboli</translation>
 <translation id="8583702881314752957">määritelmäluettelo</translation>
 <translation id="8597182159515967513">otsikko</translation>
+<translation id="8603553056539299761">vasemmalle ja oikealle, niin voit hakea</translation>
 <translation id="860475260694818407">sisällysluettelo</translation>
 <translation id="8613126697340063924">hallinnoi etätoistoa</translation>
 <translation id="862370744433916922">alaotsikko</translation>

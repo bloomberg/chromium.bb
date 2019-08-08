@@ -115,9 +115,6 @@ const char kCreateBlobUrlJavascript[] =
 
 enum CertificateStatus { VALID_CERTIFICATE, INVALID_CERTIFICATE };
 
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data");
-
 const char kTestCertificateIssuerName[] = "Test Root CA";
 
 bool AreCommittedInterstitialsEnabled() {
@@ -267,7 +264,6 @@ void CheckBrokenSecurityStyle(const SecurityStyleTestObserver& observer,
       observer.latest_explanations();
   EXPECT_EQ(0u, expired_explanation.neutral_explanations.size());
   ASSERT_EQ(1u, expired_explanation.insecure_explanations.size());
-  EXPECT_FALSE(expired_explanation.pkp_bypassed);
   EXPECT_TRUE(expired_explanation.info_explanations.empty());
 
   // Check that the summary and description are as expected.
@@ -322,25 +318,25 @@ void CheckSecureConnectionExplanation(
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
 
-  security_state::SecurityInfo security_info;
-  SecurityStateTabHelper::FromWebContents(web_contents)
-      ->GetSecurityInfo(&security_info);
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      SecurityStateTabHelper::FromWebContents(web_contents)
+          ->GetVisibleSecurityState();
 
   const char *protocol, *key_exchange, *cipher, *mac;
-  int ssl_version =
-      net::SSLConnectionStatusToVersion(security_info.connection_status);
+  int ssl_version = net::SSLConnectionStatusToVersion(
+      visible_security_state->connection_status);
   net::SSLVersionToString(&protocol, ssl_version);
   bool is_aead, is_tls13;
-  uint16_t cipher_suite =
-      net::SSLConnectionStatusToCipherSuite(security_info.connection_status);
+  uint16_t cipher_suite = net::SSLConnectionStatusToCipherSuite(
+      visible_security_state->connection_status);
   net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead,
                                &is_tls13, cipher_suite);
   // Modern configurations are always AEADs and specify groups.
   EXPECT_TRUE(is_aead);
   EXPECT_EQ(nullptr, mac);
-  ASSERT_NE(0, security_info.key_exchange_group);
+  ASSERT_NE(0, visible_security_state->key_exchange_group);
   const char* key_exchange_group =
-      SSL_get_curve_name(security_info.key_exchange_group);
+      SSL_get_curve_name(visible_security_state->key_exchange_group);
 
   // The description should summarize the settings.
   EXPECT_NE(std::string::npos, explanation.description.find(protocol));
@@ -370,44 +366,49 @@ void CheckSecurityInfoForSecure(
     content::WebContents* contents,
     security_state::SecurityLevel expect_security_level,
     bool expect_sha1_in_chain,
-    security_state::ContentStatus expect_mixed_content_status,
-    bool pkp_bypassed,
+    bool expect_displayed_mixed_content,
+    bool expect_ran_mixed_content,
     bool expect_cert_error) {
   ASSERT_TRUE(contents);
 
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(contents);
   ASSERT_TRUE(helper);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(expect_security_level, security_info.security_level);
-  EXPECT_EQ(expect_sha1_in_chain, security_info.sha1_in_chain);
-  EXPECT_EQ(expect_mixed_content_status, security_info.mixed_content_status);
-  EXPECT_TRUE(security_info.scheme_is_cryptographic);
-  EXPECT_EQ(pkp_bypassed, security_info.pkp_bypassed);
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      helper->GetVisibleSecurityState();
+  EXPECT_EQ(expect_security_level, helper->GetSecurityLevel());
+  EXPECT_EQ(expect_sha1_in_chain,
+            security_state::IsSHA1InChain(*visible_security_state));
+  EXPECT_EQ(expect_displayed_mixed_content,
+            visible_security_state->displayed_mixed_content);
+  EXPECT_EQ(expect_ran_mixed_content,
+            visible_security_state->ran_mixed_content);
+  EXPECT_TRUE(
+      security_state::IsSchemeCryptographic(visible_security_state->url));
   EXPECT_EQ(expect_cert_error,
-            net::IsCertStatusError(security_info.cert_status));
-  EXPECT_TRUE(security_info.connection_info_initialized);
-  EXPECT_TRUE(!!security_info.certificate);
+            net::IsCertStatusError(visible_security_state->cert_status));
+  EXPECT_TRUE(visible_security_state->connection_info_initialized);
+  EXPECT_TRUE(!!visible_security_state->certificate);
 }
 
-// Check that the current SecurityInfo reflects a non-committed navigation.
+// Check that the current security state reflects a non-committed navigation.
 void CheckSecurityInfoForNonCommitted(content::WebContents* contents) {
   ASSERT_TRUE(contents);
 
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(contents);
   ASSERT_TRUE(helper);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::NONE, security_info.security_level);
-  EXPECT_FALSE(security_info.sha1_in_chain);
-  EXPECT_EQ(security_state::CONTENT_STATUS_NONE,
-            security_info.mixed_content_status);
-  EXPECT_FALSE(security_info.scheme_is_cryptographic);
-  EXPECT_FALSE(net::IsCertStatusError(security_info.cert_status));
-  EXPECT_FALSE(security_info.connection_info_initialized);
-  EXPECT_FALSE(!!security_info.certificate);
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      helper->GetVisibleSecurityState();
+  EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
+  EXPECT_FALSE(security_state::IsSHA1InChain(*visible_security_state));
+  EXPECT_FALSE(visible_security_state->displayed_mixed_content);
+  EXPECT_FALSE(visible_security_state->ran_mixed_content);
+  EXPECT_FALSE(
+      security_state::IsSchemeCryptographic(visible_security_state->url));
+  EXPECT_FALSE(net::IsCertStatusError(visible_security_state->cert_status));
+  EXPECT_FALSE(visible_security_state->connection_info_initialized);
+  EXPECT_FALSE(!!visible_security_state->certificate);
 }
 
 void ProceedThroughInterstitial(content::WebContents* tab) {
@@ -455,7 +456,7 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest,
  public:
   SecurityStateTabHelperTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    https_server_.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+    https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   }
 
   void SetUpOnMainThread() override {
@@ -516,8 +517,6 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest,
 
     ui_test_utils::NavigateToURL(browser(), GURL(blob_or_filesystem_url));
     InjectScript(contents);
-    security_state::SecurityInfo security_info;
-    helper->GetSecurityInfo(&security_info);
 
     content::NavigationEntry* entry =
         contents->GetController().GetVisibleEntry();
@@ -542,7 +541,7 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest,
 
     EXPECT_EQ(use_secure_inner_origin ? security_state::NONE
                                       : expected_security_level,
-              security_info.security_level);
+              helper->GetSecurityLevel());
   }
 
   net::EmbeddedTestServer https_server_;
@@ -581,7 +580,7 @@ class DidChangeVisibleSecurityStateTest
  public:
   DidChangeVisibleSecurityStateTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    https_server_.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+    https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -619,19 +618,20 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, HttpPage) {
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(contents);
   ASSERT_TRUE(helper);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::NONE, security_info.security_level);
-  EXPECT_FALSE(security_info.sha1_in_chain);
-  EXPECT_EQ(security_state::CONTENT_STATUS_NONE,
-            security_info.mixed_content_status);
-  EXPECT_FALSE(security_info.scheme_is_cryptographic);
-  EXPECT_FALSE(net::IsCertStatusError(security_info.cert_status));
-  // We expect that the SecurityInfo fields for this committed navigation will
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      helper->GetVisibleSecurityState();
+  EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
+  EXPECT_FALSE(security_state::IsSHA1InChain(*visible_security_state));
+  EXPECT_FALSE(visible_security_state->displayed_mixed_content);
+  EXPECT_FALSE(visible_security_state->ran_mixed_content);
+  EXPECT_FALSE(
+      security_state::IsSchemeCryptographic(visible_security_state->url));
+  EXPECT_FALSE(net::IsCertStatusError(visible_security_state->cert_status));
+  // We expect that the security info fields for this committed navigation will
   // be initialized to reflect the unencrypted connection.
-  EXPECT_TRUE(security_info.connection_info_initialized);
-  EXPECT_FALSE(!!security_info.certificate);
-  EXPECT_EQ(0, security_info.connection_status);
+  EXPECT_TRUE(visible_security_state->connection_info_initialized);
+  EXPECT_FALSE(!!visible_security_state->certificate);
+  EXPECT_EQ(0, visible_security_state->connection_status);
 }
 
 IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, HttpsPage) {
@@ -641,7 +641,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, HttpsPage) {
                                https_server_.GetURL("/ssl/google.html"));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::SECURE, false, security_state::CONTENT_STATUS_NONE, false,
+      security_state::SECURE, false, false, false,
       false /* expect cert status error */);
 }
 
@@ -690,8 +690,8 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, SHA1CertificateBlocked) {
                                https_server_.GetURL("/ssl/google.html"));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, true, security_state::CONTENT_STATUS_NONE,
-      false, true /* expect cert status error */);
+      security_state::DANGEROUS, true, false, false,
+      true /* expect cert status error */);
 
   const content::SecurityStyleExplanations& interstitial_explanation =
       observer.latest_explanations();
@@ -705,8 +705,8 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, SHA1CertificateBlocked) {
 
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, true, security_state::CONTENT_STATUS_NONE,
-      false, true /* expect cert status error */);
+      security_state::DANGEROUS, true, false, false,
+      true /* expect cert status error */);
 
   const content::SecurityStyleExplanations& page_explanation =
       observer.latest_explanations();
@@ -728,7 +728,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, SHA1CertificateWarning) {
                                https_server_.GetURL("/ssl/google.html"));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::NONE, true, security_state::CONTENT_STATUS_NONE, false,
+      security_state::NONE, true, false, false,
       false /* expect cert status error */);
 
   const content::SecurityStyleExplanations& explanation =
@@ -753,8 +753,8 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContent) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::NONE, false, security_state::CONTENT_STATUS_DISPLAYED,
-      false, false /* expect cert status error */);
+      security_state::NONE, false, true, false,
+      false /* expect cert status error */);
 
   // Navigate to an HTTPS page that displays mixed content dynamically.
   replacement_path = GetFilePathWithHostAndPortReplacement(
@@ -763,7 +763,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContent) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::SECURE, false, security_state::CONTENT_STATUS_NONE, false,
+      security_state::SECURE, false, false, false,
       false /* expect cert status error */);
   // Load the insecure image.
   bool js_result = false;
@@ -773,8 +773,8 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContent) {
   EXPECT_TRUE(js_result);
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::NONE, false, security_state::CONTENT_STATUS_DISPLAYED,
-      false, false /* expect cert status error */);
+      security_state::NONE, false, true, false,
+      false /* expect cert status error */);
 
   // Navigate to an HTTPS page that runs mixed content.
   replacement_path = GetFilePathWithHostAndPortReplacement(
@@ -783,8 +783,8 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContent) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, false, security_state::CONTENT_STATUS_RAN,
-      false, false /* expect cert status error */);
+      security_state::DANGEROUS, false, false, true,
+      false /* expect cert status error */);
 
   // Navigate to an HTTPS page that runs and displays mixed content.
   replacement_path = GetFilePathWithHostAndPortReplacement(
@@ -793,8 +793,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContent) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, false,
-      security_state::CONTENT_STATUS_DISPLAYED_AND_RAN, false,
+      security_state::DANGEROUS, false, true, true,
       false /* expect cert status error */);
 
   // Navigate to an HTTPS page that runs mixed content in an iframe.
@@ -807,8 +806,8 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContent) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, false, security_state::CONTENT_STATUS_RAN,
-      false, false /* expect cert status error */);
+      security_state::DANGEROUS, false, false, true,
+      false /* expect cert status error */);
 }
 
 IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
@@ -830,13 +829,13 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(web_contents);
   ASSERT_TRUE(helper);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      helper->GetVisibleSecurityState();
 
-  EXPECT_FALSE(net::IsCertStatusError(security_info.cert_status));
-  EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
-  EXPECT_EQ(security_state::CONTENT_STATUS_RAN,
-            security_info.content_with_cert_errors_status);
+  EXPECT_FALSE(net::IsCertStatusError(visible_security_state->cert_status));
+  EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
+  EXPECT_TRUE(visible_security_state->ran_content_with_cert_errors);
+  EXPECT_FALSE(visible_security_state->displayed_content_with_cert_errors);
 }
 
 IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
@@ -858,13 +857,13 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(web_contents);
   ASSERT_TRUE(helper);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      helper->GetVisibleSecurityState();
 
-  EXPECT_FALSE(net::IsCertStatusError(security_info.cert_status));
-  EXPECT_EQ(security_state::NONE, security_info.security_level);
-  EXPECT_EQ(security_state::CONTENT_STATUS_DISPLAYED,
-            security_info.content_with_cert_errors_status);
+  EXPECT_FALSE(net::IsCertStatusError(visible_security_state->cert_status));
+  EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
+  EXPECT_FALSE(visible_security_state->ran_content_with_cert_errors);
+  EXPECT_TRUE(visible_security_state->displayed_content_with_cert_errors);
 }
 
 IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
@@ -888,13 +887,13 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(web_contents);
   ASSERT_TRUE(helper);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      helper->GetVisibleSecurityState();
 
-  EXPECT_FALSE(net::IsCertStatusError(security_info.cert_status));
-  EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
-  EXPECT_EQ(security_state::CONTENT_STATUS_DISPLAYED_AND_RAN,
-            security_info.content_with_cert_errors_status);
+  EXPECT_FALSE(net::IsCertStatusError(visible_security_state->cert_status));
+  EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
+  EXPECT_TRUE(visible_security_state->ran_content_with_cert_errors);
+  EXPECT_TRUE(visible_security_state->displayed_content_with_cert_errors);
 }
 
 // Same as SecurityStateTabHelperTest.ActiveAndPassiveContentWithCertErrors but
@@ -913,8 +912,8 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContentWithSHA1Cert) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::NONE, true, security_state::CONTENT_STATUS_DISPLAYED,
-      false, false /* expect cert status error */);
+      security_state::NONE, true, true, false,
+      false /* expect cert status error */);
 
   // Navigate to an HTTPS page that displays mixed content dynamically.
   replacement_path = GetFilePathWithHostAndPortReplacement(
@@ -923,7 +922,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContentWithSHA1Cert) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::NONE, true, security_state::CONTENT_STATUS_NONE, false,
+      security_state::NONE, true, false, false,
       false /* expect cert status error */);
   // Load the insecure image.
   bool js_result = false;
@@ -933,8 +932,8 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContentWithSHA1Cert) {
   EXPECT_TRUE(js_result);
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::NONE, true, security_state::CONTENT_STATUS_DISPLAYED,
-      false, false /* expect cert status error */);
+      security_state::NONE, true, true, false,
+      false /* expect cert status error */);
 
   // Navigate to an HTTPS page that runs mixed content.
   replacement_path = GetFilePathWithHostAndPortReplacement(
@@ -943,8 +942,8 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContentWithSHA1Cert) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, true, security_state::CONTENT_STATUS_RAN,
-      false, false /* expect cert status error */);
+      security_state::DANGEROUS, true, false, true,
+      false /* expect cert status error */);
 
   // Navigate to an HTTPS page that runs and displays mixed content.
   replacement_path = GetFilePathWithHostAndPortReplacement(
@@ -953,8 +952,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContentWithSHA1Cert) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, true,
-      security_state::CONTENT_STATUS_DISPLAYED_AND_RAN, false,
+      security_state::DANGEROUS, true, true, true,
       false /* expect cert status error */);
 }
 
@@ -975,7 +973,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, MixedContentStrictBlocking) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::SECURE, false, security_state::CONTENT_STATUS_NONE, false,
+      security_state::SECURE, false, false, false,
       false /* expect cert status error */);
 }
 
@@ -987,16 +985,16 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, BrokenHTTPS) {
                                https_server_.GetURL("/ssl/google.html"));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, false, security_state::CONTENT_STATUS_NONE,
-      false, true /* expect cert status error */);
+      security_state::DANGEROUS, false, false, false,
+      true /* expect cert status error */);
 
   ProceedThroughInterstitial(
       browser()->tab_strip_model()->GetActiveWebContents());
 
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, false, security_state::CONTENT_STATUS_NONE,
-      false, true /* expect cert status error */);
+      security_state::DANGEROUS, false, false, false,
+      true /* expect cert status error */);
 
   // Navigate to a broken HTTPS page that displays mixed content.
   std::string replacement_path = GetFilePathWithHostAndPortReplacement(
@@ -1006,8 +1004,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, BrokenHTTPS) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, false,
-      security_state::CONTENT_STATUS_DISPLAYED, false,
+      security_state::DANGEROUS, false, true, false,
       true /* expect cert status error */);
 }
 
@@ -1026,9 +1023,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
   ASSERT_TRUE(helper);
 
   ui_test_utils::NavigateToURL(browser(), GURL("data:text/html,<html></html>"));
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
 
   // Ensure that WebContentsObservers don't show an incorrect Form Not Secure
   // explanation. Regression test for https://crbug.com/691412.
@@ -1071,20 +1066,21 @@ IN_PROC_BROWSER_TEST_P(
                                 PasswordReuseEvent::SIGN_IN_PASSWORD);
   observer.WaitForDidChangeVisibleSecurityState();
 
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      helper->GetVisibleSecurityState();
+
+  EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
   EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE,
-            security_info.malicious_content_status);
+            visible_security_state->malicious_content_status);
 
   // Simulates a Gaia password change, then malicious content status will
   // change to MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING.
   service->OnGaiaPasswordChanged();
   base::RunLoop().RunUntilIdle();
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+  visible_security_state = helper->GetVisibleSecurityState();
+  EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
   EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING,
-            security_info.malicious_content_status);
+            visible_security_state->malicious_content_status);
 }
 
 // Tests the security level and malicious content status for enterprise password
@@ -1116,11 +1112,11 @@ IN_PROC_BROWSER_TEST_P(
                                 PasswordReuseEvent::ENTERPRISE_PASSWORD);
   observer.WaitForDidChangeVisibleSecurityState();
 
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      helper->GetVisibleSecurityState();
+  EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
   EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE,
-            security_info.malicious_content_status);
+            visible_security_state->malicious_content_status);
 
   // Since these are non-Gaia enterprise passwords, Gaia password change won't
   // have any impact here.
@@ -1141,9 +1137,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
   ASSERT_TRUE(helper);
 
   ui_test_utils::NavigateToURL(browser(), GURL("ftp://example.test/"));
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
 
   // Ensure that WebContentsObservers don't show an incorrect Form Not Secure
   // explanation. Regression test for https://crbug.com/691412.
@@ -1266,12 +1260,10 @@ IN_PROC_BROWSER_TEST_P(PKPModelClientTest, PKPBypass) {
 
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::SECURE, false, security_state::CONTENT_STATUS_NONE, true,
-      false);
+      security_state::SECURE, false, false, false, false);
 
   const content::SecurityStyleExplanations& explanation =
       observer.latest_explanations();
-  EXPECT_TRUE(explanation.pkp_bypassed);
   EXPECT_FALSE(explanation.info_explanations.empty());
 }
 
@@ -1358,7 +1350,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateLoadingTest, NavigationStateChanges) {
                                https_server_.GetURL("/ssl/google.html"));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::SECURE, false, security_state::CONTENT_STATUS_NONE, false,
+      security_state::SECURE, false, false, false,
       false /* expect cert status error */);
 
   // Navigate to a page that doesn't finish loading. Test that the
@@ -1426,25 +1418,21 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
       browser(),
       GetURLWithNonLocalHostname(embedded_test_server(),
                                  "/textinput/focus_input_on_load.html"));
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
 
   // Verify a value set operation isn't treated as user-input.
   EXPECT_TRUE(content::ExecuteScript(
       contents, "document.getElementById('text_id').value='v';"));
   InjectScript(contents);
   base::RunLoop().RunUntilIdle();
-  helper->GetSecurityInfo(&security_info);
-  ASSERT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+  ASSERT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
 
   // Verify an InsertText operation isn't treated as user-input.
   EXPECT_TRUE(content::ExecuteScript(
       contents, "document.execCommand('InsertText',false,'a');"));
   InjectScript(contents);
   base::RunLoop().RunUntilIdle();
-  helper->GetSecurityInfo(&security_info);
-  ASSERT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+  ASSERT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
 }
 
 // Tests that the security level of a HTTP page is downgraded from
@@ -1468,9 +1456,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
   ui_test_utils::NavigateToURL(
       browser(),
       GetURLWithNonLocalHostname(embedded_test_server(), "/file_input.html"));
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
 
   // Prepare a file for the upload form.
   base::FilePath file_path;
@@ -1489,8 +1475,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
   observer.WaitForDidChangeVisibleSecurityState();
 
   // Verify that the security state degrades as expected.
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+  EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
 
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
@@ -1499,8 +1484,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
   // Verify that after a refresh, the DANGEROUS state is cleared.
   contents->GetController().Reload(content::ReloadType::NORMAL, false);
   content::WaitForLoadStop(contents);
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
 }
 
 // A Browser subclass that keeps track of messages that have been
@@ -1564,14 +1548,14 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, AddedTab) {
                      ui::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(content::WaitForLoadStop(new_contents.get()));
   CheckSecurityInfoForSecure(new_contents.get(), security_state::SECURE, false,
-                             security_state::CONTENT_STATUS_NONE, false,
+                             false, false,
                              false /* expect cert status error */);
 
   content::WebContents* raw_new_contents = new_contents.get();
   browser()->tab_strip_model()->InsertWebContentsAt(0, std::move(new_contents),
                                                     TabStripModel::ADD_NONE);
   CheckSecurityInfoForSecure(raw_new_contents, security_state::SECURE, false,
-                             security_state::CONTENT_STATUS_NONE, false,
+                             false, false,
                              false /* expect cert status error */);
 }
 
@@ -1586,7 +1570,7 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server_expired.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
   https_test_server_expired.ServeFilesFromSourceDirectory(
-      base::FilePath(kDocRoot));
+      GetChromeTestDataDir());
   ASSERT_TRUE(https_test_server_expired.Start());
 
   content::WebContents* web_contents =
@@ -1601,11 +1585,11 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
   EXPECT_EQ(0u, observer.latest_explanations().insecure_explanations.size());
   EXPECT_EQ(0u, observer.latest_explanations().secure_explanations.size());
   EXPECT_FALSE(observer.latest_explanations().scheme_is_cryptographic);
-  EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
-  EXPECT_FALSE(observer.latest_explanations().ran_mixed_content);
-  EXPECT_FALSE(observer.latest_explanations().displayed_mixed_content);
-  EXPECT_TRUE(observer.latest_explanations().summary.empty());
+  // Localhost is considered a secure origin, so we expect the summary to
+  // reflect this.
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_NON_CRYPTO_SECURE_SUMMARY),
+            observer.latest_explanations().summary);
 
   // Visit an (otherwise valid) HTTPS page that displays mixed content.
   std::string replacement_path = GetFilePathWithHostAndPortReplacement(
@@ -1627,15 +1611,8 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
   CheckSecureConnectionExplanation(
       mixed_content_explanation.secure_explanations[1], browser());
   EXPECT_TRUE(mixed_content_explanation.scheme_is_cryptographic);
-  EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
   EXPECT_TRUE(observer.latest_explanations().summary.empty());
-  EXPECT_TRUE(mixed_content_explanation.displayed_mixed_content);
-  EXPECT_FALSE(mixed_content_explanation.ran_mixed_content);
-  EXPECT_EQ(blink::kWebSecurityStyleNeutral,
-            mixed_content_explanation.displayed_insecure_content_style);
-  EXPECT_EQ(blink::kWebSecurityStyleInsecure,
-            mixed_content_explanation.ran_insecure_content_style);
 
   // Visit a broken HTTPS url.
   GURL expired_url(https_test_server_expired.GetURL("/title1.html"));
@@ -1652,10 +1629,7 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
   CheckSecureSubresourcesExplanation(
       observer.latest_explanations().secure_explanations[1]);
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
-  EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
-  EXPECT_FALSE(observer.latest_explanations().displayed_mixed_content);
-  EXPECT_FALSE(observer.latest_explanations().ran_mixed_content);
   EXPECT_TRUE(observer.latest_explanations().summary.empty());
 
   // Before clicking through, navigate to a different page, and then go
@@ -1674,10 +1648,7 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
   CheckSecureSubresourcesExplanation(
       observer.latest_explanations().secure_explanations[2]);
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
-  EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
-  EXPECT_FALSE(observer.latest_explanations().displayed_mixed_content);
-  EXPECT_FALSE(observer.latest_explanations().ran_mixed_content);
   EXPECT_TRUE(observer.latest_explanations().summary.empty());
 
   // After going back to the interstitial, an event for a broken lock
@@ -1692,10 +1663,7 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
   CheckSecureSubresourcesExplanation(
       observer.latest_explanations().secure_explanations[1]);
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
-  EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
-  EXPECT_FALSE(observer.latest_explanations().displayed_mixed_content);
-  EXPECT_FALSE(observer.latest_explanations().ran_mixed_content);
   EXPECT_TRUE(observer.latest_explanations().summary.empty());
 
   // Since the next expected style is the same as the previous, clear
@@ -1715,10 +1683,7 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
   CheckSecureSubresourcesExplanation(
       observer.latest_explanations().secure_explanations[1]);
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
-  EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
-  EXPECT_FALSE(observer.latest_explanations().displayed_mixed_content);
-  EXPECT_FALSE(observer.latest_explanations().ran_mixed_content);
   EXPECT_TRUE(observer.latest_explanations().summary.empty());
 }
 
@@ -1748,9 +1713,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
       GetURLWithNonLocalHostname(embedded_test_server(), "/title1.html");
   ui_test_utils::NavigateToURL(browser(), http_url);
 
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+  EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
   EXPECT_EQ(blink::kWebSecurityStyleInsecure, observer.latest_security_style());
   const content::SecurityStyleExplanations& http_explanation =
       observer.latest_explanations();
@@ -1776,7 +1739,7 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server_expired.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
   https_test_server_expired.ServeFilesFromSourceDirectory(
-      base::FilePath(kDocRoot));
+      GetChromeTestDataDir());
   ASSERT_TRUE(https_test_server_expired.Start());
 
   content::WebContents* web_contents =
@@ -1798,10 +1761,7 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
   CheckSecureSubresourcesExplanation(
       observer.latest_explanations().secure_explanations[2]);
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
-  EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
-  EXPECT_FALSE(observer.latest_explanations().displayed_mixed_content);
-  EXPECT_FALSE(observer.latest_explanations().ran_mixed_content);
 
   // Navigate to a bad HTTPS page on a different host, and then click
   // Back to verify that the previous good security style is seen again.
@@ -1827,10 +1787,7 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
   CheckSecureSubresourcesExplanation(
       observer.latest_explanations().secure_explanations[1]);
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
-  EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
-  EXPECT_FALSE(observer.latest_explanations().displayed_mixed_content);
-  EXPECT_FALSE(observer.latest_explanations().ran_mixed_content);
 
   content::WindowedNotificationObserver back_nav_load_observer(
       content::NOTIFICATION_LOAD_STOP,
@@ -1851,10 +1808,7 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
   CheckSecureSubresourcesExplanation(
       observer.latest_explanations().secure_explanations[2]);
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
-  EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
-  EXPECT_FALSE(observer.latest_explanations().displayed_mixed_content);
-  EXPECT_FALSE(observer.latest_explanations().ran_mixed_content);
 }
 
 // After AddNonsecureUrlHandler() is called, requests to this hostname
@@ -1931,9 +1885,6 @@ IN_PROC_BROWSER_TEST_F(
   // TLS settings, so it should remain at WebSecurityStyleSecure.
   EXPECT_EQ(blink::kWebSecurityStyleSecure, observer.latest_security_style());
 
-  security_state::SecurityInfo security_info;
-  SecurityStateTabHelper::FromWebContents(web_contents)
-      ->GetSecurityInfo(&security_info);
   for (const auto& explanation :
        observer.latest_explanations().secure_explanations) {
     EXPECT_NE(l10n_util::GetStringUTF8(IDS_SECURE_SSL_SUMMARY),
@@ -1976,9 +1927,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperIncognitoTest, HttpErrorPage) {
   ASSERT_TRUE(entry);
   ASSERT_EQ(content::PAGE_TYPE_ERROR, entry->GetPageType());
 
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::NONE, security_info.security_level);
+  EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
 }
 
 IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
@@ -2003,9 +1952,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
       GetURLWithNonLocalHostname(embedded_test_server(),
                                  "/textinput/focus_input_on_load.html"));
 
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
 
   {
     // Ensure that the security level remains Dangerous in the
@@ -2016,8 +1963,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
         {{security_state::features::kMarkHttpAsFeatureParameterName,
           security_state::features::kMarkHttpAsParameterDangerous}});
 
-    helper->GetSecurityInfo(&security_info);
-    EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+    EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
   }
 
   // Type one character into the focused input control and wait for a security
@@ -2029,8 +1975,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
   observer.WaitForDidChangeVisibleSecurityState();
 
   // Verify that the security state degrades as expected.
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+  EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
   const content::SecurityStyleExplanations& http_explanation =
       observer.latest_explanations();
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_HTTP_NONSECURE_SUMMARY),
@@ -2042,14 +1987,12 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
                      embedded_test_server(),
                      "/textinput/focus_input_on_load.html#fragment"));
   content::WaitForLoadStop(contents);
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+  EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
 
   // Verify that after a refresh, the DANGEROUS state is cleared.
   contents->GetController().Reload(content::ReloadType::NORMAL, false);
   content::WaitForLoadStop(contents);
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
 }
 
 IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
@@ -2073,9 +2016,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
       browser(),
       GetURLWithNonLocalHostname(embedded_test_server(), "/file_input.html"));
 
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
   SecurityStyleTestObserver observer(contents);
 
   // Prepare a file for the upload form.
@@ -2094,8 +2035,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
   observer.WaitForDidChangeVisibleSecurityState();
 
   // Verify that the security state degrades as expected.
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+  EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
 }
 
 // Tests that the histogram for security level is recorded correctly for HTTP
@@ -2179,7 +2119,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, FormSecurityLevelHistogram) {
   net::EmbeddedTestServer broken_https_server(
       net::EmbeddedTestServer::TYPE_HTTPS);
   broken_https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
-  broken_https_server.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+  broken_https_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(broken_https_server.Start());
 
   // Make the form target the expired certificate server.

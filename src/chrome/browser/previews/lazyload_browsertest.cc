@@ -43,3 +43,20 @@ IN_PROC_BROWSER_TEST_F(LazyLoadBrowserTest, CSSBackgroundImageDeferred) {
 
 // TODO(rajendrant): Add a test that checks if the deferred image is loaded when
 // user scrolls near it.
+
+IN_PROC_BROWSER_TEST_F(LazyLoadBrowserTest, CSSPseudoBackgroundImageLoaded) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  base::HistogramTester histogram_tester;
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/lazyload/css-pseudo-background-image.html"));
+
+  base::RunLoop().RunUntilIdle();
+  // Navigate away to finish the histogram recording.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  // Verify that the image bucket has substantial kilobytes recorded.
+  EXPECT_GE(30 /* KB */, histogram_tester.GetBucketCount(
+                             "DataUse.ContentType.UserTrafficKB",
+                             data_use_measurement::DataUseUserData::IMAGE));
+}

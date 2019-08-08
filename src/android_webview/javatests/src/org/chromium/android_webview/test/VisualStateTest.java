@@ -26,7 +26,6 @@ import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
@@ -35,6 +34,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.FilterInputStream;
@@ -404,7 +404,7 @@ public class VisualStateTest {
 
     private AwTestContainerView createDetachedTestContainerViewOnMainSync(
             final AwContentsClient awContentsClient) {
-        return ThreadUtils.runOnUiThreadBlockingNoException(() -> {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
             AwTestContainerView detachedView =
                     mActivityTestRule.createDetachedAwTestContainerView(awContentsClient);
             detachedView.setClipBounds(new Rect(0, 0, 100, 100));

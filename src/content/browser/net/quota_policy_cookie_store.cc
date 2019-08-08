@@ -74,8 +74,8 @@ std::unique_ptr<net::CookieStore> CreateCookieStore(
 
   if (config.path.empty()) {
     // Empty path means in-memory store.
-    cookie_monster = std::make_unique<net::CookieMonster>(
-        nullptr /* store */, nullptr /* channel_id_service */, net_log);
+    cookie_monster =
+        std::make_unique<net::CookieMonster>(nullptr /* store */, net_log);
   } else {
     scoped_refptr<base::SequencedTaskRunner> client_task_runner =
         config.client_task_runner;
@@ -103,14 +103,16 @@ std::unique_ptr<net::CookieStore> CreateCookieStore(
             sqlite_store.get(),
             config.storage_policy.get());
 
-    cookie_monster = std::make_unique<net::CookieMonster>(
-        persistent_store, config.channel_id_service, net_log);
+    cookie_monster =
+        std::make_unique<net::CookieMonster>(persistent_store, net_log);
     if (config.persist_session_cookies)
       cookie_monster->SetPersistSessionCookies(true);
   }
 
   if (!config.cookieable_schemes.empty())
-    cookie_monster->SetCookieableSchemes(config.cookieable_schemes);
+    // No need to wait for callback, the work happens synchronously.
+    cookie_monster->SetCookieableSchemes(config.cookieable_schemes,
+                                         base::DoNothing());
 
   return std::move(cookie_monster);
 }

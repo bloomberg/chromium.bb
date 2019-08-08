@@ -95,6 +95,15 @@ bool PendingExtensionManager::HasPendingExtensionFromSync() const {
   return false;
 }
 
+bool PendingExtensionManager::HasPendingExtensionFromPolicy() const {
+  return std::find_if(pending_extension_list_.begin(),
+                      pending_extension_list_.end(),
+                      [](const PendingExtensionInfo& info) {
+                        return info.install_source() ==
+                               Manifest::EXTERNAL_POLICY_DOWNLOAD;
+                      }) != pending_extension_list_.end();
+}
+
 void PendingExtensionManager::ExpectPolicyReinstallForCorruption(
     const ExtensionId& id) {
   if (base::ContainsKey(expected_policy_reinstalls_, id))

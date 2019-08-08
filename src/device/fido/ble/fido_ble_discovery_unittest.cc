@@ -43,6 +43,7 @@ using TestMockDevice = ::testing::NiceMock<MockBluetoothDevice>;
 using NiceMockBluetoothAdapter = ::testing::NiceMock<MockBluetoothAdapter>;
 
 constexpr char kDeviceName[] = "device_name";
+constexpr char kDeviceChangedName[] = "device_changed_name";
 constexpr char kDeviceAddress[] = "device_address";
 constexpr char kDeviceChangedAddress[] = "device_changed_address";
 constexpr char kAuthenticatorId[] = "ble:device_address";
@@ -74,6 +75,23 @@ class FidoBleDiscoveryTest : public ::testing::Test {
         .WillRepeatedly(Return(kDeviceAddress));
 
     EXPECT_CALL(*adapter(), GetDevice(kDeviceAddress))
+        .WillRepeatedly(Return(mock_device.get()));
+
+    return mock_device;
+  }
+
+  std::unique_ptr<TestMockDevice> CreateChangedMockFidoDevice() {
+    DCHECK(adapter_);
+    auto mock_device = std::make_unique<TestMockDevice>(
+        adapter_.get(), 0 /* bluetooth_class */, kDeviceChangedName,
+        kDeviceChangedAddress, false /* paired */, false /* connected */);
+    EXPECT_CALL(*mock_device, GetUUIDs)
+        .WillRepeatedly(Return(
+            std::vector<BluetoothUUID>{BluetoothUUID(kFidoServiceUUID)}));
+    EXPECT_CALL(*mock_device, GetAddress)
+        .WillRepeatedly(Return(kDeviceChangedAddress));
+
+    EXPECT_CALL(*adapter(), GetDevice(kDeviceChangedAddress))
         .WillRepeatedly(Return(mock_device.get()));
 
     return mock_device;
@@ -393,6 +411,54 @@ TEST_F(FidoBleDiscoveryTest,
       base::TimeDelta::FromSeconds(4));
 
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
+}
+
+// Verify that if a device changes its address and the new address collides
+// with the address of an existing device, the operation is aborted with no
+// changes.
+TEST_F(FidoBleDiscoveryTest, DiscoveryDoesNotDeleteDeviceOnAddressCollision) {
+  SetMockBluetoothAdapter();
+  EXPECT_CALL(*adapter(), IsPresent()).WillOnce(Return(true));
+  auto mock_device = CreateMockFidoDevice();
+  auto changed_mock_device = CreateChangedMockFidoDevice();
+
+  EXPECT_CALL(*observer(),
+              AuthenticatorAdded(discovery(), IdMatches(kDeviceAddress)));
+
+  EXPECT_CALL(*observer(), AuthenticatorAdded(
+                               discovery(), IdMatches(kDeviceChangedAddress)));
+
+  discovery()->Start();
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+
+  adapter()->NotifyDeviceChanged(mock_device.get());
+  ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(mock_device.get()));
+
+  adapter()->NotifyDeviceChanged(changed_mock_device.get());
+  ASSERT_TRUE(
+      ::testing::Mock::VerifyAndClearExpectations(changed_mock_device.get()));
+
+  EXPECT_EQ(2u, discovery()->GetAuthenticatorsForTesting().size());
+
+  FidoAuthenticator* authenticator =
+      discovery()->GetAuthenticatorForTesting(kAuthenticatorId);
+
+  // Assign address |kDeviceChangedAddress| to mock_device, which originally
+  // had address |kDeviceAddress|. This will collide with
+  // |changed_mock_device| which is already present.
+  EXPECT_CALL(*mock_device.get(), GetAddress)
+      .WillRepeatedly(Return(kDeviceChangedAddress));
+  for (auto& observer : adapter()->GetObservers()) {
+    observer.DeviceAddressChanged(adapter(), mock_device.get(), kDeviceAddress);
+  }
+
+  adapter()->NotifyDeviceChanged(mock_device.get());
+
+  EXPECT_EQ(authenticator->GetId(),
+            FidoBleDevice::GetId(kDeviceChangedAddress));
+  EXPECT_EQ(2u, discovery()->GetAuthenticatorsForTesting().size());
+  EXPECT_TRUE(discovery()->GetAuthenticatorForTesting(
+      FidoBleDevice::GetId(kDeviceChangedAddress)));
 }
 
 }  // namespace device

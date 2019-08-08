@@ -24,8 +24,7 @@ RadioButton::RadioButton(const base::string16& label, int group_id)
   SetGroup(group_id);
 }
 
-RadioButton::~RadioButton() {
-}
+RadioButton::~RadioButton() = default;
 
 const char* RadioButton::GetClassName() const {
   return kViewClassName;
@@ -40,7 +39,7 @@ View* RadioButton::GetSelectedViewForGroup(int group) {
   Views views;
   GetViewsInGroupFromParent(group, &views);
   if (views.empty())
-    return NULL;
+    return nullptr;
 
   for (Views::const_iterator i(views.begin()); i != views.end(); ++i) {
     // REVIEW: why don't we check the runtime type like is done above?
@@ -48,7 +47,7 @@ View* RadioButton::GetSelectedViewForGroup(int group) {
     if (radio_button->checked())
       return radio_button;
   }
-  return NULL;
+  return nullptr;
 }
 
 bool RadioButton::IsGroupFocusTraversable() const {

@@ -10,12 +10,6 @@ namespace password_manager {
 //       names, e.g. "MyGreatFeature".
 namespace features {
 
-// Enable affiliation based matching, so that credentials stored for an Android
-// application will also be considered matches for, and be filled into
-// corresponding Web applications.
-const base::Feature kAffiliationBasedMatching = {
-    "AffiliationBasedMatching", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables the editing of passwords in chrome://settings/passwords, i.e. the
 // Desktop passwords settings page.
 const base::Feature kEditPasswordsInDesktopSettings = {
@@ -25,16 +19,6 @@ const base::Feature kEditPasswordsInDesktopSettings = {
 // with the present encryption key from the Keychain.
 const base::Feature kDeleteCorruptedPasswords = {
     "DeleteCorruptedPasswords", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Use HTML based username detector.
-const base::Feature kHtmlBasedUsernameDetector = {
-    "HtmlBaseUsernameDetector", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls whether password requirements can be overridden for domains
-// (as opposed to only relying on the autofill server).
-const base::Feature kPasswordGenerationRequirementsDomainOverrides = {
-    "PasswordGenerationRequirementsDomainOverrides",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls the ability to import passwords from Chrome's settings page.
 const base::Feature kPasswordImport = {"PasswordImport",
@@ -66,7 +50,7 @@ const base::Feature kGooglePasswordManager = {
 // Enables new password form parsing mechanism for filling passwords, details in
 // https://goo.gl/QodPH1
 const base::Feature kNewPasswordFormParsing = {
-    "new-password-form-parsing", base::FEATURE_DISABLED_BY_DEFAULT};
+    "new-password-form-parsing", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables new password form parsing mechanism for saving passwords, details in
 // https://goo.gl/QodPH1
@@ -85,8 +69,8 @@ const base::Feature kManualPasswordGenerationAndroid{
 
 // Performs a one-off migration (with retries) from a native backend into
 // logindb. Passwords are served from the new location.
-const base::Feature kMigrateLinuxToLoginDB = {
-    "migrate-linux-to-logindb", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kMigrateLinuxToLoginDB = {"migrate-linux-to-logindb",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Field trial identifier for password generation requirements.
 const char* kGenerationRequirementsFieldTrial =

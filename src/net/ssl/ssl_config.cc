@@ -26,7 +26,6 @@ SSLConfig::SSLConfig()
       version_max(kDefaultSSLVersionMax),
       early_data_enabled(false),
       version_interference_probe(false),
-      channel_id_enabled(false),
       false_start_enabled(true),
       require_ecdhe(false),
       ignore_certificate_errors(false),

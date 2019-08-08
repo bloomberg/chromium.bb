@@ -68,18 +68,14 @@ enum TestContextOptions {
 
 const char kTestKey[] = "test-key";
 
-// Name of the preference that governs enabling the Data Reduction Proxy.
-const char kDataReductionProxyEnabled[] = "data_reduction_proxy.enabled";
+net::BackoffEntry::Policy kTestBackoffPolicy;
 
-const net::BackoffEntry::Policy kTestBackoffPolicy = {
-    0,               // num_errors_to_ignore
-    10 * 1000,       // initial_delay_ms
-    2,               // multiply_factor
-    0,               // jitter_factor
-    30 * 60 * 1000,  // maximum_backoff_ms
-    -1,              // entry_lifetime_ms
-    true,            // always_use_initial_delay
-};
+const net::BackoffEntry::Policy& GetTestBackoffPolicy() {
+  kTestBackoffPolicy = data_reduction_proxy::GetBackoffPolicy();
+  // Remove jitter to bring certainty in the tests.
+  kTestBackoffPolicy.jitter_factor = 0;
+  return kTestBackoffPolicy;
+}
 
 }  // namespace
 
@@ -112,8 +108,9 @@ TestDataReductionProxyConfigServiceClient::
         DataReductionProxyConfig* config,
         DataReductionProxyIOData* io_data,
         network::NetworkConnectionTracker* network_connection_tracker,
-        ConfigStorer config_storer)
-    : DataReductionProxyConfigServiceClient(kTestBackoffPolicy,
+        ConfigStorer config_storer,
+        const net::BackoffEntry::Policy& backoff_policy)
+    : DataReductionProxyConfigServiceClient(backoff_policy,
                                             request_options,
                                             config_values,
                                             config,
@@ -124,7 +121,7 @@ TestDataReductionProxyConfigServiceClient::
       is_application_state_background_(false),
 #endif
       tick_clock_(base::Time::UnixEpoch()),
-      test_backoff_entry_(&kTestBackoffPolicy, &tick_clock_) {
+      test_backoff_entry_(&backoff_policy, &tick_clock_) {
 }
 
 TestDataReductionProxyConfigServiceClient::
@@ -142,6 +139,11 @@ void TestDataReductionProxyConfigServiceClient::SetCustomReleaseTime(
 
 base::TimeDelta TestDataReductionProxyConfigServiceClient::GetDelay() const {
   return config_refresh_timer_.GetCurrentDelay();
+}
+
+base::TimeDelta
+TestDataReductionProxyConfigServiceClient::GetBackoffTimeUntilRelease() const {
+  return test_backoff_entry_.GetTimeUntilRelease();
 }
 
 int TestDataReductionProxyConfigServiceClient::GetBackoffErrorCount() {
@@ -278,10 +280,11 @@ void TestDataReductionProxyIOData::SetIgnoreLongTermBlackListRules(
 }
 
 void TestDataReductionProxyIOData::SetDataReductionProxyService(
-    base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service) {
+    base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service,
+    const std::string& user_agent) {
   if (!service_set_)
     DataReductionProxyIOData::SetDataReductionProxyService(
-        data_reduction_proxy_service);
+        data_reduction_proxy_service, user_agent);
 
   service_set_ = true;
 }
@@ -495,15 +498,13 @@ DataReductionProxyTestContext::Builder::Build() {
   if (!settings_)
     settings_ = std::make_unique<DataReductionProxySettings>();
   if (skip_settings_initialization_) {
-    settings_->set_data_reduction_proxy_enabled_pref_name_for_test(
-        kDataReductionProxyEnabled);
     test_context_flags |= SKIP_SETTINGS_INITIALIZATION;
   }
 
   if (use_mock_service_)
     test_context_flags |= USE_MOCK_SERVICE;
 
-  pref_service->registry()->RegisterBooleanPref(kDataReductionProxyEnabled,
+  pref_service->registry()->RegisterBooleanPref(prefs::kDataSaverEnabled,
                                                 false);
   RegisterSimpleProfilePrefs(pref_service->registry());
 
@@ -519,7 +520,8 @@ DataReductionProxyTestContext::Builder::Build() {
         std::move(params), io_data->request_options(), raw_mutable_config,
         io_data->config(), io_data.get(), test_network_connection_tracker,
         base::BindRepeating(&TestConfigStorer::StoreSerializedConfig,
-                            base::Unretained(config_storer.get()))));
+                            base::Unretained(config_storer.get())),
+        GetTestBackoffPolicy()));
   } else if (use_config_client_) {
     config_client.reset(new DataReductionProxyConfigServiceClient(
         GetBackoffPolicy(), io_data->request_options(), raw_mutable_config,
@@ -583,22 +585,26 @@ DataReductionProxyTestContext::~DataReductionProxyTestContext() {
   DestroySettings();
 }
 
-const char*
-DataReductionProxyTestContext::GetDataReductionProxyEnabledPrefName() const {
-  return kDataReductionProxyEnabled;
-}
-
 void DataReductionProxyTestContext::RegisterDataReductionProxyEnabledPref() {
   simple_pref_service_->registry()->RegisterBooleanPref(
-      kDataReductionProxyEnabled, false);
+      prefs::kDataSaverEnabled, false);
 }
 
 void DataReductionProxyTestContext::SetDataReductionProxyEnabled(bool enabled) {
-  simple_pref_service_->SetBoolean(kDataReductionProxyEnabled, enabled);
+  // Set the command line so that |IsDataSaverEnabledByUser| returns as expected
+  // on all platforms.
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+  if (enabled) {
+    cmd->AppendSwitch(switches::kEnableDataReductionProxy);
+  } else {
+    cmd->RemoveSwitch(switches::kEnableDataReductionProxy);
+  }
+
+  simple_pref_service_->SetBoolean(prefs::kDataSaverEnabled, enabled);
 }
 
 bool DataReductionProxyTestContext::IsDataReductionProxyEnabled() const {
-  return simple_pref_service_->GetBoolean(kDataReductionProxyEnabled);
+  return simple_pref_service_->GetBoolean(prefs::kDataSaverEnabled);
 }
 
 void DataReductionProxyTestContext::RunUntilIdle() {
@@ -621,10 +627,11 @@ void DataReductionProxyTestContext::DestroySettings() {
 
 void DataReductionProxyTestContext::InitSettingsWithoutCheck() {
   settings_->InitDataReductionProxySettings(
-      kDataReductionProxyEnabled, simple_pref_service_.get(), io_data_.get(),
+      simple_pref_service_.get(), io_data_.get(),
       CreateDataReductionProxyServiceInternal(settings_.get()));
   io_data_->SetDataReductionProxyService(
-      settings_->data_reduction_proxy_service()->GetWeakPtr());
+      settings_->data_reduction_proxy_service()->GetWeakPtr(),
+      std::string() /*user_agent*/);
   settings_->data_reduction_proxy_service()->SetIOData(io_data_->GetWeakPtr());
 }
 
@@ -688,7 +695,7 @@ void DataReductionProxyTestContext::
                                         "OK");
 
   // Set the pref to cause the secure proxy check to be issued.
-  pref_service()->SetBoolean(kDataReductionProxyEnabled, true);
+  SetDataReductionProxyEnabled(true);
   RunUntilIdle();
 }
 

@@ -204,6 +204,11 @@ class AutocompleteController : public AutocompleteProviderListener,
   void StopHelper(bool clear_result,
                   bool due_to_user_inactivity);
 
+  // Helper for UpdateKeywordDescriptions(). Returns whether curbing the keyword
+  // descriptions is enabled, and whether there is enough input to guarantee
+  // that the Omnibox is in keyword mode.
+  bool ShouldCurbKeywordDescriptions(const base::string16& keyword);
+
   // MemoryDumpProvider:
   bool OnMemoryDump(
       const base::trace_event::MemoryDumpArgs& args,

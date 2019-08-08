@@ -55,9 +55,8 @@ class RemoteViewProvider::EmbeddingWindowObserver
     : public aura::WindowObserver {
  public:
   using SizeChangedCallback = base::RepeatingCallback<void(const gfx::Size&)>;
-  EmbeddingWindowObserver(aura::Window* window,
-                          const SizeChangedCallback& callback)
-      : window_observer_(this), on_size_changed_(callback) {
+  EmbeddingWindowObserver(aura::Window* window, SizeChangedCallback callback)
+      : window_observer_(this), on_size_changed_(std::move(callback)) {
     window_observer_.Add(window);
   }
   ~EmbeddingWindowObserver() override = default;
@@ -110,10 +109,10 @@ void RemoteViewProvider::GetEmbedToken(GetEmbedTokenCallback callback) {
   embed_root_ = window_tree_client->CreateEmbedRoot(this);
 }
 
-void RemoteViewProvider::SetCallbacks(const OnEmbedCallback& on_embed,
-                                      const OnUnembedCallback& on_unembed) {
-  on_embed_callback_ = on_embed;
-  on_unembed_callback_ = on_unembed;
+void RemoteViewProvider::SetCallbacks(OnEmbedCallback on_embed,
+                                      OnUnembedCallback on_unembed) {
+  on_embed_callback_ = std::move(on_embed);
+  on_unembed_callback_ = std::move(on_unembed);
 }
 
 void RemoteViewProvider::OnEmbeddedWindowDestroyed() {

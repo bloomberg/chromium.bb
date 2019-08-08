@@ -129,7 +129,7 @@ class MockHttpStream : public HttpStream {
     result_waiter_->set_result(not_reusable);
   }
 
-  HttpStream* RenewStreamForAuth() override { return NULL; }
+  HttpStream* RenewStreamForAuth() override { return nullptr; }
 
   bool IsResponseBodyComplete() const override { return is_complete_; }
 
@@ -225,7 +225,7 @@ int MockHttpStream::ReadResponseBodyImpl(IOBuffer* buf, int buf_len) {
 
 void MockHttpStream::CompleteRead() {
   int result = ReadResponseBodyImpl(user_buf_.get(), buf_len_);
-  user_buf_ = NULL;
+  user_buf_ = nullptr;
   base::ResetAndReturn(&callback_).Run(result);
 }
 

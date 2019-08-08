@@ -192,17 +192,62 @@ function createHelperIframe(name, doBindEvents) {
                        doBindEvents);
 }
 
-/**
- * requestVia*() functions return promises that are resolved on successful
- * requests with objects of the same "type", i.e. objects that contains
- * the same sets of keys that are fixed within one category of tests (e.g.
- * within wpt/referrer-policy tests).
- * wrapResult() (that should be defined outside this file) is used to convert
- * the response bodies of subresources into the expected result objects in some
- * cases, and in other cases the result objects are constructed more directly.
- * TODO(https://crbug.com/906850): Clean up the semantics around this, e.g.
- * use (or not use) wrapResult() consistently, unify the arguments, etc.
- */
+function wrapResult(server_data) {
+  if (typeof(server_data) === "string") {
+    throw server_data;
+  }
+  return {
+    referrer: server_data.headers.referer,
+    headers: server_data.headers
+  }
+}
+
+// `requestVia*()` functions return promises that are resolved on successful
+// requests with objects with the following keys:
+// - `headers`: HTTP request headers sent to server.
+// - `referrer`: Referrer.
+// - `location`: The URL of the subresource.
+//
+// Category 1:
+//     `headers`: set.
+//     `referrer`: set via `document.referrer`.
+//     `location`: set via `document.location`.
+//     See `template/document.html.template`.
+// Category 2:
+//     `headers`: set.
+//     `referrer`: set to `headers.referer` by `wrapResult()`.
+//     `location`: not set.
+// Category 3:
+//     All the keys listed above are NOT set.
+//
+// -------------------------------- -------- --------------------------
+// Function name                    Category Used in
+//                                           -------- ------- ---------
+//                                           referrer mixed-  upgrade-
+//                                           policy   content insecure-
+//                                           policy   content request
+// -------------------------------- -------- -------- ------- ---------
+// requestViaAnchor                 1        Y        Y       -
+// requestViaArea                   1        Y        Y       -
+// requestViaAudio                  3        -        Y       -
+// requestViaDedicatedWorker        2        Y        Y       Y
+// requestViaFetch                  2        Y        Y       -
+// requestViaForm                   3        -        Y       -
+// requestViaIframe                 1        Y        Y       -
+// requestViaImage                  3        -        Y       -
+// requestViaImageForReferrerPolicy 2        Y        -       -
+// requestViaLinkPrefetch           3        -        Y       -
+// requestViaLinkStylesheet         3        -        Y       -
+// requestViaObject                 3        -        Y       -
+// requestViaPicture                3        -        Y       -
+// requestViaScript                 2        Y        Y       -
+// requestViaSendBeacon             3        -        Y       -
+// requestViaSharedWorker           2        Y        -       -
+// requestViaVideo                  3        -        Y       -
+// requestViaWebSocket              3        -        Y       -
+// requestViaWorklet                3        -        Y       Y
+// requestViaXhr                    2        Y        Y       -
+// -------------------------------- -------- -------- ------- ---------
 
 /**
  * Creates a new iframe, binds load and error events, sets the src attribute and
@@ -263,25 +308,43 @@ function extractImageData(img) {
 }
 
 function decodeImageData(rgba) {
-  var rgb = new Uint8ClampedArray(rgba.length);
+  let decodedBytes = new Uint8ClampedArray(rgba.length);
+  let decodedLength = 0;
 
-  // RGBA -> RGB.
-  var rgb_length = 0;
-  for (var i = 0; i < rgba.length; ++i) {
-    // Skip alpha component.
-    if (i % 4 == 3)
-      continue;
+  for (var i = 0; i + 12 <= rgba.length; i += 12) {
+    // A single byte is encoded in three pixels. 8 pixel octets (among
+    // 9 octets = 3 pixels * 3 channels) are used to encode 8 bits,
+    // the most significant bit first, where `0` and `255` in pixel values
+    // represent `0` and `1` in bits, respectively.
+    // This encoding is used to avoid errors due to different color spaces.
+    const bits = [];
+    for (let j = 0; j < 3; ++j) {
+      bits.push(rgba[i + j * 4 + 0]);
+      bits.push(rgba[i + j * 4 + 1]);
+      bits.push(rgba[i + j * 4 + 2]);
+      // rgba[i + j * 4 + 3]: Skip alpha channel.
+    }
+    // The last one element is not used.
+    bits.pop();
+
+    // Decode a single byte.
+    let byte = 0;
+    for (let j = 0; j < 8; ++j) {
+      byte <<= 1;
+      if (bits[j] >= 128)
+        byte |= 1;
+    }
 
     // Zero is the string terminator.
-    if (rgba[i] == 0)
+    if (byte == 0)
       break;
 
-    rgb[rgb_length++] = rgba[i];
+    decodedBytes[decodedLength++] = byte;
   }
 
   // Remove trailing nulls from data.
-  rgb = rgb.subarray(0, rgb_length);
-  var string_data = (new TextDecoder("ascii")).decode(rgb);
+  decodedBytes = decodedBytes.subarray(0, decodedLength);
+  var string_data = (new TextDecoder("ascii")).decode(decodedBytes);
 
   return JSON.parse(string_data);
 }
@@ -365,8 +428,9 @@ function requestViaFetch(url) {
 function dedicatedWorkerUrlThatFetches(url) {
   return `data:text/javascript,
     fetch('${url}')
-      .then(() => postMessage(''),
-            () => postMessage(''));`;
+      .then(r => r.json())
+      .then(j => postMessage(j))
+      .catch((e) => postMessage(e.message));`;
 }
 
 function workerUrlThatImports(url) {
@@ -679,6 +743,136 @@ function requestViaWebSocket(url) {
   .then(data => {
       return JSON.parse(data);
     });
+}
+
+// Subresource paths and invokers.
+const subresourceMap = {
+  "a-tag": {
+    path: "/common/security-features/subresource/document.py",
+    invoker: requestViaAnchor,
+  },
+  "area-tag": {
+    path: "/common/security-features/subresource/document.py",
+    invoker: requestViaArea,
+  },
+  "audio-tag": {
+    path: "/common/security-features/subresource/audio.py",
+    invoker: requestViaAudio,
+  },
+  "beacon-request": {
+    path: "/common/security-features/subresource/empty.py",
+    invoker: requestViaSendBeacon,
+  },
+  "fetch-request": {
+    path: "/common/security-features/subresource/xhr.py",
+    invoker: requestViaFetch,
+  },
+  "form-tag": {
+    path: "/common/security-features/subresource/empty.py",
+    invoker: requestViaForm,
+  },
+  "iframe-tag": {
+    path: "/common/security-features/subresource/document.py",
+    invoker: requestViaIframe,
+  },
+  "img-tag": {
+    path: "/common/security-features/subresource/image.py",
+    invoker: requestViaImage,
+    invokerForReferrerPolicy: requestViaImageForReferrerPolicy,
+  },
+  "link-css-tag": {
+    path: "/common/security-features/subresource/empty.py",
+    invoker: requestViaLinkStylesheet,
+  },
+  "link-prefetch-tag": {
+    path: "/common/security-features/subresource/empty.py",
+    invoker: requestViaLinkPrefetch,
+  },
+  "object-tag": {
+    path: "/common/security-features/subresource/empty.py",
+    invoker: requestViaObject,
+  },
+  "picture-tag": {
+    path: "/common/security-features/subresource/image.py",
+    invoker: requestViaPicture,
+  },
+  "script-tag": {
+    path: "/common/security-features/subresource/script.py",
+    invoker: requestViaScript,
+  },
+  "video-tag": {
+    path: "/common/security-features/subresource/video.py",
+    invoker: requestViaVideo,
+  },
+  "xhr-request": {
+    path: "/common/security-features/subresource/xhr.py",
+    invoker: requestViaXhr,
+  },
+
+  "worker-request": {
+    path: "/common/security-features/subresource/worker.py",
+    invoker: url => requestViaDedicatedWorker(url),
+  },
+  // TODO: Merge "module-worker" and "module-worker-top-level".
+  "module-worker": {
+    path: "/common/security-features/subresource/worker.py",
+    invoker: url => requestViaDedicatedWorker(url, {type: "module"}),
+  },
+  "module-worker-top-level": {
+    path: "/common/security-features/subresource/worker.py",
+    invoker: url => requestViaDedicatedWorker(url, {type: "module"}),
+  },
+  "module-data-worker-import": {
+    path: "/common/security-features/subresource/worker.py",
+    invoker: url =>
+        requestViaDedicatedWorker(workerUrlThatImports(url), {type: "module"}),
+  },
+  "classic-data-worker-fetch": {
+    path: "/common/security-features/subresource/empty.py",
+    invoker: url =>
+        requestViaDedicatedWorker(dedicatedWorkerUrlThatFetches(url), {}),
+  },
+  "shared-worker": {
+    path: "/common/security-features/subresource/shared-worker.py",
+    invoker: requestViaSharedWorker,
+  },
+
+  "websocket-request": {
+    path: "/stash_responder",
+    invoker: requestViaWebSocket,
+  },
+};
+for (const workletType of ['animation', 'audio', 'layout', 'paint']) {
+  subresourceMap[`worklet-${workletType}-top-level`] = {
+      path: "/common/security-features/subresource/worker.py",
+      invoker: url => requestViaWorklet(workletType, url)
+    };
+  subresourceMap[`worklet-${workletType}-data-import`] = {
+      path: "/common/security-features/subresource/worker.py",
+      invoker: url =>
+          requestViaWorklet(workletType, workerUrlThatImports(url))
+    };
+}
+
+function getRequestURLs(subresourceType, originType, redirectionType) {
+  const key = guid();
+  const value = guid();
+
+  // We use the same stash path for both HTTP/S and WS/S stash requests.
+  const stashPath = encodeURIComponent("/mixed-content");
+
+  const stashEndpoint = "/common/security-features/subresource/xhr.py?key=" +
+                        key + "&path=" + stashPath;
+  return {
+    testUrl:
+      getSubresourceOrigin(originType) +
+        subresourceMap[subresourceType].path +
+        "?redirection=" + encodeURIComponent(redirectionType) +
+        "&action=purge&key=" + key +
+        "&path=" + stashPath,
+    announceUrl: stashEndpoint + "&action=put&value=" + value,
+    assertUrl: stashEndpoint + "&action=take",
+  };
 }
 
 // SanityChecker does nothing in release mode. See sanity-checker.js for debug

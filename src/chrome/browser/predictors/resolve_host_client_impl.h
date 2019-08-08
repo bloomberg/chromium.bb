@@ -10,7 +10,6 @@
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/address_list.h"
-#include "net/base/completion_callback.h"
 #include "services/network/public/cpp/resolve_host_client_base.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 

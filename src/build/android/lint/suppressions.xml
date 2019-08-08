@@ -152,6 +152,7 @@ Still reading?
     <!-- see crbug.com/542435 -->
     <ignore regexp="android_webview/apk/java/res"/>
     <ignore regexp="android_webview/tools/system_webview_shell/apk/res"/>
+    <ignore regexp="chrome/android/features/autofill_assistant/java/res"/>
     <ignore regexp="chrome/android/webapk/shell_apk/res"/>
     <ignore regexp="chromecast/internal"/>
     <ignore regexp="tools/android/push_apps_to_background/res"/>
@@ -233,6 +234,8 @@ Still reading?
     <ignore regexp="Static interface  method requires API level 24"/>
     <!-- 1 This is for testonly target android_support_chromium_java. -->
     <ignore regexp="third_party/android_tools/sdk/extras/chromium/support/src/org/chromium/android/support/PackageManagerWrapper.java"/>
+    <!-- 1 This is for testonly target android_support_chromium_java in android_sdk. -->
+    <ignore regexp="third_party/android_sdk/public/extras/chromium/support/src/org/chromium/android/support/PackageManagerWrapper.java"/>
     <!-- Endnote: Please specify number of suppressions when adding more -->
   </issue>
   <!-- This warning just adds a lot of false positives. -->
@@ -288,6 +291,7 @@ Still reading?
   </issue>
   <issue id="StringFormatCount" severity="Error">
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-cs/android_chrome_strings.xml"/>
+    <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-fr/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-pl/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values/android_chrome_strings.xml"/>
   </issue>

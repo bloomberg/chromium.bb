@@ -26,7 +26,7 @@ class MenuRunnerImplInterface {
   static MenuRunnerImplInterface* Create(
       ui::MenuModel* menu_model,
       int32_t run_types,
-      const base::Closure& on_menu_closed_callback);
+      base::RepeatingClosure on_menu_closed_callback);
 
   // Returns true if we're in a nested run loop running the menu.
   virtual bool IsRunning() const = 0;
@@ -49,7 +49,7 @@ class MenuRunnerImplInterface {
 
  protected:
   // Call Release() to delete.
-  virtual ~MenuRunnerImplInterface() {}
+  virtual ~MenuRunnerImplInterface() = default;
 };
 
 }  // namespace internal

@@ -35,7 +35,7 @@ struct VIEWS_MUS_EXPORT WindowManagerFrameValues {
 
   // Max width of buttons in the title bar. This width assumes all buttons are
   // present.
-  int max_title_bar_button_width;
+  int max_title_bar_button_width = 0;
 };
 
 }  // namespace views

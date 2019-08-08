@@ -6,9 +6,9 @@
 #import <XCTest/XCTest.h>
 
 #include "base/strings/sys_string_conversions.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/nigori.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/protocol/proto_value_conversions.h"
@@ -78,7 +78,8 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
 
   [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [SigninEarlGreyUtils assertSignedOut];
+  NSError* signedOutError = [SigninEarlGreyUtils checkSignedOut];
+  GREYAssertNil(signedOutError, signedOutError.localizedDescription);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -104,7 +105,8 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
 
   [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [SigninEarlGreyUtils assertSignedOut];
+  NSError* signedOutError = [SigninEarlGreyUtils checkSignedOut];
+  GREYAssertNil(signedOutError, signedOutError.localizedDescription);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -137,7 +139,9 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
                                    grey_accessibilityLabel(identity2.userEmail),
                                    grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_nil()];
-  [SigninEarlGreyUtils assertSignedInWithIdentity:identity1];
+  NSError* signedInError =
+      [SigninEarlGreyUtils checkSignedInWithIdentity:identity1];
+  GREYAssertNil(signedInError, signedInError.localizedDescription);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -176,7 +180,9 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
                                    grey_accessibilityLabel(identity2.userEmail),
                                    grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_nil()];
-  [SigninEarlGreyUtils assertSignedInWithIdentity:identity1];
+  NSError* signedInError =
+      [SigninEarlGreyUtils checkSignedInWithIdentity:identity1];
+  GREYAssertNil(signedInError, signedInError.localizedDescription);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -202,7 +208,8 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
   // Check that the user is signed out and the Main Settings screen is shown.
   [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [SigninEarlGreyUtils assertSignedOut];
+  NSError* signedOutError = [SigninEarlGreyUtils checkSignedOut];
+  GREYAssertNil(signedOutError, signedOutError.localizedDescription);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -231,7 +238,9 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                           SettingsAccountsCollectionView()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [SigninEarlGreyUtils assertSignedInWithIdentity:identity];
+  NSError* signedInError =
+      [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
+  GREYAssertNil(signedInError, signedInError.localizedDescription);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -291,7 +300,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
   ExpectedTextLabelCallback callback = ^(NSString* identityEmail) {
     ios::ChromeBrowserState* browser_state =
         chrome_test_util::GetOriginalBrowserState();
-    browser_sync::ProfileSyncService* profile_sync_service =
+    syncer::ProfileSyncService* profile_sync_service =
         ProfileSyncServiceFactory::GetAsProfileSyncServiceForBrowserState(
             browser_state);
     profile_sync_service->GetEncryptionObserverForTest()->OnPassphraseRequired(

@@ -67,32 +67,20 @@ class VertexBufferValidationTest : public ValidationTest {
             return utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, vs.str().c_str());
         }
 
-        dawn::InputState MakeInputState(unsigned int numInputs) {
-            auto builder = device.CreateInputStateBuilder();
-            dawn::VertexAttributeDescriptor attribute;
-            attribute.offset = 0;
-            attribute.format = dawn::VertexFormat::FloatR32G32B32;
-
-            dawn::VertexInputDescriptor input;
-            input.stride = 0;
-            input.stepMode = dawn::InputStepMode::Vertex;
-
-            for (unsigned int i = 0; i < numInputs; ++i) {
-                attribute.shaderLocation = i;
-                attribute.inputSlot = i;
-                input.inputSlot = i;
-                builder.SetAttribute(&attribute);
-                builder.SetInput(&input);
-            }
-            return builder.GetResult();
-        }
-
-        dawn::RenderPipeline MakeRenderPipeline(const dawn::ShaderModule& vsModule, const dawn::InputState& inputState) {
-
+        dawn::RenderPipeline MakeRenderPipeline(const dawn::ShaderModule& vsModule,
+                                                unsigned int numInputs) {
             utils::ComboRenderPipelineDescriptor descriptor(device);
             descriptor.cVertexStage.module = vsModule;
             descriptor.cFragmentStage.module = fsModule;
-            descriptor.inputState = inputState;
+
+            for (unsigned int i = 0; i < numInputs; ++i) {
+                descriptor.cInputState.cAttributes[i].shaderLocation = i;
+                descriptor.cInputState.cAttributes[i].inputSlot = i;
+                descriptor.cInputState.cAttributes[i].format = dawn::VertexFormat::Float3;
+                descriptor.cInputState.cInputs[i].inputSlot = i;
+            }
+            descriptor.cInputState.numInputs = numInputs;
+            descriptor.cInputState.numAttributes = numInputs;
 
             return device.CreateRenderPipeline(&descriptor);
         }
@@ -105,14 +93,11 @@ TEST_F(VertexBufferValidationTest, VertexInputsInheritedBetweenPipelines) {
     auto vsModule2 = MakeVertexShader(2);
     auto vsModule1 = MakeVertexShader(1);
 
-    auto inputState2 = MakeInputState(2);
-    auto inputState1 = MakeInputState(1);
-
-    auto pipeline2 = MakeRenderPipeline(vsModule2, inputState2);
-    auto pipeline1 = MakeRenderPipeline(vsModule1, inputState1);
+    auto pipeline2 = MakeRenderPipeline(vsModule2, 2);
+    auto pipeline1 = MakeRenderPipeline(vsModule1, 1);
 
     auto vertexBuffers = MakeVertexBuffers<2>();
-    uint32_t offsets[] = { 0, 0 };
+    uint64_t offsets[] = { 0, 0 };
 
     // Check failure when vertex buffer is not set
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();
@@ -143,14 +128,11 @@ TEST_F(VertexBufferValidationTest, VertexInputsNotInheritedBetweenRendePasses) {
     auto vsModule2 = MakeVertexShader(2);
     auto vsModule1 = MakeVertexShader(1);
 
-    auto inputState2 = MakeInputState(2);
-    auto inputState1 = MakeInputState(1);
-
-    auto pipeline2 = MakeRenderPipeline(vsModule2, inputState2);
-    auto pipeline1 = MakeRenderPipeline(vsModule1, inputState1);
+    auto pipeline2 = MakeRenderPipeline(vsModule2, 2);
+    auto pipeline1 = MakeRenderPipeline(vsModule1, 1);
 
     auto vertexBuffers = MakeVertexBuffers<2>();
-    uint32_t offsets[] = { 0, 0 };
+    uint64_t offsets[] = { 0, 0 };
 
     // Check success when vertex buffer is set for each render pass
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();

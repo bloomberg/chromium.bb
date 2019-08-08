@@ -22,6 +22,7 @@ import os
 import random
 import re
 
+from chromite.lib import cros_logging as logging
 from chromite.lib.paygen import utils
 
 
@@ -111,7 +112,7 @@ class Image(utils.RestrictedAttrDict):
 
   def __str__(self):
     if self.uri:
-      return '%s' % self.uri.split('/')[-1]
+      return self.uri.split('/')[-1]
     else:
       return ('Image: %s:%s/%s%s/%s%s/%s/%s (no uri)' %
               (self.build.bucket, self.build.board,
@@ -120,6 +121,30 @@ class Image(utils.RestrictedAttrDict):
                self.build.version,
                '(%s)' % self.image_version if self.image_version else '',
                self.image_type, self.key))
+
+
+class DLCImage(Image):
+  """Define a ChromeOS DLC Image.
+
+  Fields:
+    dlc_id: ID of a DLC module image.
+    dlc_package: Package name of the DLC module.
+    dlc_image: File name of a DLC module image.
+  """
+  _name = 'DLC Image definition'
+  _slots = Image._slots + ('dlc_id', 'dlc_package', 'dlc_image')
+
+  def __init__(self, *args, **kwargs):
+    super(DLCImage, self).__init__(*args, **kwargs)
+
+  def __str__(self):
+    if self.uri:
+      return self.uri.split('/')[-1]
+    else:
+      return '%s %s/%s/%s' % (super(DLCImage, self).__str__(),
+                              self.dlc_id,
+                              self.dlc_package,
+                              self.dlc_image)
 
 
 class UnsignedImageArchive(utils.RestrictedAttrDict):
@@ -285,6 +310,15 @@ class ChromeosReleases(object):
     }
 
   @staticmethod
+  def DLCImageName():
+    """Creates file name for a DLC image.
+
+    Returns:
+      The name of the DLC image.
+    """
+    return 'dlc.img'
+
+  @staticmethod
   def UnsignedImageArchiveName(board, version, milestone, image_type):
     """The base name for the tarball containing an unsigned build image.
 
@@ -357,6 +391,14 @@ class ChromeosReleases(object):
         ChromeosReleases.UnsignedImageArchiveName(build.board, build.version,
                                                   milestone, image_type))
 
+  @staticmethod
+  def DLCImagesUri(build):
+    """Creates the gspath for DLC images for a given build image archive."""
+
+    # DLC images are located at gs://{path_to_build}/dlc/{DLC_ID}/{DLC_PACKAGE}
+    return os.path.join(ChromeosReleases.BuildUri(build), 'dlc', '*', '*',
+                        ChromeosReleases.DLCImageName())
+
   @classmethod
   def ParseImageUri(cls, image_uri):
     """Parse the URI of an image into an Image object."""
@@ -371,7 +413,7 @@ class ChromeosReleases(object):
     if not values:
       return None
 
-    # Insert the URI
+    # Insert the URI.
     values['uri'] = image_uri
 
     # Create an Image object using the values we parsed out.
@@ -392,11 +434,90 @@ class ChromeosReleases(object):
     if not values:
       return None
 
-    # Insert the URI
+    # Insert the URI.
     values['uri'] = image_uri
 
     # Create an Image object using the values we parsed out.
     return UnsignedImageArchive(values)
+
+  @classmethod
+  def ParseDLCImageUri(cls, image_uri):
+    """Parse the URI of a DLC image into an Image object."""
+
+    # The named values in this regex must match the arguments to
+    # gspaths.DLCImage.
+    exp = (r'^gs://(?P<bucket>.*)/(?P<channel>.*)/(?P<board>.*)/'
+           r'(?P<version>.*)/dlc/(?P<dlc_id>.*)/(?P<dlc_package>.*)/'
+           r'(?P<dlc_image>.*)$')
+
+    values = Build.BuildValuesFromUri(exp, image_uri)
+    if not values:
+      logging.warning('Unparsable DLC URI: %s', image_uri)
+      return None
+
+    # Insert the URI
+    values['uri'] = image_uri
+
+    # Create an Image object using the values we parsed out.
+    return DLCImage(values)
+
+  @staticmethod
+  def DLCPayloadName(channel, board, version, dlc_id, dlc_package,
+                     random_str=None, src_version=None, sign=True):
+    """Creates the payload file name of a DLC image.
+
+    Args:
+      channel: What channel does the build belong to? Usually "xxx-channel".
+      board: What board is the build for? "x86-alex", "lumpy", etc.
+      version: What is the build version? "3015.0.0", "1945.76.3", etc
+      dlc_id: This is the ID of the DLC module.
+      dlc_package: Package name of the DLC module.
+      random_str: Force a given random string. None means generate one.
+      src_version: If this payload is a delta, this is the version of the image
+                   it updates from.
+      sign: Whether to sign the payload.
+
+    Returns:
+      The name for the specified build's payloads. Should be in the form of:
+      dlc_dummy-dlc_dummy-package_11869.0.0_kevin-arcnext_canary-channel_full
+      .bin-250bc111ea4955aebc2af08db1f1773c.signed
+    """
+    if random_str is None:
+      random_str = _RandomString()
+
+    if sign is True:
+      signed_ext = '.signed'
+    else:
+      signed_ext = ''
+
+    if src_version:
+      template = ('dlc_%(dlc_id)s_%(dlc_package)s_%(src_version)s-%(version)s_'
+                  '%(board)s_%(channel)s_delta.bin-%(random_str)s'
+                  '%(signed_ext)s')
+
+      return template % {
+          'dlc_id' : dlc_id,
+          'dlc_package': dlc_package,
+          'channel': channel,
+          'board': board,
+          'version': version,
+          'random_str': random_str,
+          'src_version': src_version,
+          'signed_ext': signed_ext,
+      }
+    else:
+      template = ('dlc_%(dlc_id)s_%(dlc_package)s_%(version)s_%(board)s_'
+                  '%(channel)s_full.bin-%(random_str)s%(signed_ext)s')
+
+      return template % {
+          'dlc_id' : dlc_id,
+          'dlc_package': dlc_package,
+          'channel': channel,
+          'board': board,
+          'version': version,
+          'random_str': random_str,
+          'signed_ext': signed_ext,
+      }
 
   @staticmethod
   def PayloadName(channel, board, version, key=None, random_str=None,
@@ -462,6 +583,40 @@ class ChromeosReleases(object):
           'random_str': random_str,
           'signed_ext': signed_ext,
       }
+
+  @staticmethod
+  def DLCPayloadUri(build, random_str, dlc_id, dlc_package, image_channel=None,
+                    image_version=None, src_version=None):
+    """Creates the gspath for a payload associated with a given build.
+
+    Args:
+      build: An instance of gspaths.Build that defines the build.
+      random_str: Force a given random string. None means generate one.
+      dlc_id: This is the ID of the DLC module.
+      dlc_package: This is the package name of the DLC module.
+      image_channel: Sometimes an image has a different channel than the build
+                     directory it's in. (ie: nplusone).
+      image_version: Sometimes an image has a different version than the build
+                     directory it's in. (ie: nplusone).
+      src_version: If this payload is a delta, this is the version of the image
+                   it updates from.
+    """
+    if image_channel is None:
+      image_channel = build.channel
+
+    if image_version is None:
+      image_version = build.version
+
+    # DLC payloads are pushed to dlc/|dlc_id|/|dlc_package| subfolder.
+    return os.path.join(ChromeosReleases.BuildPayloadsUri(build),
+                        'dlc', dlc_id, dlc_package,
+                        ChromeosReleases.DLCPayloadName(image_channel,
+                                                        build.board,
+                                                        image_version,
+                                                        dlc_id,
+                                                        dlc_package,
+                                                        random_str,
+                                                        src_version))
 
   @staticmethod
   def PayloadUri(build, random_str, key=None, image_channel=None,
@@ -664,6 +819,18 @@ def IsUnsignedImageArchive(a):
     True if |a| is of UnsignedImageArchive type, False otherwise
   """
   return isinstance(a, UnsignedImageArchive)
+
+
+def IsDLCImage(a):
+  """Return if the object is of DLCImage type.
+
+  Args:
+    a: object whose type needs to be checked
+
+  Returns:
+    True if |a| is of DLCImage type, False otherwise
+  """
+  return isinstance(a, DLCImage)
 
 
 def _RandomString():

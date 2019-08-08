@@ -11,27 +11,27 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
-#import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinating.h"
+#import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container_consumer.h"
 #include "ios/chrome/browser/ui/infobars/infobar_container_mediator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #include "ios/chrome/browser/ui/infobars/legacy_infobar_container_view_controller.h"
-#import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_animator.h"
-#import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_presentation_controller.h"
-#import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface InfobarContainerCoordinator () <
-    InfobarContainerConsumer,
-    UIViewControllerTransitioningDelegate,
-    SigninPresenter>
+namespace {
+// The duration in seconds that the InfobarCoordinator banner will be presented
+// for.
+const double kBannerPresentationDurationInSeconds = 6.0;
+}  // namespace
 
-@property(nonatomic, assign) TabModel* tabModel;
+@interface InfobarContainerCoordinator () <InfobarContainerConsumer>
+
+@property(nonatomic, assign) WebStateList* webStateList;
 
 // ViewController of the Infobar currently being presented, can be nil.
 @property(nonatomic, weak) UIViewController* infobarViewController;
@@ -50,11 +50,11 @@
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:
                                   (ios::ChromeBrowserState*)browserState
-                                  tabModel:(TabModel*)tabModel {
+                              webStateList:(WebStateList*)webStateList {
   self = [super initWithBaseViewController:viewController
                               browserState:browserState];
   if (self) {
-    _tabModel = tabModel;
+    _webStateList = webStateList;
   }
   return self;
 }
@@ -82,11 +82,9 @@
   self.mediator = [[InfobarContainerMediator alloc]
       initWithConsumer:self
         legacyConsumer:self.legacyContainerViewController
-          browserState:self.browserState
-              tabModel:self.tabModel];
+          webStateList:self.webStateList];
 
   self.mediator.syncPresenter = self.syncPresenter;
-  self.mediator.signinPresenter = self;
 
   [[UpgradeCenter sharedInstance] registerClient:self.mediator
                                   withDispatcher:self.dispatcher];
@@ -123,6 +121,15 @@
   return NO;
 }
 
+- (void)dismissInfobarBannerAnimated:(BOOL)animated
+                          completion:(void (^)())completion {
+  DCHECK(IsInfobarUIRebootEnabled());
+  InfobarCoordinator* infobarCoordinator =
+      static_cast<InfobarCoordinator*>(self.activeChildCoordinator);
+  [infobarCoordinator dismissInfobarBannerAnimated:animated
+                                        completion:completion];
+}
+
 #pragma mark - Accessors
 
 - (void)setCommandDispatcher:(CommandDispatcher*)commandDispatcher {
@@ -140,24 +147,35 @@
   self.dispatcher = static_cast<id<ApplicationCommands>>(_commandDispatcher);
 }
 
+- (BOOL)isPresentingInfobarBanner {
+  DCHECK(IsInfobarUIRebootEnabled());
+  _presentingInfobarBanner = self.infobarViewController ? YES : NO;
+  return _presentingInfobarBanner;
+}
+
 #pragma mark - InfobarConsumer
 
-- (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate
-                      position:(NSInteger)position {
+- (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate {
   DCHECK(IsInfobarUIRebootEnabled());
-  ChromeCoordinator<InfobarCoordinating>* infobarCoordinator =
-      static_cast<ChromeCoordinator<InfobarCoordinating>*>(infoBarDelegate);
+  InfobarCoordinator* infobarCoordinator =
+      static_cast<InfobarCoordinator*>(infoBarDelegate);
 
-  // Present the InfobarCoordinator BannerViewController.
+  // Present the InfobarBanner, and set the Coordinator and View hierarchies.
   [infobarCoordinator start];
-  self.infobarViewController = [infobarCoordinator bannerViewController];
-  [infobarCoordinator bannerViewController].transitioningDelegate = self;
-  [[infobarCoordinator bannerViewController]
-      setModalPresentationStyle:UIModalPresentationCustom];
-  [self.baseViewController
-      presentViewController:[infobarCoordinator bannerViewController]
-                   animated:YES
-                 completion:nil];
+  infobarCoordinator.badgeDelegate = self.mediator;
+  infobarCoordinator.browserState = self.browserState;
+  infobarCoordinator.baseViewController = self.baseViewController;
+  [infobarCoordinator presentInfobarBannerAnimated:YES completion:nil];
+  self.infobarViewController = infobarCoordinator.bannerViewController;
+  [self.childCoordinators addObject:infobarCoordinator];
+
+  // Dismissed the presented InfobarCoordinator banner after
+  // kBannerPresentationDuration seconds.
+  dispatch_time_t popTime = dispatch_time(
+      DISPATCH_TIME_NOW, kBannerPresentationDurationInSeconds * NSEC_PER_SEC);
+  dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
+    [infobarCoordinator dismissInfobarBannerAfterInteraction];
+  });
 }
 
 - (void)setUserInteractionEnabled:(BOOL)enabled {
@@ -173,45 +191,9 @@
 #pragma mark - InfobarCommands
 
 - (void)displayModalInfobar {
-  // TODO(crbug.com/911864): To be implemented.
-}
-
-#pragma mark - UIViewControllerTransitioningDelegate
-
-- (UIPresentationController*)
-    presentationControllerForPresentedViewController:
-        (UIViewController*)presented
-                            presentingViewController:
-                                (UIViewController*)presenting
-                                sourceViewController:(UIViewController*)source {
-  InfobarBannerPresentationController* presentationController =
-      [[InfobarBannerPresentationController alloc]
-          initWithPresentedViewController:presented
-                 presentingViewController:presenting];
-  return presentationController;
-}
-
-- (id<UIViewControllerAnimatedTransitioning>)
-    animationControllerForPresentedController:(UIViewController*)presented
-                         presentingController:(UIViewController*)presenting
-                             sourceController:(UIViewController*)source {
-  InfobarBannerAnimator* animator = [[InfobarBannerAnimator alloc] init];
-  animator.presenting = YES;
-  return animator;
-}
-
-- (id<UIViewControllerAnimatedTransitioning>)
-    animationControllerForDismissedController:(UIViewController*)dismissed {
-  InfobarBannerAnimator* animator = [[InfobarBannerAnimator alloc] init];
-  animator.presenting = NO;
-  return animator;
-}
-
-#pragma mark - SigninPresenter
-
-- (void)showSignin:(ShowSigninCommand*)command {
-  [self.dispatcher showSignin:command
-           baseViewController:self.baseViewController];
+  InfobarCoordinator* infobarCoordinator =
+      static_cast<InfobarCoordinator*>(self.activeChildCoordinator);
+  [infobarCoordinator presentInfobarModal];
 }
 
 @end

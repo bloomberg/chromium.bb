@@ -10,6 +10,7 @@
 #include "base/threading/thread_checker.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/presentation_feedback_map.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
@@ -84,16 +85,16 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override;
   void DisplayDidCompleteSwapWithSize(const gfx::Size& pixel_size) override;
-  void DidSwapAfterSnapshotRequestReceived(
-      const std::vector<ui::LatencyInfo>& latency_info) override;
+  void SetPreferredFrameInterval(base::TimeDelta interval) override;
+  base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
+      const FrameSinkId& id) override;
 
  private:
   // mojom::CompositorFrameSinkClient implementation:
   void DidReceiveCompositorFrameAck(
       const std::vector<ReturnedResource>& resources) override;
   void OnBeginFrame(const BeginFrameArgs& args,
-                    const base::flat_map<uint32_t, gfx::PresentationFeedback>&
-                        feedbacks) override;
+                    const PresentationFeedbackMap& feedbacks) override;
   void ReclaimResources(
       const std::vector<ReturnedResource>& resources) override;
   void OnBeginFramePausedChanged(bool paused) override;

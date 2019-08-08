@@ -32,8 +32,10 @@ void SimpleThreadScheduler::PostNonNestableIdleTask(
     const base::Location& location,
     Thread::IdleTask task) {}
 
-void SimpleThreadScheduler::AddRAILModeObserver(WebRAILModeObserver* observer) {
-}
+void SimpleThreadScheduler::AddRAILModeObserver(RAILModeObserver* observer) {}
+
+void SimpleThreadScheduler::RemoveRAILModeObserver(
+    RAILModeObserver const* observer) {}
 
 scoped_refptr<base::SingleThreadTaskRunner>
 SimpleThreadScheduler::V8TaskRunner() {

@@ -5,12 +5,15 @@
 #include "third_party/blink/renderer/core/html/html_meta_element.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/media_query_list.h"
+#include "third_party/blink/renderer/core/css/media_query_matcher.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -21,6 +24,8 @@ class HTMLMetaElementTest : public PageTestBase {
     PageTestBase::SetUp();
 
     RuntimeEnabledFeatures::SetDisplayCutoutAPIEnabled(true);
+    RuntimeEnabledFeatures::SetMetaSupportedColorSchemesEnabled(true);
+    RuntimeEnabledFeatures::SetMediaQueryPrefersColorSchemeEnabled(true);
     GetDocument().GetSettings()->SetViewportMetaEnabled(true);
   }
 
@@ -35,7 +40,7 @@ class HTMLMetaElementTest : public PageTestBase {
  protected:
   HTMLMetaElement* CreateSupportedColorSchemesMeta(
       const AtomicString& content) {
-    HTMLMetaElement* meta = HTMLMetaElement::Create(GetDocument());
+    auto* meta = MakeGarbageCollected<HTMLMetaElement>(GetDocument());
     meta->setAttribute(html_names::kNameAttr, "supported-color-schemes");
     meta->setAttribute(html_names::kContentAttr, content);
     return meta;
@@ -183,6 +188,26 @@ TEST_F(HTMLMetaElementTest, SupportedColorSchemesParsing) {
   SetSupportedColorSchemes("light, dark");
   EXPECT_FALSE(SupportsColorScheme(ColorScheme::kLight));
   EXPECT_TRUE(SupportsColorScheme(ColorScheme::kDark));
+}
+
+TEST_F(HTMLMetaElementTest, SupportedColorSchemesForcedDarkeningAndMQ) {
+  GetDocument().GetSettings()->SetPreferredColorScheme(
+      PreferredColorScheme::kDark);
+
+  auto* media_query = GetDocument().GetMediaQueryMatcher().MatchMedia(
+      "(prefers-color-scheme: dark)");
+  EXPECT_TRUE(media_query->matches());
+  GetDocument().GetSettings()->SetForceDarkModeEnabled(true);
+  EXPECT_FALSE(media_query->matches());
+
+  SetSupportedColorSchemes("light");
+  EXPECT_FALSE(media_query->matches());
+
+  SetSupportedColorSchemes("dark");
+  EXPECT_TRUE(media_query->matches());
+
+  SetSupportedColorSchemes("light dark");
+  EXPECT_TRUE(media_query->matches());
 }
 
 }  // namespace blink

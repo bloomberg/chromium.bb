@@ -45,7 +45,6 @@
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_document_parser.h"
-#include "third_party/blink/renderer/core/inspector/add_string_to_digestor.h"
 #include "third_party/blink/renderer/core/inspector/dom_editor.h"
 #include "third_party/blink/renderer/core/inspector/inspector_history.h"
 #include "third_party/blink/renderer/core/xml/parser/xml_document_parser.h"
@@ -76,7 +75,8 @@ void DOMPatchSupport::PatchDocument(const String& markup) {
   DCHECK(new_document);
   new_document->SetContextFeatures(GetDocument().GetContextFeatures());
   if (!GetDocument().IsHTMLDocument()) {
-    DocumentParser* parser = XMLDocumentParser::Create(*new_document, nullptr);
+    DocumentParser* parser =
+        MakeGarbageCollected<XMLDocumentParser>(*new_document, nullptr);
     parser->Append(markup);
     parser->Finish();
     parser->Detach();
@@ -435,45 +435,43 @@ DOMPatchSupport::Digest* DOMPatchSupport::CreateDigest(
     Node* node,
     UnusedNodesMap* unused_nodes_map) {
   Digest* digest = MakeGarbageCollected<Digest>(node);
-
-  std::unique_ptr<WebCryptoDigestor> digestor =
-      CreateDigestor(kHashAlgorithmSha1);
+  Digestor digestor(kHashAlgorithmSha1);
   DigestValue digest_result;
 
   Node::NodeType node_type = node->getNodeType();
-  digestor->Consume(reinterpret_cast<const unsigned char*>(&node_type),
-                    sizeof(node_type));
-  AddStringToDigestor(digestor.get(), node->nodeName());
-  AddStringToDigestor(digestor.get(), node->nodeValue());
+  digestor.Update(
+      {reinterpret_cast<const uint8_t*>(&node_type), sizeof(node_type)});
+  digestor.UpdateUtf8(node->nodeName());
+  digestor.UpdateUtf8(node->nodeValue());
 
   if (node->IsElementNode()) {
     Element& element = ToElement(*node);
     Node* child = element.firstChild();
     while (child) {
       Digest* child_info = CreateDigest(child, unused_nodes_map);
-      AddStringToDigestor(digestor.get(), child_info->sha1_);
+      digestor.UpdateUtf8(child_info->sha1_);
       child = child->nextSibling();
       digest->children_.push_back(child_info);
     }
 
     AttributeCollection attributes = element.AttributesWithoutUpdate();
     if (!attributes.IsEmpty()) {
-      std::unique_ptr<WebCryptoDigestor> attrs_digestor =
-          CreateDigestor(kHashAlgorithmSha1);
+      Digestor attrs_digestor(kHashAlgorithmSha1);
       for (auto& attribute : attributes) {
-        AddStringToDigestor(attrs_digestor.get(),
-                            attribute.GetName().ToString());
-        AddStringToDigestor(attrs_digestor.get(),
-                            attribute.Value().GetString());
+        attrs_digestor.UpdateUtf8(attribute.GetName().ToString());
+        attrs_digestor.UpdateUtf8(attribute.Value().GetString());
       }
-      FinishDigestor(attrs_digestor.get(), digest_result);
+
+      attrs_digestor.Finish(digest_result);
+      DCHECK(!attrs_digestor.has_failed());
       digest->attrs_sha1_ =
           Base64Encode(reinterpret_cast<const char*>(digest_result.data()), 10);
-      AddStringToDigestor(digestor.get(), digest->attrs_sha1_);
-      digest_result.clear();
+      digestor.UpdateUtf8(digest->attrs_sha1_);
     }
   }
-  FinishDigestor(digestor.get(), digest_result);
+
+  digestor.Finish(digest_result);
+  DCHECK(!digestor.has_failed());
   digest->sha1_ =
       Base64Encode(reinterpret_cast<const char*>(digest_result.data()), 10);
 

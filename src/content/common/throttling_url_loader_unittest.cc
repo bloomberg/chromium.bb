@@ -469,6 +469,31 @@ TEST_F(ThrottlingURLLoaderTest, DeferBeforeStart) {
   EXPECT_EQ(1u, client_.on_complete_called());
 }
 
+TEST_F(ThrottlingURLLoaderTest, ModifyHeaderInResumeBeforeStart) {
+  throttle_->set_will_start_request_callback(
+      base::BindRepeating([](URLLoaderThrottle::Delegate* delegate,
+                             bool* defer) { *defer = true; }));
+
+  CreateLoaderAndStart();
+
+  base::RunLoop run_loop;
+  factory_.set_on_create_loader_and_start(base::BindRepeating(
+      [](const base::RepeatingClosure& quit_closure,
+         const network::ResourceRequest& url_request) {
+        EXPECT_EQ("X-Test-Header-1: Foo\r\n\r\n",
+                  url_request.headers.ToString());
+        quit_closure.Run();
+      },
+      run_loop.QuitClosure()));
+
+  net::HttpRequestHeaders modified_headers;
+  modified_headers.SetHeader("X-Test-Header-1", "Foo");
+  throttle_->delegate()->UpdateDeferredRequestHeaders(modified_headers);
+  throttle_->delegate()->Resume();
+
+  run_loop.Run();
+}
+
 TEST_F(ThrottlingURLLoaderTest, ModifyURLBeforeStart) {
   throttle_->set_modify_url_in_will_start(GURL("http://example.org/foo"));
 
@@ -476,6 +501,40 @@ TEST_F(ThrottlingURLLoaderTest, ModifyURLBeforeStart) {
 
   EXPECT_EQ(1u, throttle_->will_start_request_called());
   EXPECT_EQ(1u, throttle_->will_redirect_request_called());
+}
+
+// Regression test for crbug.com/933538
+TEST_F(ThrottlingURLLoaderTest, ModifyURLAndDeferRedirect) {
+  throttle_->set_modify_url_in_will_start(GURL("http://example.org/foo"));
+  throttle_->set_will_start_request_callback(
+      base::BindRepeating([](URLLoaderThrottle::Delegate* /* delegate */,
+                             bool* defer) { *defer = true; }));
+  throttle_->set_will_redirect_request_callback(base::BindRepeating(
+      [](URLLoaderThrottle::Delegate* /* delegate */, bool* defer,
+         std::vector<std::string>* /* removed_headers */,
+         net::HttpRequestHeaders* /* modified_headers */) { *defer = true; }));
+
+  CreateLoaderAndStart();
+
+  EXPECT_EQ(1u, throttle_->will_start_request_called());
+  EXPECT_EQ(0u, throttle_->will_redirect_request_called());
+
+  throttle_->delegate()->Resume();
+
+  EXPECT_EQ(1u, throttle_->will_start_request_called());
+  EXPECT_EQ(1u, throttle_->will_redirect_request_called());
+  EXPECT_EQ(0u, client_.on_received_redirect_called());
+
+  throttle_->delegate()->Resume();
+
+  EXPECT_EQ(1u, throttle_->will_start_request_called());
+  EXPECT_EQ(1u, throttle_->will_redirect_request_called());
+  EXPECT_EQ(0u, throttle_->before_will_process_response_called());
+  EXPECT_EQ(0u, throttle_->will_process_response_called());
+  EXPECT_EQ(0u, factory_.create_loader_and_start_called());
+  EXPECT_EQ(0u, client_.on_received_response_called());
+  EXPECT_EQ(1u, client_.on_received_redirect_called());
+  EXPECT_EQ(0u, client_.on_complete_called());
 }
 
 TEST_F(ThrottlingURLLoaderTest, CancelBeforeRedirect) {
@@ -593,6 +652,36 @@ TEST_F(ThrottlingURLLoaderTest, ModifyHeadersBeforeRedirect) {
       "X-Test-Header-3: Client Value\r\n"
       "X-Test-Header-4: Bar\r\n\r\n",
       factory_.headers_modified_on_redirect().ToString());
+}
+
+TEST_F(ThrottlingURLLoaderTest, ModifyHeaderInResumeBeforeRedirect) {
+  base::RunLoop run_loop1;
+  throttle_->set_will_redirect_request_callback(base::BindRepeating(
+      [](const base::RepeatingClosure& quit_closure,
+         URLLoaderThrottle::Delegate* delegate, bool* defer,
+         std::vector<std::string>* removed_headers,
+         net::HttpRequestHeaders* modified_headers) {
+        *defer = true;
+        quit_closure.Run();
+      },
+      run_loop1.QuitClosure()));
+
+  CreateLoaderAndStart();
+  factory_.NotifyClientOnReceiveRedirect();
+  run_loop1.Run();
+
+  net::HttpRequestHeaders modified_headers;
+  modified_headers.SetHeader("X-Test-Header-1", "Foo");
+  throttle_->delegate()->UpdateDeferredRequestHeaders(modified_headers);
+  throttle_->delegate()->Resume();
+
+  loader_->FollowRedirect({}, {});
+
+  base::RunLoop run_loop2;
+  run_loop2.RunUntilIdle();
+
+  EXPECT_EQ("X-Test-Header-1: Foo\r\n\r\n",
+            factory_.headers_modified_on_redirect().ToString());
 }
 
 TEST_F(ThrottlingURLLoaderTest, MultipleThrottlesModifyHeadersBeforeRedirect) {

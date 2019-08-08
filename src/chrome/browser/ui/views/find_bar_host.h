@@ -120,7 +120,7 @@ class FindBarHost : public DropdownBarHost,
   void OnVisibilityChanged() override;
 
   // views::WidgetDelegate:
-  ax::mojom::Role GetAccessibleWindowRole() const override;
+  ax::mojom::Role GetAccessibleWindowRole() override;
   base::string16 GetAccessibleWindowTitle() const override;
 
  private:

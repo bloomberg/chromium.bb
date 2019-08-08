@@ -803,10 +803,6 @@ virtual void DiscardFramebufferEXT(GLenum target,
                                    GLsizei count,
                                    const GLenum* attachments) = 0;
 virtual void LoseContextCHROMIUM(GLenum current, GLenum other) = 0;
-virtual void GenSyncTokenCHROMIUM(GLbyte* sync_token) = 0;
-virtual void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) = 0;
-virtual void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens, GLsizei count) = 0;
-virtual void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) = 0;
 virtual void UnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
                                                 GLuint dest_id,
                                                 GLint x,
@@ -1011,12 +1007,12 @@ virtual GLuint CreateClientGpuFenceCHROMIUM(ClientGpuFence source) = 0;
 virtual void WaitGpuFenceCHROMIUM(GLuint gpu_fence_id) = 0;
 virtual void DestroyGpuFenceCHROMIUM(GLuint gpu_fence_id) = 0;
 virtual void InvalidateReadbackBufferShadowDataCHROMIUM(GLuint buffer_id) = 0;
-virtual void FramebufferTextureMultiviewLayeredANGLE(GLenum target,
-                                                     GLenum attachment,
-                                                     GLuint texture,
-                                                     GLint level,
-                                                     GLint baseViewIndex,
-                                                     GLsizei numViews) = 0;
+virtual void FramebufferTextureMultiviewOVR(GLenum target,
+                                            GLenum attachment,
+                                            GLuint texture,
+                                            GLint level,
+                                            GLint baseViewIndex,
+                                            GLsizei numViews) = 0;
 virtual void MaxShaderCompilerThreadsKHR(GLuint count) = 0;
 virtual GLuint CreateAndTexStorage2DSharedImageCHROMIUM(
     const GLbyte* mailbox) = 0;

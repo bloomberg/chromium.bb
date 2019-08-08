@@ -19,9 +19,9 @@
 #include "absl/types/optional.h"
 #include "api/audio_codecs/audio_decoder_factory.h"
 #include "api/audio_codecs/audio_encoder.h"
+#include "api/function_view.h"
 #include "modules/audio_coding/include/audio_coding_module_typedefs.h"
 #include "modules/audio_coding/neteq/include/neteq.h"
-#include "rtc_base/function_view.h"
 #include "system_wrappers/include/clock.h"
 
 namespace webrtc {
@@ -40,7 +40,7 @@ class AudioPacketizationCallback {
  public:
   virtual ~AudioPacketizationCallback() {}
 
-  virtual int32_t SendData(FrameType frame_type,
+  virtual int32_t SendData(AudioFrameType frame_type,
                            uint8_t payload_type,
                            uint32_t timestamp,
                            const uint8_t* payload_data,
@@ -53,7 +53,7 @@ class ACMVADCallback {
  public:
   virtual ~ACMVADCallback() {}
 
-  virtual int32_t InFrameType(FrameType frame_type) = 0;
+  virtual int32_t InFrameType(AudioFrameType frame_type) = 0;
 };
 
 class AudioCodingModule {

@@ -494,6 +494,7 @@ void Display::setAttributes(rx::DisplayImpl *impl, const AttributeMap &attribMap
 
 Error Display::initialize()
 {
+    ASSERT(mImplementation != nullptr);
     mImplementation->setBlobCache(&mBlobCache);
 
     // TODO(jmadill): Store Platform in Display and init here.
@@ -515,8 +516,6 @@ Error Display::initialize()
 
     SCOPED_ANGLE_HISTOGRAM_TIMER("GPU.ANGLE.DisplayInitializeMS");
     TRACE_EVENT0("gpu.angle", "egl::Display::initialize");
-
-    ASSERT(mImplementation != nullptr);
 
     if (isInitialized())
     {
@@ -652,6 +651,33 @@ Error Display::terminate(const Thread *thread)
 std::vector<const Config *> Display::getConfigs(const egl::AttributeMap &attribs) const
 {
     return mConfigSet.filter(attribs);
+}
+
+std::vector<const Config *> Display::chooseConfig(const egl::AttributeMap &attribs) const
+{
+    egl::AttributeMap attribsWithDefaults = AttributeMap();
+
+    // Insert default values for attributes that have either an Exact or Mask selection criteria,
+    // and a default value that matters (e.g. isn't EGL_DONT_CARE):
+    attribsWithDefaults.insert(EGL_COLOR_BUFFER_TYPE, EGL_RGB_BUFFER);
+    attribsWithDefaults.insert(EGL_LEVEL, 0);
+    attribsWithDefaults.insert(EGL_RENDERABLE_TYPE, EGL_OPENGL_ES_BIT);
+    attribsWithDefaults.insert(EGL_SURFACE_TYPE, EGL_WINDOW_BIT);
+    attribsWithDefaults.insert(EGL_TRANSPARENT_TYPE, EGL_NONE);
+    if (getExtensions().pixelFormatFloat)
+    {
+        attribsWithDefaults.insert(EGL_COLOR_COMPONENT_TYPE_EXT,
+                                   EGL_COLOR_COMPONENT_TYPE_FIXED_EXT);
+    }
+
+    // Add the caller-specified values (Note: the poorly-named insert() method will replace any
+    // of the default values from above):
+    for (auto attribIter = attribs.begin(); attribIter != attribs.end(); attribIter++)
+    {
+        attribsWithDefaults.insert(attribIter->first, attribIter->second);
+    }
+
+    return mConfigSet.filter(attribsWithDefaults);
 }
 
 Error Display::createWindowSurface(const Config *configuration,
@@ -869,7 +895,10 @@ Error Display::createContext(const Config *configuration,
     return NoError();
 }
 
-Error Display::createSync(EGLenum type, const AttributeMap &attribs, Sync **outSync)
+Error Display::createSync(const gl::Context *currentContext,
+                          EGLenum type,
+                          const AttributeMap &attribs,
+                          Sync **outSync)
 {
     ASSERT(isInitialized());
 
@@ -881,7 +910,7 @@ Error Display::createSync(EGLenum type, const AttributeMap &attribs, Sync **outS
     angle::UniqueObjectPointer<egl::Sync, Display> syncPtr(new Sync(mImplementation, type, attribs),
                                                            this);
 
-    ANGLE_TRY(syncPtr->initialize(this));
+    ANGLE_TRY(syncPtr->initialize(this, currentContext));
 
     Sync *sync = syncPtr.release();
 
@@ -1038,7 +1067,7 @@ void Display::notifyDeviceLost()
     for (ContextSet::iterator context = mContextSet.begin(); context != mContextSet.end();
          context++)
     {
-        (*context)->markContextLost();
+        (*context)->markContextLost(gl::GraphicsResetStatus::UnknownContextReset);
     }
 
     mDeviceLost = true;
@@ -1398,16 +1427,6 @@ EGLint Display::programCacheResize(EGLint limit, EGLenum mode)
             UNREACHABLE();
             return 0;
     }
-}
-
-Error Display::clientWaitSync(Sync *sync, EGLint flags, EGLTime timeout, EGLint *outResult)
-{
-    return sync->clientWait(this, flags, timeout, outResult);
-}
-
-Error Display::waitSync(Sync *sync, EGLint flags)
-{
-    return sync->serverWait(this, flags);
 }
 
 }  // namespace egl

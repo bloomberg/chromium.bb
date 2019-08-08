@@ -1,7 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html"
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html"
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
@@ -10,18 +11,17 @@
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../languages_page/languages_browser_proxy.html">
 <link rel="import" href="../settings_shared_css.html">
-<link rel="import" href="../settings_vars_css.html">
 
 <dom-module id="settings-tts-subpage">
   <template>
     <style include="settings-shared md-select">
       h2 {
-        padding-inline-start: var(--settings-box-row-padding);
+        padding-inline-start: var(--cr-section-padding);
       }
 
       .settings-box {
-        margin-inline-end: var(--settings-box-row-padding);
-        margin-inline-start: var(--settings-box-row-indent);
+        margin-inline-end: var(--cr-section-padding);
+        margin-inline-start: var(--cr-section-indent-padding);
         padding-inline-end: 0;
         padding-inline-start: 0;
       }
@@ -88,7 +88,8 @@
     </div>
     <div class="settings-box continuation">
       <cr-input id="previewInput" label="$i18n{textToSpeechPreviewInputLabel}"
-          value="{{previewText_}}">
+          value="{{previewText_}}"
+          disabled="[[isPreviewing_]]">
         <paper-button on-click="onPreviewTtsClick_"
             disabled$="[[!enablePreviewButton_(allVoices, isPreviewing_,
                          previewText_)]]"

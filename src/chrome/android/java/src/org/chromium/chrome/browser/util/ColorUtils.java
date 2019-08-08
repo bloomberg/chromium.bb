@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
 import android.support.v7.content.res.AppCompatResources;
 
@@ -129,31 +130,56 @@ public class ColorUtils {
     /**
      * Determine the text box color based on the current toolbar background color.
      * @param res {@link Resources} used to retrieve colors.
-     * @param isLocationBarShownInNtp Whether the location bar is currently shown in an NTP.
+     * @param isLocationBarShownInNtp Whether the location bar is currently shown in an NTP. Note
+     *                                that this should be false if the returned text box color is
+     *                                not used in an NTP.
      * @param color The color of the toolbar background.
-     @return The base color for the textbox given a toolbar background color.
+     * @param isIncognito Whether or not the color is used for incognito mode.
+     * @return The base color for the textbox given a toolbar background color.
      */
     public static int getTextBoxColorForToolbarBackground(
-            Resources res, boolean isLocationBarShownInNtp, int color) {
-        // If modern is enabled, it is a special case. It's toolbar is white with a darker text box
-        // background.
-        boolean usingDefaultThemeColor = ColorUtils.isUsingDefaultToolbarColor(res, false, color);
-        if (usingDefaultThemeColor) {
-            // In modern, the default theme color is white, so the text box uses a darker color
-            // which is different from all other cases. In the case of the NTP, the location bar is
-            // not visible by default, so we make it the same color as the background of the NTP.
-            return isLocationBarShownInNtp
-                    ? ApiCompatibilityUtils.getColor(res, R.color.modern_primary_color)
-                    : ApiCompatibilityUtils.getColor(res, R.color.toolbar_text_box_background);
+            Resources res, boolean isLocationBarShownInNtp, int color, boolean isIncognito) {
+        // Text box color on default toolbar background in incognito mode is a pre-defined
+        // color. We calculate the equivalent opaque color from the pre-defined translucent color.
+        if (isIncognito) {
+            final int overlayColor = ApiCompatibilityUtils.getColor(
+                    res, R.color.toolbar_text_box_background_incognito);
+            final float overlayColorAlpha = Color.alpha(overlayColor) / 255f;
+            final int overlayColorOpaque = overlayColor & 0xFF000000;
+            return getColorWithOverlay(color, overlayColorOpaque, overlayColorAlpha);
         }
 
-        if (shouldUseOpaqueTextboxBackground(color)) {
-            // NTP should have no visible textbox in the toolbar, so just return the toolbar's
-            // background color.
-            return isLocationBarShownInNtp ? ApiCompatibilityUtils.getColor(res, R.color.ntp_bg)
-                                           : Color.WHITE;
+        // NTP should have no visible text box in the toolbar, so just return the NTP
+        // background color.
+        if (isLocationBarShownInNtp) return getPrimaryBackgroundColor(res, false);
+
+        // Text box color on default toolbar background in standard mode is a pre-defined
+        // color instead of a calculated color.
+        if (ColorUtils.isUsingDefaultToolbarColor(res, false, color)) {
+            return ApiCompatibilityUtils.getColor(res, R.color.toolbar_text_box_background);
         }
+
+        // TODO(mdjones): Clean up shouldUseOpaqueTextboxBackground logic.
+        if (shouldUseOpaqueTextboxBackground(color)) return Color.WHITE;
+
         return getColorWithOverlay(color, Color.WHITE, LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA);
+    }
+
+    /**
+     * @param tab The {@link Tab} on which the toolbar scene layer color is used.
+     * @return The toolbar (or browser controls) color used in the compositor scene layer. Note that
+     *         this is primarily used for compositor animation, and doesn't affect the Android view.
+     */
+    public static @ColorInt int getToolbarSceneLayerBackground(Tab tab) {
+        // On NTP, the toolbar background is tinted as the NTP background color, so return NTP
+        // background color here to make animation smoother.
+        if (tab.getNativePage() instanceof NewTabPage) {
+            if (((NewTabPage) tab.getNativePage()).isLocationBarShownInNTP()) {
+                return tab.getNativePage().getBackgroundColor();
+            }
+        }
+
+        return TabThemeColorHelper.getColor(tab);
     }
 
     /**

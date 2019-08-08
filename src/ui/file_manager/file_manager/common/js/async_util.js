@@ -31,8 +31,8 @@ AsyncUtil.forEach = (array, callback, completionCallback, opt_thisObject) => {
   const queue = new AsyncUtil.Queue();
   for (let i = 0; i < array.length; i++) {
     queue.run(((element, index, iterationCompletionCallback) => {
-      callback(iterationCompletionCallback, element, index, array);
-    }).bind(null, array[i], i));
+                callback(iterationCompletionCallback, element, index, array);
+              }).bind(null, array[i], i));
   }
   queue.run(iterationCompletionCallback => {
     completionCallback();  // Don't pass iteration completion callback.
@@ -344,8 +344,8 @@ AsyncUtil.Aggregator.prototype.run = function() {
   // If recently called, then schedule the consecutive call with a delay.
   if (Date.now() - this.lastRunTime_ < this.delay_) {
     this.cancelScheduledRuns_();
-    this.scheduledRunsTimer_ = setTimeout(this.runImmediately_.bind(this),
-                                          this.delay_ + 1);
+    this.scheduledRunsTimer_ =
+        setTimeout(this.runImmediately_.bind(this), this.delay_ + 1);
     this.lastRunTime_ = Date.now();
     return;
   }

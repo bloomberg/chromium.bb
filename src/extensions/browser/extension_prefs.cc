@@ -201,6 +201,9 @@ constexpr const char kPrefDNRRulesetChecksum[] = "dnr_ruleset_checksum";
 // extension for the Declarative Net Request API.
 constexpr const char kPrefDNRAllowedPages[] = "dnr_whitelisted_pages";
 
+constexpr const char kPrefDNRDynamicRulesetChecksum[] =
+    "dnr_dynamic_ruleset_checksum";
+
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public prefs::ScopedDictionaryPrefUpdate {
  public:
@@ -778,6 +781,22 @@ void ExtensionPrefs::ReplaceDisableReasons(const std::string& extension_id,
 void ExtensionPrefs::ClearDisableReasons(const std::string& extension_id) {
   ModifyDisableReasons(extension_id, disable_reason::DISABLE_NONE,
                        DISABLE_REASON_CLEAR);
+}
+
+void ExtensionPrefs::ClearInapplicableDisableReasonsForComponentExtension(
+    const std::string& component_extension_id) {
+  static constexpr int kAllowDisableReasons =
+      disable_reason::DISABLE_RELOAD |
+      disable_reason::DISABLE_UNSUPPORTED_REQUIREMENT |
+      disable_reason::DISABLE_CORRUPTED;
+
+  // Some disable reasons incorrectly cause component extensions to never
+  // activate on load. See https://crbug.com/946839 for more details on why we
+  // do this.
+  ModifyDisableReasons(
+      component_extension_id,
+      kAllowDisableReasons & GetDisableReasons(component_extension_id),
+      DISABLE_REASON_REPLACE);
 }
 
 void ExtensionPrefs::ModifyDisableReasons(const std::string& extension_id,
@@ -1743,15 +1762,28 @@ void ExtensionPrefs::SetNeedsSync(const std::string& extension_id,
 }
 
 bool ExtensionPrefs::GetDNRRulesetChecksum(const ExtensionId& extension_id,
-                                           int* dnr_ruleset_checksum) const {
-  return ReadPrefAsInteger(extension_id, kPrefDNRRulesetChecksum,
-                           dnr_ruleset_checksum);
+                                           int* checksum) const {
+  return ReadPrefAsInteger(extension_id, kPrefDNRRulesetChecksum, checksum);
 }
 
 void ExtensionPrefs::SetDNRRulesetChecksum(const ExtensionId& extension_id,
-                                           int dnr_ruleset_checksum) {
+                                           int checksum) {
   UpdateExtensionPref(extension_id, kPrefDNRRulesetChecksum,
-                      std::make_unique<base::Value>(dnr_ruleset_checksum));
+                      std::make_unique<base::Value>(checksum));
+}
+
+bool ExtensionPrefs::GetDNRDynamicRulesetChecksum(
+    const ExtensionId& extension_id,
+    int* checksum) const {
+  return ReadPrefAsInteger(extension_id, kPrefDNRDynamicRulesetChecksum,
+                           checksum);
+}
+
+void ExtensionPrefs::SetDNRDynamicRulesetChecksum(
+    const ExtensionId& extension_id,
+    int checksum) {
+  UpdateExtensionPref(extension_id, kPrefDNRDynamicRulesetChecksum,
+                      std::make_unique<base::Value>(checksum));
 }
 
 void ExtensionPrefs::SetDNRAllowedPages(const ExtensionId& extension_id,
@@ -1824,7 +1856,7 @@ void ExtensionPrefs::RegisterProfilePrefs(
   registry->RegisterListPref(pref_names::kInstallAllowList);
   registry->RegisterListPref(pref_names::kInstallDenyList);
   registry->RegisterDictionaryPref(pref_names::kInstallForceList);
-  registry->RegisterDictionaryPref(pref_names::kInstallLoginScreenAppList);
+  registry->RegisterDictionaryPref(pref_names::kLoginScreenExtensions);
   registry->RegisterListPref(pref_names::kAllowedTypes);
   registry->RegisterBooleanPref(pref_names::kStorageGarbageCollect, false);
   registry->RegisterListPref(pref_names::kAllowedInstallSites);
@@ -1837,7 +1869,7 @@ void ExtensionPrefs::RegisterProfilePrefs(
                                 true);
   registry->RegisterIntegerPref(kCorruptedDisableCount, 0);
   registry->RegisterBooleanPref(pref_names::kInsecureExtensionUpdatesEnabled,
-                                true);
+                                false);
 
 #if !defined(OS_MACOSX)
   registry->RegisterBooleanPref(pref_names::kAppFullscreenAllowed, true);

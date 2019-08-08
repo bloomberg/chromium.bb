@@ -40,7 +40,7 @@ FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
     const String& outgoing_referrer,
     HttpsState https_state,
     AllowedByNosniff::MimeTypeCheck mime_type_check_for_classic_worker_script,
-    base::Optional<mojom::IPAddressSpace> address_space)
+    mojom::IPAddressSpace address_space)
     : global_object_url_(global_object_url),
       base_url_(base_url),
       security_origin_(std::move(security_origin)),

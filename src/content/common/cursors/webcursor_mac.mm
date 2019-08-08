@@ -127,34 +127,9 @@ NSCursor* GetCoreCursorWithFallback(CrCoreCursorType type,
   return LoadCursor(resource_id, hotspot_x, hotspot_y);
 }
 
-NSCursor* CreateCustomCursor(const std::vector<char>& custom_data,
-                             const gfx::Size& custom_size,
-                             float custom_scale,
-                             const gfx::Point& hotspot) {
-  // If the data is missing, leave the backing transparent.
-  void* data = NULL;
-  size_t data_size = 0;
-  if (!custom_data.empty()) {
-    // This is safe since we're not going to draw into the context we're
-    // creating.
-    data = const_cast<char*>(&custom_data[0]);
-    data_size = custom_data.size();
-  }
-
-  // If the size is empty, use a 1x1 transparent image.
-  gfx::Size size = custom_size;
-  if (size.IsEmpty()) {
-    size.SetSize(1, 1);
-    data = NULL;
-  }
-
-  SkBitmap bitmap;
-  SkImageInfo image_info = SkImageInfo::MakeN32(size.width(), size.height(),
-                                                kUnpremul_SkAlphaType);
-  if (bitmap.tryAllocPixels(image_info) && data)
-    memcpy(bitmap.getAddr32(0, 0), data, data_size);
-  else
-    bitmap.eraseARGB(0, 0, 0, 0);
+NSCursor* CreateCustomCursor(const content::CursorInfo& info) {
+  float custom_scale = info.image_scale_factor;
+  gfx::Size custom_size(info.custom_image.width(), info.custom_image.height());
 
   // Convert from pixels to view units.
   if (custom_scale == 0)
@@ -162,12 +137,12 @@ NSCursor* CreateCustomCursor(const std::vector<char>& custom_data,
   NSSize dip_size = NSSizeFromCGSize(
       gfx::ScaleToFlooredSize(custom_size, 1 / custom_scale).ToCGSize());
   NSPoint dip_hotspot = NSPointFromCGPoint(
-      gfx::ScaleToFlooredPoint(hotspot, 1 / custom_scale).ToCGPoint());
+      gfx::ScaleToFlooredPoint(info.hotspot, 1 / custom_scale).ToCGPoint());
 
   // Both the image and its representation need to have the same size for
   // cursors to appear in high resolution on retina displays. Note that the
   // size of a representation is not the same as pixelsWide or pixelsHigh.
-  NSImage* cursor_image = skia::SkBitmapToNSImage(bitmap);
+  NSImage* cursor_image = skia::SkBitmapToNSImage(info.custom_image);
   [cursor_image setSize:dip_size];
   [[[cursor_image representations] objectAtIndex:0] setSize:dip_size];
 
@@ -183,7 +158,7 @@ namespace content {
 
 // Match Safari's cursor choices; see platform/mac/CursorMac.mm .
 gfx::NativeCursor WebCursor::GetNativeCursor() {
-  switch (type_) {
+  switch (info_.type) {
     case WebCursorInfo::kTypePointer:
       return [NSCursor arrowCursor];
     case WebCursorInfo::kTypeCross:
@@ -287,77 +262,10 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
     case WebCursorInfo::kTypeGrabbing:
       return [NSCursor closedHandCursor];
     case WebCursorInfo::kTypeCustom:
-      return CreateCustomCursor(
-          custom_data_, custom_size_, custom_scale_, hotspot_);
+      return CreateCustomCursor(info_);
   }
   NOTREACHED();
   return nil;
-}
-
-void WebCursor::InitFromNSCursor(NSCursor* cursor) {
-  CursorInfo cursor_info;
-
-  if ([cursor isEqual:[NSCursor arrowCursor]]) {
-    cursor_info.type = WebCursorInfo::kTypePointer;
-  } else if ([cursor isEqual:[NSCursor IBeamCursor]]) {
-    cursor_info.type = WebCursorInfo::kTypeIBeam;
-  } else if ([cursor isEqual:[NSCursor crosshairCursor]]) {
-    cursor_info.type = WebCursorInfo::kTypeCross;
-  } else if ([cursor isEqual:[NSCursor pointingHandCursor]]) {
-    cursor_info.type = WebCursorInfo::kTypeHand;
-  } else if ([cursor isEqual:[NSCursor resizeLeftCursor]]) {
-    cursor_info.type = WebCursorInfo::kTypeWestResize;
-  } else if ([cursor isEqual:[NSCursor resizeRightCursor]]) {
-    cursor_info.type = WebCursorInfo::kTypeEastResize;
-  } else if ([cursor isEqual:[NSCursor resizeLeftRightCursor]]) {
-    cursor_info.type = WebCursorInfo::kTypeEastWestResize;
-  } else if ([cursor isEqual:[NSCursor resizeUpCursor]]) {
-    cursor_info.type = WebCursorInfo::kTypeNorthResize;
-  } else if ([cursor isEqual:[NSCursor resizeDownCursor]]) {
-    cursor_info.type = WebCursorInfo::kTypeSouthResize;
-  } else if ([cursor isEqual:[NSCursor resizeUpDownCursor]]) {
-    cursor_info.type = WebCursorInfo::kTypeNorthSouthResize;
-  } else if ([cursor isEqual:[NSCursor openHandCursor]]) {
-    cursor_info.type = WebCursorInfo::kTypeGrab;
-  } else if ([cursor isEqual:[NSCursor closedHandCursor]]) {
-    cursor_info.type = WebCursorInfo::kTypeGrabbing;
-  } else if ([cursor isEqual:[NSCursor operationNotAllowedCursor]]) {
-    cursor_info.type = WebCursorInfo::kTypeNotAllowed;
-  } else if ([cursor isEqual:[NSCursor dragCopyCursor]]) {
-    cursor_info.type = WebCursorInfo::kTypeCopy;
-  } else if ([cursor isEqual:[NSCursor contextualMenuCursor]]) {
-    cursor_info.type = WebCursorInfo::kTypeContextMenu;
-  } else if (
-      [NSCursor respondsToSelector:@selector(IBeamCursorForVerticalLayout)] &&
-      [cursor isEqual:[NSCursor IBeamCursorForVerticalLayout]]) {
-    cursor_info.type = WebCursorInfo::kTypeVerticalText;
-  } else {
-    // Also handles the [NSCursor disappearingItemCursor] case. Quick-and-dirty
-    // image conversion; TODO(avi): do better.
-    CGImageRef cg_image = nil;
-    NSImage* image = [cursor image];
-    for (id rep in [image representations]) {
-      if ([rep isKindOfClass:[NSBitmapImageRep class]]) {
-        cg_image = [rep CGImage];
-        break;
-      }
-    }
-
-    if (cg_image) {
-      cursor_info.type = WebCursorInfo::kTypeCustom;
-      NSPoint hot_spot = [cursor hotSpot];
-      cursor_info.hotspot = gfx::Point(hot_spot.x, hot_spot.y);
-      cursor_info.custom_image = skia::CGImageToSkBitmap(cg_image);
-    } else {
-      cursor_info.type = WebCursorInfo::kTypePointer;
-    }
-  }
-
-  InitFromCursorInfo(cursor_info);
-}
-
-void WebCursor::InitPlatformData() {
-  return;
 }
 
 bool WebCursor::IsPlatformDataEqual(const WebCursor& other) const {

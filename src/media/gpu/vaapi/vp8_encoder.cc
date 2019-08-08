@@ -47,7 +47,8 @@ VP8Encoder::~VP8Encoder() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-bool VP8Encoder::Initialize(const VideoEncodeAccelerator::Config& config) {
+bool VP8Encoder::Initialize(const VideoEncodeAccelerator::Config& config,
+                            const AcceleratedVideoEncoder::Config& ave_config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (VideoCodecProfileToVideoCodec(config.output_profile) != kCodecVP8) {
     DVLOGF(1) << "Invalid profile: " << GetProfileName(config.output_profile);
@@ -110,8 +111,19 @@ bool VP8Encoder::PrepareEncodeJob(EncodeJob* encode_job) {
   UpdateFrameHeader(encode_job->IsKeyframeRequested());
   *picture->frame_hdr = current_frame_hdr_;
 
+  // We only use |last_frame| for a reference frame. This follows the behavior
+  // of libvpx encoder in chromium webrtc use case.
+  std::array<bool, kNumVp8ReferenceBuffers> ref_frames_used{true, false, false};
+
+  if (current_frame_hdr_.IsKeyframe()) {
+    // A driver should ignore |ref_frames_used| values if keyframe is requested.
+    // But we fill false in |ref_frames_used| just in case.
+    std::fill(std::begin(ref_frames_used), std::end(ref_frames_used), false);
+  }
+
   if (!accelerator_->SubmitFrameParameters(encode_job, current_params_, picture,
-                                           reference_frames_)) {
+                                           reference_frames_,
+                                           ref_frames_used)) {
     LOG(ERROR) << "Failed submitting frame parameters";
     return false;
   }

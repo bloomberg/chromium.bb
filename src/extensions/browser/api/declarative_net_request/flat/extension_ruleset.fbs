@@ -19,17 +19,25 @@ table UrlRuleMetadata {
   redirect_url : string;
 }
 
+/// This provides a mapping from an action to its index within the |index_list|
+/// vector.
+enum ActionIndex : ubyte {
+  block = 0,
+  allow,
+  redirect,
+  remove_cookie_header,
+  remove_referer_header,
+  remove_set_cookie_header,
+  /// Number of actions. Must be the last entry.
+  count
+}
+
 /// The top-level data structure used to store extensions URL rules for the
 /// Declarative Net Request API.
 table ExtensionIndexedRuleset {
-  /// The index of all blocking URL rules.
-  blocking_index : url_pattern_index.flat.UrlPatternIndex;
-
-  /// The index of all allowing URL rules.
-  allowing_index : url_pattern_index.flat.UrlPatternIndex;
-
-  /// The index of all redirect URL rules.
-  redirect_index : url_pattern_index.flat.UrlPatternIndex;
+  /// Vector of UrlPatternIndex for different action types. This will consist
+  /// of ActionIndex_count indices.
+  index_list : [url_pattern_index.flat.UrlPatternIndex];
 
   /// Extension related metadata. Sorted by id, to support fast lookup.
   /// Currently this is only used for redirect rules.

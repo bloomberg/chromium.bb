@@ -188,7 +188,7 @@ cr.define('settings_sync_account_control', function() {
             assertEquals(email, 'foo@foo.com');
             assertEquals(isDefaultPromoAccount, true);
 
-            assertVisible(testElement.$$('paper-icon-button-light'), true);
+            assertVisible(testElement.$$('cr-icon-button'), true);
             assertTrue(testElement.$$('#sync-icon-container').hidden);
 
             testElement.$$('#dropdown-arrow').click();
@@ -237,7 +237,7 @@ cr.define('settings_sync_account_control', function() {
       Polymer.dom.flush();
 
       assertVisible(testElement.$$('#avatar-row'), true);
-      assertVisible(testElement.$$('paper-icon-button-light'), false);
+      assertVisible(testElement.$$('cr-icon-button'), false);
       assertVisible(testElement.$$('#promo-header'), false);
       assertFalse(testElement.$$('#sync-icon-container').hidden);
 

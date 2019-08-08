@@ -5,11 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_OWNER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_OWNER_H_
 
-#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -32,8 +32,7 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
   virtual Frame* ContentFrame() const = 0;
   virtual void SetContentFrame(Frame&) = 0;
   virtual void ClearContentFrame() = 0;
-
-  virtual SandboxFlags GetSandboxFlags() const = 0;
+  virtual const FramePolicy& GetFramePolicy() const = 0;
   // Note: there is a subtle ordering dependency here: if a page load needs to
   // report resource timing information, it *must* do so before calling
   // DispatchLoad().
@@ -71,7 +70,6 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
   virtual bool AllowPaymentRequest() const = 0;
   virtual bool IsDisplayNone() const = 0;
   virtual AtomicString RequiredCsp() const = 0;
-  virtual const ParsedFeaturePolicy& ContainerPolicy() const = 0;
 
   // Returns whether or not children of the owned frame should be lazily loaded.
   virtual bool ShouldLazyLoadChildren() const = 0;
@@ -86,17 +84,16 @@ class CORE_EXPORT DummyFrameOwner final
   USING_GARBAGE_COLLECTED_MIXIN(DummyFrameOwner);
 
  public:
-  static DummyFrameOwner* Create() {
-    return MakeGarbageCollected<DummyFrameOwner>();
-  }
-
   void Trace(blink::Visitor* visitor) override { FrameOwner::Trace(visitor); }
 
   // FrameOwner overrides:
   Frame* ContentFrame() const override { return nullptr; }
   void SetContentFrame(Frame&) override {}
   void ClearContentFrame() override {}
-  SandboxFlags GetSandboxFlags() const override { return kSandboxNone; }
+  const FramePolicy& GetFramePolicy() const override {
+    DEFINE_STATIC_LOCAL(FramePolicy, frame_policy, ());
+    return frame_policy;
+  }
   void AddResourceTiming(const ResourceTimingInfo&) override {}
   void DispatchLoad() override {}
   bool CanRenderFallbackContent() const override { return false; }
@@ -113,10 +110,6 @@ class CORE_EXPORT DummyFrameOwner final
   bool AllowPaymentRequest() const override { return false; }
   bool IsDisplayNone() const override { return false; }
   AtomicString RequiredCsp() const override { return g_null_atom; }
-  const ParsedFeaturePolicy& ContainerPolicy() const override {
-    DEFINE_STATIC_LOCAL(ParsedFeaturePolicy, container_policy, ());
-    return container_policy;
-  }
   bool ShouldLazyLoadChildren() const override { return false; }
 
  private:

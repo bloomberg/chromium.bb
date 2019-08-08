@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_ALLOCATOR_H_
 
 #include "build/build_config.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_buildflags.h"
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
@@ -138,9 +137,8 @@ class PLATFORM_EXPORT HeapAllocator {
   }
 
   template <typename T>
-  static void BackingWriteBarrier(TraceWrapperMember<T>* address, size_t size) {
+  static void BackingWriteBarrier(Member<T>* address, size_t size) {
     MarkingVisitor::WriteBarrier(address);
-    ScriptWrappableMarkingVisitor::WriteBarrier(address, size);
   }
 
   template <typename T>
@@ -215,7 +213,6 @@ class PLATFORM_EXPORT HeapAllocator {
 
   template <typename T, typename Traits>
   static void NotifyNewObject(T* object) {
-#if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
     if (!ThreadState::IsAnyIncrementalMarking())
       return;
     // The object may have been in-place constructed as part of a large object.
@@ -226,10 +223,6 @@ class PLATFORM_EXPORT HeapAllocator {
       // are discovered by the marker.
       ThreadState::NoAllocationScope no_allocation_scope(thread_state);
       DCHECK(thread_state->CurrentVisitor());
-      // This check ensures that the visitor will not eagerly recurse into
-      // children but rather push all blink::GarbageCollected objects and only
-      // eagerly trace non-managed objects.
-      DCHECK(!thread_state->Heap().GetStackFrameDepth().IsEnabled());
       // No weak handling for write barriers. Modifying weakly reachable objects
       // strongifies them for the current cycle.
       DCHECK(!Traits::kCanHaveDeletedValue || !Traits::IsDeletedValue(*object));
@@ -238,12 +231,10 @@ class PLATFORM_EXPORT HeapAllocator {
                                                       ->CurrentVisitor(),
                                                   *object);
     }
-#endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
   }
 
   template <typename T, typename Traits>
   static void NotifyNewObjects(T* array, size_t len) {
-#if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
     if (!ThreadState::IsAnyIncrementalMarking())
       return;
     // The object may have been in-place constructed as part of a large object.
@@ -253,7 +244,6 @@ class PLATFORM_EXPORT HeapAllocator {
       // See |NotifyNewObject| for details.
       ThreadState::NoAllocationScope no_allocation_scope(thread_state);
       DCHECK(thread_state->CurrentVisitor());
-      DCHECK(!thread_state->Heap().GetStackFrameDepth().IsEnabled());
       // No weak handling for write barriers. Modifying weakly reachable objects
       // strongifies them for the current cycle.
       while (len-- > 0) {
@@ -266,7 +256,6 @@ class PLATFORM_EXPORT HeapAllocator {
         array++;
       }
     }
-#endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
   }
 
   template <typename T>
@@ -728,18 +717,6 @@ struct VectorTraits<blink::SameThreadCheckedMember<T>>
 };
 
 template <typename T>
-struct VectorTraits<blink::TraceWrapperMember<T>>
-    : VectorTraitsBase<blink::TraceWrapperMember<T>> {
-  STATIC_ONLY(VectorTraits);
-  static const bool kNeedsDestruction = false;
-  static const bool kCanInitializeWithMemset = true;
-  static const bool kCanClearUnusedSlotsWithMemset = true;
-  static const bool kCanMoveWithMemcpy = true;
-  static const bool kCanCopyWithMemcpy = true;
-  static const bool kCanSwapUsingCopyOrMove = true;
-};
-
-template <typename T>
 struct VectorTraits<blink::WeakMember<T>>
     : VectorTraitsBase<blink::WeakMember<T>> {
   STATIC_ONLY(VectorTraits);
@@ -872,39 +849,6 @@ struct HashTraits<blink::SameThreadCheckedMember<T>>
   static blink::SameThreadCheckedMember<T> EmptyValue() {
     return blink::SameThreadCheckedMember<T>(nullptr, nullptr);
   }
-};
-
-template <typename T>
-struct HashTraits<blink::TraceWrapperMember<T>>
-    : SimpleClassHashTraits<blink::TraceWrapperMember<T>> {
-  STATIC_ONLY(HashTraits);
-  // FIXME: Implement proper const'ness for iterator types. Requires support
-  // in the marking Visitor.
-  using PeekInType = T*;
-  using IteratorGetType = blink::TraceWrapperMember<T>*;
-  using IteratorConstGetType = const blink::TraceWrapperMember<T>*;
-  using IteratorReferenceType = blink::TraceWrapperMember<T>&;
-  using IteratorConstReferenceType = const blink::TraceWrapperMember<T>&;
-  static IteratorReferenceType GetToReferenceConversion(IteratorGetType x) {
-    return *x;
-  }
-  static IteratorConstReferenceType GetToReferenceConstConversion(
-      IteratorConstGetType x) {
-    return *x;
-  }
-
-  using PeekOutType = T*;
-
-  template <typename U>
-  static void Store(const U& value, blink::TraceWrapperMember<T>& storage) {
-    storage = value;
-  }
-
-  static PeekOutType Peek(const blink::TraceWrapperMember<T>& value) {
-    return value;
-  }
-
-  static blink::TraceWrapperMember<T> EmptyValue() { return nullptr; }
 };
 
 template <typename T>

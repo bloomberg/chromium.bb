@@ -14,9 +14,11 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
@@ -106,6 +108,12 @@ ash::ShelfLayoutManager* GetShelfLayoutManagerForDisplay(
     const display::Display& display) {
   auto* root = ash::Shell::GetRootWindowForDisplayId(display.id());
   return ash::Shelf::ForWindow(root)->shelf_layout_manager();
+}
+
+ash::WorkAreaInsets* GetWorkAreaInsetsForDisplay(
+    const display::Display& display) {
+  auto* root = ash::Shell::GetRootWindowForDisplayId(display.id());
+  return ash::WorkAreaInsets::ForWindow(root);
 }
 
 int Component(uint32_t direction) {
@@ -551,8 +559,22 @@ void input_method_surface_destroy(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
 }
 
+void input_method_surface_set_bounds(wl_client* client,
+                                     wl_resource* resource,
+                                     uint32_t display_id_hi,
+                                     uint32_t display_id_lo,
+                                     int32_t x,
+                                     int32_t y,
+                                     int32_t width,
+                                     int32_t height) {
+  GetUserDataAs<InputMethodSurface>(resource)->SetBounds(
+      static_cast<int64_t>(display_id_hi) << 32 | display_id_lo,
+      gfx::Rect(x, y, width, height));
+}
+
 const struct zcr_input_method_surface_v1_interface
-    input_method_surface_implementation = {input_method_surface_destroy};
+    input_method_surface_implementation = {input_method_surface_destroy,
+                                           input_method_surface_set_bounds};
 
 ////////////////////////////////////////////////////////////////////////////////
 // remote_shell_interface:
@@ -731,7 +753,7 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
         gfx::Insets stable_insets_in_client_pixel =
             GetWorkAreaInsetsInClientPixel(
                 display, default_dsf, size_in_client_pixel,
-                shelf_layout_manager->ComputeStableWorkArea());
+                GetWorkAreaInsetsForDisplay(display)->ComputeStableWorkArea());
         int systemui_visibility =
             shelf_layout_manager->visibility_state() == ash::SHELF_AUTO_HIDE
                 ? ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_AUTOHIDE_NON_STICKY
@@ -825,12 +847,12 @@ void remote_shell_destroy(wl_client* client, wl_resource* resource) {
 int RemoteSurfaceContainer(uint32_t container) {
   switch (container) {
     case ZCR_REMOTE_SHELL_V1_CONTAINER_DEFAULT:
-      return ash::kShellWindowId_DefaultContainer;
+      return ash::desks_util::GetActiveDeskContainerId();
     case ZCR_REMOTE_SHELL_V1_CONTAINER_OVERLAY:
       return ash::kShellWindowId_SystemModalContainer;
     default:
       DLOG(WARNING) << "Unsupported container: " << container;
-      return ash::kShellWindowId_DefaultContainer;
+      return ash::desks_util::GetActiveDeskContainerId();
   }
 }
 

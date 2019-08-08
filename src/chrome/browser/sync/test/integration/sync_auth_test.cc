@@ -12,7 +12,7 @@
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_token_status.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/http/http_status_code.h"
@@ -52,25 +52,34 @@ constexpr char kMalformedOAuth2Token[] = R"({ "foo": )";
 // Waits until local changes are committed or an auth error is encountered.
 class TestForAuthError : public UpdatedProgressMarkerChecker {
  public:
-  explicit TestForAuthError(browser_sync::ProfileSyncService* service);
+  explicit TestForAuthError(syncer::ProfileSyncService* service)
+      : UpdatedProgressMarkerChecker(service) {}
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied() override {
+    return (service()->GetSyncTokenStatus().last_get_token_error.state() !=
+            GoogleServiceAuthError::NONE) ||
+           UpdatedProgressMarkerChecker::IsExitConditionSatisfied();
+  }
+
+  std::string GetDebugMessage() const override {
+    return "Waiting for auth error";
+  }
 };
 
-TestForAuthError::TestForAuthError(browser_sync::ProfileSyncService* service)
-    : UpdatedProgressMarkerChecker(service) {}
+class SyncTransportActiveChecker : public SingleClientStatusChangeChecker {
+ public:
+  explicit SyncTransportActiveChecker(syncer::ProfileSyncService* service)
+      : SingleClientStatusChangeChecker(service) {}
 
-bool TestForAuthError::IsExitConditionSatisfied() {
-  return (service()->GetSyncTokenStatus().last_get_token_error.state() !=
-          GoogleServiceAuthError::NONE) ||
-         UpdatedProgressMarkerChecker::IsExitConditionSatisfied();
-}
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied() override {
+    return service()->GetTransportState() ==
+           syncer::SyncService::TransportState::ACTIVE;
+  }
 
-std::string TestForAuthError::GetDebugMessage() const {
-  return "Waiting for auth error";
-}
+  std::string GetDebugMessage() const override { return "Sync Active"; }
+};
 
 class SyncAuthTest : public SyncTest {
  public:
@@ -303,7 +312,7 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, DISABLED_TokenExpiry) {
 
 class NoAuthErrorChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit NoAuthErrorChecker(browser_sync::ProfileSyncService* service)
+  explicit NoAuthErrorChecker(syncer::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
   // StatusChangeChecker implementation.
@@ -331,11 +340,12 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, SyncPausedState) {
   ASSERT_TRUE(GetSyncService(0)->GetAuthError().IsPersistentError());
   ASSERT_TRUE(AttemptToTriggerAuthError());
 
+  // Pausing sync may issue a reconfiguration, so wait until it finishes.
+  SyncTransportActiveChecker(GetSyncService(0)).Wait();
+
   // While Sync itself is still considered active, the active data types should
   // now be empty.
   EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
-  EXPECT_EQ(GetSyncService(0)->GetTransportState(),
-            syncer::SyncService::TransportState::ACTIVE);
 
   // Clear the "Sync paused" state again.
   GetClient(0)->ExitSyncPausedStateForPrimaryAccount();
@@ -344,9 +354,10 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, SyncPausedState) {
   NoAuthErrorChecker(GetSyncService(0)).Wait();
   ASSERT_FALSE(GetSyncService(0)->GetAuthError().IsPersistentError());
 
+  // Resuming sync could issue a reconfiguration, so wait until it finishes.
+  SyncTransportActiveChecker(GetSyncService(0)).Wait();
+
   // Now the active data types should be back.
   EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
-  EXPECT_EQ(GetSyncService(0)->GetTransportState(),
-            syncer::SyncService::TransportState::ACTIVE);
   EXPECT_EQ(GetSyncService(0)->GetActiveDataTypes(), active_types);
 }

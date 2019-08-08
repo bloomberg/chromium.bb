@@ -16,7 +16,6 @@
 
 #include "api/transport/field_trial_based_config.h"
 #include "api/transport/webrtc_key_value_config.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "modules/congestion_controller/goog_cc/delay_based_bwe.h"
 #include "modules/congestion_controller/include/network_changed_observer.h"
 #include "modules/congestion_controller/include/send_side_congestion_controller_interface.h"
@@ -174,9 +173,6 @@ class DEPRECATED_SendSideCongestionController
   size_t transport_overhead_bytes_per_packet_ RTC_GUARDED_BY(bwe_lock_);
 
   rtc::RaceChecker worker_race_;
-
-  bool pacer_pushback_experiment_ = false;
-  float encoding_rate_ = 1.0;
 
   std::unique_ptr<CongestionWindowPushbackController>
       congestion_window_pushback_controller_;

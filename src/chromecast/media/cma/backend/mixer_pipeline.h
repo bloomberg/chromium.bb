@@ -41,7 +41,7 @@ class MixerPipeline {
   ~MixerPipeline();
 
   // Sets the sample rate of all processors.
-  void Initialize(int samples_per_second);
+  void Initialize(int samples_per_second, int frames_per_write);
 
   // Returns the FilterGroup that should process a stream with |device_id| or
   // |nullptr| if no matching FilterGroup is found.

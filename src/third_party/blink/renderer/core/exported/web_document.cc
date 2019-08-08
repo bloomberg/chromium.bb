@@ -105,8 +105,11 @@ WebString WebDocument::GetReferrer() const {
   return ConstUnwrap<Document>()->referrer();
 }
 
-SkColor WebDocument::ThemeColor() const {
-  return ConstUnwrap<Document>()->ThemeColor().Rgb();
+base::Optional<SkColor> WebDocument::ThemeColor() const {
+  base::Optional<Color> color = ConstUnwrap<Document>()->ThemeColor();
+  if (color)
+    return color->Rgb();
+  return base::nullopt;
 }
 
 WebURL WebDocument::OpenSearchDescriptionURL() const {
@@ -277,6 +280,18 @@ WebURL WebDocument::CanonicalUrlForSharing() const {
 
 WebDistillabilityFeatures WebDocument::DistillabilityFeatures() {
   return DocumentStatisticsCollector::CollectStatistics(*Unwrap<Document>());
+}
+
+void WebDocument::SetShowBeforeUnloadDialog(bool show_dialog) {
+  if (!IsHTMLDocument())
+    return;
+  if (!IsPluginDocument() &&
+      !RuntimeEnabledFeatures::MimeHandlerViewInCrossProcessFrameEnabled()) {
+    return;
+  }
+
+  Document* doc = Unwrap<Document>();
+  doc->SetShowBeforeUnloadDialog(show_dialog);
 }
 
 WebDocument::WebDocument(Document* elem) : WebNode(elem) {}

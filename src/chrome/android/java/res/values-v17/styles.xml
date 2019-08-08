@@ -110,6 +110,13 @@
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowIsTranslucent">true</item>
     </style>
+    <!-- A style for Activities that need translucency for technical reasons, but otherwise should
+         look as usual (according to Theme.Chromium.Activity).-->
+    <style name="Theme.Chromium.Activity.FakeTranslucent" parent="Theme.Chromium.Activity">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
 
     <!-- Extend base theme rather than Theme.Chromium.WithWindowAnimation to avoid values-v27
          navigation bar colors from being applied -->
@@ -542,12 +549,7 @@
         <item name="android:includeFontPadding">false</item>
         <item name="android:requiresFadingEdge">horizontal</item>
         <item name="android:singleLine">true</item>
-        <item name="android:textAppearance">
-            @style/TextAppearance.ContextualSearchContextTextView</item>
-    </style>
-    <style name="TextAppearance.ContextualSearchContextTextView">
-        <item name="android:textColor">#CCC</item>
-        <item name="android:textSize">@dimen/text_size_large</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlackHint1</item>
     </style>
     <style name="ContextualSearchCaptionTextView">
         <item name="android:layout_width">match_parent</item>
@@ -635,6 +637,36 @@
         <item name="android:layout_height">48dp</item>
         <item name="android:layout_gravity">center</item>
     </style>
+    <style name="SplitToolbarButton" parent="BottomToolbarButton">
+        <item name="android:layout_height">24dp</item>
+        <item name="android:layout_width">24dp</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:clickable">false</item>
+    </style>
+    <style name="TextAppearance.BottomToolbarLabel" parent="TextAppearance.RobotoMediumStyle">
+        <item name="android:textColor">@color/default_text_color_dark_secondary</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+    <style name="BottomToolbarButtonWrapper">
+        <item name="android:layout_width">56dp</item>
+        <item name="android:paddingStart">4dp</item>
+        <item name="android:paddingEnd">4dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:gravity">center</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+    </style>
+    <style name="BottomToolbarLabel">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingTop">7dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.BottomToolbarLabel</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:visibility">gone</item>
+    </style>
 
     <style name="AppMenuItem">
         <item name="android:paddingStart">16dp</item>
@@ -671,7 +703,7 @@
         <item name="android:textColor">@color/secondary_text_default_material_light</item>
     </style>
     <style name="TextAppearance.PhotoPickerSpecialTile" parent="TextAppearance.BlackTitle2">
-        <item name="android:textColor">@color/photo_picker_special_tile_color</item>
+        <item name="android:textColor">@color/photo_picker_special_tile_text_color</item>
     </style>
     <style name="TextAppearance.SearchEngineRecentTitle" parent="TextAppearance.RobotoMediumStyle">
         <item name="android:textColor">@color/default_text_color_link</item>

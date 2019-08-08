@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
+#include "base/trace_event/trace_event.h"
 #include "content/browser/renderer_host/dwrite_font_uma_logging_win.h"
 
 namespace content {
@@ -33,8 +34,16 @@ bool FontFilePathAndTtcIndex(IDWriteFont* font,
         MessageFilterError::ADD_FILES_FOR_FONT_CREATE_FACE_FAILED);
     return false;
   }
+  return FontFilePathAndTtcIndex(font_face.Get(), file_path, ttc_index);
+}
 
+bool FontFilePathAndTtcIndex(IDWriteFontFace* font_face,
+                             base::string16& file_path,
+                             uint32_t& ttc_index) {
+  TRACE_EVENT0("dwrite,fonts",
+               "dwrite_font_file_util::FontFilePathAndTtcIndex");
   UINT32 file_count;
+  HRESULT hr;
   hr = font_face->GetFiles(&file_count, nullptr);
   if (FAILED(hr)) {
     LogMessageFilterError(

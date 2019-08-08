@@ -748,8 +748,7 @@ struct FuzzTraits<content::PageState> {
 template <>
 struct FuzzTraits<content::WebCursor> {
   static bool Fuzz(content::WebCursor* p, Fuzzer* fuzzer) {
-    content::CursorInfo info;
-    p->GetCursorInfo(&info);
+    content::CursorInfo info = p->info();
 
     // |type| enum is not validated on de-serialization, so pick random value.
     if (!FuzzParam(reinterpret_cast<int*>(&info.type), fuzzer))
@@ -768,8 +767,7 @@ struct FuzzTraits<content::WebCursor> {
     if (!(info.image_scale_factor > 0.0))
       info.image_scale_factor = 1;
 
-    *p = content::WebCursor();
-    p->InitFromCursorInfo(info);
+    *p = content::WebCursor(info);
     return true;
   }
 };
@@ -1334,15 +1332,6 @@ struct FuzzTraits<ppapi::proxy::SerializedHandle> {
 template <>
 struct FuzzTraits<ppapi::proxy::SerializedFontDescription> {
   static bool Fuzz(ppapi::proxy::SerializedFontDescription* p,
-                       Fuzzer* fuzzer) {
-    // TODO(mbarbella): This should actually do something.
-    return true;
-  }
-};
-
-template <>
-struct FuzzTraits<ppapi::proxy::SerializedTrueTypeFontDesc> {
-  static bool Fuzz(ppapi::proxy::SerializedTrueTypeFontDesc* p,
                        Fuzzer* fuzzer) {
     // TODO(mbarbella): This should actually do something.
     return true;

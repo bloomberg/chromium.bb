@@ -69,7 +69,9 @@ body {
   display: -webkit-box;
   height: 31px;
   margin-top: 8px;
+  overflow: hidden;
   pointer-events: auto;
+  position: relative;
   transition: border-top 130ms ease;
   user-select: none;
 }
@@ -93,6 +95,19 @@ body {
   font-weight: 500;
   line-height: 34px;
   padding: 0 30px;
+  position: relative;
+  transition: all 500ms ease;
+}
+
+.ink {
+  background: rgb(232, 240, 254);
+  border-radius: 100%;
+  position: absolute;
+  transform: scale(0);
+}
+
+.ripple-category-list-item-animation {
+  animation: ripple-category-list-item 500ms linear;
 }
 
 #categories-list > li[selected] > div {
@@ -867,4 +882,10 @@ html[dir='rtl'] #current-wallpaper-more-options {
   90% { opacity: 0.06;
         transform: scale(1);
       }
+}
+
+@keyframes ripple-category-list-item {
+  100% { opacity: 0;
+         transform: scale(2.5);
+       }
 }

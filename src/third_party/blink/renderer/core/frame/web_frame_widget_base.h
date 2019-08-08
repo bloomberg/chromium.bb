@@ -32,6 +32,7 @@ class AnimationWorkletMutatorDispatcherImpl;
 class GraphicsLayer;
 class HitTestResult;
 class PageWidgetEventHandler;
+class PaintWorkletPaintDispatcher;
 class WebLayerTreeView;
 class WebLocalFrameImpl;
 class WebViewImpl;
@@ -64,6 +65,9 @@ class CORE_EXPORT WebFrameWidgetBase
   EnsureCompositorMutatorDispatcher(
       scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner);
 
+  // Creates or returns cached paint dispatcher.
+  scoped_refptr<PaintWorkletPaintDispatcher> EnsureCompositorPaintDispatcher();
+
   // Sets the root graphics layer. |GraphicsLayer| can be null when detaching
   // the root layer.
   virtual void SetRootGraphicsLayer(GraphicsLayer*) = 0;
@@ -80,7 +84,6 @@ class CORE_EXPORT WebFrameWidgetBase
   // WebFrameWidget implementation.
   void Close() override;
   WebLocalFrame* LocalRoot() const override;
-  void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) override;
   WebDragOperation DragTargetDragEnter(const WebDragData&,
                                        const WebFloatPoint& point_in_viewport,
                                        const WebFloatPoint& screen_point,
@@ -197,6 +200,8 @@ class CORE_EXPORT WebFrameWidgetBase
   // make that happen.
   base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> mutator_dispatcher_;
   scoped_refptr<base::SingleThreadTaskRunner> mutator_task_runner_;
+
+  scoped_refptr<PaintWorkletPaintDispatcher> paint_dispatcher_;
 
   friend class WebViewImpl;
 };

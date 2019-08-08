@@ -93,6 +93,9 @@ enum class WebappInstallSource {
   // A system app installed on Chrome OS.
   SYSTEM_DEFAULT = 14,
 
+  // Install icon in the Omnibox.
+  OMNIBOX_INSTALL_ICON = 15,
+
   // Add any new values above this one.
   COUNT,
 };

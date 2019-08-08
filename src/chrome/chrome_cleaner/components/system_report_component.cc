@@ -73,9 +73,6 @@ using base::WaitableEvent;
 namespace chrome_cleaner {
 namespace {
 
-// The initial number of services when enumerating services.
-const unsigned int kInitialNumberOfServices = 100;
-
 const wchar_t kServicesKeyPath[] = L"system\\currentcontrolset\\services\\";
 
 const wchar_t kAbsolutePrefix[] = L"\\??\\";
@@ -415,9 +412,8 @@ bool RetrieveExecutablePathFromPid(DWORD pid, base::FilePath* path) {
   return true;
 }
 
-bool RetrieveExecutablePathFromServiceName(const wchar_t* service_name,
+bool RetrieveExecutablePathFromServiceName(const base::string16& service_name,
                                            base::FilePath* service_path) {
-  DCHECK(service_name);
   DCHECK(service_path);
   base::string16 subkey_path(kServicesKeyPath);
   subkey_path += service_name;
@@ -464,49 +460,30 @@ void ReportRunningServices(DWORD services_type) {
     PLOG(ERROR) << "Cannot open service manager.";
     return;
   }
-
-  std::vector<uint8_t> buffer(kInitialNumberOfServices *
-                              sizeof(ENUM_SERVICE_STATUS_PROCESS));
-  ULONG number_of_service = 0;
-  while (true) {
-    ULONG more_bytes_needed = 0;
-    if (::EnumServicesStatusEx(service_manager.Get(), SC_ENUM_PROCESS_INFO,
-                               services_type, SERVICE_ACTIVE, &buffer[0],
-                               buffer.size(), &more_bytes_needed,
-                               &number_of_service, nullptr, nullptr) != FALSE) {
-      break;
-    }
-
-    if (::GetLastError() == ERROR_MORE_DATA) {
-      buffer.resize(buffer.size() + more_bytes_needed);
-    } else {
-      PLOG(ERROR) << "Cannot enumerate running services.";
-      return;
-    }
+  std::vector<ServiceStatus> services;
+  if (!EnumerateServices(service_manager, services_type, SERVICE_ACTIVE,
+                         &services)) {
+    return;
   }
 
-  LPENUM_SERVICE_STATUS_PROCESS services =
-      reinterpret_cast<LPENUM_SERVICE_STATUS_PROCESS>(&buffer[0]);
-  for (size_t i = 0; i < number_of_service; i++) {
+  for (const ServiceStatus& service : services) {
     base::FilePath service_path;
     bool service_found = false;
-    if (services[i].ServiceStatusProcess.dwProcessId != 0) {
+    if (service.service_status_process.dwProcessId != 0) {
       service_found = RetrieveExecutablePathFromPid(
-          services[i].ServiceStatusProcess.dwProcessId, &service_path);
+          service.service_status_process.dwProcessId, &service_path);
     } else {
       service_found = RetrieveExecutablePathFromServiceName(
-          services[i].lpServiceName, &service_path);
+          service.service_name, &service_path);
     }
     if (service_found) {
       internal::FileInformation file_information;
-      bool white_listed = false;
+      bool ignored_reporting = false;
       RetrieveDetailedFileInformation(service_path, &file_information,
-                                      &white_listed);
-
-      if (!white_listed) {
-        LoggingServiceAPI::GetInstance()->AddService(services[i].lpDisplayName,
-                                                     services[i].lpServiceName,
-                                                     file_information);
+                                      &ignored_reporting);
+      if (!ignored_reporting) {
+        LoggingServiceAPI::GetInstance()->AddService(
+            service.display_name, service.service_name, file_information);
       }
     }
   }

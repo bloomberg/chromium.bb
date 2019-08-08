@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
@@ -376,18 +377,25 @@ int KeywordScoreForSufficientlyCompleteMatch();
 EmphasizeTitlesCondition GetEmphasizeTitlesConditionForInput(
     const AutocompleteInput& input);
 
+// Returns the maximum number of URL matches that should be allowed within
+// the Omnibox if there are search-type matches available to replace them.
+// If the capping feature is not enabled, or the parameter cannot be
+// parsed, it returns 0.
+size_t GetMaxURLMatches();
+
 // ---------------------------------------------------------
 // For UI experiments.
+
+// Returns whether preserving default match score is enabled.
+bool IsPreserveDefaultMatchScoreEnabled();
 
 // Returns true if the rich entities flag is enabled.
 bool IsRichEntitySuggestionsEnabled();
 
-// Returns true if either the reverse answers flag or the
-// #upcoming-ui-features flag is enabled.
+// Returns true if the reverse answers flag is enabled.
 bool IsReverseAnswersEnabled();
 
-// Returns true if either the tab switch suggestions flag or the
-// #upcoming-ui-features flag is enabled.
+// Returns true if either the tab switch suggestions flag is enabled.
 bool IsTabSwitchSuggestionsEnabled();
 
 // Returns true if the feature of reversing the tab switch logic is enabled.
@@ -396,21 +404,29 @@ bool IsTabSwitchLogicReversed();
 // Returns true if the #omnibox-pedal-suggestions feature is enabled.
 bool IsPedalSuggestionsEnabled();
 
-// Returns true if either the steady-state elision flag for scheme or the
-// #upcoming-ui-features flag is enabled.
+// Returns true if either the steady-state elision flag for scheme is enabled.
 bool IsHideSteadyStateUrlSchemeEnabled();
 
 // Returns true if either the steady-state elision flag for trivial
-// subdomains or the #upcoming-ui-features flag is enabled.
+// subdomains is enabled.
 bool IsHideSteadyStateUrlTrivialSubdomainsEnabled();
 
-// Returns the size of the vertical margin that should be used in the
-// suggestion view.
-int GetSuggestionVerticalMargin();
+// Returns the field trial override for the vertical margin size that should be
+// used in the suggestion view. Returns base::nullopt if the UI code should use
+// the default vertical margin.
+base::Optional<int> GetSuggestionVerticalMarginFieldTrialOverride();
 
 // Simply a convenient wrapper for testing a flag. Used downstream for an
 // assortment of keyword mode experiments.
 bool IsExperimentalKeywordModeEnabled();
+
+// Returns whether the group suggestions by type feature is enabled,
+// which "bunches" search suggestions (except for the default match).
+bool IsGroupSuggestionsBySearchVsUrlFeatureEnabled();
+
+// Returns whether the feature to limit the number of shown URL matches
+// is enabled.
+bool IsMaxURLMatchesFeatureEnabled();
 
 // ---------------------------------------------------------
 // Clipboard URL suggestions:
@@ -448,6 +464,9 @@ extern const char kKeywordRequiresPrefixMatchRule[];
 extern const char kKeywordScoreForSufficientlyCompleteMatchRule[];
 extern const char kHQPAllowDupMatchesForScoringRule[];
 extern const char kEmphasizeTitlesRule[];
+
+// Parameter name used by the Omnibox match capping experiment.
+extern const char kOmniboxMaxURLMatchesParam[];
 
 // Parameter names used by the HUP new scoring experiments.
 extern const char kHUPNewScoringTypedCountRelevanceCapParam[];

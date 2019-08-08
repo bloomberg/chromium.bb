@@ -11,7 +11,7 @@
 // support both OnceCallback and RepeatingCallback.
 //
 // Use:
-//   using FooCallback = base::Callback<int(std::string)>;
+//   using FooCallback = base::RepeatingCallback<int(std::string)>;
 //
 //   TEST(FooTest, RunsCallbackWithBarArgument) {
 //     base::MockCallback<FooCallback> callback;
@@ -38,13 +38,13 @@ template <typename F>
 class MockCallback;
 
 template <typename R>
-class MockCallback<Callback<R()>> {
+class MockCallback<RepeatingCallback<R()>> {
  public:
   MockCallback() = default;
   MOCK_METHOD0_T(Run, R());
 
-  Callback<R()> Get() {
-    return Bind(&MockCallback::Run, Unretained(this));
+  RepeatingCallback<R()> Get() {
+    return BindRepeating(&MockCallback::Run, Unretained(this));
   }
 
  private:
@@ -66,13 +66,13 @@ class MockCallback<OnceCallback<R()>> {
 };
 
 template <typename R, typename A1>
-class MockCallback<Callback<R(A1)>> {
+class MockCallback<RepeatingCallback<R(A1)>> {
  public:
   MockCallback() = default;
   MOCK_METHOD1_T(Run, R(A1));
 
-  Callback<R(A1)> Get() {
-    return Bind(&MockCallback::Run, Unretained(this));
+  RepeatingCallback<R(A1)> Get() {
+    return BindRepeating(&MockCallback::Run, Unretained(this));
   }
 
  private:
@@ -94,13 +94,13 @@ class MockCallback<OnceCallback<R(A1)>> {
 };
 
 template <typename R, typename A1, typename A2>
-class MockCallback<Callback<R(A1, A2)>> {
+class MockCallback<RepeatingCallback<R(A1, A2)>> {
  public:
   MockCallback() = default;
   MOCK_METHOD2_T(Run, R(A1, A2));
 
-  Callback<R(A1, A2)> Get() {
-    return Bind(&MockCallback::Run, Unretained(this));
+  RepeatingCallback<R(A1, A2)> Get() {
+    return BindRepeating(&MockCallback::Run, Unretained(this));
   }
 
  private:
@@ -122,13 +122,13 @@ class MockCallback<OnceCallback<R(A1, A2)>> {
 };
 
 template <typename R, typename A1, typename A2, typename A3>
-class MockCallback<Callback<R(A1, A2, A3)>> {
+class MockCallback<RepeatingCallback<R(A1, A2, A3)>> {
  public:
   MockCallback() = default;
   MOCK_METHOD3_T(Run, R(A1, A2, A3));
 
-  Callback<R(A1, A2, A3)> Get() {
-    return Bind(&MockCallback::Run, Unretained(this));
+  RepeatingCallback<R(A1, A2, A3)> Get() {
+    return BindRepeating(&MockCallback::Run, Unretained(this));
   }
 
  private:
@@ -150,13 +150,13 @@ class MockCallback<OnceCallback<R(A1, A2, A3)>> {
 };
 
 template <typename R, typename A1, typename A2, typename A3, typename A4>
-class MockCallback<Callback<R(A1, A2, A3, A4)>> {
+class MockCallback<RepeatingCallback<R(A1, A2, A3, A4)>> {
  public:
   MockCallback() = default;
   MOCK_METHOD4_T(Run, R(A1, A2, A3, A4));
 
-  Callback<R(A1, A2, A3, A4)> Get() {
-    return Bind(&MockCallback::Run, Unretained(this));
+  RepeatingCallback<R(A1, A2, A3, A4)> Get() {
+    return BindRepeating(&MockCallback::Run, Unretained(this));
   }
 
  private:
@@ -179,13 +179,13 @@ class MockCallback<OnceCallback<R(A1, A2, A3, A4)>> {
 
 template <typename R, typename A1, typename A2, typename A3, typename A4,
     typename A5>
-class MockCallback<Callback<R(A1, A2, A3, A4, A5)>> {
+class MockCallback<RepeatingCallback<R(A1, A2, A3, A4, A5)>> {
  public:
   MockCallback() = default;
   MOCK_METHOD5_T(Run, R(A1, A2, A3, A4, A5));
 
-  Callback<R(A1, A2, A3, A4, A5)> Get() {
-    return Bind(&MockCallback::Run, Unretained(this));
+  RepeatingCallback<R(A1, A2, A3, A4, A5)> Get() {
+    return BindRepeating(&MockCallback::Run, Unretained(this));
   }
 
  private:
@@ -209,13 +209,13 @@ class MockCallback<OnceCallback<R(A1, A2, A3, A4, A5)>> {
 
 template <typename R, typename A1, typename A2, typename A3, typename A4,
     typename A5, typename A6>
-class MockCallback<Callback<R(A1, A2, A3, A4, A5, A6)>> {
+class MockCallback<RepeatingCallback<R(A1, A2, A3, A4, A5, A6)>> {
  public:
   MockCallback() = default;
   MOCK_METHOD6_T(Run, R(A1, A2, A3, A4, A5, A6));
 
-  Callback<R(A1, A2, A3, A4, A5, A6)> Get() {
-    return Bind(&MockCallback::Run, Unretained(this));
+  RepeatingCallback<R(A1, A2, A3, A4, A5, A6)> Get() {
+    return BindRepeating(&MockCallback::Run, Unretained(this));
   }
 
  private:
@@ -239,13 +239,13 @@ class MockCallback<OnceCallback<R(A1, A2, A3, A4, A5, A6)>> {
 
 template <typename R, typename A1, typename A2, typename A3, typename A4,
     typename A5, typename A6, typename A7>
-class MockCallback<Callback<R(A1, A2, A3, A4, A5, A6, A7)>> {
+class MockCallback<RepeatingCallback<R(A1, A2, A3, A4, A5, A6, A7)>> {
  public:
   MockCallback() = default;
   MOCK_METHOD7_T(Run, R(A1, A2, A3, A4, A5, A6, A7));
 
-  Callback<R(A1, A2, A3, A4, A5, A6, A7)> Get() {
-    return Bind(&MockCallback::Run, Unretained(this));
+  RepeatingCallback<R(A1, A2, A3, A4, A5, A6, A7)> Get() {
+    return BindRepeating(&MockCallback::Run, Unretained(this));
   }
 
  private:
@@ -269,13 +269,13 @@ class MockCallback<OnceCallback<R(A1, A2, A3, A4, A5, A6, A7)>> {
 
 template <typename R, typename A1, typename A2, typename A3, typename A4,
     typename A5, typename A6, typename A7, typename A8>
-class MockCallback<Callback<R(A1, A2, A3, A4, A5, A6, A7, A8)>> {
+class MockCallback<RepeatingCallback<R(A1, A2, A3, A4, A5, A6, A7, A8)>> {
  public:
   MockCallback() = default;
   MOCK_METHOD8_T(Run, R(A1, A2, A3, A4, A5, A6, A7, A8));
 
-  Callback<R(A1, A2, A3, A4, A5, A6, A7, A8)> Get() {
-    return Bind(&MockCallback::Run, Unretained(this));
+  RepeatingCallback<R(A1, A2, A3, A4, A5, A6, A7, A8)> Get() {
+    return BindRepeating(&MockCallback::Run, Unretained(this));
   }
 
  private:
@@ -299,13 +299,13 @@ class MockCallback<OnceCallback<R(A1, A2, A3, A4, A5, A6, A7, A8)>> {
 
 template <typename R, typename A1, typename A2, typename A3, typename A4,
     typename A5, typename A6, typename A7, typename A8, typename A9>
-class MockCallback<Callback<R(A1, A2, A3, A4, A5, A6, A7, A8, A9)>> {
+class MockCallback<RepeatingCallback<R(A1, A2, A3, A4, A5, A6, A7, A8, A9)>> {
  public:
   MockCallback() = default;
   MOCK_METHOD9_T(Run, R(A1, A2, A3, A4, A5, A6, A7, A8, A9));
 
-  Callback<R(A1, A2, A3, A4, A5, A6, A7, A8, A9)> Get() {
-    return Bind(&MockCallback::Run, Unretained(this));
+  RepeatingCallback<R(A1, A2, A3, A4, A5, A6, A7, A8, A9)> Get() {
+    return BindRepeating(&MockCallback::Run, Unretained(this));
   }
 
  private:
@@ -330,13 +330,14 @@ class MockCallback<OnceCallback<R(A1, A2, A3, A4, A5, A6, A7, A8, A9)>> {
 template <typename R, typename A1, typename A2, typename A3, typename A4,
     typename A5, typename A6, typename A7, typename A8, typename A9,
     typename A10>
-class MockCallback<Callback<R(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10)>> {
+class MockCallback<RepeatingCallback<R(A1, A2, A3, A4, A5, A6, A7, A8, A9,
+    A10)>> {
  public:
   MockCallback() = default;
   MOCK_METHOD10_T(Run, R(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10));
 
-  Callback<R(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10)> Get() {
-    return Bind(&MockCallback::Run, Unretained(this));
+  RepeatingCallback<R(A1, A2, A3, A4, A5, A6, A7, A8, A9, A10)> Get() {
+    return BindRepeating(&MockCallback::Run, Unretained(this));
   }
 
  private:

@@ -18,7 +18,8 @@
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/user_manager/user_manager.h"
@@ -36,7 +37,6 @@ namespace {
 
 const char kLowDiskSpaceId[] = "arc_low_disk";
 const char kNotifierId[] = "arc_boot_error";
-const char kStoragePage[] = "storage";
 
 void ShowLowDiskSpaceErrorNotification(content::BrowserContext* context) {
   // We suppress the low-disk notification when there are multiple users on an
@@ -75,15 +75,16 @@ void ShowLowDiskSpaceErrorNotification(content::BrowserContext* context) {
                   [](Profile* profile, base::Optional<int> button_index) {
                     if (button_index) {
                       DCHECK_EQ(0, *button_index);
-                      chrome::ShowSettingsSubPageForProfile(profile,
-                                                            kStoragePage);
+                      chrome::SettingsWindowManager::GetInstance()
+                          ->ShowOSSettings(profile, chrome::kStorageSubPage);
                     }
                   },
                   profile)),
           ash::kNotificationStorageFullIcon,
           message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
   NotificationDisplayService::GetForProfile(profile)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification);
+      NotificationHandler::Type::TRANSIENT, *notification,
+      /*metadata=*/nullptr);
 }
 
 // Singleton factory for ArcBootErrorNotificationFactory.

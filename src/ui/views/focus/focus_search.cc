@@ -5,6 +5,7 @@
 #include "ui/views/focus/focus_search.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
@@ -33,14 +34,10 @@ View* FocusSearch::FindNextFocusableView(
     FocusSearch::AnchoredDialogPolicy can_go_into_anchored_dialog,
     FocusTraversable** focus_traversable,
     View** focus_traversable_view) {
+  DCHECK(!root_->children().empty());
+
   *focus_traversable = nullptr;
   *focus_traversable_view = nullptr;
-
-  if (!root_->has_children()) {
-    NOTREACHED();
-    // Nothing to focus on here.
-    return nullptr;
-  }
 
   View* initial_starting_view = starting_view;
   int starting_view_group = -1;
@@ -50,8 +47,8 @@ View* FocusSearch::FindNextFocusableView(
   if (!starting_view) {
     // Default to the first/last child
     starting_view = search_direction == SearchDirection::kBackwards
-                        ? root_->child_at(root_->child_count() - 1)
-                        : root_->child_at(0);
+                        ? root_->children().back()
+                        : root_->children().front();
     // If there was no starting view, then the one we select is a potential
     // focus candidate.
     check_starting_view = StartingViewPolicy::kCheckStartingView;
@@ -195,7 +192,7 @@ View* FocusSearch::FindNextFocusableViewImpl(
 
   // First let's try the left child.
   if (can_go_down) {
-    if (starting_view->has_children()) {
+    if (!starting_view->children().empty()) {
       View* v = FindNextFocusableViewImpl(
           starting_view->child_at(0), StartingViewPolicy::kCheckStartingView,
           false, true, can_go_into_anchored_dialog, skip_group_id, seen_views,
@@ -317,9 +314,8 @@ View* FocusSearch::FindPreviousFocusableViewImpl(
 
     can_go_into_anchored_dialog =
         AnchoredDialogPolicy::kCanGoIntoAnchoredDialog;
-    if (starting_view->has_children()) {
-      View* view =
-          starting_view->child_at(starting_view->child_count() - 1);
+    if (!starting_view->children().empty()) {
+      View* view = starting_view->children().back();
       View* v = FindPreviousFocusableViewImpl(
           view, StartingViewPolicy::kCheckStartingView, false, true,
           can_go_into_anchored_dialog, skip_group_id, seen_views,

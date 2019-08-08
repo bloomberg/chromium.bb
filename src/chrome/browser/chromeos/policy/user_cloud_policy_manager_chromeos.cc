@@ -38,7 +38,6 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "components/crash/core/common/crash_key.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
@@ -218,16 +217,6 @@ void UserCloudPolicyManagerChromeOS::Connect(
   DCHECK(device_management_service);
   DCHECK(local_state);
 
-  // TODO(emaxx): Remove the crash key after the crashes tracked at
-  // https://crbug.com/685996 are fixed.
-  if (core()->client()) {
-    static crash_reporter::CrashKeyString<1024> connect_callstack_key(
-        "user-cloud-policy-manager-connect-trace");
-    crash_reporter::SetCrashKeyStringToStackTrace(&connect_callstack_key,
-                                                  connect_callstack_);
-  } else {
-    connect_callstack_ = base::debug::StackTrace();
-  }
   CHECK(!core()->client());
 
   local_state_ = local_state;
@@ -238,7 +227,10 @@ void UserCloudPolicyManagerChromeOS::Connect(
   std::unique_ptr<CloudPolicyClient> cloud_policy_client =
       std::make_unique<CloudPolicyClient>(
           std::string() /* machine_id */, std::string() /* machine_model */,
-          std::string() /* brand_code */, device_management_service,
+          std::string() /* brand_code */,
+          std::string() /* ethernet_mac_address */,
+          std::string() /* dock_mac_address */,
+          std::string() /* manufacture_date */, device_management_service,
           system_url_loader_factory, nullptr /* signing_service */,
           chromeos::GetDeviceDMTokenForUserPolicyGetter(account_id_));
   CreateComponentCloudPolicyService(

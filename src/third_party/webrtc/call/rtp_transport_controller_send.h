@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 
+#include "api/network_state_predictor.h"
 #include "api/transport/network_control.h"
 #include "call/rtp_bitrate_configurator.h"
 #include "call/rtp_transport_controller_send_interface.h"
@@ -47,6 +48,7 @@ class RtpTransportControllerSend final
   RtpTransportControllerSend(
       Clock* clock,
       RtcEventLog* event_log,
+      NetworkStatePredictorFactoryInterface* predictor_factory,
       NetworkControllerFactoryInterface* controller_factory,
       const BitrateConstraints& bitrate_config,
       std::unique_ptr<ProcessThread> process_thread,
@@ -60,7 +62,6 @@ class RtpTransportControllerSend final
       const RtpConfig& rtp_config,
       int rtcp_report_interval_ms,
       Transport* send_transport,
-      bool is_svc,
       const RtpSenderObservers& observers,
       RtcEventLog* event_log,
       std::unique_ptr<FecController> fec_controller,
@@ -131,6 +132,7 @@ class RtpTransportControllerSend final
   void UpdateControlState() RTC_RUN_ON(task_queue_);
 
   Clock* const clock_;
+  const FieldTrialBasedConfig trial_based_config_;
   PacketRouter packet_router_;
   std::vector<std::unique_ptr<RtpVideoSenderInterface>> video_rtp_senders_;
   PacedSender pacer_;

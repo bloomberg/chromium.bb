@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
@@ -25,7 +26,7 @@ namespace {
 
 // In DP, the amount to round the corners of the progress bar (both bg and
 // fg, aka slice).
-const int kCornerRadius = 3;
+constexpr int kCornerRadius = 3;
 
 // Adds a rectangle to the path. The corners will be rounded if there is room.
 void AddPossiblyRoundRectToPath(const gfx::Rect& rectangle,
@@ -50,8 +51,7 @@ ProgressBar::ProgressBar(int preferred_height, bool allow_round_corner)
   EnableCanvasFlippingForRTLUI(true);
 }
 
-ProgressBar::~ProgressBar() {
-}
+ProgressBar::~ProgressBar() = default;
 
 void ProgressBar::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kProgressIndicator;
@@ -111,7 +111,7 @@ void ProgressBar::SetValue(double value) {
 
   current_value_ = adjusted_value;
   if (IsIndeterminate()) {
-    indeterminate_bar_animation_.reset(new gfx::LinearAnimation(this));
+    indeterminate_bar_animation_ = std::make_unique<gfx::LinearAnimation>(this);
     indeterminate_bar_animation_->SetDuration(base::TimeDelta::FromSeconds(2));
     indeterminate_bar_animation_->Start();
   } else {

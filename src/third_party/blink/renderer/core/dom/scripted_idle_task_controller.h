@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/dom/idle_deadline.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -73,7 +72,7 @@ class CORE_EXPORT ScriptedIdleTaskController
     void Trace(Visitor*) override;
 
    private:
-    TraceWrapperMember<V8IdleRequestCallback> callback_;
+    Member<V8IdleRequestCallback> callback_;
   };
 
   int RegisterCallback(IdleTask*, const IdleRequestOptions*);
@@ -88,12 +87,31 @@ class CORE_EXPORT ScriptedIdleTaskController
                      IdleDeadline::CallbackType);
 
  private:
+  class QueuedIdleTask : public GarbageCollectedFinalized<QueuedIdleTask> {
+   public:
+    QueuedIdleTask(IdleTask*,
+                   TimeTicks queue_timestamp,
+                   uint32_t timeout_millis);
+    virtual ~QueuedIdleTask() = default;
+
+    virtual void Trace(Visitor*);
+
+    IdleTask* task() { return task_; }
+    TimeTicks queue_timestamp() const { return queue_timestamp_; }
+    uint32_t timeout_millis() const { return timeout_millis_; }
+
+   private:
+    Member<IdleTask> task_;
+    TimeTicks queue_timestamp_;
+    uint32_t timeout_millis_;
+  };
+
   friend class internal::IdleRequestCallbackWrapper;
 
   void ContextPaused();
   void ContextUnpaused();
   void ScheduleCallback(scoped_refptr<internal::IdleRequestCallbackWrapper>,
-                        long long timeout_millis);
+                        uint32_t timeout_millis);
 
   int NextCallbackId();
 
@@ -105,8 +123,12 @@ class CORE_EXPORT ScriptedIdleTaskController
 
   void RunCallback(CallbackId, TimeTicks deadline, IdleDeadline::CallbackType);
 
+  void RecordIdleTaskMetrics(QueuedIdleTask*,
+                             TimeTicks run_timestamp,
+                             IdleDeadline::CallbackType);
+
   ThreadScheduler* scheduler_;  // Not owned.
-  HeapHashMap<CallbackId, TraceWrapperMember<IdleTask>> idle_tasks_;
+  HeapHashMap<CallbackId, Member<QueuedIdleTask>> idle_tasks_;
   Vector<CallbackId> pending_timeouts_;
   CallbackId next_callback_id_;
   bool paused_;

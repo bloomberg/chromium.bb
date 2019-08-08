@@ -165,6 +165,12 @@ void AXEventGenerator::OnStateChanged(AXTree* tree,
         AddEvent(unignored_parent, Event::CHILDREN_CHANGED);
       break;
     }
+    case ax::mojom::State::kMultiselectable:
+      AddEvent(node, Event::MULTISELECTABLE_STATE_CHANGED);
+      break;
+    case ax::mojom::State::kRequired:
+      AddEvent(node, Event::REQUIRED_STATE_CHANGED);
+      break;
     default:
       break;
   }
@@ -178,6 +184,35 @@ void AXEventGenerator::OnStringAttributeChanged(AXTree* tree,
   DCHECK_EQ(tree_, tree);
 
   switch (attr) {
+    case ax::mojom::StringAttribute::kAccessKey:
+      AddEvent(node, Event::ACCESS_KEY_CHANGED);
+      break;
+    case ax::mojom::StringAttribute::kAriaInvalidValue:
+      AddEvent(node, Event::INVALID_STATUS_CHANGED);
+      break;
+    case ax::mojom::StringAttribute::kAutoComplete:
+      AddEvent(node, Event::AUTO_COMPLETE_CHANGED);
+      break;
+    case ax::mojom::StringAttribute::kClassName:
+      AddEvent(node, Event::CLASS_NAME_CHANGED);
+      break;
+    case ax::mojom::StringAttribute::kDescription:
+      AddEvent(node, Event::DESCRIPTION_CHANGED);
+      break;
+    case ax::mojom::StringAttribute::kKeyShortcuts:
+      AddEvent(node, Event::KEY_SHORTCUTS_CHANGED);
+      break;
+    case ax::mojom::StringAttribute::kLanguage:
+      AddEvent(node, Event::LANGUAGE_CHANGED);
+      break;
+    case ax::mojom::StringAttribute::kLiveStatus:
+      // TODO(accessibility): tree in the midst of updates. Disallow access to
+      // |node|.
+      if (node->data().GetStringAttribute(
+              ax::mojom::StringAttribute::kLiveStatus) != "off" &&
+          node->data().role != ax::mojom::Role::kAlert)
+        AddEvent(node, Event::LIVE_REGION_CREATED);
+      break;
     case ax::mojom::StringAttribute::kName:
       // If the name of the root node changes, we expect OnTreeDataChanged to
       // add a DOCUMENT_TITLE_CHANGED event instead.
@@ -191,25 +226,11 @@ void AXEventGenerator::OnStringAttributeChanged(AXTree* tree,
         FireLiveRegionEvents(node);
       }
       break;
-    case ax::mojom::StringAttribute::kDescription:
-      AddEvent(node, Event::DESCRIPTION_CHANGED);
+    case ax::mojom::StringAttribute::kPlaceholder:
+      AddEvent(node, Event::PLACEHOLDER_CHANGED);
       break;
     case ax::mojom::StringAttribute::kValue:
       AddEvent(node, Event::VALUE_CHANGED);
-      break;
-    case ax::mojom::StringAttribute::kAriaInvalidValue:
-      AddEvent(node, Event::INVALID_STATUS_CHANGED);
-      break;
-    case ax::mojom::StringAttribute::kLiveStatus:
-      // TODO(accessibility): tree in the midst of updates. Disallow access to
-      // |node|.
-      if (node->data().GetStringAttribute(
-              ax::mojom::StringAttribute::kLiveStatus) != "off" &&
-          node->data().role != ax::mojom::Role::kAlert)
-        AddEvent(node, Event::LIVE_REGION_CREATED);
-      break;
-    case ax::mojom::StringAttribute::kAutoComplete:
-      AddEvent(node, Event::AUTO_COMPLETE_CHANGED);
       break;
     case ax::mojom::StringAttribute::kImageAnnotation:
       // The image annotation is reported as part of the accessible name.
@@ -240,19 +261,43 @@ void AXEventGenerator::OnIntAttributeChanged(AXTree* tree,
     case ax::mojom::IntAttribute::kCheckedState:
       AddEvent(node, Event::CHECKED_STATE_CHANGED);
       break;
+    case ax::mojom::IntAttribute::kHierarchicalLevel:
+      AddEvent(node, Event::HIERARCHICAL_LEVEL_CHANGED);
+      break;
     case ax::mojom::IntAttribute::kInvalidState:
       AddEvent(node, Event::INVALID_STATUS_CHANGED);
       break;
-    case ax::mojom::IntAttribute::kRestriction:
-      AddEvent(node, Event::STATE_CHANGED);
+    case ax::mojom::IntAttribute::kPosInSet:
+      AddEvent(node, Event::POSITION_IN_SET_CHANGED);
       break;
+    case ax::mojom::IntAttribute::kRestriction: {
+      bool was_enabled;
+      bool was_readonly;
+      GetRestrictionStates(static_cast<ax::mojom::Restriction>(old_value),
+                           &was_enabled, &was_readonly);
+      bool is_enabled;
+      bool is_readonly;
+      GetRestrictionStates(static_cast<ax::mojom::Restriction>(new_value),
+                           &is_enabled, &is_readonly);
+
+      if (was_enabled != is_enabled)
+        AddEvent(node, Event::ENABLED_CHANGED);
+      if (was_readonly != is_readonly)
+        AddEvent(node, Event::READONLY_CHANGED);
+      break;
+    }
     case ax::mojom::IntAttribute::kScrollX:
+      AddEvent(node, Event::SCROLL_HORIZONTAL_POSITION_CHANGED);
+      break;
     case ax::mojom::IntAttribute::kScrollY:
-      AddEvent(node, Event::SCROLL_POSITION_CHANGED);
+      AddEvent(node, Event::SCROLL_VERTICAL_POSITION_CHANGED);
       break;
     case ax::mojom::IntAttribute::kImageAnnotationStatus:
       // The image annotation is reported as part of the accessible name.
       AddEvent(node, Event::IMAGE_ANNOTATION_CHANGED);
+      break;
+    case ax::mojom::IntAttribute::kSetSize:
+      AddEvent(node, Event::SET_SIZE_CHANGED);
       break;
     default:
       AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
@@ -267,10 +312,23 @@ void AXEventGenerator::OnFloatAttributeChanged(AXTree* tree,
                                                float new_value) {
   DCHECK_EQ(tree_, tree);
 
-  if (attr == ax::mojom::FloatAttribute::kValueForRange)
-    AddEvent(node, Event::VALUE_CHANGED);
-  else
-    AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
+  switch (attr) {
+    case ax::mojom::FloatAttribute::kMaxValueForRange:
+      AddEvent(node, Event::VALUE_MAX_CHANGED);
+      break;
+    case ax::mojom::FloatAttribute::kMinValueForRange:
+      AddEvent(node, Event::VALUE_MIN_CHANGED);
+      break;
+    case ax::mojom::FloatAttribute::kStepValueForRange:
+      AddEvent(node, Event::VALUE_STEP_CHANGED);
+      break;
+    case ax::mojom::FloatAttribute::kValueForRange:
+      AddEvent(node, Event::VALUE_CHANGED);
+      break;
+    default:
+      AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
+      break;
+  }
 }
 
 void AXEventGenerator::OnBoolAttributeChanged(AXTree* tree,
@@ -279,18 +337,27 @@ void AXEventGenerator::OnBoolAttributeChanged(AXTree* tree,
                                               bool new_value) {
   DCHECK_EQ(tree_, tree);
 
-  if (attr == ax::mojom::BoolAttribute::kSelected) {
-    AddEvent(node, Event::SELECTED_CHANGED);
-    ui::AXNode* container = node;
-    while (container &&
-           !ui::IsContainerWithSelectableChildren(container->data().role))
-      container = container->parent();
-    if (container)
-      AddEvent(container, Event::SELECTED_CHILDREN_CHANGED);
-    return;
+  switch (attr) {
+    case ax::mojom::BoolAttribute::kBusy:
+      // Fire an 'invalidated' event when aria-busy becomes false
+      if (!new_value)
+        AddEvent(node, Event::LAYOUT_INVALIDATED);
+      AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
+      break;
+    case ax::mojom::BoolAttribute::kSelected: {
+      AddEvent(node, Event::SELECTED_CHANGED);
+      ui::AXNode* container = node;
+      while (container &&
+             !ui::IsContainerWithSelectableChildren(container->data().role))
+        container = container->parent();
+      if (container)
+        AddEvent(container, Event::SELECTED_CHILDREN_CHANGED);
+      break;
+    }
+    default:
+      AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
+      break;
   }
-
-  AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
 }
 
 void AXEventGenerator::OnIntListAttributeChanged(
@@ -300,7 +367,31 @@ void AXEventGenerator::OnIntListAttributeChanged(
     const std::vector<int32_t>& old_value,
     const std::vector<int32_t>& new_value) {
   DCHECK_EQ(tree_, tree);
-  AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
+
+  switch (attr) {
+    case ax::mojom::IntListAttribute::kControlsIds:
+      AddEvent(node, Event::CONTROLS_CHANGED);
+      break;
+    case ax::mojom::IntListAttribute::kDescribedbyIds:
+      AddEvent(node, Event::DESCRIBED_BY_CHANGED);
+      break;
+    case ax::mojom::IntListAttribute::kFlowtoIds: {
+      AddEvent(node, Event::FLOW_TO_CHANGED);
+
+      // Fire FLOW_FROM_CHANGED for all nodes added or removed
+      for (int32_t id : ComputeIntListDifference(old_value, new_value)) {
+        if (auto* target_node = tree->GetFromId(id))
+          AddEvent(target_node, Event::FLOW_FROM_CHANGED);
+      }
+      break;
+    }
+    case ax::mojom::IntListAttribute::kLabelledbyIds:
+      AddEvent(node, Event::LABELED_BY_CHANGED);
+      break;
+    default:
+      AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
+      break;
+  }
 }
 
 void AXEventGenerator::OnTreeDataChanged(AXTree* tree,
@@ -313,7 +404,8 @@ void AXEventGenerator::OnTreeDataChanged(AXTree* tree,
     AddEvent(tree->root(), Event::LOAD_COMPLETE);
   }
 
-  if (new_tree_data.sel_anchor_object_id !=
+  if (new_tree_data.sel_is_backward != old_tree_data.sel_is_backward ||
+      new_tree_data.sel_anchor_object_id !=
           old_tree_data.sel_anchor_object_id ||
       new_tree_data.sel_anchor_offset != old_tree_data.sel_anchor_offset ||
       new_tree_data.sel_anchor_affinity != old_tree_data.sel_anchor_affinity ||
@@ -361,7 +453,7 @@ void AXEventGenerator::OnAtomicUpdateFinished(
     if ((change.type == NODE_CREATED || change.type == SUBTREE_CREATED)) {
       if (change.node->data().HasStringAttribute(
               ax::mojom::StringAttribute::kLiveStatus)) {
-        if (change.node->data().role == ax::mojom::Role::kAlert)
+        if (ui::IsAlert(change.node->data().role))
           AddEvent(change.node, Event::ALERT);
         else if (change.node->data().GetStringAttribute(
                      ax::mojom::StringAttribute::kLiveStatus) != "off")
@@ -372,10 +464,11 @@ void AXEventGenerator::OnAtomicUpdateFinished(
                      ax::mojom::StringAttribute::kName)) {
         FireLiveRegionEvents(change.node);
       }
-    }
-
-    if (change.type != NODE_CREATED && change.type != SUBTREE_CREATED)
+      if (change.type == SUBTREE_CREATED)
+        AddEvent(change.node, Event::SUBTREE_CREATED);
+    } else {
       FireRelationSourceEvents(tree, change.node);
+    }
   }
 
   FireActiveDescendantEvents();
@@ -466,6 +559,40 @@ bool AXEventGenerator::ShouldFireLoadEvents(AXNode* node) {
   const AXNodeData& data = node->data();
   return data.relative_bounds.bounds.width() ||
          data.relative_bounds.bounds.height();
+}
+
+// static
+void AXEventGenerator::GetRestrictionStates(ax::mojom::Restriction restriction,
+                                            bool* is_enabled,
+                                            bool* is_readonly) {
+  switch (restriction) {
+    case ax::mojom::Restriction::kDisabled:
+      *is_enabled = false;
+      *is_readonly = true;
+      break;
+    case ax::mojom::Restriction::kReadOnly:
+      *is_enabled = true;
+      *is_readonly = true;
+      break;
+    case ax::mojom::Restriction::kNone:
+      *is_enabled = true;
+      *is_readonly = false;
+      break;
+  }
+}
+
+// static
+std::vector<int32_t> AXEventGenerator::ComputeIntListDifference(
+    const std::vector<int32_t>& lhs,
+    const std::vector<int32_t>& rhs) {
+  std::set<int32_t> sorted_lhs(lhs.cbegin(), lhs.cend());
+  std::set<int32_t> sorted_rhs(rhs.cbegin(), rhs.cend());
+
+  std::vector<int32_t> result;
+  std::set_symmetric_difference(sorted_lhs.cbegin(), sorted_lhs.cend(),
+                                sorted_rhs.cbegin(), sorted_rhs.cend(),
+                                std::back_inserter(result));
+  return result;
 }
 
 }  // namespace ui

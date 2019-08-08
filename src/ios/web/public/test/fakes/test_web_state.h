@@ -38,6 +38,7 @@ class TestWebState : public WebState {
   UIView* GetView() override;
   void WasShown() override;
   void WasHidden() override;
+  void SetKeepRenderProcessAlive(bool keep_alive) override;
   BrowserState* GetBrowserState() const override;
   void OpenURL(const OpenURLParams& params) override {}
   void Stop() override {}

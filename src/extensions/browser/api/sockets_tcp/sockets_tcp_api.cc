@@ -321,8 +321,9 @@ void SocketsTcpConnectFunction::StartConnect() {
     return;
   }
 
-  socket->Connect(addresses_,
-                  base::Bind(&SocketsTcpConnectFunction::OnCompleted, this));
+  socket->Connect(
+      addresses_,
+      base::BindOnce(&SocketsTcpConnectFunction::OnCompleted, this));
 }
 
 void SocketsTcpConnectFunction::OnCompleted(int net_result) {
@@ -379,9 +380,8 @@ void SocketsTcpSendFunction::AsyncWorkStart() {
     return;
   }
 
-  socket->Write(io_buffer_,
-                io_buffer_size_,
-                base::Bind(&SocketsTcpSendFunction::OnCompleted, this));
+  socket->Write(io_buffer_, io_buffer_size_,
+                base::BindOnce(&SocketsTcpSendFunction::OnCompleted, this));
 }
 
 void SocketsTcpSendFunction::OnCompleted(int net_result) {

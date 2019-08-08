@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "base/values.h"
 #include "cc/raster/raster_buffer_provider.h"
 
@@ -22,7 +21,11 @@ class LayerTreeFrameSink;
 
 class CC_EXPORT BitmapRasterBufferProvider : public RasterBufferProvider {
  public:
+  BitmapRasterBufferProvider(const BitmapRasterBufferProvider&) = delete;
   ~BitmapRasterBufferProvider() override;
+
+  BitmapRasterBufferProvider& operator=(const BitmapRasterBufferProvider&) =
+      delete;
 
   explicit BitmapRasterBufferProvider(LayerTreeFrameSink* frame_sink);
 
@@ -50,8 +53,6 @@ class CC_EXPORT BitmapRasterBufferProvider : public RasterBufferProvider {
       const;
 
   LayerTreeFrameSink* const frame_sink_;
-
-  DISALLOW_COPY_AND_ASSIGN(BitmapRasterBufferProvider);
 };
 
 }  // namespace cc

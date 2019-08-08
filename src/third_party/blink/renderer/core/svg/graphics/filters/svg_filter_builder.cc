@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/platform/graphics/filters/paint_filter_effect.h"
 #include "third_party/blink/renderer/platform/graphics/filters/source_alpha.h"
 #include "third_party/blink/renderer/platform/graphics/filters/source_graphic.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -113,18 +114,19 @@ SVGFilterBuilder::SVGFilterBuilder(FilterEffect* source_graphic,
   FilterEffect* source_graphic_ref = source_graphic;
   builtin_effects_.insert(FilterInputKeywords::GetSourceGraphic(),
                           source_graphic_ref);
-  builtin_effects_.insert(FilterInputKeywords::SourceAlpha(),
-                          SourceAlpha::Create(source_graphic_ref));
+  builtin_effects_.insert(
+      FilterInputKeywords::SourceAlpha(),
+      MakeGarbageCollected<SourceAlpha>(source_graphic_ref));
   if (fill_flags) {
     builtin_effects_.insert(FilterInputKeywords::FillPaint(),
-                            PaintFilterEffect::Create(
+                            MakeGarbageCollected<PaintFilterEffect>(
                                 source_graphic_ref->GetFilter(), *fill_flags));
   }
   if (stroke_flags) {
     builtin_effects_.insert(
         FilterInputKeywords::StrokePaint(),
-        PaintFilterEffect::Create(source_graphic_ref->GetFilter(),
-                                  *stroke_flags));
+        MakeGarbageCollected<PaintFilterEffect>(source_graphic_ref->GetFilter(),
+                                                *stroke_flags));
   }
   AddBuiltinEffects();
 }
@@ -147,10 +149,10 @@ static EColorInterpolation ColorInterpolationForElement(
   // "manually" (used by external SVG files.)
   if (const CSSPropertyValueSet* property_set =
           element.PresentationAttributeStyle()) {
-    const CSSValue* css_value =
-        property_set->GetPropertyCSSValue(CSSPropertyColorInterpolationFilters);
-    if (css_value && css_value->IsIdentifierValue()) {
-      return ToCSSIdentifierValue(*css_value).ConvertTo<EColorInterpolation>();
+    const CSSValue* css_value = property_set->GetPropertyCSSValue(
+        CSSPropertyID::kColorInterpolationFilters);
+    if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(css_value)) {
+      return identifier_value->ConvertTo<EColorInterpolation>();
     }
   }
   // 'auto' is the default (per Filter Effects), but since the property is

@@ -186,7 +186,7 @@ message AutofillRandomizedFieldMetadata {
 
 // This message contains information about the field types in a single form.
 // It is sent by the toolbar to contribute to the field type statistics.
-// Next available id: 39
+// Next available id: 40
 message AutofillUploadContents {
   required string client_version = 1;
   required fixed64 form_signature = 2;
@@ -343,6 +343,13 @@ message AutofillUploadContents {
 
   // Noisifed password length.
   optional uint32 password_length = 29;
+
+  // If |password_has_special_symbol| is true, this field contains nosified
+  // information about a special symbol used in a user-created password stored
+  // in ASCII code.
+  // Otherwise, this field is unset.
+  optional uint32 password_special_symbol = 39;
+
   // The end of the section of password attributes.
 
   // Event observed by the password manager which indicated that the form was

@@ -50,6 +50,13 @@ const char kLocalStorage[] = "localStorage";
 const char kSessionStorage[] = "sessionStorage";
 const char kShutdownPath[] = "shutdown";
 
+bool w3cMode(const std::string& session_id,
+             const SessionThreadMap& session_thread_map) {
+  if (session_id.length() > 0 && session_thread_map.count(session_id) > 0)
+    return session_thread_map.at(session_id)->w3cMode();
+  return kW3CDefault;
+}
+
 }  // namespace
 
 // WrapperURLLoaderFactory subclasses mojom::URLLoaderFactory as non-mojo, cross
@@ -704,13 +711,14 @@ HttpHandler::HttpHandler(
                                                        kSessionStorage),
                                    false /*w3c_standard_command*/)),
 
-      // No W3C equivalent.
+      // No W3C equivalent, temporarily enabled until clients start using
+      // "session/:sessionId/se/log".
+      // Superseded by "session/:sessionId/se/log".
       CommandMapping(
           kPost, "session/:sessionId/log",
-          WrapToCommand("GetLog", base::BindRepeating(&ExecuteGetLog),
-                        false /*w3c_standard_command*/)),
+          WrapToCommand("GetLog", base::BindRepeating(&ExecuteGetLog))),
 
-      // No W3C equivalent.
+      // No W3C equivalent. Superseded by "session/:sessionId/se/log/types".
       CommandMapping(
           kGet, "session/:sessionId/log/types",
           WrapToCommand("GetLogTypes",
@@ -742,6 +750,20 @@ HttpHandler::HttpHandler(
           kPost, "session/:sessionId/network_connection",
           WrapToCommand("SetNetworkConnection",
                         base::BindRepeating(&ExecuteSetNetworkConnection))),
+
+      //
+      // Non-standard extension commands
+      //
+
+      // Commands to access Chrome logs, defined by agreement with Selenium.
+      // Using "se" prefix for "Selenium".
+      CommandMapping(
+          kPost, "session/:sessionId/se/log",
+          WrapToCommand("GetLog", base::BindRepeating(&ExecuteGetLog))),
+      CommandMapping(
+          kGet, "session/:sessionId/se/log/types",
+          WrapToCommand("GetLogTypes",
+                        base::BindRepeating(&ExecuteGetAvailableLogTypes))),
 
       //
       // ChromeDriver specific extension commands.
@@ -912,11 +934,11 @@ void HttpHandler::HandleCommand(
   CommandMap::const_iterator iter = command_map_->begin();
   while (true) {
     if (iter == command_map_->end()) {
-      if (kW3CDefault) {
+      if (w3cMode(session_id, session_thread_map_)) {
         PrepareResponse(
             trimmed_path, send_response_func,
             Status(kUnknownCommand, "unknown command: " + trimmed_path),
-            nullptr, session_id, kW3CDefault);
+            nullptr, session_id, true);
       } else {
         std::unique_ptr<net::HttpServerResponseInfo> response(
             new net::HttpServerResponseInfo(net::HTTP_NOT_FOUND));
@@ -937,10 +959,10 @@ void HttpHandler::HandleCommand(
     std::unique_ptr<base::Value> parsed_body =
         base::JSONReader::ReadDeprecated(request.data);
     if (!parsed_body || !parsed_body->GetAsDictionary(&body_params)) {
-      if (kW3CDefault) {
+      if (w3cMode(session_id, session_thread_map_)) {
         PrepareResponse(trimmed_path, send_response_func,
                         Status(kInvalidArgument, "missing command parameters"),
-                        nullptr, session_id, kW3CDefault);
+                        nullptr, session_id, true);
       } else {
         std::unique_ptr<net::HttpServerResponseInfo> response(
             new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
@@ -950,12 +972,13 @@ void HttpHandler::HandleCommand(
       return;
     }
     params.MergeDictionary(body_params);
-  } else if (kW3CDefault && iter->method == kPost) {
+  } else if (iter->method == kPost &&
+             w3cMode(session_id, session_thread_map_)) {
     // Data in JSON format is required for POST requests. See step 5 of
     // https://www.w3.org/TR/2018/REC-webdriver1-20180605/#processing-model.
     PrepareResponse(trimmed_path, send_response_func,
                     Status(kInvalidArgument, "missing command parameters"),
-                    nullptr, session_id, kW3CDefault);
+                    nullptr, session_id, true);
     return;
   }
 
@@ -1060,6 +1083,9 @@ HttpHandler::PrepareStandardResponse(
     case kInvalidSelector:
       response.reset(new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
       break;
+    case kInvalidSessionId:
+      response.reset(new net::HttpServerResponseInfo(net::HTTP_NOT_FOUND));
+      break;
     case kJavaScriptError:
       response.reset(
           new net::HttpServerResponseInfo(net::HTTP_INTERNAL_SERVER_ERROR));
@@ -1127,11 +1153,16 @@ HttpHandler::PrepareStandardResponse(
     case kNoSuchExecutionContext:
       response.reset(new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
       break;
-    case kInvalidSessionId:
     case kChromeNotReachable:
     case kDisconnected:
     case kForbidden:
     case kTabCrashed:
+      response.reset(
+          new net::HttpServerResponseInfo(net::HTTP_INTERNAL_SERVER_ERROR));
+      break;
+
+    default:
+      DCHECK(false);
       response.reset(
           new net::HttpServerResponseInfo(net::HTTP_INTERNAL_SERVER_ERROR));
       break;
@@ -1142,24 +1173,10 @@ HttpHandler::PrepareStandardResponse(
 
   base::DictionaryValue body_params;
   if (status.IsError()){
-    // Separates status default message from additional details.
-    std::string error;
-    std::string message(status.message());
-    std::string::size_type separator = message.find_first_of(":\n");
-    if (separator == std::string::npos) {
-      error = message;
-      message.clear();
-    } else {
-      error = message.substr(0, separator);
-      separator++;
-      while (separator < message.length() && message[separator] == ' ')
-        separator++;
-      message = message.substr(separator);
-    }
     std::unique_ptr<base::DictionaryValue> inner_params(
         new base::DictionaryValue());
-    inner_params->SetString("error", error);
-    inner_params->SetString("message", message);
+    inner_params->SetString("error", StatusCodeToString(status.code()));
+    inner_params->SetString("message", status.message());
     inner_params->SetString("stacktrace", status.stack_trace());
     body_params.SetDictionary("value", std::move(inner_params));
   } else {

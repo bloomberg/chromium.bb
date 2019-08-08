@@ -27,15 +27,15 @@ constexpr char kDisabled[] = "disabled";
 // The manifest data container for the ActionInfos for BrowserActions,
 // PageActions and SystemIndicators.
 struct ActionInfoData : public Extension::ManifestData {
-  explicit ActionInfoData(ActionInfo* action_info);
+  explicit ActionInfoData(std::unique_ptr<ActionInfo> action_info);
   ~ActionInfoData() override;
 
   // The action associated with the BrowserAction.
   std::unique_ptr<ActionInfo> action_info;
 };
 
-ActionInfoData::ActionInfoData(ActionInfo* info) : action_info(info) {
-}
+ActionInfoData::ActionInfoData(std::unique_ptr<ActionInfo> info)
+    : action_info(std::move(info)) {}
 
 ActionInfoData::~ActionInfoData() {
 }
@@ -65,15 +65,15 @@ std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
   // Read the page action |default_icon| (optional).
   // The |default_icon| value can be either dictionary {icon size -> icon path}
   // or non empty string value.
-  if (dict->HasKey(keys::kPageActionDefaultIcon)) {
+  if (dict->HasKey(keys::kActionDefaultIcon)) {
     const base::DictionaryValue* icons_value = NULL;
     std::string default_icon;
-    if (dict->GetDictionary(keys::kPageActionDefaultIcon, &icons_value)) {
+    if (dict->GetDictionary(keys::kActionDefaultIcon, &icons_value)) {
       if (!manifest_handler_helpers::LoadIconsFromDictionary(
               icons_value, &result->default_icon, error)) {
         return nullptr;
       }
-    } else if (dict->GetString(keys::kPageActionDefaultIcon, &default_icon) &&
+    } else if (dict->GetString(keys::kActionDefaultIcon, &default_icon) &&
                manifest_handler_helpers::NormalizeAndValidatePath(
                    &default_icon)) {
       // Choose the most optimistic (highest) icon density regardless of the
@@ -82,26 +82,25 @@ std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
       result->default_icon.Add(extension_misc::EXTENSION_ICON_GIGANTOR,
                                default_icon);
     } else {
-      *error = base::ASCIIToUTF16(errors::kInvalidPageActionIconPath);
+      *error = base::ASCIIToUTF16(errors::kInvalidActionDefaultIcon);
       return nullptr;
     }
   }
 
   // Read the page action title from |default_title| if present, |name| if not
   // (both optional).
-  if (dict->HasKey(keys::kPageActionDefaultTitle)) {
-    if (!dict->GetString(keys::kPageActionDefaultTitle,
-                         &result->default_title)) {
-      *error = base::ASCIIToUTF16(errors::kInvalidPageActionDefaultTitle);
+  if (dict->HasKey(keys::kActionDefaultTitle)) {
+    if (!dict->GetString(keys::kActionDefaultTitle, &result->default_title)) {
+      *error = base::ASCIIToUTF16(errors::kInvalidActionDefaultTitle);
       return nullptr;
     }
   }
 
   // Read the action's default popup (optional).
-  if (dict->HasKey(keys::kPageActionDefaultPopup)) {
+  if (dict->HasKey(keys::kActionDefaultPopup)) {
     std::string url_str;
-    if (!dict->GetString(keys::kPageActionDefaultPopup, &url_str)) {
-      *error = base::ASCIIToUTF16(errors::kInvalidPageActionPopup);
+    if (!dict->GetString(keys::kActionDefaultPopup, &url_str)) {
+      *error = base::ASCIIToUTF16(errors::kInvalidActionDefaultPopup);
       return nullptr;
     }
 
@@ -110,8 +109,7 @@ std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
       result->default_popup_url = Extension::GetResourceURL(extension->url(),
                                                             url_str);
       if (!result->default_popup_url.is_valid()) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidPageActionPopupPath, url_str);
+        *error = base::ASCIIToUTF16(errors::kInvalidActionDefaultPopup);
         return nullptr;
       }
     } else {
@@ -137,6 +135,26 @@ std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
 }
 
 // static
+const ActionInfo* ActionInfo::GetAnyActionInfo(const Extension* extension) {
+  // TODO(devlin): Since all actions are mutually exclusive, we can store
+  // them all under the same key. For now, we don't do that because some callers
+  // need to differentiate between action types.
+  const ActionInfo* info = GetActionInfo(extension, keys::kBrowserAction);
+  if (info)
+    return info;
+  info = GetActionInfo(extension, keys::kPageAction);
+  if (info)
+    return info;
+  return GetActionInfo(extension, keys::kAction);
+}
+
+// static
+const ActionInfo* ActionInfo::GetExtensionActionInfo(
+    const Extension* extension) {
+  return GetActionInfo(extension, keys::kAction);
+}
+
+// static
 const ActionInfo* ActionInfo::GetBrowserActionInfo(const Extension* extension) {
   return GetActionInfo(extension, keys::kBrowserAction);
 }
@@ -153,28 +171,30 @@ const ActionInfo* ActionInfo::GetSystemIndicatorInfo(
 
 // static
 void ActionInfo::SetExtensionActionInfo(Extension* extension,
-                                        ActionInfo* info) {
+                                        std::unique_ptr<ActionInfo> info) {
   extension->SetManifestData(keys::kAction,
-                             std::make_unique<ActionInfoData>(info));
+                             std::make_unique<ActionInfoData>(std::move(info)));
 }
 
 // static
-void ActionInfo::SetBrowserActionInfo(Extension* extension, ActionInfo* info) {
+void ActionInfo::SetBrowserActionInfo(Extension* extension,
+                                      std::unique_ptr<ActionInfo> info) {
   extension->SetManifestData(keys::kBrowserAction,
-                             std::make_unique<ActionInfoData>(info));
+                             std::make_unique<ActionInfoData>(std::move(info)));
 }
 
 // static
-void ActionInfo::SetPageActionInfo(Extension* extension, ActionInfo* info) {
+void ActionInfo::SetPageActionInfo(Extension* extension,
+                                   std::unique_ptr<ActionInfo> info) {
   extension->SetManifestData(keys::kPageAction,
-                             std::make_unique<ActionInfoData>(info));
+                             std::make_unique<ActionInfoData>(std::move(info)));
 }
 
 // static
 void ActionInfo::SetSystemIndicatorInfo(Extension* extension,
-                                        ActionInfo* info) {
+                                        std::unique_ptr<ActionInfo> info) {
   extension->SetManifestData(keys::kSystemIndicator,
-                             std::make_unique<ActionInfoData>(info));
+                             std::make_unique<ActionInfoData>(std::move(info)));
 }
 
 // static

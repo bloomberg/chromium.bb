@@ -74,7 +74,7 @@ scoped_refptr<EncodedFormData> ComplexFormData() {
 
   data->AppendData("foo", 3);
   data->AppendFileRange("/foo/bar/baz", 3, 4, 5);
-  std::unique_ptr<BlobData> blob_data = BlobData::Create();
+  auto blob_data = std::make_unique<BlobData>();
   blob_data->AppendText("hello", false);
   auto size = blob_data->length();
   scoped_refptr<BlobDataHandle> blob_data_handle =
@@ -193,7 +193,7 @@ TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromSimpleFormData) {
 
 TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromComplexFormData) {
   scoped_refptr<EncodedFormData> data = ComplexFormData();
-  MockBytesConsumer* underlying = MockBytesConsumer::Create();
+  auto* underlying = MakeGarbageCollected<MockBytesConsumer>();
   BytesConsumer* consumer =
       FormDataBytesConsumer::CreateForTesting(&GetDocument(), data, underlying);
   Checkpoint checkpoint;
@@ -376,7 +376,7 @@ TEST_F(FormDataBytesConsumerTest, BeginReadAffectsDraining) {
 }
 
 TEST_F(FormDataBytesConsumerTest, BeginReadAffectsDrainingWithComplexFormData) {
-  MockBytesConsumer* underlying = MockBytesConsumer::Create();
+  auto* underlying = MakeGarbageCollected<MockBytesConsumer>();
   BytesConsumer* consumer = FormDataBytesConsumer::CreateForTesting(
       &GetDocument(), ComplexFormData(), underlying);
 
@@ -415,7 +415,7 @@ TEST_F(FormDataBytesConsumerTest, BeginReadAffectsDrainingWithComplexFormData) {
 TEST_F(FormDataBytesConsumerTest, SetClientWithComplexFormData) {
   scoped_refptr<EncodedFormData> input_form_data = ComplexFormData();
 
-  MockBytesConsumer* underlying = MockBytesConsumer::Create();
+  auto* underlying = MakeGarbageCollected<MockBytesConsumer>();
   BytesConsumer* consumer = FormDataBytesConsumer::CreateForTesting(
       &GetDocument(), input_form_data, underlying);
   Checkpoint checkpoint;
@@ -437,7 +437,7 @@ TEST_F(FormDataBytesConsumerTest, SetClientWithComplexFormData) {
 TEST_F(FormDataBytesConsumerTest, CancelWithComplexFormData) {
   scoped_refptr<EncodedFormData> input_form_data = ComplexFormData();
 
-  MockBytesConsumer* underlying = MockBytesConsumer::Create();
+  auto* underlying = MakeGarbageCollected<MockBytesConsumer>();
   BytesConsumer* consumer = FormDataBytesConsumer::CreateForTesting(
       &GetDocument(), input_form_data, underlying);
   Checkpoint checkpoint;

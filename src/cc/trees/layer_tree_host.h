@@ -19,7 +19,6 @@
 #include "base/cancelable_callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -57,6 +56,7 @@ struct PresentationFeedback;
 }
 
 namespace cc {
+
 class HeadsUpDisplayLayer;
 class Layer;
 class LayerTreeHostClient;
@@ -128,7 +128,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       LayerTreeHostSingleThreadClient* single_thread_client,
       InitParams params);
 
+  LayerTreeHost(const LayerTreeHost&) = delete;
   virtual ~LayerTreeHost();
+
+  LayerTreeHost& operator=(const LayerTreeHost&) = delete;
 
   // Returns the process global unique identifier for this LayerTreeHost.
   int GetId() const;
@@ -273,11 +276,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   // Input Handling ---------------------------------------------
 
-  // Notifies the compositor that input from the browser is being throttled till
-  // the next commit. The compositor will prioritize activation of the pending
-  // tree so a commit can be performed.
-  void NotifyInputThrottledUntilCommit();
-
   // Sets the state of the browser controls. (Used for URL bar animations on
   // android).
   void UpdateBrowserControlsState(BrowserControlsState constraints,
@@ -405,7 +403,11 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
                                 float bottom_height,
                                 bool shrink);
   void SetBrowserControlsShownRatio(float ratio);
+
   void SetOverscrollBehavior(const OverscrollBehavior& overscroll_behavior);
+  const OverscrollBehavior& overscroll_behavior() const {
+    return overscroll_behavior_;
+  }
 
   void SetPageScaleFactorAndLimits(float page_scale_factor,
                                    float min_page_scale_factor,
@@ -474,7 +476,11 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // 'external_page_scale_factor', a value that affects raster scale in the
   // same way that page_scale_factor does, but doesn't affect any geometry
   // calculations.
-  void SetExternalPageScaleFactor(float page_scale_factor);
+  void SetExternalPageScaleFactor(float page_scale_factor,
+                                  bool is_external_pinch_gesture_active);
+  bool is_external_pinch_gesture_active_for_testing() {
+    return is_external_pinch_gesture_active_;
+  }
 
   // Requests that we force send RenderFrameMetadata with the next frame.
   void RequestForceSendMetadata() { force_send_metadata_request_ = true; }
@@ -659,6 +665,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
                                  ElementListType list_type,
                                  const PropertyAnimationState& mask,
                                  const PropertyAnimationState& state) override;
+  void AnimationScalesChanged(ElementId element_id,
+                              ElementListType list_type,
+                              float maximum_scale,
+                              float starting_scale) override;
 
   void ScrollOffsetAnimationFinished() override {}
   gfx::ScrollOffset GetScrollOffsetForAnimation(
@@ -804,6 +814,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   float min_page_scale_factor_ = 1.f;
   float max_page_scale_factor_ = 1.f;
   float external_page_scale_factor_ = 1.f;
+  bool is_external_pinch_gesture_active_ = false;
+  // Used to track the out-bound state for ApplyViewportChanges.
+  bool is_pinch_gesture_active_from_impl_ = false;
 
   int raster_color_space_id_ = -1;
   gfx::ColorSpace raster_color_space_;
@@ -893,8 +906,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Used to vend weak pointers to LayerTreeHost to ScopedDeferMainFrameUpdate
   // objects.
   base::WeakPtrFactory<LayerTreeHost> defer_main_frame_update_weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);
 };
 
 }  // namespace cc

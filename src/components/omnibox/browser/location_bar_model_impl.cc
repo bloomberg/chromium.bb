@@ -96,15 +96,12 @@ GURL LocationBarModelImpl::GetURL() const {
   return delegate_->GetURL(&url) ? url : GURL(url::kAboutBlankURL);
 }
 
-security_state::SecurityLevel LocationBarModelImpl::GetSecurityLevel(
-    bool ignore_editing) const {
-  // When editing or empty, assume no security style.
-  if ((input_in_progress() && !ignore_editing) || !ShouldDisplayURL())
+security_state::SecurityLevel LocationBarModelImpl::GetSecurityLevel() const {
+  // When empty, assume no security style.
+  if (!ShouldDisplayURL())
     return security_state::NONE;
 
-  security_state::SecurityInfo info;
-  delegate_->GetSecurityInfo(&info);
-  return info.security_level;
+  return delegate_->GetSecurityLevel();
 }
 
 bool LocationBarModelImpl::GetDisplaySearchTerms(base::string16* search_terms) {
@@ -114,11 +111,12 @@ bool LocationBarModelImpl::GetDisplaySearchTerms(base::string16* search_terms) {
 
   // Only show the search terms if the site is secure. However, make an
   // exception before the security state is initialized to prevent a UI flicker.
-  security_state::SecurityInfo info;
-  delegate_->GetSecurityInfo(&info);
-  if (info.connection_info_initialized &&
-      info.security_level != security_state::SecurityLevel::SECURE &&
-      info.security_level != security_state::SecurityLevel::EV_SECURE) {
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      delegate_->GetVisibleSecurityState();
+  security_state::SecurityLevel security_level = delegate_->GetSecurityLevel();
+  if (visible_security_state->connection_info_initialized &&
+      security_level != security_state::SecurityLevel::SECURE &&
+      security_level != security_state::SecurityLevel::EV_SECURE) {
     return false;
   }
 
@@ -141,7 +139,7 @@ const gfx::VectorIcon& LocationBarModelImpl::GetVectorIcon() const {
   if (IsOfflinePage())
     return omnibox::kOfflinePinIcon;
 
-  switch (GetSecurityLevel(true /* ignore_editing */)) {
+  switch (GetSecurityLevel()) {
     case security_state::NONE:
     case security_state::HTTP_SHOW_WARNING:
       return omnibox::kHttpIcon;
@@ -165,23 +163,6 @@ const gfx::VectorIcon& LocationBarModelImpl::GetVectorIcon() const {
 #endif
 }
 
-base::string16 LocationBarModelImpl::GetEVCertName() const {
-  if (GetSecurityLevel(false) != security_state::EV_SECURE)
-    return base::string16();
-
-  // Note: cert is guaranteed non-NULL or the security level would be NONE.
-  scoped_refptr<net::X509Certificate> cert = delegate_->GetCertificate();
-  DCHECK(cert);
-
-  // EV are required to have an organization name and country.
-  DCHECK(!cert->subject().organization_names.empty());
-  DCHECK(!cert->subject().country_name.empty());
-  return l10n_util::GetStringFUTF16(
-      IDS_SECURE_CONNECTION_EV,
-      base::UTF8ToUTF16(cert->subject().organization_names[0]),
-      base::UTF8ToUTF16(cert->subject().country_name));
-}
-
 LocationBarModelImpl::SecureChipText LocationBarModelImpl::GetSecureChipText()
     const {
   // Note that displayed text (the first output) will be implicitly used as the
@@ -198,11 +179,11 @@ LocationBarModelImpl::SecureChipText LocationBarModelImpl::GetSecureChipText()
   if (IsOfflinePage())
     return SecureChipText(l10n_util::GetStringUTF16(IDS_OFFLINE_VERBOSE_STATE));
 
-  switch (GetSecurityLevel(false)) {
+  switch (GetSecurityLevel()) {
     case security_state::HTTP_SHOW_WARNING:
       return SecureChipText(
           l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE));
-    case security_state::EV_SECURE:
+    case security_state::EV_SECURE: {
       if (securityUIStudyParam ==
           OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterEvToSecure)
         return SecureChipText(
@@ -211,7 +192,20 @@ LocationBarModelImpl::SecureChipText LocationBarModelImpl::GetSecureChipText()
           OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterBothToLock)
         return SecureChipText(base::string16(), l10n_util::GetStringUTF16(
                                                     IDS_SECURE_VERBOSE_STATE));
-      return SecureChipText(GetEVCertName());
+
+      // Note: Cert is guaranteed non-NULL or the security level would be NONE.
+      scoped_refptr<net::X509Certificate> cert = delegate_->GetCertificate();
+      DCHECK(cert);
+
+      // EV are required to have an organization name and country.
+      DCHECK(!cert->subject().organization_names.empty());
+      DCHECK(!cert->subject().country_name.empty());
+
+      return SecureChipText(l10n_util::GetStringFUTF16(
+          IDS_SECURE_CONNECTION_EV,
+          base::UTF8ToUTF16(cert->subject().organization_names[0]),
+          base::UTF8ToUTF16(cert->subject().country_name)));
+    }
     case security_state::SECURE:
       if (securityUIStudyParam !=
           OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterKeepSecureChip)
@@ -220,12 +214,12 @@ LocationBarModelImpl::SecureChipText LocationBarModelImpl::GetSecureChipText()
       return SecureChipText(
           l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE));
     case security_state::DANGEROUS: {
-      security_state::SecurityInfo security_info;
-      delegate_->GetSecurityInfo(&security_info);
+      std::unique_ptr<security_state::VisibleSecurityState>
+          visible_security_state = delegate_->GetVisibleSecurityState();
 
       // Don't show any text in the security indicator for sites on the billing
       // interstitial list.
-      if (security_info.malicious_content_status ==
+      if (visible_security_state->malicious_content_status ==
           security_state::MALICIOUS_CONTENT_STATUS_BILLING) {
 #if defined(OS_IOS)
         // On iOS, we never expect this status, because there are no billing
@@ -235,8 +229,9 @@ LocationBarModelImpl::SecureChipText LocationBarModelImpl::GetSecureChipText()
         return SecureChipText(base::string16());
       }
 
-      bool fails_malware_check = security_info.malicious_content_status !=
-                                 security_state::MALICIOUS_CONTENT_STATUS_NONE;
+      bool fails_malware_check =
+          visible_security_state->malicious_content_status !=
+          security_state::MALICIOUS_CONTENT_STATUS_NONE;
       return SecureChipText(l10n_util::GetStringUTF16(
           fails_malware_check ? IDS_DANGEROUS_VERBOSE_STATE
                               : IDS_NOT_SECURE_VERBOSE_STATE));

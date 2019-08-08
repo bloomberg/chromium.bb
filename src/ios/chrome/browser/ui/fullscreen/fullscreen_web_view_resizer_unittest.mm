@@ -6,7 +6,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
-#include "ios/web/public/features.h"
+#include "ios/web/common/features.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,9 +27,6 @@ const CGFloat kViewHeight = 700;
 class FullscreenWebViewResizerTest : public PlatformTest {
  public:
   FullscreenWebViewResizerTest() {
-    // Make sure the features is enabled.
-    _features.InitAndEnableFeature(web::features::kOutOfWebFullscreen);
-
     // FullscreenModel setup.
     _model.SetExpandedToolbarHeight(kTopToolbarExpandedHeight);
     _model.SetCollapsedToolbarHeight(kTopToolbarCollapsedHeight);

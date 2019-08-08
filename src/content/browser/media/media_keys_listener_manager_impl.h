@@ -14,6 +14,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/media_keys_listener_manager.h"
 #include "ui/base/accelerators/media_keys_listener.h"
+#include "ui/base/mpris/buildflags/buildflags.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace service_manager {
@@ -27,6 +28,14 @@ class HardwareKeyMediaController;
 #if defined(OS_MACOSX)
 class NowPlayingInfoCenterNotifier;
 #endif
+
+#if BUILDFLAG(USE_MPRIS)
+class MprisNotifier;
+#endif
+
+#if defined(OS_WIN)
+class SystemMediaControlsNotifier;
+#endif  // defined(OS_WIN)
 
 // Listens for media keys and decides which listeners receive which events. In
 // particular, it owns one of its delegates (HardwareKeyMediaController), and
@@ -112,6 +121,14 @@ class CONTENT_EXPORT MediaKeysListenerManagerImpl
 #if defined(OS_MACOSX)
   std::unique_ptr<NowPlayingInfoCenterNotifier>
       now_playing_info_center_notifier_;
+#endif
+
+#if defined(OS_WIN)
+  std::unique_ptr<SystemMediaControlsNotifier> system_media_controls_notifier_;
+#endif  // defined(OS_WIN)
+
+#if BUILDFLAG(USE_MPRIS)
+  std::unique_ptr<MprisNotifier> mpris_notifier_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(MediaKeysListenerManagerImpl);

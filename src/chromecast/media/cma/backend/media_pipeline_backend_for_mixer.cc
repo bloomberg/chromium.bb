@@ -37,9 +37,13 @@ namespace media {
 
 MediaPipelineBackendForMixer::MediaPipelineBackendForMixer(
     const MediaPipelineDeviceParams& params)
-    : state_(kStateUninitialized), params_(params) {}
+    : state_(kStateUninitialized), params_(params), weak_factory_(this) {
+  weak_this_ = weak_factory_.GetWeakPtr();
+}
 
-MediaPipelineBackendForMixer::~MediaPipelineBackendForMixer() {}
+MediaPipelineBackendForMixer::~MediaPipelineBackendForMixer() {
+  DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
+}
 
 MediaPipelineBackendForMixer::AudioDecoder*
 MediaPipelineBackendForMixer::CreateAudioDecoder() {
@@ -199,6 +203,13 @@ int64_t MediaPipelineBackendForMixer::GetCurrentPts() {
   int64_t video_pts = INT64_MIN;
   int64_t audio_pts = INT64_MIN;
 
+  // Decoders will do funky things if you ask them what the PTS is before
+  // playback has started, so deal with that here.
+  if (!playback_started_ ||
+      start_playback_timestamp_us_ > MonotonicClockNow()) {
+    return INT64_MIN;
+  }
+
   if (video_decoder_ && video_decoder_->GetCurrentPts(&timestamp, &pts))
     video_pts = pts;
   if (audio_decoder_)
@@ -255,7 +266,7 @@ void MediaPipelineBackendForMixer::VideoReadyToPlay() {
   GetTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&MediaPipelineBackendForMixer::OnVideoReadyToPlay,
-                     base::Unretained(this)));
+                     weak_this_));
 }
 
 void MediaPipelineBackendForMixer::OnVideoReadyToPlay() {

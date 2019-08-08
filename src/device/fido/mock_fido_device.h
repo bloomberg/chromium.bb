@@ -21,6 +21,10 @@
 #include "device/fido/fido_transport_protocol.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+namespace cbor {
+class Value;
+}
+
 namespace device {
 
 class MockFidoDevice : public ::testing::StrictMock<FidoDevice> {
@@ -46,26 +50,27 @@ class MockFidoDevice : public ::testing::StrictMock<FidoDevice> {
   static std::unique_ptr<MockFidoDevice> MakeCtapWithGetInfoExpectation(
       base::Optional<base::span<const uint8_t>> get_info_response =
           base::nullopt);
+  // EncodeCBORRequest is a helper function for use with the |Expect*|
+  // functions, below, that take a serialised request.
+  static std::vector<uint8_t> EncodeCBORRequest(
+      std::pair<CtapRequestCommand, base::Optional<cbor::Value>> request);
 
   MockFidoDevice();
   MockFidoDevice(ProtocolVersion protocol_version,
                  base::Optional<AuthenticatorGetInfoResponse> device_info);
   ~MockFidoDevice() override;
 
-  // TODO(crbug.com/729950): Remove these workarounds once support for move-only
-  // types is added to GMock.
-  MOCK_METHOD1(TryWinkRef, void(WinkCallback& cb));
-  void TryWink(WinkCallback cb) override;
-
-  MOCK_METHOD0(Cancel, void(void));
+  MOCK_METHOD1(Cancel, void(FidoDevice::CancelToken));
 
   MOCK_CONST_METHOD0(GetId, std::string(void));
   // GMock cannot mock a method taking a move-only type.
   // TODO(crbug.com/729950): Remove these workarounds once support for move-only
   // types is added to GMock.
   MOCK_METHOD2(DeviceTransactPtr,
-               void(const std::vector<uint8_t>& command, DeviceCallback& cb));
-  void DeviceTransact(std::vector<uint8_t> command, DeviceCallback cb) override;
+               CancelToken(const std::vector<uint8_t>& command,
+                           DeviceCallback& cb));
+  CancelToken DeviceTransact(std::vector<uint8_t> command,
+                             DeviceCallback cb) override;
 
   // FidoDevice:
   FidoTransportProtocol DeviceTransport() const override;

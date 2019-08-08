@@ -142,7 +142,7 @@
 <translation id="5939518447894949180">Setel ulang</translation>
 <translation id="5966707198760109579">Minggu</translation>
 <translation id="5987525920412732405">tombol putar</translation>
-<translation id="6011459053400940133">penggeser volume</translation>
+<translation id="6011459053400940133">Pengatur volume</translation>
 <translation id="6015796118275082299">Tahun</translation>
 <translation id="6023896073578205740">kotak daftar</translation>
 <translation id="6150588977291308318">bibliografi</translation>
@@ -176,7 +176,9 @@
 <translation id="6941933287844615239">download media</translation>
 <translation id="6981594929165378967">penyisipan</translation>
 <translation id="6989848892321993519">Perpanjang teks ini menjadi <ph name="MIN_CHARACTERS" /> karakter atau lebih (saat ini Anda menggunakan 1 karakter).</translation>
+<translation id="7033340931668032222">ke atas dan ke bawah untuk mengubah volume</translation>
 <translation id="709897737746224366">Sesuaikan dengan format yang diminta.</translation>
+<translation id="7118469954320184356">Deskripsi tidak tersedia.</translation>
 <translation id="7139483182332611405">kata pengantar</translation>
 <translation id="7263440858009898357">Pilih item pada daftar.</translation>
 <translation id="727747134524199931">judul kolom</translation>
@@ -226,6 +228,7 @@
 <translation id="8550857728288566671">simbol grafis</translation>
 <translation id="8583702881314752957">daftar definisi</translation>
 <translation id="8597182159515967513">kepala</translation>
+<translation id="8603553056539299761">ke kiri dan ke kanan untuk mencari</translation>
 <translation id="860475260694818407">daftar isi</translation>
 <translation id="8613126697340063924">kontrol pemutaran jarak jauh</translation>
 <translation id="862370744433916922">subjudul</translation>

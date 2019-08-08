@@ -277,7 +277,7 @@ TEST_F(ChromeContentRendererClientTest, ShouldTrackUseCounter) {
 TEST_F(ChromeContentRendererClientTest, AddImageContextMenuPropertiesForLoFi) {
   ChromeContentRendererClient client;
   blink::WebURLResponse web_url_response;
-  web_url_response.AddHTTPHeaderField(
+  web_url_response.AddHttpHeaderField(
       blink::WebString::FromUTF8(
           data_reduction_proxy::chrome_proxy_content_transform_header()),
       blink::WebString::FromUTF8(

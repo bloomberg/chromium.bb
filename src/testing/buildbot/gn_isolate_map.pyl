@@ -42,6 +42,9 @@
 #  "script"
 #  : the test is a python script; the path to the script is specified in
 #    the "script" field.
+#  "generated_script"
+#  : the test is a script generated at build time; the path to the script
+#    *relative to the output directory* is specified in the "script" field.
 #  "fuzzer"
 #  : the test is a fuzzer that needs to be run with a wrapper.
 #  "unknown"
@@ -630,6 +633,10 @@
       "--test-path=../../third_party/blink/web_tests/external/wpt/webdriver/tests/",
     ],
   },
+  "chrome/installer/linux": {
+    "label": "//chrome/installer/linux:linux",
+    "type": "additional_compile_target",
+  },
   "chromedriver_replay_unittests": {
     "label": "//chrome/test/chromedriver:chromedriver_replay_unittests",
     "script": "//chrome/test/chromedriver/log_replay/client_replay_unittest.py",
@@ -676,7 +683,7 @@
       "command_buffer_perftests",
       "--non-telemetry=true",
       "--adb-path",
-      "src/third_party/android_tools/sdk/platform-tools/adb",
+      "src/third_party/android_sdk/public/platform-tools/adb",
     ],
     "label": "//gpu:command_buffer_perftests",
     "script": "//testing/scripts/run_performance_tests.py",
@@ -1093,7 +1100,7 @@
       "gpu_perftests",
       "--non-telemetry=true",
       "--adb-path",
-      "src/third_party/android_tools/sdk/platform-tools/adb",
+      "src/third_party/android_sdk/public/platform-tools/adb",
     ],
     "label": "//gpu:gpu_perftests",
     "script": "//testing/scripts/run_performance_tests.py",
@@ -1249,6 +1256,13 @@
     "label": "//ios/chrome/test/earl_grey:ios_chrome_settings_egtests",
     "type": "raw",
   },
+  "ios_chrome_translate_egtests": {
+    "args": [
+      "--enable-features=CompactTranslateInfobarIOS",
+    ],
+    "label": "//ios/chrome/test/earl_grey:ios_chrome_translate_egtests",
+    "type": "raw",
+  },
   "ios_chrome_smoke_egtests": {
     "args": [],
     "label": "//ios/chrome/test/earl_grey:ios_chrome_smoke_egtests",
@@ -1257,6 +1271,26 @@
   "ios_chrome_ui_egtests": {
     "args": [],
     "label": "//ios/chrome/test/earl_grey:ios_chrome_ui_egtests",
+    "type": "raw",
+  },
+  "ios_chrome_ui_payments_egtests": {
+    "args": [],
+    "label": "//ios/chrome/test/earl_grey:ios_chrome_ui_payments_egtests",
+    "type": "raw",
+  },
+  "ios_chrome_ui_qr_scanner_egtests": {
+    "args": [],
+    "label": "//ios/chrome/test/earl_grey:ios_chrome_ui_qr_scanner_egtests",
+    "type": "raw",
+  },
+  "ios_chrome_ui_settings_egtests": {
+    "args": [],
+    "label": "//ios/chrome/test/earl_grey:ios_chrome_ui_settings_egtests",
+    "type": "raw",
+  },
+  "ios_chrome_ui_signin_interaction_egtests": {
+    "args": [],
+    "label": "//ios/chrome/test/earl_grey:ios_chrome_ui_signin_interaction_egtests",
     "type": "raw",
   },
   "ios_chrome_unittests": {
@@ -1419,6 +1453,14 @@
   "lookup_affiliation_response_parser_fuzzer": {
     "label": "//components/password_manager/core/browser:lookup_affiliation_response_parser_fuzzer",
     "type": "fuzzer",
+  },
+  "mac_signing_tests": {
+    "args": [
+      "../../chrome/installer/mac/signing/run_mac_signing_tests.py",
+    ],
+    "label": "//chrome/installer/mac:mac_signing_tests",
+    "script": "//testing/scripts/run_isolated_script_test.py",
+    "type": "script",
   },
   "mdns_parser_fuzzer": {
     "label": "//third_party/webrtc/test/fuzzers:mdns_parser_fuzzer",
@@ -1764,8 +1806,8 @@
     "label": "//net:net_gzip_source_stream_fuzzer",
     "type": "fuzzer",
   },
-  "net_host_resolver_impl_fuzzer": {
-    "label": "//net/dns:net_host_resolver_impl_fuzzer",
+  "net_host_resolver_manager_fuzzer": {
+    "label": "//net/dns:net_host_resolver_manager_fuzzer",
     "type": "fuzzer",
   },
   "net_hpack_decoder_fuzzer": {
@@ -1970,12 +2012,8 @@
     "label": "//cc/paint:paint_op_buffer_fuzzer",
     "type": "fuzzer",
   },
-  "password_generator_fips181_fuzzer": {
-    "label": "//components/autofill/core/browser:password_generator_fips181_fuzzer",
-    "type": "fuzzer",
-  },
   "password_generator_proto_fuzzer": {
-    "label": "//components/autofill/core/browser:password_generator_proto_fuzzer",
+    "label": "//components/password_manager/core/browser:password_generator_proto_fuzzer",
     "type": "fuzzer",
   },
   "password_manager_form_parser_fuzzer": {
@@ -2144,10 +2182,6 @@
     "label": "//printing:printing_unittests",
     "type": "console_test_launcher",
   },
-  "profiling_fuzzer": {
-    "label": "//components/services/heap_profiling:profiling_fuzzer",
-    "type": "fuzzer",
-  },
   "prtime_fuzzer": {
     "label": "//testing/libfuzzer/fuzzers:prtime_fuzzer",
     "type": "fuzzer",
@@ -2195,6 +2229,11 @@
   "residual_echo_detector_fuzzer": {
     "label": "//third_party/webrtc/test/fuzzers:residual_echo_detector_fuzzer",
     "type": "fuzzer",
+  },
+  "resource_sizes_cronet_sample_apk": {
+    "label": "//components/cronet/android:resource_sizes_cronet_sample_apk",
+    "type": "generated_script",
+    "script": "bin/resource_sizes_cronet_sample_apk",
   },
   "rtcp_receiver_fuzzer": {
     "label": "//third_party/webrtc/test/fuzzers:rtcp_receiver_fuzzer",
@@ -2406,6 +2445,12 @@
     "type": "additional_compile_target",
   },
   "system_webview_shell_layout_test_apk": {
+    "args": [
+      "--use-webview-provider",
+      "apks/SystemWebView.apk",
+      "--replace-system-package",
+      "org.chromium.webview_shell,apks/SystemWebViewShell.apk",
+    ],
     "label": "//android_webview/tools/system_webview_shell:system_webview_shell_layout_test_apk",
     "type": "console_test_launcher",
   },
@@ -2430,14 +2475,13 @@
     "script": "//testing/scripts/run_telemetry_as_googletest.py",
     "type": "script",
   },
-  # This isolate is solely used to run the One Builbot Step Tester
-  # trybot so that we don't use the full chrome build each time.  Instead
-  # this uses the reference build to run telemetry.
-  "telemetry_perf_tests_without_chrome": {
+  # This isolate is used by
+  # https://www.chromium.org/developers/cluster-telemetry
+  "ct_telemetry_perf_tests_without_chrome": {
     "args": [
       "../../tools/perf/run_benchmark",
     ],
-    "label": "//chrome/test:telemetry_perf_tests_without_chrome",
+    "label": "//chrome/test:ct_telemetry_perf_tests_without_chrome",
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
@@ -2468,6 +2512,11 @@
   "template_url_parser_fuzzer": {
     "label": "//testing/libfuzzer/fuzzers:template_url_parser_fuzzer",
     "type": "fuzzer",
+  },
+  "test_buildbucket_api_gpu_use_cases": {
+    "label": "//content/test:test_buildbucket_api_gpu_use_cases",
+    "script": "//testing/scripts/test_buildbucket_api_gpu_use_cases.py",
+    "type": "script",
   },
   "test_config_and_dict": {
     "label": "//testing/libfuzzer/tests:test_config_and_dict",
@@ -2507,7 +2556,7 @@
       "--non-telemetry=true",
       "--test-launcher-print-test-stdio=always",
       "--adb-path",
-      "src/third_party/android_tools/sdk/platform-tools/adb",
+      "src/third_party/android_sdk/public/platform-tools/adb",
     ],
     "label": "//components/tracing:tracing_perftests",
     "script": "//testing/scripts/run_performance_tests.py",
@@ -2571,6 +2620,10 @@
   },
   "url_unittests": {
     "label": "//url:url_unittests",
+    "type": "console_test_launcher",
+  },
+  "usage_time_limit_unittests": {
+    "label": "//chrome/test:usage_time_limit_unittests",
     "type": "console_test_launcher",
   },
   "usb_descriptors_fuzzer": {
@@ -2685,7 +2738,7 @@
       "vr_common_perftests",
       "--non-telemetry=true",
       "--adb-path",
-      "src/third_party/android_tools/sdk/platform-tools/adb",
+      "src/third_party/android_sdk/public/platform-tools/adb",
     ],
     "label": "//chrome/browser/vr:vr_common_perftests",
     "script": "//testing/scripts/run_performance_tests.py",
@@ -2810,6 +2863,10 @@
     "type": "console_test_launcher",
   },
   "webview_ui_test_app_test_apk": {
+    "args": [
+      "--use-webview-provider",
+      "apks/SystemWebView.apk",
+    ],
     "label": "//android_webview/tools/automated_ui_tests:webview_ui_test_app_test_apk",
     "type": "console_test_launcher",
   },
@@ -2827,7 +2884,12 @@
   },
   "xr_browser_tests": {
     "label": "//chrome/browser/vr:xr_browser_tests",
+    # We can't use the "script" type since we need to be run from the output
+    # directory (or at least given the path). Thus, we need to tell mb.py to not
+    # automatically append the .exe suffix on Windows.
     "type": "windowed_test_launcher",
+    "executable": "run_xr_browser_tests.py",
+    "executable_suffix": "",
     "args": [
       '--enable-gpu',
       '--test-launcher-bot-mode',

@@ -6,6 +6,8 @@
 #define ASH_APP_LIST_APP_LIST_METRICS_H_
 
 #include "ash/app_list/app_list_export.h"
+#include "ash/public/interfaces/app_list.mojom.h"
+#include "ash/public/interfaces/app_list_view.mojom.h"
 
 namespace app_list {
 
@@ -22,14 +24,6 @@ constexpr char kAppListShowInputLatencyHistogram[] =
 // representation time of the dismissed launcher UI.
 constexpr char kAppListHideInputLatencyHistogram[] =
     "Apps.AppListHide.InputLatency";
-
-// The UMA histogram that logs usage of suggested and regular apps.
-constexpr char kAppListAppLaunched[] = "Apps.AppListAppLaunched";
-
-// The UMA histogram that logs usage of suggested and regular apps while the
-// fullscreen launcher is enabled.
-constexpr char kAppListAppLaunchedFullscreen[] =
-    "Apps.AppListAppLaunchedFullscreen";
 
 // The UMA histogram that logs different ways to move an app in app list's apps
 // grid.
@@ -93,6 +87,16 @@ constexpr char kSearchResultOpenDisplayTypeHistogram[] =
 // The UMA histogram that logs how long the search query was when a result was
 // opened.
 constexpr char kSearchQueryLength[] = "Apps.AppListSearchQueryLength";
+
+// The UMA histogram that logs how long the search query was when a result was
+// opened in clamshell mode.
+constexpr char kSearchQueryLengthInClamshell[] =
+    "Apps.AppListSearchQueryLength.ClamshellMode";
+
+// The UMA histogram that logs how long the search query was when a result was
+// opened in tablet mode.
+constexpr char kSearchQueryLengthInTablet[] =
+    "Apps.AppListSearchQueryLength.TabletMode";
 
 // The UMA histogram that logs the Manhattan distance from the origin of the
 // search results to the selected result.
@@ -184,19 +188,24 @@ enum AppListPageSwitcherSource {
   kMouseWheelScroll = 4,
   kMousePadScroll = 5,
   kDragAppToBorder = 6,
-  kMaxAppListPageSwitcherSource = 7,
+  kMoveAppWithKeyboard = 7,
+  kMaxAppListPageSwitcherSource = 8,
 };
 
 // The different ways to move an app in app list's apps grid. These values are
 // written to logs. New enum values can be added, but existing enums must never
 // be renumbered or deleted and reused.
 enum AppListAppMovingType {
-  kMoveIntoFolder = 0,
-  kMoveOutOfFolder = 1,
+  kMoveByDragIntoFolder = 0,
+  kMoveByDragOutOfFolder = 1,
   kMoveIntoAnotherFolder = 2,
-  kReorderInFolder = 3,
-  kReorderInTopLevel = 4,
-  kMaxAppListAppMovingType = 5,
+  kReorderByDragInFolder = 3,
+  kReorderByDragInTopLevel = 4,
+  kReorderByKeyboardInFolder = 5,
+  kReorderByKeyboardInTopLevel = 6,
+  kMoveByKeyboardIntoFolder = 7,
+  kMoveByKeyboardOutOfFolder = 8,
+  kMaxAppListAppMovingType = 9,
 };
 
 // Different places a search result can be launched from. These values do not
@@ -222,6 +231,9 @@ void RecordZeroStateSearchResultUserActionHistogram(
 void RecordZeroStateSearchResultRemovalHistogram(
     ZeroStateSearchResutRemovalConfirmation removal_decision);
 
+APP_LIST_EXPORT void RecordSearchAbandonWithQueryLengthHistogram(
+    int query_length);
+
 APP_LIST_EXPORT void RecordSearchResultOpenSource(
     const SearchResult* result,
     const AppListModel* model,
@@ -231,6 +243,14 @@ APP_LIST_EXPORT void RecordSearchLaunchIndexAndQueryLength(
     SearchResultLaunchLocation launch_location,
     int query_length,
     int suggestion_index);
+
+APP_LIST_EXPORT void RecordAppListAppLaunched(
+    ash::mojom::AppListLaunchedFrom launched_from,
+    ash::mojom::AppListViewState app_list_state,
+    bool is_tablet_mode,
+    bool home_launcher_shown);
+
+APP_LIST_EXPORT bool IsCommandIdAnAppLaunch(int command_id);
 
 }  // namespace app_list
 

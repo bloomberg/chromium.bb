@@ -35,7 +35,7 @@ bool PrimaryAccountMutatorImpl::SetPrimaryAccount(
 
   // TODO(crbug.com/889899): should check that the account email is allowed.
 
-  signin_manager_->OnExternalSigninCompleted(account_info.email);
+  signin_manager_->SignIn(account_info.email);
   return true;
 }
 

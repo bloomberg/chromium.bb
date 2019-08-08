@@ -15,10 +15,9 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/dbus/cryptohome_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/util/tpm_util.h"
+#include "chromeos/dbus/cryptohome/tpm_util.h"
 #include "components/policy/proto/install_attributes.pb.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,12 +50,12 @@ class InstallAttributesTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(base::PathService::OverrideAndCreateIfNeeded(
         dbus_paths::FILE_INSTALL_ATTRIBUTES, GetTempPath(), true, false));
-    DBusThreadManager::Initialize();
-    install_attributes_ = std::make_unique<InstallAttributes>(
-        DBusThreadManager::Get()->GetCryptohomeClient());
+    CryptohomeClient::InitializeFake();
+    install_attributes_ =
+        std::make_unique<InstallAttributes>(CryptohomeClient::Get());
   }
 
-  void TearDown() override { DBusThreadManager::Shutdown(); }
+  void TearDown() override { CryptohomeClient::Shutdown(); }
 
   base::FilePath GetTempPath() const {
     base::FilePath temp_path = base::MakeAbsoluteFilePath(temp_dir_.GetPath());

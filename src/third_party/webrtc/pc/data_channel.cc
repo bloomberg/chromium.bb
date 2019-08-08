@@ -28,6 +28,30 @@ namespace webrtc {
 static size_t kMaxQueuedReceivedDataBytes = 16 * 1024 * 1024;
 static size_t kMaxQueuedSendDataBytes = 16 * 1024 * 1024;
 
+InternalDataChannelInit::InternalDataChannelInit(const DataChannelInit& base)
+    : DataChannelInit(base), open_handshake_role(kOpener) {
+  // If the channel is externally negotiated, do not send the OPEN message.
+  if (base.negotiated) {
+    open_handshake_role = kNone;
+  } else {
+    // Datachannel is externally negotiated. Ignore the id value.
+    // Specified in createDataChannel, WebRTC spec section 6.1 bullet 13.
+    id = -1;
+  }
+  // Backwards compatibility: If base.maxRetransmits or base.maxRetransmitTime
+  // have been set to -1, unset them.
+  if (maxRetransmits && *maxRetransmits == -1) {
+    RTC_LOG(LS_ERROR)
+        << "Accepting maxRetransmits = -1 for backwards compatibility";
+    maxRetransmits = absl::nullopt;
+  }
+  if (maxRetransmitTime && *maxRetransmitTime == -1) {
+    RTC_LOG(LS_ERROR)
+        << "Accepting maxRetransmitTime = -1 for backwards compatibility";
+    maxRetransmitTime = absl::nullopt;
+  }
+}
+
 bool SctpSidAllocator::AllocateSid(rtc::SSLRole role, int* sid) {
   int potential_sid = (role == rtc::SSL_CLIENT) ? 0 : 1;
   while (!IsSidAvailable(potential_sid)) {
@@ -127,6 +151,7 @@ DataChannel::DataChannel(DataChannelProviderInterface* provider,
       bytes_sent_(0),
       messages_received_(0),
       bytes_received_(0),
+      buffered_amount_(0),
       data_channel_type_(dct),
       provider_(provider),
       handshake_state_(kHandshakeInit),
@@ -139,21 +164,22 @@ DataChannel::DataChannel(DataChannelProviderInterface* provider,
 
 bool DataChannel::Init(const InternalDataChannelInit& config) {
   if (data_channel_type_ == cricket::DCT_RTP) {
-    if (config.reliable || config.id != -1 || config.maxRetransmits != -1 ||
-        config.maxRetransmitTime != -1) {
+    if (config.reliable || config.id != -1 || config.maxRetransmits ||
+        config.maxRetransmitTime) {
       RTC_LOG(LS_ERROR) << "Failed to initialize the RTP data channel due to "
                            "invalid DataChannelInit.";
       return false;
     }
     handshake_state_ = kHandshakeReady;
   } else if (IsSctpLike(data_channel_type_)) {
-    if (config.id < -1 || config.maxRetransmits < -1 ||
-        config.maxRetransmitTime < -1) {
+    if (config.id < -1 ||
+        (config.maxRetransmits && *config.maxRetransmits < 0) ||
+        (config.maxRetransmitTime && *config.maxRetransmitTime < 0)) {
       RTC_LOG(LS_ERROR) << "Failed to initialize the SCTP data channel due to "
                            "invalid DataChannelInit.";
       return false;
     }
-    if (config.maxRetransmits != -1 && config.maxRetransmitTime != -1) {
+    if (config.maxRetransmits && config.maxRetransmitTime) {
       RTC_LOG(LS_ERROR)
           << "maxRetransmits and maxRetransmitTime should not be both set.";
       return false;
@@ -205,12 +231,12 @@ bool DataChannel::reliable() const {
   if (data_channel_type_ == cricket::DCT_RTP) {
     return false;
   } else {
-    return config_.maxRetransmits == -1 && config_.maxRetransmitTime == -1;
+    return !config_.maxRetransmits && !config_.maxRetransmitTime;
   }
 }
 
 uint64_t DataChannel::buffered_amount() const {
-  return queued_send_data_.byte_count();
+  return buffered_amount_;
 }
 
 void DataChannel::Close() {
@@ -224,6 +250,7 @@ void DataChannel::Close() {
 }
 
 bool DataChannel::Send(const DataBuffer& buffer) {
+  buffered_amount_ += buffer.size();
   if (state_ != kOpen) {
     return false;
   }
@@ -429,6 +456,7 @@ void DataChannel::CloseAbruptly() {
 
   // Closing abruptly means any queued data gets thrown away.
   queued_send_data_.Clear();
+  buffered_amount_ = 0;
   queued_control_data_.Clear();
 
   // Still go to "kClosing" before "kClosed", since observers may be expecting
@@ -548,7 +576,6 @@ void DataChannel::SendQueuedDataMessages() {
 
   RTC_DCHECK(state_ == kOpen || state_ == kClosing);
 
-  uint64_t start_buffered_amount = buffered_amount();
   while (!queued_send_data_.Empty()) {
     std::unique_ptr<DataBuffer> buffer = queued_send_data_.PopFront();
     if (!SendDataMessage(*buffer, false)) {
@@ -556,10 +583,6 @@ void DataChannel::SendQueuedDataMessages() {
       queued_send_data_.PushFront(std::move(buffer));
       break;
     }
-  }
-
-  if (observer_ && buffered_amount() < start_buffered_amount) {
-    observer_->OnBufferedAmountChange(start_buffered_amount);
   }
 }
 
@@ -577,8 +600,10 @@ bool DataChannel::SendDataMessage(const DataBuffer& buffer,
              "because the OPEN_ACK message has not been received.";
     }
 
-    send_params.max_rtx_count = config_.maxRetransmits;
-    send_params.max_rtx_ms = config_.maxRetransmitTime;
+    send_params.max_rtx_count =
+        config_.maxRetransmits ? *config_.maxRetransmits : -1;
+    send_params.max_rtx_ms =
+        config_.maxRetransmitTime ? *config_.maxRetransmitTime : -1;
     send_params.sid = config_.id;
   } else {
     send_params.ssrc = send_ssrc_;
@@ -591,6 +616,12 @@ bool DataChannel::SendDataMessage(const DataBuffer& buffer,
   if (success) {
     ++messages_sent_;
     bytes_sent_ += buffer.size();
+
+    RTC_DCHECK(buffered_amount_ >= buffer.size());
+    buffered_amount_ -= buffer.size();
+    if (observer_ && buffer.size() > 0) {
+      observer_->OnBufferedAmountChange(buffer.size());
+    }
     return true;
   }
 
@@ -614,17 +645,12 @@ bool DataChannel::SendDataMessage(const DataBuffer& buffer,
 }
 
 bool DataChannel::QueueSendDataMessage(const DataBuffer& buffer) {
-  size_t start_buffered_amount = buffered_amount();
-  if (start_buffered_amount >= kMaxQueuedSendDataBytes) {
+  size_t start_buffered_amount = queued_send_data_.byte_count();
+  if (start_buffered_amount + buffer.size() > kMaxQueuedSendDataBytes) {
     RTC_LOG(LS_ERROR) << "Can't buffer any more data for the data channel.";
     return false;
   }
   queued_send_data_.PushBack(absl::make_unique<DataBuffer>(buffer));
-
-  // The buffer can have length zero, in which case there is no change.
-  if (observer_ && buffered_amount() > start_buffered_amount) {
-    observer_->OnBufferedAmountChange(start_buffered_amount);
-  }
   return true;
 }
 

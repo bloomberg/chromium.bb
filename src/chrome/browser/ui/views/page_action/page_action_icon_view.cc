@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 
+#include <utility>
+
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -31,12 +32,8 @@ bool ActivateButtonOnSpaceDown() {
 
 }  // namespace
 
-void PageActionIconView::Init() {
-  AddChildView(image());
-  image()->set_can_process_events_within_subtree(false);
-  image()->EnableCanvasFlippingForRTLUI(true);
-  SetInkDropMode(InkDropMode::ON);
-  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+bool PageActionIconView::Delegate::IsLocationBarUserInputInProgress() const {
+  return false;
 }
 
 PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
@@ -44,14 +41,16 @@ PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
                                        PageActionIconView::Delegate* delegate,
                                        const gfx::FontList& font_list)
     : IconLabelBubbleView(font_list),
-      icon_size_(GetLayoutConstant(LOCATION_BAR_ICON_SIZE)),
       command_updater_(command_updater),
       delegate_(delegate),
-      command_id_(command_id),
-      active_(false),
-      suppress_mouse_released_action_(false) {
+      command_id_(command_id) {
+  DCHECK(delegate_);
+
+  image()->EnableCanvasFlippingForRTLUI(true);
+  SetInkDropMode(InkDropMode::ON);
   set_ink_drop_visible_opacity(
       GetOmniboxStateOpacity(OmniboxPartState::SELECTED));
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 }
 
 PageActionIconView::~PageActionIconView() {}
@@ -72,10 +71,13 @@ bool PageActionIconView::Update() {
   return false;
 }
 
+SkColor PageActionIconView::GetLabelColorForTesting() const {
+  return label()->enabled_color();
+}
+
 SkColor PageActionIconView::GetTextColor() const {
-  // Returns the color of the label shown during animation.
   return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelDisabledColor);
+      ui::NativeTheme::kColorId_TextfieldDefaultColor);
 }
 
 void PageActionIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -83,12 +85,9 @@ void PageActionIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(GetTextForTooltipAndAccessibleName());
 }
 
-bool PageActionIconView::GetTooltipText(const gfx::Point& p,
-                                        base::string16* tooltip) const {
-  if (IsBubbleShowing())
-    return false;
-  *tooltip = GetTextForTooltipAndAccessibleName();
-  return true;
+base::string16 PageActionIconView::GetTooltipText(const gfx::Point& p) const {
+  return IsBubbleShowing() ? base::string16()
+                           : GetTextForTooltipAndAccessibleName();
 }
 
 bool PageActionIconView::OnMousePressed(const ui::MouseEvent& event) {
@@ -147,13 +146,14 @@ bool PageActionIconView::OnKeyReleased(const ui::KeyEvent& event) {
 }
 
 void PageActionIconView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   View::ViewHierarchyChanged(details);
   if (details.is_add && details.child == this && GetNativeTheme())
     UpdateIconImage();
 }
 
 void PageActionIconView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  IconLabelBubbleView::OnNativeThemeChanged(theme);
   UpdateIconImage();
 }
 
@@ -161,50 +161,12 @@ void PageActionIconView::OnThemeChanged() {
   UpdateIconImage();
 }
 
-void PageActionIconView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  image()->SetPaintToLayer();
-  image()->layer()->SetFillsBoundsOpaquely(false);
-  IconLabelBubbleView::AddInkDropLayer(ink_drop_layer);
-}
-
-void PageActionIconView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  IconLabelBubbleView::RemoveInkDropLayer(ink_drop_layer);
-  image()->DestroyLayer();
-}
-
-std::unique_ptr<views::InkDrop> PageActionIconView::CreateInkDrop() {
-  std::unique_ptr<views::InkDropImpl> ink_drop =
-      CreateDefaultFloodFillInkDropImpl();
-  ink_drop->SetShowHighlightOnFocus(!focus_ring());
-  return std::move(ink_drop);
-}
-
-std::unique_ptr<views::InkDropRipple> PageActionIconView::CreateInkDropRipple()
-    const {
-  return std::make_unique<views::FloodFillInkDropRipple>(
-      size(), GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
-      ink_drop_visible_opacity());
-}
-
-std::unique_ptr<views::InkDropHighlight>
-PageActionIconView::CreateInkDropHighlight() const {
-  std::unique_ptr<views::InkDropHighlight> highlight =
-      CreateDefaultInkDropHighlight(
-          gfx::RectF(GetMirroredRect(GetContentsBounds())).CenterPoint(),
-          size());
-  highlight->set_visible_opacity(
-      GetOmniboxStateOpacity(OmniboxPartState::HOVERED));
-  return highlight;
-}
-
-std::unique_ptr<views::InkDropMask> PageActionIconView::CreateInkDropMask()
-    const {
-  return std::make_unique<views::RoundRectInkDropMask>(size(), gfx::Insets(),
-                                                       height() / 2.f);
-}
-
 SkColor PageActionIconView::GetInkDropBaseColor() const {
   return delegate_->GetPageActionInkDropColor();
+}
+
+bool PageActionIconView::ShouldShowSeparator() const {
+  return false;
 }
 
 void PageActionIconView::OnGestureEvent(ui::GestureEvent* event) {

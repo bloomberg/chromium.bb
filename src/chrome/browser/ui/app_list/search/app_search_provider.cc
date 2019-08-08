@@ -28,7 +28,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
-#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
@@ -56,6 +56,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/services/app_service/public/cpp/app_service_proxy.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "extensions/browser/extension_prefs.h"
@@ -77,11 +78,11 @@ constexpr size_t kMinimumReservedAppsContainerCapacity = 60U;
 // is somewhat arbitrary, but is roughly equivalent to the 'ter' in 'terminal'.
 constexpr double kCrostiniTerminalRelevanceThreshold = 0.8;
 
-// When ranking with the |AppSearchResultRanker| is enabled, this boost is
+// When ranking with the |QueryBasedAppsRanker| is enabled, this boost is
 // added to all apps that the ranker knows about.
 constexpr float kDefaultRankerScoreBoost = 0.0f;
 
-// When ranking with the |AppSearchResultRanker| is enabled, its scores are
+// When ranking with the |QueryBasedAppsRanker| is enabled, its scores are
 // multiplied by this amount.
 constexpr float kDefaultRankerScoreCoefficient = 0.1f;
 
@@ -267,6 +268,8 @@ class AppSearchProvider::DataSource {
       AppListControllerDelegate* list_controller,
       bool is_recommended) = 0;
 
+  virtual void ViewClosing() {}
+
  protected:
   Profile* profile() { return profile_; }
   AppSearchProvider* owner() { return owner_; }
@@ -285,8 +288,11 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
                              public apps::AppRegistryCache::Observer {
  public:
   AppServiceDataSource(Profile* profile, AppSearchProvider* owner)
-      : AppSearchProvider::DataSource(profile, owner) {
-    apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile);
+      : AppSearchProvider::DataSource(profile, owner),
+        icon_cache_(apps::AppServiceProxyFactory::GetForProfile(profile),
+                    apps::IconCache::GarbageCollectionPolicy::kExplicit) {
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(profile);
     if (proxy) {
       Observe(&proxy->AppRegistryCache());
     }
@@ -296,7 +302,8 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
 
   // AppSearchProvider::DataSource overrides:
   void AddApps(AppSearchProvider::Apps* apps_vector) override {
-    apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile());
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(profile());
     if (!proxy) {
       return;
     }
@@ -335,8 +342,10 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
       AppListControllerDelegate* list_controller,
       bool is_recommended) override {
     return std::make_unique<AppServiceAppResult>(
-        profile(), app_id, list_controller, is_recommended);
+        profile(), app_id, list_controller, is_recommended, &icon_cache_);
   }
+
+  void ViewClosing() override { icon_cache_.SweepReleasedIcons(); }
 
  private:
   // apps::AppRegistryCache::Observer overrides:
@@ -347,6 +356,18 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
       owner()->RefreshAppsAndUpdateResults();
     }
   }
+
+  // The AppServiceDataSource seems like one (but not the only) good place to
+  // add an App Service icon caching wrapper, because (1) the AppSearchProvider
+  // destroys and creates multiple search results in a short period of time,
+  // while the user is typing, so will clearly benefit from a cache, and (2)
+  // there is an obvious point in time when the cache can be emptied: the user
+  // will obviously stop typing (so stop triggering LoadIcon requests) when the
+  // search box view closes.
+  //
+  // There are reasons to have more than one icon caching layer. See the
+  // comments for the apps::IconCache::GarbageCollectionPolicy enum.
+  apps::IconCache icon_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(AppServiceDataSource);
 };
@@ -688,6 +709,12 @@ void AppSearchProvider::Start(const base::string16& query) {
     UpdateResults();
 }
 
+void AppSearchProvider::ViewClosing() {
+  ClearResultsSilently();
+  for (auto& data_source : data_sources_)
+    data_source->ViewClosing();
+}
+
 void AppSearchProvider::Train(const std::string& id, RankingItemType type) {
   if (type == RankingItemType::kApp)
     ranker_->Train(NormalizeID(id));
@@ -784,9 +811,9 @@ void AppSearchProvider::UpdateQueriedResults() {
   new_results.reserve(apps_size);
 
   const bool should_rerank =
-      app_list_features::IsAppSearchResultRankerEnabled() &&
+      app_list_features::IsQueryBasedAppsRankerEnabled() &&
       base::GetFieldTrialParamByFeatureAsBool(
-          app_list_features::kEnableAppSearchResultRanker,
+          app_list_features::kEnableQueryBasedAppsRanker,
           "rank_app_query_results", false) &&
       ranker_ != nullptr;
   // Maps app IDs to their score according to |ranker_|.
@@ -796,10 +823,10 @@ void AppSearchProvider::UpdateQueriedResults() {
   if (should_rerank) {
     ranker_scores = ranker_->Rank();
     ranker_score_coefficient = base::GetFieldTrialParamByFeatureAsDouble(
-        app_list_features::kEnableAppSearchResultRanker,
-        "app_query_coefficient", ranker_score_coefficient);
+        app_list_features::kEnableQueryBasedAppsRanker, "app_query_coefficient",
+        ranker_score_coefficient);
     ranker_score_boost = base::GetFieldTrialParamByFeatureAsDouble(
-        app_list_features::kEnableAppSearchResultRanker, "app_query_boost",
+        app_list_features::kEnableQueryBasedAppsRanker, "app_query_boost",
         ranker_score_boost);
   }
 

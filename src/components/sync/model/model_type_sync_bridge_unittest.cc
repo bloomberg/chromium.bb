@@ -47,19 +47,25 @@ TEST_F(ModelTypeSyncBridgeTest, DefaultConflictResolution) {
   EXPECT_FALSE(local_data.is_deleted());
   EXPECT_TRUE(remote_data.is_deleted());
   EXPECT_EQ(ConflictResolution::USE_LOCAL,
-            bridge()->ResolveConflict(local_data, remote_data).type());
+            bridge()
+                ->ResolveConflict(/*storage_key=*/std::string(), remote_data)
+                .type());
 
   remote_data.specifics.mutable_preference()->set_value("value");
   EXPECT_FALSE(local_data.is_deleted());
   EXPECT_FALSE(remote_data.is_deleted());
   EXPECT_EQ(ConflictResolution::USE_REMOTE,
-            bridge()->ResolveConflict(local_data, remote_data).type());
+            bridge()
+                ->ResolveConflict(/*storage_key=*/std::string(), remote_data)
+                .type());
 
   local_data.specifics.clear_preference();
   EXPECT_TRUE(local_data.is_deleted());
   EXPECT_FALSE(remote_data.is_deleted());
   EXPECT_EQ(ConflictResolution::USE_REMOTE,
-            bridge()->ResolveConflict(local_data, remote_data).type());
+            bridge()
+                ->ResolveConflict(/*storage_key=*/std::string(), remote_data)
+                .type());
 }
 
 }  // namespace

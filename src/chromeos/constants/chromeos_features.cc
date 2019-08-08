@@ -24,7 +24,12 @@ const base::Feature kCrostiniBackup{"CrostiniBackup",
 
 // Enables or disables Crostini support for usb mounting.
 const base::Feature kCrostiniUsbSupport{"CrostiniUsbSupport",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables or disables Crostini usb mounting for unsupported devices.
+// To enable, CrostiniUsbSupport must also be enabled.
+const base::Feature kCrostiniUsbAllowUnsupported{
+    "CrostiniUsbAllowUnsupported", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the CryptAuth v2 Enrollment flow.
 const base::Feature kCryptAuthV2Enrollment{"CryptAuthV2Enrollment",
@@ -37,6 +42,10 @@ const base::Feature kDiscoverApp{"DiscoverApp",
 
 // If enabled, DriveFS will be used for Drive sync.
 const base::Feature kDriveFs{"DriveFS", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// If enabled shows the new visual signals feedback panel.
+const base::Feature kEnableFileManagerFeedbackPanel{
+    "EnableFeedbackPanel", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables web push for background notifications in
 // Android Messages Integration on Chrome OS.
@@ -57,21 +66,27 @@ const base::Feature kEnableSupervisionTransitionScreens{
 const base::Feature kFsNosymfollow{"FsNosymfollow",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable or disable Unified Input Logic in the IME extension on Chrome OS.
-const base::Feature kImeInputLogic{"ImeInputLogic",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+// Enable or disable Unified Input Logic for FST decocder in the IME extension
+// on Chrome OS.
+const base::Feature kImeInputLogicFst{"ImeInputLogicFst",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, allows the qualified IME extension to connect to IME service.
 const base::Feature kImeServiceConnectable{"ImeServiceConnectable",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables Instant Tethering on Chrome OS.
 const base::Feature kInstantTethering{"InstantTethering",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable or disable native controls in video player on Chrome OS.
-const base::Feature kVideoPlayerNativeControls{
-    "VideoPlayerNativeControls", base::FEATURE_ENABLED_BY_DEFAULT};
+// Splits OS settings (display, mouse, keyboard, etc.) out from browser settings
+// into a separate window.
+const base::Feature kSplitSettings{"SplitSettings",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the updated cellular activation UI; see go/cros-cellular-design.
+const base::Feature kUpdatedCellularActivationUi{
+    "UpdatedCellularActivationUi", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Use the messages.google.com domain as part of the "Messages" feature under
 // "Connected Devices" settings.
@@ -94,6 +109,10 @@ const base::Feature kUserActivityPrediction{"UserActivityPrediction",
 // for the Smart Dim feature on Chrome OS.
 const base::Feature kUserActivityPredictionMlService{
     "UserActivityPredictionMlService", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable or disable native controls in video player on Chrome OS.
+const base::Feature kVideoPlayerNativeControls{
+    "VideoPlayerNativeControls", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 

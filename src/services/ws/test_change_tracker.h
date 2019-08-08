@@ -44,7 +44,6 @@ enum ChangeType {
   CHANGE_TYPE_CURSOR_CHANGED,
   CHANGE_TYPE_ON_CHANGE_COMPLETED,
   CHANGE_TYPE_ON_TOP_LEVEL_CREATED,
-  CHANGE_TYPE_OPACITY,
   CHANGE_TYPE_REQUEST_CLOSE,
   CHANGE_TYPE_TRANSFORM_CHANGED,
   CHANGE_TYPE_DISPLAY_CHANGED,
@@ -91,6 +90,7 @@ struct Change {
   Id window_id2 = 0;
   Id window_id3 = 0;
   gfx::Rect bounds;
+  ui::WindowShowState state;
   viz::FrameSinkId frame_sink_id;
   base::Optional<viz::LocalSurfaceIdAllocation> local_surface_id_allocation;
   int32_t event_action = 0;
@@ -98,7 +98,6 @@ struct Change {
   std::string embed_url;
   mojom::OrderDirection direction;
   bool bool_value = false;
-  float float_value = 0.f;
   std::string property_key;
   std::string property_value;
   ui::CursorType cursor_type = ui::CursorType::kNull;
@@ -192,6 +191,7 @@ class TestChangeTracker {
   void OnWindowBoundsChanged(
       Id window_id,
       const gfx::Rect& new_bounds,
+      ui::WindowShowState state,
       const base::Optional<viz::LocalSurfaceIdAllocation>&
           local_surface_id_allocation);
   void OnWindowTransformChanged(Id window_id);
@@ -204,7 +204,6 @@ class TestChangeTracker {
                          mojom::OrderDirection direction);
   void OnWindowDeleted(Id window_id);
   void OnWindowVisibilityChanged(Id window_id, bool visible);
-  void OnWindowOpacityChanged(Id window_id, float opacity);
   void OnWindowDisplayChanged(Id window_id, int64_t display_id);
   void OnWindowParentDrawnStateChanged(Id window_id, bool drawn);
   void OnWindowInputEvent(Id window_id,

@@ -16,13 +16,14 @@
 #include "media/gpu/test/video_frame_helpers.h"
 
 namespace media {
+
+class VideoFrameMapper;
+
 namespace test {
 
 // Default output folder used to store frames.
 constexpr const base::FilePath::CharType* kDefaultOutputFolder =
     FILE_PATH_LITERAL("video_frames");
-
-class VideoFrameMapper;
 
 // The video frame file writer class implements functionality to write video
 // frames to file. The supported output formats are PNG and raw I420 YUV.

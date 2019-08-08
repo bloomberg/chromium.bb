@@ -19,7 +19,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.CommandLine;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -41,6 +40,7 @@ import org.chromium.chrome.test.util.TabStripUtils;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.ui.test.util.UiRestriction;
@@ -75,13 +75,13 @@ public class OverviewListLayoutTest {
 
         @Override
         public boolean isSatisfied() {
-            return mChildCount == ThreadUtils.runOnUiThreadBlockingNoException(
-                    new Callable<Integer>() {
-                        @Override
-                        public Integer call() {
-                            return getList().getChildCount();
-                        }
-                    });
+            return mChildCount
+                    == TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
+                           @Override
+                           public Integer call() {
+                               return getList().getChildCount();
+                           }
+                       });
         }
     }
 
@@ -96,8 +96,8 @@ public class OverviewListLayoutTest {
 
         @Override
         public boolean isSatisfied() {
-            int actualTabCount = ThreadUtils.runOnUiThreadBlockingNoException(
-                    new Callable<Integer>() {
+            int actualTabCount =
+                    TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
                         @Override
                         public Integer call() {
                             return mActivityTestRule.getActivity()
@@ -219,12 +219,8 @@ public class OverviewListLayoutTest {
 
         didReceiveClosureCommittedHelper.waitForCallback(0);
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertEquals("Tab not closed", 3, getList().getChildCount());
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertEquals("Tab not closed", 3, getList().getChildCount()); });
     }
 
     @Test
@@ -257,12 +253,8 @@ public class OverviewListLayoutTest {
 
         didReceiveClosureCommittedHelper.waitForCallback(0);
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertEquals("Tab not closed", 3, getList().getChildCount());
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertEquals("Tab not closed", 3, getList().getChildCount()); });
     }
 
     @Test
@@ -280,11 +272,8 @@ public class OverviewListLayoutTest {
         TouchCommon.dragTo(mActivityTestRule.getActivity(), location[0], SWIPE_END_X, location[1],
                 location[1], 20, SystemClock.uptimeMillis());
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertEquals("Tab not reset as expected", 4, getList().getChildCount());
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals("Tab not reset as expected", 4, getList().getChildCount());
         });
     }
 
@@ -316,11 +305,8 @@ public class OverviewListLayoutTest {
 
         Assert.assertFalse("Close not undone", item.hasPendingClosure());
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertEquals("Tab closure not undone", 4, getList().getChildCount());
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals("Tab closure not undone", 4, getList().getChildCount());
         });
     }
 
@@ -419,11 +405,12 @@ public class OverviewListLayoutTest {
 
         Assert.assertNotNull("IncognitoButton is null", incognitoButton);
 
-        ThreadUtils.runOnUiThreadBlocking(() -> incognitoButton.select());
+        TestThreadUtils.runOnUiThreadBlocking(() -> incognitoButton.select());
 
         CriteriaHelper.pollInstrumentationThread(new ChildCountCriteria(2));
 
-        ThreadUtils.runOnUiThreadBlocking(() -> getContainer().getStandardTabsButton().select());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> getContainer().getStandardTabsButton().select());
 
         CriteriaHelper.pollInstrumentationThread(new ChildCountCriteria(4));
     }
@@ -480,11 +467,7 @@ public class OverviewListLayoutTest {
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
         didReceiveClosureCommittedHelper.waitForCallback(0);
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertEquals("Tab not closed", 3, getList().getChildCount());
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertEquals("Tab not closed", 3, getList().getChildCount()); });
     }
 }

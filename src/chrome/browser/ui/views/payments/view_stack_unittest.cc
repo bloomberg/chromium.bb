@@ -101,7 +101,7 @@ class ViewStackTest : public ChromeViewsTestBase {
 };
 
 TEST_F(ViewStackTest, TestInitialStateAddedAsChildView) {
-  EXPECT_EQ(1, view_stack_->child_count());
+  EXPECT_EQ(1u, view_stack_->children().size());
   // This child was added without any animation so it's on top of its parent
   // already.
   AssertViewOnTopOfStack(view_stack_->top());
@@ -109,7 +109,7 @@ TEST_F(ViewStackTest, TestInitialStateAddedAsChildView) {
 
 TEST_F(ViewStackTest, TestPushStateAddsViewToChildren) {
   view_stack_->Push(std::make_unique<TestStackView>(), true);
-  EXPECT_EQ(2, view_stack_->child_count());
+  EXPECT_EQ(2u, view_stack_->children().size());
 
   AssertViewCompletelyNextToStack(view_stack_->top());
 }

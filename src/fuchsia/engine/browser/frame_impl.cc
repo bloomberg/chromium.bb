@@ -4,14 +4,13 @@
 
 #include "fuchsia/engine/browser/frame_impl.h"
 
-#include <zircon/syscalls.h>
+#include <limits>
 
-#include <string>
-
+#include "base/bind_helpers.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/logging.h"
-#include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/message_port_provider.h"
 #include "content/public/browser/navigation_entry.h"
@@ -33,6 +32,11 @@
 #include "url/gurl.h"
 
 namespace {
+
+// logging::LogSeverity does not define a value to disable logging so set a
+// value much lower than logging::LOG_VERBOSE here.
+const logging::LogSeverity kLogSeverityNone =
+    std::numeric_limits<logging::LogSeverity>::min();
 
 // Layout manager that allows only one child window and stretches it to fill the
 // parent.
@@ -72,40 +76,54 @@ class LayoutManagerImpl : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(LayoutManagerImpl);
 };
 
-chromium::web::NavigationEntry ConvertContentNavigationEntry(
+fuchsia::web::NavigationState ConvertContentNavigationEntry(
     content::NavigationEntry* entry) {
   DCHECK(entry);
-  chromium::web::NavigationEntry converted;
-  converted.title = base::UTF16ToUTF8(entry->GetTitleForDisplay());
-  converted.url = entry->GetURL().spec();
-  converted.is_error =
-      entry->GetPageType() == content::PageType::PAGE_TYPE_ERROR;
+
+  fuchsia::web::NavigationState converted;
+  converted.set_title(base::UTF16ToUTF8(entry->GetTitleForDisplay()));
+  converted.set_url(entry->GetURL().spec());
+
+  switch (entry->GetPageType()) {
+    case content::PageType::PAGE_TYPE_NORMAL:
+    case content::PageType::PAGE_TYPE_INTERSTITIAL:
+      converted.set_page_type(fuchsia::web::PageType::NORMAL);
+      break;
+    case content::PageType::PAGE_TYPE_ERROR:
+      converted.set_page_type(fuchsia::web::PageType::ERROR);
+      break;
+  }
   return converted;
 }
 
-// Computes the observable differences between |entry_1| and |entry_2|.
+// Computes the observable differences between |old_entry| and |new_entry|.
 // Returns true if they are different, |false| if their observable fields are
 // identical.
-bool ComputeNavigationEvent(const chromium::web::NavigationEntry& old_entry,
-                            const chromium::web::NavigationEntry& new_entry,
-                            chromium::web::NavigationEvent* computed_event) {
-  DCHECK(computed_event);
+bool DiffNavigationEntries(const fuchsia::web::NavigationState& old_entry,
+                           const fuchsia::web::NavigationState& new_entry,
+                           fuchsia::web::NavigationState* difference) {
+  DCHECK(difference);
 
   bool is_changed = false;
 
-  if (old_entry.title != new_entry.title) {
+  DCHECK(new_entry.has_title());
+  if (!old_entry.has_title() || (new_entry.title() != old_entry.title())) {
     is_changed = true;
-    computed_event->title = new_entry.title;
+    difference->set_title(new_entry.title());
   }
 
-  if (old_entry.url != new_entry.url) {
+  DCHECK(new_entry.has_url());
+  if (!old_entry.has_url() || (new_entry.url() != old_entry.url())) {
     is_changed = true;
-    computed_event->url = new_entry.url;
+    difference->set_url(new_entry.url());
   }
 
-  computed_event->is_error = new_entry.is_error;
-  if (old_entry.is_error != new_entry.is_error)
+  DCHECK(new_entry.has_page_type());
+  if (!old_entry.has_page_type() ||
+      (new_entry.page_type() != old_entry.page_type())) {
     is_changed = true;
+    difference->set_page_type(new_entry.page_type());
+  }
 
   return is_changed;
 }
@@ -177,14 +195,36 @@ class ScenicWindowTreeHost : public aura::WindowTreeHostPlatform {
   DISALLOW_COPY_AND_ASSIGN(ScenicWindowTreeHost);
 };
 
+logging::LogSeverity ConsoleLogLevelToLoggingSeverity(
+    fuchsia::web::ConsoleLogLevel level) {
+  switch (level) {
+    case fuchsia::web::ConsoleLogLevel::NONE:
+      return kLogSeverityNone;
+    case fuchsia::web::ConsoleLogLevel::DEBUG:
+      return logging::LOG_VERBOSE;
+    case fuchsia::web::ConsoleLogLevel::INFO:
+      return logging::LOG_INFO;
+    case fuchsia::web::ConsoleLogLevel::WARN:
+      return logging::LOG_WARNING;
+    case fuchsia::web::ConsoleLogLevel::ERROR:
+      return logging::LOG_ERROR;
+  }
+  NOTREACHED()
+      << "Unknown log level: "
+      << static_cast<std::underlying_type<fuchsia::web::ConsoleLogLevel>::type>(
+             level);
+}
+
 }  // namespace
 
 FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
                      ContextImpl* context,
-                     fidl::InterfaceRequest<chromium::web::Frame> frame_request)
+                     fidl::InterfaceRequest<fuchsia::web::Frame> frame_request)
     : web_contents_(std::move(web_contents)),
+      log_level_(kLogSeverityNone),
       context_(context),
-      binding_(this, std::move(frame_request)) {
+      binding_(this, std::move(frame_request)),
+      weak_factory_(this) {
   web_contents_->SetDelegate(this);
   Observe(web_contents_.get());
   binding_.set_error_handler([this](zx_status_t status) {
@@ -205,30 +245,7 @@ zx::unowned_channel FrameImpl::GetBindingChannelForTest() const {
   return zx::unowned_channel(binding_.channel());
 }
 
-bool FrameImpl::ShouldCreateWebContents(
-    content::WebContents* web_contents,
-    content::RenderFrameHost* opener,
-    content::SiteInstance* source_site_instance,
-    int32_t route_id,
-    int32_t main_frame_route_id,
-    int32_t main_frame_widget_route_id,
-    content::mojom::WindowContainerType window_container_type,
-    const GURL& opener_url,
-    const std::string& frame_name,
-    const GURL& target_url,
-    const std::string& partition_id,
-    content::SessionStorageNamespace* session_storage_namespace) {
-  DCHECK_EQ(web_contents, web_contents_.get());
-
-  // Prevent any child WebContents (popup windows, tabs, etc.) from spawning.
-  // TODO(crbug.com/888131): Implement support for popup windows.
-  NOTIMPLEMENTED() << "Ignored popup window request for URL: "
-                   << target_url.spec();
-
-  return false;
-}
-
-void FrameImpl::CreateView(fuchsia::ui::gfx::ExportToken view_token) {
+void FrameImpl::CreateView(fuchsia::ui::views::ViewToken view_token) {
   // If a View to this Frame is already active then disconnect it.
   TearDownView();
 
@@ -260,150 +277,202 @@ void FrameImpl::CreateView(fuchsia::ui::gfx::ExportToken view_token) {
   window_tree_host_->Show();
 }
 
-void FrameImpl::CreateView2(
-    zx::eventpair view_token,
-    fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
-    fidl::InterfaceHandle<fuchsia::sys::ServiceProvider> outgoing_services) {
-  fuchsia::ui::gfx::ExportToken export_token;
-  export_token.value = std::move(view_token);
-  CreateView(std::move(export_token));
-}
-
 void FrameImpl::GetNavigationController(
-    fidl::InterfaceRequest<chromium::web::NavigationController> controller) {
+    fidl::InterfaceRequest<fuchsia::web::NavigationController> controller) {
   controller_bindings_.AddBinding(this, std::move(controller));
 }
 
-void FrameImpl::SetJavaScriptLogLevel(chromium::web::LogLevel level) {
-  log_level_ = level;
+void FrameImpl::ExecuteJavaScriptNoResult(
+    std::vector<std::string> origins,
+    fuchsia::mem::Buffer script,
+    ExecuteJavaScriptNoResultCallback callback) {
+  fuchsia::web::Frame_ExecuteJavaScriptNoResult_Result result;
+  if (!context_->IsJavaScriptInjectionAllowed()) {
+    result.set_err(fuchsia::web::FrameError::INTERNAL_ERROR);
+    callback(std::move(result));
+    return;
+  }
+
+  if (!IsOriginWhitelisted(web_contents_->GetLastCommittedURL(), origins)) {
+    result.set_err(fuchsia::web::FrameError::INVALID_ORIGIN);
+    callback(std::move(result));
+    return;
+  }
+
+  base::string16 script_utf16;
+  if (!cr_fuchsia::ReadUTF8FromVMOAsUTF16(script, &script_utf16)) {
+    result.set_err(fuchsia::web::FrameError::BUFFER_NOT_UTF8);
+    callback(std::move(result));
+    return;
+  }
+
+  web_contents_->GetMainFrame()->ExecuteJavaScript(script_utf16,
+                                                   base::NullCallback());
+  result.set_response(fuchsia::web::Frame_ExecuteJavaScriptNoResult_Response());
+  callback(std::move(result));
 }
 
-void FrameImpl::SetNavigationEventObserver(
-    fidl::InterfaceHandle<chromium::web::NavigationEventObserver> observer) {
+void FrameImpl::AddBeforeLoadJavaScript(
+    uint64_t id,
+    std::vector<std::string> origins,
+    fuchsia::mem::Buffer script,
+    AddBeforeLoadJavaScriptCallback callback) {
+  fuchsia::web::Frame_AddBeforeLoadJavaScript_Result result;
+  if (!context_->IsJavaScriptInjectionAllowed()) {
+    result.set_err(fuchsia::web::FrameError::INTERNAL_ERROR);
+    callback(std::move(result));
+    return;
+  }
+
+  // Convert the script to UTF8 and store it as a shared memory buffer, so that
+  // it can be efficiently shared with multiple renderer processes.
+  base::string16 script_utf16;
+  if (!cr_fuchsia::ReadUTF8FromVMOAsUTF16(script, &script_utf16)) {
+    result.set_err(fuchsia::web::FrameError::BUFFER_NOT_UTF8);
+    callback(std::move(result));
+    return;
+  }
+
+  // Create a read-only VMO from |script|.
+  fuchsia::mem::Buffer script_buffer =
+      cr_fuchsia::MemBufferFromString16(script_utf16);
+
+  // Wrap the VMO into a read-only shared-memory container that Mojo can work
+  // with.
+  base::subtle::PlatformSharedMemoryRegion script_region =
+      base::subtle::PlatformSharedMemoryRegion::Take(
+          std::move(script_buffer.vmo),
+          base::subtle::PlatformSharedMemoryRegion::Mode::kWritable,
+          script_buffer.size, base::UnguessableToken::Create());
+  script_region.ConvertToReadOnly();
+  auto script_region_mojo =
+      base::ReadOnlySharedMemoryRegion::Deserialize(std::move(script_region));
+
+  // If there is no script with the identifier |id|, then create a place for it
+  // at the end of the injection sequence.
+  if (before_load_scripts_.find(id) == before_load_scripts_.end())
+    before_load_scripts_order_.push_back(id);
+
+  before_load_scripts_[id] =
+      OriginScopedScript(origins, std::move(script_region_mojo));
+
+  result.set_response(fuchsia::web::Frame_AddBeforeLoadJavaScript_Response());
+  callback(std::move(result));
+}
+
+void FrameImpl::RemoveBeforeLoadJavaScript(uint64_t id) {
+  before_load_scripts_.erase(id);
+
+  for (auto script_id_iter = before_load_scripts_order_.begin();
+       script_id_iter != before_load_scripts_order_.end(); ++script_id_iter) {
+    if (*script_id_iter == id) {
+      before_load_scripts_order_.erase(script_id_iter);
+      return;
+    }
+  }
+}
+
+void FrameImpl::PostMessage(std::string origin,
+                            fuchsia::web::WebMessage message,
+                            PostMessageCallback callback) {
+  constexpr char kWildcardOrigin[] = "*";
+
+  fuchsia::web::Frame_PostMessage_Result result;
+  if (origin.empty()) {
+    result.set_err(fuchsia::web::FrameError::INVALID_ORIGIN);
+    callback(std::move(result));
+    return;
+  }
+
+  if (!message.has_data()) {
+    result.set_err(fuchsia::web::FrameError::NO_DATA_IN_MESSAGE);
+    callback(std::move(result));
+    return;
+  }
+
+  base::Optional<base::string16> origin_utf16;
+  if (origin != kWildcardOrigin)
+    origin_utf16 = base::UTF8ToUTF16(origin);
+
+  base::string16 data_utf16;
+  if (!cr_fuchsia::ReadUTF8FromVMOAsUTF16(message.data(), &data_utf16)) {
+    result.set_err(fuchsia::web::FrameError::BUFFER_NOT_UTF8);
+    callback(std::move(result));
+    return;
+  }
+
+  // Include outgoing MessagePorts in the message.
+  std::vector<mojo::ScopedMessagePipeHandle> message_ports;
+  if (message.has_outgoing_transfer()) {
+    // Verify that all the Transferables are valid before we start allocating
+    // resources to them.
+    for (const fuchsia::web::OutgoingTransferable& outgoing :
+         message.outgoing_transfer()) {
+      if (!outgoing.is_message_port()) {
+        result.set_err(fuchsia::web::FrameError::INTERNAL_ERROR);
+        callback(std::move(result));
+        return;
+      }
+    }
+
+    for (fuchsia::web::OutgoingTransferable& outgoing :
+         *message.mutable_outgoing_transfer()) {
+      mojo::ScopedMessagePipeHandle port =
+          MessagePortImpl::FromFidl(std::move(outgoing.message_port()));
+      if (!port) {
+        result.set_err(fuchsia::web::FrameError::INTERNAL_ERROR);
+        callback(std::move(result));
+        return;
+      }
+      message_ports.push_back(std::move(port));
+    }
+  }
+
+  content::MessagePortProvider::PostMessageToFrame(
+      web_contents_.get(), base::string16(), origin_utf16,
+      std::move(data_utf16), std::move(message_ports));
+  result.set_response(fuchsia::web::Frame_PostMessage_Response());
+  callback(std::move(result));
+}
+
+void FrameImpl::SetNavigationEventListener(
+    fidl::InterfaceHandle<fuchsia::web::NavigationEventListener> listener) {
   // Reset the event buffer state.
   waiting_for_navigation_event_ack_ = false;
   cached_navigation_state_ = {};
   pending_navigation_event_ = {};
   pending_navigation_event_is_dirty_ = false;
 
-  if (observer) {
-    navigation_observer_.Bind(std::move(observer));
-    navigation_observer_.set_error_handler(
-        [this](zx_status_t status) { SetNavigationEventObserver(nullptr); });
+  if (listener) {
+    navigation_listener_.Bind(std::move(listener));
+    navigation_listener_.set_error_handler(
+        [this](zx_status_t status) { SetNavigationEventListener(nullptr); });
   } else {
-    navigation_observer_.Unbind();
+    navigation_listener_.Unbind();
   }
 }
 
-void FrameImpl::ExecuteJavaScript(std::vector<std::string> origins,
-                                  fuchsia::mem::Buffer script,
-                                  chromium::web::ExecuteMode mode,
-                                  ExecuteJavaScriptCallback callback) {
-  if (!context_->IsJavaScriptInjectionAllowed()) {
-    callback(false);
-    return;
-  }
-
-  if (origins.empty()) {
-    callback(false);
-    return;
-  }
-
-  std::vector<std::string> origins_strings;
-  for (const auto& origin : origins)
-    origins_strings.push_back(origin);
-
-  base::string16 script_utf16;
-  if (!cr_fuchsia::ReadUTF8FromVMOAsUTF16(script, &script_utf16)) {
-    callback(false);
-    return;
-  }
-
-  if (mode == chromium::web::ExecuteMode::IMMEDIATE_ONCE) {
-    if (!IsOriginWhitelisted(web_contents_->GetLastCommittedURL(),
-                             origins_strings)) {
-      callback(false);
-      return;
-    }
-
-    web_contents_->GetMainFrame()->ExecuteJavaScript(script_utf16);
-  } else {
-    // Store the script as UTF16 shared memory buffer, so that it can be
-    // used directly by renderers without string format conversions.
-
-    // Create a read-only VMO from |script|.
-    fuchsia::mem::Buffer script_buffer =
-        cr_fuchsia::MemBufferFromString16(script_utf16);
-    if (!script_buffer.vmo) {
-      LOG(WARNING) << "Couldn't read script contents from VMO.";
-      callback(false);
-      return;
-    }
-
-    // Wrap the VMO into a read-only shared-memory container that Mojo can work
-    // with.
-    base::subtle::PlatformSharedMemoryRegion script_region =
-        base::subtle::PlatformSharedMemoryRegion::Take(
-            std::move(script_buffer.vmo),
-            base::subtle::PlatformSharedMemoryRegion::Mode::kWritable,
-            script_buffer.size, base::UnguessableToken::Create());
-    script_region.ConvertToReadOnly();
-    before_load_scripts_.emplace_back(
-        origins_strings, base::ReadOnlySharedMemoryRegion::Deserialize(
-                             std::move(script_region)));
-  }
-  callback(true);
+void FrameImpl::SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel level) {
+  log_level_ = ConsoleLogLevelToLoggingSeverity(level);
 }
 
-void FrameImpl::PostMessage(chromium::web::WebMessage message,
-                            std::string target_origin,
-                            PostMessageCallback callback) {
-  constexpr char kWildcardOrigin[] = "*";
-
-  if (target_origin.empty()) {
-    callback(false);
-    return;
-  }
-
-  base::Optional<base::string16> target_origin_utf16;
-  if (target_origin != kWildcardOrigin)
-    target_origin_utf16 = base::UTF8ToUTF16(target_origin);
-
-  base::string16 data_utf16;
-  if (!cr_fuchsia::ReadUTF8FromVMOAsUTF16(message.data, &data_utf16)) {
-    DLOG(WARNING) << "PostMessage() rejected non-UTF8 |message.data|.";
-    callback(false);
-    return;
-  }
-
-  // Include outgoing MessagePorts in the message.
-  std::vector<mojo::ScopedMessagePipeHandle> message_ports;
-  if (message.outgoing_transfer) {
-    if (!message.outgoing_transfer->is_message_port()) {
-      DLOG(WARNING) << "|outgoing_transfer| is not a MessagePort.";
-      callback(false);
-      return;
-    }
-
-    mojo::ScopedMessagePipeHandle port = MessagePortImpl::FromFidl(
-        std::move(message.outgoing_transfer->message_port()));
-    if (!port) {
-      callback(false);
-      return;
-    }
-    message_ports.push_back(std::move(port));
-  }
-
-  content::MessagePortProvider::PostMessageToFrame(
-      web_contents_.get(), base::string16(), target_origin_utf16,
-      std::move(data_utf16), std::move(message_ports));
-  callback(true);
+void FrameImpl::SetEnableInput(bool enable_input) {
+  discarding_event_filter_.set_discard_events(!enable_input);
 }
+
+FrameImpl::OriginScopedScript::OriginScopedScript() = default;
 
 FrameImpl::OriginScopedScript::OriginScopedScript(
     std::vector<std::string> origins,
     base::ReadOnlySharedMemoryRegion script)
-    : origins(std::move(origins)), script(std::move(script)) {}
+    : origins_(std::move(origins)), script_(std::move(script)) {}
+
+FrameImpl::OriginScopedScript& FrameImpl::OriginScopedScript::operator=(
+    FrameImpl::OriginScopedScript&& other) {
+  origins_ = std::move(other.origins_);
+  script_ = std::move(other.script_);
+  return *this;
+}
 
 FrameImpl::OriginScopedScript::~OriginScopedScript() = default;
 
@@ -424,8 +493,19 @@ void FrameImpl::TearDownView() {
   }
 }
 
+void FrameImpl::OnNavigationEntryChanged(content::NavigationEntry* entry) {
+  fuchsia::web::NavigationState entry_converted =
+      ConvertContentNavigationEntry(entry);
+  pending_navigation_event_is_dirty_ |= DiffNavigationEntries(
+      cached_navigation_state_, entry_converted, &pending_navigation_event_);
+  cached_navigation_state_ = std::move(entry_converted);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&FrameImpl::MaybeSendNavigationEvent,
+                                weak_factory_.GetWeakPtr()));
+}
+
 void FrameImpl::MaybeSendNavigationEvent() {
-  if (!navigation_observer_)
+  if (!navigation_listener_)
     return;
 
   if (!pending_navigation_event_is_dirty_ ||
@@ -438,41 +518,40 @@ void FrameImpl::MaybeSendNavigationEvent() {
 
   // Send the event to the observer and, upon acknowledgement, revisit this
   // function to send another update.
-  navigation_observer_->OnNavigationStateChanged(
+  navigation_listener_->OnNavigationStateChanged(
       std::move(pending_navigation_event_), [this]() {
         waiting_for_navigation_event_ack_ = false;
         MaybeSendNavigationEvent();
       });
+
+  pending_navigation_event_ = {};
 }
 
 void FrameImpl::LoadUrl(std::string url,
-                        std::unique_ptr<chromium::web::LoadUrlParams> params) {
-  chromium::web::LoadUrlParams2 converted_params;
-  if (params) {
-    converted_params.set_type(params->type);
-    converted_params.set_referrer_url(std::move(params->referrer));
-    converted_params.set_was_user_activated(params->user_activated);
-    converted_params.set_headers(std::move(params->headers));
-  }
-  LoadUrl2(std::move(url), std::move(converted_params));
-}
-
-void FrameImpl::LoadUrl2(std::string url,
-                         chromium::web::LoadUrlParams2 params) {
+                        fuchsia::web::LoadUrlParams params,
+                        LoadUrlCallback callback) {
+  fuchsia::web::NavigationController_LoadUrl_Result result;
   GURL validated_url(url);
   if (!validated_url.is_valid()) {
-    // TODO(crbug.com/934539): Add type epitaph.
-    DLOG(WARNING) << "Invalid URL: " << url;
+    result.set_err(fuchsia::web::NavigationControllerError::INVALID_URL);
+    callback(std::move(result));
     return;
   }
 
   content::NavigationController::LoadURLParams params_converted(validated_url);
   if (params.has_headers()) {
-    std::vector<base::StringPiece> extra_headers;
-    extra_headers.reserve(params.headers()->size());
-    for (const auto& header : *params.headers()) {
-      extra_headers.push_back(base::StringPiece(
-          reinterpret_cast<const char*>(header.data()), header.size()));
+    std::vector<std::string> extra_headers;
+    extra_headers.reserve(params.headers().size());
+    for (const auto& header : params.headers()) {
+      // TODO(crbug.com/964732): Check there is no colon in |header_name|.
+      base::StringPiece header_name(
+          reinterpret_cast<const char*>(header.name.data()),
+          header.name.size());
+      base::StringPiece header_value(
+          reinterpret_cast<const char*>(header.value.data()),
+          header.value.size());
+      extra_headers.emplace_back(
+          base::StrCat({header_name, ": ", header_value}));
     }
     params_converted.extra_headers = base::JoinString(extra_headers, "\n");
   }
@@ -487,7 +566,10 @@ void FrameImpl::LoadUrl2(std::string url,
   } else {
     params_converted.was_activated = content::WasActivatedOption::kNo;
   }
+
   web_contents_->GetController().LoadURLWithParams(params_converted);
+  result.set_response(fuchsia::web::NavigationController_LoadUrl_Response());
+  callback(std::move(result));
 }
 
 void FrameImpl::GoBack() {
@@ -504,29 +586,88 @@ void FrameImpl::Stop() {
   web_contents_->Stop();
 }
 
-void FrameImpl::Reload(chromium::web::ReloadType type) {
+void FrameImpl::Reload(fuchsia::web::ReloadType type) {
   content::ReloadType internal_reload_type;
   switch (type) {
-    case chromium::web::ReloadType::PARTIAL_CACHE:
+    case fuchsia::web::ReloadType::PARTIAL_CACHE:
       internal_reload_type = content::ReloadType::NORMAL;
       break;
-    case chromium::web::ReloadType::NO_CACHE:
+    case fuchsia::web::ReloadType::NO_CACHE:
       internal_reload_type = content::ReloadType::BYPASSING_CACHE;
       break;
   }
   web_contents_->GetController().Reload(internal_reload_type, false);
 }
 
-void FrameImpl::GetVisibleEntry(GetVisibleEntryCallback callback) {
+void FrameImpl::GetVisibleEntry(
+    fuchsia::web::NavigationController::GetVisibleEntryCallback callback) {
   content::NavigationEntry* entry =
       web_contents_->GetController().GetVisibleEntry();
   if (!entry) {
-    callback(nullptr);
+    callback({});
     return;
   }
 
-  chromium::web::NavigationEntry output = ConvertContentNavigationEntry(entry);
-  callback(std::make_unique<chromium::web::NavigationEntry>(std::move(output)));
+  callback(ConvertContentNavigationEntry(entry));
+}
+
+bool FrameImpl::ShouldCreateWebContents(
+    content::WebContents* web_contents,
+    content::RenderFrameHost* opener,
+    content::SiteInstance* source_site_instance,
+    int32_t route_id,
+    int32_t main_frame_route_id,
+    int32_t main_frame_widget_route_id,
+    content::mojom::WindowContainerType window_container_type,
+    const GURL& opener_url,
+    const std::string& frame_name,
+    const GURL& target_url,
+    const std::string& partition_id,
+    content::SessionStorageNamespace* session_storage_namespace) {
+  DCHECK_EQ(web_contents, web_contents_.get());
+
+  // Prevent any child WebContents (popup windows, tabs, etc.) from spawning.
+  // TODO(crbug.com/888131): Implement support for popup windows.
+  NOTIMPLEMENTED() << "Ignored popup window request for URL: "
+                   << target_url.spec();
+
+  return false;
+}
+
+bool FrameImpl::DidAddMessageToConsole(content::WebContents* source,
+                                       int32_t level,
+                                       const base::string16& message,
+                                       int32_t line_no,
+                                       const base::string16& source_id) {
+  if (log_level_ > level) {
+    return false;
+  }
+
+  std::string formatted_message =
+      base::StringPrintf("%s:%d : %s", base::UTF16ToUTF8(source_id).data(),
+                         line_no, base::UTF16ToUTF8(message).data());
+  switch (level) {
+    case logging::LOG_VERBOSE:
+      LOG(INFO) << "debug:" << formatted_message;
+      break;
+    case logging::LOG_INFO:
+      LOG(INFO) << "info:" << formatted_message;
+      break;
+    case logging::LOG_WARNING:
+      LOG(WARNING) << "warn:" << formatted_message;
+      break;
+    case logging::LOG_ERROR:
+      LOG(ERROR) << "error:" << formatted_message;
+      break;
+    default:
+      DLOG(WARNING) << "Unknown log level: " << level;
+      return false;
+  }
+
+  if (console_log_message_hook_)
+    console_log_message_hook_.Run(formatted_message);
+
+  return true;
 }
 
 void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
@@ -535,15 +676,7 @@ void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
     return;
   }
 
-  chromium::web::NavigationEntry current_navigation_state =
-      ConvertContentNavigationEntry(
-          web_contents_->GetController().GetVisibleEntry());
-  pending_navigation_event_is_dirty_ |=
-      ComputeNavigationEvent(cached_navigation_state_, current_navigation_state,
-                             &pending_navigation_event_);
-  cached_navigation_state_ = std::move(current_navigation_state);
-
-  MaybeSendNavigationEvent();
+  OnNavigationEntryChanged(web_contents_->GetController().GetVisibleEntry());
 }
 
 void FrameImpl::ReadyToCommitNavigation(
@@ -563,55 +696,15 @@ void FrameImpl::ReadyToCommitNavigation(
   // Provision the renderer's ScriptInjector with the scripts scoped to this
   // page's origin.
   before_load_script_injector->ClearOnLoadScripts();
-  for (auto i = before_load_scripts_.begin();
-       i != before_load_scripts_.end();) {
-    if (IsOriginWhitelisted(navigation_handle->GetURL(), i->origins)) {
+  for (uint64_t script_id : before_load_scripts_order_) {
+    const OriginScopedScript& script = before_load_scripts_[script_id];
+    if (IsOriginWhitelisted(navigation_handle->GetURL(), script.origins())) {
       before_load_script_injector->AddOnLoadScript(
-          mojo::WrapReadOnlySharedMemoryRegion(i->script.Duplicate()));
+          mojo::WrapReadOnlySharedMemoryRegion(script.script().Duplicate()));
     }
-
-    i++;
   }
 }
 
-bool FrameImpl::DidAddMessageToConsole(content::WebContents* source,
-                                       int32_t level,
-                                       const base::string16& message,
-                                       int32_t line_no,
-                                       const base::string16& source_id) {
-  if (static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
-          log_level_) > level) {
-    return false;
-  }
-
-  std::string message_formatted =
-      base::StringPrintf("%s:%d : %s", base::UTF16ToUTF8(source_id).data(),
-                         line_no, base::UTF16ToUTF8(message).data());
-  switch (level) {
-    case static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
-        chromium::web::LogLevel::DEBUG):
-      LOG(INFO) << "debug:" << message_formatted;
-      break;
-    case static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
-        chromium::web::LogLevel::INFO):
-      LOG(INFO) << "info:" << message_formatted;
-      break;
-    case static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
-        chromium::web::LogLevel::WARN):
-      LOG(WARNING) << "warn:" << message_formatted;
-      break;
-    case static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
-        chromium::web::LogLevel::ERROR):
-      LOG(ERROR) << "error:" << message_formatted;
-      break;
-    default:
-      DLOG(WARNING) << "Unknown log level: " << level;
-      return false;
-  }
-
-  return true;
-}
-
-void FrameImpl::SetEnableInput(bool enable_input) {
-  discarding_event_filter_.set_discard_events(!enable_input);
+void FrameImpl::TitleWasSet(content::NavigationEntry* entry) {
+  OnNavigationEntryChanged(entry);
 }

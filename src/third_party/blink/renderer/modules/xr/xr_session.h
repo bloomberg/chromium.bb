@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_request_callback_collection.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/geometry/double_size.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -38,6 +37,7 @@ class XRReferenceSpaceOptions;
 class XRRenderState;
 class XRRenderStateInit;
 class XRView;
+class XRViewerSpace;
 
 class XRSession final : public EventTargetWithInlineData,
                         public device::mojom::blink::XRSessionClient,
@@ -47,26 +47,26 @@ class XRSession final : public EventTargetWithInlineData,
 
  public:
   enum SessionMode {
-    kModeUnknown = 0,
-    kModeInline = 1,
-    kModeImmersiveVR = 2,
-    kModeImmersiveAR = 3,
-    kModeInlineAR = 4
+    kModeInline = 0,
+    kModeImmersiveVR,
+    kModeImmersiveAR,
+    kModeInlineAR
   };
-
-  static SessionMode stringToSessionMode(const String&);
-  static String sessionModeToString(SessionMode);
 
   enum EnvironmentBlendMode {
-    kBlendModeOpaque = 1,
-    kBlendModeAdditive = 2,
-    kBlendModeAlphaBlend = 3
+    kBlendModeOpaque = 0,
+    kBlendModeAdditive,
+    kBlendModeAlphaBlend
   };
 
+  // TODO(ddorwin): If https://github.com/immersive-web/webxr/issues/513 is
+  // resolved in favor of removing `mode`, remove |mode_string|.
   XRSession(XR*,
             device::mojom::blink::XRSessionClientRequest client_request,
             SessionMode mode,
-            EnvironmentBlendMode environment_blend_mode);
+            const String& mode_string,
+            EnvironmentBlendMode environment_blend_mode,
+            bool sensorless_session);
   ~XRSession() override = default;
 
   XR* xr() const { return xr_; }
@@ -74,6 +74,7 @@ class XRSession final : public EventTargetWithInlineData,
   bool environmentIntegration() const { return environment_integration_; }
   const String& environmentBlendMode() const { return blend_mode_string_; }
   XRRenderState* renderState() const { return render_state_; }
+  XRSpace* viewerSpace() const;
 
   bool immersive() const;
 
@@ -93,8 +94,7 @@ class XRSession final : public EventTargetWithInlineData,
   int requestAnimationFrame(V8XRFrameRequestCallback*);
   void cancelAnimationFrame(int id);
 
-  using InputSourceMap =
-      HeapHashMap<uint32_t, TraceWrapperMember<XRInputSource>>;
+  using InputSourceMap = HeapHashMap<uint32_t, Member<XRInputSource>>;
 
   HeapVector<Member<XRInputSource>> getInputSources() const;
 
@@ -164,13 +164,16 @@ class XRSession final : public EventTargetWithInlineData,
     return true;
   }
 
-  void UpdateDisplayInfo(
+  void UpdateEyeParameters(
       const device::mojom::blink::VREyeParametersPtr& left_eye,
       const device::mojom::blink::VREyeParametersPtr& right_eye);
+  void UpdateStageParameters(
+      const device::mojom::blink::VRStageParametersPtr& stage_parameters);
   bool External() const { return is_external_; }
   // Incremented every time display_info_ is changed, so that other objects that
   // depend on it can know when they need to update.
   unsigned int DisplayInfoPtrId() const { return display_info_id_; }
+  unsigned int StageParametersId() const { return stage_parameters_id_; }
 
   void SetNonImmersiveProjectionMatrix(const WTF::Vector<float>&);
   void SetXRDisplayInfo(device::mojom::blink::VRDisplayInfoPtr display_info);
@@ -206,26 +209,33 @@ class XRSession final : public EventTargetWithInlineData,
       base::Optional<WTF::Vector<device::mojom::blink::XRHitResultPtr>>
           results);
 
+  void EnsureEnvironmentErrorHandler();
+  void OnEnvironmentProviderError();
+
   const Member<XR> xr_;
   const SessionMode mode_;
   const String mode_string_;
   const bool environment_integration_;
   String blend_mode_string_;
   Member<XRRenderState> render_state_;
+  Member<XRViewerSpace> viewer_space_;
   HeapVector<Member<XRRenderStateInit>> pending_render_state_;
   HeapVector<Member<XRView>> views_;
   InputSourceMap input_sources_;
   Member<ResizeObserver> resize_observer_;
   Member<XRCanvasInputProvider> canvas_input_provider_;
+  bool environment_error_handler_subscribed_ = false;
+  HeapHashSet<Member<ScriptPromiseResolver>> hit_test_promises_;
 
   bool has_xr_focus_ = true;
   bool is_external_ = false;
-  int display_info_id_ = 0;
+  unsigned int display_info_id_ = 0;
+  unsigned int stage_parameters_id_ = 0;
   device::mojom::blink::VRDisplayInfoPtr display_info_;
 
   mojo::Binding<device::mojom::blink::XRSessionClient> client_binding_;
 
-  TraceWrapperMember<XRFrameRequestCallbackCollection> callback_collection_;
+  Member<XRFrameRequestCallbackCollection> callback_collection_;
   std::unique_ptr<TransformationMatrix> base_pose_matrix_;
 
   WTF::Vector<float> non_immersive_projection_matrix_;
@@ -245,6 +255,10 @@ class XRSession final : public EventTargetWithInlineData,
   // Dimensions of the output canvas.
   int output_width_ = 1;
   int output_height_ = 1;
+
+  // Indicates that this is a sensorless session which should only support the
+  // identity reference space.
+  bool sensorless_session_ = false;
 };
 
 }  // namespace blink

@@ -332,20 +332,20 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, TimeRanges) {
   AddAutocompleteSuggestion("email", "example@example.com");
   AddCreditCard("0000-0000-0000-0000", "1", "2015", "1");
   AddAddress("John", "Doe", "Main Street 12345");
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
 
   const base::Time kTime2 = kTime1 + base::TimeDelta::FromSeconds(10);
   test_clock.SetNow(kTime2);
   AddCreditCard("0123-4567-8910-1112", "10", "2015", "1");
   AddAddress("Jane", "Smith", "Main Street 12346");
   AddAddress("John", "Smith", "Side Street 47");
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
 
   const base::Time kTime3 = kTime2 + base::TimeDelta::FromSeconds(10);
   test_clock.SetNow(kTime3);
   AddAutocompleteSuggestion("tel", "+987654321");
   AddCreditCard("1211-1098-7654-3210", "10", "2030", "1");
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
 
   // Test the results for different starting points.
   struct TestCase {

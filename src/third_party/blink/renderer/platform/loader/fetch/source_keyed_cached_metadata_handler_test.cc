@@ -7,6 +7,7 @@
 #include <array>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_crypto.h"
 #include "third_party/blink/renderer/platform/crypto.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -14,56 +15,6 @@
 namespace blink {
 
 namespace {
-
-class MockSha256WebCryptoDigestor : public WebCryptoDigestor {
- public:
-  bool Consume(const unsigned char* data, unsigned data_size) override {
-    String key(data, data_size);
-
-    auto it = kMapOfHashes.find(key);
-
-    if (it != kMapOfHashes.end()) {
-      hash_exists_ = true;
-      hash_ = it->value;
-    }
-
-    return hash_exists_;
-  }
-
-  bool Finish(unsigned char*& result_data,
-              unsigned& result_data_size) override {
-    if (hash_exists_) {
-      result_data = hash_.data();
-      result_data_size = hash_.size();
-    }
-    return hash_exists_;
-  }
-
- private:
-  Vector<unsigned char> hash_;
-  bool hash_exists_;
-
-  HashMap<String, Vector<unsigned char>> kMapOfHashes = {
-      {"source1",
-       Vector<unsigned char>{0xc4, 0xd5, 0xe4, 0x35, 0x74, 0x89, 0x3c, 0x3c,
-                             0xc3, 0xd4, 0xba, 0xba, 0x65, 0x58, 0x92, 0x48,
-                             0x47, 0x9a, 0x9f, 0xbf, 0xaf, 0x1f, 0x60, 0x8e,
-                             0xb1, 0x54, 0x1e, 0xc0, 0xc6, 0xfe, 0x63, 0x6f}},
-      {"source2",
-       Vector<unsigned char>{0x99, 0x2f, 0x4e, 0xb2, 0x41, 0xee, 0x6e, 0xef,
-                             0xe4, 0x92, 0x80, 0x25, 0xa2, 0x74, 0x7d, 0xb0,
-                             0x8b, 0x91, 0x98, 0x34, 0xc9, 0x3c, 0x5f, 0x57,
-                             0x41, 0x72, 0x5f, 0xa2, 0x6b, 0x63, 0x38, 0x41}}};
-};
-
-// Mock WebCrypto implementation for digest calculation.
-class MockDigestWebCrypto : public WebCrypto {
-  std::unique_ptr<WebCryptoDigestor> CreateDigestor(
-      WebCryptoAlgorithmId algorithm_id) override {
-    EXPECT_EQ(algorithm_id, WebCryptoAlgorithmId::kWebCryptoAlgorithmIdSha256);
-    return std::make_unique<MockSha256WebCryptoDigestor>();
-  }
-};
 
 // Structure holding cache metadata sent to the platform.
 struct CacheMetadataEntry {
@@ -86,8 +37,6 @@ class SourceKeyedCachedMetadataHandlerMockPlatform final
  public:
   SourceKeyedCachedMetadataHandlerMockPlatform() {}
   ~SourceKeyedCachedMetadataHandlerMockPlatform() override = default;
-
-  WebCrypto* Crypto() override { return &mock_web_crypto_; }
 
   void CacheMetadata(blink::mojom::CodeCacheType cache_type,
                      const WebURL& url,
@@ -118,7 +67,6 @@ class SourceKeyedCachedMetadataHandlerMockPlatform final
   }
 
  private:
-  MockDigestWebCrypto mock_web_crypto_;
   Vector<CacheMetadataEntry> cache_entries_;
 };
 

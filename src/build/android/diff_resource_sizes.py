@@ -22,8 +22,8 @@ with host_paths.SysPath(host_paths.TRACING_PATH):
   from tracing.value import convert_chart_json # pylint: disable=import-error
 
 _ANDROID_DIR = os.path.dirname(os.path.abspath(__file__))
-with host_paths.SysPath(os.path.join(_ANDROID_DIR, 'gyp', 'util')):
-  import build_utils # pylint: disable=import-error
+with host_paths.SysPath(os.path.join(_ANDROID_DIR, 'gyp')):
+  from util import build_utils  # pylint: disable=import-error
 
 
 _BASE_CHART = {

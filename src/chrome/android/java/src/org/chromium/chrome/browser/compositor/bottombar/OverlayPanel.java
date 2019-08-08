@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -500,17 +501,14 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     /**
      * Updates the browser controls state for the base tab.  As these values are set at the renderer
      * level, there is potential for this impacting other tabs that might share the same
-     * process. See {@link Tab#updateBrowserControlsState(int current, boolean animate)}
+     * process. See {@link BrowserControlsState.update(Tab, tab, int current, boolean animate)}
      * @param current The desired current state for the controls.  Pass
      *                {@link BrowserControlsState#BOTH} to preserve the current position.
      * @param animate Whether the controls should animate to the specified ending condition or
      *                should jump immediately.
      */
     public void updateBrowserControlsState(int current, boolean animate) {
-        Tab currentTab = mActivity.getActivityTab();
-        if (currentTab != null) {
-            currentTab.updateBrowserControlsState(current, animate);
-        }
+        TabBrowserControlsState.update(mActivity.getActivityTab(), current, animate);
     }
 
     /**

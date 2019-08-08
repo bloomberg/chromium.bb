@@ -43,12 +43,14 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
+#include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "v8/include/v8.h"
@@ -222,6 +224,7 @@ ImageResource* ImageResource::Create(const ResourceRequest& request) {
 
 ImageResource* ImageResource::CreateForTest(const KURL& url) {
   ResourceRequest request(url);
+  request.SetInspectorId(CreateUniqueIdentifier());
   return Create(request);
 }
 
@@ -398,6 +401,7 @@ void ImageResource::DecodeError(bool all_data_received) {
   if (!all_data_received && Loader()) {
     // Observers are notified via ImageResource::finish().
     // TODO(hiroshige): Do not call didFinishLoading() directly.
+    Loader()->AbortResponseBodyLoading();
     Loader()->DidFinishLoading(
         CurrentTimeTicks(), size, size, size, false,
         std::vector<network::cors::PreflightTimingInfo>());

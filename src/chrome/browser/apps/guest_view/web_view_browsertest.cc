@@ -51,6 +51,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/download/public/common/download_features.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
@@ -439,11 +440,11 @@ class MockDownloadWebContentsDelegate : public content::WebContentsDelegate {
 
   void CanDownload(const GURL& url,
                    const std::string& request_method,
-                   const base::Callback<void(bool)>& callback) override {
+                   base::OnceCallback<void(bool)> callback) override {
     orig_delegate_->CanDownload(
         url, request_method,
-        base::Bind(&MockDownloadWebContentsDelegate::DownloadDecided,
-                   base::Unretained(this), callback));
+        base::BindOnce(&MockDownloadWebContentsDelegate::DownloadDecided,
+                       base::Unretained(this), std::move(callback)));
   }
 
   void WaitForCanDownload(bool expect_allow) {
@@ -460,7 +461,7 @@ class MockDownloadWebContentsDelegate : public content::WebContentsDelegate {
     message_loop_runner_->Run();
   }
 
-  void DownloadDecided(const base::Callback<void(bool)>& callback, bool allow) {
+  void DownloadDecided(base::OnceCallback<void(bool)> callback, bool allow) {
     EXPECT_FALSE(decision_made_);
     decision_made_ = true;
 
@@ -468,11 +469,11 @@ class MockDownloadWebContentsDelegate : public content::WebContentsDelegate {
       EXPECT_EQ(expect_allow_, allow);
       if (message_loop_runner_.get())
         message_loop_runner_->Quit();
-      callback.Run(allow);
+      std::move(callback).Run(allow);
       return;
     }
     last_download_allowed_ = allow;
-    callback.Run(allow);
+    std::move(callback).Run(allow);
   }
 
   void Reset() {
@@ -713,7 +714,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     // Start a HTTPS server so we can load an interstitial page inside guest.
     net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
     https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
-    https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+    https_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     ASSERT_TRUE(https_server.Start());
 
     net::HostPortPair host_and_port = https_server.host_port_pair();
@@ -2231,7 +2232,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, IndexedDBIsolation) {
 // This test ensures that closing app window on 'loadcommit' does not crash.
 // The test launches an app with guest and closes the window on loadcommit. It
 // then launches the app window again. The process is repeated 3 times.
-IN_PROC_BROWSER_TEST_F(WebViewTest, CloseOnLoadcommit) {
+// TODO(crbug.com/949923): The test is flaky (crash) on ChromeOS debug and ASan/LSan
+#if defined(OS_CHROMEOS) && (!defined(NDEBUG) || defined(ADDRESS_SANITIZER))
+#define MAYBE_CloseOnLoadcommit DISABLED_CloseOnLoadcommit
+#else
+#define MAYBE_CloseOnLoadcommit CloseOnLoadcommit
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_CloseOnLoadcommit) {
   LoadAndLaunchPlatformApp("web_view/close_on_loadcommit",
                            "done-close-on-loadcommit");
 }
@@ -3000,6 +3007,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DownloadCookieIsolation) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      download::features::kDownloadDBForNewDownloads);
+
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(&HandleDownloadRequestWithCookie));
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
@@ -3053,6 +3064,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, DownloadCookieIsolation_CrossSession) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      download::features::kDownloadDBForNewDownloads);
+
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(&HandleDownloadRequestWithCookie));
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
@@ -3183,14 +3198,14 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, SendMessageToComponentExtensionFromGuest) {
 
   // Retrive the guestProcessId and guestRenderFrameRoutingId from the
   // extension.
-  int guest_process_id = content::ChildProcessHost::kInvalidUniqueID;
-  content::ExecuteScriptAndGetValue(embedder_web_contents->GetMainFrame(),
-                                    "window.guestProcessId")
-      ->GetAsInteger(&guest_process_id);
-  int guest_render_frame_routing_id = MSG_ROUTING_NONE;
-  content::ExecuteScriptAndGetValue(embedder_web_contents->GetMainFrame(),
-                                    "window.guestRenderFrameRoutingId")
-      ->GetAsInteger(&guest_render_frame_routing_id);
+  int guest_process_id =
+      content::ExecuteScriptAndGetValue(embedder_web_contents->GetMainFrame(),
+                                        "window.guestProcessId")
+          .GetInt();
+  int guest_render_frame_routing_id =
+      content::ExecuteScriptAndGetValue(embedder_web_contents->GetMainFrame(),
+                                        "window.guestRenderFrameRoutingId")
+          .GetInt();
 
   auto* guest_rfh = content::RenderFrameHost::FromID(
       guest_process_id, guest_render_frame_routing_id);
@@ -4035,7 +4050,7 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
       blink::WebGestureEvent::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
-      blink::kWebGestureDeviceTouchpad);
+      blink::WebGestureDevice::kTouchpad);
   scroll_begin.SetPositionInWidget(guest_scroll_location);
   scroll_begin.SetPositionInScreen(guest_scroll_location_in_root);
   scroll_begin.data.scroll_begin.delta_x_hint = 0;
@@ -4503,7 +4518,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TouchpadPinchSyntheticWheelEvents) {
   const gfx::Point pinch_position(contents_rect.width() / 2,
                                   contents_rect.height() / 2);
   content::SimulateGesturePinchSequence(guest_contents, pinch_position, 1.23,
-                                        blink::kWebGestureDeviceTouchpad);
+                                        blink::WebGestureDevice::kTouchpad);
 
   ASSERT_TRUE(synthetic_wheel_listener.WaitUntilSatisfied());
 }

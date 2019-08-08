@@ -15,11 +15,22 @@
 namespace blink {
 
 void NGLineBoxFragmentBuilder::Reset() {
-  children_.resize(0);
-  offsets_.resize(0);
-  line_box_type_ = NGPhysicalLineBoxFragment::kNormalLineBox;
-  metrics_ = NGLineHeightMetrics();
+  children_.Shrink(0);
+  offsets_.Shrink(0);
+  child_break_tokens_.Shrink(0);
+  inline_break_tokens_.Shrink(0);
+  oof_positioned_candidates_.Shrink(0);
+
   size_.inline_size = LayoutUnit();
+  metrics_ = NGLineHeightMetrics();
+  line_box_type_ = NGPhysicalLineBoxFragment::kNormalLineBox;
+
+  has_last_resort_break_ = false;
+  has_floating_descendants_ = false;
+  has_orthogonal_flow_roots_ = false;
+  has_child_that_depends_on_percentage_block_size_ = false;
+  has_block_fragmentation_ = false;
+  may_have_descendant_above_block_start_ = false;
 }
 
 void NGLineBoxFragmentBuilder::SetIsEmptyLineBox() {

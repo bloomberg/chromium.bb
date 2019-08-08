@@ -26,8 +26,6 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestAudioFocusObserver
       media_session::mojom::AudioFocusRequestStatePtr session) override;
   void OnFocusLost(
       media_session::mojom::AudioFocusRequestStatePtr session) override;
-  void OnActiveSessionChanged(
-      media_session::mojom::AudioFocusRequestStatePtr session) override;
 
   void WaitForGainedEvent();
   void WaitForLostEvent();
@@ -44,16 +42,10 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestAudioFocusObserver
     return focus_lost_session_;
   }
 
-  const media_session::mojom::AudioFocusRequestStatePtr& active_session()
-      const {
-    return active_session_;
-  }
-
   // These store the order of notifications that were received by the observer.
   enum class NotificationType {
     kFocusGained,
     kFocusLost,
-    kActiveSessionChanged,
   };
   const std::vector<NotificationType>& notifications() const {
     return notifications_;
@@ -65,7 +57,6 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestAudioFocusObserver
   // These store the values we received.
   media_session::mojom::AudioFocusRequestStatePtr focus_gained_session_;
   media_session::mojom::AudioFocusRequestStatePtr focus_lost_session_;
-  media_session::mojom::AudioFocusRequestStatePtr active_session_;
 
   // If either of these are true we will quit the run loop if we observe a gain
   // or lost event.

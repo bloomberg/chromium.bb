@@ -17,6 +17,10 @@ namespace {
 
 constexpr int kRtcpIntervalMs = 1000;
 
+// RTCP is typically sent over UDP, which has a maximum payload length
+// of 65535 bytes. We err on the side of caution and check a bit above that.
+constexpr size_t kMaxInputLenBytes = 66000;
+
 class NullModuleRtpRtcp : public RTCPReceiver::ModuleRtpRtcp {
  public:
   void SetTmmbn(std::vector<rtcp::TmmbItem>) override {}
@@ -28,11 +32,15 @@ class NullModuleRtpRtcp : public RTCPReceiver::ModuleRtpRtcp {
 }  // namespace
 
 void FuzzOneInput(const uint8_t* data, size_t size) {
+  if (size > kMaxInputLenBytes) {
+    return;
+  }
+
   NullModuleRtpRtcp rtp_rtcp_module;
   SimulatedClock clock(1234);
 
   RTCPReceiver receiver(&clock, false, nullptr, nullptr, nullptr, nullptr,
-                        nullptr, kRtcpIntervalMs, &rtp_rtcp_module);
+                        nullptr, nullptr, kRtcpIntervalMs, &rtp_rtcp_module);
 
   receiver.IncomingPacket(data, size);
 }

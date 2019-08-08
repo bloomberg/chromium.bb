@@ -438,19 +438,11 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
 }
 
 bool InlineTextBoxPainter::ShouldPaintTextBox(const PaintInfo& paint_info) {
-  // When painting selection, we want to include a highlight when the
-  // selection spans line breaks. In other cases such as invisible elements
-  // or those with no text that are not line breaks, we can skip painting
-  // wholesale.
-  // TODO(wkorman): Constrain line break painting to appropriate paint phase.
-  // This code path is only called in PaintPhaseForeground whereas we would
-  // expect PaintPhaseSelection. The existing haveSelection logic in paint()
-  // tests for != PaintPhaseTextClip.
-  if (inline_text_box_.GetLineLayoutItem().StyleRef().Visibility() !=
-          EVisibility::kVisible ||
-      inline_text_box_.Truncation() == kCFullTruncation ||
-      !inline_text_box_.Len())
+  // We can skip painting if the text box (including selection) is invisible.
+  if (inline_text_box_.Truncation() == kCFullTruncation ||
+      !inline_text_box_.Len() || inline_text_box_.VisualRect().IsEmpty())
     return false;
+
   return true;
 }
 
@@ -604,16 +596,16 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
       case DocumentMarker::kTextMatch:
         if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground) {
           inline_text_box_.PaintTextMatchMarkerBackground(
-              paint_info, box_origin, ToTextMatchMarker(marker), style, font);
+              paint_info, box_origin, To<TextMatchMarker>(marker), style, font);
         } else {
           inline_text_box_.PaintTextMatchMarkerForeground(
-              paint_info, box_origin, ToTextMatchMarker(marker), style, font);
+              paint_info, box_origin, To<TextMatchMarker>(marker), style, font);
         }
         break;
       case DocumentMarker::kComposition:
       case DocumentMarker::kActiveSuggestion:
       case DocumentMarker::kSuggestion: {
-        const StyleableMarker& styleable_marker = ToStyleableMarker(marker);
+        const auto& styleable_marker = To<StyleableMarker>(marker);
         if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground) {
           const PaintOffsets marker_offsets =
               MarkerPaintStartAndEnd(styleable_marker);

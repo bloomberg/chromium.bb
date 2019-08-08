@@ -12,7 +12,7 @@
 #include <string>
 
 #include "absl/memory/memory.h"
-#include "api/task_queue/global_task_queue_factory.h"
+#include "api/task_queue/default_task_queue_factory.h"
 #include "call/rtp_transport_controller_send.h"
 #include "call/rtp_video_sender.h"
 #include "modules/video_coding/fec_controller_default.h"
@@ -27,10 +27,7 @@
 #include "video/send_statistics_proxy.h"
 
 using ::testing::_;
-using ::testing::AnyNumber;
-using ::testing::Invoke;
 using ::testing::NiceMock;
-using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::Unused;
 
@@ -83,12 +80,14 @@ class RtpVideoSenderTestFixture {
       : clock_(1000000),
         config_(&transport_),
         send_delay_stats_(&clock_),
+        task_queue_factory_(CreateDefaultTaskQueueFactory()),
         transport_controller_(&clock_,
                               &event_log_,
                               nullptr,
+                              nullptr,
                               bitrate_config_,
                               ProcessThread::Create("PacerThread"),
-                              &GlobalTaskQueueFactory()),
+                              task_queue_factory_.get()),
         process_thread_(ProcessThread::Create("test_thread")),
         call_stats_(&clock_, process_thread_.get()),
         stats_proxy_(&clock_,
@@ -102,7 +101,7 @@ class RtpVideoSenderTestFixture {
     std::map<uint32_t, RtpState> suspended_ssrcs;
     router_ = absl::make_unique<RtpVideoSender>(
         &clock_, suspended_ssrcs, suspended_payload_states, config_.rtp,
-        config_.rtcp_report_interval_ms, &transport_, config_.is_svc,
+        config_.rtcp_report_interval_ms, &transport_,
         CreateObservers(&call_stats_, &encoder_feedback_, &stats_proxy_,
                         &stats_proxy_, &stats_proxy_, frame_count_observer,
                         &stats_proxy_, &stats_proxy_, &send_delay_stats_),
@@ -129,6 +128,7 @@ class RtpVideoSenderTestFixture {
   VideoSendStream::Config config_;
   SendDelayStats send_delay_stats_;
   BitrateConstraints bitrate_config_;
+  const std::unique_ptr<TaskQueueFactory> task_queue_factory_;
   RtpTransportControllerSend transport_controller_;
   std::unique_ptr<ProcessThread> process_thread_;
   CallStats call_stats_;
@@ -143,7 +143,7 @@ TEST(RtpVideoSenderTest, SendOnOneModule) {
   EncodedImage encoded_image;
   encoded_image.SetTimestamp(1);
   encoded_image.capture_time_ms_ = 2;
-  encoded_image._frameType = kVideoFrameKey;
+  encoded_image._frameType = VideoFrameType::kVideoFrameKey;
   encoded_image.Allocate(1);
   encoded_image.data()[0] = kPayload;
   encoded_image.set_size(1);
@@ -174,7 +174,7 @@ TEST(RtpVideoSenderTest, SendSimulcastSetActive) {
   EncodedImage encoded_image_1;
   encoded_image_1.SetTimestamp(1);
   encoded_image_1.capture_time_ms_ = 2;
-  encoded_image_1._frameType = kVideoFrameKey;
+  encoded_image_1._frameType = VideoFrameType::kVideoFrameKey;
   encoded_image_1.Allocate(1);
   encoded_image_1.data()[0] = kPayload;
   encoded_image_1.set_size(1);
@@ -218,7 +218,7 @@ TEST(RtpVideoSenderTest, SendSimulcastSetActiveModules) {
   EncodedImage encoded_image_1;
   encoded_image_1.SetTimestamp(1);
   encoded_image_1.capture_time_ms_ = 2;
-  encoded_image_1._frameType = kVideoFrameKey;
+  encoded_image_1._frameType = VideoFrameType::kVideoFrameKey;
   encoded_image_1.Allocate(1);
   encoded_image_1.data()[0] = kPayload;
   encoded_image_1.set_size(1);
@@ -307,19 +307,19 @@ TEST(RtpVideoSenderTest, FrameCountCallbacks) {
   EncodedImage encoded_image;
   encoded_image.SetTimestamp(1);
   encoded_image.capture_time_ms_ = 2;
-  encoded_image._frameType = kVideoFrameKey;
+  encoded_image._frameType = VideoFrameType::kVideoFrameKey;
   encoded_image.Allocate(1);
   encoded_image.data()[0] = kPayload;
   encoded_image.set_size(1);
 
-  encoded_image._frameType = kVideoFrameKey;
+  encoded_image._frameType = VideoFrameType::kVideoFrameKey;
 
   // No callbacks when not active.
   EXPECT_CALL(callback, FrameCountUpdated).Times(0);
   EXPECT_NE(
       EncodedImageCallback::Result::OK,
       test.router()->OnEncodedImage(encoded_image, nullptr, nullptr).error);
-  testing::Mock::VerifyAndClearExpectations(&callback);
+  ::testing::Mock::VerifyAndClearExpectations(&callback);
 
   test.router()->SetActive(true);
 
@@ -333,9 +333,9 @@ TEST(RtpVideoSenderTest, FrameCountCallbacks) {
   EXPECT_EQ(1, frame_counts.key_frames);
   EXPECT_EQ(0, frame_counts.delta_frames);
 
-  testing::Mock::VerifyAndClearExpectations(&callback);
+  ::testing::Mock::VerifyAndClearExpectations(&callback);
 
-  encoded_image._frameType = kVideoFrameDelta;
+  encoded_image._frameType = VideoFrameType::kVideoFrameDelta;
   EXPECT_CALL(callback, FrameCountUpdated(_, kSsrc1))
       .WillOnce(SaveArg<0>(&frame_counts));
   EXPECT_EQ(

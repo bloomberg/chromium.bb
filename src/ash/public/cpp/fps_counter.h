@@ -35,7 +35,7 @@ class ASH_PUBLIC_EXPORT FpsCounter : public ui::CompositorObserver {
   void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 
   // Use this to update histogram even with zero animation.
-  static void SetFoceReportZeroAnimationForTest(bool value);
+  static void SetForceReportZeroAnimationForTest(bool value);
 
  private:
   ui::Compositor* compositor_ = nullptr;

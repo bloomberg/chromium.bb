@@ -163,8 +163,7 @@ ScriptPromise FontFaceSet::load(ScriptState* script_state,
 
   Font font;
   if (!ResolveFontStyle(font_string, font)) {
-    ScriptPromiseResolver* resolver =
-        ScriptPromiseResolver::Create(script_state);
+    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
     ScriptPromise promise = resolver->Promise();
     resolver->Reject(DOMException::Create(
         DOMExceptionCode::kSyntaxError,
@@ -182,8 +181,8 @@ ScriptPromise FontFaceSet::load(ScriptState* script_state,
       segmented_font_face->Match(text, faces);
   }
 
-  LoadFontPromiseResolver* resolver =
-      LoadFontPromiseResolver::Create(faces, script_state);
+  auto* resolver =
+      MakeGarbageCollected<LoadFontPromiseResolver>(faces, script_state);
   ScriptPromise promise = resolver->Promise();
   // After this, resolver->promise() may return null.
   resolver->LoadFonts();

@@ -18,6 +18,8 @@
 
 #include <iostream>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "gflags/gflags.h"
 #include "lib/quic_trace.pb.h"
 
@@ -54,7 +56,7 @@ struct SentPacket {
   size_t size;
 };
 // Map of the sent packets, keyed by packet number.
-using SentPacketMap = std::unordered_map<uint64_t, SentPacket>;
+using SentPacketMap = absl::flat_hash_map<uint64_t, SentPacket>;
 
 void PrintSentPacket(const SentPacketMap& packet_map,
                      uint64_t packet_number,
@@ -78,7 +80,7 @@ void PrintTimeSequence(std::istream* trace_source) {
 
   size_t total_sent = 0;
   SentPacketMap packet_map;
-  std::unordered_set<uint64_t> already_acknowledged;
+  absl::flat_hash_set<uint64_t> already_acknowledged;
   // In a single pass, compute |packet_map| and output the requested sequence.
   for (const Event& event : trace.events()) {
     // Track all sent packets and their offsets in the plot.

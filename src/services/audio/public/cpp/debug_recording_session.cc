@@ -11,7 +11,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "media/audio/audio_debug_recording_manager.h"
-#include "media/audio/audio_manager.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 

@@ -35,6 +35,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
+import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TimeUtils;
 import org.chromium.base.TraceEvent;
@@ -331,6 +332,11 @@ public class CustomTabsConnection {
                 if (mDisconnectCallback != null) {
                     mDisconnectCallback.onResult(session);
                 }
+
+                // TODO(pshmakov): invert this dependency by moving event dispatching to a separate
+                // class.
+                ChromeApplication.getComponent().resolveCustomTabsFileProcessor()
+                        .onSessionDisconnected(session);
             }
         };
         PostMessageServiceConnection serviceConnection = new PostMessageServiceConnection(session);
@@ -429,7 +435,7 @@ public class CustomTabsConnection {
                     return;
                 }
                 try (TraceEvent e = TraceEvent.scoped("CreateSpareWebContents")) {
-                    WarmupManager.getInstance().createSpareWebContents();
+                    createSpareWebContents();
                 }
             });
         }
@@ -448,7 +454,7 @@ public class CustomTabsConnection {
                 try (TraceEvent e = TraceEvent.scoped("WarmupInternalFinishInitialization")) {
                     // (4)
                     Profile profile = Profile.getLastUsedProfile();
-                    WarmupManager.getInstance().startPreconnectPredictorInitialization(profile);
+                    WarmupManager.startPreconnectPredictorInitialization(profile);
 
                     // (5)
                     // The throttling database uses shared preferences, that can cause a
@@ -508,7 +514,7 @@ public class CustomTabsConnection {
     boolean lowConfidenceMayLaunchUrl(List<Bundle> likelyBundles) {
         ThreadUtils.assertOnUiThread();
         if (!preconnectUrls(likelyBundles)) return false;
-        WarmupManager.getInstance().createSpareWebContents();
+        createSpareWebContents();
         return true;
     }
 
@@ -643,7 +649,7 @@ public class CustomTabsConnection {
         }
 
         if (!ids.isEmpty()) {
-            result &= ThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            result &= PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
                 boolean res = true;
                 for (int i = 0; i < ids.size(); i++) {
                     res &= BrowserSessionContentUtils.updateCustomButton(
@@ -660,7 +666,7 @@ public class CustomTabsConnection {
                     CustomTabsIntent.EXTRA_REMOTEVIEWS_VIEW_IDS);
             final PendingIntent pendingIntent = IntentUtils.safeGetParcelable(bundle,
                     CustomTabsIntent.EXTRA_REMOTEVIEWS_PENDINGINTENT);
-            result &= ThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            result &= PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
                 return BrowserSessionContentUtils.updateRemoteViews(
                         session, remoteViews, clickableIDs, pendingIntent);
             });
@@ -850,6 +856,9 @@ public class CustomTabsConnection {
             args.putParcelable("url", url);
             args.putInt("status", status);
             safeExtraCallback(session, ON_DETACHED_REQUEST_REQUESTED, args);
+            if (mLogRequests) {
+                logCallback(ON_DETACHED_REQUEST_REQUESTED, bundleToJson(args).toString());
+            }
         }
 
         return status;
@@ -1300,7 +1309,8 @@ public class CustomTabsConnection {
      */
     @VisibleForTesting
     void cleanUpSession(final CustomTabsSessionToken session) {
-        ThreadUtils.runOnUiThread(() -> mClientManager.cleanupSession(session));
+        PostTask.runOrPostTask(
+                UiThreadTaskTraits.DEFAULT, () -> mClientManager.cleanupSession(session));
     }
 
     /**
@@ -1376,7 +1386,7 @@ public class CustomTabsConnection {
             recordSpeculationStatusOnStart(SPECULATION_STATUS_ON_START_BACKGROUND_TAB);
             launchUrlInHiddenTab(session, url, extras);
         } else {
-            warmupManager.createSpareWebContents();
+            createSpareWebContents();
         }
         warmupManager.maybePreconnectUrlAndSubResources(profile, url);
     }
@@ -1454,11 +1464,6 @@ public class CustomTabsConnection {
             CustomTabsSessionToken session, String url, String origin, int referrerPolicy,
             @DetachedResourceRequestMotivation int motivation);
 
-    // TODO(amalova): remove this method as soon as it is safe to do
-    public ModuleLoader getModuleLoader(ComponentName componentName, int dexResourceId) {
-        return getModuleLoader(componentName, null);
-    }
-
     public ModuleLoader getModuleLoader(ComponentName componentName, @Nullable String assetName) {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE_DEX_LOADING)) {
             assetName = null;
@@ -1469,8 +1474,12 @@ public class CustomTabsConnection {
                     !componentName.equals(mModuleLoader.getComponentName());
             boolean isAssetNameChanged =
                     !TextUtils.equals(assetName, mModuleLoader.getDexAssetName());
+            ModuleLoader.ModuleApkVersion newModuleApkVersion =
+                    ModuleLoader.ModuleApkVersion.getModuleVersion(componentName.getPackageName());
+            boolean isModuleVersionChanged =
+                    !mModuleLoader.getModuleApkVersion().equals(newModuleApkVersion);
 
-            if (isComponentNameChanged || isAssetNameChanged) {
+            if (isComponentNameChanged || isAssetNameChanged || isModuleVersionChanged) {
                 mModuleLoader.destroyModule(ModuleMetrics.DestructionReason.MODULE_LOADER_CHANGED);
                 mModuleLoader = null;
             }
@@ -1490,11 +1499,26 @@ public class CustomTabsConnection {
         Bundle args = new Bundle();
         args.putParcelable("url", Uri.parse(url));
         args.putInt("net_error", status);
-        getInstance().safeExtraCallback(session, ON_DETACHED_REQUEST_COMPLETED, args);
+        CustomTabsConnection connection = getInstance();
+        connection.safeExtraCallback(session, ON_DETACHED_REQUEST_COMPLETED, args);
+        if (connection.mLogRequests) {
+            connection.logCallback(ON_DETACHED_REQUEST_COMPLETED, bundleToJson(args).toString());
+        }
     }
 
     @VisibleForTesting
     @Nullable HiddenTabHolder.SpeculationParams getSpeculationParamsForTesting() {
         return mHiddenTabHolder.getSpeculationParamsForTesting();
+    }
+
+    public static void createSpareWebContents() {
+        if (SysUtils.isLowEndDevice()) return;
+        WarmupManager.getInstance().createSpareWebContents(WarmupManager.FOR_CCT);
+    }
+
+    public boolean receiveFile(CustomTabsSessionToken sessionToken, Uri uri, int purpose,
+            Bundle extras) {
+        return ChromeApplication.getComponent().resolveCustomTabsFileProcessor()
+                .processFile(sessionToken, uri, purpose, extras);
     }
 }

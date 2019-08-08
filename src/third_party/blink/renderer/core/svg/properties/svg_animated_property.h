@@ -37,7 +37,7 @@
 #include "third_party/blink/renderer/core/svg/properties/svg_property_info.h"
 #include "third_party/blink/renderer/core/svg/properties/svg_property_tear_off.h"
 #include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace blink {
@@ -74,7 +74,7 @@ class SVGAnimatedPropertyBase : public GarbageCollectedMixin {
   }
 
   bool HasPresentationAttributeMapping() const {
-    return CssPropertyId() != CSSPropertyInvalid;
+    return CssPropertyId() != CSSPropertyID::kInvalid;
   }
 
   bool IsSpecified() const;
@@ -88,7 +88,7 @@ class SVGAnimatedPropertyBase : public GarbageCollectedMixin {
   SVGAnimatedPropertyBase(AnimatedPropertyType,
                           SVGElement*,
                           const QualifiedName& attribute_name,
-                          CSSPropertyID = CSSPropertyInvalid,
+                          CSSPropertyID = CSSPropertyID::kInvalid,
                           unsigned initial_value = 0);
 
   static constexpr int kInitialValueStorageBits = 3;
@@ -102,7 +102,7 @@ class SVGAnimatedPropertyBase : public GarbageCollectedMixin {
   static_assert(kNumberOfAnimatedPropertyTypes <= (1u << 5),
                 "enough bits for AnimatedPropertyType (type_)");
   static constexpr int kCssPropertyBits = 9;
-  static_assert((1u << kCssPropertyBits) - 1 >= lastCSSProperty,
+  static_assert((1u << kCssPropertyBits) - 1 >= kIntLastCSSProperty,
                 "enough bits for CSS property ids");
 
   const unsigned type_ : 5;
@@ -110,7 +110,7 @@ class SVGAnimatedPropertyBase : public GarbageCollectedMixin {
   const unsigned initial_value_storage_ : kInitialValueStorageBits;
 
   unsigned base_value_needs_synchronization_ : 1;
-  TraceWrapperMember<SVGElement> context_element_;
+  Member<SVGElement> context_element_;
   const QualifiedName& attribute_name_;
   DISALLOW_COPY_AND_ASSIGN(SVGAnimatedPropertyBase);
 };
@@ -172,11 +172,12 @@ class SVGAnimatedPropertyCommon : public SVGAnimatedPropertyBase {
   }
 
  protected:
-  SVGAnimatedPropertyCommon(SVGElement* context_element,
-                            const QualifiedName& attribute_name,
-                            Property* initial_value,
-                            CSSPropertyID css_property_id = CSSPropertyInvalid,
-                            unsigned initial_value_bits = 0)
+  SVGAnimatedPropertyCommon(
+      SVGElement* context_element,
+      const QualifiedName& attribute_name,
+      Property* initial_value,
+      CSSPropertyID css_property_id = CSSPropertyID::kInvalid,
+      unsigned initial_value_bits = 0)
       : SVGAnimatedPropertyBase(Property::ClassType(),
                                 context_element,
                                 attribute_name,
@@ -217,7 +218,7 @@ class SVGAnimatedProperty : public SVGAnimatedPropertyCommon<Property> {
   SVGAnimatedProperty(SVGElement* context_element,
                       const QualifiedName& attribute_name,
                       Property* initial_value,
-                      CSSPropertyID css_property_id = CSSPropertyInvalid,
+                      CSSPropertyID css_property_id = CSSPropertyID::kInvalid,
                       unsigned initial_value_bits = 0)
       : SVGAnimatedPropertyCommon<Property>(context_element,
                                             attribute_name,
@@ -238,7 +239,7 @@ class SVGAnimatedProperty<Property, TearOffType, void>
       SVGElement* context_element,
       const QualifiedName& attribute_name,
       Property* initial_value,
-      CSSPropertyID css_property_id = CSSPropertyInvalid) {
+      CSSPropertyID css_property_id = CSSPropertyID::kInvalid) {
     return new SVGAnimatedProperty<Property>(context_element, attribute_name,
                                              initial_value, css_property_id);
   }
@@ -259,16 +260,16 @@ class SVGAnimatedProperty<Property, TearOffType, void>
   // Use currentValue() from C++ code.
   virtual TearOffType* baseVal() {
     if (!base_val_tear_off_) {
-      base_val_tear_off_ =
-          TearOffType::Create(this->BaseValue(), this, kPropertyIsNotAnimVal);
+      base_val_tear_off_ = MakeGarbageCollected<TearOffType>(
+          this->BaseValue(), this, kPropertyIsNotAnimVal);
     }
     return base_val_tear_off_;
   }
 
   TearOffType* animVal() {
     if (!anim_val_tear_off_) {
-      anim_val_tear_off_ =
-          TearOffType::Create(this->CurrentValue(), this, kPropertyIsAnimVal);
+      anim_val_tear_off_ = MakeGarbageCollected<TearOffType>(
+          this->CurrentValue(), this, kPropertyIsAnimVal);
     }
     return anim_val_tear_off_;
   }
@@ -283,7 +284,7 @@ class SVGAnimatedProperty<Property, TearOffType, void>
   SVGAnimatedProperty(SVGElement* context_element,
                       const QualifiedName& attribute_name,
                       Property* initial_value,
-                      CSSPropertyID css_property_id = CSSPropertyInvalid,
+                      CSSPropertyID css_property_id = CSSPropertyID::kInvalid,
                       unsigned initial_value_bits = 0)
       : SVGAnimatedPropertyCommon<Property>(context_element,
                                             attribute_name,
@@ -317,7 +318,7 @@ class SVGAnimatedProperty<Property, void, void>
       SVGElement* context_element,
       const QualifiedName& attribute_name,
       Property* initial_value,
-      CSSPropertyID css_property_id = CSSPropertyInvalid) {
+      CSSPropertyID css_property_id = CSSPropertyID::kInvalid) {
     return new SVGAnimatedProperty<Property>(context_element, attribute_name,
                                              initial_value, css_property_id);
   }
@@ -326,7 +327,7 @@ class SVGAnimatedProperty<Property, void, void>
   SVGAnimatedProperty(SVGElement* context_element,
                       const QualifiedName& attribute_name,
                       Property* initial_value,
-                      CSSPropertyID css_property_id = CSSPropertyInvalid)
+                      CSSPropertyID css_property_id = CSSPropertyID::kInvalid)
       : SVGAnimatedPropertyCommon<Property>(context_element,
                                             attribute_name,
                                             initial_value,

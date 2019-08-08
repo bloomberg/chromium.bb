@@ -25,6 +25,7 @@
 <translation id="1585657529869845941">Кликнете върху бутона <ph name="BEGIN_BOLD" />Превключване въпреки това<ph name="END_BOLD" />, ако се показва</translation>
 <translation id="1587223624401073077">Google Chrome използва камерата ви.</translation>
 <translation id="1587325591171447154">Chrome блокира „<ph name="FILE_NAME" />“, тъй като файлът е опасен.</translation>
+<translation id="1590588151039584890">За да се извърши актуализацията, Chrome трябва да спре работа на този компютър. Това може да доведе до изтриване на незапазените промени на други потребители, които са влезли в профила си на този компютър.</translation>
 <translation id="1619887657840448962">За да направим Chrome по-безопасен, деактивирахме следното разширение, което липсва от <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и може да е било добавено без ваше знание.</translation>
 <translation id="1628000112320670027">Получаване на помощ за Chrome</translation>
 <translation id="1662639173275167396">Chrome OS е възможна благодарение на допълнителен <ph name="BEGIN_LINK_CROS_OSS" />софтуер с отворен код<ph name="END_LINK_CROS_OSS" />. Това се отнася и за <ph name="BEGIN_LINK_LINUX_OSS" />Linux (бета)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -40,6 +41,7 @@
 <translation id="1773601347087397504">Получаване на помощ за използването на Chrome OS</translation>
 <translation id="1795405610103747296">Инсталирайте Chrome на телефона си. Ще ви изпратим SMS на него: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">С изключването на тази функция можете да влизате в сайтовете на Google, като например Gmail, без да влизате в Chrome</translation>
+<translation id="1815759068706561639">Chrome блокира „<ph name="FILE_NAME" />“, тъй като файлът е опасен. Функцията за разширена защита се грижи за безопасността ви.</translation>
 <translation id="1860536484129686729">Chrome се нуждае от разрешение за достъп до камерата ви за този сайт</translation>
 <translation id="1873233029667955273">Google Chrome не е браузърът ви по подразбиране</translation>
 <translation id="1874309113135274312">Google Chrome бета (mDNS-In)</translation>
@@ -58,7 +60,6 @@
 <translation id="2290014774651636340">Ключовете на приложния програмен интерфейс (API) на Google липсват. Някои функции на Google Chrome ще бъдат деактивирани.</translation>
 <translation id="2290095356545025170">Наистина ли искате да деинсталирате Google Chrome?</translation>
 <translation id="2309047409763057870">Тази инсталация на Google Chrome е алтернативна и не може да се зададе като браузър по подразбиране.</translation>
-<translation id="2334084861041072223">Авторски права <ph name="YEAR" /> Google Inc. Всички права запазени.</translation>
 <translation id="2346876346033403680">По-рано някой влезе в Chrome на този компютър като <ph name="ACCOUNT_EMAIL_LAST" />. Ако това не е профилът ви, създайте нов потребител в браузъра, за да се съхранява отделно информацията ви.
 
 В случай че влезете въпреки това, данните в Chrome като отметки, история и други настройки ще се обединят с/ъс <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
@@ -66,6 +67,7 @@
 <translation id="2429317896000329049">Google Chrome не можа да синхронизира данните ви, защото синхронизирането не е налице за домейна ви.</translation>
 <translation id="2467438592969358367">Google Chrome иска да експортира паролите ви. За да разрешите това, въведете паролата си за Windows.</translation>
 <translation id="2485422356828889247">Деинсталиране</translation>
+<translation id="2521856951867783208">Chrome блокира този файл, тъй като може да е опасен. Функцията за разширена защита се грижи за безопасността ви.</translation>
 <translation id="2534507159460261402">Google Pay (копирано в Chrome)</translation>
 <translation id="2535429035253759792">Администраторът ви моли да рестартирате Chrome, за да се приложи тази актуализация</translation>
 <translation id="2580411288591421699">Не може да се инсталира същата версия на Google Chrome, която се използва понастоящем. Моля, затворете браузъра и опитайте отново.</translation>
@@ -102,6 +104,7 @@
 <translation id="3451115285585441894">Добавя се към Chrome...</translation>
 <translation id="345171907106878721">Добавяне на вас към Chrome</translation>
 <translation id="3479552764303398839">Не сега</translation>
+<translation id="3481286511616257896">Chrome блокира „<ph name="FILE_NAME" />“, тъй като файлът може да е опасен. Функцията за разширена защита се грижи за безопасността ви.</translation>
 <translation id="34857402635545079">Да се изчистят и данните от Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome се нуждае от достъп до данните за местоположението ви, за да ги сподели с този сайт</translation>
 <translation id="3576528680708590453">Системният ви администратор е конфигурирал Google Chrome да отваря алтернативен браузър за достъп до <ph name="TARGET_URL_HOSTNAME" />.</translation>
@@ -114,7 +117,6 @@
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Премахване от Chrome...</translation>
 <translation id="386202838227397562">Моля, затворете всички прозорци на Google Chrome и опитайте отново.</translation>
-<translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Отваряне на връзката в прозорец в режим „инко&amp;гнито“ на Chrome</translation>
 <translation id="3889417619312448367">Деинсталиране на Google Chrome</translation>
 <translation id="3898493977366060150">Интелигентен начин за сърфиране в мрежата, създаден от Google</translation>
@@ -141,7 +143,6 @@
 <translation id="4600710005438004015">Chrome не можа да се актуализира до най-новата версия. Това означава, че пропускате нови функции и корекции за сигурност.</translation>
 <translation id="4631713731678262610">Скриване в менюто на Chrome</translation>
 <translation id="4633000520311261472">За да направим Chrome по-безопасен, деактивирахме някои разширения, които не са посочени в <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и може да са били добавени без ваше знание.</translation>
-<translation id="4700157086864140907">Google Chrome може да предостави по-интелигентна проверка на правописа, като изпрати до сървърите ни въвежданото от вас в браузъра, позволявайки ви да използвате същата технология за проверка на правописа, ползвана при търсенето с Google.</translation>
 <translation id="4728575227883772061">Инсталирането не бе успешно поради неизвестна грешка. Ако Google Chrome понастоящем работи, моля, затворете го и опитайте отново.</translation>
 <translation id="4750550185319565338">Рестартирайте Chrome, за да активирате <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (входящ трафик за mDNS)</translation>
@@ -166,10 +167,12 @@
 <translation id="5386244825306882791">То също контролира коя страница се показва при стартиране на Chrome или при търсене от полето за всичко.</translation>
 <translation id="5430073640787465221">Файлът с предпочитанията ви е повреден или невалиден. Google Chrome не може да възстанови настройките ви.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome ще се стартира отново сега}=1{Chrome ще се стартира отново след 1 секунда}other{Chrome ще се стартира отново след # секунди}}</translation>
+<translation id="5543953544073077331">Изпълняват се други копия на Chrome. Затворете ги, за да актуализирате.</translation>
 <translation id="556024056938947818">Google Chrome опитва да покаже паролите.</translation>
 <translation id="5566025111015594046">Google Chrome (входящ трафик за mDNS)</translation>
 <translation id="565744775970812598">Chrome блокира „<ph name="FILE_NAME" />“, тъй като файлът може да е опасен.</translation>
 <translation id="5686916850681061684">Персонализиране и контролиране на Google Chrome. Трябва да обърнете внимание на нещо – кликнете за подробности.</translation>
+<translation id="5690427481109656848">Google LLC</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome ще се рестартира след 1 секунда}other{Google Chrome ще се рестартира след # секунди}}</translation>
 <translation id="573759479754913123">Всичко за Chrome OS</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
@@ -224,12 +227,16 @@
 <translation id="7459554271817304652">Настройте синхронизирането, за да запазите онлайн персонализираните функции на браузъра си и да осъществявате достъп до тях от Google Chrome на всеки компютър.</translation>
 <translation id="7473136999113284234">Chrome се актуализира автоматично, така че винаги да имате най-новата версия.</translation>
 <translation id="7486227612705979895">Chrome ще осъществява достъп до хранилището ви в Диск, за да извежда предложения в адресната лента</translation>
+<translation id="748945194546522577">Chrome блокира този файл, тъй като е опасен. Функцията за разширена защита се грижи за безопасността ви.</translation>
+<translation id="7531671357096394523">Затваряне на всички копия на Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Показване на Chrome OS на този език</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome ще се стартира отново след 1 минута}other{Chrome ще се стартира отново след # минути}}</translation>
 <translation id="7589360514048265910">Занапред този компютър няма да получава актуализации на Google Chrome, защото Mac OS X 10.9 вече не се поддържа.</translation>
 <translation id="7592736734348559088">Google Chrome не можа да синхронизира данните ви, защото потребителското име и паролата за вход в профила ви не са актуални.</translation>
 <translation id="7626032353295482388">Добре дошли в Chrome</translation>
+<translation id="7636297873481318396">Chrome блокира този файл, тъй като е опасен. Функцията за разширена защита се грижи за безопасността ви.</translation>
+<translation id="7641148173327520642">Системният ви администратор е конфигурирал Google Chrome да отваря <ph name="ALTERNATIVE_BROWSER_NAME" /> за достъп до <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Лого на Chrome Enterprise</translation>
 <translation id="7747138024166251722">Инсталационната програма не можа да създаде временна директория. Моля, проверете дали има свободно дисково пространство и разрешение за инсталиране на софтуер.</translation>
 <translation id="7761834446675418963">Кликнете върху името си, за да отворите Chrome и да започнете да сърфирате.</translation>
@@ -259,6 +266,7 @@
 <translation id="8286862437124483331">Google Chrome опитва да покаже паролите. За да разрешите това, въведете паролата си за Windows.</translation>
 <translation id="8290100596633877290">О, не! Google Chrome претърпя срив. Да се стартира ли отново сега?</translation>
 <translation id="8342675569599923794">Chrome блокира този файл, тъй като е опасен.</translation>
+<translation id="8370517070665726704">Авторски права <ph name="YEAR" /> г. Google LLC. Всички права запазени.</translation>
 <translation id="8380166467911888159">С цел поправка на правописни грешки Chrome изпраща до Google текста, който въвеждате в текстовите полета</translation>
 <translation id="840084489713044809">Google Chrome иска да експортира паролите ви.</translation>
 <translation id="8406086379114794905">Помогнете за подобряването на Chrome</translation>
@@ -277,6 +285,7 @@
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">То също контролира коя страница се показва при стартиране на Chrome.</translation>
 <translation id="870251953148363156">Актуализиране на &amp;Google Chrome</translation>
+<translation id="8704255848199359374">Използва се същата програма за проверка на правописа като в Google Търсене. Текстът, който въвеждате в браузъра, се изпраща до Google. Винаги можете да промените това поведение от настройките.</translation>
 <translation id="873133009373065397">Google Chrome не може да определи или зададе браузъра по подразбиране</translation>
 <translation id="8736674169840206667">Администраторът ви изисква да рестартирате Chrome, за да се приложи актуализация</translation>
 <translation id="8788264404293392165">Този език служи за показване на ПИ на Chrome OS</translation>

@@ -168,8 +168,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
     return *error_;
   }
 
-  void SetIdentifier(unsigned long identifier) { identifier_ = identifier; }
-  unsigned long Identifier() const { return identifier_; }
+  uint64_t InspectorId() const { return LastResourceRequest().InspectorId(); }
 
   virtual bool ShouldIgnoreHTTPStatusCodeErrors() const { return false; }
 
@@ -177,6 +176,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
     return resource_request_;
   }
   const ResourceRequest& LastResourceRequest() const;
+  const ResourceResponse* LastResourceResponse() const;
 
   virtual void SetRevalidatingRequest(const ResourceRequest&);
 
@@ -267,7 +267,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   virtual void ResponseReceived(const ResourceResponse&);
   virtual void ResponseBodyReceived(
-      ResponseBodyLoaderDrainableInterface& body_loader) {}
+      ResponseBodyLoaderDrainableInterface& body_loader,
+      scoped_refptr<base::SingleThreadTaskRunner> loader_task_runner) {}
   void SetResponse(const ResourceResponse&);
   const ResourceResponse& GetResponse() const { return response_; }
 
@@ -532,8 +533,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   base::Optional<ResourceError> error_;
 
   TimeTicks load_response_end_;
-
-  unsigned long identifier_;
 
   size_t encoded_size_;
   size_t encoded_size_memory_usage_;

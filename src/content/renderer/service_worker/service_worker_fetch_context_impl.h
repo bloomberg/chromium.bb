@@ -35,7 +35,6 @@ class ServiceWorkerFetchContextImpl final
           url_loader_factory_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           script_loader_factory_info,
-      int service_worker_provider_id,
       std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
       std::unique_ptr<WebSocketHandshakeThrottleProvider>
           websocket_handshake_throttle_provider,
@@ -73,7 +72,6 @@ class ServiceWorkerFetchContextImpl final
   // Consumed on the worker thread to create |web_script_loader_factory_|.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo>
       script_loader_factory_info_;
-  const int service_worker_provider_id_;
 
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;

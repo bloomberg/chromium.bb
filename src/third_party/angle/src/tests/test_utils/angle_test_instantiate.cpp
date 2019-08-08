@@ -28,17 +28,6 @@ namespace angle
 {
 namespace
 {
-SystemInfo *GetTestSystemInfo()
-{
-    static SystemInfo *sSystemInfo = nullptr;
-    if (sSystemInfo == nullptr)
-    {
-        sSystemInfo = new SystemInfo;
-        GetSystemInfo(sSystemInfo);
-    }
-    return sSystemInfo;
-}
-
 bool IsANGLEConfigSupported(const PlatformParameters &param, OSWindow *osWindow)
 {
     std::unique_ptr<angle::Library> eglLibrary;
@@ -49,7 +38,8 @@ bool IsANGLEConfigSupported(const PlatformParameters &param, OSWindow *osWindow)
 
     EGLWindow *eglWindow =
         EGLWindow::New(param.majorVersion, param.minorVersion, param.eglParameters);
-    bool result = eglWindow->initializeGL(osWindow, eglLibrary.get());
+    ConfigParameters configParams;
+    bool result = eglWindow->initializeGL(osWindow, eglLibrary.get(), configParams);
     eglWindow->destroyGL();
     EGLWindow::Delete(&eglWindow);
     return result;
@@ -61,7 +51,8 @@ bool IsWGLConfigSupported(const PlatformParameters &param, OSWindow *osWindow)
     std::unique_ptr<angle::Library> openglLibrary(angle::OpenSharedLibrary("opengl32"));
 
     WGLWindow *wglWindow = WGLWindow::New(param.majorVersion, param.minorVersion);
-    bool result          = wglWindow->initializeGL(osWindow, openglLibrary.get());
+    ConfigParameters configParams;
+    bool result = wglWindow->initializeGL(osWindow, openglLibrary.get(), configParams);
     wglWindow->destroyGL();
     WGLWindow::Delete(&wglWindow);
     return result;
@@ -76,6 +67,27 @@ bool IsNativeConfigSupported(const PlatformParameters &param, OSWindow *osWindow
     return false;
 }
 }  // namespace
+
+SystemInfo *GetTestSystemInfo()
+{
+    static SystemInfo *sSystemInfo = nullptr;
+    if (sSystemInfo == nullptr)
+    {
+        sSystemInfo = new SystemInfo;
+        if (!GetSystemInfo(sSystemInfo))
+        {
+            std::cerr << "Warning: incomplete system info collection.\n";
+        }
+
+        // Print complete system info when available.
+        // Seems to trip up Android test expectation parsing.
+        if (!IsAndroid())
+        {
+            PrintSystemInfo(*sSystemInfo);
+        }
+    }
+    return sSystemInfo;
+}
 
 bool IsAndroid()
 {
@@ -131,6 +143,45 @@ bool IsFuchsia()
 #endif
 }
 
+bool IsAndroidDevice(const std::string &deviceName)
+{
+    if (!IsAndroid())
+    {
+        return false;
+    }
+    SystemInfo *systemInfo = GetTestSystemInfo();
+    if (systemInfo->machineModelName == deviceName)
+    {
+        return true;
+    }
+    return false;
+}
+
+bool IsNexus5X()
+{
+    return IsAndroidDevice("Nexus 5X");
+}
+
+bool IsNexus6P()
+{
+    return IsAndroidDevice("Nexus 6P");
+}
+
+bool IsPixelXL()
+{
+    return IsAndroidDevice("Pixel XL");
+}
+
+bool IsPixel2()
+{
+    return IsAndroidDevice("Pixel 2");
+}
+
+bool IsNVIDIAShield()
+{
+    return IsAndroidDevice("SHIELD Android TV");
+}
+
 bool IsConfigWhitelisted(const SystemInfo &systemInfo, const PlatformParameters &param)
 {
     VendorID vendorID = systemInfo.gpus[systemInfo.primaryGPUIndex].vendorId;
@@ -173,13 +224,13 @@ bool IsConfigWhitelisted(const SystemInfo &systemInfo, const PlatformParameters 
                         }
 
                         // Win ES emulation is currently only supported on NVIDIA.
-                        return vendorID == kVendorID_Nvidia;
+                        return IsNVIDIA(vendorID);
                     default:
                         return false;
                 }
             case GLESDriverType::SystemWGL:
                 // AMD does not support the ES compatibility extensions.
-                return vendorID != kVendorID_AMD;
+                return IsAMD(vendorID);
             default:
                 return false;
         }
@@ -187,7 +238,7 @@ bool IsConfigWhitelisted(const SystemInfo &systemInfo, const PlatformParameters 
 
     if (IsOSX())
     {
-        // Currently we only support the OpenGL back-end on OSX.
+        // We do not support non-ANGLE bindings on OSX.
         if (param.driver != GLESDriverType::AngleEGL)
         {
             return false;
@@ -199,23 +250,25 @@ bool IsConfigWhitelisted(const SystemInfo &systemInfo, const PlatformParameters 
             return false;
         }
 
+        // Currently we only support the OpenGL back-end on OSX.
         return (param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE);
     }
 
     if (IsFuchsia())
     {
-        // Currently we only support the Vulkan back-end on Fuchsia.
+        // We do not support non-ANGLE bindings on Fuchsia.
         if (param.driver != GLESDriverType::AngleEGL)
         {
             return false;
         }
 
+        // Currently we only support the Vulkan back-end on Fuchsia.
         return (param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE);
     }
 
     if (IsOzone())
     {
-        // Currently we only support the GLES back-end on Ozone.
+        // We do not support non-ANGLE bindings on Ozone.
         if (param.driver != GLESDriverType::AngleEGL)
             return false;
 
@@ -223,17 +276,19 @@ bool IsConfigWhitelisted(const SystemInfo &systemInfo, const PlatformParameters 
         if (param.majorVersion > 2)
             return false;
 
+        // Currently we only support the GLES back-end on Ozone.
         return (param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE);
     }
 
     if (IsLinux())
     {
-        // Currently we support the OpenGL and Vulkan back-ends on Linux.
+        // We do not support non-ANGLE bindings on Linux.
         if (param.driver != GLESDriverType::AngleEGL)
         {
             return false;
         }
 
+        // Currently we support the OpenGL and Vulkan back-ends on Linux.
         switch (param.getRenderer())
         {
             case EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE:
@@ -247,19 +302,22 @@ bool IsConfigWhitelisted(const SystemInfo &systemInfo, const PlatformParameters 
 
     if (IsAndroid())
     {
-        // Currently we support the GLES and Vulkan back-ends on Linux.
+        // We do not support non-ANGLE bindings on Android.
         if (param.driver != GLESDriverType::AngleEGL)
         {
             return false;
         }
 
-        // Some Android devices don't support backing 3.2 contexts. We should refine this to only
-        // exclude the problematic devices.
+        // Nexus Android devices don't support backing 3.2 contexts
         if (param.eglParameters.majorVersion == 3 && param.eglParameters.minorVersion == 2)
         {
-            return false;
+            if (IsNexus5X() || IsNexus6P())
+            {
+                return false;
+            }
         }
 
+        // Currently we support the GLES and Vulkan back-ends on Android.
         switch (param.getRenderer())
         {
             case EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE:

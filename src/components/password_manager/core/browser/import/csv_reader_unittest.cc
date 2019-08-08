@@ -15,7 +15,7 @@ namespace password_manager {
 TEST(CSVReaderTest, Positive) {
   struct TestCase {
     const char* name;
-    const char* input;
+    const std::string input;
     std::vector<const char*> expected_column_names;
     std::vector<std::vector<std::pair<const char*, const char*>>>
         expected_row_maps;
@@ -185,6 +185,12 @@ TEST(CSVReaderTest, Positive) {
               {{"bar", "f"}, {"foo", "e"}},
           },
       },
+      {
+          "JustEnoughColumns",
+          std::string(CSVTable::kMaxColumns - 1, ','),
+          std::vector<const char*>{CSVTable::kMaxColumns, ""},
+          {},
+      },
   };
 
   for (const TestCase& test_case : kCases) {
@@ -206,7 +212,7 @@ TEST(CSVReaderTest, Positive) {
 TEST(CSVReaderTest, Negative) {
   struct TestCase {
     const char* name;
-    const char* input;
+    const std::string input;
   };
   const TestCase kCases[] = {
       {
@@ -231,6 +237,10 @@ TEST(CSVReaderTest, Negative) {
       {
           "FailureWhenJustOneQuoteAndComma",
           "\",",
+      },
+      {
+          "TooManyColumns",
+          std::string(CSVTable::kMaxColumns, ','),
       },
   };
 

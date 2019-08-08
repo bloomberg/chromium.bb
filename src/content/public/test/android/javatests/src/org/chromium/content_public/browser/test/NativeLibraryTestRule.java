@@ -15,6 +15,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content_public.browser.BrowserStartupController;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.resources.ResourceExtractor;
 
 /**
@@ -48,12 +49,7 @@ public class NativeLibraryTestRule implements TestRule {
         // LibraryLoader is not in general multithreaded; as other InstrumentationTestCase code
         // (specifically, ChromeBrowserProvider) uses it from the main thread we must do
         // likewise.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                nativeInitialization(initBrowserProcess);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(() -> { nativeInitialization(initBrowserProcess); });
     }
 
     private void nativeInitialization(boolean initBrowserProcess) {
@@ -61,6 +57,7 @@ public class NativeLibraryTestRule implements TestRule {
             try {
                 // Extract compressed resource paks.
                 ResourceExtractor resourceExtractor = ResourceExtractor.get();
+                resourceExtractor.setResultTraits(UiThreadTaskTraits.BOOTSTRAP);
                 resourceExtractor.startExtractingResources("en");
                 resourceExtractor.waitForCompletion();
 

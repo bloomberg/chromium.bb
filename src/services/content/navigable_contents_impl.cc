@@ -29,16 +29,16 @@ namespace content {
 NavigableContentsImpl::NavigableContentsImpl(
     Service* service,
     mojom::NavigableContentsParamsPtr params,
-    mojom::NavigableContentsRequest request,
-    mojom::NavigableContentsClientPtr client)
+    mojo::PendingReceiver<mojom::NavigableContents> receiver,
+    mojo::PendingRemote<mojom::NavigableContentsClient> client)
     : service_(service),
-      binding_(this, std::move(request)),
+      receiver_(this, std::move(receiver)),
       client_(std::move(client)),
       delegate_(
           service_->delegate()->CreateNavigableContentsDelegate(*params,
                                                                 client_.get())),
       native_content_view_(delegate_->GetNativeView()) {
-  binding_.set_connection_error_handler(base::BindRepeating(
+  receiver_.set_disconnect_handler(base::BindRepeating(
       &Service::RemoveNavigableContents, base::Unretained(service_), this));
 }
 

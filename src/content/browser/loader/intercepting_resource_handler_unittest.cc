@@ -46,7 +46,7 @@ class InterceptingResourceHandlerTest : public testing::Test {
         old_handler_status_(
             net::URLRequestStatus::FromError(net::ERR_IO_PENDING)) {
     ResourceRequestInfo::AllocateForTesting(request_.get(),
-                                            RESOURCE_TYPE_MAIN_FRAME,
+                                            ResourceType::kMainFrame,
                                             nullptr,  // context
                                             0,        // render_process_id
                                             0,        // render_view_id

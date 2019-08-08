@@ -28,7 +28,6 @@ SetPINRequestHandler::SetPINRequestHandler(
 
 SetPINRequestHandler::~SetPINRequestHandler() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
-  CancelActiveAuthenticators();
 }
 
 void SetPINRequestHandler::ProvidePIN(const std::string& old_pin,
@@ -78,17 +77,18 @@ void SetPINRequestHandler::OnTouch(FidoAuthenticator* authenticator) {
   }
 
   authenticator_ = authenticator;
-  CancelActiveAuthenticators();
 
   switch (authenticator_->Options()->client_pin_availability) {
     case AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported:
       state_ = State::kFinished;
+      CancelActiveAuthenticators(authenticator->GetId());
       finished_callback_.Run(CtapDeviceResponseCode::kCtap1ErrInvalidCommand);
       return;
 
     case AuthenticatorSupportedOptions::ClientPinAvailability::
         kSupportedAndPinSet:
       state_ = State::kGettingRetries;
+      CancelActiveAuthenticators(authenticator->GetId());
       authenticator_->GetRetries(
           base::BindOnce(&SetPINRequestHandler::OnRetriesResponse,
                          weak_factory_.GetWeakPtr()));
@@ -97,6 +97,7 @@ void SetPINRequestHandler::OnTouch(FidoAuthenticator* authenticator) {
     case AuthenticatorSupportedOptions::ClientPinAvailability::
         kSupportedButPinNotSet:
       state_ = State::kWaitingForPIN;
+      CancelActiveAuthenticators(authenticator->GetId());
       std::move(get_pin_callback_).Run(base::nullopt);
       break;
   }
@@ -107,10 +108,6 @@ void SetPINRequestHandler::OnRetriesResponse(
     base::Optional<pin::RetriesResponse> response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
   DCHECK_EQ(state_, State::kGettingRetries);
-
-  if (status == CtapDeviceResponseCode::kSuccess && !response) {
-    status = CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
-  }
 
   if (status != CtapDeviceResponseCode::kSuccess) {
     state_ = State::kFinished;
@@ -129,10 +126,6 @@ void SetPINRequestHandler::OnHaveEphemeralKey(
     base::Optional<pin::KeyAgreementResponse> response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
   DCHECK_EQ(state_, State::kGetEphemeralKey);
-
-  if (status == CtapDeviceResponseCode::kSuccess && !response) {
-    status = CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
-  }
 
   if (status != CtapDeviceResponseCode::kSuccess) {
     state_ = State::kFinished;

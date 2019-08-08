@@ -322,7 +322,7 @@ TEST(HttpAuthCacheTest, Remove) {
   // lookup.
   HttpAuthCache::Entry* entry = cache.Lookup(
       origin, kRealm3, HttpAuth::AUTH_SCHEME_DIGEST);
-  EXPECT_FALSE(NULL == entry);
+  EXPECT_FALSE(nullptr == entry);
 }
 
 TEST(HttpAuthCacheTest, ClearEntriesAddedSince) {
@@ -461,7 +461,7 @@ TEST(HttpAuthCacheTest, UpdateStaleChallenge) {
       "nonce=\"s3MzvFhaBAA=4c520af5acd9d8d7ae26947529d18c8eae1e98f4\"",
       CreateASCIICredentials("realm-digest-user", "realm-digest-password"),
       "/baz/index.html");
-  ASSERT_TRUE(entry_pre != NULL);
+  ASSERT_TRUE(entry_pre != nullptr);
 
   EXPECT_EQ(2, entry_pre->IncrementNonceCount());
   EXPECT_EQ(3, entry_pre->IncrementNonceCount());
@@ -478,7 +478,7 @@ TEST(HttpAuthCacheTest, UpdateStaleChallenge) {
   // the nonce count should be reset to 0.
   HttpAuthCache::Entry* entry_post =
       cache.Lookup(origin, kRealm1, HttpAuth::AUTH_SCHEME_DIGEST);
-  ASSERT_TRUE(entry_post != NULL);
+  ASSERT_TRUE(entry_post != nullptr);
   EXPECT_EQ(2, entry_post->IncrementNonceCount());
 
   // UpdateStaleChallenge will fail if an entry doesn't exist in the cache.
@@ -524,19 +524,19 @@ TEST(HttpAuthCacheTest, UpdateAllFrom) {
 
   // Copied from first_cache.
   entry = second_cache.Lookup(origin, kRealm1, HttpAuth::AUTH_SCHEME_BASIC);
-  EXPECT_TRUE(NULL != entry);
+  EXPECT_TRUE(nullptr != entry);
   EXPECT_EQ(kAlice, entry->credentials().username());
   EXPECT_EQ(k123, entry->credentials().password());
 
   // Copied from first_cache.
   entry = second_cache.Lookup(origin, kRealm2, HttpAuth::AUTH_SCHEME_BASIC);
-  EXPECT_TRUE(NULL != entry);
+  EXPECT_TRUE(nullptr != entry);
   EXPECT_EQ(kAlice2, entry->credentials().username());
   EXPECT_EQ(k1234, entry->credentials().password());
 
   // Overwritten from first_cache.
   entry = second_cache.Lookup(origin, kRealm3, HttpAuth::AUTH_SCHEME_DIGEST);
-  EXPECT_TRUE(NULL != entry);
+  EXPECT_TRUE(nullptr != entry);
   EXPECT_EQ(kRoot, entry->credentials().username());
   EXPECT_EQ(kWileCoyote, entry->credentials().password());
   // Nonce count should get copied.
@@ -544,13 +544,13 @@ TEST(HttpAuthCacheTest, UpdateAllFrom) {
 
   // All paths should get copied.
   entry = second_cache.LookupByPath(origin, another_path);
-  EXPECT_TRUE(NULL != entry);
+  EXPECT_TRUE(nullptr != entry);
   EXPECT_EQ(kRoot, entry->credentials().username());
   EXPECT_EQ(kWileCoyote, entry->credentials().password());
 
   // Left intact in second_cache.
   entry = second_cache.Lookup(origin, kRealm4, HttpAuth::AUTH_SCHEME_BASIC);
-  EXPECT_TRUE(NULL != entry);
+  EXPECT_TRUE(nullptr != entry);
   EXPECT_EQ(kAdmin, entry->credentials().username());
   EXPECT_EQ(kRoot, entry->credentials().password());
 }
@@ -587,10 +587,10 @@ class HttpAuthCacheEvictionTest : public testing::Test {
         cache_.Lookup(
             origin_, GenerateRealm(realm_i), HttpAuth::AUTH_SCHEME_BASIC);
     if (exists) {
-      EXPECT_FALSE(entry == NULL);
+      EXPECT_FALSE(entry == nullptr);
       EXPECT_EQ(GenerateRealm(realm_i), entry->realm());
     } else {
-      EXPECT_TRUE(entry == NULL);
+      EXPECT_TRUE(entry == nullptr);
     }
   }
 
@@ -598,10 +598,10 @@ class HttpAuthCacheEvictionTest : public testing::Test {
     const HttpAuthCache::Entry* entry =
         cache_.LookupByPath(origin_, GeneratePath(realm_i, path_i));
     if (exists) {
-      EXPECT_FALSE(entry == NULL);
+      EXPECT_FALSE(entry == nullptr);
       EXPECT_EQ(GenerateRealm(realm_i), entry->realm());
     } else {
-      EXPECT_TRUE(entry == NULL);
+      EXPECT_TRUE(entry == nullptr);
     }
   }
 

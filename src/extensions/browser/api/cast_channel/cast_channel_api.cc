@@ -420,7 +420,7 @@ void CastChannelSendFunction::AsyncWorkStart() {
     return;
   }
   socket->transport()->SendMessage(
-      message_to_send, base::Bind(&CastChannelSendFunction::OnSend, this));
+      message_to_send, base::BindOnce(&CastChannelSendFunction::OnSend, this));
 }
 
 void CastChannelSendFunction::OnSend(int result) {
@@ -458,7 +458,7 @@ void CastChannelCloseFunction::AsyncWorkStart() {
                        api::cast_channel::CHANNEL_ERROR_INVALID_CHANNEL_ID);
     AsyncWorkCompleted();
   } else {
-    socket->Close(base::Bind(&CastChannelCloseFunction::OnClose, this));
+    socket->Close(base::BindOnce(&CastChannelCloseFunction::OnClose, this));
   }
 }
 

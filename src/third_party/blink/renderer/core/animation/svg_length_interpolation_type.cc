@@ -5,21 +5,24 @@
 #include "third_party/blink/renderer/core/animation/svg_length_interpolation_type.h"
 
 #include <memory>
+#include <utility>
+
 #include "third_party/blink/renderer/core/animation/string_keyframe.h"
 #include "third_party/blink/renderer/core/animation/svg_interpolation_environment.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_length.h"
 #include "third_party/blink/renderer/core/svg/svg_length_context.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 std::unique_ptr<InterpolableValue>
 SVGLengthInterpolationType::NeutralInterpolableValue() {
-  std::unique_ptr<InterpolableList> list_of_values =
-      InterpolableList::Create(CSSPrimitiveValue::kLengthUnitTypeCount);
+  auto list_of_values = std::make_unique<InterpolableList>(
+      CSSPrimitiveValue::kLengthUnitTypeCount);
   for (wtf_size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; ++i)
-    list_of_values->Set(i, InterpolableNumber::Create(0));
+    list_of_values->Set(i, std::make_unique<InterpolableNumber>(0));
 
   return std::move(list_of_values);
 }
@@ -31,10 +34,12 @@ InterpolationValue SVGLengthInterpolationType::ConvertSVGLength(
   CSSLengthArray length_array;
   primitive_value.AccumulateLengthArray(length_array);
 
-  std::unique_ptr<InterpolableList> list_of_values =
-      InterpolableList::Create(CSSPrimitiveValue::kLengthUnitTypeCount);
-  for (wtf_size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; ++i)
-    list_of_values->Set(i, InterpolableNumber::Create(length_array.values[i]));
+  auto list_of_values = std::make_unique<InterpolableList>(
+      CSSPrimitiveValue::kLengthUnitTypeCount);
+  for (wtf_size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; ++i) {
+    list_of_values->Set(
+        i, std::make_unique<InterpolableNumber>(length_array.values[i]));
+  }
 
   return InterpolationValue(std::move(list_of_values));
 }
@@ -84,7 +89,8 @@ SVGLength* SVGLengthInterpolationType::ResolveInterpolableSVGLength(
   if (negative_values_forbidden && value < 0)
     value = 0;
 
-  SVGLength* result = SVGLength::Create(unit_mode);  // defaults to the length 0
+  auto* result =
+      MakeGarbageCollected<SVGLength>(unit_mode);  // defaults to the length 0
   result->NewValueSpecifiedUnits(unit_type, value);
   return result;
 }

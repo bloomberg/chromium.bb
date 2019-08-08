@@ -50,17 +50,24 @@ namespace dawn_native { namespace metal {
         }
 
         MTLTextureType MetalTextureType(dawn::TextureDimension dimension,
-                                        unsigned int arrayLayers) {
+                                        unsigned int arrayLayers,
+                                        unsigned int sampleCount) {
             switch (dimension) {
                 case dawn::TextureDimension::e2D:
-                    return (arrayLayers > 1) ? MTLTextureType2DArray : MTLTextureType2D;
+                    if (sampleCount > 1) {
+                        ASSERT(arrayLayers == 1);
+                        return MTLTextureType2DMultisample;
+                    } else {
+                        return (arrayLayers > 1) ? MTLTextureType2DArray : MTLTextureType2D;
+                    }
             }
         }
 
-        MTLTextureType MetalTextureViewType(dawn::TextureViewDimension dimension) {
+        MTLTextureType MetalTextureViewType(dawn::TextureViewDimension dimension,
+                                            unsigned int sampleCount) {
             switch (dimension) {
                 case dawn::TextureViewDimension::e2D:
-                    return MTLTextureType2D;
+                    return (sampleCount > 1) ? MTLTextureType2DMultisample : MTLTextureType2D;
                 case dawn::TextureViewDimension::e2DArray:
                     return MTLTextureType2DArray;
                 case dawn::TextureViewDimension::Cube:
@@ -178,7 +185,8 @@ namespace dawn_native { namespace metal {
 
     MTLTextureDescriptor* CreateMetalTextureDescriptor(const TextureDescriptor* descriptor) {
         MTLTextureDescriptor* mtlDesc = [MTLTextureDescriptor new];
-        mtlDesc.textureType = MetalTextureType(descriptor->dimension, descriptor->arrayLayerCount);
+        mtlDesc.textureType = MetalTextureType(descriptor->dimension, descriptor->arrayLayerCount,
+                                               descriptor->sampleCount);
         mtlDesc.usage = MetalTextureUsage(descriptor->usage);
         mtlDesc.pixelFormat = MetalPixelFormat(descriptor->format);
 
@@ -190,18 +198,20 @@ namespace dawn_native { namespace metal {
         mtlDesc.arrayLength = descriptor->arrayLayerCount;
         mtlDesc.storageMode = MTLStorageModePrivate;
 
+        mtlDesc.sampleCount = descriptor->sampleCount;
+
         return mtlDesc;
     }
 
     Texture::Texture(Device* device, const TextureDescriptor* descriptor)
-        : TextureBase(device, descriptor) {
+        : TextureBase(device, descriptor, TextureState::OwnedInternal) {
         MTLTextureDescriptor* mtlDesc = CreateMetalTextureDescriptor(descriptor);
         mMtlTexture = [device->GetMTLDevice() newTextureWithDescriptor:mtlDesc];
         [mtlDesc release];
     }
 
     Texture::Texture(Device* device, const TextureDescriptor* descriptor, id<MTLTexture> mtlTexture)
-        : TextureBase(device, descriptor), mMtlTexture(mtlTexture) {
+        : TextureBase(device, descriptor, TextureState::OwnedInternal), mMtlTexture(mtlTexture) {
         [mMtlTexture retain];
     }
 
@@ -209,8 +219,9 @@ namespace dawn_native { namespace metal {
                      const TextureDescriptor* descriptor,
                      IOSurfaceRef ioSurface,
                      uint32_t plane)
-        : TextureBase(device, descriptor) {
+        : TextureBase(device, descriptor, TextureState::OwnedInternal) {
         MTLTextureDescriptor* mtlDesc = CreateMetalTextureDescriptor(descriptor);
+        mtlDesc.storageMode = MTLStorageModeManaged;
         mMtlTexture = [device->GetMTLDevice() newTextureWithDescriptor:mtlDesc
                                                              iosurface:ioSurface
                                                                  plane:plane];
@@ -218,7 +229,12 @@ namespace dawn_native { namespace metal {
     }
 
     Texture::~Texture() {
+        DestroyInternal();
+    }
+
+    void Texture::DestroyImpl() {
         [mMtlTexture release];
+        mMtlTexture = nil;
     }
 
     id<MTLTexture> Texture::GetMTLTexture() {
@@ -235,7 +251,8 @@ namespace dawn_native { namespace metal {
             mMtlTextureView = [mtlTexture retain];
         } else {
             MTLPixelFormat format = MetalPixelFormat(descriptor->format);
-            MTLTextureType textureViewType = MetalTextureViewType(descriptor->dimension);
+            MTLTextureType textureViewType =
+                MetalTextureViewType(descriptor->dimension, texture->GetSampleCount());
             auto mipLevelRange = NSMakeRange(descriptor->baseMipLevel, descriptor->mipLevelCount);
             auto arrayLayerRange =
                 NSMakeRange(descriptor->baseArrayLayer, descriptor->arrayLayerCount);

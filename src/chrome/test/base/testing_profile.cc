@@ -40,11 +40,12 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service.h"
-#include "chrome/browser/policy/schema_registry_service_factory.h"
+#include "chrome/browser/policy/schema_registry_service_profile_builder.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
@@ -53,6 +54,7 @@
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/bookmark_sync_service_factory.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
+#include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
@@ -79,10 +81,14 @@
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "components/keyed_service/core/simple_dependency_manager.h"
 #include "components/keyed_service/core/simple_factory_key.h"
+#include "components/keyed_service/core/simple_key_map.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/history_index_restore_observer.h"
 #include "components/omnibox/browser/in_memory_url_index.h"
+#include "components/policy/core/common/cloud/cloud_external_data_manager.h"
+#include "components/policy/core/common/cloud/mock_user_cloud_policy_store.h"
+#include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_service_impl.h"
@@ -114,6 +120,8 @@
 #include "net/url_request/url_request_test_util.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/test/test_network_connection_tracker.h"
+#include "services/service_manager/public/cpp/service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -131,12 +139,17 @@
 #include "extensions/browser/extension_system.h"
 #endif
 
+#if !defined(OS_ANDROID)
+#include "chrome/services/app_service/app_service.h"
+#include "chrome/services/app_service/public/mojom/constants.mojom.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chromeos/account_manager/account_manager.h"
-#include "chromeos/account_manager/account_manager_factory.h"
+#include "chromeos/components/account_manager/account_manager.h"
+#include "chromeos/components/account_manager/account_manager_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -215,8 +228,7 @@ std::unique_ptr<KeyedService> BuildWebDataService(
 }
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-std::unique_ptr<KeyedService> BuildOfflinePageModel(
-    content::BrowserContext* context) {
+std::unique_ptr<KeyedService> BuildOfflinePageModel(SimpleFactoryKey* key) {
   return std::make_unique<offline_pages::StubOfflinePageModel>();
 }
 #endif
@@ -284,6 +296,7 @@ TestingProfile::TestingProfile(
     bool allows_browser_windows,
     base::Optional<bool> is_new_profile,
     const std::string& supervised_user_id,
+    std::unique_ptr<policy::UserCloudPolicyManager> policy_manager,
     std::unique_ptr<policy::PolicyService> policy_service,
     TestingFactories testing_factories,
     const std::string& profile_name)
@@ -304,6 +317,7 @@ TestingProfile::TestingProfile(
       browser_context_dependency_manager_(
           BrowserContextDependencyManager::GetInstance()),
       resource_context_(nullptr),
+      user_cloud_policy_manager_(std::move(policy_manager)),
       delegate_(delegate),
       profile_name_(profile_name),
       policy_service_(policy_service.release()) {
@@ -380,11 +394,12 @@ void TestingProfile::Init() {
                           profile_manager->GetSystemProfilePath());
   }
 
-  if (IsOffTheRecord())
-    key_ = std::make_unique<SimpleFactoryKey>(
-        original_profile_->GetPath(), original_profile_->GetSimpleFactoryKey());
-  else
-    key_ = std::make_unique<SimpleFactoryKey>(profile_path_);
+  if (IsOffTheRecord()) {
+    key_ = std::make_unique<ProfileKey>(original_profile_->GetPath(),
+                                        original_profile_->GetProfileKey());
+  } else {
+    key_ = std::make_unique<ProfileKey>(profile_path_);
+  }
 
   BrowserContext::Initialize(this, profile_path_);
 
@@ -400,7 +415,7 @@ void TestingProfile::Init() {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   if (!IsOffTheRecord()) {
     SupervisedUserSettingsService* settings_service =
-        SupervisedUserSettingsServiceFactory::GetForProfile(this);
+        SupervisedUserSettingsServiceFactory::GetForKey(key_.get());
     TestingPrefStore* store = new TestingPrefStore();
     settings_service->Init(store);
     settings_service->MergeDataAndStartSyncing(
@@ -423,6 +438,9 @@ void TestingProfile::Init() {
   else
     CreateTestingPrefService();
 
+  key_->SetPrefs(prefs_.get());
+  SimpleKeyMap::GetInstance()->Associate(this, key_.get());
+
   if (!base::PathExists(profile_path_))
     base::CreateDirectory(profile_path_);
 
@@ -436,7 +454,8 @@ void TestingProfile::Init() {
       profile_path_, GetURLLoaderFactory(),
       base::BindRepeating(&chromeos::DelayNetworkCall,
                           base::TimeDelta::FromMilliseconds(
-                              chromeos::kDefaultNetworkRetryDelayMS)));
+                              chromeos::kDefaultNetworkRetryDelayMS)),
+      GetPrefs());
   if (!chromeos::CrosSettings::IsInitialized()) {
     scoped_cros_settings_test_helper_.reset(
         new chromeos::ScopedCrosSettingsTestHelper);
@@ -482,17 +501,18 @@ void TestingProfile::Init() {
 
   // Prefs for incognito profiles are set in CreateIncognitoPrefService() by
   // simulating ProfileImpl::GetOffTheRecordPrefs().
-  SimpleFactoryKey* key = GetSimpleFactoryKey();
+  SimpleFactoryKey* key = GetProfileKey();
   if (!IsOffTheRecord()) {
     DCHECK(!original_profile_);
     user_prefs::PrefRegistrySyncable* pref_registry =
         static_cast<user_prefs::PrefRegistrySyncable*>(
             prefs_->DeprecatedGetPrefRegistry());
-    simple_dependency_manager_->RegisterProfilePrefsForServices(key,
-                                                                pref_registry);
-    browser_context_dependency_manager_->
-        RegisterProfilePrefsForServices(this, pref_registry);
+    simple_dependency_manager_->RegisterProfilePrefsForServices(pref_registry);
+    browser_context_dependency_manager_->RegisterProfilePrefsForServices(
+        pref_registry);
   }
+
+  FullBrowserTransitionManager::Get()->OnProfileCreated(this);
 
   simple_dependency_manager_->CreateServicesForTest(key);
   browser_context_dependency_manager_->CreateBrowserContextServicesForTest(
@@ -530,8 +550,21 @@ TestingProfile::~TestingProfile() {
 
   MaybeSendDestroyedNotification();
 
-  browser_context_dependency_manager_->DestroyBrowserContextServices(this);
-  simple_dependency_manager_->DestroyKeyedServices(GetSimpleFactoryKey());
+  FullBrowserTransitionManager::Get()->OnProfileDestroyed(this);
+
+  // The SimpleDependencyManager should always be passed after the
+  // BrowserContextDependencyManager. This is because the KeyedService instances
+  // in the BrowserContextDependencyManager's dependency graph can depend on the
+  // ones in the SimpleDependencyManager's graph.
+  DependencyManager::PerformInterlockedTwoPhaseShutdown(
+      browser_context_dependency_manager_, this, simple_dependency_manager_,
+      key_.get());
+  key_.reset();
+
+  SimpleKeyMap::GetInstance()->Dissociate(this);
+
+  if (user_cloud_policy_manager_)
+    user_cloud_policy_manager_->Shutdown();
 
   if (host_content_settings_map_.get())
     host_content_settings_map_->ShutdownOnUIThread();
@@ -597,7 +630,7 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
   }
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   offline_pages::OfflinePageModelFactory::GetInstance()->SetTestingFactory(
-      this, base::BindRepeating(&BuildOfflinePageModel));
+      GetProfileKey(), base::BindRepeating(&BuildOfflinePageModel));
 #endif
   ManagedBookmarkServiceFactory::GetInstance()->SetTestingFactory(
       this, ManagedBookmarkServiceFactory::GetDefaultFactory());
@@ -772,7 +805,7 @@ void TestingProfile::CreatePrefServiceForSupervisedUser() {
   DCHECK(!supervised_user_id_.empty());
   sync_preferences::PrefServiceMockFactory factory;
   SupervisedUserSettingsService* supervised_user_settings =
-      SupervisedUserSettingsServiceFactory::GetForProfile(this);
+      SupervisedUserSettingsServiceFactory::GetForKey(GetProfileKey());
   scoped_refptr<PrefStore> supervised_user_prefs =
       base::MakeRefCounted<SupervisedUserPrefStore>(supervised_user_settings);
 
@@ -798,10 +831,7 @@ void TestingProfile::CreateIncognitoPrefService() {
 
 void TestingProfile::CreateProfilePolicyConnector() {
   schema_registry_service_ =
-      policy::SchemaRegistryServiceFactory::CreateForContext(
-          this, policy::Schema(), nullptr);
-  CHECK_EQ(schema_registry_service_.get(),
-           policy::SchemaRegistryServiceFactory::GetForContext(this));
+      BuildSchemaRegistryServiceForProfile(this, policy::Schema(), nullptr);
 
   if (!policy_service_) {
     std::vector<policy::ConfigurationPolicyProvider*> providers;
@@ -895,9 +925,18 @@ base::Time TestingProfile::GetStartTime() const {
   return start_time_;
 }
 
-SimpleFactoryKey* TestingProfile::GetSimpleFactoryKey() const {
+ProfileKey* TestingProfile::GetProfileKey() const {
   DCHECK(key_);
   return key_.get();
+}
+
+policy::SchemaRegistryService*
+TestingProfile::GetPolicySchemaRegistryService() {
+  return schema_registry_service_.get();
+}
+
+policy::UserCloudPolicyManager* TestingProfile::GetUserCloudPolicyManager() {
+  return user_cloud_policy_manager_.get();
 }
 
 base::FilePath TestingProfile::last_selected_directory() {
@@ -1012,6 +1051,18 @@ void TestingProfile::SetCorsOriginAccessListForOrigin(
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(closure));
 }
 
+std::unique_ptr<service_manager::Service> TestingProfile::HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
+#if !defined(OS_ANDROID)
+  if (service_name == apps::mojom::kServiceName) {
+    return std::make_unique<apps::AppService>(std::move(request));
+  }
+#endif  // !defined(OS_ANDROID)
+
+  return nullptr;
+}
+
 net::URLRequestContextGetter*
 TestingProfile::CreateMediaRequestContextForStoragePartition(
     const base::FilePath& partition_path,
@@ -1095,6 +1146,11 @@ void TestingProfile::Builder::SetSupervisedUserId(
   supervised_user_id_ = supervised_user_id;
 }
 
+void TestingProfile::Builder::SetUserCloudPolicyManager(
+    std::unique_ptr<policy::UserCloudPolicyManager> user_cloud_policy_manager) {
+  user_cloud_policy_manager_ = std::move(user_cloud_policy_manager);
+}
+
 void TestingProfile::Builder::SetPolicyService(
     std::unique_ptr<policy::PolicyService> policy_service) {
   policy_service_ = std::move(policy_service);
@@ -1114,15 +1170,15 @@ std::unique_ptr<TestingProfile> TestingProfile::Builder::Build() {
   DCHECK(!build_called_);
   build_called_ = true;
 
-  return std::unique_ptr<TestingProfile>(
-      new TestingProfile(path_, delegate_,
+  return std::unique_ptr<TestingProfile>(new TestingProfile(
+      path_, delegate_,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-                         extension_policy_,
+      extension_policy_,
 #endif
-                         std::move(pref_service_), nullptr, guest_session_,
-                         allows_browser_windows_, std::move(is_new_profile_),
-                         supervised_user_id_, std::move(policy_service_),
-                         std::move(testing_factories_), profile_name_));
+      std::move(pref_service_), nullptr, guest_session_,
+      allows_browser_windows_, std::move(is_new_profile_), supervised_user_id_,
+      std::move(user_cloud_policy_manager_), std::move(policy_service_),
+      std::move(testing_factories_), profile_name_));
 }
 
 TestingProfile* TestingProfile::Builder::BuildIncognito(
@@ -1139,5 +1195,6 @@ TestingProfile* TestingProfile::Builder::BuildIncognito(
 #endif
       std::move(pref_service_), original_profile, guest_session_,
       allows_browser_windows_, std::move(is_new_profile_), supervised_user_id_,
-      std::move(policy_service_), std::move(testing_factories_), profile_name_);
+      std::move(user_cloud_policy_manager_), std::move(policy_service_),
+      std::move(testing_factories_), profile_name_);
 }

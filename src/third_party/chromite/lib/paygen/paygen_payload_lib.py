@@ -105,11 +105,22 @@ class PaygenPayload(object):
     #
     #  Names to pass to cros_generate_update_payload for extracting old/new
     # kernel/rootfs partitions.
-    self.partition_names = (self._ROOTFS, self._KERNEL)
-    self.tgt_partitions = tuple(os.path.join(self.work_dir, 'tgt_%s.bin' % name)
-                                for name in self.partition_names)
-    self.src_partitions = tuple(os.path.join(self.work_dir, 'src_%s.bin' % name)
-                                for name in self.partition_names)
+    if self._IsDLC():
+      # DLC module image has 1 partition.
+      self.partition_names = ('dlc/%s/%s' %
+                              (self.payload.tgt_image.dlc_id,
+                               self.payload.tgt_image.dlc_package),)
+      # DLC partition is the image itself.
+      self.tgt_partitions = (self.tgt_image_file,)
+      self.src_partitions = (self.src_image_file,)
+    else:
+      self.partition_names = (self._ROOTFS, self._KERNEL)
+      self.tgt_partitions = tuple(os.path.join(self.work_dir,
+                                               'tgt_%s.bin' % name)
+                                  for name in self.partition_names)
+      self.src_partitions = tuple(os.path.join(self.work_dir,
+                                               'src_%s.bin' % name)
+                                  for name in self.partition_names)
 
     self.signer = None
     if sign:
@@ -119,6 +130,9 @@ class PaygenPayload(object):
     # instance of the cache manager to properly coordinate.
     self._cache = download_cache.DownloadCache(
         self._FindCacheDir(), cache_size=PaygenPayload.CACHE_SIZE)
+
+  def _IsDLC(self):
+    return gspaths.IsDLCImage(self.payload.tgt_image)
 
   def _MetadataUri(self, uri):
     """Given a payload uri, find the uri for the metadata signature."""
@@ -305,8 +319,6 @@ class PaygenPayload(object):
           partition_lib.ExtractKernel(self.src_image_file,
                                       self.src_partitions[idx])
       else:
-        # It is a normal dlc partition, so we need to just copy it there but for
-        # now just raise an error.
         raise Error('Invalid partition %s' % part_name)
 
   def _GenerateUnsignedPayload(self):
@@ -314,11 +326,13 @@ class PaygenPayload(object):
     # Note that the command run here requires sudo access.
     logging.info('Generating unsigned payload as %s', self.payload_file)
 
-    self._ExtractPartitions()
+    if not self._IsDLC():
+      self._ExtractPartitions()
 
     # Makes sure we have generated postinstall config for major version 2 and
     # platform image.
-    self._GeneratePostinstConfig(True)
+    # We do not generate postinstall config for DLC images.
+    self._GeneratePostinstConfig(not self._IsDLC())
 
     tgt_image = self.payload.tgt_image
     cmd = ['delta_generator',
@@ -327,9 +341,11 @@ class PaygenPayload(object):
            # Target image args: (The order of partitions are important.)
            '--partition_names=' + ':'.join(self.partition_names),
            '--new_partitions=' +
-           ':'.join(path_util.ToChrootPath(x) for x in self.tgt_partitions),
-           '--new_postinstall_config_file=' +
-           path_util.ToChrootPath(self._postinst_config_file)]
+           ':'.join(path_util.ToChrootPath(x) for x in self.tgt_partitions)]
+
+    if not self._IsDLC():
+      cmd += ['--new_postinstall_config_file=' +
+              path_util.ToChrootPath(self._postinst_config_file)]
 
     if tgt_image.build:
       # These next 6 parameters are basically optional and the update engine

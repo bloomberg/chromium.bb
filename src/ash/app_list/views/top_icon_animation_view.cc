@@ -19,8 +19,8 @@ TopIconAnimationView::TopIconAnimationView(const gfx::ImageSkia& icon,
                                            const gfx::Rect& scaled_rect,
                                            bool open_folder,
                                            bool item_in_folder_icon)
-    : icon_(new views::ImageView),
-      title_(new views::Label),
+    : icon_(nullptr),
+      title_(nullptr),
       scaled_rect_(scaled_rect),
       open_folder_(open_folder),
       item_in_folder_icon_(item_in_folder_icon) {
@@ -28,24 +28,27 @@ TopIconAnimationView::TopIconAnimationView(const gfx::ImageSkia& icon,
   DCHECK(!icon.isNull());
   gfx::ImageSkia resized(gfx::ImageSkiaOperations::CreateResizedImage(
       icon, skia::ImageOperations::RESIZE_BEST, icon_size_));
-  icon_->SetImage(resized);
-  AddChildView(icon_);
+  auto icon_image = std::make_unique<views::ImageView>();
+  icon_image->SetImage(resized);
+  icon_ = AddChildView(std::move(icon_image));
 
-  title_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  title_->SetAutoColorReadabilityEnabled(false);
-  title_->SetHandlesTooltips(false);
-  title_->SetFontList(AppListConfig::instance().app_title_font());
-  title_->SetLineHeight(AppListConfig::instance().app_title_max_line_height());
-  title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  title_->SetEnabledColor(SK_ColorBLACK);
-  title_->SetText(title);
+  auto title_label = std::make_unique<views::Label>();
+  title_label->SetBackgroundColor(SK_ColorTRANSPARENT);
+  title_label->SetAutoColorReadabilityEnabled(false);
+  title_label->SetHandlesTooltips(false);
+  title_label->SetFontList(AppListConfig::instance().app_title_font());
+  title_label->SetLineHeight(
+      AppListConfig::instance().app_title_max_line_height());
+  title_label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  title_label->SetEnabledColor(SK_ColorBLACK);
+  title_label->SetText(title);
   if (item_in_folder_icon_) {
     // The title's opacity of the item should be changed separately if it is in
     // the folder item's icon.
-    title_->SetPaintToLayer();
-    title_->layer()->SetFillsBoundsOpaquely(false);
+    title_label->SetPaintToLayer();
+    title_label->layer()->SetFillsBoundsOpaquely(false);
   }
-  AddChildView(title_);
+  title_ = AddChildView(std::move(title_label));
 
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);

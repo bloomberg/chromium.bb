@@ -19,7 +19,8 @@ ImageFetcherImpl::ImageFetcherImpl(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : url_loader_factory_(url_loader_factory),
       image_decoder_(std::move(image_decoder)),
-      image_data_fetcher_(new ImageDataFetcher(url_loader_factory)) {}
+      image_data_fetcher_(new ImageDataFetcher(url_loader_factory)),
+      weak_ptr_factory_(this) {}
 
 ImageFetcherImpl::~ImageFetcherImpl() {}
 
@@ -102,8 +103,8 @@ void ImageFetcherImpl::OnImageURLFetched(const GURL& image_url,
   request->request_metadata = metadata;
   image_decoder_->DecodeImage(
       image_data, params.frame_size(),
-      base::BindRepeating(&ImageFetcherImpl::OnImageDecoded,
-                          base::Unretained(this), image_url, metadata));
+      base::BindOnce(&ImageFetcherImpl::OnImageDecoded,
+                     weak_ptr_factory_.GetWeakPtr(), image_url, metadata));
 }
 
 void ImageFetcherImpl::OnImageDecoded(const GURL& image_url,

@@ -16,7 +16,7 @@ class Event;
 }
 
 namespace views {
-class MenuButton;
+class Button;
 
 // An interface implemented by an object to let it know that a menu button was
 // clicked.
@@ -26,12 +26,12 @@ class VIEWS_EXPORT MenuButtonListener {
   // point to display the menu, and |event| is the event causing the click, if
   // any. (Note: "Clicked" refers to any activation, including e.g. accelerators
   // and key events).
-  virtual void OnMenuButtonClicked(MenuButton* source,
+  virtual void OnMenuButtonClicked(Button* source,
                                    const gfx::Point& point,
                                    const ui::Event* event) = 0;
 
  protected:
-  virtual ~MenuButtonListener() {}
+  virtual ~MenuButtonListener() = default;
 };
 
 }  // namespace views

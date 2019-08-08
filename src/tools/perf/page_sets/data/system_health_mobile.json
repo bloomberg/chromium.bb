@@ -27,14 +27,14 @@
         "browse:media:flickr_infinite_scroll": {
             "DEFAULT": "system_health_mobile_062.wprgo"
         },
+        "browse:media:googleplaystore:2019": {
+            "DEFAULT": "system_health_mobile_4413a28712.wprgo"
+        },
         "browse:media:imgur": {
             "DEFAULT": "system_health_mobile_035.wprgo"
         },
         "browse:media:youtube": {
             "DEFAULT": "system_health_mobile_037.wprgo"
-        },
-        "browse:media:googleplaystore:2019": {
-            "DEFAULT": "system_health_mobile_4413a28712.wprgo"
         },
         "browse:news:cnn": {
             "DEFAULT": "system_health_mobile_014.wprgo"
@@ -71,6 +71,9 @@
         },
         "browse:search:amp:2018": {
             "DEFAULT": "system_health_mobile_0483ae239d.wprgo"
+        },
+        "browse:search:amp:sxg:2019": {
+            "DEFAULT": "system_health_mobile_d7a7409e72.wprgo"
         },
         "browse:shopping:amazon": {
             "DEFAULT": "system_health_mobile_053.wprgo"

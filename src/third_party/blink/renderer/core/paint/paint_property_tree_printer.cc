@@ -69,6 +69,7 @@ class PropertyTreePrinterTraits<TransformPaintPropertyNode> {
   static void AddVisualViewportProperties(
       const VisualViewport& visual_viewport,
       PropertyTreePrinter<TransformPaintPropertyNode>& printer) {
+    printer.AddNode(visual_viewport.GetDeviceEmulationTransformNode());
     printer.AddNode(visual_viewport.GetOverscrollElasticityTransformNode());
     printer.AddNode(visual_viewport.GetPageScaleNode());
     printer.AddNode(visual_viewport.GetScrollTranslationNode());

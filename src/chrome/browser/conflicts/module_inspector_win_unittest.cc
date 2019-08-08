@@ -12,8 +12,11 @@
 #include "base/bind.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_path_override.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/services/util_win/public/mojom/constants.mojom.h"
 #include "chrome/services/util_win/util_win_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -33,9 +36,25 @@ base::FilePath GetKernel32DllFilePath() {
   return path;
 }
 
+bool CreateInspectionResultsCacheWithEntry(
+    const ModuleInfoKey& module_key,
+    const ModuleInspectionResult& inspection_result) {
+  // First create a cache with bogus data and create the cache file.
+  InspectionResultsCache inspection_results_cache;
+
+  AddInspectionResultToCache(module_key, inspection_result,
+                             &inspection_results_cache);
+
+  return WriteInspectionResultsCache(
+      ModuleInspector::GetInspectionResultsCachePath(),
+      inspection_results_cache);
+}
+
 class ModuleInspectorTest : public testing::Test {
  public:
-  ModuleInspectorTest() = default;
+  ModuleInspectorTest()
+      : test_browser_thread_bundle_(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
 
   // Callback for ModuleInspector.
   void OnModuleInspected(const ModuleInfoKey& module_key,
@@ -44,10 +63,17 @@ class ModuleInspectorTest : public testing::Test {
   }
 
   void RunUntilIdle() { test_browser_thread_bundle_.RunUntilIdle(); }
+  void FastForwardToIdleTimer() {
+    test_browser_thread_bundle_.FastForwardBy(
+        ModuleInspector::kFlushInspectionResultsTimerTimeout);
+    test_browser_thread_bundle_.RunUntilIdle();
+  }
 
   const std::vector<ModuleInspectionResult>& inspected_modules() {
     return inspected_modules_;
   }
+
+  void ClearInspectedModules() { inspected_modules_.clear(); }
 
   // A TestBrowserThreadBundle is required instead of a ScopedTaskEnvironment
   // because of AfterStartupTaskUtils (DCHECK for BrowserThread::UI).
@@ -145,4 +171,115 @@ TEST_F(ModuleInspectorTest, OOPInspectModule) {
 
   RunUntilIdle();
   EXPECT_EQ(2u, inspected_modules().size());
+}
+
+TEST_F(ModuleInspectorTest, InspectionResultsCache) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kInspectionResultsCache);
+
+  base::ScopedTempDir scoped_temp_dir;
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+
+  base::ScopedPathOverride scoped_user_data_dir_override(
+      chrome::DIR_USER_DATA, scoped_temp_dir.GetPath());
+
+  // First create a cache with bogus data and create the cache file.
+  ModuleInfoKey module_key(GetKernel32DllFilePath(), 0, 0);
+  ModuleInspectionResult inspection_result;
+  inspection_result.location = L"BogusLocation";
+  inspection_result.basename = L"BogusBasename";
+
+  ASSERT_TRUE(
+      CreateInspectionResultsCacheWithEntry(module_key, inspection_result));
+
+  ModuleInspector module_inspector(base::Bind(
+      &ModuleInspectorTest::OnModuleInspected, base::Unretained(this)));
+
+  module_inspector.AddModule(module_key);
+
+  RunUntilIdle();
+
+  ASSERT_EQ(1u, inspected_modules().size());
+
+  // The following comparisons can only succeed if the module was truly read
+  // from the cache.
+  ASSERT_EQ(inspected_modules()[0].location, inspection_result.location);
+  ASSERT_EQ(inspected_modules()[0].basename, inspection_result.basename);
+}
+
+// Tests that when OnModuleDatabaseIdle() notificate is received, the cache is
+// flushed to disk.
+TEST_F(ModuleInspectorTest, InspectionResultsCache_OnModuleDatabaseIdle) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kInspectionResultsCache);
+
+  base::ScopedTempDir scoped_temp_dir;
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+
+  base::ScopedPathOverride scoped_user_data_dir_override(
+      chrome::DIR_USER_DATA, scoped_temp_dir.GetPath());
+
+  ModuleInspector module_inspector(base::Bind(
+      &ModuleInspectorTest::OnModuleInspected, base::Unretained(this)));
+
+  ModuleInfoKey module_key(GetKernel32DllFilePath(), 0, 0);
+  module_inspector.AddModule(module_key);
+
+  RunUntilIdle();
+
+  ASSERT_EQ(1u, inspected_modules().size());
+
+  module_inspector.OnModuleDatabaseIdle();
+  RunUntilIdle();
+
+  // If the cache was written to disk, it should contain the one entry for
+  // Kernel32.dll.
+  InspectionResultsCache inspection_results_cache;
+  EXPECT_EQ(ReadInspectionResultsCache(
+                ModuleInspector::GetInspectionResultsCachePath(), 0,
+                &inspection_results_cache),
+            ReadCacheResult::kSuccess);
+
+  EXPECT_EQ(inspection_results_cache.size(), 1u);
+  auto inspection_result =
+      GetInspectionResultFromCache(module_key, &inspection_results_cache);
+  EXPECT_TRUE(inspection_result);
+}
+
+// Tests that when the timer expires before the OnModuleDatabaseIdle()
+// notification, the cache is flushed to disk.
+TEST_F(ModuleInspectorTest, InspectionResultsCache_TimerExpired) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kInspectionResultsCache);
+
+  base::ScopedTempDir scoped_temp_dir;
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+
+  base::ScopedPathOverride scoped_user_data_dir_override(
+      chrome::DIR_USER_DATA, scoped_temp_dir.GetPath());
+
+  ModuleInspector module_inspector(base::Bind(
+      &ModuleInspectorTest::OnModuleInspected, base::Unretained(this)));
+
+  ModuleInfoKey module_key(GetKernel32DllFilePath(), 0, 0);
+  module_inspector.AddModule(module_key);
+
+  RunUntilIdle();
+
+  ASSERT_EQ(1u, inspected_modules().size());
+
+  // Fast forwarding until the timer is fired.
+  FastForwardToIdleTimer();
+
+  // If the cache was flushed, it should contain the one entry for Kernel32.dll.
+  InspectionResultsCache inspection_results_cache;
+  EXPECT_EQ(ReadInspectionResultsCache(
+                ModuleInspector::GetInspectionResultsCachePath(), 0,
+                &inspection_results_cache),
+            ReadCacheResult::kSuccess);
+
+  EXPECT_EQ(inspection_results_cache.size(), 1u);
+  auto inspection_result =
+      GetInspectionResultFromCache(module_key, &inspection_results_cache);
+  EXPECT_TRUE(inspection_result);
 }

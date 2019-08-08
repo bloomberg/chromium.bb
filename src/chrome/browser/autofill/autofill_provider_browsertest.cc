@@ -31,9 +31,6 @@ using ::testing::Invoke;
 namespace autofill {
 namespace {
 
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data");
-
 class MockAutofillProvider : public TestAutofillProvider {
  public:
   MockAutofillProvider() {}
@@ -92,7 +89,6 @@ class AutofillProviderBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     autofill_client_ = std::make_unique<TestAutofillClient>();
     autofill_provider_ = std::make_unique<MockAutofillProvider>();
-    embedded_test_server()->AddDefaultHandlers(base::FilePath(kDocRoot));
     // Serve both a.com and b.com (and any other domain).
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());

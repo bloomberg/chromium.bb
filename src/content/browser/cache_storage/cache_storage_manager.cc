@@ -17,9 +17,9 @@
 #include "base/containers/id_map.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/hash/sha1.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
-#include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -79,13 +79,14 @@ void ListOriginsAndLastModifiedOnTaskRunner(
 
   base::FilePath path;
   while (!(path = file_enum.Next()).empty()) {
-    base::FilePath index_path = path.AppendASCII(CacheStorage::kIndexFileName);
+    base::FilePath index_path =
+        path.AppendASCII(LegacyCacheStorage::kIndexFileName);
     base::File::Info file_info;
     base::Time index_last_modified;
     if (GetFileInfo(index_path, &file_info))
       index_last_modified = file_info.last_modified;
     std::string protobuf;
-    base::ReadFileToString(path.AppendASCII(CacheStorage::kIndexFileName),
+    base::ReadFileToString(path.AppendASCII(LegacyCacheStorage::kIndexFileName),
                            &protobuf);
     proto::CacheStorageIndex index;
     if (index.ParseFromString(protobuf)) {
@@ -198,7 +199,7 @@ CacheStorageHandle CacheStorageManager::OpenCacheStorage(
 
   CacheStorageMap::const_iterator it = cache_storage_map_.find({origin, owner});
   if (it == cache_storage_map_.end()) {
-    CacheStorage* cache_storage = new CacheStorage(
+    LegacyCacheStorage* cache_storage = new LegacyCacheStorage(
         ConstructOriginPath(root_path_, origin, owner), IsMemoryBacked(),
         cache_task_runner_.get(), quota_manager_proxy_, blob_context_, this,
         origin, owner);
@@ -238,9 +239,10 @@ void CacheStorageManager::NotifyCacheContentChanged(const url::Origin& origin,
     observer.OnCacheContentChanged(origin, name);
 }
 
-void CacheStorageManager::CacheStorageUnreferenced(CacheStorage* cache_storage,
-                                                   const url::Origin& origin,
-                                                   CacheStorageOwner owner) {
+void CacheStorageManager::CacheStorageUnreferenced(
+    LegacyCacheStorage* cache_storage,
+    const url::Origin& origin,
+    CacheStorageOwner owner) {
   DCHECK(cache_storage);
   cache_storage->AssertUnreferenced();
   auto it = cache_storage_map_.find({origin, owner});
@@ -250,6 +252,13 @@ void CacheStorageManager::CacheStorageUnreferenced(CacheStorage* cache_storage,
   // Currently we don't do anything when a CacheStorage instance becomes
   // unreferenced.  In the future we will deallocate some or all of the
   // CacheStorage's state.
+}
+
+// static
+bool CacheStorageManager::IsValidQuotaOrigin(const url::Origin& origin) {
+  // Disallow opaque origins at the quota boundary because we DCHECK that we
+  // don't get an opaque origin in lower code layers.
+  return !origin.opaque();
 }
 
 void CacheStorageManager::GetAllOriginsUsage(
@@ -303,14 +312,15 @@ void CacheStorageManager::GetAllOriginsUsageGetSizes(
                      std::move(callback)));
 
   for (StorageUsageInfo& usage : *usages_ptr) {
-    if (usage.total_size_bytes != CacheStorage::kSizeUnknown) {
+    if (usage.total_size_bytes != CacheStorage::kSizeUnknown ||
+        !IsValidQuotaOrigin(usage.origin)) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, barrier_closure);
       continue;
     }
     CacheStorageHandle cache_storage =
         OpenCacheStorage(usage.origin, CacheStorageOwner::kCacheAPI);
-    cache_storage.value()->Size(
-        base::BindOnce(&OneOriginSizeReported, barrier_closure, &usage));
+    LegacyCacheStorage::From(cache_storage)
+        ->Size(base::BindOnce(&OneOriginSizeReported, barrier_closure, &usage));
   }
 }
 
@@ -321,8 +331,7 @@ void CacheStorageManager::GetOriginUsage(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   CacheStorageHandle cache_storage = OpenCacheStorage(origin, owner);
-
-  cache_storage.value()->Size(std::move(callback));
+  LegacyCacheStorage::From(cache_storage)->Size(std::move(callback));
 }
 
 void CacheStorageManager::GetOrigins(
@@ -385,7 +394,7 @@ void CacheStorageManager::DeleteOriginData(
   auto it = cache_storage_map_.find({origin, owner});
   DCHECK(it != cache_storage_map_.end());
 
-  CacheStorage* cache_storage = it->second.release();
+  LegacyCacheStorage* cache_storage = it->second.release();
   cache_storage->ResetManager();
   cache_storage_map_.erase({origin, owner});
   cache_storage->GetSizeThenCloseAllCaches(
@@ -404,7 +413,7 @@ void CacheStorageManager::DeleteOriginDidClose(
     const url::Origin& origin,
     CacheStorageOwner owner,
     storage::QuotaClient::DeletionCallback callback,
-    std::unique_ptr<CacheStorage> cache_storage,
+    std::unique_ptr<LegacyCacheStorage> cache_storage,
     int64_t origin_size) {
   // TODO(jkarlin): Deleting the storage leaves any unfinished operations
   // hanging, resulting in unresolved promises. Fix this by returning early from

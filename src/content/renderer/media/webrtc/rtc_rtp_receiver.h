@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBRTC_RTC_RTP_RECEIVER_H_
 #define CONTENT_RENDERER_MEDIA_WEBRTC_RTC_RTP_RECEIVER_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
@@ -18,6 +20,7 @@
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/rtp_receiver_interface.h"
+#include "third_party/webrtc/api/stats/rtc_stats.h"
 
 namespace content {
 
@@ -126,9 +129,11 @@ class CONTENT_EXPORT RTCRtpReceiver : public blink::WebRTCRtpReceiver {
   blink::WebVector<blink::WebString> StreamIds() const override;
   blink::WebVector<std::unique_ptr<blink::WebRTCRtpSource>> GetSources()
       override;
-  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
-                blink::RTCStatsFilter) override;
+  void GetStats(blink::WebRTCStatsReportCallback,
+                const std::vector<webrtc::NonStandardGroupId>&) override;
   std::unique_ptr<webrtc::RtpParameters> GetParameters() const override;
+  void SetJitterBufferMinimumDelay(
+      base::Optional<double> delay_seconds) override;
 
  private:
   class RTCRtpReceiverInternal;

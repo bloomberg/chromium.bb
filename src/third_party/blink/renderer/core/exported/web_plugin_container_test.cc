@@ -203,8 +203,7 @@ class TestPluginWebFrameClient : public frame_test_helpers::TestWebFrameClient {
                                   WebTreeScopeType scope,
                                   const WebString& name,
                                   const WebString& fallback_name,
-                                  WebSandboxFlags sandbox_flags,
-                                  const ParsedFeaturePolicy& container_policy,
+                                  const FramePolicy&,
                                   const WebFrameOwnerProperties&,
                                   FrameOwnerElementType owner_type) override {
     return CreateLocalChild(*parent, scope,
@@ -264,6 +263,7 @@ String ReadClipboard() {
 
 void ClearClipboardBuffer() {
   SystemClipboard::GetInstance().WritePlainText(String(""));
+  SystemClipboard::GetInstance().CommitWrite();
   EXPECT_EQ(String(""), ReadClipboard());
 }
 
@@ -788,7 +788,7 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin) {
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
-                        kWebGestureDeviceTouchscreen);
+                        WebGestureDevice::kTouchscreen);
 
   // First, send an event that doesn't hit the plugin to verify that the
   // plugin doesn't receive it.
@@ -1513,7 +1513,7 @@ TEST_F(WebPluginContainerTest, CompositedPluginCAP) {
   const auto* plugin =
       static_cast<const CompositedPlugin*>(container->Plugin());
 
-  std::unique_ptr<PaintController> paint_controller = PaintController::Create();
+  auto paint_controller = std::make_unique<PaintController>();
   paint_controller->UpdateCurrentPaintChunkProperties(
       base::nullopt, PropertyTreeState::Root());
   GraphicsContext graphics_context(*paint_controller);

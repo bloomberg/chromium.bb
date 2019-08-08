@@ -13,6 +13,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#import "ios/web/common/crw_content_view.h"
+#include "ios/web/common/url_util.h"
 #import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/legacy_navigation_manager_impl.h"
@@ -26,10 +28,8 @@
 #include "ios/web/public/favicon_url.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
 #import "ios/web/public/navigation_item.h"
-#include "ios/web/public/url_util.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/context_menu_params.h"
-#import "ios/web/public/web_state/ui/crw_content_view.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
 #include "ios/web/public/web_state/web_state_interface_provider.h"
@@ -586,6 +586,10 @@ void WebStateImpl::WasHidden() {
     observer.WasHidden(this);
 }
 
+void WebStateImpl::SetKeepRenderProcessAlive(bool keep_alive) {
+  [web_controller_ setKeepsRenderProcessAlive:keep_alive];
+}
+
 BrowserState* WebStateImpl::GetBrowserState() const {
   return navigation_manager_->GetBrowserState();
 }
@@ -895,6 +899,10 @@ void WebStateImpl::GoToBackForwardListItem(WKBackForwardListItem* wk_item,
 
 void WebStateImpl::RemoveWebView() {
   return [web_controller_ removeWebView];
+}
+
+NavigationItemImpl* WebStateImpl::GetPendingItem() {
+  return [web_controller_ lastPendingItemForNewNavigation];
 }
 
 void WebStateImpl::RestoreSessionStorage(CRWSessionStorage* session_storage) {

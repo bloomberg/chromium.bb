@@ -37,9 +37,6 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerHelper
   // Callback to add labelled examples as training data.
   using AddExampleCB = base::RepeatingCallback<void(LabelledExample)>;
 
-  // Convenience.
-  using ObservationId = LearningTaskController::ObservationId;
-
   // TODO(liberato): Consider making the FP not optional.
   LearningTaskControllerHelper(const LearningTask& task,
                                AddExampleCB add_example_cb,
@@ -48,10 +45,10 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerHelper
   virtual ~LearningTaskControllerHelper();
 
   // See LearningTaskController::BeginObservation.
-  void BeginObservation(ObservationId id, FeatureVector features);
-  void CompleteObservation(ObservationId id,
+  void BeginObservation(base::UnguessableToken id, FeatureVector features);
+  void CompleteObservation(base::UnguessableToken id,
                            const ObservationCompletion& completion);
-  void CancelObservation(ObservationId id);
+  void CancelObservation(base::UnguessableToken id);
 
  private:
   // Record of an example that has been started by RecordObservedFeatures, but
@@ -67,19 +64,20 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerHelper
   };
 
   // [non-repeating int] = example
-  using PendingExampleMap = std::map<ObservationId, PendingExample>;
+  using PendingExampleMap = std::map<base::UnguessableToken, PendingExample>;
 
   // Called on any sequence when features are ready.  Will call OnFeatureReady
   // if called on |task_runner|, or will post to |task_runner|.
   static void OnFeaturesReadyTrampoline(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       base::WeakPtr<LearningTaskControllerHelper> weak_this,
-      ObservationId id,
+      base::UnguessableToken id,
       FeatureVector features);
 
   // Called when a new feature vector has been finished by |feature_provider_|,
   // if needed, to actually add the example.
-  void OnFeaturesReady(ObservationId example_id, FeatureVector features);
+  void OnFeaturesReady(base::UnguessableToken example_id,
+                       FeatureVector features);
 
   // If |example| is finished, then send it to the LearningSession and remove it
   // from the map.  Otherwise, do nothing.

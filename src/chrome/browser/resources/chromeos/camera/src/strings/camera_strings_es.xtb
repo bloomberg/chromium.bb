@@ -8,6 +8,7 @@
 <translation id="1664224225747386870">No se ha grabado nada</translation>
 <translation id="1862930711583847113">No se puede exportar <ph name="FILE" /></translation>
 <translation id="2036868001356139588">Duración del temporizador</translation>
+<translation id="2050339315714019657">Vertical</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> activa</translation>
 <translation id="229579744168541441">Exportar a disco</translation>
 <translation id="2501278716633472235">Volver</translation>
@@ -20,14 +21,19 @@
 <translation id="3081586908890909590">Cambiar al modo de cámara de vídeo</translation>
 <translation id="3183731565330012717">Tipo de cuadrícula</translation>
 <translation id="3227137524299004712">Micrófono</translation>
+<translation id="3517926952904427380">No se ha podido hacer una foto vertical</translation>
 <translation id="3569311554794739032">¿Seguro que quieres eliminar <ph name="FILE" />?</translation>
+<translation id="3810838688059735925">Vídeo</translation>
 <translation id="4279490309300973883">Duplicando</translation>
+<translation id="4329152592498422850">Cambiar para hacer una foto cuadrada</translation>
 <translation id="4445542136948522167">Detener foto</translation>
+<translation id="4628948037717959914">Foto</translation>
 <translation id="4649291346448517080">No se puede guardar el archivo</translation>
 <translation id="4890010094662541459">3x3</translation>
 <translation id="5057360777601936059">Tu cámara no está disponible en este momento.
         Comprueba si está conectada correctamente.</translation>
 <translation id="5152121255775685072">Ir a la galería</translation>
+<translation id="5671277269877808209">Cuadrado</translation>
 <translation id="5869546221129391014">Cuadrícula</translation>
 <translation id="6073451960410192870">Detener grabación</translation>
 <translation id="6233780560267770709">Tres por tres</translation>
@@ -46,6 +52,7 @@
 <translation id="8145038249676204903">Cambiar al modo de cámara de fotos</translation>
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8428213095426709021">Configuración</translation>
+<translation id="8815966864175525708">Cambiar para hacer una foto vertical</translation>
 <translation id="8870695351537079478">No se puede iniciar la grabación</translation>
 <translation id="9045155556724273246">10 segundos</translation>
 <translation id="945522503751344254">Enviar comentarios</translation>

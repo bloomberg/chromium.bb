@@ -120,24 +120,16 @@ config("extra_warnings") {
       "/we4244",  # Conversion: possible loss of data.
       "/we4456",  # Variable shadowing.
       "/we4458",  # declaration hides class member.
+      "/we4715",  # not all control paths return a value
       "/we4800",  # forcing value to bool.
       "/we4838",  # narrowing conversion.
     ]
   }
   if (is_clang) {
-    if (!is_fuchsia) {
-      cflags += [
-        # Remove when crbug.com/926235 is resolved.
-        "-Wextra-semi",
-      ]
-    }
-
     cflags += [
       # Enable after anglebug.com/3128 is fixed.
       # "-Wextra-semi-stmt",
 
-      # Remove when crbug.com/428099 is resolved.
-      "-Winconsistent-missing-override",
       "-Wnon-virtual-dtor",
       "-Wunneeded-internal-declaration",
     ]
@@ -455,8 +447,10 @@ config("libANGLE_config") {
   cflags = []
   defines = []
   libs = []
+  ldflags = []
   if (angle_enable_d3d9) {
     defines += [ "ANGLE_ENABLE_D3D9" ]
+    ldflags += [ "/DELAYLOAD:d3d9.dll" ]
   }
   if (angle_enable_d3d11) {
     defines += [ "ANGLE_ENABLE_D3D11" ]
@@ -472,6 +466,9 @@ config("libANGLE_config") {
   }
   if (angle_enable_vulkan) {
     defines += [ "ANGLE_ENABLE_VULKAN" ]
+    if (angle_enable_custom_vulkan_cmd_buffers) {
+      defines += [ "ANGLE_USE_CUSTOM_VULKAN_CMD_BUFFERS=1" ]
+    }
   }
   if (angle_enable_null) {
     defines += [ "ANGLE_ENABLE_NULL" ]
@@ -495,27 +492,8 @@ config("libANGLE_config") {
 
 if (angle_enable_vulkan) {
   config("vulkan_config") {
-    if (is_win) {
-      defines = [
-        "VK_USE_PLATFORM_WIN32_KHR",
-        "VK_USE_PLATFORM_WIN32_KHX",
-      ]
-    }
-    if (is_linux) {
-      defines = [
-        "VK_USE_PLATFORM_XCB_KHR",
-        "VK_USE_PLATFORM_XCB_KHX",
-      ]
-    }
     if (is_android) {
-      defines = [
-        "VK_USE_PLATFORM_ANDROID_KHR",
-        "VK_USE_PLATFORM_ANDROID_KHX",
-      ]
       libs = [ "vulkan" ]
-    }
-    if (is_fuchsia) {
-      defines = [ "VK_USE_PLATFORM_FUCHSIA" ]
     }
   }
 

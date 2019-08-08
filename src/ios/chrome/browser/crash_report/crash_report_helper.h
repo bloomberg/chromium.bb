@@ -8,7 +8,18 @@
 @class NSString;
 @class TabModel;
 
+namespace web {
+class WebState;
+}  // namespace web
+
 namespace breakpad {
+
+// Monitors the urls loaded by |web_state| to allow crash reports to contain the
+// current loading url.
+void MonitorURLsForWebState(web::WebState* web_state);
+
+// Stop monitoring the urls loaded by |web_state|.
+void StopMonitoringURLsForWebState(web::WebState* web_state);
 
 // Monitors the urls loaded in |tab_model| to allow crash reports to contain
 // the currently loaded urls.

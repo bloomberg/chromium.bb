@@ -127,7 +127,7 @@ class Server : public DiscreteTimeSimulation::Actor {
         max_experienced_queries_per_tick_(0),
         mock_request_(context_.CreateRequest(GURL(),
                                              DEFAULT_PRIORITY,
-                                             NULL,
+                                             nullptr,
                                              TRAFFIC_ANNOTATION_FOR_TESTS)) {}
 
   void SetDowntime(const TimeTicks& start_time, const TimeDelta& duration) {
@@ -598,8 +598,8 @@ double SimulateDowntime(const TimeDelta& duration,
   if (!enable_throttling)
     throttler_entry->DisableBackoffThrottling();
 
-  Requester requester(
-      throttler_entry.get(), average_client_interval, &server, NULL);
+  Requester requester(throttler_entry.get(), average_client_interval, &server,
+                      nullptr);
   requester.SetStartupJitter(duration / 3);
   requester.SetRequestJitter(average_client_interval);
 

@@ -18,9 +18,9 @@ class ScriptState;
 class V8CustomElementAdoptedCallback;
 class V8CustomElementAttributeChangedCallback;
 class V8CustomElementConstructor;
-class V8CustomElementDisabledStateChangedCallback;
 class V8CustomElementFormAssociatedCallback;
-class V8CustomElementRestoreValueCallback;
+class V8CustomElementFormDisabledCallback;
+class V8CustomElementFormStateRestoreCallback;
 class V8VoidFunction;
 
 class ScriptCustomElementDefinitionData {
@@ -38,9 +38,8 @@ class ScriptCustomElementDefinitionData {
   Member<V8CustomElementAttributeChangedCallback> attribute_changed_callback_;
   Member<V8CustomElementFormAssociatedCallback> form_associated_callback_;
   Member<V8VoidFunction> form_reset_callback_;
-  Member<V8CustomElementDisabledStateChangedCallback>
-      disabled_state_changed_callback_;
-  Member<V8CustomElementRestoreValueCallback> restore_value_callback_;
+  Member<V8CustomElementFormDisabledCallback> form_disabled_callback_;
+  Member<V8CustomElementFormStateRestoreCallback> form_state_restore_callback_;
   HashSet<AtomicString> observed_attributes_;
   Vector<String> disabled_features_;
   bool is_form_associated_ = false;

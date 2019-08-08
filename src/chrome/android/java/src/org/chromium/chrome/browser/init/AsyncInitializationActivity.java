@@ -31,6 +31,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
@@ -41,20 +42,22 @@ import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.chrome.browser.upgrade.UpgradeActivity;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayUtil;
 import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogManagerHolder;
 
 import java.lang.reflect.Field;
 
 /**
  * An activity that talks with application and activity level delegates for async initialization.
  */
-public abstract class AsyncInitializationActivity
-        extends ChromeBaseAppCompatActivity implements ChromeActivityNativeDelegate, BrowserParts {
+public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatActivity
+        implements ChromeActivityNativeDelegate, BrowserParts, ModalDialogManagerHolder {
     private static final String TAG = "AsyncInitActivity";
     protected final Handler mHandler;
 
@@ -129,11 +132,21 @@ public abstract class AsyncInitializationActivity
         return true;
     }
 
-    @CallSuper
     @Override
-    public void preInflationStartup() {
+    public final void preInflationStartup() {
+        performPreInflationStartup();
+    }
+
+    /**
+     * Perform pre-inflation startup for the activity. Sub-classes providing custom pre-inflation
+     * startup logic should override this method.
+     */
+    @CallSuper
+    protected void performPreInflationStartup() {
         mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(this);
         mHadWarmStart = LibraryLoader.getInstance().isInitialized();
+        // TODO(https://crbug.com/948745): Dispatch in #preInflationStartup instead so that
+        // subclass's #performPreInflationStartup has executed before observers are notified.
         mLifecycleDispatcher.dispatchPreInflationStartup();
     }
 
@@ -157,28 +170,38 @@ public abstract class AsyncInitializationActivity
     /** Controls the parameter of {@link NativeInitializationController#startBackgroundTasks}.*/
     @VisibleForTesting
     public boolean shouldAllocateChildConnection() {
-        return true;
+        // If a spare WebContents exists, a child connection has already been allocated that will be
+        // used by the next created tab.
+        return !WarmupManager.getInstance().hasSpareWebContents();
     }
 
-    @CallSuper
     @Override
-    public void postInflationStartup() {
+    public final void postInflationStartup() {
+        performPostInflationStartup();
+        mLifecycleDispatcher.dispatchPostInflationStartup();
+    }
+
+    /**
+     * Perform post-inflation startup for the activity. Sub-classes providing custom post-inflation
+     * startup logic should override this method.
+     */
+    @CallSuper
+    protected void performPostInflationStartup() {
         final View firstDrawView = getViewToBeDrawnBeforeInitializingNative();
         assert firstDrawView != null;
         ViewTreeObserver.OnPreDrawListener firstDrawListener =
                 new ViewTreeObserver.OnPreDrawListener() {
-            @Override
-            public boolean onPreDraw() {
-                firstDrawView.getViewTreeObserver().removeOnPreDrawListener(this);
-                mFirstDrawComplete = true;
-                if (!mStartupDelayed) {
-                    onFirstDrawComplete();
-                }
-                return true;
-            }
-        };
+                    @Override
+                    public boolean onPreDraw() {
+                        firstDrawView.getViewTreeObserver().removeOnPreDrawListener(this);
+                        mFirstDrawComplete = true;
+                        if (!mStartupDelayed) {
+                            onFirstDrawComplete();
+                        }
+                        return true;
+                    }
+                };
         firstDrawView.getViewTreeObserver().addOnPreDrawListener(firstDrawListener);
-        mLifecycleDispatcher.dispatchPostInflationStartup();
     }
 
     /**
@@ -541,7 +564,7 @@ public abstract class AsyncInitializationActivity
         assert mFirstDrawComplete;
         assert !mStartupDelayed;
 
-        mHandler.post(new Runnable() {
+        PostTask.postTask(UiThreadTaskTraits.BOOTSTRAP, new Runnable() {
             @Override
             public void run() {
                 mNativeInitializationController.firstDrawComplete();
@@ -585,6 +608,7 @@ public abstract class AsyncInitializationActivity
      * @return The {@link ModalDialogManager} that manages the display of modal dialogs (e.g.
      *         JavaScript dialogs).
      */
+    @Override
     public ModalDialogManager getModalDialogManager() {
         return mModalDialogManager;
     }

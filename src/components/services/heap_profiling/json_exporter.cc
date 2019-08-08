@@ -23,7 +23,7 @@ namespace {
 using StringTable = std::map<std::string, size_t>;
 
 constexpr uint32_t kAllocatorCount =
-    static_cast<uint32_t>(AllocatorType::kCount);
+    static_cast<uint32_t>(AllocatorType::kMaxValue) + 1;
 
 struct BacktraceNode {
   BacktraceNode(size_t string_id, size_t parent)

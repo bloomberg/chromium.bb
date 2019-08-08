@@ -39,7 +39,7 @@ namespace {
 // Returns true if |window| is a proxy window and marked as has-content.
 bool IsOpaqueProxyWindow(const aura::Window* window) {
   return WindowService::IsProxyWindow(window) &&
-         window->GetProperty(aura::client::kClientWindowHasContent);
+         window->GetProperty(aura::client::kWindowLayerDrawn);
 }
 
 // Factory to create ws::WindowOcclusionChangeBuilder that dispatches occlusion
@@ -200,11 +200,7 @@ bool WindowService::CompleteScheduleEmbedForExistingClient(
     aura::Window* window,
     const base::UnguessableToken& embed_token,
     int embed_flags) {
-  // Caller must supply a window, and further the window should not be exposed
-  // to a remote client yet.
   DCHECK(window);
-  DCHECK(!IsProxyWindow(window));
-
   const TreeAndWindowId tree_and_id =
       FindTreeWithScheduleEmbedForExistingClient(embed_token);
   if (!tree_and_id.tree)
@@ -215,6 +211,8 @@ bool WindowService::CompleteScheduleEmbedForExistingClient(
   const bool owner_intercept_events = false;
 
   ProxyWindow* proxy_window = GetProxyWindowForWindowCreateIfNecessary(window);
+  // Allow |window| to replace an existing embed by destroying the old one now.
+  proxy_window->SetEmbedding(nullptr);
   tree_and_id.tree->CompleteScheduleEmbedForExistingClient(
       window, tree_and_id.id, embed_token);
   std::unique_ptr<Embedding> embedding =

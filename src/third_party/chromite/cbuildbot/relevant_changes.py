@@ -29,13 +29,13 @@ class RelevantChanges(object):
   """Class that quries and tracks relevant changes."""
 
   @classmethod
-  def _GetSlaveMappingAndCLActions(cls, master_build_id, buildstore, config,
-                                   changes, slave_buildbucket_ids,
+  def _GetSlaveMappingAndCLActions(cls, master_build_identifier, buildstore,
+                                   config, changes, slave_buildbucket_ids,
                                    include_master=False):
-    """Query CIDB to for slaves and CL actions.
+    """Query BuildStore to for slaves and CL actions.
 
     Args:
-      master_build_id: Build id of this master build.
+      master_build_identifier: BuildIdentifier of this master build.
       buildstore: Instance of buildstore.BuildStore.
       config: Instance of config_lib.BuildConfig of this build.
       changes: A list of GerritPatch instances to examine.
@@ -54,8 +54,12 @@ class RelevantChanges(object):
     assert config.master, 'This is not a master build.'
 
     # TODO(buildstore): make sure buildstore is BuildStore, not CIDBConnection.
-    slave_list = buildstore.GetSlaveStatuses(
-        master_build_id, buildbucket_ids=slave_buildbucket_ids)
+    if slave_buildbucket_ids:
+      slave_list = buildstore.GetBuildStatuses(
+          buildbucket_ids=slave_buildbucket_ids)
+    else:
+      slave_list = buildstore.GetSlaveStatuses(
+          master_build_identifier)
 
     # TODO(akeshet): We are getting the full action history for all changes that
     # were in this CQ run. It would make more sense to only get the actions from
@@ -68,19 +72,19 @@ class RelevantChanges(object):
       config_map[d['id']] = d['build_config']
 
     if include_master:
-      config_map[master_build_id] = config.name
+      config_map[master_build_identifier.cidb_id] = config.name
 
     return config_map, action_history
 
   @classmethod
-  def GetRelevantChangesForSlaves(cls, master_build_id, buildstore, config,
-                                  changes, builds_not_passed_sync_stage,
+  def GetRelevantChangesForSlaves(cls, master_build_identifier, buildstore,
+                                  config, changes, builds_not_passed_sync_stage,
                                   slave_buildbucket_ids,
                                   include_master=False):
     """Compile a set of relevant changes for each slave.
 
     Args:
-      master_build_id: Build id of this master build.
+      master_build_identifier: BuildIdentifier of this master build.
       buildstore: Instance of buildstore.BuildStore.
       config: Instance of config_lib.BuildConfig of this build.
       changes: A list of GerritPatch instances to examine.
@@ -99,7 +103,7 @@ class RelevantChanges(object):
     # TODO(buildstore): make sure buildstore is BuildStore, not CIDBConnection.
     # Retrieve the slaves and clactions from CIDB.
     config_map, action_history = cls._GetSlaveMappingAndCLActions(
-        master_build_id, buildstore, config, changes,
+        master_build_identifier, buildstore, config, changes,
         slave_buildbucket_ids, include_master=include_master)
     changes_by_build_id = clactions.GetRelevantChangesForBuilds(
         changes, action_history, config_map.keys())
@@ -120,7 +124,8 @@ class RelevantChanges(object):
 
   @classmethod
   def GetPreviouslyPassedSlavesForChanges(
-      cls, master_build_id, buildstore, changes, change_relevant_slaves_dict,
+      cls, master_build_identifier, buildstore, changes,
+      change_relevant_slaves_dict,
       history_lookback_limit=CQ_HISTORY_LOOKBACK_LIMIT_HOUR):
     """Get slaves passed in history (not from current run) for changes.
 
@@ -131,7 +136,7 @@ class RelevantChanges(object):
     this slave is considered as a previously passed slave.
 
     Args:
-      master_build_id: The build id of current master to get current slaves.
+      master_build_identifier: The BuildIdentifier of current master.
       buildstore: An instance of buildstore.BuildStore.
       changes: A list of cros_patch.GerritPatch instance to check.
       change_relevant_slaves_dict: A dict mapping changes to their relevant
@@ -147,7 +152,7 @@ class RelevantChanges(object):
     """
     assert buildstore, 'No buildstore to use.'
     # TODO(buildstore): make sure buildstore is BuildStore, not CIDBConnection.
-    current_slaves = buildstore.GetSlaveStatuses(master_build_id)
+    current_slaves = buildstore.GetSlaveStatuses(master_build_identifier)
     current_slave_build_ids = [x['id'] for x in current_slaves]
 
     valid_configs = set()
@@ -190,7 +195,7 @@ class TriageRelevantChanges(object):
   master build. With the build information fetched from Buildbucket and CIDB,
   it performs relevant change triages, and returns a ShouldWait flag indicating
   whether it's still meaningful for the master build to wait for the slave
-  builds. The triages include anaylizing whether the failed slave builds have
+  builds. The triages include analyzing whether the failed slave builds have
   passed the critial sync stage, whether the failures in failed slave builds
   are ignorable for changes, classifying changes into will_submit, might_submit
   and will_not_submit sets, and so on.
@@ -212,14 +217,14 @@ class TriageRelevantChanges(object):
   STAGE_UPLOAD_PREBUILTS = (
       artifact_stages.UploadPrebuiltsStage.StageNamePrefix())
 
-  def __init__(self, master_build_id, buildstore, builders_array, config,
-               metadata, version, build_root, changes, buildbucket_info_dict,
-               cidb_status_dict, completed_builds, dependency_map,
-               buildbucket_client, dry_run=True):
+  def __init__(self, master_build_identifier, buildstore, builders_array,
+               config, metadata, version, build_root, changes,
+               buildbucket_info_dict, cidb_status_dict, completed_builds,
+               dependency_map, buildbucket_client, dry_run=True):
     """Initialize an instance of TriageRelevantChanges.
 
     Args:
-      master_build_id: The build_id of the master build.
+      master_build_identifier: The BuildIdentifier instance of the master build.
       buildstore: A BuildStore instance to make DB calls.
       builders_array: A list of expected slave build config names (strings).
       config: An instance of config_lib.BuildConfig. Config dict of this build.
@@ -244,7 +249,7 @@ class TriageRelevantChanges(object):
       buildbucket_client: Instance of buildbucket_lib.buildbucket_client.
       dry_run: Boolean indicating whether it's a dry run. Default to True.
     """
-    self.master_build_id = master_build_id
+    self.master_build_identifier = master_build_identifier
     self.buildstore = buildstore
     self.db = buildstore.GetCIDBHandle()
     self.builders_array = builders_array
@@ -293,7 +298,7 @@ class TriageRelevantChanges(object):
         self.slave_changes_dict)
     self.change_passed_slaves_dict = (
         RelevantChanges.GetPreviouslyPassedSlavesForChanges(
-            self.master_build_id, self.buildstore, self.changes,
+            self.master_build_identifier, self.buildstore, self.changes,
             self.change_relevant_slaves_dict))
 
   @staticmethod
@@ -395,8 +400,8 @@ class TriageRelevantChanges(object):
     slave_buildbucket_ids = [bb_info.buildbucket_id
                              for bb_info in self.buildbucket_info_dict.values()]
     slave_changes_dict = RelevantChanges.GetRelevantChangesForSlaves(
-        self.master_build_id, self.buildstore, self.config, self.changes,
-        builds_not_passed_sync_stage, slave_buildbucket_ids)
+        self.master_build_identifier, self.buildstore, self.config,
+        self.changes, builds_not_passed_sync_stage, slave_buildbucket_ids)
 
     # Some slaves may not pick up any changes, update the value to set()
     for slave_config in self.buildbucket_info_dict:
@@ -501,8 +506,9 @@ class TriageRelevantChanges(object):
     # TODO(nxia): Improve SlaveBuilderStatus to take buildbucket_info_dict
     # and cidb_status_dict as arguments to avoid extra queries.
     slave_builder_statuses = builder_status_lib.SlaveBuilderStatus(
-        self.master_build_id, self.buildstore, self.config, self.metadata,
-        self.buildbucket_client, self.builders_array, self.dry_run)
+        self.master_build_identifier, self.buildstore, self.config,
+        self.metadata, self.buildbucket_client, self.builders_array,
+        self.dry_run)
 
     for build_config, bb_info in self.buildbucket_info_dict.iteritems():
       if (build_config in self.completed_builds and

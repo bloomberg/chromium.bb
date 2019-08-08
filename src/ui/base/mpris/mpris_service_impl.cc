@@ -25,6 +25,7 @@ namespace mpris {
 
 namespace {
 
+constexpr int kDebounceTimeoutMilliseconds = 50;
 constexpr int kNumMethodsToExport = 14;
 
 }  // namespace
@@ -81,6 +82,35 @@ void MprisServiceImpl::SetCanPlay(bool value) {
 void MprisServiceImpl::SetCanPause(bool value) {
   SetPropertyInternal(media_player2_player_properties_, "CanPause",
                       base::Value(value));
+}
+
+void MprisServiceImpl::SetPlaybackStatus(PlaybackStatus value) {
+  base::Value status;
+  switch (value) {
+    case PlaybackStatus::kPlaying:
+      status = base::Value("Playing");
+      break;
+    case PlaybackStatus::kPaused:
+      status = base::Value("Paused");
+      break;
+    case PlaybackStatus::kStopped:
+      status = base::Value("Stopped");
+      break;
+  }
+  SetPropertyInternal(media_player2_player_properties_, "PlaybackStatus",
+                      status);
+}
+
+void MprisServiceImpl::SetTitle(const base::string16& value) {
+  SetMetadataPropertyInternal("xesam:title", base::Value(value));
+}
+
+void MprisServiceImpl::SetArtist(const base::string16& value) {
+  SetMetadataPropertyInternal("xesam:artist", base::Value(value));
+}
+
+void MprisServiceImpl::SetAlbum(const base::string16& value) {
+  SetMetadataPropertyInternal("xesam:album", base::Value(value));
 }
 
 std::string MprisServiceImpl::GetServiceName() const {
@@ -197,8 +227,12 @@ void MprisServiceImpl::InitializeDbusInterface() {
 void MprisServiceImpl::OnExported(const std::string& interface_name,
                                   const std::string& method_name,
                                   bool success) {
-  if (success)
-    num_methods_exported_++;
+  if (!success) {
+    service_failed_to_start_ = true;
+    return;
+  }
+
+  num_methods_exported_++;
 
   // Still waiting for more methods to finish exporting.
   if (num_methods_exported_ < kNumMethodsToExport)
@@ -212,7 +246,11 @@ void MprisServiceImpl::OnExported(const std::string& interface_name,
 
 void MprisServiceImpl::OnOwnership(const std::string& service_name,
                                    bool success) {
-  DCHECK(success);
+  if (!success) {
+    service_failed_to_start_ = true;
+    return;
+  }
+
   service_ready_ = true;
 
   for (MprisServiceObserver& obs : observers_)
@@ -380,15 +418,50 @@ void MprisServiceImpl::SetPropertyInternal(PropertyMap& property_map,
 
   property_map[property_name] = new_value.Clone();
 
-  PropertyMap changed_properties;
-  changed_properties[property_name] = new_value.Clone();
-  EmitPropertiesChangedSignal(changed_properties);
+  changed_properties_.insert(property_name);
+
+  EmitPropertiesChangedSignalDebounced();
 }
 
-void MprisServiceImpl::EmitPropertiesChangedSignal(
-    const PropertyMap& changed_properties) {
-  if (!bus_ || !exported_object_)
+void MprisServiceImpl::SetMetadataPropertyInternal(
+    const std::string& property_name,
+    const base::Value& new_value) {
+  base::Value& metadata = media_player2_player_properties_["Metadata"];
+  base::Value* current_value = metadata.FindKey(property_name);
+
+  if (current_value && *current_value == new_value)
     return;
+  metadata.SetKey(property_name, new_value.Clone());
+
+  changed_properties_.insert("Metadata");
+
+  EmitPropertiesChangedSignalDebounced();
+}
+
+void MprisServiceImpl::EmitPropertiesChangedSignalDebounced() {
+  properties_changed_debounce_timer_.Stop();
+  properties_changed_debounce_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kDebounceTimeoutMilliseconds), this,
+      &MprisServiceImpl::EmitPropertiesChangedSignal);
+}
+
+void MprisServiceImpl::EmitPropertiesChangedSignal() {
+  // If we're still trying to start the service, delay emitting.
+  if (!service_ready_ && !service_failed_to_start_) {
+    EmitPropertiesChangedSignalDebounced();
+    return;
+  }
+
+  if (!bus_ || !exported_object_ || !service_ready_)
+    return;
+
+  PropertyMap changed_property_map;
+  for (std::string property_name : changed_properties_) {
+    changed_property_map[property_name] =
+        media_player2_player_properties_[property_name].Clone();
+  }
+  changed_properties_.clear();
 
   // |signal| follows the PropertiesChanged API:
   // org.freedesktop.DBus.Properties.PropertiesChanged(
@@ -399,7 +472,7 @@ void MprisServiceImpl::EmitPropertiesChangedSignal(
   dbus::MessageWriter writer(&signal);
   writer.AppendString(kMprisAPIPlayerInterfaceName);
 
-  AddPropertiesToWriter(&writer, changed_properties);
+  AddPropertiesToWriter(&writer, changed_property_map);
 
   std::vector<std::string> empty_invalidated_properties;
   writer.AppendArrayOfStrings(empty_invalidated_properties);

@@ -74,6 +74,12 @@ struct RTCNetworkType {
   static const char* const kUnknown;
 };
 
+// https://webrtc.org/experiments/rtp-hdrext/video-content-type/
+struct RTCContentType {
+  static const char* const kUnspecified;
+  static const char* const kScreenshare;
+};
+
 // https://w3c.github.io/webrtc-stats/#certificatestats-dict*
 class RTC_EXPORT RTCCertificateStats final : public RTCStats {
  public:
@@ -391,6 +397,7 @@ class RTC_EXPORT RTCInboundRTPStreamStats final : public RTCRTPStreamStats {
   RTCStatsMember<uint32_t> packets_received;
   RTCStatsMember<uint64_t> bytes_received;
   RTCStatsMember<int32_t> packets_lost;  // Signed per RFC 3550
+  RTCStatsMember<double> last_packet_received_timestamp;
   // TODO(hbos): Collect and populate this value for both "audio" and "video",
   // currently not collected for "video". https://bugs.webrtc.org/7065
   RTCStatsMember<double> jitter;
@@ -418,6 +425,8 @@ class RTC_EXPORT RTCInboundRTPStreamStats final : public RTCRTPStreamStats {
   // TODO(hbos): Collect and populate this value. https://bugs.webrtc.org/7065
   RTCStatsMember<double> gap_discard_rate;
   RTCStatsMember<uint32_t> frames_decoded;
+  // https://henbos.github.io/webrtc-provisional-stats/#dom-rtcinboundrtpstreamstats-contenttype
+  RTCStatsMember<std::string> content_type;
 };
 
 // https://w3c.github.io/webrtc-stats/#outboundrtpstats-dict*
@@ -433,10 +442,15 @@ class RTC_EXPORT RTCOutboundRTPStreamStats final : public RTCRTPStreamStats {
   ~RTCOutboundRTPStreamStats() override;
 
   RTCStatsMember<uint32_t> packets_sent;
+  RTCStatsMember<uint64_t> retransmitted_packets_sent;
   RTCStatsMember<uint64_t> bytes_sent;
+  RTCStatsMember<uint64_t> retransmitted_bytes_sent;
   // TODO(hbos): Collect and populate this value. https://bugs.webrtc.org/7066
   RTCStatsMember<double> target_bitrate;
   RTCStatsMember<uint32_t> frames_encoded;
+  RTCStatsMember<double> total_encode_time;
+  // https://henbos.github.io/webrtc-provisional-stats/#dom-rtcoutboundrtpstreamstats-contenttype
+  RTCStatsMember<std::string> content_type;
 };
 
 // https://w3c.github.io/webrtc-stats/#transportstats-dict*

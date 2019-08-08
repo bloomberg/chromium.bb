@@ -135,8 +135,8 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
                 regularTabCreator, incognitoTabCreator, mUma, mOrderController,
                 mTabContentManager, mTabSaver, this));
         initialize(isIncognitoSelected(), normalModel, incognitoModel);
-        regularTabCreator.setTabModel(normalModel, mOrderController, mTabContentManager);
-        incognitoTabCreator.setTabModel(incognitoModel, mOrderController, mTabContentManager);
+        regularTabCreator.setTabModel(normalModel, mOrderController);
+        incognitoTabCreator.setTabModel(incognitoModel, mOrderController);
         mTabSaver.setTabContentManager(mTabContentManager);
 
         addObserver(new EmptyTabModelSelectorObserver() {
@@ -192,6 +192,11 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
             @Override
             public void onNavigationEntriesDeleted(Tab tab) {
                 mTabSaver.addTabToSaveQueue(tab);
+            }
+
+            @Override
+            public void onActivityAttachmentChanged(Tab tab, boolean attached) {
+                if (!attached) getModel(tab.isIncognito()).removeTab(tab);
             }
         };
     }

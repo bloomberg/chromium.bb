@@ -29,6 +29,8 @@ class FakeSyncEngine : public SyncEngine {
   // Immediately calls params.host->OnEngineInitialized.
   void Initialize(InitParams params) override;
 
+  bool IsInitialized() const override;
+
   void TriggerRefresh(const ModelTypeSet& types) override;
 
   void UpdateCredentials(const SyncCredentials& credentials) override;
@@ -67,7 +69,7 @@ class FakeSyncEngine : public SyncEngine {
 
   UserShare* GetUserShare() const override;
 
-  Status GetDetailedStatus() override;
+  SyncStatus GetDetailedStatus() override;
 
   void HasUnsyncedItemsForTest(
       base::OnceCallback<void(bool)> cb) const override;
@@ -87,10 +89,14 @@ class FakeSyncEngine : public SyncEngine {
                           const base::Closure& callback) override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
 
+  std::unique_ptr<ModelTypeControllerDelegate> GetNigoriControllerDelegate()
+      override;
+
   void set_fail_initial_download(bool should_fail);
 
  private:
-  bool fail_initial_download_;
+  bool fail_initial_download_ = false;
+  bool initialized_ = false;
 };
 
 }  // namespace syncer

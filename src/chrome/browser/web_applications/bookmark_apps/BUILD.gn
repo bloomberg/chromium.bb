@@ -20,6 +20,7 @@ source_set("bookmark_apps") {
     "//chrome/common",
     "//components/favicon/content",
     "//components/pref_registry",
+    "//extensions/browser",
     "//skia",
   ]
 }
@@ -48,6 +49,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "bookmark_app_install_manager_unittest.cc",
     "external_web_apps_unittest.cc",
     "policy/web_app_policy_manager_unittest.cc",
     "system_web_app_manager_unittest.cc",

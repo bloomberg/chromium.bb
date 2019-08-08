@@ -314,6 +314,18 @@ if (proprietary_codecs) {
   }
 }
 
+fuzzer_test("media_jpeg_parser_picture_fuzzer") {
+  sources = [
+    "filters/jpeg_parser_picture_fuzzertest.cc",
+  ]
+  deps = [
+    ":test_support",
+    "//base",
+  ]
+  seed_corpus = "test/data"
+  dict = "test/jpeg.dict"
+}
+
 fuzzer_test("media_vp8_parser_fuzzer") {
   sources = [
     "filters/vp8_parser_fuzzertest.cc",

@@ -141,7 +141,7 @@ class PrintContextTest : public PaintTestConfigurations, public RenderingTest {
 class PrintContextFrameTest : public PrintContextTest {
  public:
   PrintContextFrameTest()
-      : PrintContextTest(SingleChildLocalFrameClient::Create()) {}
+      : PrintContextTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 };
 
 #define EXPECT_SKRECT_EQ(expectedX, expectedY, expectedWidth, expectedHeight, \

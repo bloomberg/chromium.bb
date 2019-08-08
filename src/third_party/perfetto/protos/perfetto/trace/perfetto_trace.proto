@@ -240,6 +240,28 @@ message AndroidLogPacket {
 
 // End of protos/perfetto/trace/android/android_log.proto
 
+// Begin of protos/perfetto/trace/android/packages_list.proto
+
+message PackagesList {
+  message PackageInfo {
+    optional string name = 1;
+    optional uint64 uid = 2;
+    optional bool debuggable = 3;
+    optional bool profileable_from_shell = 4;
+    optional int64 version_code = 5;
+  }
+
+  repeated PackageInfo packages = 1;
+
+  // At least one error occurred parsing the packages.list.
+  optional bool parse_error = 2;
+
+  // Failed to open / read packages.list.
+  optional bool read_error = 3;
+}
+
+// End of protos/perfetto/trace/android/packages_list.proto
+
 // Begin of protos/perfetto/trace/clock_snapshot.proto
 
 // A snapshot of clock readings to allow for trace alignment.
@@ -2403,11 +2425,123 @@ message PowerRails {
 
 // End of protos/perfetto/trace/power/power_rails.proto
 
+// Begin of protos/perfetto/trace/profiling/profile_packet.proto
+
+message ProfilePacket {
+  // either a function or library name.
+  repeated InternedString strings = 1;
+  message InternedString {
+    optional uint64 id = 1;
+    optional bytes str = 2;
+  }
+
+  repeated Mapping mappings = 4;
+  message Mapping {
+    optional uint64 id = 1;        // Interning key.
+    optional uint64 build_id = 2;  // Interning key.
+    optional uint64 offset = 3;
+    optional uint64 start = 4;
+    optional uint64 end = 5;
+    optional uint64 load_bias = 6;
+    // E.g. ["system", "lib64", "libc.so"]
+    repeated uint64 path_string_ids = 7;  // id of string.
+  }
+
+  repeated Frame frames = 2;
+  message Frame {
+    optional uint64 id = 1;  // Interning key
+    // E.g. "fopen"
+    optional uint64 function_name_id = 2;  // id of string.
+    optional uint64 mapping_id = 3;
+    optional uint64 rel_pc = 4;
+  }
+
+  repeated Callstack callstacks = 3;
+  message Callstack {
+    optional uint64 id = 1;
+    // Frames of this callstack. Bottom frame first.
+    repeated uint64 frame_ids = 2;
+  }
+
+  message HeapSample {
+    optional uint64 callstack_id = 1;
+    // bytes allocated at this frame.
+    optional uint64 self_allocated = 2;
+    // bytes allocated at this frame that have been freed.
+    optional uint64 self_freed = 3;
+    optional uint64 timestamp = 4;  // timestamp [opt]
+    optional uint64 alloc_count = 5;
+    optional uint64 free_count = 6;
+  }
+
+  message Histogram {
+    message Bucket {
+      // This bucket counts values from the previous bucket's (or -infinity if
+      // this is the first bucket) upper_limit (inclusive) to this upper_limit
+      // (exclusive).
+      optional uint64 upper_limit = 1;
+      // This is the highest bucket. This is set instead of the upper_limit. Any
+      // values larger or equal to the previous bucket's upper_limit are counted
+      // in this bucket.
+      optional bool max_bucket = 2;
+      // Number of values that fall into this range.
+      optional uint64 count = 3;
+    }
+    repeated Bucket buckets = 1;
+  }
+
+  message ProcessStats {
+    optional uint64 unwinding_errors = 1;
+    optional uint64 heap_samples = 2;
+    optional uint64 map_reparses = 3;
+    optional Histogram unwinding_time_us = 4;
+    optional uint64 total_unwinding_time_us = 5;
+  }
+
+  repeated ProcessHeapSamples process_dumps = 5;
+  message ProcessHeapSamples {
+    optional uint64 pid = 1;
+
+    // This process was profiled from startup.
+    // If false, this process was already running when profiling started.
+    optional bool from_startup = 3;
+
+    // This process was not profiled because a concurrent session was active.
+    // If this is true, samples will be empty.
+    optional bool rejected_concurrent = 4;
+
+    // This process disconnected while it was profiled.
+    // If false, the process outlived the profiling session.
+    optional bool disconnected = 6;
+
+    // If disconnected, this disconnect was caused by the client overrunning
+    // the buffer.
+    optional bool buffer_overran = 7;
+
+    // If disconnected, this disconnected was caused by the shared memory
+    // buffer being corrupted. THIS IS ALWAYS A BUG IN HEAPPROFD OR CLIENT
+    // MEMORY CORRUPTION.
+    optional bool buffer_corrupted = 8;
+
+    optional ProcessStats stats = 5;
+
+    repeated HeapSample samples = 2;
+  }
+
+  optional bool continued = 6;
+  optional uint64 index = 7;
+}
+
+// End of protos/perfetto/trace/profiling/profile_packet.proto
+
 // Begin of protos/perfetto/trace/ps/process_stats.proto
 
 // Per-process periodically sampled stats. These samples are wrapped in a
 // dedicated message (as opposite to be fields in process_tree.proto) because
 // they are dumped at a different rate than cmdline and thread list.
+// Note: not all of these stats will be present in every ProcessStats message
+// and sometimes processes may be missing . This is because counters are
+// cached to reduce emission of counters which do not change.
 message ProcessStats {
   message Process {
     optional int32 pid = 1;
@@ -2532,6 +2666,21 @@ message SysStats {
 
 // End of protos/perfetto/trace/sys_stats/sys_stats.proto
 
+// Begin of protos/perfetto/trace/system_info.proto
+
+message Utsname {
+  optional string sysname = 1;
+  optional string version = 2;
+  optional string release = 3;
+  optional string machine = 4;
+}
+
+message SystemInfo {
+  optional Utsname utsname = 1;
+}
+
+// End of protos/perfetto/trace/system_info.proto
+
 // Begin of protos/perfetto/trace/trace.proto
 
 message Trace {
@@ -2552,7 +2701,7 @@ message Trace {
 // TracePacket(s).
 //
 // Next reserved id: 13 (up to 15).
-// Next id: 45.
+// Next id: 47.
 message TracePacket {
   // TODO(primiano): in future we should add a timestamp_clock_domain field to
   // allow mixing timestamps from different clock domains.
@@ -2578,6 +2727,9 @@ message TracePacket {
     BatteryCounters battery = 38;
     PowerRails power_rails = 40;
     AndroidLogPacket android_log = 39;
+    SystemInfo system_info = 45;
+    Trigger trigger = 46;
+    PackagesList packages_list = 47;
 
     // Only used by TrackEvent.
     ProcessDescriptor process_descriptor = 43;
@@ -2631,17 +2783,17 @@ message TracePacket {
   // ensure intact incremental data.
   optional bool incremental_state_cleared = 41;
 
-  // Flag set by the service if one or multiple packets on the packet's sequence
-  // were dropped since the last packet that the consumer read from the
-  // sequence. This can happen if chunks in the trace buffer are overridden
-  // before the consumer could read them when the trace is configured in ring
-  // buffer mode. This flag only affects the current packet sequence (see
-  // |trusted_packet_sequence_id|).
+  // Flag set by the service if, for the current packet sequence (see
+  // |trusted_packet_sequence_id|), either:
+  // * this is the first packet, or
+  // * one or multiple packets were dropped since the last packet that the
+  //   consumer read from the sequence. This can happen if chunks in the trace
+  //   buffer are overridden before the consumer could read them when the trace
+  //   is configured in ring buffer mode.
   //
   // When packet loss occurs, incrementally emitted data (including interned
   // data) on the sequence should be considered invalid up until the next packet
-  // with |incremental_state_cleared| set. In such a situation, the reader
-  // should skip to the next packet with this flag set.
+  // with |incremental_state_cleared| set.
   optional bool previous_packet_dropped = 42;
 }
 
@@ -2770,7 +2922,7 @@ message ThreadDescriptor {
     THREAD_UNSPECIFIED = 0;
     // TODO(eseckler): Add thread types.
   };
-  optional ChromeThreadType thread_type = 4;
+  optional ChromeThreadType chrome_thread_type = 4;
 
   // TODO(eseckler): Replace this with ChromeThreadType where possible.
   optional string thread_name = 5;
@@ -2920,66 +3072,22 @@ message LegacyEventName {
 
 // End of protos/perfetto/trace/track_event/track_event.proto
 
-// Begin of protos/perfetto/trace/profiling/profile_packet.proto
+// Begin of protos/perfetto/trace/trigger.proto
 
-message ProfilePacket {
-  // either a function or library name.
-  repeated InternedString strings = 1;
-  message InternedString {
-    optional uint64 id = 1;
-    optional bytes str = 2;
-  }
-
-  repeated Frame frames = 2;
-  message Frame {
-    optional uint64 id = 1;  // Interning key
-    // E.g. "fopen"
-    optional uint64 function_name_id = 2;  // id of string.
-    optional uint64 mapping_id = 3;
-    optional uint64 rel_pc = 4;
-  }
-
-  repeated Callstack callstacks = 3;
-  message Callstack {
-    optional uint64 id = 1;
-    // Frames of this callstack. Bottom frame first.
-    repeated uint64 frame_ids = 2;
-  }
-
-  repeated Mapping mappings = 4;
-  message Mapping {
-    optional uint64 id = 1;  // Interning key.
-    optional uint64 build_id = 2;  // Interning key.
-    optional uint64 offset = 3;
-    optional uint64 start = 4;
-    optional uint64 end = 5;
-    optional uint64 load_bias = 6;
-    // E.g. ["system", "lib64", "libc.so"]
-    repeated uint64 path_string_ids = 7;  // id of string.
-  }
-
-  message HeapSample {
-    optional uint64 callstack_id = 1;
-    // bytes allocated at this frame.
-    optional uint64 self_allocated = 2;
-    // bytes freed at this frame.
-    optional uint64 self_freed = 3;
-    optional uint64 timestamp = 4;  // timestamp [opt]
-    optional uint64 alloc_count = 5;
-    optional uint64 free_count = 6;
-  }
-
-  repeated ProcessHeapSamples process_dumps = 5;
-  message ProcessHeapSamples {
-    optional uint64 pid = 1;
-    repeated HeapSample samples = 2;
-  }
-
-  optional bool continued = 6;
-  optional uint64 index = 7;
+// When a TracingSession receives a trigger it records the boot time nanoseconds
+// in the TracePacket's timestamp field as well as the name of the producer that
+// triggered it. We emit this data so filtering can be done on triggers received
+// in the trace.
+message Trigger {
+  // Name of the trigger which was received.
+  optional string trigger_name = 1;
+  // The actual producer that activated |trigger|.
+  optional string producer_name = 2;
+  // The verified UID of the producer.
+  optional int32 trusted_producer_uid = 3;
 }
 
-// End of protos/perfetto/trace/profiling/profile_packet.proto
+// End of protos/perfetto/trace/trigger.proto
 
 // Begin of protos/perfetto/config/android/android_log_config.proto
 
@@ -3005,6 +3113,10 @@ message AndroidLogConfig {
 
 message ChromeConfig {
   optional string trace_config = 1;
+
+  // When enabled, the data source should only fill in fields in the output that
+  // are not potentially privacy sensitive.
+  optional bool privacy_filtering_enabled = 2;
 }
 
 // End of protos/perfetto/config/chrome/chrome_config.proto
@@ -3032,6 +3144,11 @@ message DataSourceConfig {
   // Set by the service to indicate the duration of the trace.
   // DO NOT SET in consumer as this will be overridden by the service.
   optional uint32 trace_duration_ms = 3;
+
+  // Set by the service to indicate whether this tracing session has extra
+  // guardrails.
+  // DO NOT SET in consumer as this will be overridden by the service.
+  optional bool enable_extra_guardrails = 6;
 
   // Set by the service to indicate which tracing session the data source
   // belongs to. The intended use case for this is checking if two data sources,
@@ -3174,6 +3291,12 @@ message ProcessStatsConfig {
   // entry of /proc/pid/cmdline).
   // TODO(primiano): implement this feature.
   // repeated string proc_stats_filter = 5;
+
+  // This is required to be either = 0 or a multiple of |proc_stats_poll_ms|
+  // (default: |proc_stats_poll_ms|). If = 0, will be set to
+  // |proc_stats_poll_ms|. Non-multiples will be rounded down to the nearest
+  // multiple.
+  optional uint32 proc_stats_cache_ttl_ms = 6;
 }
 
 // End of protos/perfetto/config/process_stats/process_stats_config.proto
@@ -3284,7 +3407,7 @@ message TestConfig {
 // It contains the general config for the logging buffer(s) and the configs for
 // all the data source being enabled.
 //
-// Next id: 17.
+// Next id: 18.
 message TraceConfig {
   message BufferConfig {
     optional uint32 size_kb = 1;
@@ -3328,6 +3451,9 @@ message TraceConfig {
   }
   repeated DataSource data_sources = 2;
 
+  // If specified, the trace will be stopped |duration_ms| after starting.
+  // However in case of traces with triggers, see
+  // TriggerConfig.trigger_timeout_ms instead.
   optional uint32 duration_ms = 3;
 
   // This is set when --dropbox is passed to the Perfetto command line client
@@ -3425,6 +3551,68 @@ message TraceConfig {
   // Android-only. If set, sends an intent to the Traceur system app when the
   // trace ends to notify it about the trace readiness.
   optional bool notify_traceur = 16;
+
+  // Triggers allow producers to start or stop the tracing session when an event
+  // occurs.
+  //
+  // For example if we are tracing probabilistically, most traces will be
+  // uninteresting. Triggers allow us to keep only the interesting ones such as
+  // those traces during which the device temperature reached a certain
+  // threshold. In this case the producer can activate a trigger to keep
+  // (STOP_TRACING) the trace, otherwise it can also begin a trace
+  // (START_TRACING) because it knows something is about to happen.
+  message TriggerConfig {
+    enum TriggerMode {
+      UNSPECIFIED = 0;
+
+      // When this mode is chosen, data sources are not started until one of the
+      // |triggers| are received. This supports early initialization and fast
+      // starting of the tracing system. On triggering, the session will then
+      // record for |stop_delay_ms|. However if no trigger is seen
+      // after |trigger_timeout_ms| the session will be stopped and no data will
+      // be returned.
+      START_TRACING = 1;
+
+      // When this mode is chosen, the session will be started via the normal
+      // EnableTracing() & StartTracing(). If no trigger is ever seen
+      // the session will be stopped after |trigger_timeout_ms| and no data will
+      // be returned. However if triggered the trace will stop after
+      // |stop_delay_ms| and any data in the buffer will be returned to the
+      // consumer.
+      STOP_TRACING = 2;
+    }
+    optional TriggerMode trigger_mode = 1;
+
+    message Trigger {
+      // The producer must specify this name to activate the trigger.
+      optional string name = 1;
+
+      // The a std::regex that will match the producer that can activate this
+      // trigger. This is optional. If unset any producers can activate this
+      // trigger.
+      optional string producer_name_regex = 2;
+
+      // After a trigger is received either in START_TRACING or STOP_TRACING
+      // mode then the trace will end |stop_delay_ms| after triggering.
+      optional uint32 stop_delay_ms = 3;
+    }
+    // A list of triggers which are related to this configuration. If ANY
+    // trigger is seen then an action will be performed based on |trigger_mode|.
+    repeated Trigger triggers = 2;
+
+    // Required and must be positive if a TriggerConfig is specified. This is
+    // how long this TraceConfig should wait for a trigger to arrive. After this
+    // period of time if no trigger is seen the TracingSession will be cleaned
+    // up.
+    optional uint32 trigger_timeout_ms = 3;
+  }
+  optional TriggerConfig trigger_config = 17;
+
+  // When this is non-empty the perfetto command line tool will ignore the rest
+  // of this TraceConfig and instead connect to the perfetto service as a
+  // producer and send these triggers, potentially stopping or starting traces
+  // that were previous configured to use a TriggerConfig.
+  repeated string activate_triggers = 18;
 }
 
 // End of protos/perfetto/config/trace_config.proto
@@ -3442,12 +3630,20 @@ message HeapprofdConfig {
 
   // Set to 1 for perfect accuracy.
   // Otherwise, sample every sample_interval_bytes on average.
-  // TODO(fmayer): Add link to docs elaborating on this.
+  //
+  // See https://docs.perfetto.dev/#/heapprofd?id=sampling-interval for more
+  // details.
   optional uint64 sampling_interval_bytes = 1;
 
   // E.g. surfaceflinger, com.android.phone
+  // This input is normalized in the following way: if it contains slashes,
+  // everything up to the last slash is discarded. If it contains "@",
+  // everything after the first @ is discared.
+  // E.g. /system/bin/surfaceflinger@1.0 normalizes to surfaceflinger.
+  // This transformation is also applied to the processes' command lines when
+  // matching.
   repeated string process_cmdline = 2;
-  // repeated string android_app = 3;  // TODO(fmayer): Implement
+
   // For watermark based triggering or local debugging.
   repeated uint64 pid = 4;
   optional bool all = 5;
@@ -3461,6 +3657,16 @@ message HeapprofdConfig {
 
   // Dump at a predefined interval.
   optional ContinuousDumpConfig continuous_dump_config = 6;
+
+  // Size of the shared memory buffer between the profiled processes and
+  // heapprofd. Defaults to 8 MiB. If larger than 500 MiB, truncated to 500
+  // MiB.
+  //
+  // Needs to be:
+  // * at least 8192,
+  // * a power of two,
+  // * a multiple of 4096.
+  optional uint64 shmem_size_bytes = 8;
 }
 
 // End of protos/perfetto/config/profiling/heapprofd_config.proto

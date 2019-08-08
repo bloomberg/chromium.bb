@@ -50,6 +50,12 @@ static inline double MultiplyZeroAlwaysGivesZero(AnimationTimeDelta x,
   return x.is_zero() || y == 0 ? 0 : (x * y).InSecondsF();
 }
 
+static inline bool IsWithinEpsilon(double a, double b) {
+  // Permit 2-bits of quantization error. Threshold based on experimentation
+  // with accuracy of fmod.
+  return std::abs(a - b) <= 2.0 * std::numeric_limits<double>::epsilon();
+}
+
 // https://drafts.csswg.org/web-animations-1/#animation-effect-phases-and-states
 static inline AnimationEffect::Phase CalculatePhase(
     double active_duration,
@@ -78,27 +84,9 @@ static inline AnimationEffect::Phase CalculatePhase(
   return AnimationEffect::kPhaseActive;
 }
 
-static inline bool IsActiveInParentPhase(AnimationEffect::Phase parent_phase,
-                                         Timing::FillMode fill_mode) {
-  switch (parent_phase) {
-    case AnimationEffect::kPhaseBefore:
-      return fill_mode == Timing::FillMode::BACKWARDS ||
-             fill_mode == Timing::FillMode::BOTH;
-    case AnimationEffect::kPhaseActive:
-      return true;
-    case AnimationEffect::kPhaseAfter:
-      return fill_mode == Timing::FillMode::FORWARDS ||
-             fill_mode == Timing::FillMode::BOTH;
-    default:
-      NOTREACHED();
-      return false;
-  }
-}
-
 static inline double CalculateActiveTime(double active_duration,
                                          Timing::FillMode fill_mode,
                                          double local_time,
-                                         AnimationEffect::Phase parent_phase,
                                          AnimationEffect::Phase phase,
                                          const Timing& specified) {
   DCHECK_GE(active_duration, 0);
@@ -110,9 +98,7 @@ static inline double CalculateActiveTime(double active_duration,
         return std::max(local_time - specified.start_delay, 0.0);
       return NullValue();
     case AnimationEffect::kPhaseActive:
-      if (IsActiveInParentPhase(parent_phase, fill_mode))
-        return local_time - specified.start_delay;
-      return NullValue();
+      return local_time - specified.start_delay;
     case AnimationEffect::kPhaseAfter:
       if (fill_mode == Timing::FillMode::FORWARDS ||
           fill_mode == Timing::FillMode::BOTH) {
@@ -190,77 +176,155 @@ static inline double CalculateIterationTime(double iteration_duration,
   return iteration_time;
 }
 
-static inline double CalculateCurrentIteration(double iteration_duration,
-                                               double iteration_time,
-                                               double offset_active_time,
-                                               const Timing& specified) {
-  DCHECK_GT(iteration_duration, 0);
-  DCHECK(IsNull(iteration_time) || iteration_time >= 0);
-
-  if (IsNull(offset_active_time))
+// Calculates the overall progress, which describes the number of iterations
+// that have completed (including partial iterations).
+// https://drafts.csswg.org/web-animations/#calculating-the-overall-progress
+static inline double CalculateOverallProgress(AnimationEffect::Phase phase,
+                                              double active_time,
+                                              double iteration_duration,
+                                              double iteration_count,
+                                              double iteration_start) {
+  // 1. If the active time is unresolved, return unresolved.
+  if (IsNull(active_time))
     return NullValue();
 
-  DCHECK_GE(iteration_time, 0);
-  DCHECK_LE(iteration_time, iteration_duration);
-  DCHECK_GE(offset_active_time, 0);
+  // 2. Calculate an initial value for overall progress.
+  double overall_progress = 0;
+  if (!iteration_duration) {
+    if (phase != AnimationEffect::kPhaseBefore)
+      overall_progress = iteration_count;
+  } else {
+    overall_progress = active_time / iteration_duration;
+  }
 
-  if (!offset_active_time)
-    return 0;
-
-  if (iteration_time == iteration_duration)
-    return specified.iteration_start + specified.iteration_count - 1;
-
-  return floor(offset_active_time / iteration_duration);
+  return overall_progress + iteration_start;
 }
 
-static inline double CalculateDirectedTime(double current_iteration,
-                                           double iteration_duration,
-                                           double iteration_time,
-                                           const Timing& specified) {
-  DCHECK(IsNull(current_iteration) || current_iteration >= 0);
-  DCHECK_GT(iteration_duration, 0);
-
-  if (IsNull(iteration_time))
+// Calculates the simple iteration progress, which is a fraction of the progress
+// through the current iteration that ignores transformations to the time
+// introduced by the playback direction or timing functions applied to the
+// effect.
+// https://drafts.csswg.org/web-animations/#calculating-the-simple-iteration
+// -progress
+static inline double CalculateSimpleIterationProgress(
+    AnimationEffect::Phase phase,
+    double overall_progress,
+    double iteration_start,
+    double active_time,
+    double active_duration,
+    double iteration_count) {
+  // 1. If the overall progress is unresolved, return unresolved.
+  if (IsNull(overall_progress))
     return NullValue();
 
-  DCHECK_GE(current_iteration, 0);
-  DCHECK_GE(iteration_time, 0);
-  DCHECK_LE(iteration_time, iteration_duration);
+  // 2. If overall progress is infinity, let the simple iteration progress be
+  // iteration start % 1.0, otherwise, let the simple iteration progress be
+  // overall progress % 1.0.
+  double simple_iteration_progress = std::isinf(overall_progress)
+                                         ? fmod(iteration_start, 1.0)
+                                         : fmod(overall_progress, 1.0);
 
-  const bool current_iteration_is_odd = fmod(current_iteration, 2) >= 1;
-  const bool current_direction_is_forwards =
-      specified.direction == Timing::PlaybackDirection::NORMAL ||
-      (specified.direction == Timing::PlaybackDirection::ALTERNATE_NORMAL &&
-       !current_iteration_is_odd) ||
-      (specified.direction == Timing::PlaybackDirection::ALTERNATE_REVERSE &&
-       current_iteration_is_odd);
+  // 3. If all of the following conditions are true,
+  //   * the simple iteration progress calculated above is zero, and
+  //   * the animation effect is in the active phase or the after phase, and
+  //   * the active time is equal to the active duration, and
+  //   * the iteration count is not equal to zero.
+  // let the simple iteration progress be 1.0.
+  if (IsWithinEpsilon(simple_iteration_progress, 0.0) &&
+      (phase == AnimationEffect::kPhaseActive ||
+       phase == AnimationEffect::kPhaseAfter) &&
+      IsWithinEpsilon(active_time, active_duration) &&
+      !IsWithinEpsilon(iteration_count, 0.0)) {
+    simple_iteration_progress = 1.0;
+  }
 
-  return current_direction_is_forwards ? iteration_time
-                                       : iteration_duration - iteration_time;
+  // 4. Return simple iteration progress.
+  return simple_iteration_progress;
 }
 
-static inline base::Optional<double> CalculateTransformedTime(
+// https://drafts.csswg.org/web-animations/#calculating-the-current-iteration
+static inline double CalculateCurrentIteration(
+    AnimationEffect::Phase phase,
+    double active_time,
+    double iteration_count,
+    double overall_progress,
+    double simple_iteration_progress) {
+  // 1. If the active time is unresolved, return unresolved.
+  if (IsNull(active_time))
+    return NullValue();
+
+  // 2. If the animation effect is in the after phase and the iteration count
+  // is infinity, return infinity.
+  if (phase == AnimationEffect::kPhaseAfter && std::isinf(iteration_count)) {
+    return std::numeric_limits<double>::infinity();
+  }
+
+  // 3. If the simple iteration progress is 1.0, return floor(overall progress)
+  // - 1.
+  if (simple_iteration_progress == 1.0)
+    return floor(overall_progress) - 1;
+
+  // 4. Otherwise, return floor(overall progress).
+  return floor(overall_progress);
+}
+
+// https://drafts.csswg.org/web-animations/#calculating-the-directed-progress
+static inline bool IsCurrentDirectionForwards(
     double current_iteration,
-    double iteration_duration,
-    double iteration_time,
-    const Timing& specified) {
-  DCHECK(IsNull(current_iteration) || current_iteration >= 0);
-  DCHECK_GT(iteration_duration, 0);
-  DCHECK(IsNull(iteration_time) ||
-         (iteration_time >= 0 && iteration_time <= iteration_duration));
+    Timing::PlaybackDirection direction) {
+  const bool current_iteration_is_even =
+      std::isinf(current_iteration)
+          ? true
+          : IsWithinEpsilon(fmod(current_iteration, 2), 0);
 
-  double directed_time = CalculateDirectedTime(
-      current_iteration, iteration_duration, iteration_time, specified);
-  if (IsNull(directed_time))
-    return base::nullopt;
-  if (!std::isfinite(iteration_duration))
-    return directed_time;
-  double time_fraction = directed_time / iteration_duration;
-  DCHECK(time_fraction >= 0 && time_fraction <= 1);
-  return MultiplyZeroAlwaysGivesZero(
-      iteration_duration,
-      specified.timing_function->Evaluate(
-          time_fraction, AccuracyForDuration(iteration_duration)));
+  switch (direction) {
+    case Timing::PlaybackDirection::NORMAL:
+      return true;
+
+    case Timing::PlaybackDirection::REVERSE:
+      return false;
+
+    case Timing::PlaybackDirection::ALTERNATE_NORMAL:
+      return current_iteration_is_even;
+
+    case Timing::PlaybackDirection::ALTERNATE_REVERSE:
+      return !current_iteration_is_even;
+  }
+}
+
+// https://drafts.csswg.org/web-animations/#calculating-the-directed-progress
+static inline double CalculateDirectedProgress(
+    double simple_iteration_progress,
+    double current_iteration,
+    Timing::PlaybackDirection direction) {
+  // 1. If the simple progress is unresolved, return unresolved.
+  if (IsNull(simple_iteration_progress))
+    return NullValue();
+
+  // 2. Calculate the current direction.
+  bool current_direction_is_forwards =
+      IsCurrentDirectionForwards(current_iteration, direction);
+
+  // 3. If the current direction is forwards then return the simple iteration
+  // progress. Otherwise return 1 - simple iteration progress.
+  return current_direction_is_forwards ? simple_iteration_progress
+                                       : 1 - simple_iteration_progress;
+}
+
+// https://drafts.csswg.org/web-animations/#calculating-the-transformed-progress
+static inline double CalculateTransformedProgress(
+    double directed_progress,
+    double iteration_duration,
+    scoped_refptr<TimingFunction> timing_function) {
+  if (IsNull(directed_progress))
+    return NullValue();
+
+  // Return the result of evaluating the animation effect’s timing function
+  // passing directed progress as the input progress value.
+  // Note that the spec calls for passing in a before flag as well, which should
+  // be used by the step easing functions (Possibly related to crbug/827560).
+  return timing_function->Evaluate(directed_progress,
+                                   AccuracyForDuration(iteration_duration));
 }
 
 }  // namespace blink

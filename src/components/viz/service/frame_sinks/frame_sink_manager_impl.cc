@@ -229,7 +229,7 @@ void FrameSinkManagerImpl::UnregisterFrameSinkHierarchy(
   mapping.children.erase(child_frame_sink_id);
 
   // Delete the FrameSinkSourceMapping for |parent_frame_sink_id| if empty.
-  if (!mapping.has_children() && !mapping.source) {
+  if (mapping.children.empty() && !mapping.source) {
     frame_sink_source_map_.erase(iter);
     return;
   }
@@ -337,9 +337,10 @@ bool FrameSinkManagerImpl::OnSurfaceDamaged(const SurfaceId& surface_id,
   return false;
 }
 
-void FrameSinkManagerImpl::OnSurfaceDiscarded(const SurfaceId& surface_id) {}
-
 void FrameSinkManagerImpl::OnSurfaceDestroyed(const SurfaceId& surface_id) {}
+
+void FrameSinkManagerImpl::OnSurfaceMarkedForDestruction(
+    const SurfaceId& surface_id) {}
 
 void FrameSinkManagerImpl::OnSurfaceDamageExpected(const SurfaceId& surface_id,
                                                    const BeginFrameArgs& args) {
@@ -470,7 +471,7 @@ void FrameSinkManagerImpl::RecursivelyDetachBeginFrameSource(
   }
 
   // Delete the FrameSinkSourceMapping for |frame_sink_id| if empty.
-  if (!mapping.has_children()) {
+  if (mapping.children.empty()) {
     frame_sink_source_map_.erase(iter);
     return;
   }
@@ -580,6 +581,15 @@ const CompositorFrameSinkSupport* FrameSinkManagerImpl::GetFrameSinkForId(
   if (it != support_map_.end())
     return it->second;
   return nullptr;
+}
+
+base::TimeDelta FrameSinkManagerImpl::GetPreferredFrameIntervalForFrameSinkId(
+    const FrameSinkId& id) const {
+  auto it = frame_sink_data_.find(id);
+  if (it == frame_sink_data_.end())
+    return BeginFrameArgs::MinInterval();
+
+  return it->second.preferred_frame_interval;
 }
 
 }  // namespace viz

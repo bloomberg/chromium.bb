@@ -66,6 +66,10 @@ const gfx::VectorIcon& GetVrIcon(VrIconId icon) {
 #if !defined(OS_ANDROID)
     case kVrOpenInBrowserIcon:
       return kOpenInBrowserIcon;
+    case kVrUsbIcon:
+      return vector_icons::kUsbIcon;
+    case kVrMidiIcon:
+      return vector_icons::kMidiIcon;
 #endif
     default:
       NOTREACHED();

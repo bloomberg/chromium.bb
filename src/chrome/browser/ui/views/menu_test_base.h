@@ -15,7 +15,7 @@
 #include "ui/views/controls/menu/menu_delegate.h"
 
 namespace views {
-class MenuButton;
+class Button;
 class MenuItemView;
 class MenuRunner;
 }
@@ -76,7 +76,7 @@ class MenuTestBase : public ViewEventTestBase,
   gfx::Size GetPreferredSizeForContents() const override;
 
   // views::MenuButtonListener implementation
-  void OnMenuButtonClicked(views::MenuButton* source,
+  void OnMenuButtonClicked(views::Button* source,
                            const gfx::Point& point,
                            const ui::Event* event) override;
 

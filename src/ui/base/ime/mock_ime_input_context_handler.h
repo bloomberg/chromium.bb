@@ -7,15 +7,15 @@
 
 #include <stdint.h>
 
+#include "base/component_export.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_input_context_handler_interface.h"
-#include "ui/base/ime/ui_base_ime_export.h"
 #include "ui/events/event.h"
 
 namespace ui {
 class InputMethod;
 
-class UI_BASE_IME_EXPORT MockIMEInputContextHandler
+class COMPONENT_EXPORT(UI_BASE_IME) MockIMEInputContextHandler
     : public IMEInputContextHandlerInterface {
  public:
   struct UpdateCompositionTextArg {

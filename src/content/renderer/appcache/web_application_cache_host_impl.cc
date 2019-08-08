@@ -317,7 +317,8 @@ void WebApplicationCacheHostImpl::GetAssociatedCacheInfo(
     return;
   info->creation_time = cache_info_.creation_time.ToDoubleT();
   info->update_time = cache_info_.last_update_time.ToDoubleT();
-  info->total_size = cache_info_.size;
+  info->response_sizes = cache_info_.response_sizes;
+  info->padding_sizes = cache_info_.padding_sizes;
 }
 
 int WebApplicationCacheHostImpl::GetHostID() const {
@@ -337,7 +338,8 @@ void WebApplicationCacheHostImpl::GetResourceList(
 
   WebVector<ResourceInfo> web_resources(resource_infos.size());
   for (size_t i = 0; i < resource_infos.size(); ++i) {
-    web_resources[i].size = resource_infos[i].size;
+    web_resources[i].response_size = resource_infos[i].response_size;
+    web_resources[i].padding_size = resource_infos[i].padding_size;
     web_resources[i].is_master = resource_infos[i].is_master;
     web_resources[i].is_explicit = resource_infos[i].is_explicit;
     web_resources[i].is_manifest = resource_infos[i].is_manifest;

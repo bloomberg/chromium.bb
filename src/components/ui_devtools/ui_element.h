@@ -29,6 +29,8 @@ enum UIElementType { WINDOW, WIDGET, VIEW, ROOT, FRAMESINK, SURFACE };
 
 class UI_DEVTOOLS_EXPORT UIElement {
  public:
+  using UIElements = std::vector<UIElement*>;
+
   virtual ~UIElement();
   int node_id() const { return node_id_; }
   std::string GetTypeName() const;
@@ -36,20 +38,20 @@ class UI_DEVTOOLS_EXPORT UIElement {
   void set_parent(UIElement* parent) { parent_ = parent; }
   UIElementDelegate* delegate() const { return delegate_; }
   UIElementType type() const { return type_; }
-  const std::vector<UIElement*>& children() const { return children_; }
+  const UIElements& children() const { return children_; }
   bool is_updating() const { return is_updating_; }
   void set_is_updating(bool is_updating) { is_updating_ = is_updating; }
   void set_owns_children(bool owns_children) { owns_children_ = owns_children; }
 
   using ElementCompare = bool (*)(const UIElement*, const UIElement*);
 
-  // |child| is inserted in front of |before|. If |before| is null, it
-  // is inserted at the end. Parent takes ownership of the added child.
+  // Inserts |child| in front of |before|. If |before| is null, it is inserted
+  // at the end. Parent takes ownership of the added child.
   void AddChild(UIElement* child, UIElement* before = nullptr);
 
-  // |child| is inserted according to a custom ordering function.
-  // |notify_delegate| calls OnUIElementAdded, which creates the subtree of
-  // UIElements at |child|, and the corresponding DOM nodes.
+  // Inserts |child| according to a custom ordering function. |notify_delegate|
+  // calls OnUIElementAdded(), which creates the subtree of UIElements at
+  // |child|, and the corresponding DOM nodes.
   void AddOrderedChild(UIElement* child,
                        ElementCompare compare,
                        bool notify_delegate = true);
@@ -58,30 +60,32 @@ class UI_DEVTOOLS_EXPORT UIElement {
   // children.
   void ClearChildren();
 
-  // Remove |child| out of vector |children_| but |child| is not destroyed.
-  // The caller is responsible for destroying |child|. |notify_delegate| calls
-  // OnUIElementRemoved, which destroys the DOM node for |child|.
+  // Removes |child| out of |children_| without destroying |child|. The caller
+  // is responsible for destroying |child|. |notify_delegate| calls
+  // OnUIElementRemoved(), which destroys the DOM node for |child|.
   void RemoveChild(UIElement* child, bool notify_delegate = true);
 
-  // Move |child| to position new_index in |children_|.
-  void ReorderChild(UIElement* child, int new_index);
+  // Moves |child| to position |index| in |children_|.
+  void ReorderChild(UIElement* child, int index);
 
   template <class T>
   int FindUIElementIdForBackendElement(T* element) const;
 
-  // Return a vector of pairs of properties' names and values.
+  // Returns properties' names and values.
   virtual std::vector<std::pair<std::string, std::string>> GetCustomProperties()
       const = 0;
+
   virtual void GetBounds(gfx::Rect* bounds) const = 0;
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
   virtual void GetVisible(bool* visible) const = 0;
   virtual void SetVisible(bool visible) = 0;
 
-  // If element exists, return its associated native window and its screen
-  // bounds. Otherwise, return null and empty bounds.
+  // If element exists, returns its associated native window and its screen
+  // bounds. Otherwise, returns null and empty bounds.
   virtual std::pair<gfx::NativeWindow, gfx::Rect> GetNodeWindowAndScreenBounds()
       const = 0;
-  // Get a list of interleaved keys and values of attributes to be displayed
+
+  // Returns a list of interleaved keys and values of attributes to be displayed
   // on the element in the dev tools hierarchy view.
   virtual std::unique_ptr<protocol::Array<std::string>> GetAttributes()
       const = 0;
@@ -99,7 +103,7 @@ class UI_DEVTOOLS_EXPORT UIElement {
  private:
   const int node_id_;
   const UIElementType type_;
-  std::vector<UIElement*> children_;
+  UIElements children_;
   UIElement* parent_;
   UIElementDelegate* delegate_;
   bool is_updating_ = false;

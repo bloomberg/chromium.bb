@@ -201,7 +201,7 @@ class WebRtcTestBase : public InProcessBrowserTest {
   scoped_refptr<content::TestStatsReportDictionary> GetStatsReportDictionary(
       content::WebContents* tab) const;
   double MeasureGetStatsPerformance(content::WebContents* tab) const;
-  std::vector<std::string> GetWhitelistedStatsTypes(
+  std::vector<std::string> GetMandatoryStatsTypes(
       content::WebContents* tab) const;
 
   // Change the default audio/video codec in the offer SDP.

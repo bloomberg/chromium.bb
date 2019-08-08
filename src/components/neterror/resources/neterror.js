@@ -57,6 +57,7 @@ if (window.top.location != window.location)
 function updateForDnsProbe(strings) {
   var context = new JsEvalContext(strings);
   jstProcess(context, document.getElementById('t'));
+  onDocumentLoadOrUpdate();
 }
 
 // Given the classList property of an element, adds an icon class to the list
@@ -77,7 +78,7 @@ function updateIconClass(classList, newClass) {
   classList['last_icon_class'] = newClass;
 
   if (newClass == 'icon-offline') {
-    document.body.classList.add('offline');
+    document.firstElementChild.classList.add('offline');
     new Runner('.interstitial-wrapper');
   } else {
     document.body.classList.add('neterror');
@@ -156,7 +157,6 @@ function setUpCachedButton(buttonStrings) {
     location = url;
   };
   reloadButton.style.display = '';
-  document.getElementById('control-buttons').hidden = false;
 }
 
 var primaryControlOnLeft = true;
@@ -195,19 +195,6 @@ function launchOfflineItem(itemID, name_space) {
 
 function launchDownloadsPage() {
   errorPageController.launchDownloadsPage();
-}
-
-// Populates a summary of suggested offline content.
-function offlineContentSummaryAvailable(summary) {
-  // Note: See AvailableContentSummaryToValue in
-  // available_offline_content_helper.cc for the data contained in |summary|.
-  if (!summary || summary.total_items == 0 ||
-      !loadTimeData.valueExists('offlineContentSummary')) {
-    return;
-  }
-  // TODO(https://crbug.com/852872): Customize presented icons based on the
-  // types of available offline content.
-  document.getElementById('offline-content-summary').hidden = false;
 }
 
 function getIconForSuggestedItem(item) {
@@ -319,38 +306,65 @@ function toggleOfflineContentListVisibility(updatePref) {
   }
 }
 
-function onDocumentLoad() {
-  var controlButtonDiv = document.getElementById('control-buttons');
-  var reloadButton = document.getElementById('reload-button');
-  var detailsButton = document.getElementById('details-button');
-  var downloadButton = document.getElementById('download-button');
-
-  var reloadButtonVisible = loadTimeData.valueExists('reloadButton') &&
-      loadTimeData.getValue('reloadButton').msg;
+// Called on document load, and from updateForDnsProbe().
+function onDocumentLoadOrUpdate() {
   var downloadButtonVisible = loadTimeData.valueExists('downloadButton') &&
       loadTimeData.getValue('downloadButton').msg;
+  var detailsButton = document.getElementById('details-button');
+
+// <if expr="HIDE_ERROR_MESSAGE_FOR_DINO_PAGE">
+  if ('chrome://dino/' == document.title) {
+    // If the user explicitly loads the dino page, don't show offline
+    // information as it's not accurate.
+    document.getElementById('main-message').classList.add(HIDDEN_CLASS);
+  }
+// </if>
 
   // If offline content suggestions will be visible, the usual buttons will not
   // be presented.
   var offlineContentVisible =
-      loadTimeData.valueExists('suggestedOfflineContentPresentationMode');
+      loadTimeData.valueExists('suggestedOfflineContentPresentation');
   if (offlineContentVisible) {
     document.querySelector('.nav-wrapper').classList.add(HIDDEN_CLASS);
     detailsButton.classList.add(HIDDEN_CLASS);
 
-    if (downloadButtonVisible)
-      document.getElementById('download-link').hidden = false;
-
+    document.getElementById('download-link').hidden = !downloadButtonVisible;
     document.getElementById('download-links-wrapper')
         .classList.remove(HIDDEN_CLASS);
     document.getElementById('error-information-popup-container')
         .classList.add('use-popup-container', HIDDEN_CLASS)
     document.getElementById('error-information-button')
         .classList.remove(HIDDEN_CLASS);
-
-    return;
   }
 
+  var attemptAutoFetch = loadTimeData.valueExists('attemptAutoFetch') &&
+      loadTimeData.getValue('attemptAutoFetch');
+
+  var reloadButtonVisible = loadTimeData.valueExists('reloadButton') &&
+      loadTimeData.getValue('reloadButton').msg;
+
+  // Check for Google cached copy suggestion.
+  var cacheButtonVisible = false;
+  if (loadTimeData.valueExists('cacheButton')) {
+    setUpCachedButton(loadTimeData.getValue('cacheButton'));
+    cacheButtonVisible = true;
+  }
+
+  var reloadButton = document.getElementById('reload-button');
+  var downloadButton = document.getElementById('download-button');
+  if (reloadButton.style.display == 'none' &&
+      downloadButton.style.display == 'none') {
+    detailsButton.classList.add('singular');
+  }
+
+  // Show or hide control buttons.
+  var controlButtonDiv = document.getElementById('control-buttons');
+  controlButtonDiv.hidden = offlineContentVisible ||
+      !(reloadButtonVisible || downloadButtonVisible || attemptAutoFetch ||
+        cacheButtonVisible);
+}
+
+function onDocumentLoad() {
   // Sets up the proper button layout for the current platform.
   if (primaryControlOnLeft) {
     buttons.classList.add('suggested-left');
@@ -358,22 +372,7 @@ function onDocumentLoad() {
     buttons.classList.add('suggested-right');
   }
 
-  // Check for Google cached copy suggestion.
-  if (loadTimeData.valueExists('cacheButton')) {
-    setUpCachedButton(loadTimeData.getValue('cacheButton'));
-  }
-
-  if (reloadButton.style.display == 'none' &&
-      downloadButton.style.display == 'none') {
-    detailsButton.classList.add('singular');
-  }
-
-  var attemptAutoFetch = loadTimeData.valueExists('attemptAutoFetch') &&
-      loadTimeData.getValue('attemptAutoFetch');
-
-  // Show control buttons.
-  if (reloadButtonVisible || downloadButtonVisible || attemptAutoFetch)
-    controlButtonDiv.hidden = false;
+  onDocumentLoadOrUpdate();
 }
 
 document.addEventListener('DOMContentLoaded', onDocumentLoad);

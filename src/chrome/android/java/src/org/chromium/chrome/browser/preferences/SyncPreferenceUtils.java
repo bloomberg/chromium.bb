@@ -3,23 +3,30 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.preferences;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.provider.Browser;
 import android.support.annotation.Nullable;
-import android.support.v7.content.res.AppCompatResources;
+import android.support.customtabs.CustomTabsIntent;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.LaunchIntentDispatcher;
+import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
-import org.chromium.components.sync.ProtocolErrorClientAction;
 import org.chromium.components.sync.StopSource;
 import org.chromium.ui.UiUtils;
 
@@ -27,6 +34,8 @@ import org.chromium.ui.UiUtils;
  * Helper methods for sync preferences.
  */
 public class SyncPreferenceUtils {
+    private static final String DASHBOARD_URL = "https://www.google.com/settings/chrome/sync";
+
     /**
      * Checks if sync error icon should be shown. Show sync error icon if sync is off because
      * of error, passphrase required or disabled in Android.
@@ -77,8 +86,7 @@ public class SyncPreferenceUtils {
                     GoogleServiceAuthError.getMessageID(profileSyncService.getAuthError()));
         }
 
-        if (profileSyncService.getProtocolErrorClientAction()
-                == ProtocolErrorClientAction.UPGRADE_CLIENT) {
+        if (profileSyncService.requiresClientUpgrade()) {
             return res.getString(
                     R.string.sync_error_upgrade_client, BuildInfo.getInstance().hostPackageLabel);
         }
@@ -114,17 +122,19 @@ public class SyncPreferenceUtils {
         ProfileSyncService profileSyncService = ProfileSyncService.get();
         if (profileSyncService == null || !AndroidSyncSettings.get().isSyncEnabled()) {
             return UiUtils.getTintedDrawable(
-                    context, R.drawable.ic_sync_green_40dp, R.color.modern_grey_700);
+                    context, R.drawable.ic_sync_green_40dp, R.color.default_icon_color);
         }
 
         if (profileSyncService.isEngineInitialized()
                 && (profileSyncService.hasUnrecoverableError()
                         || profileSyncService.getAuthError() != GoogleServiceAuthError.State.NONE
                         || profileSyncService.isPassphraseRequiredForDecryption())) {
-            return AppCompatResources.getDrawable(context, R.drawable.ic_sync_error_40dp);
+            return UiUtils.getTintedDrawable(
+                    context, R.drawable.ic_sync_error_40dp, R.color.default_red);
         }
 
-        return AppCompatResources.getDrawable(context, R.drawable.ic_sync_green_40dp);
+        return UiUtils.getTintedDrawable(
+                context, R.drawable.ic_sync_green_40dp, R.color.default_green);
     }
 
     /**
@@ -163,5 +173,26 @@ public class SyncPreferenceUtils {
             runnable.run();
             return false;
         };
+    }
+
+    /**
+     * Opens web dashboard to manage sync in a custom tab.
+     * @param activity The activity to use for starting the intent.
+     */
+    public static void openSyncDashboard(Activity activity) {
+        // TODO(https://crbug.com/948103): Create a builder for custom tab intents.
+        CustomTabsIntent customTabIntent =
+                new CustomTabsIntent.Builder().setShowTitle(false).build();
+        customTabIntent.intent.setData(Uri.parse(DASHBOARD_URL));
+
+        Intent intent = LaunchIntentDispatcher.createCustomTabActivityIntent(
+                activity, customTabIntent.intent);
+        intent.setPackage(activity.getPackageName());
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE,
+                CustomTabIntentDataProvider.CustomTabsUiType.DEFAULT);
+        intent.putExtra(Browser.EXTRA_APPLICATION_ID, activity.getPackageName());
+        IntentHandler.addTrustedIntentExtras(intent);
+
+        IntentUtils.safeStartActivity(activity, intent);
     }
 }

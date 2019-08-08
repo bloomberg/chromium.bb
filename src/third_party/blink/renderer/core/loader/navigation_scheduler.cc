@@ -64,91 +64,20 @@ namespace blink {
 
 unsigned NavigationDisablerForBeforeUnload::navigation_disable_count_ = 0;
 
-class ScheduledURLNavigation : public ScheduledNavigation {
- protected:
-  ScheduledURLNavigation(ClientNavigationReason reason,
-                         double delay,
-                         Document* origin_document,
-                         const KURL& url,
-                         WebFrameLoadType frame_load_type,
-                         bool is_location_change,
-                         base::TimeTicks input_timestamp)
-      : ScheduledNavigation(reason,
-                            delay,
-                            origin_document,
-                            is_location_change,
-                            input_timestamp),
-        url_(url),
-        should_check_main_world_content_security_policy_(
-            kCheckContentSecurityPolicy),
-        frame_load_type_(frame_load_type) {
-    if (ContentSecurityPolicy::ShouldBypassMainWorld(origin_document)) {
-      should_check_main_world_content_security_policy_ =
-          kDoNotCheckContentSecurityPolicy;
-    }
-
-    if (origin_document && url.ProtocolIs("blob") &&
-        BlobUtils::MojoBlobURLsEnabled()) {
-      origin_document->GetPublicURLManager().Resolve(
-          url_, MakeRequest(&blob_url_token_));
-    }
-  }
-
-  void Fire(LocalFrame* frame) override {
-    std::unique_ptr<UserGestureIndicator> gesture_indicator =
-        CreateUserGestureIndicator();
-    FrameLoadRequest request(OriginDocument(), ResourceRequest(url_), "_self",
-                             should_check_main_world_content_security_policy_);
-    request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
-    request.SetInputStartTime(InputTimestamp());
-
-    if (blob_url_token_) {
-      mojom::blink::BlobURLTokenPtr token_clone;
-      blob_url_token_->Clone(MakeRequest(&token_clone));
-      request.SetBlobURLToken(std::move(token_clone));
-    }
-
-    frame->Loader().StartNavigation(request, frame_load_type_);
-  }
-
-  KURL Url() const override { return url_; }
-
-  WebFrameLoadType LoadType() const { return frame_load_type_; }
-
- private:
-  KURL url_;
-  mojom::blink::BlobURLTokenPtr blob_url_token_;
-  ContentSecurityPolicyDisposition
-      should_check_main_world_content_security_policy_;
-  WebFrameLoadType frame_load_type_;
-};
-
-class ScheduledRedirect final : public ScheduledURLNavigation {
+class ScheduledRedirect final : public ScheduledNavigation {
  public:
-  static ScheduledRedirect* Create(double delay,
-                                   Document* origin_document,
-                                   const KURL& url,
-                                   Document::HttpRefreshType http_refresh_type,
-                                   WebFrameLoadType frame_load_type,
-                                   base::TimeTicks input_timestamp) {
-    return MakeGarbageCollected<ScheduledRedirect>(
-        delay, origin_document, url, http_refresh_type, frame_load_type,
-        input_timestamp);
-  }
-
   ScheduledRedirect(double delay,
                     Document* origin_document,
                     const KURL& url,
                     Document::HttpRefreshType http_refresh_type,
                     WebFrameLoadType frame_load_type,
                     base::TimeTicks input_timestamp)
-      : ScheduledURLNavigation(ToReason(http_refresh_type),
-                               delay,
-                               origin_document,
-                               url,
-                               frame_load_type,
-                               false,
-                               input_timestamp) {
+      : ScheduledNavigation(ToReason(http_refresh_type),
+                            delay,
+                            origin_document,
+                            url,
+                            frame_load_type,
+                            input_timestamp) {
     ClearUserGesture();
   }
 
@@ -168,7 +97,7 @@ class ScheduledRedirect final : public ScheduledURLNavigation {
           mojom::FetchCacheMode::kValidateCache);
       load_type = WebFrameLoadType::kReload;
     }
-    request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
+    request.SetClientRedirectReason(GetReason());
     frame->Loader().StartNavigation(request, load_type);
   }
 
@@ -188,7 +117,7 @@ class ScheduledRedirect final : public ScheduledURLNavigation {
   }
 };
 
-class ScheduledFrameNavigation final : public ScheduledURLNavigation {
+class ScheduledFrameNavigation final : public ScheduledNavigation {
  public:
   static ScheduledFrameNavigation* Create(Document* origin_document,
                                           const KURL& url,
@@ -202,95 +131,52 @@ class ScheduledFrameNavigation final : public ScheduledURLNavigation {
                            const KURL& url,
                            WebFrameLoadType frame_load_type,
                            base::TimeTicks input_timestamp)
-      : ScheduledURLNavigation(ClientNavigationReason::kFrameNavigation,
-                               0.0,
-                               origin_document,
-                               url,
-                               frame_load_type,
-                               !url.ProtocolIsJavaScript(),
-                               input_timestamp) {}
-};
-
-class ScheduledPageBlock final : public ScheduledNavigation {
- public:
-  static ScheduledPageBlock* Create(Document* origin_document, int reason) {
-    return MakeGarbageCollected<ScheduledPageBlock>(origin_document, reason);
-  }
-
-  ScheduledPageBlock(Document* origin_document, int reason)
-      : ScheduledNavigation(ClientNavigationReason::kPageBlock,
+      : ScheduledNavigation(ClientNavigationReason::kFrameNavigation,
                             0.0,
                             origin_document,
-                            true,
-                            base::TimeTicks() /* input_timestamp */),
-        reason_(reason) {}
-
-  void Fire(LocalFrame* frame) override {
-    frame->Client()->LoadErrorPage(reason_);
-  }
-
-  KURL Url() const override { return KURL(); }
-
- private:
-  int reason_;
-};
-
-class ScheduledFormSubmission final : public ScheduledNavigation {
- public:
-  static ScheduledFormSubmission* Create(Document* document,
-                                         FormSubmission* submission,
-                                         WebFrameLoadType frame_load_type,
-                                         base::TimeTicks input_timestamp) {
-    return MakeGarbageCollected<ScheduledFormSubmission>(
-        document, submission, frame_load_type, input_timestamp);
-  }
-
-  ScheduledFormSubmission(Document* document,
-                          FormSubmission* submission,
-                          WebFrameLoadType frame_load_type,
-                          base::TimeTicks input_timestamp)
-      : ScheduledNavigation(submission->Method() == FormSubmission::kGetMethod
-                                ? ClientNavigationReason::kFormSubmissionGet
-                                : ClientNavigationReason::kFormSubmissionPost,
-                            0,
-                            document,
-                            true,
+                            url,
+                            frame_load_type,
                             input_timestamp),
-        submission_(submission),
-        frame_load_type_(frame_load_type) {
-    DCHECK_NE(submission->Method(), FormSubmission::kDialogMethod);
-    DCHECK(submission_->Form());
+        should_check_main_world_content_security_policy_(
+            kCheckContentSecurityPolicy) {
+    if (ContentSecurityPolicy::ShouldBypassMainWorld(origin_document)) {
+      should_check_main_world_content_security_policy_ =
+          kDoNotCheckContentSecurityPolicy;
+    }
+
+    if (origin_document && url.ProtocolIs("blob") &&
+        BlobUtils::MojoBlobURLsEnabled()) {
+      origin_document->GetPublicURLManager().Resolve(
+          Url(), MakeRequest(&blob_url_token_));
+    }
   }
 
   void Fire(LocalFrame* frame) override {
     std::unique_ptr<UserGestureIndicator> gesture_indicator =
         CreateUserGestureIndicator();
-    FrameLoadRequest frame_request =
-        submission_->CreateFrameLoadRequest(OriginDocument());
-    frame_request.SetInputStartTime(InputTimestamp());
-    frame->Loader().StartNavigation(frame_request, frame_load_type_,
-                                    submission_->GetNavigationPolicy());
-  }
+    FrameLoadRequest request(OriginDocument(), ResourceRequest(Url()), "_self",
+                             should_check_main_world_content_security_policy_);
+    request.SetClientRedirectReason(GetReason());
+    request.SetInputStartTime(InputTimestamp());
 
-  KURL Url() const override { return submission_->RequestURL(); }
+    if (blob_url_token_) {
+      mojom::blink::BlobURLTokenPtr token_clone;
+      blob_url_token_->Clone(MakeRequest(&token_clone));
+      request.SetBlobURLToken(std::move(token_clone));
+    }
 
-  void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(submission_);
-    ScheduledNavigation::Trace(visitor);
+    frame->Loader().StartNavigation(request, LoadType());
   }
 
  private:
-  Member<FormSubmission> submission_;
-  WebFrameLoadType frame_load_type_;
+  mojom::blink::BlobURLTokenPtr blob_url_token_;
+  ContentSecurityPolicyDisposition
+      should_check_main_world_content_security_policy_;
 };
 
 NavigationScheduler::NavigationScheduler(LocalFrame* frame) : frame_(frame) {}
 
 NavigationScheduler::~NavigationScheduler() {
-}
-
-bool NavigationScheduler::LocationChangePending() {
-  return redirect_ && redirect_->IsLocationChange();
 }
 
 bool NavigationScheduler::IsNavigationScheduledWithin(double interval) const {
@@ -320,9 +206,10 @@ void NavigationScheduler::ScheduleRedirect(
     WebFrameLoadType frame_load_type = WebFrameLoadType::kStandard;
     if (delay <= 1)
       frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
-    Schedule(ScheduledRedirect::Create(delay, frame_->GetDocument(), url,
-                                       http_refresh_type, frame_load_type,
-                                       InputTimestamp()));
+    Schedule(MakeGarbageCollected<ScheduledRedirect>(
+                 delay, frame_->GetDocument(), url, http_refresh_type,
+                 frame_load_type, InputTimestamp()),
+             kDoNotCancelParsing);
   }
 }
 
@@ -373,31 +260,18 @@ void NavigationScheduler::ScheduleFrameNavigation(
         EqualIgnoringFragmentIdentifier(frame_->GetDocument()->Url(), url)) {
       FrameLoadRequest request(origin_document, ResourceRequest(url), "_self");
       request.SetInputStartTime(input_timestamp);
-      if (frame_load_type == WebFrameLoadType::kReplaceCurrentItem)
-        request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
+      if (frame_load_type == WebFrameLoadType::kReplaceCurrentItem) {
+        request.SetClientRedirectReason(
+            ClientNavigationReason::kFrameNavigation);
+      }
       frame_->Loader().StartNavigation(request, frame_load_type);
       return;
     }
   }
 
   Schedule(ScheduledFrameNavigation::Create(origin_document, url,
-                                            frame_load_type, input_timestamp));
-}
-
-void NavigationScheduler::SchedulePageBlock(Document* origin_document,
-                                            int reason) {
-  DCHECK(frame_->GetPage());
-  Schedule(ScheduledPageBlock::Create(origin_document, reason));
-}
-
-void NavigationScheduler::ScheduleFormSubmission(Document* document,
-                                                 FormSubmission* submission) {
-  DCHECK(frame_->GetPage());
-  WebFrameLoadType frame_load_type = WebFrameLoadType::kStandard;
-  if (MustReplaceCurrentItem(frame_))
-    frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
-  Schedule(ScheduledFormSubmission::Create(document, submission,
-                                           frame_load_type, InputTimestamp()));
+                                            frame_load_type, input_timestamp),
+           kCancelParsing);
 }
 
 void NavigationScheduler::NavigateTask() {
@@ -413,7 +287,8 @@ void NavigationScheduler::NavigateTask() {
   probe::FrameClearedScheduledNavigation(frame_);
 }
 
-void NavigationScheduler::Schedule(ScheduledNavigation* redirect) {
+void NavigationScheduler::Schedule(ScheduledNavigation* redirect,
+                                   CancelParsingPolicy cancel_parsing_policy) {
   DCHECK(frame_->GetPage());
 
   // In a back/forward navigation, we sometimes restore history state to
@@ -432,8 +307,14 @@ void NavigationScheduler::Schedule(ScheduledNavigation* redirect) {
 
   Cancel();
   redirect_ = redirect;
-  if (redirect_->IsLocationChange())
-    frame_->GetDocument()->SuppressLoadEvent();
+
+  // Most navigations are guaranteed to transition documents if they reach this
+  // point. JS urls aren't, and refresh headers are delayed. Don't immediately
+  // cancel parsing for those.
+  if (cancel_parsing_policy == kCancelParsing &&
+      !redirect->Url().ProtocolIsJavaScript()) {
+    frame_->GetDocument()->CancelParsing();
+  }
   StartTimer();
 }
 
@@ -464,7 +345,7 @@ void NavigationScheduler::Cancel() {
     probe::FrameClearedScheduledNavigation(frame_);
   }
   if (frame_->GetDocument())
-    frame_->GetDocument()->CancelPendingJavaScriptUrl();
+    frame_->GetDocument()->CancelPendingJavaScriptUrls();
   navigate_task_handle_.Cancel();
   redirect_.Clear();
 }

@@ -1,12 +1,14 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="security_keys_subpage.html">
 <link rel="import" href="../clear_browsing_data_dialog/clear_browsing_data_dialog.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../lifetime_browser_proxy.html">
@@ -135,57 +137,34 @@
         </settings-toggle-button>
 </if>
 <if expr="use_nss_certs or is_win or is_macosx">
-        <div id="manageCertificates" class="settings-box two-line"
-            actionable on-click="onManageCertificatesTap_">
-          <div class="start">
-            $i18n{manageCertificates}
-            <div class="secondary" id="manageCertificatesSecondary">
-              $i18n{manageCertificatesDescription}
-            </div>
-          </div>
-<if expr="use_nss_certs">
-          <paper-icon-button-light class="subpage-arrow">
-            <button aria-label="$i18n{manageCertificates}"
-                aria-describedby="manageCertificatesSecondary"></button>
-          </paper-icon-button-light>
-</if>
+        <cr-link-row id="manageCertificates"
+            class="hr"
 <if expr="not use_nss_certs">
-          <paper-icon-button-light class="icon-external">
-            <button aria-label="$i18n{manageCertificates}"
-                aria-describedby="manageCertificatesSecondary"></button>
-          </paper-icon-button-light>
+            external
 </if>
-        </div>
+            label="$i18n{manageCertificates}"
+            sub-label="$i18n{manageCertificatesDescription}"
+            on-click="onManageCertificatesTap_"></cr-link-row>
 </if>
-        <div id="site-settings-subpage-trigger"
-            class="settings-box two-line" actionable
-            on-click="onSiteSettingsTap_">
-          <div class="start">
-            [[siteSettingsPageTitle_()]]
-            <div class="secondary" id="siteSettingsSecondary">
-              $i18n{siteSettingsDescription}
-            </div>
-          </div>
-          <paper-icon-button-light class="subpage-arrow">
-            <button aria-label$="[[siteSettingsPageTitle_()]]"
-                aria-describedby="siteSettingsSecondary"></button>
-          </paper-icon-button-light>
-        </div>
-        <div class="settings-box two-line" id="clearBrowsingData"
-            on-click="onClearBrowsingDataTap_" actionable>
-          <div class="start">
-            $i18n{clearBrowsingData}
-            <div class="secondary" id="clearBrowsingDataSecondary">
-              $i18n{clearBrowsingDataDescription}
-            </div>
-          </div>
-          <paper-icon-button-light class="subpage-arrow">
-            <button id="clearBrowsingDataTrigger"
-                aria-label="$i18n{clearBrowsingData}"
-                aria-describedby="clearBrowsingDataSecondary"></button>
-          </paper-icon-button-light>
-        </div>
+        <template is="dom-if" if="[[enableSecurityKeysSubpage_]]">
+          <cr-link-row id="security-keys-subpage-trigger"
+            class="hr"
+            label="$i18n{securityKeysTitle}"
+            sub-label="$i18n{securityKeysDesc}"
+            on-click="onSecurityKeysTap_"></cr-link-row>
+        </template>
+        <cr-link-row id="site-settings-subpage-trigger"
+            class="hr"
+            label="[[siteSettingsPageTitle_()]]"
+            sub-label="$i18n{siteSettingsDescription}"
+            on-click="onSiteSettingsTap_"></cr-link-row>
+        <cr-link-row id="clearBrowsingData"
+            class="hr"
+            label="$i18n{clearBrowsingData}"
+            sub-label="$i18n{clearBrowsingDataDescription}"
+            on-click="onClearBrowsingDataTap_"></cr-link-row>
       </div>
+
 <if expr="use_nss_certs">
       <template is="dom-if" route-path="/certificates">
         <settings-subpage
@@ -195,6 +174,17 @@
         </settings-subpage>
       </template>
 </if>
+
+      <template is="dom-if" if="[[enableSecurityKeysSubpage_]]">
+        <template is="dom-if" route-path="/securityKeys">
+          <settings-subpage
+              associated-control="[[$$('#security-keys-subpage-trigger')]]"
+              page-title="$i18n{securityKeysTitle}">
+            <security-keys-subpage></security-keys-subpage>
+          </settings-subpage>
+        </template>
+      </template>
+
       <template is="dom-if" route-path="/content">
         <settings-subpage
             associated-control="[[$$('#site-settings-subpage-trigger')]]"
@@ -278,15 +268,9 @@
               label="$i18n{thirdPartyCookie}"
               sub-label="$i18n{thirdPartyCookieSublabel}">
           </settings-toggle-button>
-          <div id="site-data-trigger" class="settings-box" actionable
-              on-click="onSiteDataTap_">
-             <div class="start" id="cookiesLink">
-               $i18n{siteSettingsCookieLink}
-             </div>
-             <paper-icon-button-light class="subpage-arrow">
-               <button aria-labelledby="cookiesLink"></button>
-             </paper-icon-button-light>
-          </div>
+          <cr-link-row id="site-data-trigger" class="hr"
+              on-click="onSiteDataTap_" label="$i18n{siteSettingsCookieLink}">
+          </cr-link-row>
           <category-setting-exceptions
               category="{{ContentSettingsTypes.COOKIES}}"
               block-header="$i18n{siteSettingsBlock}"
@@ -462,9 +446,8 @@
               target="_blank"
               href="https://www.macromedia.com/support/documentation/en/flashplayer/help/settings_manager07.html">
             <div class="start">$i18n{adobeFlashStorage}</div>
-            <paper-icon-button-light actionable class="icon-external">
-              <button aria-label="$i18n{adobeFlashStorage}"></button>
-            </paper-icon-button-light>
+            <cr-icon-button actionable class="icon-external"
+                aria-label="$i18n{adobeFlashStorage}"></cr-icon-button>
           </a>
 </if>
           <category-setting-exceptions
@@ -557,6 +540,22 @@
           </chooser-exception-list>
         </settings-subpage>
       </template>
+      <template is="dom-if" if="[[enableExperimentalWebPlatformFeatures_]]">
+        <template is="dom-if" route-path="/content/serialPorts" no-search>
+          <settings-subpage page-title="$i18n{siteSettingsSerialPorts}">
+            <category-default-setting
+                toggle-off-label="$i18n{siteSettingsSerialPortsBlock}"
+                toggle-on-label=
+                    "$i18n{siteSettingsSerialPortsAskRecommended}"
+                category="{{ContentSettingsTypes.SERIAL_PORTS}}">
+            </category-default-setting>
+            <chooser-exception-list
+                category="{{ContentSettingsTypes.SERIAL_PORTS}}"
+                chooser-type="{{ChooserType.SERIAL_PORTS}}">
+            </chooser-exception-list>
+          </settings-subpage>
+        </template>
+      </template>
       <template is="dom-if" route-path="/content/siteDetails" no-search>
         <settings-subpage page-title="[[pageTitle]]">
           <site-details
@@ -613,23 +612,21 @@
 </if>
         </settings-subpage>
       </template>
-      <template is="dom-if" if="[[enableClipboardContentSetting_]]">
-        <template is="dom-if" route-path="/content/clipboard" no-search>
-          <settings-subpage page-title="$i18n{siteSettingsClipboard}"
-              search-label="$i18n{siteSettingsAllSitesSearch}"
-              search-term="{{searchFilter_}}">
-            <category-default-setting
-                toggle-off-label="$i18n{siteSettingsClipboardBlock}"
-                toggle-on-label="$i18n{siteSettingsClipboardAskRecommended}"
-                category="{{ContentSettingsTypes.CLIPBOARD}}">
-            </category-default-setting>
-            <category-setting-exceptions
-                category="{{ContentSettingsTypes.CLIPBOARD}}"
-                block-header="$i18n{siteSettingsBlock}"
-                search-filter="[[searchFilter_]]">
-            </category-setting-exceptions>
-          </settings-subpage>
-       </template>
+      <template is="dom-if" route-path="/content/clipboard" no-search>
+        <settings-subpage page-title="$i18n{siteSettingsClipboard}"
+            search-label="$i18n{siteSettingsAllSitesSearch}"
+            search-term="{{searchFilter_}}">
+          <category-default-setting
+              toggle-off-label="$i18n{siteSettingsClipboardBlock}"
+              toggle-on-label="$i18n{siteSettingsClipboardAskRecommended}"
+              category="{{ContentSettingsTypes.CLIPBOARD}}">
+          </category-default-setting>
+          <category-setting-exceptions
+              category="{{ContentSettingsTypes.CLIPBOARD}}"
+              block-header="$i18n{siteSettingsBlock}"
+              search-filter="[[searchFilter_]]">
+          </category-setting-exceptions>
+        </settings-subpage>
       </template>
       <template is="dom-if" if="[[enablePaymentHandlerContentSetting_]]">
         <template is="dom-if" route-path="/content/paymentHandler" no-search>

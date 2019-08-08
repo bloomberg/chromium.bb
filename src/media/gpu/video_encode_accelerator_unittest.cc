@@ -58,7 +58,7 @@
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/h264_dpb.h"
 #include "media/gpu/test/video_accelerator_unittest_helpers.h"
-#include "media/gpu/test/video_encode_accelerator_unittest_helpers.h"
+#include "media/gpu/test/video_frame_helpers.h"
 #include "media/video/fake_video_encode_accelerator.h"
 #include "media/video/h264_level_limits.h"
 #include "media/video/h264_parser.h"
@@ -1682,7 +1682,7 @@ void VEAClient::CreateEncoder() {
   const VideoEncodeAccelerator::Config config(
       test_stream_->pixel_format, test_stream_->visible_size,
       test_stream_->requested_profile, requested_bitrate_, requested_framerate_,
-      test_stream_->requested_level, storage_type);
+      keyframe_period_, test_stream_->requested_level, storage_type);
   encoder_ = CreateVideoEncodeAccelerator(config, this, gpu::GpuPreferences());
   if (!encoder_) {
     LOG(ERROR) << "Failed creating a VideoEncodeAccelerator.";
@@ -1929,30 +1929,45 @@ scoped_refptr<VideoFrame> VEAClient::CreateFrame(off_t position) {
 
   size_t num_planes = VideoFrame::NumPlanes(test_stream_->pixel_format);
   CHECK_LE(num_planes, 3u);
+
   uint8_t* frame_data[3] = {};
-  size_t plane_stride[3] = {};
-  frame_data[0] =
-      reinterpret_cast<uint8_t*>(&test_stream_->aligned_in_file_data[0]) +
-      position;
-  for (size_t i = 1; i < num_planes; i++) {
-    frame_data[i] = frame_data[i - 1] + test_stream_->aligned_plane_size[i - 1];
-  }
+  std::vector<VideoFrameLayout::Plane> planes(num_planes);
+  size_t offset = position;
+  // All the planes are stored in the same buffer, aligned_in_file_data[0].
   for (size_t i = 0; i < num_planes; i++) {
-    plane_stride[i] = VideoFrame::RowBytes(i, test_stream_->pixel_format,
-                                           input_coded_size_.width());
+    frame_data[i] =
+        reinterpret_cast<uint8_t*>(&test_stream_->aligned_in_file_data[0]) +
+        offset;
+    planes[i].stride = VideoFrame::RowBytes(i, test_stream_->pixel_format,
+                                            input_coded_size_.width());
+    planes[i].offset = offset;
+    offset += test_stream_->aligned_plane_size[i];
   }
 
-  scoped_refptr<VideoFrame> video_frame = VideoFrame::WrapExternalYuvData(
-      test_stream_->pixel_format, input_coded_size_,
-      gfx::Rect(test_stream_->visible_size), test_stream_->visible_size,
-      plane_stride[0], plane_stride[1], plane_stride[2], frame_data[0],
-      frame_data[1], frame_data[2],
-      // Timestamp needs to avoid starting from 0.
-      base::TimeDelta().FromMilliseconds((next_input_id_ + 1) *
-                                         base::Time::kMillisecondsPerSecond /
-                                         current_framerate_));
-  if (g_native_input) {
-    video_frame = test::CreateDmabufFrameFromVideoFrame(std::move(video_frame));
+  auto layout = VideoFrameLayout::CreateWithPlanes(
+      test_stream_->pixel_format, input_coded_size_, std::move(planes),
+      {test_stream_->aligned_buffer_size});
+  if (!layout) {
+    LOG(ERROR) << "Failed to create VideoFrameLayout";
+    return nullptr;
+  }
+
+  scoped_refptr<VideoFrame> video_frame =
+      VideoFrame::WrapExternalYuvDataWithLayout(
+          *layout, gfx::Rect(test_stream_->visible_size),
+          test_stream_->visible_size, frame_data[0], frame_data[1],
+          frame_data[2],
+          // Timestamp needs to avoid starting from 0.
+          base::TimeDelta().FromMilliseconds(
+              (next_input_id_ + 1) * base::Time::kMillisecondsPerSecond /
+              current_framerate_));
+  if (video_frame && g_native_input) {
+#if defined(OS_LINUX)
+    video_frame = test::CloneVideoFrame(
+        video_frame.get(), video_frame->layout(), VideoFrame::STORAGE_DMABUFS);
+#else
+    video_frame = nullptr;
+#endif
   }
 
   EXPECT_NE(nullptr, video_frame.get());
@@ -2491,22 +2506,33 @@ void VEACacheLineUnalignedInputClient::FeedEncoderWithOneInput(
   CHECK_LE(num_planes, 3u);
   std::vector<char, AlignedAllocator<char, kPlatformBufferAlignment>>
       aligned_data[3];
+  std::vector<VideoFrameLayout::Plane> planes(num_planes);
+  std::vector<size_t> buffer_sizes(num_planes);
   uint8_t* frame_data[3] = {};
-  uint8_t plane_stride[3] = {};
+  // This VideoFrame is dummy. Each plane is stored in a separate buffer and
+  // each buffer size is the same as the plane size.
   for (size_t i = 0; i < num_planes; i++) {
-    aligned_data[i].resize(
-        VideoFrame::PlaneSize(pixel_format, i, input_coded_size).GetArea());
+    size_t plane_size =
+        VideoFrame::PlaneSize(pixel_format, i, input_coded_size).GetArea();
+    aligned_data[i].resize(plane_size);
     frame_data[i] = reinterpret_cast<uint8_t*>(aligned_data[i].data());
-    plane_stride[i] =
+    planes[i].stride =
         VideoFrame::RowBytes(i, pixel_format, input_coded_size.width());
+    planes[i].offset = 0;
+    buffer_sizes[i] = plane_size;
   }
 
-  scoped_refptr<VideoFrame> video_frame = VideoFrame::WrapExternalYuvData(
-      pixel_format, input_coded_size, gfx::Rect(input_coded_size),
-      input_coded_size, plane_stride[0], plane_stride[1], plane_stride[2],
-      frame_data[0], frame_data[1], frame_data[2],
-      base::TimeDelta().FromMilliseconds(base::Time::kMillisecondsPerSecond /
-                                         fps_));
+  auto layout = VideoFrameLayout::CreateWithPlanes(
+      pixel_format, input_coded_size, std::move(planes),
+      std::move(buffer_sizes));
+  ASSERT_TRUE(layout);
+
+  scoped_refptr<VideoFrame> video_frame =
+      VideoFrame::WrapExternalYuvDataWithLayout(
+          *layout, gfx::Rect(input_coded_size), input_coded_size, frame_data[0],
+          frame_data[1], frame_data[2],
+          base::TimeDelta().FromMilliseconds(
+              base::Time::kMillisecondsPerSecond / fps_));
 
   encoder_->Encode(video_frame, false);
 }

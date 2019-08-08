@@ -1,8 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="fonts_browser_proxy.html">
 <link rel="import" href="../controls/settings_slider.html">
 <link rel="import" href="../controls/settings_dropdown_menu.html">
@@ -57,7 +57,7 @@
             menu-options="[[fontOptions_]]">
         </settings-dropdown-menu>
       </div>
-      <div class="list-item underbar"
+      <div class="list-item"
           style="
               font-size:[[prefs.webkit.webprefs.default_font_size.value]]px;
               font-family:
@@ -78,7 +78,7 @@
             menu-options="[[fontOptions_]]">
         </settings-dropdown-menu>
       </div>
-      <div class="list-item underbar"
+      <div class="list-item"
           style="
               font-size:[[prefs.webkit.webprefs.default_font_size.value]]px;
               font-family:
@@ -99,7 +99,7 @@
             menu-options="[[fontOptions_]]">
         </settings-dropdown-menu>
       </div>
-      <div class="list-item underbar"
+      <div class="list-item"
           style="
               font-size:[[prefs.webkit.webprefs.default_font_size.value]]px;
               font-family:
@@ -131,19 +131,9 @@
       </div>
     </div>
     <template is="dom-if" if="[[!isGuest_]]">
-      <div class="settings-box two-line" id="advancedButton"
-          on-click="openAdvancedExtension_" actionable>
-        <div class="start">
-          $i18n{advancedFontSettings}
-          <div class="secondary" id="advancedButtonSublabel">
-            [[advancedExtensionSublabel_]]
-          </div>
-        </div>
-        <paper-icon-button-light class="icon-external">
-          <button aria-label="$i18n{advancedFontSettings}"
-              aria-describedby="advancedButtonSublabel"></button>
-        </paper-icon-button-light>
-      </div>
+      <cr-link-row id="advancedButton" class="hr"
+          on-click="openAdvancedExtension_" label="$i18n{advancedFontSettings}"
+          sub-label="[[advancedExtensionSublabel_]]" external></cr-link-row>
     </template>
   </template>
   <script src="appearance_fonts_page.js"></script>

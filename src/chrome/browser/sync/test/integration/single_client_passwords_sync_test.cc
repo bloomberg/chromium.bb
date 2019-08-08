@@ -10,9 +10,11 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
+
+namespace {
 
 using passwords_helper::AddLogin;
 using passwords_helper::CreateTestPasswordForm;
@@ -23,6 +25,9 @@ using passwords_helper::GetVerifierPasswordStore;
 using passwords_helper::ProfileContainsSamePasswordFormsAsVerifier;
 
 using autofill::PasswordForm;
+
+using testing::ElementsAre;
+using testing::IsEmpty;
 
 class SingleClientPasswordsSyncTest : public FeatureToggler, public SyncTest {
  public:
@@ -199,3 +204,65 @@ IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
 INSTANTIATE_TEST_SUITE_P(USS,
                          SingleClientPasswordsSyncTest,
                          ::testing::Values(false, true));
+
+class SingleClientPasswordsSyncUssMigratorTest : public SyncTest {
+ public:
+  SingleClientPasswordsSyncUssMigratorTest() : SyncTest(SINGLE_CLIENT) {}
+  ~SingleClientPasswordsSyncUssMigratorTest() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SingleClientPasswordsSyncUssMigratorTest);
+};
+
+// Creates and syncs two passwords before USS being enabled.
+IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncUssMigratorTest,
+                       PRE_ExerciseUssMigrator) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndDisableFeature(switches::kSyncUSSPasswords);
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  AddLogin(GetPasswordStore(0), CreateTestPasswordForm(0));
+  AddLogin(GetPasswordStore(0), CreateTestPasswordForm(1));
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+  ASSERT_EQ(2, GetPasswordCount(0));
+}
+
+// TODO(https://crbug.com/952074): re-enable once flakiness is addressed.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_ExerciseUssMigrator DISABLED_ExerciseUssMigrator
+#else
+#define MAYBE_ExerciseUssMigrator ExerciseUssMigrator
+#endif
+
+// Now that local passwords, the local sync directory and the sever are
+// populated with two passwords, USS is enabled for passwords.
+IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncUssMigratorTest,
+                       MAYBE_ExerciseUssMigrator) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndEnableFeature(switches::kSyncUSSPasswords);
+
+  base::HistogramTester histogram_tester;
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  ASSERT_EQ(2, GetPasswordCount(0));
+#if defined(CHROMEOS)
+  // identity::SetRefreshTokenForPrimaryAccount() is needed on ChromeOS in order
+  // to get a non-empty refresh token on startup.
+  GetClient(0)->SignInPrimaryAccount();
+#endif  // defined(CHROMEOS)
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
+  ASSERT_EQ(2, GetPasswordCount(0));
+
+  EXPECT_EQ(1, histogram_tester.GetBucketCount(
+                   "Sync.USSMigrationSuccess",
+                   syncer::ModelTypeToHistogramInt(syncer::PASSWORDS)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Sync.USSMigrationEntityCount.PASSWORD"),
+      ElementsAre(base::Bucket(/*min=*/2, /*count=*/1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples("Sync.DataTypeStartFailures2"),
+              IsEmpty());
+  EXPECT_EQ(
+      0, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.PASSWORD",
+                                         /*REMOTE_INITIAL_UPDATE=*/5));
+}
+
+}  // namespace

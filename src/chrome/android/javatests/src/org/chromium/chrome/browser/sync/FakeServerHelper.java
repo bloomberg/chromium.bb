@@ -11,6 +11,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import org.chromium.base.ThreadUtils;
 import org.chromium.components.sync.protocol.EntitySpecifics;
 import org.chromium.components.sync.protocol.SyncEntity;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +60,7 @@ public class FakeServerHelper {
                     "deleteFakeServer must be called before calling useFakeServer again.");
         }
 
-        sNativeFakeServer = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Long>() {
+        sNativeFakeServer = TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Long>() {
             @Override
             public Long call() {
                 FakeServerHelper fakeServerHelper = FakeServerHelper.get();
@@ -77,7 +78,7 @@ public class FakeServerHelper {
      */
     public static void deleteFakeServer() {
         checkFakeServerInitialized("useFakeServer must be called before calling deleteFakeServer.");
-        ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
+        TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
             @Override
             public Void call() {
                 FakeServerHelper.get().deleteFakeServer(sNativeFakeServer);
@@ -94,7 +95,7 @@ public class FakeServerHelper {
      * @return the FakeServer pointer
      */
     public long createFakeServer() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Long>() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Long>() {
             @Override
             public Long call() {
                 return nativeCreateFakeServer(mNativeFakeServerHelperAndroid);
@@ -110,7 +111,7 @@ public class FakeServerHelper {
      * @return the NetworkResources pointer
      */
     public long createNetworkResources(final long nativeFakeServer) {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Long>() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Long>() {
             @Override
             public Long call() {
                 return nativeCreateNetworkResources(
@@ -125,7 +126,7 @@ public class FakeServerHelper {
      * @param nativeFakeServer the pointer to be deleted
      */
     public void deleteFakeServer(final long nativeFakeServer) {
-        ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
+        TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
             @Override
             public Void call() {
                 nativeDeleteFakeServer(mNativeFakeServerHelperAndroid, nativeFakeServer);
@@ -147,7 +148,7 @@ public class FakeServerHelper {
     public boolean verifyEntityCountByTypeAndName(
             final int count, final int modelType, final String name) {
         checkFakeServerInitialized("useFakeServer must be called before data verification.");
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return nativeVerifyEntityCountByTypeAndName(
@@ -165,7 +166,7 @@ public class FakeServerHelper {
      */
     public boolean verifySessions(final String[] urls) {
         checkFakeServerInitialized("useFakeServer must be called before data verification.");
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return nativeVerifySessions(
@@ -184,7 +185,7 @@ public class FakeServerHelper {
     public List<SyncEntity> getSyncEntitiesByModelType(final int modelType)
             throws ExecutionException {
         checkFakeServerInitialized("useFakeServer must be called before getting sync entities.");
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<List<SyncEntity>>() {
+        return TestThreadUtils.runOnUiThreadBlocking(new Callable<List<SyncEntity>>() {
             @Override
             public List<SyncEntity> call() throws InvalidProtocolBufferException {
                 byte[][] serializedEntities = nativeGetSyncEntitiesByModelType(
@@ -211,7 +212,7 @@ public class FakeServerHelper {
     public void injectUniqueClientEntity(final String nonUniqueName, final String clientTag,
             final EntitySpecifics entitySpecifics) {
         checkFakeServerInitialized("useFakeServer must be called before data injection.");
-        ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
+        TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
             @Override
             public Void call() {
                 // The protocol buffer is serialized as a byte array because it can be easily
@@ -232,7 +233,7 @@ public class FakeServerHelper {
      */
     public void setWalletData(final SyncEntity entity) {
         checkFakeServerInitialized("useFakeServer must be called before data injection.");
-        ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
+        TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
             @Override
             public Void call() {
                 // The protocol buffer is serialized as a byte array because it can be easily
@@ -252,7 +253,7 @@ public class FakeServerHelper {
      */
     public void modifyEntitySpecifics(final String id, final EntitySpecifics entitySpecifics) {
         checkFakeServerInitialized("useFakeServer must be called before data modification.");
-        ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
+        TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
             @Override
             public Void call() {
                 // The protocol buffer is serialized as a byte array because it can be easily
@@ -274,7 +275,7 @@ public class FakeServerHelper {
      */
     public void injectBookmarkEntity(final String title, final String url, final String parentId) {
         checkFakeServerInitialized("useFakeServer must be called before data injection.");
-        ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
+        TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
             @Override
             public Void call() {
                 nativeInjectBookmarkEntity(
@@ -292,7 +293,7 @@ public class FakeServerHelper {
      */
     public void injectBookmarkFolderEntity(final String title, final String parentId) {
         checkFakeServerInitialized("useFakeServer must be called before data injection.");
-        ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
+        TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
             @Override
             public Void call() {
                 nativeInjectBookmarkFolderEntity(
@@ -314,7 +315,7 @@ public class FakeServerHelper {
     public void modifyBookmarkEntity(
             final String bookmarkId, final String title, final String url, final String parentId) {
         checkFakeServerInitialized("useFakeServer must be called before data injection.");
-        ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
+        TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
             @Override
             public Void call() {
                 nativeModifyBookmarkEntity(mNativeFakeServerHelperAndroid, sNativeFakeServer,
@@ -334,7 +335,7 @@ public class FakeServerHelper {
     public void modifyBookmarkFolderEntity(
             final String folderId, final String title, final String parentId) {
         checkFakeServerInitialized("useFakeServer must be called before data injection.");
-        ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
+        TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
             @Override
             public Void call() {
                 nativeModifyBookmarkFolderEntity(mNativeFakeServerHelperAndroid, sNativeFakeServer,
@@ -350,19 +351,20 @@ public class FakeServerHelper {
      * In other words, this method injects a tombstone into the fake Sync server.
      *
      * @param id the server ID of the entity to delete
-     * @param clientDefinedUniqueTag the client defined unique tag of the entity to delete
+     * @param clientTagHash the client defined unique tag hash of the entity to delete (or an empty
+     *         string if sync does not care about this being a hash)
      */
     public void deleteEntity(final String id) {
         deleteEntity(id, "");
     }
 
-    public void deleteEntity(final String id, final String clientDefinedUniqueTag) {
+    public void deleteEntity(final String id, final String clientTagHash) {
         checkFakeServerInitialized("useFakeServer must be called before deleting an entity.");
-        ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
+        TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
             @Override
             public Void call() {
-                nativeDeleteEntity(mNativeFakeServerHelperAndroid, sNativeFakeServer, id,
-                        clientDefinedUniqueTag);
+                nativeDeleteEntity(
+                        mNativeFakeServerHelperAndroid, sNativeFakeServer, id, clientTagHash);
                 return null;
             }
         });
@@ -376,7 +378,7 @@ public class FakeServerHelper {
      */
     public String getBookmarkBarFolderId() {
         checkFakeServerInitialized("useFakeServer must be called before access");
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<String>() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<String>() {
             @Override
             public String call() {
                 return nativeGetBookmarkBarFolderId(
@@ -390,11 +392,8 @@ public class FakeServerHelper {
      */
     public void clearServerData() {
         checkFakeServerInitialized("useFakeServer must be called before clearing data");
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                nativeClearServerData(mNativeFakeServerHelperAndroid, sNativeFakeServer);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            nativeClearServerData(mNativeFakeServerHelperAndroid, sNativeFakeServer);
         });
     }
 

@@ -29,10 +29,10 @@ if (build_with_chromium) {
 # Common dawn configs
 ###############################################################################
 
-config("dawn_public") {
+config("dawn_public_include_dirs") {
   include_dirs = [
     "${target_gen_dir}/../..",
-    "${dawn_root}/src/include"
+    "${dawn_root}/src/include",
   ]
 }
 
@@ -60,8 +60,6 @@ config("dawn_internal") {
     defines += [ "DAWN_ENABLE_BACKEND_VULKAN" ]
   }
 
-  configs = [ ":dawn_public" ]
-
   # Only internal Dawn targets can use this config, this means only targets in
   # this BUILD.gn file.
   visibility = [ ":*" ]
@@ -81,6 +79,7 @@ if (is_win || is_linux || is_mac) {
       "Assert.h",
       "BitSetIterator.h",
       "Compiler.h",
+      "Constants.h",
       "DynamicLib.cpp",
       "DynamicLib.h",
       "HashUtils.h",
@@ -96,7 +95,7 @@ if (is_win || is_linux || is_mac) {
       "vulkan_platform.h",
       "windows_with_undefs.h",
     ]
-  
+
     configs += [ ":dawn_internal" ]
     deps = [
       "${dawn_root}/src/dawn:dawn_headers",

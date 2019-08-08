@@ -82,22 +82,6 @@ void AppendJsTemplateProcessHtml(
   output->append("</script>");
 }
 
-// Appends the source for i18n Templates in a script tag.
-void AppendI18nTemplateSourceHtml(std::string* output) {
-  base::StringPiece i18n_template_src(
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_WEBUI_I18N_TEMPLATE_JS));
-
-  if (i18n_template_src.empty()) {
-    NOTREACHED() << "Unable to get i18n template src";
-    return;
-  }
-
-  output->append("<script>");
-  i18n_template_src.AppendToString(output);
-  output->append("</script>");
-}
-
 }  // namespace
 
 std::string GetI18nTemplateHtml(const base::StringPiece& html_template,
@@ -107,13 +91,8 @@ std::string GetI18nTemplateHtml(const base::StringPiece& html_template,
   std::string output =
       ui::ReplaceTemplateExpressions(html_template, replacements);
 
-  // TODO(dschuyler): After the i18n-content and i18n-values are replaced with
-  // $i18n{} replacements, we will be able to return output at this point.
-  // Remove Append*() lines that builds up the i18n replacement work to be done
-  // in JavaScript.
   AppendLoadTimeData(&output);
   AppendJsonHtml(json, &output);
-  AppendI18nTemplateSourceHtml(&output);
 
   return output;
 }
@@ -126,13 +105,8 @@ std::string GetTemplatesHtml(const base::StringPiece& html_template,
   std::string output =
       ui::ReplaceTemplateExpressions(html_template, replacements);
 
-  // TODO(dschuyler): After the i18n-content and i18n-values are replaced with
-  // $i18n{} replacements, we will be able to return output at this point.
-  // Remove Append*() lines that builds up the i18n replacement work to be done
-  // in JavaScript.
   AppendLoadTimeData(&output);
   AppendJsonHtml(json, &output);
-  AppendI18nTemplateSourceHtml(&output);
   AppendJsTemplateSourceHtml(&output);
   AppendJsTemplateProcessHtml(template_id, &output);
   return output;

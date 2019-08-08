@@ -8,6 +8,8 @@ Generate all acceptable regular instructions by traversing validator DFA
 and run check them against RDFA decoder and text-based specification.
 """
 
+from __future__ import print_function
+
 import itertools
 import multiprocessing
 import optparse
@@ -110,8 +112,8 @@ def CheckValid64bitInstruction(
   result, actual_postcondition = ValidateAndGetPostcondition(
       bundle, len(instruction), precondition, validator_inst)
   if not result:
-    print 'warning: validator rejected %s with precondition %s' % (
-        dis, precondition)
+    print('warning: validator rejected %s with precondition %s' %
+          (dis, precondition))
   else:
     # We are checking for implication, not for equality, because in some cases
     # specification computes postcondition with better precision.
@@ -127,10 +129,9 @@ def CheckValid64bitInstruction(
         'for %s where specification predicted %s'
         % (actual_postcondition, dis, postcondition))
     if postcondition != actual_postcondition:
-      print (
-          'warning: validator reported too broad postcondition %s for %s, '
-          'where specification predicted %s'
-          % (actual_postcondition, dis, postcondition))
+      print('warning: validator reported too broad postcondition %s for %s, '
+            'where specification predicted %s' % (actual_postcondition, dis,
+                                                  postcondition))
 
 
 def CheckInvalid64bitInstruction(
@@ -184,15 +185,15 @@ def ValidateInstruction(instruction, validator_inst):
     try:
       spec.ValidateDirectJumpOrRegularInstruction(dis, bitness=32)
       if not result:
-        print 'warning: validator rejected', dis
+        print('warning: validator rejected', dis)
       return True
     except spec.SandboxingError as e:
       if result:
-        print 'validator accepted instruction disallowed by specification'
+        print('validator accepted instruction disallowed by specification')
         raise
     except spec.DoNotMatchError:
       if result:
-        print 'validator accepted instruction not recognized by specification'
+        print('validator accepted instruction not recognized by specification')
         raise
 
     return False
@@ -291,7 +292,7 @@ def main():
   assert dfa.initial_state.is_accepting
   assert not dfa.initial_state.any_byte
 
-  print len(dfa.states), 'states'
+  print(len(dfa.states), 'states')
 
   num_suffixes = dfa_traversal.GetNumSuffixes(dfa.initial_state)
 
@@ -300,10 +301,10 @@ def main():
   total_instructions = sum(
       num_suffixes[t.to_state]
       for t in dfa.initial_state.forward_transitions.values())
-  print total_instructions, 'regular instructions total'
+  print(total_instructions, 'regular instructions total')
 
   tasks = dfa_traversal.CreateTraversalTasks(dfa.states, dfa.initial_state)
-  print len(tasks), 'tasks'
+  print(len(tasks), 'tasks')
 
   pool = multiprocessing.Pool()
 
@@ -312,12 +313,12 @@ def main():
   total = 0
   num_valid = 0
   for prefix, count, valid_count in results:
-    print ', '.join(map(hex, prefix))
+    print(', '.join(map(hex, prefix)))
     total += count
     num_valid += valid_count
 
-  print total, 'instructions were processed'
-  print num_valid, 'valid instructions'
+  print(total, 'instructions were processed')
+  print(num_valid, 'valid instructions')
 
 
 if __name__ == '__main__':

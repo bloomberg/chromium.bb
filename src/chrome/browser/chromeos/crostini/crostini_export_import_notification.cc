@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/crostini/crostini_export_import.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/platform_util.h"
@@ -39,18 +40,28 @@ CrostiniExportImportNotification::CrostiniExportImportNotification(
   // Messages.
   switch (type) {
     case ExportImportType::EXPORT:
-      title_running_ = IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_RUNNING;
-      title_done_ = IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_DONE;
-      message_done_ = IDS_CROSTINI_EXPORT_NOTIFICATION_MESSAGE_DONE;
-      title_failed_ = IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_FAILED;
-      message_failed_ = IDS_CROSTINI_EXPORT_NOTIFICATION_MESSAGE_FAILED;
+      title_running_ = l10n_util::GetStringUTF16(
+          IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_RUNNING);
+      title_done_ = l10n_util::GetStringUTF16(
+          IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_DONE);
+      message_done_ = l10n_util::GetStringUTF16(
+          IDS_CROSTINI_EXPORT_NOTIFICATION_MESSAGE_DONE);
+      title_failed_ = l10n_util::GetStringUTF16(
+          IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_FAILED);
+      message_failed_ = l10n_util::GetStringUTF16(
+          IDS_CROSTINI_EXPORT_NOTIFICATION_MESSAGE_FAILED);
       break;
     case ExportImportType::IMPORT:
-      title_running_ = IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_RUNNING;
-      title_done_ = IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_DONE;
-      message_done_ = IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_DONE;
-      title_failed_ = IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_FAILED;
-      message_failed_ = IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_FAILED;
+      title_running_ = l10n_util::GetStringUTF16(
+          IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_RUNNING);
+      title_done_ = l10n_util::GetStringUTF16(
+          IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_DONE);
+      message_done_ = l10n_util::GetStringUTF16(
+          IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_DONE);
+      title_failed_ = l10n_util::GetStringUTF16(
+          IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_FAILED);
+      message_failed_ = l10n_util::GetStringUTF16(
+          IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_FAILED);
       break;
     default:
       NOTREACHED();
@@ -88,7 +99,7 @@ void CrostiniExportImportNotification::UpdateStatus(Status status,
       }
       notification_->set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
       notification_->set_progress(progress_percent);
-      notification_->set_title(l10n_util::GetStringUTF16(title_running_));
+      notification_->set_title(title_running_);
       notification_->set_message(
           GetTimeRemainingMessage(started_, progress_percent));
       notification_->set_never_timeout(true);
@@ -99,23 +110,24 @@ void CrostiniExportImportNotification::UpdateStatus(Status status,
         notification_->set_buttons({message_center::ButtonInfo(
             l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_SHOW))});
       }
-      notification_->set_title(l10n_util::GetStringUTF16(title_done_));
-      notification_->set_message(l10n_util::GetStringUTF16(message_done_));
+      notification_->set_title(title_done_);
+      notification_->set_message(message_done_);
       notification_->set_never_timeout(false);
       break;
     case Status::FAILED:
       notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
       notification_->set_accent_color(
           ash::kSystemNotificationColorCriticalWarning);
-      notification_->set_title(l10n_util::GetStringUTF16(title_failed_));
-      notification_->set_message(l10n_util::GetStringUTF16(message_failed_));
+      notification_->set_title(title_failed_);
+      notification_->set_message(message_failed_);
       notification_->set_never_timeout(false);
       break;
     default:
       NOTREACHED();
   }
   NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification_);
+      NotificationHandler::Type::TRANSIENT, *notification_,
+      /*metadata=*/nullptr);
 }
 
 void CrostiniExportImportNotification::Close(bool by_user) {

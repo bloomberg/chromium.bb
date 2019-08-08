@@ -539,7 +539,7 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
       [activityController applicationActivitiesForData:data
                                             dispatcher:nil
                                          bookmarkModel:bookmark_model_];
-  ASSERT_EQ(IsUIRefreshPhase1Enabled() ? 5U : 3U, [items count]);
+  ASSERT_EQ(5U, [items count]);
   BOOL foundPrintActivity = NO;
   for (id item in items) {
     if ([item class] == [PrintActivity class]) {
@@ -562,7 +562,7 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
   items = [activityController applicationActivitiesForData:data
                                                 dispatcher:nil
                                              bookmarkModel:bookmark_model_];
-  EXPECT_EQ(IsUIRefreshPhase1Enabled() ? 4U : 2U, [items count]);
+  EXPECT_EQ(4U, [items count]);
   foundPrintActivity = NO;
   for (id item in items) {
     if ([item class] == [PrintActivity class]) {
@@ -811,9 +811,6 @@ TEST_F(ActivityServiceControllerTest, TestShareDidCompleteWithError) {
 // Verifies that the FindInPageActivity is sent to the UIActivityViewController
 // if and only if the activity is "searchable".
 TEST_F(ActivityServiceControllerTest, FindInPageActivity) {
-  if (!IsUIRefreshPhase1Enabled())
-    return;
-
   ActivityServiceController* activityController =
       [[ActivityServiceController alloc] init];
 

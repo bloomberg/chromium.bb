@@ -22,6 +22,8 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 
 #include <algorithm>
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -30,7 +32,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
-#include "third_party/blink/renderer/core/loader/network_hints_interface.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
@@ -102,17 +103,20 @@ Page* ChromeClient::CreateWindow(
     LocalFrame* frame,
     const FrameLoadRequest& r,
     const WebWindowFeatures& features,
-    NavigationPolicy navigation_policy,
-    SandboxFlags sandbox_flags,
+    WebSandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state,
     const SessionStorageNamespaceId& session_storage_namespace_id) {
+// This feature is being disabled on trunk but an easily-merged CL is needed for
+// merging back to stable. https://crbug.com/936080
+#if 0
   if (!CanOpenUIElementIfDuringPageDismissal(
           frame->Tree().Top(), UIElementType::kPopup, g_empty_string)) {
     return nullptr;
   }
+#endif
 
-  return CreateWindowDelegate(frame, r, features, navigation_policy,
-                              sandbox_flags, opener_feature_state,
+  return CreateWindowDelegate(frame, r, features, sandbox_flags,
+                              opener_feature_state,
                               session_storage_namespace_id);
 }
 
@@ -184,8 +188,11 @@ void ChromeClient::MouseDidMoveOverElement(LocalFrame& frame,
                                            const HitTestResult& result) {
   if (!result.GetScrollbar() && result.InnerNode() &&
       result.InnerNode()->GetDocument().IsDNSPrefetchEnabled()) {
-    NetworkHintsInterfaceImpl().DnsPrefetchHost(
-        result.AbsoluteLinkURL().Host());
+    WebPrescientNetworking* web_prescient_networking =
+        Platform::Current()->PrescientNetworking();
+    if (web_prescient_networking) {
+      web_prescient_networking->PrefetchDNS(result.AbsoluteLinkURL().Host());
+    }
   }
 
   ShowMouseOverURL(result);
@@ -253,11 +260,12 @@ bool ChromeClient::Print(LocalFrame* frame) {
     return false;
   }
 
-  if (frame->GetDocument()->IsSandboxed(kSandboxModals)) {
+  if (frame->GetDocument()->IsSandboxed(WebSandboxFlags::kModals)) {
     UseCounter::Count(frame->GetDocument(),
                       WebFeature::kDialogInSandboxedContext);
     frame->Console().AddMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
+        mojom::ConsoleMessageSource::kSecurity,
+        mojom::ConsoleMessageLevel::kError,
         "Ignored call to 'print()'. The document is sandboxed, and the "
         "'allow-modals' keyword is not set."));
     return false;

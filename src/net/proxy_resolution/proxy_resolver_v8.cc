@@ -407,7 +407,7 @@ class SharedIsolateFactory {
 
   v8::Isolate* GetSharedIsolateWithoutCreating() {
     base::AutoLock lock(lock_);
-    return holder_ ? holder_->isolate() : NULL;
+    return holder_ ? holder_->isolate() : nullptr;
   }
 
  private:
@@ -567,8 +567,8 @@ class ProxyResolverV8::Context {
     global_template->Set(ASCIILiteralToV8String(isolate_, "isInNetEx"),
                          is_in_net_ex_template);
 
-    v8_context_.Reset(
-        isolate_, v8::Context::New(isolate_, NULL, global_template));
+    v8_context_.Reset(isolate_,
+                      v8::Context::New(isolate_, nullptr, global_template));
 
     v8::Local<v8::Context> context =
         v8::Local<v8::Context>::New(isolate_, v8_context_);

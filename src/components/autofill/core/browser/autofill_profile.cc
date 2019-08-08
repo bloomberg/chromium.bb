@@ -12,11 +12,11 @@
 #include <set>
 
 #include "base/guid.h"
+#include "base/hash/sha1.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -228,6 +228,7 @@ ServerFieldType NormalizeTypeForValidityCheck(ServerFieldType type) {
 AutofillProfile::AutofillProfile(const std::string& guid,
                                  const std::string& origin)
     : AutofillDataModel(guid, origin),
+      company_(this),
       phone_number_(this),
       record_type_(LOCAL_PROFILE),
       has_converted_(false),
@@ -235,6 +236,7 @@ AutofillProfile::AutofillProfile(const std::string& guid,
 
 AutofillProfile::AutofillProfile(RecordType type, const std::string& server_id)
     : AutofillDataModel(base::GenerateGUID(), std::string()),
+      company_(this),
       phone_number_(this),
       server_id_(server_id),
       record_type_(type),
@@ -245,6 +247,7 @@ AutofillProfile::AutofillProfile(RecordType type, const std::string& server_id)
 
 AutofillProfile::AutofillProfile()
     : AutofillDataModel(base::GenerateGUID(), std::string()),
+      company_(this),
       phone_number_(this),
       record_type_(LOCAL_PROFILE),
       has_converted_(false),
@@ -252,6 +255,7 @@ AutofillProfile::AutofillProfile()
 
 AutofillProfile::AutofillProfile(const AutofillProfile& profile)
     : AutofillDataModel(std::string(), std::string()),
+      company_(this),
       phone_number_(this),
       weak_ptr_factory_(this) {
   operator=(profile);
@@ -277,6 +281,7 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
   name_ = profile.name_;
   email_ = profile.email_;
   company_ = profile.company_;
+  company_.set_profile(this);
   phone_number_ = profile.phone_number_;
   phone_number_.set_profile(this);
 
@@ -444,12 +449,6 @@ int AutofillProfile::Compare(const AutofillProfile& profile) const {
   return 0;
 }
 
-bool AutofillProfile::EqualsSansOrigin(const AutofillProfile& profile) const {
-  return guid() == profile.guid() &&
-         language_code() == profile.language_code() &&
-         Compare(profile) == 0;
-}
-
 bool AutofillProfile::EqualsForSyncPurposes(const AutofillProfile& profile)
     const {
   return use_count() == profile.use_count() &&
@@ -565,7 +564,7 @@ bool AutofillProfile::MergeDataFrom(const AutofillProfile& profile,
 
   NameInfo name;
   EmailInfo email;
-  CompanyInfo company;
+  CompanyInfo company(this);
   PhoneNumber phone_number(this);
   Address address;
 
@@ -662,16 +661,6 @@ bool AutofillProfile::SaveAdditionalInfo(const AutofillProfile& profile,
     }
   }
   return true;
-}
-
-// static
-bool AutofillProfile::SupportsMultiValue(ServerFieldType type) {
-  FieldTypeGroup group = AutofillType(type).group();
-  return group == NAME ||
-         group == NAME_BILLING ||
-         group == EMAIL ||
-         group == PHONE_HOME ||
-         group == PHONE_BILLING;
 }
 
 // static
@@ -832,12 +821,24 @@ bool AutofillProfile::HasGreaterFrescocencyThan(
     base::Time comparison_time,
     bool use_client_validation,
     bool use_server_validation) const {
+  double score = GetFrecencyScore(comparison_time);
+  double other_score = other->GetFrecencyScore(comparison_time);
+
+  const double kEpsilon = 0.001;
+  if (std::fabs(score - other_score) > kEpsilon)
+    return score > other_score;
+
   bool is_valid = (!use_client_validation || IsValidByClient()) &&
                   (!use_server_validation || IsValidByServer());
   bool other_is_valid = (!use_client_validation || other->IsValidByClient()) &&
                         (!use_server_validation || other->IsValidByServer());
-  if (is_valid == other_is_valid)
-    return HasGreaterFrecencyThan(other, comparison_time);
+
+  if (is_valid == other_is_valid) {
+    if (use_date() != other->use_date())
+      return use_date() > other->use_date();
+    return guid() > other->guid();
+  }
+
   if (is_valid && !other_is_valid)
     return true;
   return false;

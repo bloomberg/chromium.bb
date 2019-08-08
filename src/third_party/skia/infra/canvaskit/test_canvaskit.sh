@@ -9,13 +9,13 @@
 # is mounted at /OUT
 
 # For example:
-# docker run -v $SKIA_ROOT:/SRC -v /tmp/dockerout:/OUT gcr.io/skia-public/gold-karma-chrome-tests:68.0.3440.106_v6 /SRC/infra/canvaskit/test_canvaskit.sh
+# docker run -v $SKIA_ROOT:/SRC -v /tmp/dockerout:/OUT gcr.io/skia-public/gold-karma-chrome-tests:72.0.3626.121_v1 /SRC/infra/canvaskit/test_canvaskit.sh
 
 set -ex
 
 #BASE_DIR is the dir this script is in ($SKIA_ROOT/infra/canvaskit)
 BASE_DIR=`cd $(dirname ${BASH_SOURCE[0]}) && pwd`
-CANVASKIT_DIR=$BASE_DIR/../../experimental/canvaskit
+CANVASKIT_DIR=$BASE_DIR/../../modules/canvaskit
 
 # Start the aggregator in the background
 /opt/gold-aggregator $@ &

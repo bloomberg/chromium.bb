@@ -36,8 +36,8 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLStyleElement::HTMLStyleElement(Document& document,
-                                          const CreateElementFlags flags)
+HTMLStyleElement::HTMLStyleElement(Document& document,
+                                   const CreateElementFlags flags)
     : HTMLElement(kStyleTag, document),
       StyleElement(&document, flags.IsCreatedByParser()),
       fired_load_(false),
@@ -131,11 +131,12 @@ void HTMLStyleElement::NotifyLoadedSheetAndAllCriticalSubresources(
   loaded_sheet_ = is_load_event;
   GetDocument()
       .GetTaskRunner(TaskType::kDOMManipulation)
-      ->PostTask(FROM_HERE,
-                 WTF::Bind(&HTMLStyleElement::DispatchPendingEvent,
-                           WrapPersistent(this),
-                           WTF::Passed(IncrementLoadEventDelayCount::Create(
-                               GetDocument()))));
+      ->PostTask(
+          FROM_HERE,
+          WTF::Bind(&HTMLStyleElement::DispatchPendingEvent,
+                    WrapPersistent(this),
+                    WTF::Passed(std::make_unique<IncrementLoadEventDelayCount>(
+                        GetDocument()))));
   fired_load_ = true;
 }
 

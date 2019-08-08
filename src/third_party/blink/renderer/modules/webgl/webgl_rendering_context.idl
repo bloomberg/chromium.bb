@@ -29,4 +29,4 @@
     DoNotCheckConstants,
     Exposed(Worker OffscreenCanvas, Window StableBlinkFeatures)
 ] interface WebGLRenderingContext { };
-WebGLRenderingContext implements WebGLRenderingContextBase;
+WebGLRenderingContext includes WebGLRenderingContextBase;

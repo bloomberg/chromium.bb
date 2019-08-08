@@ -34,7 +34,7 @@ class ImageDecoder;
 class ImageFetcherParams {
   // Only allow the bridge to access the private function set_skip_transcoding
   // used for gif download.
-  friend class CachedImageFetcherBridge;
+  friend class ImageFetcherBridge;
 
  public:
   // Sets the UMA client name to report feature-specific metrics. Make sure
@@ -74,6 +74,12 @@ class ImageFetcherParams {
     skip_transcoding_ = skip_transcoding;
   }
 
+  bool skip_disk_cache_read() { return skip_disk_cache_read_; }
+
+  void set_skip_disk_cache_read(bool skip_disk_cache_read) {
+    skip_disk_cache_read_ = skip_disk_cache_read;
+  }
+
  private:
   void set_skip_transcoding(bool skip_transcoding) {
     skip_transcoding_ = skip_transcoding;
@@ -89,6 +95,9 @@ class ImageFetcherParams {
   // some java clients we decode GIFs entirely in Java which is safe to do
   // in-process without transcoding.
   bool skip_transcoding_;
+  // True if the disk cache should be skipped because it was already checked in
+  // java.
+  bool skip_disk_cache_read_;
 };
 
 // A class used to fetch server images. It can be called from any thread and the

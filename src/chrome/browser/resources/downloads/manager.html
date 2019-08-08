@@ -7,6 +7,7 @@
 <link rel="import" href="chrome://downloads/search_service.html">
 <link rel="import" href="chrome://downloads/toolbar.html">
 <link rel="import" href="chrome://resources/cr_components/managed_footnote/managed_footnote.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast_manager.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
@@ -140,6 +141,8 @@
         </div>
       </div>
     </div>
+    <cr-toast-manager on-undo-click="onUndoClick_" undo-label="$i18n{undo}"
+        undo-description="$i18n{undoDescription}"></cr-toast-manager>
   </template>
   <script src="chrome://downloads/manager.js"></script>
 </dom-module>

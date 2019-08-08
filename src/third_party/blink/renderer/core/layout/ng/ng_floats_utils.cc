@@ -143,7 +143,7 @@ std::unique_ptr<NGExclusionShapeData> CreateExclusionShapeData(
 
 // Creates an exclusion from the fragment that will be placed in the provided
 // layout opportunity.
-scoped_refptr<NGExclusion> CreateExclusion(
+scoped_refptr<const NGExclusion> CreateExclusion(
     const NGLogicalSize& float_available_size,
     const NGLogicalSize& float_percentage_size,
     const NGLogicalSize& float_replaced_percentage_size,
@@ -291,7 +291,7 @@ NGPositionedFloat PositionFloat(
   }
 
   // Add the float as an exclusion.
-  scoped_refptr<NGExclusion> exclusion = CreateExclusion(
+  scoped_refptr<const NGExclusion> exclusion = CreateExclusion(
       float_available_size, float_percentage_size,
       float_replaced_percentage_size, float_fragment, float_margin_bfc_offset,
       fragment_margins, *unpositioned_float, parent_space, parent_style,

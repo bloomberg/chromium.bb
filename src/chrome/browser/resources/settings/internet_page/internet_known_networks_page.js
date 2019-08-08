@@ -125,10 +125,10 @@ Polymer({
    * @private
    */
   onMenuButtonTap_: function(event) {
-    const button = /** @type {!HTMLElement} */ (event.target);
-    this.selectedGuid_ =
-        /** @type {!{model: !{item: !CrOnc.NetworkStateProperties}}} */ (event)
-            .model.item.GUID;
+    const button = event.target;
+    const networkState =
+        /** @type {!CrOnc.NetworkStateProperties} */ (event.model.item);
+    this.selectedGuid_ = networkState.GUID;
     // We need to make a round trip to Chrome in order to retrieve the managed
     // properties for the network. The delay is not noticeable (~5ms) and is
     // preferable to initiating a query for every known network at load time.
@@ -139,16 +139,17 @@ Polymer({
                 'Unexpected error: ' + chrome.runtime.lastError.message);
             return;
           }
-          const preferred = button.hasAttribute('preferred');
           if (this.isNetworkPolicyEnforced(properties.Priority)) {
             this.showAddPreferred_ = false;
             this.showRemovePreferred_ = false;
           } else {
+            const preferred = this.networkIsPreferred_(networkState);
             this.showAddPreferred_ = !preferred;
             this.showRemovePreferred_ = preferred;
           }
           this.enableForget_ = !this.isPolicySource(properties.Source);
-          /** @type {!CrActionMenuElement} */ (this.$.dotsMenu).showAt(button);
+          /** @type {!CrActionMenuElement} */ (this.$.dotsMenu)
+              .showAt(/** @type {!Element} */ (button));
         });
     event.stopPropagation();
   },

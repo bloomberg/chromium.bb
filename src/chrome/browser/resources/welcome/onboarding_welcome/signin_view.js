@@ -8,10 +8,6 @@ Polymer({
   behaviors: [welcome.NavigationBehavior],
 
   /** @private {boolean} */
-  shouldShowEmailInterstitial_:
-      loadTimeData.getBoolean('showEmailInterstitial'),
-
-  /** @private {boolean} */
   finalized_: false,
 
   /** @private {?welcome.WelcomeBrowserProxy} */
@@ -48,38 +44,17 @@ Polymer({
     this.signinViewProxy_.recordNavigatedAway();
   },
 
-  /**
-   * @return {?string}
-   * @private
-   */
-  getTargetUrl_: function() {
-    const savedProvider =
-        nux.EmailAppProxyImpl.getInstance().getSavedProvider();
-    if (savedProvider != undefined && this.shouldShowEmailInterstitial_) {
-      return `chrome://welcome/email-interstitial?provider=${savedProvider}`;
-    } else {
-      return null;
-    }
-  },
-
-  /**
-   * When the user clicks sign-in, check whether or not they previously
-   * selected an email provider they prefer to use. If so, direct them back to
-   * the email-interstitial page, otherwise let it direct to NTP.
-   * @private
-   */
+  /** private */
   onSignInClick_: function() {
     this.finalized_ = true;
     this.signinViewProxy_.recordSignIn();
-    this.welcomeBrowserProxy_.handleActivateSignIn(this.getTargetUrl_());
+    this.welcomeBrowserProxy_.handleActivateSignIn(null);
   },
 
   /** @private */
   onNoThanksClick_: function() {
     this.finalized_ = true;
     this.signinViewProxy_.recordSkip();
-    // It's safe to assume sign-view is always going to be the last step, so
-    // go to the target url directly. If there's no target, it lands on NTP.
-    this.welcomeBrowserProxy_.handleUserDecline(this.getTargetUrl_());
+    this.welcomeBrowserProxy_.handleUserDecline();
   }
 });

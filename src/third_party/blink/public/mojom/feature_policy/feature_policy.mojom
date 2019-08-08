@@ -80,10 +80,6 @@ enum FeaturePolicyFeature {
   // Controls the layout size of intrinsically sized images and videos. When
   // disabled, default size (300 x 150) is used to prevent relayout.
   kUnsizedMedia = 21,
-  // Controls which image formats are allowed to be used in the document.
-  kLegacyImageFormats = 22,
-  // When disallowed, requires images to have a reasonable byte-to-pixel ratio.
-  kUnoptimizedImages = 23,
   // When disallowed, restricts source image size to be no more 2x larger than
   // the image's containing block.
   kOversizedImages = 25,
@@ -95,6 +91,7 @@ enum FeaturePolicyFeature {
   // which interfere with document's input stream (document.write(),
   // document.close(), etc.).
   kDocumentWrite = 28,
+  // TODO(ekaramad): kLazyLoad is deprecated; remove.
   // Used to enforce lazyloading for a frame and any nested <iframe> or image.
   kLazyLoad = 29,
   // Restricts the usage of layout-causing animations in a document.
@@ -122,8 +119,25 @@ enum FeaturePolicyFeature {
   kSerial = 42,
   // Controls access to WebHID.
   kHid = 43,
+  // Controls access to Idle Detection
+  kIdleDetection = 44,
+
+  // When disallowed, these policies require images to have a reasonable byte-to-pixel ratio.
+  kUnoptimizedLossyImages = 45,
+  kUnoptimizedLosslessImages = 46,
+  kUnoptimizedLosslessImagesStrict = 47,
+
+  // Loading policies.
+  kLoadingFrameDefaultEager = 48,
+
+  // Implements sandbox flag: allow-downloads-without-user-activation.
+  kDownloadsWithoutUserActivation = 49,
+
+  // When disallowed, a frame without user activation cannot acquire focus.
+  kFocusWithoutUserActivation = 52,
 
   // Don't change assigned numbers of any item, and don't reuse removed slots.
+  // Add new features at the end of the enum.
   // Also, run update_feature_policy_enum.py in
   // chromium/src/tools/metrics/histograms/ to update the UMA mapping.
 };

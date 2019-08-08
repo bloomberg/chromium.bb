@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
+#include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
@@ -52,8 +53,11 @@ void ChromeExtensionHostDelegate::OnExtensionHostCreated(
       web_contents);
   PrefsTabHelper::CreateForWebContents(web_contents);
   apps::AudioFocusWebContentsObserver::CreateForWebContents(web_contents);
-  performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
-      web_contents);
+
+  if (performance_manager::PerformanceManager::GetInstance()) {
+    performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
+        web_contents);
+  }
 }
 
 void ChromeExtensionHostDelegate::OnRenderViewCreatedForBackgroundPage(

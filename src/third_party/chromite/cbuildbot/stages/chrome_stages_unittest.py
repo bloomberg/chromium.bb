@@ -31,13 +31,13 @@ class SimpleChromeArtifactsStage(cbuildbot_unittest.SimpleBuilderTestCase,
                                  generic_stages_unittest.AbstractStageTestCase,
                                  cros_test_lib.LoggingTestCase):
   """Verify stage that creates the chrome-sdk and builds chrome with it."""
-  BOT_ID = 'link-paladin'
+  BOT_ID = 'grunt-paladin'
   RELEASE_TAG = ''
 
   # pylint: disable=protected-access
 
   def setUp(self):
-    self.CreateMockOverlay('link')
+    self.CreateMockOverlay('grunt')
 
     self.StartPatcher(parallel_unittest.ParallelMock())
 

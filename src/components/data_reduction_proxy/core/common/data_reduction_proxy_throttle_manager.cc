@@ -71,10 +71,7 @@ void DataReductionProxyThrottleManager::OnThrottleConfigChanged(
 
   // TODO(eroman): Use typemappings instead of converting here?
   for (const auto& entry : config->proxies_for_http) {
-    proxies_for_http_.push_back(DataReductionProxyServer(
-        entry->proxy_server, entry->is_core
-                                 ? ProxyServer_ProxyType_CORE
-                                 : ProxyServer_ProxyType_UNSPECIFIED_TYPE));
+    proxies_for_http_.push_back(DataReductionProxyServer(entry->proxy_server));
   }
 }
 

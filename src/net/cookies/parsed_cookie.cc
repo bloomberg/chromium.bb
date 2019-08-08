@@ -69,7 +69,7 @@ const char kTokenSeparator[] = ";=";
 // Returns true if |c| occurs in |chars|
 // TODO(erikwright): maybe make this take an iterator, could check for end also?
 inline bool CharIsA(const char c, const char* chars) {
-  return strchr(chars, c) != NULL;
+  return strchr(chars, c) != nullptr;
 }
 // Seek the iterator to the first occurrence of a character in |chars|.
 // Returns true if it hit the end, false otherwise.
@@ -138,7 +138,7 @@ ParsedCookie::ParsedCookie(const std::string& cookie_line)
       same_site_index_(0),
       priority_index_(0) {
   if (cookie_line.size() > kMaxCookieSize) {
-    VLOG(1) << "Not parsing cookie, too large: " << cookie_line.size();
+    DVLOG(1) << "Not parsing cookie, too large: " << cookie_line.size();
     return;
   }
 
@@ -155,7 +155,7 @@ bool ParsedCookie::IsValid() const {
 
 CookieSameSite ParsedCookie::SameSite() const {
   return (same_site_index_ == 0)
-             ? CookieSameSite::DEFAULT_MODE
+             ? CookieSameSite::NO_RESTRICTION
              : StringToCookieSameSite(pairs_[same_site_index_].second);
 }
 

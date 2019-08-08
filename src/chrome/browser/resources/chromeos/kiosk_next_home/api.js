@@ -25,6 +25,13 @@ kioskNextHome.Bridge = class {
   addListener(listener) {}
 
   /**
+   * Gets the obfuscated account Gaia ID associated with the current user
+   * session.
+   * @return {!Promise<string>} Promise for the obfuscated account Gaia ID.
+   */
+  getAccountId() {}
+
+  /**
    * Returns an access token with the requested scopes.
    * @param {!Array<string>} scopes List of scopes to use when obtaining access
    *     token.
@@ -33,72 +40,130 @@ kioskNextHome.Bridge = class {
   getAccessToken(scopes) {}
 
   /**
-   * Returns a list of apps installed in the user session.
-   * @return {!Promise<!Array<!kioskNextHome.InstalledApp>>} Promise for the
-   *     list of apps.
+   * Returns the Android ID for the ARC++ container. This call might fail if the
+   * ARC provisioning is not complete (i.e. user has not finished the ARC setup
+   * flow).
+   * @return {!Promise<string>} Promise for the Android ID.
    */
-  getInstalledApps() {}
+  getAndroidId() {}
 
   /**
-   * Launches a content (app, video, etc).
-   * @param {!kioskNextHome.ContentSource} contentSource
-   * @param {string} contentId
-   * @param {?Object=} opt_params Optional params to locate the content.
-   * @return {!Promise<boolean>} Promise that is resolved after the content is
-   *     launched.
+   * Returns a list of apps installed in the user session.
+   * @return {!Promise<!Array<!kioskNextHome.App>>} Promise for the list of
+   *     apps.
    */
-  launchContent(contentSource, contentId, opt_params) {}
+  getApps() {}
+
+  /**
+   * Launches the app with the given appId.
+   *
+   * Note: This is a fire and forget operation, given the VMs involved and
+   * their IPC interfaces, we can't tell if the operation was successful.
+   * @param {string} appId Chrome OS identifier for the app.
+   */
+  launchApp(appId) {}
+
+  /**
+   * Launches a URL prefixed by chromeos::switches::kKioskNextHomeUrlPrefix with
+   * the given suffix.
+   * @param {string} suffix
+   * @return {!Promise} Resolves if URL is launched, or rejects in case of
+   *     failures.
+   */
+  launchHomeUrl(suffix) {}
+
+  /**
+   * Shows a prompt to uninstall the app with the given appId.
+   *
+   * We will notify listeners when the app is uninstalled through a readiness
+   * state change.
+   * @param {string} appId App to uninstall.
+   */
+  uninstallApp(appId) {}
+
+  /**
+   * Returns current device network state.
+   * @return {kioskNextHome.NetworkState}
+   */
+  getNetworkState() {}
 };
 
 /**
- * Set of known / handled content sources.
- *
- * A "Content Source" describes how to launch/view the content.
- * @enum {string}
- */
-kioskNextHome.ContentSource = {
-  /** The content is, or is hosted inside, an ARC++ app. */
-  ARC_INTENT: 'arc_intent',
-};
-
-/**
- * Types of installed apps on ChromeOS.
+ * Types of installed apps on Chrome OS.
  * @enum {string}
  */
 kioskNextHome.AppType = {
+  /**
+   * The app type could not be determined or is not relevant to Kiosk Next (e.g.
+   * Linux apps).
+   */
+  UNKNOWN: 'unknown',
   /** The app is an ARC++ app (Android app). */
   ARC: 'arc',
+  /**
+   * The app is a Chrome OS app.
+   *
+   * Note: This is an artificial grouping of the many different types of apps
+   * that Chrome OS supports. Built-in apps (e.g. Settings), Extensions (e.g.
+   * Files app) and pinned web apps. They mostly behave in the same way from
+   * the point of view of Kiosk Next.
+   */
+  CHROME: 'chrome',
+};
+
+/**
+ * Readiness status for apps.
+ * These values loosely map to AppService's apps.mojom.Readiness enum.
+ * @enum {string}
+ */
+kioskNextHome.AppReadiness = {
+  /**
+   * App readiness could not be determined.
+   * This can happen if the current app is unavailable for unknown or
+   * unexpected reasons, like a renderer crash for Extensions or an unsupported
+   * operation (such as blacklisted web apps).
+   */
+  UNKNOWN: 'unknown',
+  /** Installed and launchable. */
+  READY: 'ready',
+  /** App is disabled by policy. */
+  DISABLED: 'disabled',
+  /** App was uninstalled by user. */
+  UNINSTALLED: 'uninstalled',
 };
 
 /**
  * A record representing an installed app on the system.
  * @record
  */
-kioskNextHome.InstalledApp = class {
+kioskNextHome.App = class {
   constructor() {
-    /** @type {!kioskNextHome.AppType} The type of app. */
-    this.appType;
-    /**
-     * @type {string} Stable, unique identifier for the app. For ARC++ apps,
-     *     this is the package name.
-     */
+    /** @type {string} Unique Chrome OS identifier for the app. */
     this.appId;
+    /** @type {kioskNextHome.AppType} */
+    this.type;
+    /**
+     * @type {string | undefined} Android package name, if it's an ARC++ app.
+     */
+    this.packageName;
     /** @type {string} Readable name to display. */
     this.displayName;
     /** @type {string | undefined} Base64-encoded thumbnail image, fallback. */
     this.thumbnailImage;
-    /** @type {boolean | undefined} Whether the app is suspended. */
-    this.suspended;
+    /**
+     * @type {kioskNextHome.AppReadiness} Current readiness state for the app.
+     */
+    this.readiness;
   }
 };
 
 /**
- * Different ways an installed app can change.
+ * Current network state of the device.
  * @enum {string}
  */
-kioskNextHome.AppEventType = {
-  INSTALLED: 'installed',
-  UNINSTALLED: 'uninstalled',
+kioskNextHome.NetworkState = {
+  ONLINE: 'online',
+  OFFLINE: 'offline',
 };
 
 /**
@@ -109,17 +174,23 @@ kioskNextHome.AppEventType = {
  */
 kioskNextHome.Listener = class {
   /**
-   * Called when an app state change.
-   * @param {!kioskNextHome.InstalledApp} app The app whose state changed.
-   * @param {!kioskNextHome.AppEventType} appEventType Type of the event
-   *     indicating what changed for the app.
+   * Called when an app state changes.
+   * TODO(brunoad): Adapt for AppService calls.
+   * @param {!kioskNextHome.App} app The app whose state changed.
    */
-  onInstalledAppChanged(app, appEventType) {}
+  onAppChanged(app) {}
+
+  /**
+   * Called when the network state changes.
+   * @param {kioskNextHome.NetworkState} networkState Current network state of
+   *     the device.
+   */
+  onNetworkStateChanged(networkState) {}
 };
 
 /**
  * Provides bridge implementation.
  * @return {!kioskNextHome.Bridge} Bridge instance that can be used to interact
- *     with ChromeOS.
+ *     with Chrome OS.
  */
 kioskNextHome.getChromeOsBridge = function() {};

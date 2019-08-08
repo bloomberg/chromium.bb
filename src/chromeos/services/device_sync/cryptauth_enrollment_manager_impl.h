@@ -16,6 +16,7 @@
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "chromeos/services/device_sync/sync_scheduler.h"
 
+class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
@@ -34,6 +35,22 @@ class CryptAuthEnroller;
 class CryptAuthEnrollerFactory;
 
 // Concrete CryptAuthEnrollmentManager implementation.
+//
+// This implementation considers three sources of enrollment requests:
+//  1) A sync scheduler requests periodic enrollments and handles any failed
+//     attempts.
+//  2) The enrollment manager listens to the GCM manager for re-enrollment
+//     requests.
+//  3) The ForceEnrollmentNow() method allows for immediate requests.
+//
+// When an enrollment has been requested, this implementation generates a user
+// key pair, if one doesn't already exists, and persists these keys as
+// preferences. Thus, the user key pair should never rotate.
+//
+// This implementation also determines the times between enrollment attempts,
+// which is roughly 30 days after a successful enrollments and 10 minutes after
+// a failed enrollment attempt, exponentially increasing for consecutive
+// failures. An enrollment is considered "invalid" after 45 days.
 class CryptAuthEnrollmentManagerImpl : public CryptAuthEnrollmentManager,
                                        public SyncScheduler::Delegate,
                                        public CryptAuthGCMManager::Observer {
@@ -65,6 +82,9 @@ class CryptAuthEnrollmentManagerImpl : public CryptAuthEnrollmentManager,
    private:
     static Factory* factory_instance_;
   };
+
+  // Registers the prefs used by this class to the given |pref_service|.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   ~CryptAuthEnrollmentManagerImpl() override;
 

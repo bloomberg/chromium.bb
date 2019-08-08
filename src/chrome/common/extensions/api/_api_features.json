@@ -104,6 +104,9 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
+      // TODO(maybelle): Audit and remove chrome://settings or
+      // chrome://os-settings as appropriate
+      "chrome://os-settings/*",
       "chrome://settings/*"
     ]
   }],
@@ -142,34 +145,22 @@
       "chrome://welcome/*"
     ]
   }],
-  "bookmarks.export": [{
-    "whitelist": [
-      "D5736E4B5CF695CB93A2FB57E4FDC6E5AFAB6FE2", // http://crbug.com/312900
-      "D57DE394F36DC1C3220E7604C575D29C51A6C495", // http://crbug.com/319444
-      "3F65507A3B39259B38C8173C6FFA3D12DF64CCE9"  // http://crbug.com/371562
-    ]
-  }, {
+  "bookmarks.export": {
     "channel": "stable",
     "contexts": ["webui"],
     "dependencies": [],
     "matches": [
       "chrome://bookmarks/*"
     ]
-  }],
-  "bookmarks.import": [{
-    "whitelist": [
-      "D5736E4B5CF695CB93A2FB57E4FDC6E5AFAB6FE2", // http://crbug.com/312900
-      "D57DE394F36DC1C3220E7604C575D29C51A6C495", // http://crbug.com/319444
-      "3F65507A3B39259B38C8173C6FFA3D12DF64CCE9"  // http://crbug.com/371562
-    ]
-  }, {
+  },
+  "bookmarks.import": {
     "channel": "stable",
     "contexts": ["webui"],
     "dependencies": [],
     "matches": [
       "chrome://bookmarks/*"
     ]
-  }],
+  },
   "brailleDisplayPrivate": {
     "dependencies": ["permission:brailleDisplayPrivate"],
     "contexts": ["blessed_extension"]
@@ -258,6 +249,7 @@
       "chrome://media-router/*",
       "chrome://mobilesetup/*",
       "chrome://oobe/*",
+      "chrome://password-change/*",
       "chrome://assistant-optin/*"
     ]
   }],
@@ -279,7 +271,7 @@
   },
   "contextMenus": {
     "dependencies": ["permission:contextMenus"],
-    "contexts": ["blessed_extension"]
+    "contexts": ["blessed_extension", "extension_service_worker"]
   },
   "contextMenusInternal": {
     "internal": true,
@@ -534,6 +526,9 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
+      // TODO(maybelle): Audit and remove chrome://settings or
+      // chrome://os-settings as appropriate
+      "chrome://os-settings/*",
       "chrome://settings/*"
     ]
   }],
@@ -548,6 +543,9 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
+      // TODO(maybelle): Audit and remove chrome://settings or
+      // chrome://os-settings as appropriate
+      "chrome://os-settings/*",
       "chrome://settings/*"
     ]
   }],
@@ -608,6 +606,9 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
+      // TODO(maybelle): Audit and remove chrome://settings or
+      // chrome://os-settings as appropriate
+      "chrome://os-settings/*",
       "chrome://settings/*"
     ]
   }],
@@ -629,10 +630,6 @@
     "internal": true,
     "contexts": ["blessed_extension"]
   }],
-  "preferencesPrivate": {
-    "dependencies": ["permission:preferencesPrivate"],
-    "contexts": ["blessed_extension"]
-  },
   "privacy": {
     "dependencies": ["permission:privacy"],
     "contexts": ["blessed_extension"]
@@ -654,6 +651,9 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://multidevice-setup/*",
+      // TODO(maybelle): Audit and remove chrome://settings or
+      // chrome://os-settings as appropriate
+      "chrome://os-settings/*",
       "chrome://settings/*",
       "chrome://oobe/*"
     ],
@@ -688,6 +688,9 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
+      // TODO(maybelle): Audit and remove chrome://settings or
+      // chrome://os-settings as appropriate
+      "chrome://os-settings/*",
       "chrome://settings/*"
     ]
   }],
@@ -742,6 +745,9 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
+      // TODO(maybelle): Audit and remove chrome://settings or
+      // chrome://os-settings as appropriate
+      "chrome://os-settings/*",
       "chrome://settings/*"
     ]
   }],

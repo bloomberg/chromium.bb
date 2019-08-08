@@ -307,14 +307,17 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       return '%s_%04x_%04x%s' % (
         os_type, params.vendor_id, params.device_id, msaa_string)
     else:
-      # This is the code path for Android devices. Include the model
+      # This is the code path for Android devices. Disambiguate
+      # chrome on Android and Android webview. Include the model
       # name (e.g. "Nexus 9") in the GPU string to disambiguate
       # multiple devices on the waterfall which might have the same
       # device string ("NVIDIA Tegra") but different screen
       # resolutions and device pixel ratios.
+      os_type = cls.GetParsedCommandLineOptions().os_type
+      if cls.browser.browser_type.startswith('android-webview'):
+        os_type = os_type + "_webview"
       return '%s_%s_%s_%s%s' % (
-        cls.GetParsedCommandLineOptions().os_type,
-        params.vendor_string, params.device_string,
+        os_type, params.vendor_string, params.device_string,
         params.model_name, msaa_string)
 
   @classmethod

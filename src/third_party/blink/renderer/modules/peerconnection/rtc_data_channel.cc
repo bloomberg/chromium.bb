@@ -157,17 +157,12 @@ void RTCDataChannel::Observer::OnStateChange() {
                       scoped_refptr<Observer>(this), webrtc_channel_->state()));
 }
 
-void RTCDataChannel::Observer::OnBufferedAmountChange(
-    uint64_t previous_amount) {
-  // Optimization: Only post a task if the change is a decrease, because the web
-  // interface does not perform any action when there is an increase.
-  if (previous_amount > webrtc_channel_->buffered_amount()) {
-    PostCrossThreadTask(
-        *main_thread_, FROM_HERE,
-        CrossThreadBind(&RTCDataChannel::Observer::OnBufferedAmountDecreaseImpl,
-                        scoped_refptr<Observer>(this),
-                        SafeCast<unsigned>(previous_amount)));
-  }
+void RTCDataChannel::Observer::OnBufferedAmountChange(uint64_t sent_data_size) {
+  PostCrossThreadTask(
+      *main_thread_, FROM_HERE,
+      CrossThreadBind(&RTCDataChannel::Observer::OnBufferedAmountChangeImpl,
+                      scoped_refptr<Observer>(this),
+                      SafeCast<unsigned>(sent_data_size)));
 }
 
 void RTCDataChannel::Observer::OnMessage(const webrtc::DataBuffer& buffer) {
@@ -188,11 +183,11 @@ void RTCDataChannel::Observer::OnStateChangeImpl(
     blink_channel_->OnStateChange(state);
 }
 
-void RTCDataChannel::Observer::OnBufferedAmountDecreaseImpl(
-    unsigned previous_amount) {
+void RTCDataChannel::Observer::OnBufferedAmountChangeImpl(
+    unsigned sent_data_size) {
   DCHECK(main_thread_->BelongsToCurrentThread());
   if (blink_channel_)
-    blink_channel_->OnBufferedAmountDecrease(previous_amount);
+    blink_channel_->OnBufferedAmountChange(sent_data_size);
 }
 
 void RTCDataChannel::Observer::OnMessageImpl(
@@ -200,15 +195,6 @@ void RTCDataChannel::Observer::OnMessageImpl(
   DCHECK(main_thread_->BelongsToCurrentThread());
   if (blink_channel_)
     blink_channel_->OnMessage(std::move(buffer));
-}
-
-RTCDataChannel* RTCDataChannel::Create(
-    ExecutionContext* context,
-    scoped_refptr<webrtc::DataChannelInterface> channel,
-    WebRTCPeerConnectionHandler* peer_connection_handler) {
-  DCHECK(channel);
-  return MakeGarbageCollected<RTCDataChannel>(context, channel,
-                                              peer_connection_handler);
 }
 
 RTCDataChannel::RTCDataChannel(
@@ -222,6 +208,7 @@ RTCDataChannel::RTCDataChannel(
                              this,
                              &RTCDataChannel::ScheduledEventTimerFired),
       buffered_amount_low_threshold_(0U),
+      buffered_amount_(0U),
       stopped_(false),
       observer_(base::MakeRefCounted<Observer>(
           context->GetTaskRunner(TaskType::kInternalMedia),
@@ -288,8 +275,13 @@ bool RTCDataChannel::negotiated() const {
   return channel()->negotiated();
 }
 
-uint16_t RTCDataChannel::id() const {
+uint16_t RTCDataChannel::id(bool& is_null) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (channel()->id() == -1) {
+    is_null = true;
+    return 0;
+  }
+  is_null = false;
   return channel()->id();
 }
 
@@ -310,7 +302,7 @@ String RTCDataChannel::readyState() const {
 }
 
 unsigned RTCDataChannel::bufferedAmount() const {
-  return SafeCast<unsigned>(channel()->buffered_amount());
+  return buffered_amount_;
 }
 
 unsigned RTCDataChannel::bufferedAmountLowThreshold() const {
@@ -352,10 +344,11 @@ void RTCDataChannel::send(const String& data, ExceptionState& exception_state) {
 
   std::string utf8_buffer = static_cast<WebString>(data).Utf8();
   webrtc::DataBuffer data_buffer(utf8_buffer);
+  buffered_amount_ += data_buffer.size();
   RecordMessageSent(*channel().get(), data_buffer.size());
   if (!channel()->Send(data_buffer)) {
-    // FIXME: This should not throw an exception but instead forcefully close
-    // the data channel.
+    // TODO(https://crbug.com/937848): Don't throw an exception if data is
+    // queued.
     ThrowCouldNotSendDataException(&exception_state);
   }
 }
@@ -371,19 +364,21 @@ void RTCDataChannel::send(DOMArrayBuffer* data,
   if (!data_length)
     return;
 
+  buffered_amount_ += data_length;
   if (!SendRawData(static_cast<const char*>((data->Data())), data_length)) {
-    // FIXME: This should not throw an exception but instead forcefully close
-    // the data channel.
+    // TODO(https://crbug.com/937848): Don't throw an exception if data is
+    // queued.
     ThrowCouldNotSendDataException(&exception_state);
   }
 }
 
 void RTCDataChannel::send(NotShared<DOMArrayBufferView> data,
                           ExceptionState& exception_state) {
+  buffered_amount_ += data.View()->byteLength();
   if (!SendRawData(static_cast<const char*>(data.View()->BaseAddress()),
                    data.View()->byteLength())) {
-    // FIXME: This should not throw an exception but instead forcefully close
-    // the data channel.
+    // TODO(https://crbug.com/937848): Don't throw an exception if data is
+    // queued.
     ThrowCouldNotSendDataException(&exception_state);
   }
 }
@@ -485,12 +480,15 @@ void RTCDataChannel::OnStateChange(
   }
 }
 
-void RTCDataChannel::OnBufferedAmountDecrease(unsigned previous_amount) {
+void RTCDataChannel::OnBufferedAmountChange(unsigned sent_data_size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DVLOG(1) << "OnBufferedAmountDecrease " << previous_amount;
+  unsigned previous_amount = buffered_amount_;
+  DVLOG(1) << "OnBufferedAmountChange " << previous_amount;
+  DCHECK_GE(buffered_amount_, sent_data_size);
+  buffered_amount_ -= sent_data_size;
 
   if (previous_amount > buffered_amount_low_threshold_ &&
-      bufferedAmount() <= buffered_amount_low_threshold_) {
+      buffered_amount_ <= buffered_amount_low_threshold_) {
     ScheduleDispatchEvent(Event::Create(event_type_names::kBufferedamountlow));
   }
 }
@@ -505,14 +503,14 @@ void RTCDataChannel::OnMessage(std::unique_ptr<webrtc::DataBuffer> buffer) {
     }
     if (binary_type_ == kBinaryTypeArrayBuffer) {
       DOMArrayBuffer* dom_buffer = DOMArrayBuffer::Create(
-          buffer->data.data<char>(), SafeCast<unsigned>(buffer->data.size()));
+          buffer->data.cdata(), SafeCast<unsigned>(buffer->data.size()));
       ScheduleDispatchEvent(MessageEvent::Create(dom_buffer));
       return;
     }
     NOTREACHED();
   } else {
     String text =
-        String::FromUTF8(buffer->data.data<char>(), buffer->data.size());
+        String::FromUTF8(buffer->data.cdata<char>(), buffer->data.size());
     if (!text) {
       LOG(ERROR) << "Failed convert received data to UTF16";
       return;

@@ -46,7 +46,7 @@ class SVGAnimatedPointList final
       SVGElement* context_element,
       const QualifiedName& attribute_name,
       SVGPointList* initial_value,
-      CSSPropertyID css_property_id = CSSPropertyInvalid) {
+      CSSPropertyID css_property_id = CSSPropertyID::kInvalid) {
     return MakeGarbageCollected<SVGAnimatedPointList>(
         context_element, attribute_name, initial_value, css_property_id);
   }
@@ -54,7 +54,7 @@ class SVGAnimatedPointList final
   SVGAnimatedPointList(SVGElement* context_element,
                        const QualifiedName& attribute_name,
                        SVGPointList* initial_value,
-                       CSSPropertyID css_property_id)
+                       CSSPropertyID css_property_id = CSSPropertyID::kInvalid)
       : SVGAnimatedProperty<SVGPointList>(context_element,
                                           attribute_name,
                                           initial_value,

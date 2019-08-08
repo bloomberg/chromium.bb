@@ -153,20 +153,14 @@ def main(argv):
   if args.expected_manifest:
     with build_utils.AtomicOutput(args.normalized_output) as normalized_output:
       normalized_output.write(_NormalizeManifest(args.output))
-    diff = diff_utils.DiffFileContents(args.expected_manifest,
-                                       args.normalized_output)
-    if diff:
-      print """
-{}
-
-Detected AndroidManifest change. Please update by running:
-
-cp {} {}
-
-See https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README.md
-for more info.
-""".format(diff, os.path.abspath(args.normalized_output),
-           os.path.abspath(args.expected_manifest))
+    msg = diff_utils.DiffFileContents(args.expected_manifest,
+                                      args.normalized_output)
+    if msg:
+      sys.stderr.write("""\
+AndroidManifest.xml expectations file needs updating. For details see:
+https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README.md
+""")
+      sys.stderr.write(msg)
       if args.verify_expected_manifest:
         sys.exit(1)
 

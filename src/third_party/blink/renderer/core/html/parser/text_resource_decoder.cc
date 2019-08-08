@@ -25,7 +25,7 @@
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/html/parser/html_meta_charset_parser.h"
 #include "third_party/blink/renderer/platform/text/text_encoding_detector.h"
-#include "third_party/blink/renderer/platform/wtf/string_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_codec.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
 
@@ -149,7 +149,7 @@ void TextResourceDecoder::SetEncoding(const WTF::TextEncoding& encoding,
   // When encoding comes from meta tag (i.e. it cannot be XML files sent via
   // XHR), treat x-user-defined as windows-1252 (bug 18270)
   if (source == kEncodingFromMetaTag &&
-      !strcasecmp(encoding.GetName(), "x-user-defined"))
+      WTF::EqualIgnoringASCIICase(encoding.GetName(), "x-user-defined"))
     encoding_ = WTF::TextEncoding("windows-1252");
   else if (source == kEncodingFromMetaTag || source == kEncodingFromXMLHeader ||
            source == kEncodingFromCSSCharset)
@@ -356,7 +356,7 @@ void TextResourceDecoder::CheckForMetaCharset(const char* data,
   }
 
   if (!charset_parser_)
-    charset_parser_ = HTMLMetaCharsetParser::Create();
+    charset_parser_ = std::make_unique<HTMLMetaCharsetParser>();
 
   if (!charset_parser_->CheckForMetaCharset(data, length))
     return;

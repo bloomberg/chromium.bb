@@ -53,6 +53,26 @@
           "reason": "geometry"
         },
         {
+          "object": "NGPhysicalTextFragment 'Alice began to feel very uneasy: to be sure, she had not as yet'",
+          "rect": [14, 520, 407, 80],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'become of me? They\u2019re dreadfully fond of beheading people'",
+          "rect": [14, 520, 407, 80],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'had any dispute with the Queen, but she knew that it might'",
+          "rect": [14, 520, 407, 80],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'happen any minute, \u2018and then,\u2019 thought she, \u2018what would'",
+          "rect": [14, 520, 407, 80],
+          "reason": "geometry"
+        },
+        {
           "object": "NGPhysicalTextFragment ' twist itself round and'",
           "rect": [14, 180, 407, 79],
           "reason": "geometry"
@@ -73,26 +93,6 @@
           "reason": "geometry"
         },
         {
-          "object": "NGPhysicalTextFragment 'Alice began to feel very uneasy: to be sure, she had not as yet'",
-          "rect": [14, 520, 406, 80],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'become of me? They\u2019re dreadfully fond of beheading people'",
-          "rect": [14, 520, 406, 80],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'had any dispute with the Queen, but she knew that it might'",
-          "rect": [14, 520, 406, 80],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'happen any minute, \u2018and then,\u2019 thought she, \u2018what would'",
-          "rect": [14, 520, 406, 80],
-          "reason": "geometry"
-        },
-        {
           "object": "NGPhysicalTextFragment 'for turns,'",
           "rect": [14, 400, 406, 59],
           "reason": "appeared"
@@ -108,6 +108,16 @@
           "reason": "geometry"
         },
         {
+          "object": "NGPhysicalTextFragment 'difficult'",
+          "rect": [65, 360, 356, 39],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'game indeed.'",
+          "rect": [65, 360, 356, 39],
+          "reason": "geometry"
+        },
+        {
           "object": "NGPhysicalTextFragment 'a furious passion, and went stamping about, and'",
           "rect": [14, 460, 355, 59],
           "reason": "geometry"
@@ -120,16 +130,6 @@
         {
           "object": "NGPhysicalTextFragment 'shouting \u2018Off with his head!\u2019 or \u2018Off with her head!\u2019'",
           "rect": [14, 460, 355, 59],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'difficult'",
-          "rect": [65, 360, 355, 39],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'game indeed.'",
-          "rect": [65, 360, 355, 39],
           "reason": "geometry"
         },
         {
@@ -189,12 +189,12 @@
         },
         {
           "object": "NGPhysicalTextFragment 'the Queen'",
-          "rect": [302, 440, 68, 19],
+          "rect": [302, 440, 67, 19],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'the Queen'",
-          "rect": [242, 440, 67, 19],
+          "rect": [242, 440, 66, 19],
           "reason": "geometry"
         },
         {

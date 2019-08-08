@@ -59,16 +59,6 @@ const char kForceHighContrast[] = "force-high-contrast";
 // language[-country] where language is the 2 letter code from ISO-639.
 const char kLang[] = "lang";
 
-// Defines the speed of Material Design visual feedback animations.
-const char kMaterialDesignInkDropAnimationSpeed[] =
-    "material-design-ink-drop-animation-speed";
-
-// Defines that Material Design visual feedback animations should be fast.
-const char kMaterialDesignInkDropAnimationSpeedFast[] = "fast";
-
-// Defines that Material Design visual feedback animations should be slow.
-const char kMaterialDesignInkDropAnimationSpeedSlow[] = "slow";
-
 // Controls touch-optimized UI layout for top chrome.
 const char kTopChromeTouchUi[] = "top-chrome-touch-ui";
 const char kTopChromeTouchUiAuto[] = "auto";

@@ -266,19 +266,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           buttonOptions.textEnterXRTitle = "START AR";
           buttonOptions.textXRNotFoundTitle = "AR NOT FOUND";
           buttonOptions.textExitXRTitle = "EXIT  AR";
+          buttonOptions.supportedSessionTypes = ['immersive-ar'];
+        } else {
+          buttonOptions.supportedSessionTypes = ['immersive-vr'];
         }
         xrButton = new XRDeviceButton(buttonOptions);
         document.querySelector('header').appendChild(xrButton.domElement);
 
-        let xrMode = appSettings.arMode ? 'immersive-ar' : 'immersive-vr';
         if (navigator.xr) {
-          navigator.xr.supportsSessionMode(xrMode).then(() => {
-            xrButton.enabled = true;
-          });
-
           // Set up "magic window" mode.
           if (appSettings.magicWindow) {
-            navigator.xr.requestSession().then(onSessionStarted);
+            navigator.xr.requestSession('inline').then(onSessionStarted);
           }
         } else {
           initFallback();
@@ -308,7 +306,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onRequestSession() {
-        let xrOptions = { mode: appSettings.arMode ? 'immersive-ar' : 'immersive-vr' };
+        let xrOptions = appSettings.arMode ? 'immersive-ar' : 'immersive-vr';
         navigator.xr.requestSession(xrOptions).then((session) => {
           xrButton.setSession(session);
           onSessionStarted(session);
@@ -324,7 +322,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           framebufferScaleFactor: appSettings.framebufferScale,
           antialias: appSettings.antialias});
         session.updateRenderState({ baseLayer: webglLayer });
-        
+
         if (session.mode.startsWith('immersive') && appSettings.mirrorCanvas) {
           let outputCanvas = document.createElement('canvas');
           document.body.appendChild(outputCanvas);
@@ -332,6 +330,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
 
         session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' }).then((refSpace) => {
+          return refSpace;
+        }, (e) => {
+          if (!session.mode.startsWith('immersive')) {
+            // If we're in inline mode, our underlying platform may not support
+            // the stationary reference space, but an identity space is guaranteed.
+            return session.requestReferenceSpace({ type: 'identity' });
+          } else {
+            throw e;
+          }
+        }).then((refSpace) => {
           if (session.mode.startsWith('immersive')) {
             xrImmersiveRefSpace = refSpace;
           } else {

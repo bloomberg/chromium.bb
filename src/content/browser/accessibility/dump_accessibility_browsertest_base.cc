@@ -27,6 +27,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -90,12 +91,31 @@ DumpAccessibilityTestBase::~DumpAccessibilityTestBase() {}
 void DumpAccessibilityTestBase::SetUpCommandLine(
     base::CommandLine* command_line) {
   IsolateAllSitesForTesting(command_line);
+
+  // Each test pass might require custom command-line setup
+  auto passes = AccessibilityTreeFormatter::GetTestPasses();
+  size_t current_pass = GetParam();
+  CHECK_LT(current_pass, passes.size());
+  if (passes[current_pass].set_up_command_line)
+    passes[current_pass].set_up_command_line(command_line);
 }
 
 void DumpAccessibilityTestBase::SetUpOnMainThread() {
   host_resolver()->AddRule("*", "127.0.0.1");
   SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
+}
+
+void DumpAccessibilityTestBase::SetUp() {
+  // TODO(dmazzoni): DumpAccessibilityTree expectations are based on the
+  // assumption that the accessibility labels feature is off. (There are
+  // also several tests that explicitly enable the feature.) It'd be better
+  // if DumpAccessibilityTree tests assumed that the feature is on by
+  // default instead.  http://crbug.com/940330
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kExperimentalAccessibilityLabels);
+
+  ContentBrowserTest::SetUp();
 }
 
 base::string16
@@ -189,14 +209,19 @@ void DumpAccessibilityTestBase::RunTest(const base::FilePath file_path,
   // Get all the tree formatters; the test is run independently on each one.
   auto formatters = AccessibilityTreeFormatter::GetTestPasses();
   auto event_recorders = AccessibilityEventRecorder::GetTestPasses();
-  DCHECK(event_recorders.size() == formatters.size());
+  CHECK(event_recorders.size() == formatters.size());
 
-  int pass_count = formatters.size();
-  for (int pass = 0; pass < pass_count; ++pass) {
-    formatter_factory_ = formatters[pass];
-    event_recorder_factory_ = event_recorders[pass];
-    RunTestForPlatform(file_path, file_dir);
-  }
+  // The current test number is supplied as a test parameter.
+  size_t current_pass = GetParam();
+  CHECK_LT(current_pass, formatters.size());
+  CHECK_EQ(std::string(formatters[current_pass].name),
+           std::string(event_recorders[current_pass].name));
+
+  formatter_factory_ = formatters[current_pass].create_formatter;
+  event_recorder_factory_ = event_recorders[current_pass].create_recorder;
+
+  RunTestForPlatform(file_path, file_dir);
+
   formatter_factory_ = nullptr;
   event_recorder_factory_ = nullptr;
 }
@@ -205,10 +230,6 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     const base::FilePath file_path,
     const char* file_dir) {
   formatter_ = formatter_factory_();
-
-  base::test::ScopedCommandLine scoped_command_line;
-  formatter_->SetUpCommandLineForTestPass(
-      scoped_command_line.GetProcessCommandLine());
 
   // Disable the "hot tracked" state (set when the mouse is hovering over
   // an object) because it makes test output change based on the mouse position.
@@ -377,9 +398,7 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     // Block until the next accessibility notification in any frame.
     VLOG(1) << "Waiting until the next accessibility event";
     AccessibilityNotificationWaiter accessibility_waiter(
-        main_frame, ax::mojom::Event::kNone);
-    for (FrameTreeNode* node : frame_tree->Nodes())
-      accessibility_waiter.ListenToAdditionalFrame(node->current_frame_host());
+        web_contents, ui::AXMode(), ax::mojom::Event::kNone);
     accessibility_waiter.WaitForNotification();
   }
 

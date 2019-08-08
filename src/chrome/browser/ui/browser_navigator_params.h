@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/global_request_id.h"
@@ -31,7 +32,7 @@ namespace content {
 class RenderFrameHost;
 class WebContents;
 struct OpenURLParams;
-}
+}  // namespace content
 
 // Parameters that tell Navigate() what to do.
 //
@@ -170,6 +171,9 @@ struct NavigateParams {
   // TabStrip. The actual index will be determined by the TabHandler in
   // accordance with |add_types|. The default allows the TabHandler to decide.
   int tabstrip_index = -1;
+
+  // The group the caller would like the tab to be added to.
+  base::Optional<int> group;
 
   // A bitmask of values defined in TabStripModel::AddTabTypes. Helps
   // determine where to insert a new tab and whether or not it should be

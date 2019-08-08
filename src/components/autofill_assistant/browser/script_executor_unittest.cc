@@ -30,7 +30,7 @@ using ::testing::DoAll;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::Field;
-using ::testing::Invoke;
+using ::testing::InvokeWithoutArgs;
 using ::testing::IsEmpty;
 using ::testing::NiceMock;
 using ::testing::Not;
@@ -63,12 +63,12 @@ class ScriptExecutorTest : public testing::Test,
     // In this test, "tell" actions always succeed and "click" actions always
     // fail. The following makes a click action fail immediately
     ON_CALL(mock_web_controller_, OnClickOrTapElement(_, _))
-        .WillByDefault(RunOnceCallback<1>(false));
+        .WillByDefault(RunOnceCallback<1>(ClientStatus(OTHER_ACTION_STATUS)));
 
-    ON_CALL(mock_web_controller_, OnElementCheck(_, _, _))
-        .WillByDefault(RunOnceCallback<2>(true));
-    ON_CALL(mock_web_controller_, OnFocusElement(_, _))
+    ON_CALL(mock_web_controller_, OnElementCheck(_, _))
         .WillByDefault(RunOnceCallback<1>(true));
+    ON_CALL(mock_web_controller_, OnFocusElement(_, _))
+        .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
   }
 
  protected:
@@ -104,7 +104,7 @@ class ScriptExecutorTest : public testing::Test,
     interruptible.set_global_payload("main script global payload");
     interruptible.set_script_payload("main script payload");
     auto* wait_action = interruptible.add_actions()->mutable_wait_for_dom();
-    wait_action->add_selectors(element);
+    wait_action->mutable_wait_until()->add_selectors(element);
     wait_action->set_allow_interrupt(true);
     interruptible.add_actions()->mutable_tell()->set_message(path);
     EXPECT_CALL(mock_service_, OnGetActions(StrEq(path), _, _, _, _, _))
@@ -181,8 +181,9 @@ TEST_F(ScriptExecutorTest, ForwardParameters) {
   (*parameters)["param2"] = "value2";
   EXPECT_CALL(mock_service_,
               OnGetActions(StrEq(kScriptPath), _,
-                           AllOf(Contains(Pair("param1", "value1")),
-                                 Contains(Pair("param2", "value2"))),
+                           Field(&TriggerContext::script_parameters,
+                                 AllOf(Contains(Pair("param1", "value1")),
+                                       Contains(Pair("param2", "value2")))),
                            _, _, _))
       .WillOnce(RunOnceCallback<5>(true, ""));
 
@@ -202,9 +203,9 @@ TEST_F(ScriptExecutorTest, RunOneActionReportAndReturn) {
       .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
 
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
-      .WillOnce(DoAll(SaveArg<2>(&processed_actions_capture),
-                      RunOnceCallback<3>(true, "")));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
   EXPECT_CALL(executor_callback_,
               Run(AllOf(Field(&ScriptExecutor::Result::success, true),
                         Field(&ScriptExecutor::Result::at_end,
@@ -226,12 +227,12 @@ TEST_F(ScriptExecutorTest, RunMultipleActions) {
   next_actions_response.add_actions()->mutable_tell()->set_message("3");
   std::vector<ProcessedActionProto> processed_actions1_capture;
   std::vector<ProcessedActionProto> processed_actions2_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
       .WillOnce(
-          DoAll(SaveArg<2>(&processed_actions1_capture),
-                RunOnceCallback<3>(true, Serialize(next_actions_response))))
-      .WillOnce(DoAll(SaveArg<2>(&processed_actions2_capture),
-                      RunOnceCallback<3>(true, "")));
+          DoAll(SaveArg<3>(&processed_actions1_capture),
+                RunOnceCallback<4>(true, Serialize(next_actions_response))))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions2_capture),
+                      RunOnceCallback<4>(true, "")));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
   executor_->Run(executor_callback_.Get());
@@ -248,9 +249,9 @@ TEST_F(ScriptExecutorTest, UnsupportedAction) {
       .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
 
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
-      .WillOnce(DoAll(SaveArg<2>(&processed_actions_capture),
-                      RunOnceCallback<3>(true, "")));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
   executor_->Run(executor_callback_.Get());
@@ -266,8 +267,8 @@ TEST_F(ScriptExecutorTest, StopAfterEnd) {
   EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
 
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
-      .WillOnce(RunOnceCallback<3>(true, ""));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(RunOnceCallback<4>(true, ""));
   EXPECT_CALL(executor_callback_,
               Run(AllOf(Field(&ScriptExecutor::Result::success, true),
                         Field(&ScriptExecutor::Result::at_end,
@@ -282,8 +283,8 @@ TEST_F(ScriptExecutorTest, ResetAfterEnd) {
   EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
 
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
-      .WillOnce(RunOnceCallback<3>(true, ""));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(RunOnceCallback<4>(true, ""));
   EXPECT_CALL(executor_callback_,
               Run(AllOf(Field(&ScriptExecutor::Result::success, true),
                         Field(&ScriptExecutor::Result::at_end,
@@ -310,12 +311,12 @@ TEST_F(ScriptExecutorTest, InterruptActionListOnError) {
       "will run after error");
   std::vector<ProcessedActionProto> processed_actions1_capture;
   std::vector<ProcessedActionProto> processed_actions2_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
       .WillOnce(
-          DoAll(SaveArg<2>(&processed_actions1_capture),
-                RunOnceCallback<3>(true, Serialize(next_actions_response))))
-      .WillOnce(DoAll(SaveArg<2>(&processed_actions2_capture),
-                      RunOnceCallback<3>(true, "")));
+          DoAll(SaveArg<3>(&processed_actions1_capture),
+                RunOnceCallback<4>(true, Serialize(next_actions_response))))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions2_capture),
+                      RunOnceCallback<4>(true, "")));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
   executor_->Run(executor_callback_.Get());
@@ -341,9 +342,9 @@ TEST_F(ScriptExecutorTest, RunDelayedAction) {
       .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
 
   std::vector<ProcessedActionProto> processed_actions_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
-      .WillOnce(DoAll(SaveArg<2>(&processed_actions_capture),
-                      RunOnceCallback<3>(true, "")));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
 
   // executor_callback_.Run() not expected to be run just yet, as the action is
   // delayed.
@@ -368,8 +369,8 @@ TEST_F(ScriptExecutorTest, ClearDetailsWhenFinished) {
 
   EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
-      .WillOnce(RunOnceCallback<3>(true, ""));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(RunOnceCallback<4>(true, ""));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
 
@@ -388,8 +389,8 @@ TEST_F(ScriptExecutorTest, DontClearDetailsIfOtherActionsAreLeft) {
 
   EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
-      .WillOnce(RunOnceCallback<3>(true, ""));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(RunOnceCallback<4>(true, ""));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
 
@@ -403,8 +404,8 @@ TEST_F(ScriptExecutorTest, ClearDetailsOnError) {
   actions_response.add_actions()->mutable_tell()->set_message("Hello");
   EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
-      .WillOnce(RunOnceCallback<3>(false, ""));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(RunOnceCallback<4>(false, ""));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, false)));
   delegate_.SetDetails(std::make_unique<Details>());  // empty, but not null
@@ -439,8 +440,8 @@ TEST_F(ScriptExecutorTest, UpdateScriptStateOnSuccess) {
   initial_actions_response.add_actions()->mutable_tell()->set_message("ok");
   EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, Serialize(initial_actions_response)));
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
-      .WillOnce(RunOnceCallback<3>(true, ""));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(RunOnceCallback<4>(true, ""));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
   executor_->Run(executor_callback_.Get());
@@ -462,9 +463,9 @@ TEST_F(ScriptExecutorTest, ForwardLastPayloadOnSuccess) {
   ActionsResponseProto next_actions_response;
   next_actions_response.set_global_payload("last global payload");
   next_actions_response.set_script_payload("last payload");
-  EXPECT_CALL(mock_service_, OnGetNextActions("actions global payload",
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, "actions global payload",
                                               "actions payload", _, _))
-      .WillOnce(RunOnceCallback<3>(true, Serialize(next_actions_response)));
+      .WillOnce(RunOnceCallback<4>(true, Serialize(next_actions_response)));
 
   EXPECT_CALL(executor_callback_, Run(_));
   executor_->Run(executor_callback_.Get());
@@ -483,15 +484,73 @@ TEST_F(ScriptExecutorTest, ForwardLastPayloadOnError) {
                                           "initial payload", _))
       .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
 
-  EXPECT_CALL(mock_service_, OnGetNextActions("actions global payload",
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, "actions global payload",
                                               "actions payload", _, _))
-      .WillOnce(RunOnceCallback<3>(false, ""));
+      .WillOnce(RunOnceCallback<4>(false, ""));
 
   EXPECT_CALL(executor_callback_, Run(_));
   executor_->Run(executor_callback_.Get());
 
   EXPECT_EQ("actions global payload", last_global_payload_);
   EXPECT_EQ("actions payload", last_script_payload_);
+}
+
+TEST_F(ScriptExecutorTest, WaitForDomWaitUntil) {
+  ActionsResponseProto actions_response;
+  auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
+  wait_for_dom->mutable_wait_until()->add_selectors("element");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  // First check does not find the element, wait for dom waits 1s, then the
+  // element is found, and the action succeeds.
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillOnce(RunOnceCallback<1>(false));
+  executor_->Run(executor_callback_.Get());
+
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillRepeatedly(RunOnceCallback<1>(true));
+  EXPECT_CALL(executor_callback_, Run(_));
+  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  ASSERT_EQ(1u, processed_actions_capture.size());
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+}
+
+TEST_F(ScriptExecutorTest, WaitForDomWaitWhile) {
+  ActionsResponseProto actions_response;
+  auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
+  wait_for_dom->mutable_wait_while()->add_selectors("element");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  // First check finds the element, wait for dom waits 1s, then the element
+  // disappears, and the action succeeds.
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillOnce(RunOnceCallback<1>(true));
+  executor_->Run(executor_callback_.Get());
+
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillRepeatedly(RunOnceCallback<1>(false));
+  EXPECT_CALL(executor_callback_, Run(_));
+  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  ASSERT_EQ(1u, processed_actions_capture.size());
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
 }
 
 TEST_F(ScriptExecutorTest, RunInterrupt) {
@@ -503,11 +562,11 @@ TEST_F(ScriptExecutorTest, RunInterrupt) {
   // Both scripts ends after the first set of actions. Capture the results.
   std::vector<ProcessedActionProto> processed_actions1_capture;
   std::vector<ProcessedActionProto> processed_actions2_capture;
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
-      .WillOnce(DoAll(SaveArg<2>(&processed_actions1_capture),
-                      RunOnceCallback<3>(true, "")))
-      .WillOnce(DoAll(SaveArg<2>(&processed_actions2_capture),
-                      RunOnceCallback<3>(true, "")));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions1_capture),
+                      RunOnceCallback<4>(true, "")))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions2_capture),
+                      RunOnceCallback<4>(true, "")));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
@@ -543,13 +602,14 @@ TEST_F(ScriptExecutorTest, RunMultipleInterruptInOrder) {
   {
     testing::InSequence seq;
     EXPECT_CALL(mock_service_,
-                OnGetNextActions(_, "payload for interrupt1", _, _))
-        .WillOnce(RunOnceCallback<3>(true, ""));
+                OnGetNextActions(_, _, "payload for interrupt1", _, _))
+        .WillOnce(RunOnceCallback<4>(true, ""));
     EXPECT_CALL(mock_service_,
-                OnGetNextActions(_, "payload for interrupt2", _, _))
-        .WillOnce(RunOnceCallback<3>(true, ""));
-    EXPECT_CALL(mock_service_, OnGetNextActions(_, "main script payload", _, _))
-        .WillOnce(RunOnceCallback<3>(true, ""));
+                OnGetNextActions(_, _, "payload for interrupt2", _, _))
+        .WillOnce(RunOnceCallback<4>(true, ""));
+    EXPECT_CALL(mock_service_,
+                OnGetNextActions(_, _, "main script payload", _, _))
+        .WillOnce(RunOnceCallback<4>(true, ""));
   }
 
   EXPECT_CALL(executor_callback_,
@@ -569,7 +629,7 @@ TEST_F(ScriptExecutorTest, RunSameInterruptMultipleTimes) {
   ActionsResponseProto interruptible;
   for (int i = 0; i < 3; i++) {
     auto* wait_action = interruptible.add_actions()->mutable_wait_for_dom();
-    wait_action->add_selectors("element");
+    wait_action->mutable_wait_until()->add_selectors("element");
     wait_action->set_allow_interrupt(true);
   }
   EXPECT_CALL(mock_service_, OnGetActions(StrEq("script_path"), _, _, _, _, _))
@@ -584,8 +644,8 @@ TEST_F(ScriptExecutorTest, RunSameInterruptMultipleTimes) {
       .WillRepeatedly(RunOnceCallback<5>(true, Serialize(interrupt_actions)));
 
   // All scripts succeed with no more actions.
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
-      .WillRepeatedly(RunOnceCallback<3>(true, ""));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<4>(true, ""));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
@@ -601,20 +661,20 @@ TEST_F(ScriptExecutorTest, ForwardMainScriptPayloadWhenInterruptRuns) {
       "last global payload from interrupt");
   next_interrupt_actions_response.set_script_payload(
       "last payload from interrupt");
-  EXPECT_CALL(mock_service_, OnGetNextActions("global payload for interrupt",
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, "global payload for interrupt",
                                               "payload for interrupt", _, _))
       .WillOnce(
-          RunOnceCallback<3>(true, Serialize(next_interrupt_actions_response)));
+          RunOnceCallback<4>(true, Serialize(next_interrupt_actions_response)));
 
   ActionsResponseProto next_main_actions_response;
   next_main_actions_response.set_global_payload(
       "last global payload from main");
   next_main_actions_response.set_script_payload("last payload from main");
   EXPECT_CALL(mock_service_,
-              OnGetNextActions("last global payload from interrupt",
+              OnGetNextActions(_, "last global payload from interrupt",
                                "main script payload", _, _))
       .WillOnce(
-          RunOnceCallback<3>(true, Serialize(next_main_actions_response)));
+          RunOnceCallback<4>(true, Serialize(next_main_actions_response)));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
@@ -628,13 +688,13 @@ TEST_F(ScriptExecutorTest, ForwardMainScriptPayloadWhenInterruptFails) {
   SetupInterruptibleScript(kScriptPath, "element");
   SetupInterrupt("interrupt", "interrupt_trigger");
 
-  EXPECT_CALL(mock_service_, OnGetNextActions("global payload for interrupt",
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, "global payload for interrupt",
                                               "payload for interrupt", _, _))
-      .WillOnce(RunOnceCallback<3>(false, ""));
+      .WillOnce(RunOnceCallback<4>(false, ""));
 
-  EXPECT_CALL(mock_service_, OnGetNextActions("global payload for interrupt",
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, "global payload for interrupt",
                                               "main script payload", _, _))
-      .WillOnce(RunOnceCallback<3>(false, ""));
+      .WillOnce(RunOnceCallback<4>(false, ""));
 
   EXPECT_CALL(executor_callback_, Run(_));
   executor_->Run(executor_callback_.Get());
@@ -650,14 +710,14 @@ TEST_F(ScriptExecutorTest, DoNotRunInterruptIfPreconditionsDontMatch) {
   SetupInterrupt("interrupt", "interrupt_trigger");
 
   EXPECT_CALL(mock_web_controller_,
-              OnElementCheck(_, Eq(Selector({"element"})), _))
-      .WillRepeatedly(RunOnceCallback<2>(true));
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillRepeatedly(RunOnceCallback<1>(true));
   EXPECT_CALL(mock_web_controller_,
-              OnElementCheck(_, Eq(Selector({"interrupt_trigger"})), _))
-      .WillRepeatedly(RunOnceCallback<2>(false));
+              OnElementCheck(Eq(Selector({"interrupt_trigger"})), _))
+      .WillRepeatedly(RunOnceCallback<1>(false));
 
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
-      .WillRepeatedly(RunOnceCallback<3>(true, ""));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<4>(true, ""));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
@@ -672,7 +732,7 @@ TEST_F(ScriptExecutorTest, DoNotRunInterruptIfNotInterruptible) {
   // The main script has a wait_for_dom, but it is not interruptible.
   ActionsResponseProto interruptible;
   auto* wait_action = interruptible.add_actions()->mutable_wait_for_dom();
-  wait_action->add_selectors("element");
+  wait_action->mutable_wait_until()->add_selectors("element");
   // allow_interrupt is not set
   EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, Serialize(interruptible)));
@@ -681,8 +741,8 @@ TEST_F(ScriptExecutorTest, DoNotRunInterruptIfNotInterruptible) {
   // given an opportunity to.
   SetupInterrupt("interrupt", "interrupt_trigger");
 
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
-      .WillRepeatedly(RunOnceCallback<3>(true, ""));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<4>(true, ""));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
@@ -699,19 +759,20 @@ TEST_F(ScriptExecutorTest, InterruptFailsMainScript) {
   SetupInterrupt("interrupt", "interrupt_trigger");
 
   // The interrupt fails.
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, "payload for interrupt", _, _))
-      .WillOnce(RunOnceCallback<3>(false, ""));
+  EXPECT_CALL(mock_service_,
+              OnGetNextActions(_, _, "payload for interrupt", _, _))
+      .WillOnce(RunOnceCallback<4>(false, ""));
 
   // The main script gets a report of the failure from the interrupt, and fails
   // in turn.
   EXPECT_CALL(
       mock_service_,
       OnGetNextActions(
-          _, "main script payload",
+          _, _, "main script payload",
           ElementsAre(Property(&ProcessedActionProto::status,
                                ProcessedActionStatusProto::INTERRUPT_FAILED)),
           _))
-      .WillOnce(RunOnceCallback<3>(false, ""));
+      .WillOnce(RunOnceCallback<4>(false, ""));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, false)));
@@ -738,9 +799,9 @@ TEST_F(ScriptExecutorTest, InterruptReturnsShutdown) {
 
   // We expect to get result of interrupt action, then result of the main script
   // action.
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
       .Times(2)
-      .WillRepeatedly(RunOnceCallback<3>(true, ""));
+      .WillRepeatedly(RunOnceCallback<4>(true, ""));
 
   EXPECT_CALL(executor_callback_,
               Run(AllOf(Field(&ScriptExecutor::Result::success, true),
@@ -773,9 +834,9 @@ TEST_F(ScriptExecutorTest, UpdateScriptListGetNext) {
   presentation->set_name("name");
   presentation->mutable_precondition();
 
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
-      .WillOnce(RunOnceCallback<3>(true, Serialize(next_actions_response)))
-      .WillOnce(RunOnceCallback<3>(true, ""));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(RunOnceCallback<4>(true, Serialize(next_actions_response)))
+      .WillOnce(RunOnceCallback<4>(true, ""));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
@@ -805,9 +866,9 @@ TEST_F(ScriptExecutorTest, UpdateScriptListShouldNotifyMultipleTimes) {
       .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
 
   script->set_path("path2");
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
-      .WillOnce(RunOnceCallback<3>(true, Serialize(actions_response)))
-      .WillOnce(RunOnceCallback<3>(true, ""));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(RunOnceCallback<4>(true, Serialize(actions_response)))
+      .WillOnce(RunOnceCallback<4>(true, ""));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
@@ -842,10 +903,10 @@ TEST_F(ScriptExecutorTest, UpdateScriptListFromInterrupt) {
   // We expect a call from the interrupt which will update the script list and a
   // second call from the interrupt to terminate. Then a call from the main
   // script which will finish without running any actions.
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
       .Times(3)
-      .WillOnce(RunOnceCallback<3>(true, Serialize(interrupt_actions)))
-      .WillRepeatedly(RunOnceCallback<3>(true, ""));
+      .WillOnce(RunOnceCallback<4>(true, Serialize(interrupt_actions)))
+      .WillRepeatedly(RunOnceCallback<4>(true, ""));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
@@ -868,7 +929,7 @@ TEST_F(ScriptExecutorTest, RestorePreInterruptStatusMessage) {
   interruptible.add_actions()->mutable_tell()->set_message(
       "pre-interrupt status");
   auto* wait_action = interruptible.add_actions()->mutable_wait_for_dom();
-  wait_action->add_selectors("element");
+  wait_action->mutable_wait_until()->add_selectors("element");
   wait_action->set_allow_interrupt(true);
   EXPECT_CALL(mock_service_, OnGetActions(kScriptPath, _, _, _, _, _))
       .WillRepeatedly(RunOnceCallback<5>(true, Serialize(interruptible)));
@@ -880,8 +941,8 @@ TEST_F(ScriptExecutorTest, RestorePreInterruptStatusMessage) {
   EXPECT_CALL(mock_service_, OnGetActions(StrEq("interrupt"), _, _, _, _, _))
       .WillRepeatedly(RunOnceCallback<5>(true, Serialize(interrupt_actions)));
 
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
-      .WillRepeatedly(RunOnceCallback<3>(true, ""));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<4>(true, ""));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
@@ -896,13 +957,13 @@ TEST_F(ScriptExecutorTest, KeepStatusMessageWhenNotInterrupted) {
   interruptible.add_actions()->mutable_tell()->set_message(
       "pre-interrupt status");
   auto* wait_action = interruptible.add_actions()->mutable_wait_for_dom();
-  wait_action->add_selectors("element");
+  wait_action->mutable_wait_until()->add_selectors("element");
   wait_action->set_allow_interrupt(true);
   EXPECT_CALL(mock_service_, OnGetActions(kScriptPath, _, _, _, _, _))
       .WillRepeatedly(RunOnceCallback<5>(true, Serialize(interruptible)));
 
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
-      .WillRepeatedly(RunOnceCallback<3>(true, ""));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<4>(true, ""));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
@@ -910,6 +971,387 @@ TEST_F(ScriptExecutorTest, KeepStatusMessageWhenNotInterrupted) {
   delegate_.SetStatusMessage("pre-run status");
   executor_->Run(executor_callback_.Get());
   EXPECT_EQ("pre-interrupt status", delegate_.GetStatusMessage());
+}
+
+TEST_F(ScriptExecutorTest, PauseWaitForDomWhileNavigating) {
+  ActionsResponseProto actions_response;
+  auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
+  wait_for_dom->set_timeout_ms(2000);
+  wait_for_dom->mutable_wait_until()->add_selectors("element");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  // First check does not find the element, wait for dom waits 1s.
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillOnce(RunOnceCallback<1>(false));
+  executor_->Run(executor_callback_.Get());
+
+  // Navigation starts while WaitForDom is waiting. The action doesn't fail,
+  // even though navigation takes a few seconds longer than the WaitForDom
+  // timeout.
+  delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
+  for (int i = 0; i < 5; i++) {
+    scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  }
+
+  // The end of navigation un-pauses WaitForDom.
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillRepeatedly(RunOnceCallback<1>(true));
+  EXPECT_CALL(executor_callback_, Run(_));
+  delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
+
+  ASSERT_EQ(1u, processed_actions_capture.size());
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+}
+
+TEST_F(ScriptExecutorTest, StartWaitForDomWhileNavigating) {
+  ActionsResponseProto actions_response;
+  auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
+  wait_for_dom->set_timeout_ms(2000);
+  wait_for_dom->mutable_wait_until()->add_selectors("element");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  // Navigation starts before WaitForDom even starts, so the operation starts in
+  // a paused state.
+  delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
+
+  executor_->Run(executor_callback_.Get());
+
+  // The end of navigation un-pauses WaitForDom, which then succeeds
+  // immediately.
+  EXPECT_CALL(executor_callback_, Run(_));
+  delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
+
+  ASSERT_EQ(1u, processed_actions_capture.size());
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+}
+
+TEST_F(ScriptExecutorTest, ReportErrorAsNavigationError) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()
+      ->mutable_click()
+      ->mutable_element_to_click()
+      ->add_selectors("will fail");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ true);
+  EXPECT_CALL(executor_callback_, Run(_));
+  executor_->Run(executor_callback_.Get());
+
+  ASSERT_EQ(1u, processed_actions_capture.size());
+
+  // The original error is overwritten; a navigation error is reported.
+  EXPECT_EQ(NAVIGATION_ERROR, processed_actions_capture[0].status());
+  EXPECT_EQ(OTHER_ACTION_STATUS,
+            processed_actions_capture[0].status_details().original_status());
+}
+
+TEST_F(ScriptExecutorTest, NavigateWhileRunningInterrupt) {
+  SetupInterruptibleScript(kScriptPath, "element");
+  RegisterInterrupt("interrupt", "interrupt_trigger");
+
+  ActionsResponseProto interrupt_actions;
+  InitInterruptActions(&interrupt_actions, "interrupt");
+
+  // A load even happens when loading the interrupt scripts, so while the
+  // interrupt is being executed. This should not interfere with the WaitForDom
+  // action that's running the interrupt.
+  EXPECT_CALL(mock_service_, OnGetActions(StrEq("interrupt"), _, _, _, _, _))
+      .WillRepeatedly(
+          DoAll(InvokeWithoutArgs(
+                    [this]() { delegate_.UpdateNavigationState(true, false); }),
+                RunOnceCallback<5>(true, Serialize(interrupt_actions)),
+                InvokeWithoutArgs([this]() {
+                  delegate_.UpdateNavigationState(false, false);
+                })));
+
+  std::vector<ProcessedActionProto> processed_actions1_capture;
+  std::vector<ProcessedActionProto> processed_actions2_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions1_capture),
+                      RunOnceCallback<4>(true, "")))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions2_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  EXPECT_CALL(executor_callback_, Run(_));
+  executor_->Run(executor_callback_.Get());
+
+  EXPECT_EQ(ACTION_APPLIED, processed_actions1_capture[0].status());
+  EXPECT_EQ(ACTION_APPLIED, processed_actions2_capture[0].status());
+}
+
+TEST_F(ScriptExecutorTest, ReportNavigationErrors) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_tell()->set_message("a");
+  actions_response.add_actions()->mutable_tell()->set_message("b");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ true);
+  EXPECT_CALL(executor_callback_, Run(_));
+  executor_->Run(executor_callback_.Get());
+
+  ASSERT_THAT(processed_actions_capture, SizeIs(2));
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+  EXPECT_TRUE(processed_actions_capture[0].navigation_info().has_error());
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[1].status());
+  EXPECT_TRUE(processed_actions_capture[1].navigation_info().has_error());
+}
+
+TEST_F(ScriptExecutorTest, ReportNavigationEnd) {
+  ActionsResponseProto actions_response;
+  auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
+  wait_for_dom->mutable_wait_until()->add_selectors("element");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  // Navigation starts, before the script is run.
+  delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
+  EXPECT_CALL(executor_callback_, Run(_));
+  executor_->Run(executor_callback_.Get());
+
+  // WaitForDom waits for navigation to end, then checks for the element, which
+  // fails.
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillOnce(RunOnceCallback<1>(false));
+  delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
+
+  // Checking for the element succeeds on the second try. Waiting avoids
+  // depending on the order at which the listeners are called.
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillOnce(RunOnceCallback<1>(true));
+  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  ASSERT_THAT(processed_actions_capture, SizeIs(1));
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+  EXPECT_FALSE(processed_actions_capture[0].navigation_info().started());
+  EXPECT_TRUE(processed_actions_capture[0].navigation_info().ended());
+}
+
+TEST_F(ScriptExecutorTest, ReportUnexpectedNavigationStart) {
+  ActionsResponseProto actions_response;
+  auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
+  wait_for_dom->mutable_wait_until()->add_selectors("element");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  // As the element doesn't exist, WaitForDom returns and waits for 1s.
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillOnce(RunOnceCallback<1>(false));
+  EXPECT_CALL(executor_callback_, Run(_));
+  executor_->Run(executor_callback_.Get());
+
+  delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
+
+  // Navigation end forces a re-check, which succeeds
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillRepeatedly(RunOnceCallback<1>(true));
+  delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
+
+  ASSERT_THAT(processed_actions_capture, SizeIs(1));
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+  EXPECT_TRUE(processed_actions_capture[0].navigation_info().started());
+  EXPECT_TRUE(processed_actions_capture[0].navigation_info().unexpected());
+}
+
+TEST_F(ScriptExecutorTest, ReportExpectedNavigationStart) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_expect_navigation();
+  auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
+  wait_for_dom->mutable_wait_until()->add_selectors("element");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  // As the element doesn't exist, WaitForDom returns and waits for 1s.
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillOnce(RunOnceCallback<1>(false));
+  EXPECT_CALL(executor_callback_, Run(_));
+  executor_->Run(executor_callback_.Get());
+
+  delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
+
+  // Navigation end forces a re-check, which succeeds
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillRepeatedly(RunOnceCallback<1>(true));
+  delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
+
+  ASSERT_THAT(processed_actions_capture, SizeIs(2));
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+  EXPECT_TRUE(processed_actions_capture[1].navigation_info().started());
+  EXPECT_FALSE(processed_actions_capture[1].navigation_info().unexpected());
+}
+
+TEST_F(ScriptExecutorTest, WaitForNavigationWithoutExpectation) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_wait_for_navigation();
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  // WaitForNavigation returns immediately
+  EXPECT_CALL(executor_callback_, Run(_));
+  executor_->Run(executor_callback_.Get());
+
+  ASSERT_THAT(processed_actions_capture, SizeIs(1));
+  EXPECT_EQ(INVALID_ACTION, processed_actions_capture[0].status());
+}
+
+TEST_F(ScriptExecutorTest, ExpectNavigation) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_expect_navigation();
+  actions_response.add_actions()->mutable_wait_for_navigation();
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  // WaitForNavigation waits for navigation to start after expect_navigation
+  EXPECT_CALL(executor_callback_, Run(_));
+  executor_->Run(executor_callback_.Get());
+
+  delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
+  delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
+  ASSERT_THAT(processed_actions_capture, SizeIs(2));
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[1].status());
+}
+
+TEST_F(ScriptExecutorTest, MultipleWaitForNavigation) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_expect_navigation();
+  actions_response.add_actions()->mutable_wait_for_navigation();
+  actions_response.add_actions()->mutable_wait_for_navigation();
+  actions_response.add_actions()->mutable_wait_for_navigation();
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  // The first wait_for_navigation waits for the navigation to happen. After
+  // that, the other wait_for_navigation return immediately.
+  EXPECT_CALL(executor_callback_, Run(_));
+  executor_->Run(executor_callback_.Get());
+
+  delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
+  delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
+  ASSERT_THAT(processed_actions_capture, SizeIs(4));
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[1].status());
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[2].status());
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[3].status());
+}
+
+TEST_F(ScriptExecutorTest, ExpectLaterNavigationIgnoringNavigationInProgress) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_expect_navigation();
+  actions_response.add_actions()->mutable_wait_for_navigation();
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
+
+  // WaitForNavigation waits for navigation to *start* after expect_navigation
+  executor_->Run(executor_callback_.Get());
+
+  // This ends the navigation that was in progress when expect_navigation was
+  // called. wait_for_navigation should not return, since navigation started
+  // after expect_navigation was called.
+  delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
+
+  // This starts the new navigation.
+  delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
+
+  // This ends the new navigation. wait_for_navigation returns.
+  EXPECT_CALL(executor_callback_, Run(_));
+  delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
+
+  ASSERT_THAT(processed_actions_capture, SizeIs(2));
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[1].status());
+}
+
+TEST_F(ScriptExecutorTest, WaitForNavigationReportsError) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_expect_navigation();
+  actions_response.add_actions()->mutable_wait_for_navigation();
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<4>(true, "")));
+
+  // WaitForNavigation waits for navigation to start after expect_navigation
+  EXPECT_CALL(executor_callback_, Run(_));
+  executor_->Run(executor_callback_.Get());
+
+  delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
+  delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ true);
+  ASSERT_THAT(processed_actions_capture, SizeIs(2));
+  EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+  EXPECT_EQ(NAVIGATION_ERROR, processed_actions_capture[1].status());
 }
 
 }  // namespace

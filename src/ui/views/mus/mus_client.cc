@@ -111,15 +111,18 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
         std::make_unique<ui::ClipboardClient>(std::move(clipboard_host_ptr)));
 
     if (params.use_accessibility_host) {
-      ax_remote_host_ = std::make_unique<AXRemoteHost>();
+      ax_aura_obj_cache_ = std::make_unique<AXAuraObjCache>();
+      ax_remote_host_ =
+          std::make_unique<AXRemoteHost>(ax_aura_obj_cache_.get());
       ax_remote_host_->Init(connector);
     }
   }
 
-  ViewsDelegate::GetInstance()->set_native_widget_factory(
-      base::Bind(&MusClient::CreateNativeWidget, base::Unretained(this)));
-  ViewsDelegate::GetInstance()->set_desktop_window_tree_host_factory(base::Bind(
-      &MusClient::CreateDesktopWindowTreeHost, base::Unretained(this)));
+  ViewsDelegate::GetInstance()->set_native_widget_factory(base::BindRepeating(
+      &MusClient::CreateNativeWidget, base::Unretained(this)));
+  ViewsDelegate::GetInstance()->set_desktop_window_tree_host_factory(
+      base::BindRepeating(&MusClient::CreateDesktopWindowTreeHost,
+                          base::Unretained(this)));
 }
 
 MusClient::~MusClient() {
@@ -329,7 +332,10 @@ void MusClient::OnEmbed(
   NOTREACHED();
 }
 
-void MusClient::OnLostConnection(aura::WindowTreeClient* client) {}
+void MusClient::OnLostConnection(aura::WindowTreeClient* client) {
+  // Better to crash than to be left in a broken state.
+  IMMEDIATE_CRASH();
+}
 
 void MusClient::OnEmbedRootDestroyed(
     aura::WindowTreeHostMus* window_tree_host) {

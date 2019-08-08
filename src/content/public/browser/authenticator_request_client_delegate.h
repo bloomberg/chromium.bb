@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
@@ -41,6 +42,9 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
     kKeyAlreadyRegistered,
     kSoftPINBlock,
     kHardPINBlock,
+    kAuthenticatorRemovedDuringPINEntry,
+    kAuthenticatorMissingResidentKeys,
+    kAuthenticatorMissingUserVerification,
   };
 
   AuthenticatorRequestClientDelegate();
@@ -82,6 +86,31 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   virtual void ShouldReturnAttestation(const std::string& relying_party_id,
                                        base::OnceCallback<void(bool)> callback);
 
+  // SupportsResidentKeys returns true if this implementation of
+  // |AuthenticatorRequestClientDelegate| supports resident keys. If false then
+  // requests to create or get assertions will be immediately rejected and
+  // |SelectAccount| will never be called.
+  virtual bool SupportsResidentKeys();
+
+  // SetMightCreateResidentCredential indicates whether activating an
+  // authenticator may cause a resident credential to be created. A resident
+  // credential may be discovered by someone with physical access to the
+  // authenticator and thus has privacy implications.
+  void SetMightCreateResidentCredential(bool v) override;
+
+  // SelectAccount is called to allow the embedder to select between one or more
+  // accounts. This is triggered when the web page requests an unspecified
+  // credential (by passing an empty allow-list). In this case, any accounts
+  // will come from the authenticator's storage and the user should confirm the
+  // use of any specific account before it is returned. The callback takes the
+  // selected account, or else |cancel_callback| can be called.
+  //
+  // This is only called if |SupportsResidentKeys| returns true.
+  virtual void SelectAccount(
+      std::vector<device::AuthenticatorGetAssertionResponse> responses,
+      base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
+          callback);
+
   // Returns whether the WebContents corresponding to |render_frame_host| is the
   // active tab in the focused window. We do not want to allow
   // authenticatorMakeCredential operations to be triggered by background tabs.
@@ -90,6 +119,10 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // implementation in ChromeContentBrowserClient for Android, return |true| so
   // that testing is possible.
   virtual bool IsFocused();
+
+  // Returns whether IsUVPAA() should always return false, regardless of
+  // hardware support or enrollment status.
+  virtual bool ShouldDisablePlatformAuthenticators();
 
 #if defined(OS_MACOSX)
   using TouchIdAuthenticatorConfig = device::fido::mac::AuthenticatorConfig;
@@ -133,6 +166,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
                                   std::string new_authenticator_id) override;
   void FidoAuthenticatorPairingModeChanged(base::StringPiece authenticator_id,
                                            bool is_in_pairing_mode) override;
+  bool SupportsPIN() const override;
   void CollectPIN(
       base::Optional<int> attempts,
       base::OnceCallback<void(std::string)> provide_pin_cb) override;

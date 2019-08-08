@@ -578,9 +578,8 @@
       "glMultiDrawElementsInstancedANGLE"
     ],
 
-    "GL_ANGLE_multiview": [
-        "glFramebufferTextureMultiviewLayeredANGLE",
-        "glFramebufferTextureMultiviewSideBySideANGLE"
+    "GL_OVR_multiview2": [
+        "glFramebufferTextureMultiviewOVR"
     ],
 
     "GL_KHR_parallel_shader_compile": [
@@ -957,5 +956,45 @@
     "angle::Platform related entry points": [
         "ANGLEGetDisplayPlatform",
         "ANGLEResetDisplayPlatform"
+    ],
+
+    "GL_EXT_memory_object/GL_EXT_semaphore": [
+        "glGetUnsignedBytevEXT",
+        "glGetUnsignedBytei_vEXT"
+    ],
+
+    "GL_EXT_memory_object": [
+        "glDeleteMemoryObjectsEXT",
+        "glIsMemoryObjectEXT",
+        "glCreateMemoryObjectsEXT",
+        "glMemoryObjectParameterivEXT",
+        "glGetMemoryObjectParameterivEXT",
+        "glTexStorageMem2DEXT",
+        "glTexStorageMem2DMultisampleEXT",
+        "glTexStorageMem3DEXT",
+        "glTexStorageMem3DMultisampleEXT",
+        "glBufferStorageMemEXT"
+    ],
+
+    "GL_EXT_memory_object_fd": [
+        "glImportMemoryFdEXT"
+    ],
+
+    "GL_EXT_semaphore": [
+        "glGenSemaphoresEXT",
+        "glDeleteSemaphoresEXT",
+        "glIsSemaphoreEXT",
+        "glSemaphoreParameterui64vEXT",
+        "glGetSemaphoreParameterui64vEXT",
+        "glWaitSemaphoreEXT",
+        "glSignalSemaphoreEXT"
+    ],
+
+    "GL_EXT_semaphore_fd": [
+        "glImportSemaphoreFdEXT"
+    ],
+
+    "GL_CHROMIUM_lose_context": [
+        "glLoseContextCHROMIUM"
     ]
 }

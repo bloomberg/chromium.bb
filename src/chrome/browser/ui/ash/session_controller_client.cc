@@ -26,6 +26,8 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -33,11 +35,11 @@
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/managed_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -101,6 +103,8 @@ ash::mojom::UserSessionPtr UserToUserSession(const User& user) {
   session->user_info->is_ephemeral =
       UserManager::Get()->IsUserNonCryptohomeDataEphemeral(user.GetAccountId());
   session->user_info->has_gaia_account = user.has_gaia_account();
+  session->user_info->should_display_managed_ui =
+      profile && chrome::ShouldDisplayManagedUi(profile);
   const AccountId& owner_id = UserManager::Get()->GetOwnerAccountId();
   session->user_info->is_device_owner =
       owner_id.is_valid() && owner_id == user.GetAccountId();
@@ -311,6 +315,16 @@ void SessionControllerClient::ShowMultiProfileLogin() {
   }
 }
 
+void SessionControllerClient::EmitAshInitialized() {
+  // Emit the ash-initialized upstart signal to start Chrome OS tasks that
+  // expect that Ash is listening to D-Bus signals they emit. For example,
+  // hammerd, which handles detachable base state, communicates the base state
+  // purely by emitting D-Bus signals, and thus has to be run whenever Ash is
+  // started so Ash (DetachableBaseHandler in particular) gets the proper view
+  // of the current detachable base state.
+  chromeos::SessionManagerClient::Get()->EmitAshInitialized();
+}
+
 // static
 bool SessionControllerClient::IsMultiProfileAvailable() {
   if (!profiles::IsMultipleProfilesEnabled() || !UserManager::IsInitialized())
@@ -395,9 +409,7 @@ void SessionControllerClient::DoLockScreen() {
     return;
 
   VLOG(1) << "Requesting screen lock from SessionControllerClient";
-  chromeos::DBusThreadManager::Get()
-      ->GetSessionManagerClient()
-      ->RequestLockScreen();
+  chromeos::SessionManagerClient::Get()->RequestLockScreen();
 }
 
 // static

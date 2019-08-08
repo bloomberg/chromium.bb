@@ -24,6 +24,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.R;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.widget.Toast;
 
 import java.util.List;
@@ -171,7 +172,8 @@ public class AccessibilityUtil {
         sOldTalkBackVersionAlertShown = true;
 
         AlertDialog.Builder builder =
-                new AlertDialog.Builder(context, R.style.Theme_Chromium_AlertDialog)
+                new UiUtils
+                        .CompatibleAlertDialogBuilder(context, R.style.Theme_Chromium_AlertDialog)
                         .setTitle(R.string.old_talkback_title)
                         .setPositiveButton(R.string.update_from_market,
                                 new DialogInterface.OnClickListener() {

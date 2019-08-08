@@ -4,7 +4,6 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
@@ -194,6 +193,22 @@
             '$i18nPolymer{siteSettingsUsbDevicesAsk}',
             '$i18nPolymer{siteSettingsUsbDevicesBlock}')]]"></cr-link-row>
 
+    <template is="dom-if" if="[[enableExperimentalWebPlatformFeatures_]]">
+      <cr-link-row
+          class="hr two-line"
+          data-route="SITE_SETTINGS_SERIAL_PORTS"
+          icon-class="subpage-arrow"
+          id="serial-ports"
+          label="$i18n{siteSettingsSerialPorts}"
+          on-click="onTapNavigate_"
+          start-icon="settings:serial-port"
+          sub-label="[[defaultSettingLabel_(
+              default_.serialPorts,
+              '$i18nPolymer{siteSettingsSerialPortsAsk}',
+              '$i18nPolymer{siteSettingsSerialPortsBlock}')]]">
+      </cr-link-row>
+    </template>
+
     <cr-link-row class="hr" data-route="SITE_SETTINGS_PDF_DOCUMENTS"
         id="pdf-documents" label="$i18n{siteSettingsPdfDocuments}"
         on-click="onTapNavigate_" start-icon="settings:pdf"></cr-link-row>
@@ -203,15 +218,15 @@
         on-click="onTapNavigate_" start-icon="settings:protected-content">
     </cr-link-row>
 
-    <template is="dom-if" if="[[enableClipboardContentSetting_]]">
-      <cr-link-row class="hr two-line" data-route="SITE_SETTINGS_CLIPBOARD"
-          id="clipboard" label="$i18n{siteSettingsClipboard}"
-          on-click="onTapNavigate_" start-icon="settings:clipboard"
-          sub-label="[[defaultSettingLabel_(
-              default_.clipboard,
-              '$i18nPolymer{siteSettingsAskBeforeAccessing}',
-              '$i18nPolymer{siteSettingsBlocked}')]]"></cr-link-row>
-    </template>
+    <cr-link-row class="hr two-line" data-route="SITE_SETTINGS_CLIPBOARD"
+        id="clipboard" label="$i18n{siteSettingsClipboard}"
+        on-click="onTapNavigate_" start-icon="settings:clipboard"
+        sub-label="[[defaultSettingLabel_(
+            default_.clipboard,
+            '$i18nPolymer{siteSettingsAskBeforeAccessing}',
+            '$i18nPolymer{siteSettingsBlocked}')]]">
+    </cr-link-row>
+
     <template is="dom-if" if="[[enablePaymentHandlerContentSetting_]]">
       <cr-link-row class="hr two-line"
           data-route="SITE_SETTINGS_PAYMENT_HANDLER" id="paymentHandler"

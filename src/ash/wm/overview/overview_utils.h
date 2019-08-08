@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/overview/overview_animation_type.h"
+#include "ash/wm/window_transient_descendant_iterator.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/gfx/geometry/rect.h"
@@ -41,25 +42,10 @@ void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
 void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
                                       OverviewAnimationType animation_type);
 
-// Creates and returns a background translucent widget parented in
-// |root_window|'s default container and having |background_color|.
-// When |border_thickness| is non-zero, a border is created having
-// |border_color|, otherwise |border_color| parameter is ignored.
-// The new background widget starts with |initial_opacity| and then fades in.
-// If |parent| is prvoided the return widget will be parented to that window,
-// otherwise its parent will be in kShellWindowId_WallpaperContainer of
-// |root_window|. |accept_events| is true if the newly-created widget should
-// handle events.
-std::unique_ptr<views::Widget> CreateBackgroundWidget(aura::Window* root_window,
-                                                      ui::LayerType layer_type,
-                                                      SkColor background_color,
-                                                      int border_thickness,
-                                                      int border_radius,
-                                                      SkColor border_color,
-                                                      float initial_opacity,
-                                                      aura::Window* parent,
-                                                      bool stack_on_top,
-                                                      bool accept_events);
+// Iterates through all the windows in the transient tree associated with
+// |window| that are visible.
+wm::WindowTransientDescendantIteratorRange GetVisibleTransientTreeIterator(
+    aura::Window* window);
 
 // Calculates the bounds of the |transformed_window|. Those bounds are a union
 // of all regular (normal and panel) windows in the |transformed_window|'s
@@ -76,10 +62,14 @@ gfx::RectF GetTargetBoundsInScreen(aura::Window* window);
 // Applies the |transform| to |window| and all of its transient children. Note
 // |transform| is the transform that is applied to |window| and needs to be
 // adjusted for the transient child windows.
-void SetTransform(aura::Window* window, const gfx::Transform& transform);
+ASH_EXPORT void SetTransform(aura::Window* window,
+                             const gfx::Transform& transform);
 
 // Checks if we are currently in sliding up on the shelf to hide overview mode.
 bool IsSlidingOutOverviewFromShelf();
+
+// Maximize the window if it is snapped without animation.
+void MaximizeIfSnapped(aura::Window* window);
 
 }  // namespace ash
 

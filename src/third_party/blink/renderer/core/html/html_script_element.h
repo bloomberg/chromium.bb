@@ -109,7 +109,7 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
 
   Element& CloneWithoutAttributesAndChildren(Document&) const override;
 
-  TraceWrapperMember<ScriptLoader> loader_;
+  Member<ScriptLoader> loader_;
 };
 
 }  // namespace blink

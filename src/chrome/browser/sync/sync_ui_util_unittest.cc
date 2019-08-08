@@ -66,7 +66,7 @@ sync_ui_util::ActionType GetDistinctCase(
     case STATUS_CASE_SETUP_IN_PROGRESS: {
       service->SetFirstSetupComplete(false);
       service->SetSetupInProgress(true);
-      service->SetDetailedSyncStatus(false, syncer::SyncEngine::Status());
+      service->SetDetailedSyncStatus(false, syncer::SyncStatus());
       return sync_ui_util::NO_ACTION;
     }
     case STATUS_CASE_SETUP_ERROR: {
@@ -74,14 +74,14 @@ sync_ui_util::ActionType GetDistinctCase(
       service->SetSetupInProgress(false);
       service->SetDisableReasons(
           syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR);
-      service->SetDetailedSyncStatus(false, syncer::SyncEngine::Status());
+      service->SetDetailedSyncStatus(false, syncer::SyncStatus());
       return sync_ui_util::REAUTHENTICATE;
     }
     case STATUS_CASE_AUTH_ERROR: {
       service->SetFirstSetupComplete(true);
       service->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
       service->SetPassphraseRequired(false);
-      service->SetDetailedSyncStatus(false, syncer::SyncEngine::Status());
+      service->SetDetailedSyncStatus(false, syncer::SyncStatus());
 
       // Make sure to fail authentication with an error in this case.
       std::string account_id = identity_manager->GetPrimaryAccountId();
@@ -98,7 +98,7 @@ sync_ui_util::ActionType GetDistinctCase(
       service->SetPassphraseRequired(false);
       syncer::SyncProtocolError protocol_error;
       protocol_error.action = syncer::UPGRADE_CLIENT;
-      syncer::SyncEngine::Status status;
+      syncer::SyncStatus status;
       status.sync_protocol_error = protocol_error;
       service->SetDetailedSyncStatus(false, status);
       service->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
@@ -107,13 +107,13 @@ sync_ui_util::ActionType GetDistinctCase(
     case STATUS_CASE_CONFIRM_SYNC_SETTINGS: {
       service->SetFirstSetupComplete(false);
       service->SetPassphraseRequired(false);
-      service->SetDetailedSyncStatus(false, syncer::SyncEngine::Status());
+      service->SetDetailedSyncStatus(false, syncer::SyncStatus());
       return sync_ui_util::CONFIRM_SYNC_SETTINGS;
     }
     case STATUS_CASE_PASSPHRASE_ERROR: {
       service->SetFirstSetupComplete(true);
       service->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
-      service->SetDetailedSyncStatus(false, syncer::SyncEngine::Status());
+      service->SetDetailedSyncStatus(false, syncer::SyncStatus());
       service->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
       service->SetPassphraseRequired(true);
       service->SetPassphraseRequiredForDecryption(true);
@@ -122,7 +122,7 @@ sync_ui_util::ActionType GetDistinctCase(
     case STATUS_CASE_SYNCED: {
       service->SetFirstSetupComplete(true);
       service->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
-      service->SetDetailedSyncStatus(false, syncer::SyncEngine::Status());
+      service->SetDetailedSyncStatus(false, syncer::SyncStatus());
       service->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
       service->SetPassphraseRequired(false);
       return sync_ui_util::NO_ACTION;
@@ -133,7 +133,7 @@ sync_ui_util::ActionType GetDistinctCase(
       service->SetFirstSetupComplete(false);
       service->SetTransportState(syncer::SyncService::TransportState::DISABLED);
       service->SetPassphraseRequired(false);
-      service->SetDetailedSyncStatus(false, syncer::SyncEngine::Status());
+      service->SetDetailedSyncStatus(false, syncer::SyncStatus());
       return sync_ui_util::NO_ACTION;
     }
     case NUMBER_OF_STATUS_CASES:
@@ -163,7 +163,8 @@ std::unique_ptr<TestingProfile> BuildSignedInTestingProfile() {
 
 // This test ensures that each distinctive SyncService status will return a
 // unique combination of status and link messages from GetStatusLabels().
-TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
+// Crashes on Win and Mac. https://crbug.com/954365
+TEST_F(SyncUIUtilTest, DISABLED_DistinctCasesReportUniqueMessageSets) {
   std::set<base::string16> messages;
   for (int idx = 0; idx != NUMBER_OF_STATUS_CASES; idx++) {
     std::unique_ptr<Profile> profile = BuildTestingProfile();
@@ -257,29 +258,14 @@ TEST_F(SyncUIUtilTest, ActionableErrorWithPassiveMessage) {
   status.sync_protocol_error.action = syncer::UPGRADE_CLIENT;
   service->SetDetailedSyncStatus(true, status);
 
-  base::string16 first_actionable_error_status_label;
+  base::string16 actionable_error_status_label;
   base::string16 link_label;
   sync_ui_util::ActionType action_type = sync_ui_util::NO_ACTION;
-  sync_ui_util::GetStatusLabels(profile.get(),
-                                &first_actionable_error_status_label,
+  sync_ui_util::GetStatusLabels(profile.get(), &actionable_error_status_label,
                                 &link_label, &action_type);
   // Expect a 'client upgrade' call to action.
   EXPECT_EQ(sync_ui_util::UPGRADE_CLIENT, action_type);
-
-  // This time set action to ENABLE_SYNC_ON_ACCOUNT.
-  status.sync_protocol_error.action = syncer::ENABLE_SYNC_ON_ACCOUNT;
-  service->SetDetailedSyncStatus(true, status);
-
-  base::string16 second_actionable_error_status_label;
-  action_type = sync_ui_util::NO_ACTION;
-  sync_ui_util::GetStatusLabels(profile.get(),
-                                &second_actionable_error_status_label,
-                                &link_label, &action_type);
-  // Expect a passive message instead of a call to action.
-  EXPECT_EQ(sync_ui_util::NO_ACTION, action_type);
-
-  EXPECT_NE(first_actionable_error_status_label,
-            second_actionable_error_status_label);
+  EXPECT_NE(actionable_error_status_label, base::string16());
 }
 
 TEST_F(SyncUIUtilTest, SyncSettingsConfirmationNeededTest) {

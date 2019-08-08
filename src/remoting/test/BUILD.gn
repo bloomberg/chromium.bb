@@ -12,6 +12,8 @@ static_library("test_support") {
     "access_token_fetcher.h",
     "chromoting_test_driver_environment.cc",
     "chromoting_test_driver_environment.h",
+    "cli_util.cc",
+    "cli_util.h",
     "connection_setup_info.cc",
     "connection_setup_info.h",
     "connection_time_observer.cc",
@@ -49,6 +51,10 @@ static_library("test_support") {
     "scroll_frame_generator.h",
     "test_chromoting_client.cc",
     "test_chromoting_client.h",
+    "test_device_id_provider.cc",
+    "test_device_id_provider.h",
+    "test_oauth_token_getter.cc",
+    "test_oauth_token_getter.h",
     "test_token_storage.cc",
     "test_token_storage.h",
     "test_video_renderer.cc",
@@ -75,6 +81,10 @@ static_library("test_support") {
 
   deps = [
     "//google_apis",
+    "//remoting/base:authorization",
+    "//remoting/base:test_support",
+    "//services/network:network_service",
+    "//services/network/public/mojom",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
@@ -176,6 +186,22 @@ if (enable_remoting_host && !is_android && !is_chromeos) {
   }
 }
 
+# A binary for testing and fiddling FTL services.
+executable("ftl_services_playground") {
+  testonly = true
+  sources = [
+    "ftl_services_playground.cc",
+    "ftl_services_playground.h",
+    "ftl_services_playground_main.cc",
+  ]
+  deps = [
+    ":test_support",
+    "//mojo/core/embedder",
+    "//remoting/base",
+    "//remoting/signaling",
+  ]
+}
+
 # A binary for testing and fiddling the FTL signaling process.
 executable("ftl_signaling_playground") {
   testonly = true
@@ -183,20 +209,12 @@ executable("ftl_signaling_playground") {
     "ftl_signaling_playground.cc",
     "ftl_signaling_playground.h",
     "ftl_signaling_playground_main.cc",
-    "test_oauth_token_factory.cc",
-    "test_oauth_token_factory.h",
-    "test_token_storage.cc",
-    "test_token_storage.h",
   ]
   deps = [
-    "//google_apis",
+    ":test_support",
     "//mojo/core/embedder",
     "//remoting/base",
-    "//remoting/base:authorization",
-    "//remoting/base:test_support",
     "//remoting/signaling",
-    "//services/network:network_service",
-    "//services/network/public/mojom",
   ]
 }
 

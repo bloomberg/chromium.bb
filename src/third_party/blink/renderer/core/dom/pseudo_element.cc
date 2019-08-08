@@ -43,7 +43,7 @@ namespace blink {
 
 PseudoElement* PseudoElement::Create(Element* parent, PseudoId pseudo_id) {
   if (pseudo_id == kPseudoIdFirstLetter)
-    return FirstLetterPseudoElement::Create(parent);
+    return MakeGarbageCollected<FirstLetterPseudoElement>(parent);
   return MakeGarbageCollected<PseudoElement>(parent, pseudo_id);
 }
 
@@ -180,13 +180,17 @@ void PseudoElement::AttachLayoutTree(AttachContext& context) {
 
   for (const ContentData* content = style.GetContentData(); content;
        content = content->Next()) {
-    LayoutObject* child = content->CreateLayoutObject(*this, style);
-    if (layout_object->IsChildAllowed(child, style)) {
-      layout_object->AddChild(child);
-      if (child->IsQuote())
-        ToLayoutQuote(child)->AttachQuote();
-    } else {
-      child->Destroy();
+    LegacyLayout legacy = context.force_legacy_layout ? LegacyLayout::kForce
+                                                      : LegacyLayout::kAuto;
+    if (!content->IsAltText()) {
+      LayoutObject* child = content->CreateLayoutObject(*this, style, legacy);
+      if (layout_object->IsChildAllowed(child, style)) {
+        layout_object->AddChild(child);
+        if (child->IsQuote())
+          ToLayoutQuote(child)->AttachQuote();
+      } else {
+        child->Destroy();
+      }
     }
   }
 }

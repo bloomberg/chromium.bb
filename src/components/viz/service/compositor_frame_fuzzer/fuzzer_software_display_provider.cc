@@ -77,8 +77,10 @@ class PNGSoftwareOutputDevice : public SoftwareOutputDevice {
 }  // namespace
 
 FuzzerSoftwareDisplayProvider::FuzzerSoftwareDisplayProvider(
+    ServerSharedBitmapManager* server_shared_bitmap_manager,
     base::Optional<base::FilePath> png_dir_path)
-    : png_dir_path_(png_dir_path),
+    : shared_bitmap_manager_(server_shared_bitmap_manager),
+      png_dir_path_(png_dir_path),
       begin_frame_source_(std::make_unique<StubBeginFrameSource>()) {}
 
 FuzzerSoftwareDisplayProvider::~FuzzerSoftwareDisplayProvider() = default;
@@ -88,8 +90,8 @@ std::unique_ptr<Display> FuzzerSoftwareDisplayProvider::CreateDisplay(
     gpu::SurfaceHandle surface_handle,
     bool gpu_compositing,
     mojom::DisplayClient* display_client,
-    ExternalBeginFrameSource* external_begin_frame_source,
-    SyntheticBeginFrameSource* synthetic_begin_frame_source,
+    BeginFrameSource* begin_frame_source,
+    UpdateVSyncParametersCallback update_vsync_callback,
     const RendererSettings& renderer_settings,
     bool send_swap_size_notifications) {
   auto task_runner = base::ThreadTaskRunnerHandle::Get();
@@ -100,13 +102,13 @@ std::unique_ptr<Display> FuzzerSoftwareDisplayProvider::CreateDisplay(
                     : std::make_unique<SoftwareOutputDevice>();
 
   auto output_surface = std::make_unique<SoftwareOutputSurface>(
-      std::move(software_output_device), synthetic_begin_frame_source);
+      std::move(software_output_device), std::move(update_vsync_callback));
 
   auto scheduler = std::make_unique<DisplayScheduler>(
       begin_frame_source_.get(), task_runner.get(),
       output_surface->capabilities().max_frames_pending);
 
-  return std::make_unique<Display>(&shared_bitmap_manager_, renderer_settings,
+  return std::make_unique<Display>(shared_bitmap_manager_, renderer_settings,
                                    frame_sink_id, std::move(output_surface),
                                    std::move(scheduler), task_runner);
 }

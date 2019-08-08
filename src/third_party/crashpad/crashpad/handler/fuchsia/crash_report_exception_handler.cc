@@ -15,6 +15,8 @@
 #include "handler/fuchsia/crash_report_exception_handler.h"
 
 #include <lib/zx/thread.h>
+#include <zircon/errors.h>
+#include <zircon/status.h>
 #include <zircon/syscalls/exception.h>
 
 #include "base/fuchsia/fuchsia_logging.h"
@@ -23,6 +25,7 @@
 #include "minidump/minidump_user_extension_stream_data_source.h"
 #include "snapshot/fuchsia/process_snapshot_fuchsia.h"
 #include "util/fuchsia/koid_utilities.h"
+#include "util/fuchsia/scoped_task_suspend.h"
 
 namespace crashpad {
 
@@ -57,7 +60,7 @@ CrashReportExceptionHandler::CrashReportExceptionHandler(
     CrashReportDatabase* database,
     CrashReportUploadThread* upload_thread,
     const std::map<std::string, std::string>* process_annotations,
-    const std::map<std::string, base::FilePath>* process_attachments,
+    const std::map<std::string, fuchsia::mem::Buffer>* process_attachments,
     const UserStreamDataSources* user_stream_data_sources)
     : database_(database),
       upload_thread_(upload_thread),
@@ -96,6 +99,8 @@ bool CrashReportExceptionHandler::HandleExceptionHandles(
     const zx::thread& thread,
     const zx::unowned_port& exception_port,
     UUID* local_report_id) {
+  ScopedTaskSuspend suspend(process);
+
   // Now that the thread has been successfully retrieved, it is possible to
   // correctly call zx_task_resume_from_exception() to continue exception
   // processing, even if something else during this function fails.
@@ -162,19 +167,25 @@ bool CrashReportExceptionHandler::HandleExceptionHandles(
 
   if (process_attachments_) {
     // Note that attachments are read at this point each time rather than once
-    // so that if the contents of the file has changed it will be re-read for
+    // so that if the contents of the VMO has changed it will be re-read for
     // each upload (e.g. in the case of a log file).
     for (const auto& it : *process_attachments_) {
+      // TODO(frousseau): make FileWriter VMO-aware.
       FileWriter* writer = new_report->AddAttachment(it.first);
-      if (writer) {
-        std::string contents;
-        if (!LoggingReadEntireFile(it.second, &contents)) {
-          // Not being able to read the file isn't considered fatal, and
-          // should not prevent the report from being processed.
-          continue;
-        }
-        writer->Write(contents.data(), contents.size());
+      if (!writer) {
+        continue;
       }
+      auto data = std::make_unique<uint8_t[]>(it.second.size);
+      const zx_status_t read_status =
+          it.second.vmo.read(data.get(), 0u, it.second.size);
+      if (read_status != ZX_OK) {
+        ZX_LOG(ERROR, read_status)
+            << "could not read VMO for attachment " << it.first;
+        // Not being able to read the VMO isn't considered fatal, and
+        // should not prevent the report from being processed.
+        continue;
+      }
+      writer->Write(data.get(), it.second.size);
     }
   }
 

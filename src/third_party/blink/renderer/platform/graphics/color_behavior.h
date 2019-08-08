@@ -6,11 +6,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COLOR_BEHAVIOR_H_
 
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "ui/gfx/color_space.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT ColorBehavior {
+  DISALLOW_NEW();
+
  public:
   // This specifies to ignore color profiles embedded in images entirely. No
   // transformations will be applied to any pixel data, and no SkImages will be

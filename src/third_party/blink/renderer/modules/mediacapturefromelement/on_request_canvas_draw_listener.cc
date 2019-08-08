@@ -14,12 +14,6 @@ OnRequestCanvasDrawListener::OnRequestCanvasDrawListener(
 
 OnRequestCanvasDrawListener::~OnRequestCanvasDrawListener() = default;
 
-// static
-OnRequestCanvasDrawListener* OnRequestCanvasDrawListener::Create(
-    std::unique_ptr<WebCanvasCaptureHandler> handler) {
-  return MakeGarbageCollected<OnRequestCanvasDrawListener>(std::move(handler));
-}
-
 void OnRequestCanvasDrawListener::SendNewFrame(
     sk_sp<SkImage> image,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider) {

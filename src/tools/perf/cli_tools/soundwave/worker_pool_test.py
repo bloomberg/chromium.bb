@@ -15,6 +15,7 @@ import unittest
 from cli_tools.soundwave import pandas_sqlite
 from cli_tools.soundwave import worker_pool
 from core.external_modules import pandas
+from telemetry import decorators
 
 
 def TestWorker(args):
@@ -30,6 +31,8 @@ def TestWorker(args):
 
 @unittest.skipIf(pandas is None, 'pandas not available')
 class TestWorkerPool(unittest.TestCase):
+
+  @decorators.Disabled('all')  # crbug.com/939777
   def testWorkerPoolRun(self):
     tempdir = tempfile.mkdtemp()
     try:

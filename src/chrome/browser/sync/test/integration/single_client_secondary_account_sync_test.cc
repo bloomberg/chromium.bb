@@ -12,8 +12,8 @@
 #include "chrome/browser/sync/test/integration/secondary_account_helper.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 
 namespace {
@@ -138,6 +138,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
   // Simulate the user opting in to full Sync: Make the account primary, and
   // set first-time setup to complete.
   secondary_account_helper::MakeAccountPrimary(profile(), "user@email.com");
+  GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
   GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
 
   EXPECT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
@@ -149,8 +150,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
   // Make sure that some model type which is not allowed in transport-only mode
   // got activated.
   ASSERT_FALSE(AllowedTypesInStandaloneTransportMode().Has(syncer::BOOKMARKS));
-  ASSERT_TRUE(GetSyncService(0)->GetUserSettings()->GetChosenDataTypes().Has(
-      syncer::BOOKMARKS));
+  ASSERT_TRUE(GetSyncService(0)->GetUserSettings()->GetSelectedTypes().Has(
+      syncer::UserSelectableType::kBookmarks));
   EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::BOOKMARKS));
 }
 #endif  // !defined(OS_CHROMEOS)

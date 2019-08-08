@@ -4,6 +4,7 @@
 
 #include "chrome/services/isolated_xr_device/xr_runtime_provider.h"
 #include "base/bind.h"
+#include "base/trace_event/common/trace_event_common.h"
 #include "chrome/common/chrome_features.h"
 #include "device/vr/buildflags/buildflags.h"
 
@@ -24,6 +25,18 @@ namespace {
 // Poll for device add/remove every 5 seconds.
 constexpr base::TimeDelta kTimeBetweenPollingEvents =
     base::TimeDelta::FromSecondsD(5);
+
+void TraceHardwareAvailable(bool added, device::mojom::XRDeviceId device_id) {
+  int id = static_cast<int>(device_id);
+  if (added) {
+    TRACE_EVENT_INSTANT1("xr", "HardwareAdded", TRACE_EVENT_SCOPE_THREAD, "id",
+                         id);
+  } else {
+    TRACE_EVENT_INSTANT1("xr", "HardwareRemoved", TRACE_EVENT_SCOPE_THREAD,
+                         "id", id);
+  }
+}
+
 }  // namespace
 
 void IsolatedXRRuntimeProvider::PollForDeviceChanges() {
@@ -33,11 +46,13 @@ void IsolatedXRRuntimeProvider::PollForDeviceChanges() {
                             device::OculusDevice::IsHwAvailable();
     if (oculus_available && !oculus_device_) {
       oculus_device_ = std::make_unique<device::OculusDevice>();
+      TraceHardwareAvailable(true, oculus_device_->GetId());
       client_->OnDeviceAdded(oculus_device_->BindXRRuntimePtr(),
                              oculus_device_->BindGamepadFactory(),
                              oculus_device_->BindCompositorHost(),
                              oculus_device_->GetId());
     } else if (oculus_device_ && !oculus_available) {
+      TraceHardwareAvailable(false, oculus_device_->GetId());
       client_->OnDeviceRemoved(oculus_device_->GetId());
       oculus_device_ = nullptr;
     }
@@ -50,11 +65,13 @@ void IsolatedXRRuntimeProvider::PollForDeviceChanges() {
                             device::OpenVRDevice::IsHwAvailable();
     if (openvr_available && !openvr_device_) {
       openvr_device_ = std::make_unique<device::OpenVRDevice>();
+      TraceHardwareAvailable(true, openvr_device_->GetId());
       client_->OnDeviceAdded(openvr_device_->BindXRRuntimePtr(),
                              openvr_device_->BindGamepadFactory(),
                              openvr_device_->BindCompositorHost(),
                              openvr_device_->GetId());
     } else if (openvr_device_ && !openvr_available) {
+      TraceHardwareAvailable(false, openvr_device_->GetId());
       client_->OnDeviceRemoved(openvr_device_->GetId());
       openvr_device_ = nullptr;
     }
@@ -66,10 +83,12 @@ void IsolatedXRRuntimeProvider::PollForDeviceChanges() {
     bool wmr_available = wmr_statics_->IsHardwareAvailable();
     if (wmr_available && !wmr_device_) {
       wmr_device_ = std::make_unique<device::MixedRealityDevice>();
+      TraceHardwareAvailable(true, wmr_device_->GetId());
       client_->OnDeviceAdded(
           wmr_device_->BindXRRuntimePtr(), wmr_device_->BindGamepadFactory(),
           wmr_device_->BindCompositorHost(), wmr_device_->GetId());
     } else if (wmr_device_ && !wmr_available) {
+      TraceHardwareAvailable(false, wmr_device_->GetId());
       client_->OnDeviceRemoved(wmr_device_->GetId());
       wmr_device_ = nullptr;
     }
@@ -122,4 +141,10 @@ IsolatedXRRuntimeProvider::IsolatedXRRuntimeProvider(
     std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref)
     : service_ref_(std::move(service_ref)), weak_ptr_factory_(this) {}
 
-IsolatedXRRuntimeProvider::~IsolatedXRRuntimeProvider() {}
+IsolatedXRRuntimeProvider::~IsolatedXRRuntimeProvider() {
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+  // Explicitly null out wmr_device_ to clean up any COM objects that depend
+  // on being RoInitialized
+  wmr_device_ = nullptr;
+#endif
+}

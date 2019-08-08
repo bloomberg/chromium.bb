@@ -5,6 +5,7 @@
 #ifndef BASE_SAMPLING_HEAP_PROFILER_SAMPLING_HEAP_PROFILER_H_
 #define BASE_SAMPLING_HEAP_PROFILER_SAMPLING_HEAP_PROFILER_H_
 
+#include <atomic>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -124,13 +125,21 @@ class BASE_EXPORT SamplingHeapProfiler
   // deleted.
   std::unordered_set<const char*> strings_;
 
+  // Mutex to make |running_sessions_| and Add/Remove samples observer access
+  // atomic.
+  Lock start_stop_mutex_;
+
+  // Number of the running sessions.
+  int running_sessions_ = 0;
+
   // Last sample ordinal used to mark samples recorded during single session.
-  uint32_t last_sample_ordinal_ = 1;
+  std::atomic<uint32_t> last_sample_ordinal_{1};
 
   // Whether it should record thread names.
-  bool record_thread_names_ = false;
+  std::atomic<bool> record_thread_names_{false};
 
   friend class NoDestructor<SamplingHeapProfiler>;
+  friend class SamplingHeapProfilerTest;
 
   DISALLOW_COPY_AND_ASSIGN(SamplingHeapProfiler);
 };

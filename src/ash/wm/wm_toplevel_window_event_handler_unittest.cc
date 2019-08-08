@@ -30,7 +30,6 @@ class WmToplevelWindowEventHandlerTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    TabletModeControllerTestApi().EnterTabletMode();
 
     dragged_window_ = CreateTestWindow();
     non_dragged_window_ = CreateTestWindow();
@@ -68,7 +67,7 @@ class WmToplevelWindowEventHandlerTest : public AshTestBase {
 // the overview mode.
 TEST_F(WmToplevelWindowEventHandlerTest,
        TapWindowInOverviewGridDuringWindowDrag) {
-  ASSERT_TRUE(TabletModeControllerTestApi().IsTabletModeStarted());
+  TabletModeControllerTestApi().EnterTabletMode();
 
   SendGestureEvent(gfx::Point(0, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
   // Drag the window to the right corner to avoid overlap with
@@ -96,8 +95,48 @@ TEST_F(WmToplevelWindowEventHandlerTest,
   EXPECT_FALSE(overview_controller->overview_session());
 }
 
+// In tablet mode, the window's resizability shouldn't be taken into account
+// when dragging from the top. Regression test for https://crbug.com/1444132
+TEST_F(WmToplevelWindowEventHandlerTest,
+       NonResizableWindowsCanBeDraggedInTabletMode) {
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  dragged_window_->SetProperty(aura::client::kResizeBehaviorKey,
+                               ws::mojom::kResizeBehaviorNone);
+
+  SendGestureEvent(gfx::Point(0, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
+  SendGestureEvent(gfx::Point(700, 500), 700, 500,
+                   ui::ET_GESTURE_SCROLL_UPDATE);
+  EXPECT_TRUE(wm::GetWindowState(dragged_window_.get())->is_dragged());
+
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  EXPECT_TRUE(overview_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->overview_session()->IsWindowInOverview(
+      non_dragged_window_.get()));
+}
+
+// Contrary to tablet mode, in non-tablet mode, non resizable windows cannot be
+// dragged.
+TEST_F(WmToplevelWindowEventHandlerTest,
+       NonResizableWindowsCannotBeDraggedInClamshellMode) {
+  ASSERT_FALSE(TabletModeControllerTestApi().IsTabletModeStarted());
+
+  dragged_window_->SetProperty(aura::client::kResizeBehaviorKey,
+                               ws::mojom::kResizeBehaviorNone);
+
+  SendGestureEvent(gfx::Point(0, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
+  SendGestureEvent(gfx::Point(700, 500), 700, 500,
+                   ui::ET_GESTURE_SCROLL_UPDATE);
+  EXPECT_FALSE(wm::GetWindowState(dragged_window_.get())->is_dragged());
+
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  EXPECT_FALSE(overview_controller->IsSelecting());
+}
+
 // Tests that the window drag will be reverted if the screen is being rotated.
 TEST_F(WmToplevelWindowEventHandlerTest, DisplayConfigurationChangeTest) {
+  TabletModeControllerTestApi().EnterTabletMode();
+
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
   display::test::ScopedSetInternalDisplayId set_internal(display_manager,

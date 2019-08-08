@@ -32,6 +32,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1929939181775079593">Chromium svarar inte. Vill du starta om?</translation>
 <translation id="1966382378801805537">Chromium kan inte fastställa eller ange standardwebbläsaren</translation>
 <translation id="2008474315282236005">Ett objekt tas bort från enheten. Logga in i Chromium som <ph name="USER_EMAIL" /> om du vill kunna återställa datan senare.</translation>
+<translation id="2037988709973327241"><ph name="FILE_NAME" /> är skadlig och har blockerats av Chromium. Du skyddas med Avancerat skydd.</translation>
 <translation id="2117378023188580026">Administratören meddelar att du bör starta om Chromium så att uppdateringen tillämpas</translation>
 <translation id="2119636228670142020">Om &amp;Chromium OS</translation>
 <translation id="2178765360243863853">Starta om Chromium nu</translation>
@@ -52,6 +53,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2718390899429598676">Din data krypteras i Chromium för att öka säkerheten.</translation>
 <translation id="2770231113462710648">Ändra standardwebbläsare till:</translation>
 <translation id="2799223571221894425">Starta om</translation>
+<translation id="2838154144102149890">Chromium måste avslutas på datorn före uppdateringen. Detta kan leda till att andra användare som är inloggade på datorn förlorar ändringar som inte har sparats.</translation>
 <translation id="2847479871509788944">Ta bort från Chromium …</translation>
 <translation id="2886012850691518054">Valfritt: Hjälp till att göra Chromium bättre genom att automatiskt skicka användningsstatistik och felrapporter till Google.</translation>
 <translation id="2898082584336937987">Installera Chromium på mobilen. Vi skickar ett sms till mobilen: <ph name="PHONE_NUMBER" /></translation>
@@ -63,6 +65,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="3068515742935458733">Hjälp oss att göra Chromium bättre genom att skicka felrapporter och <ph name="UMA_LINK" /> till Google</translation>
 <translation id="3103660991484857065">Det gick inte att packa upp arkivet med installationsfilen. Ladda ned Chromium igen.</translation>
 <translation id="3130323860337406239">Chromium använder din mikrofon.</translation>
+<translation id="3154325651427862069"><ph name="FILE_NAME" /> kan vara skadlig och har blockerats av Chromium. Du skyddas med Avancerat skydd.</translation>
 <translation id="3155163173539279776">Starta om Chromium</translation>
 <translation id="3179665906251668410">Öppna länken i ett inko&amp;gnitofönster i Chromium</translation>
 <translation id="3190315855212034486">Hoppsan! Chromium har kraschat. Vill du starta om nu?</translation>
@@ -90,6 +93,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="388648406173476553">Anpassa och kontrollera Chromium. Någonting behöver ses över. Klicka här för mer information.</translation>
 <translation id="3889543394854987837">Öppna Chromium genom att klicka på ditt namn och börja surfa.</translation>
 <translation id="3898493977366060150">Surfa smart med Google</translation>
+<translation id="3931244652999881512">Filen är farlig och har blockerats av Chromium. Du skyddas med Avancerat skydd.</translation>
 <translation id="3965668104013180445">{0,plural, =1{Om en timme startas Chromium OS om}other{Om # timmar startas Chromium OS om}}</translation>
 <translation id="4036079820698952681">Hjälp oss att förbättra Chromium genom att rapportera dina <ph name="BEGIN_LINK" />aktuella inställningar<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Den senaste versionen har viktiga säkerhetsförbättringar och nya funktioner.</translation>
@@ -140,6 +144,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5680901439334282664">Logga in i Chromium</translation>
 <translation id="5698481217667032250">Visa Chromium på det här språket</translation>
 <translation id="5712253116097046984">Administratören meddelar att du bör starta om Chromium OS så att uppdateringen tillämpas</translation>
+<translation id="5726979195371243087">Filen kan vara farlig och har blockerats av Chromium. Du skyddas med Avancerat skydd.</translation>
 <translation id="5756484659843248772">Användargränssnittet i Chromium OS visas på det här språket</translation>
 <translation id="5768914737813585044">Visa Chromium OS på det här språket</translation>
 <translation id="5796460469508169315">Chromium är nästan klart.</translation>
@@ -185,6 +190,7 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="6810143991807788455">Hjälp oss att förbättra Chromium genom att rapportera dina aktuella inställningar</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (har kopierats till Chromium)</translation>
+<translation id="6868056391275687737">Andra kopior av Chromium körs. Stäng dem om du vill uppdatera.</translation>
 <translation id="6893813176749746474">Chromium har uppdaterats men du har inte använt det på över 30 dagar.</translation>
 <translation id="6964305034639999644">Öppna länken i ett inko&amp;gnitofönster i Chromium.</translation>
 <translation id="6970811910055250180">Enheten uppdateras ...</translation>
@@ -192,7 +198,6 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="705851970750939768">Uppdatera Chromium</translation>
 <translation id="7066436765290594559">Det gick inte att synkronisera data med Chromium. Uppdatera lösenfrasen för synkronisering.</translation>
 <translation id="7067091210845072982">Om en bild inte har någon användbar beskrivning görs ett försök att beskriva den åt dig i Chromium. Bilderna skickas till Google så att beskrivningen kan genereras.</translation>
-<translation id="7162152143154757523">Med Chromiums stavningskontroll skickas det du skriver i webbläsaren till Googles servrar så att du kan använda samma stavningsteknik som används i Googles webbsökning.</translation>
 <translation id="7196312274710523067">Det gick inte att starta Chromium. Försök igen.</translation>
 <translation id="7205698830395646142">Dölj i Chromium-menyn</translation>
 <translation id="7223968959479464213">Aktivitetshanteraren – Chromium</translation>
@@ -211,6 +216,7 @@ Kom ihåg att låsa din profil när du inte använder Chromium om <ph name="NEW_
 <ph name="BEGIN_LINK_2" />Läs mer<ph name="END_LINK_2" />
 
 Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_EMAIL" />.</translation>
+<translation id="7349591376906416160">Systemadministratören har konfigurerat Chromium så att <ph name="TARGET_URL_HOSTNAME" /> öppnas i <ph name="ALTERNATIVE_BROWSER_NAME" />.</translation>
 <translation id="7448255348454382571">Starta om Chromium OS</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium Dev</translation>
 <translation id="7451052299415159299">Du behöver ge Chromium behörighet att använda kameran på webbplatsen</translation>
@@ -254,6 +260,8 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> är uppdaterad.</translation>
 <translation id="8697124171261953979">Det styr också vilken sida som visas när du startar Chromium eller söker i adressfältet.</translation>
 <translation id="8704119203788522458">Det här är Chromium</translation>
+<translation id="8704255848199359374">Detta använder samma stavningskontroll som Google Sök. Text som du anger i webbläsaren skickas till Google. Du kan när som helst ändra detta i inställningarna.</translation>
+<translation id="8748383401829947534">Avsluta alla kopior av Chromium.</translation>
 <translation id="8796602469536043152">Du behöver ge Chromium behörighet att använda kameran och mikrofonen på webbplatsen</translation>
 <translation id="8803635938069941624">Villkor för Chromium OS</translation>
 <translation id="8821041990367117597">Chromium kunde inte synkronisera data eftersom inloggningsuppgifterna för kontot är inaktuella.</translation>

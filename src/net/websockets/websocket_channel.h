@@ -213,7 +213,7 @@ class NET_EXPORT WebSocketChannel {
 
   // Authentication request from WebSocketStream::CreateAndConnectStream().
   // Forwards the request to the event interface.
-  int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
+  int OnAuthRequired(const AuthChallengeInfo& auth_info,
                      scoped_refptr<HttpResponseHeaders> response_headers,
                      const IPEndPoint& remote_endpoint,
                      base::OnceCallback<void(const AuthCredentials*)> callback,

@@ -25,7 +25,6 @@ class CONTENT_EXPORT BrowserAccessibilityWin : public BrowserAccessibility {
   //
   // BrowserAccessibility methods.
   //
-  void OnSubtreeWillBeDeleted() override;
   bool IsNative() const override;
   void OnLocationChanged() override;
   base::string16 GetText() const override;

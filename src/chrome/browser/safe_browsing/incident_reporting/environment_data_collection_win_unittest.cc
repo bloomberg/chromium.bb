@@ -126,10 +126,8 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, RecordLspFeature) {
 TEST(SafeBrowsingEnvironmentDataCollectionWinTest, VerifyLoadedModules) {
   //  Load the test modules.
   std::vector<base::ScopedNativeLibrary> test_dlls(kTestDllNamesCount);
-  for (size_t i = 0; i < kTestDllNamesCount; ++i) {
-    test_dlls[i].Reset(
-        LoadNativeLibrary(base::FilePath(kTestDllNames[i]), NULL));
-  }
+  for (size_t i = 0; i < kTestDllNamesCount; ++i)
+    test_dlls[i] = base::ScopedNativeLibrary(base::FilePath(kTestDllNames[i]));
 
   // Edit the first byte of the function exported by the first module. Calling
   // GetModuleHandle so we do not increment the library ref count.

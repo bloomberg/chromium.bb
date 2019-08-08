@@ -31,7 +31,6 @@ group("safe_browsing_db_shared") {
     ":hit_report",
     ":safebrowsing_proto",
     ":util",
-    ":v4_feature_list",  # Used by SafeBrowsingService
     "//components/safe_browsing/common:safe_browsing_prefs",
   ]
 }
@@ -135,17 +134,6 @@ static_library("v4_database") {
   ]
 }
 
-static_library("v4_feature_list") {
-  sources = [
-    "v4_feature_list.cc",
-    "v4_feature_list.h",
-  ]
-  deps = [
-    "//base",
-    "//components/safe_browsing:features",
-  ]
-}
-
 static_library("v4_get_hash_protocol_manager") {
   sources = [
     "v4_get_hash_protocol_manager.cc",
@@ -176,7 +164,6 @@ static_library("v4_local_database_manager") {
     ":hit_report",
     ":safebrowsing_proto",
     ":v4_database",
-    ":v4_feature_list",
     ":v4_get_hash_protocol_manager",
     ":v4_protocol_manager_util",
     ":v4_update_protocol_manager",

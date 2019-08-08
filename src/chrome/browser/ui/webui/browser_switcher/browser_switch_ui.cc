@@ -29,6 +29,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -71,16 +72,38 @@ content::WebUIDataSource* CreateBrowserSwitchUIHTMLSource(
   auto* service = GetBrowserSwitcherService(web_ui);
   source->AddInteger("launchDelay", service->prefs().GetDelay());
 
-  source->AddLocalizedString("countdownTitle",
-                             IDS_ABOUT_BROWSER_SWITCH_COUNTDOWN_TITLE);
-  source->AddLocalizedString("description",
-                             IDS_ABOUT_BROWSER_SWITCH_DESCRIPTION);
-  source->AddLocalizedString("errorTitle",
-                             IDS_ABOUT_BROWSER_SWITCH_ERROR_TITLE);
-  source->AddLocalizedString("genericError",
-                             IDS_ABOUT_BROWSER_SWITCH_GENERIC_ERROR);
-  source->AddLocalizedString("openingTitle",
-                             IDS_ABOUT_BROWSER_SWITCH_OPENING_TITLE);
+  std::string browser_name = service->driver()->GetBrowserName();
+  source->AddString("browserName", browser_name);
+
+  if (browser_name.empty()) {
+    // Browser name could not be auto-detected. Say "alternative browser"
+    // instead of naming the browser.
+    source->AddLocalizedString(
+        "countdownTitle",
+        IDS_ABOUT_BROWSER_SWITCH_COUNTDOWN_TITLE_UNKNOWN_BROWSER);
+    source->AddLocalizedString(
+        "description", IDS_ABOUT_BROWSER_SWITCH_DESCRIPTION_UNKNOWN_BROWSER);
+    source->AddLocalizedString(
+        "errorTitle", IDS_ABOUT_BROWSER_SWITCH_ERROR_TITLE_UNKNOWN_BROWSER);
+    source->AddLocalizedString(
+        "genericError", IDS_ABOUT_BROWSER_SWITCH_GENERIC_ERROR_UNKNOWN_BROWSER);
+    source->AddLocalizedString(
+        "openingTitle", IDS_ABOUT_BROWSER_SWITCH_OPENING_TITLE_UNKNOWN_BROWSER);
+  } else {
+    // Browser name was auto-detected. Name it in the text.
+    source->AddLocalizedString(
+        "countdownTitle",
+        IDS_ABOUT_BROWSER_SWITCH_COUNTDOWN_TITLE_KNOWN_BROWSER);
+    source->AddLocalizedString(
+        "description", IDS_ABOUT_BROWSER_SWITCH_DESCRIPTION_KNOWN_BROWSER);
+    source->AddLocalizedString(
+        "errorTitle", IDS_ABOUT_BROWSER_SWITCH_ERROR_TITLE_KNOWN_BROWSER);
+    source->AddLocalizedString(
+        "genericError", IDS_ABOUT_BROWSER_SWITCH_GENERIC_ERROR_KNOWN_BROWSER);
+    source->AddLocalizedString(
+        "openingTitle", IDS_ABOUT_BROWSER_SWITCH_OPENING_TITLE_KNOWN_BROWSER);
+  }
+
   source->AddLocalizedString("protocolError",
                              IDS_ABOUT_BROWSER_SWITCH_PROTOCOL_ERROR);
   source->AddLocalizedString("title", IDS_ABOUT_BROWSER_SWITCH_TITLE);

@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/svg/svg_animation_element.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 #include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -41,7 +42,7 @@ void SVGPreserveAspectRatio::SetDefault() {
 }
 
 SVGPreserveAspectRatio* SVGPreserveAspectRatio::Clone() const {
-  SVGPreserveAspectRatio* preserve_aspect_ratio = Create();
+  auto* preserve_aspect_ratio = MakeGarbageCollected<SVGPreserveAspectRatio>();
 
   preserve_aspect_ratio->align_ = align_;
   preserve_aspect_ratio->meet_or_slice_ = meet_or_slice_;

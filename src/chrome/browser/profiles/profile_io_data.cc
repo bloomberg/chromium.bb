@@ -34,7 +34,6 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context_getter.h"
-#include "chrome/browser/net/failing_url_request_interceptor.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/policy/cloud/policy_header_service_factory.h"
@@ -135,7 +134,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/tpm/tpm_token_info_getter.h"
@@ -261,7 +260,7 @@ void GetTPMInfoForUserOnUIThread(const AccountId& account_id,
            << " " << account_id.Serialize() << " " << username_hash;
   std::unique_ptr<chromeos::TPMTokenInfoGetter> scoped_token_info_getter =
       chromeos::TPMTokenInfoGetter::CreateForUserToken(
-          account_id, chromeos::DBusThreadManager::Get()->GetCryptohomeClient(),
+          account_id, chromeos::CryptohomeClient::Get(),
           base::ThreadTaskRunnerHandle::Get());
   chromeos::TPMTokenInfoGetter* token_info_getter =
       scoped_token_info_getter.get();
@@ -435,6 +434,10 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
   allowed_domains_for_apps_.Init(prefs::kAllowedDomainsForApps, pref_service);
   allowed_domains_for_apps_.MoveToThread(
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+  signed_exchange_enabled_.Init(prefs::kSignedHTTPExchangeEnabled,
+                                pref_service);
+  signed_exchange_enabled_.MoveToThread(
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
@@ -1141,6 +1144,10 @@ void ProfileIOData::SetUpJobFactoryDefaultsForBuilder(
       url::kAboutScheme,
       std::make_unique<about_handler::AboutProtocolHandler>());
 
+  // File support is needed for PAC scripts that use file URLs.
+  // TODO(crbug.com/839566): remove file support for all cases.
+  builder->set_file_enabled(true);
+
   builder->SetInterceptors(std::move(request_interceptors));
 
   if (protocol_handler_interceptor) {
@@ -1166,6 +1173,7 @@ void ProfileIOData::ShutdownOnUIThread(
   safe_browsing_whitelist_domains_.Destroy();
   network_prediction_options_.Destroy();
   incognito_availibility_pref_.Destroy();
+  signed_exchange_enabled_.Destroy();
 #if BUILDFLAG(ENABLE_PLUGINS)
   always_open_pdf_externally_.Destroy();
 #endif

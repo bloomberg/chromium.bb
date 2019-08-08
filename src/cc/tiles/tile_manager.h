@@ -14,7 +14,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "cc/base/unique_notifier.h"
@@ -135,7 +134,11 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
               scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner,
               size_t scheduled_raster_task_limit,
               const TileManagerSettings& tile_manager_settings);
+
+  TileManager(const TileManager&) = delete;
   ~TileManager() override;
+
+  TileManager& operator=(const TileManager&) = delete;
 
   // Assigns tile memory and schedules work to prepare tiles for drawing.
   // This step occurs after Commit and at most once per BeginFrame. It can be
@@ -470,8 +473,6 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   base::WeakPtrFactory<TileManager> task_set_finished_weak_ptr_factory_;
   // The |ready_to_draw_callback_weak_ptr_factory_| is never invalidated.
   base::WeakPtrFactory<TileManager> ready_to_draw_callback_weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(TileManager);
 };
 
 }  // namespace cc

@@ -27,7 +27,7 @@
 #include "net/http/http_stream_factory.h"
 #include "net/quic/quic_utils_chromium.h"
 #include "net/spdy/spdy_session_pool.h"
-#include "net/third_party/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

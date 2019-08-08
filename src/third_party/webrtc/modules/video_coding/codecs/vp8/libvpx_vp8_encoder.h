@@ -18,9 +18,8 @@
 #include "api/video/encoded_image.h"
 #include "api/video/video_frame.h"
 #include "api/video_codecs/video_encoder.h"
+#include "api/video_codecs/vp8_frame_buffer_controller.h"
 #include "api/video_codecs/vp8_frame_config.h"
-#include "api/video_codecs/vp8_temporal_layers.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "modules/video_coding/codecs/vp8/include/vp8.h"
 #include "modules/video_coding/codecs/vp8/libvpx_interface.h"
 #include "modules/video_coding/include/video_codec_interface.h"
@@ -36,7 +35,12 @@ namespace webrtc {
 class LibvpxVp8Encoder : public VideoEncoder {
  public:
   LibvpxVp8Encoder();
+  explicit LibvpxVp8Encoder(std::unique_ptr<Vp8FrameBufferControllerFactory>
+                                frame_buffer_controller_factory);
   explicit LibvpxVp8Encoder(std::unique_ptr<LibvpxInterface> interface);
+  LibvpxVp8Encoder(std::unique_ptr<Vp8FrameBufferControllerFactory>
+                       frame_buffer_controller_factory,
+                   std::unique_ptr<LibvpxInterface> interface);
   ~LibvpxVp8Encoder() override;
 
   int Release() override;
@@ -46,21 +50,23 @@ class LibvpxVp8Encoder : public VideoEncoder {
                  size_t max_payload_size) override;
 
   int Encode(const VideoFrame& input_image,
-             const CodecSpecificInfo* codec_specific_info,
-             const std::vector<FrameType>* frame_types) override;
+             const std::vector<VideoFrameType>* frame_types) override;
 
   int RegisterEncodeCompleteCallback(EncodedImageCallback* callback) override;
 
-  int SetRateAllocation(const VideoBitrateAllocation& bitrate,
-                        uint32_t new_framerate) override;
+  void SetRates(const RateControlParameters& parameters) override;
+
+  void OnPacketLossRateUpdate(float packet_loss_rate) override;
+
+  void OnRttUpdate(int64_t rtt_ms) override;
+
+  void OnLossNotification(const LossNotification& loss_notification) override;
 
   EncoderInfo GetEncoderInfo() const override;
 
   static vpx_enc_frame_flags_t EncodeFlags(const Vp8FrameConfig& references);
 
  private:
-  void SetupTemporalLayers(const VideoCodec& codec);
-
   // Get the cpu_speed setting for encoder based on resolution and/or platform.
   int GetCpuSpeed(int width, int height);
 
@@ -101,7 +107,9 @@ class LibvpxVp8Encoder : public VideoEncoder {
   int cpu_speed_default_;
   int number_of_cores_;
   uint32_t rc_max_intra_target_;
-  std::vector<std::unique_ptr<Vp8TemporalLayers>> temporal_layers_;
+  const std::unique_ptr<Vp8FrameBufferControllerFactory>
+      frame_buffer_controller_factory_;
+  std::unique_ptr<Vp8FrameBufferController> frame_buffer_controller_;
   std::vector<bool> key_frame_request_;
   std::vector<bool> send_stream_;
   std::vector<int> cpu_speed_;

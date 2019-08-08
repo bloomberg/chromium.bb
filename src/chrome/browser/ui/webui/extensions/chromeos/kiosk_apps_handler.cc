@@ -111,9 +111,9 @@ KioskAppsHandler::KioskAppsHandler(OwnerSettingsServiceChromeOS* service)
       weak_ptr_factory_(this) {}
 
 KioskAppsHandler::~KioskAppsHandler() {
-  // TODO(scottchen): This is needed because OnJavascriptDisallowed only called
+  // TODO(tommycli): This is needed because OnJavascriptDisallowed only called
   // with refresh or off-page navigation, otherwise DCHECK triggered when
-  // exiting. Ask tommycli for more information.
+  // exiting.
   kiosk_app_manager_->RemoveObserver(this);
 }
 

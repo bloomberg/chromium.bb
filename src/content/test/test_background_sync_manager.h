@@ -12,20 +12,18 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 
-namespace base {
-class TimeDelta;
-}
-
 namespace url {
 class Origin;
-}
+}  // namespace url
 
 namespace content {
 
 struct BackgroundSyncParameters;
+class DevToolsBackgroundServicesContext;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerVersion;
 
@@ -41,8 +39,9 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
       base::RepeatingCallback<void(scoped_refptr<ServiceWorkerVersion>,
                                    ServiceWorkerVersion::StatusCallback)>;
 
-  explicit TestBackgroundSyncManager(
-      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
+  TestBackgroundSyncManager(
+      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+      scoped_refptr<DevToolsBackgroundServicesContext> devtools_context);
   ~TestBackgroundSyncManager() override;
 
   // Force a call to the internal Init() method.
@@ -86,6 +85,18 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
   const BackgroundSyncParameters* background_sync_parameters() const {
     return parameters_.get();
   }
+
+  bool IsBrowserWakeupScheduled() const {
+    return !soonest_one_shot_wakeup_delta_.is_max();
+  }
+
+  bool EqualsSoonestOneShotWakeupDelta(base::TimeDelta compare_to) const {
+    return soonest_one_shot_wakeup_delta_ == compare_to;
+  }
+
+  // Override to allow the test to cache the result.
+  base::TimeDelta GetSoonestWakeupDelta(
+      blink::mojom::BackgroundSyncType sync_type) override;
 
  protected:
   // Override to allow delays to be injected by tests.
@@ -144,6 +155,7 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
   DispatchSyncCallback dispatch_sync_callback_;
   base::OnceClosure delayed_task_;
   base::TimeDelta delayed_task_delta_;
+  base::TimeDelta soonest_one_shot_wakeup_delta_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBackgroundSyncManager);
 };

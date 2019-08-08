@@ -352,9 +352,9 @@ float CXFA_TextLayout::DoSplitLayout(size_t szBlockIndex,
       szLineIndex = m_Blocks[szBlockIndex].szIndex;
     else
       szLineIndex = GetNextIndexFromLastBlockData();
-    if (!m_pLoader->blockHeights.empty()) {
-      for (size_t i = 0; i < szBlockIndex; ++i)
-        fLinePos -= m_pLoader->blockHeights[i].fHeight;
+    for (size_t i = 0;
+         i < std::min(szBlockIndex, m_pLoader->blockHeights.size()); ++i) {
+      fLinePos -= m_pLoader->blockHeights[i].fHeight;
     }
   }
 
@@ -716,9 +716,9 @@ bool CXFA_TextLayout::LoadRichText(
       if (m_bBlockContinue || (m_pLoader && pXMLNode == m_pLoader->pXMLNode)) {
         m_bBlockContinue = true;
       }
-      if (pXMLNode->GetType() == FX_XMLNODE_Text) {
+      if (pXMLNode->GetType() == CFX_XMLNode::Type::kText) {
         bContentNode = true;
-      } else if (pXMLNode->GetType() == FX_XMLNODE_Element) {
+      } else if (pXMLNode->GetType() == CFX_XMLNode::Type::kElement) {
         pElement = static_cast<const CFX_XMLElement*>(pXMLNode);
         wsName = pElement->GetLocalTagName();
       }

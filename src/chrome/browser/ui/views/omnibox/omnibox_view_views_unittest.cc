@@ -56,18 +56,8 @@ namespace {
 
 class TestingOmniboxView : public OmniboxViewViews {
  public:
-  enum BaseTextEmphasis {
-    DEEMPHASIZED,
-    EMPHASIZED,
-    UNSET,
-  };
-
   TestingOmniboxView(OmniboxEditController* controller,
                      std::unique_ptr<OmniboxClient> client);
-
-  static BaseTextEmphasis to_base_text_emphasis(bool emphasize) {
-    return emphasize ? EMPHASIZED : DEEMPHASIZED;
-  }
 
   using views::Textfield::GetRenderText;
 
@@ -81,7 +71,7 @@ class TestingOmniboxView : public OmniboxViewViews {
 
   Range scheme_range() const { return scheme_range_; }
   Range emphasis_range() const { return emphasis_range_; }
-  BaseTextEmphasis base_text_emphasis() const { return base_text_emphasis_; }
+  bool base_text_emphasis() const { return base_text_emphasis_; }
 
   // OmniboxViewViews:
   void EmphasizeURLComponents() override;
@@ -108,7 +98,7 @@ class TestingOmniboxView : public OmniboxViewViews {
   Range emphasis_range_;
 
   // SetEmphasis() logs whether the base color of the text is emphasized.
-  BaseTextEmphasis base_text_emphasis_ = UNSET;
+  bool base_text_emphasis_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingOmniboxView);
 };
@@ -122,7 +112,7 @@ TestingOmniboxView::TestingOmniboxView(OmniboxEditController* controller,
                        gfx::FontList()) {}
 
 void TestingOmniboxView::ResetEmphasisTestState() {
-  base_text_emphasis_ = UNSET;
+  base_text_emphasis_ = false;
   emphasis_range_ = Range::InvalidRange();
   scheme_range_ = Range::InvalidRange();
 }
@@ -160,7 +150,7 @@ void TestingOmniboxView::UpdatePopup() {
 
 void TestingOmniboxView::SetEmphasis(bool emphasize, const Range& range) {
   if (range == Range::InvalidRange()) {
-    base_text_emphasis_ = to_base_text_emphasis(emphasize);
+    base_text_emphasis_ = emphasize;
     return;
   }
 
@@ -476,8 +466,7 @@ TEST_F(OmniboxViewViewsTest, Emphasis) {
     SCOPED_TRACE(test_case.input);
 
     SetAndEmphasizeText(test_case.input, false);
-    EXPECT_EQ(TestingOmniboxView::to_base_text_emphasis(
-                  test_case.expected_base_text_emphasized),
+    EXPECT_EQ(test_case.expected_base_text_emphasized,
               omnibox_view()->base_text_emphasis());
     EXPECT_EQ(test_case.expected_emphasis_range,
               omnibox_view()->emphasis_range());
@@ -485,8 +474,7 @@ TEST_F(OmniboxViewViewsTest, Emphasis) {
 
     if (test_case.expected_scheme_range.IsValid()) {
       SetAndEmphasizeText(test_case.input, true);
-      EXPECT_EQ(TestingOmniboxView::to_base_text_emphasis(
-                    test_case.expected_base_text_emphasized),
+      EXPECT_EQ(test_case.expected_base_text_emphasized,
                 omnibox_view()->base_text_emphasis());
       EXPECT_EQ(test_case.expected_emphasis_range,
                 omnibox_view()->emphasis_range());
@@ -757,7 +745,7 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
   }
 
   ui::MouseEvent CreateMouseEvent(ui::EventType type, const gfx::Point& point) {
-    return ui::MouseEvent(type, point, gfx::Point(), ui::EventTimeForNow(),
+    return ui::MouseEvent(type, point, point, ui::EventTimeForNow(),
                           ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   }
 
@@ -1011,6 +999,17 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseDoubleClickDrag) {
   EXPECT_EQ(12U, start);
   EXPECT_EQ(19U, end);
 
+  // Expect that negligible drags are ignored immediately after unelision, as
+  // the text has likely shifted, and we don't want to accidentally change the
+  // selection.
+  gfx::Point drag_point = GetPointInTextAtXOffset(4 * kCharacterWidth);
+  drag_point.Offset(1, 1);  // Offset test point one pixel in each dimension.
+  omnibox_textfield()->OnMouseDragged(
+      CreateMouseEvent(ui::ET_MOUSE_DRAGGED, drag_point));
+  omnibox_view()->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(12U, start);
+  EXPECT_EQ(19U, end);
+
   // Expect that dragging to the fourth character of the full URL (between the
   // the 'p' and the 's' of https), will word-select the scheme, subdomain, and
   // domain, so the new selection will be |https://www.example|.com. The
@@ -1195,8 +1194,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest,
   omnibox_view()->EmphasizeURLComponents();
 
   // Expect that no part is de-emphasized, there is no "scheme" range.
-  EXPECT_EQ(TestingOmniboxView::BaseTextEmphasis::EMPHASIZED,
-            omnibox_view()->base_text_emphasis());
+  EXPECT_TRUE(omnibox_view()->base_text_emphasis());
   EXPECT_FALSE(omnibox_view()->emphasis_range().IsValid());
   EXPECT_FALSE(omnibox_view()->scheme_range().IsValid());
 }

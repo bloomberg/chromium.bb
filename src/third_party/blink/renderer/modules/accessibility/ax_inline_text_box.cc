@@ -43,13 +43,6 @@ AXInlineTextBox::AXInlineTextBox(
     AXObjectCacheImpl& ax_object_cache)
     : AXObject(ax_object_cache), inline_text_box_(std::move(inline_text_box)) {}
 
-AXInlineTextBox* AXInlineTextBox::Create(
-    scoped_refptr<AbstractInlineTextBox> inline_text_box,
-    AXObjectCacheImpl& ax_object_cache) {
-  return MakeGarbageCollected<AXInlineTextBox>(std::move(inline_text_box),
-                                               ax_object_cache);
-}
-
 void AXInlineTextBox::Init() {}
 
 void AXInlineTextBox::Detach() {
@@ -140,8 +133,9 @@ AXObject* AXInlineTextBox::ComputeParent() const {
   DCHECK(!IsDetached());
   if (!inline_text_box_ || !ax_object_cache_)
     return nullptr;
-
   LineLayoutText line_layout_text = inline_text_box_->GetLineLayoutItem();
+  if (!line_layout_text)
+    return nullptr;
   return ax_object_cache_->GetOrCreate(
       LineLayoutAPIShim::LayoutObjectFrom(line_layout_text));
 }

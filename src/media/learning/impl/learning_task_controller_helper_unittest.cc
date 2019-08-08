@@ -43,6 +43,8 @@ class LearningTaskControllerHelperTest : public testing::Test {
     example_.features.push_back(FeatureValue(3));
     example_.target_value = TargetValue(123);
     example_.weight = 100u;
+
+    id_ = base::UnguessableToken::Create();
   }
 
   void CreateClient(bool include_fp) {
@@ -87,7 +89,7 @@ class LearningTaskControllerHelperTest : public testing::Test {
 
   LearningTask task_;
 
-  LearningTaskController::ObservationId id_ = 1;
+  base::UnguessableToken id_;
 
   LabelledExample example_;
 };

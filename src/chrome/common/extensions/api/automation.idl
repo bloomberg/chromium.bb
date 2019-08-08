@@ -23,6 +23,7 @@
     clicked,
     documentSelectionChanged,
     documentTitleChanged,
+    endOfTest,
     expandedChanged,
     focus,
     focusContext,
@@ -294,8 +295,10 @@
     focus,
     getImageData,
     getTextLocation,
+    hideTooltip,
     hitTest,
     increment,
+    internalInvalidateTree,
     loadInlineTextBoxes,
     replaceSelectedText,
     scrollBackward,
@@ -311,7 +314,9 @@
     setSelection,
     setSequentialFocusNavigationStartingPoint,
     setValue,
-    showContextMenu
+    showContextMenu,
+    signalEndOfTest,
+    showTooltip
   };
 
   // Possible changes to the automation tree. For any given atomic change
@@ -714,6 +719,19 @@
     // The affinity of the tree selection focus, if any.
     DOMString? focusAffinity;
 
+    // The selection start node of the tree selection, if any.
+    AutomationNode? selectionStartObject;
+    // The selection start offset of the tree selection, if any.
+    long? selectionStartOffset;
+    // The affinity of the tree selection start, if any.
+    DOMString? selectionStartAffinity;
+    // The selection end node of the tree selection, if any.
+    AutomationNode? selectionEndObject;
+    // The selection end offset of the tree selection, if any.
+    long? selectionEndOffset;
+    // The affinity of the tree selection end, if any.
+    DOMString? selectionEndAffinity;
+
     //
     // Range attributes.
     //
@@ -907,6 +925,12 @@
 
     // Indicates whether this node is selected, unselected, or neither.
     boolean? selected;
+
+    // Indicates the font size of this node.
+    long? fontSize;
+
+    // Indicates the font family.
+    DOMString fontFamily;
 
     //
     // Walking the tree.

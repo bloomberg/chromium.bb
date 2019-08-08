@@ -65,12 +65,13 @@ WorkerBackingThread& AnimationAndPaintWorkletThread::GetWorkerBackingThread() {
               ->GetThread();
 }
 
-static void CollectAllGarbageOnThread(base::WaitableEvent* done_event) {
-  blink::ThreadState::Current()->CollectAllGarbage();
+static void CollectAllGarbageOnThreadForTesting(
+    base::WaitableEvent* done_event) {
+  blink::ThreadState::Current()->CollectAllGarbageForTesting();
   done_event->Signal();
 }
 
-void AnimationAndPaintWorkletThread::CollectAllGarbage() {
+void AnimationAndPaintWorkletThread::CollectAllGarbageForTesting() {
   DCHECK(IsMainThread());
   base::WaitableEvent done_event;
   auto* holder =
@@ -78,7 +79,7 @@ void AnimationAndPaintWorkletThread::CollectAllGarbage() {
   if (!holder)
     return;
   holder->GetThread()->BackingThread().PostTask(
-      FROM_HERE, CrossThreadBind(&CollectAllGarbageOnThread,
+      FROM_HERE, CrossThreadBind(&CollectAllGarbageOnThreadForTesting,
                                  CrossThreadUnretained(&done_event)));
   done_event.Wait();
 }
@@ -90,8 +91,8 @@ AnimationAndPaintWorkletThread::CreateWorkerGlobalScope(
     case WorkletType::ANIMATION_WORKLET: {
       TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("animation-worklet"),
                    "AnimationAndPaintWorkletThread::CreateWorkerGlobalScope");
-      return AnimationWorkletGlobalScope::Create(std::move(creation_params),
-                                                 this);
+      return MakeGarbageCollected<AnimationWorkletGlobalScope>(
+          std::move(creation_params), this);
     }
     case WorkletType::PAINT_WORKLET:
       TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("paint-worklet"),

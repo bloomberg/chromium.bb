@@ -92,8 +92,7 @@ MockFileSystem.prototype.findChildren_ = function(directory) {
     if (path.indexOf(parentPath) === 0 && path !== parentPath) {
       const nextSeparator = path.indexOf('/', parentPath.length);
       // Add immediate children files and directories...
-      if (nextSeparator === -1 ||
-          nextSeparator === path.length - 1) {
+      if (nextSeparator === -1 || nextSeparator === path.length - 1) {
         children.push(this.entries[path]);
       }
     }

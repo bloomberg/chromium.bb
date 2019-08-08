@@ -19,6 +19,12 @@ using testing::SetArgPointee;
 
 namespace extensions {
 
+namespace {
+
+const char kTestExtensionId[] = "test_app";
+
+}  // namespace
+
 class ExtensionDownloaderTest : public ExtensionsTest {
  protected:
   ExtensionDownloaderTest() {}
@@ -31,28 +37,37 @@ class ExtensionDownloaderTest : public ExtensionsTest {
         update_url, 0, "", "", ManifestFetchData::PING, fetch_priority);
   }
 
+  std::unique_ptr<ManifestFetchData> CreateTestAppFetchData() {
+    GURL kUpdateUrl("http://localhost/manifest1");
+    std::unique_ptr<ManifestFetchData> fetch(
+        CreateManifestFetchData(kUpdateUrl));
+    ManifestFetchData::PingData zero_days(0, 0, true, 0);
+    fetch->AddExtension(kTestExtensionId, "1.0", &zero_days, "", "", "",
+                        ManifestFetchData::FetchPriority::BACKGROUND);
+    return fetch;
+  }
+
   void AddFetchDataToDownloader(ExtensionDownloaderTestHelper* helper,
                                 std::unique_ptr<ManifestFetchData> fetch) {
     helper->downloader().StartUpdateCheck(std::move(fetch));
   }
 };
 
+// Several tests checking that OnExtensionDownloadStageChanged callback is
+// called correctly.
 TEST_F(ExtensionDownloaderTest, TestStageChanges) {
   ExtensionDownloaderTestHelper helper;
 
-  GURL kUpdateUrl("http://localhost/manifest1");
-  std::unique_ptr<ManifestFetchData> fetch(CreateManifestFetchData(kUpdateUrl));
-  ManifestFetchData::PingData zero_days(0, 0, true, 0);
-  fetch->AddExtension("test_app", "1.0", &zero_days, "", std::string(),
-                      std::string(),
-                      ManifestFetchData::FetchPriority::BACKGROUND);
+  std::unique_ptr<ManifestFetchData> fetch(CreateTestAppFetchData());
   GURL fetch_url = fetch->full_url();
 
   const std::string kManifest =
       "<?xml version='1.0' encoding='UTF-8'?>"
       "<gupdate xmlns='http://www.google.com/update2/response'"
       "                protocol='2.0'>"
-      " <app appid='test_app'>"
+      " <app appid='" +
+      std::string(kTestExtensionId) +
+      "'>"
       "  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'"
       "               version='1.1' prodversionmin='1.1' />"
       " </app>"
@@ -64,34 +79,36 @@ TEST_F(ExtensionDownloaderTest, TestStageChanges) {
                                                net::HTTP_OK);
 
   MockExtensionDownloaderDelegate& delegate = helper.delegate();
-  EXPECT_CALL(delegate, IsExtensionPending("test_app")).WillOnce(Return(true));
+  EXPECT_CALL(delegate, IsExtensionPending(kTestExtensionId))
+      .WillOnce(Return(true));
   Sequence sequence;
-  EXPECT_CALL(delegate,
-              OnExtensionDownloadStageChanged(
-                  "test_app", ExtensionDownloaderDelegate::QUEUED_FOR_MANIFEST))
-      .Times(AnyNumber());
-  EXPECT_CALL(delegate,
-              OnExtensionDownloadStageChanged(
-                  "test_app", ExtensionDownloaderDelegate::QUEUED_FOR_CRX))
+  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
+                            kTestExtensionId,
+                            ExtensionDownloaderDelegate::QUEUED_FOR_MANIFEST))
       .Times(AnyNumber());
   EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            "test_app",
+                            kTestExtensionId,
+                            ExtensionDownloaderDelegate::QUEUED_FOR_CRX))
+      .Times(AnyNumber());
+  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
+                            kTestExtensionId,
                             ExtensionDownloaderDelegate::DOWNLOADING_MANIFEST))
       .InSequence(sequence);
-  EXPECT_CALL(delegate,
-              OnExtensionDownloadStageChanged(
-                  "test_app", ExtensionDownloaderDelegate::PARSING_MANIFEST))
-      .InSequence(sequence);
-  EXPECT_CALL(delegate,
-              OnExtensionDownloadStageChanged(
-                  "test_app", ExtensionDownloaderDelegate::MANIFEST_LOADED))
-      .InSequence(sequence);
-  EXPECT_CALL(delegate,
-              OnExtensionDownloadStageChanged(
-                  "test_app", ExtensionDownloaderDelegate::DOWNLOADING_CRX))
+  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
+                            kTestExtensionId,
+                            ExtensionDownloaderDelegate::PARSING_MANIFEST))
       .InSequence(sequence);
   EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            "test_app", ExtensionDownloaderDelegate::FINISHED))
+                            kTestExtensionId,
+                            ExtensionDownloaderDelegate::MANIFEST_LOADED))
+      .InSequence(sequence);
+  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
+                            kTestExtensionId,
+                            ExtensionDownloaderDelegate::DOWNLOADING_CRX))
+      .InSequence(sequence);
+  EXPECT_CALL(delegate,
+              OnExtensionDownloadStageChanged(
+                  kTestExtensionId, ExtensionDownloaderDelegate::FINISHED))
       .InSequence(sequence);
 
   AddFetchDataToDownloader(&helper, std::move(fetch));
@@ -104,19 +121,16 @@ TEST_F(ExtensionDownloaderTest, TestStageChanges) {
 TEST_F(ExtensionDownloaderTest, TestStageChangesNoUpdates) {
   ExtensionDownloaderTestHelper helper;
 
-  GURL kUpdateUrl("http://localhost/manifest1");
-  std::unique_ptr<ManifestFetchData> fetch(CreateManifestFetchData(kUpdateUrl));
-  ManifestFetchData::PingData zero_days(0, 0, true, 0);
-  fetch->AddExtension("test_app", "1.0", &zero_days, "", std::string(),
-                      std::string(),
-                      ManifestFetchData::FetchPriority::BACKGROUND);
+  std::unique_ptr<ManifestFetchData> fetch(CreateTestAppFetchData());
   GURL fetch_url = fetch->full_url();
 
   const std::string kManifest =
       "<?xml version='1.0' encoding='UTF-8'?>"
       "<gupdate xmlns='http://www.google.com/update2/response'"
       "                protocol='2.0'>"
-      " <app appid='test_app'>"
+      " <app appid='" +
+      std::string(kTestExtensionId) +
+      "'>"
       "  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'"
       "               version='1.1' prodversionmin='1.1' />"
       " </app>"
@@ -128,32 +142,34 @@ TEST_F(ExtensionDownloaderTest, TestStageChangesNoUpdates) {
                                                net::HTTP_OK);
 
   MockExtensionDownloaderDelegate& delegate = helper.delegate();
-  EXPECT_CALL(delegate, IsExtensionPending("test_app")).WillOnce(Return(false));
-  EXPECT_CALL(delegate, GetExtensionExistingVersion("test_app", _))
+  EXPECT_CALL(delegate, IsExtensionPending(kTestExtensionId))
+      .WillOnce(Return(false));
+  EXPECT_CALL(delegate, GetExtensionExistingVersion(kTestExtensionId, _))
       .WillOnce(DoAll(SetArgPointee<1>("1.1"), Return(true)));
   Sequence sequence;
-  EXPECT_CALL(delegate,
-              OnExtensionDownloadStageChanged(
-                  "test_app", ExtensionDownloaderDelegate::QUEUED_FOR_MANIFEST))
+  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
+                            kTestExtensionId,
+                            ExtensionDownloaderDelegate::QUEUED_FOR_MANIFEST))
       .Times(AnyNumber());
   EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            "test_app",
+                            kTestExtensionId,
                             ExtensionDownloaderDelegate::DOWNLOADING_MANIFEST))
       .InSequence(sequence);
-  EXPECT_CALL(delegate,
-              OnExtensionDownloadStageChanged(
-                  "test_app", ExtensionDownloaderDelegate::PARSING_MANIFEST))
-      .InSequence(sequence);
-  EXPECT_CALL(delegate,
-              OnExtensionDownloadStageChanged(
-                  "test_app", ExtensionDownloaderDelegate::MANIFEST_LOADED))
-      .InSequence(sequence);
-  EXPECT_CALL(delegate,
-              OnExtensionDownloadStageChanged(
-                  "test_app", ExtensionDownloaderDelegate::DOWNLOADING_CRX))
-      .Times(0);
   EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            "test_app", ExtensionDownloaderDelegate::FINISHED))
+                            kTestExtensionId,
+                            ExtensionDownloaderDelegate::PARSING_MANIFEST))
+      .InSequence(sequence);
+  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
+                            kTestExtensionId,
+                            ExtensionDownloaderDelegate::MANIFEST_LOADED))
+      .InSequence(sequence);
+  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
+                            kTestExtensionId,
+                            ExtensionDownloaderDelegate::DOWNLOADING_CRX))
+      .Times(0);
+  EXPECT_CALL(delegate,
+              OnExtensionDownloadStageChanged(
+                  kTestExtensionId, ExtensionDownloaderDelegate::FINISHED))
       .InSequence(sequence);
 
   AddFetchDataToDownloader(&helper, std::move(fetch));
@@ -166,12 +182,7 @@ TEST_F(ExtensionDownloaderTest, TestStageChangesNoUpdates) {
 TEST_F(ExtensionDownloaderTest, TestStageChangesBadManifest) {
   ExtensionDownloaderTestHelper helper;
 
-  GURL kUpdateUrl("http://localhost/manifest1");
-  std::unique_ptr<ManifestFetchData> fetch(CreateManifestFetchData(kUpdateUrl));
-  ManifestFetchData::PingData zero_days(0, 0, true, 0);
-  fetch->AddExtension("test_app", "1.0", &zero_days, "", std::string(),
-                      std::string(),
-                      ManifestFetchData::FetchPriority::BACKGROUND);
+  std::unique_ptr<ManifestFetchData> fetch(CreateTestAppFetchData());
   GURL fetch_url = fetch->full_url();
 
   const std::string kManifest = "invalid xml";
@@ -180,24 +191,25 @@ TEST_F(ExtensionDownloaderTest, TestStageChangesBadManifest) {
 
   MockExtensionDownloaderDelegate& delegate = helper.delegate();
   Sequence sequence;
-  EXPECT_CALL(delegate,
-              OnExtensionDownloadStageChanged(
-                  "test_app", ExtensionDownloaderDelegate::QUEUED_FOR_MANIFEST))
+  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
+                            kTestExtensionId,
+                            ExtensionDownloaderDelegate::QUEUED_FOR_MANIFEST))
       .Times(AnyNumber());
   EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            "test_app",
+                            kTestExtensionId,
                             ExtensionDownloaderDelegate::DOWNLOADING_MANIFEST))
       .InSequence(sequence);
-  EXPECT_CALL(delegate,
-              OnExtensionDownloadStageChanged(
-                  "test_app", ExtensionDownloaderDelegate::PARSING_MANIFEST))
-      .InSequence(sequence);
-  EXPECT_CALL(delegate,
-              OnExtensionDownloadStageChanged(
-                  "test_app", ExtensionDownloaderDelegate::MANIFEST_LOADED))
-      .Times(0);
   EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            "test_app", ExtensionDownloaderDelegate::FINISHED))
+                            kTestExtensionId,
+                            ExtensionDownloaderDelegate::PARSING_MANIFEST))
+      .InSequence(sequence);
+  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
+                            kTestExtensionId,
+                            ExtensionDownloaderDelegate::MANIFEST_LOADED))
+      .Times(0);
+  EXPECT_CALL(delegate,
+              OnExtensionDownloadStageChanged(
+                  kTestExtensionId, ExtensionDownloaderDelegate::FINISHED))
       .InSequence(sequence);
 
   AddFetchDataToDownloader(&helper, std::move(fetch));
@@ -210,12 +222,7 @@ TEST_F(ExtensionDownloaderTest, TestStageChangesBadManifest) {
 TEST_F(ExtensionDownloaderTest, TestStageChangesBadQuery) {
   ExtensionDownloaderTestHelper helper;
 
-  GURL kUpdateUrl("http://localhost/manifest1");
-  std::unique_ptr<ManifestFetchData> fetch(CreateManifestFetchData(kUpdateUrl));
-  ManifestFetchData::PingData zero_days(0, 0, true, 0);
-  fetch->AddExtension("test_app", "1.0", &zero_days, "", std::string(),
-                      std::string(),
-                      ManifestFetchData::FetchPriority::BACKGROUND);
+  std::unique_ptr<ManifestFetchData> fetch(CreateTestAppFetchData());
   GURL fetch_url = fetch->full_url();
 
   helper.test_url_loader_factory().AddResponse(fetch_url.spec(), "",
@@ -223,21 +230,58 @@ TEST_F(ExtensionDownloaderTest, TestStageChangesBadQuery) {
 
   MockExtensionDownloaderDelegate& delegate = helper.delegate();
   Sequence sequence;
-  EXPECT_CALL(delegate,
-              OnExtensionDownloadStageChanged(
-                  "test_app", ExtensionDownloaderDelegate::QUEUED_FOR_MANIFEST))
+  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
+                            kTestExtensionId,
+                            ExtensionDownloaderDelegate::QUEUED_FOR_MANIFEST))
       .Times(AnyNumber());
   EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            "test_app",
+                            kTestExtensionId,
                             ExtensionDownloaderDelegate::DOWNLOADING_MANIFEST))
       .InSequence(sequence);
+  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
+                            kTestExtensionId,
+                            ExtensionDownloaderDelegate::PARSING_MANIFEST))
+      .Times(0);
   EXPECT_CALL(delegate,
               OnExtensionDownloadStageChanged(
-                  "test_app", ExtensionDownloaderDelegate::PARSING_MANIFEST))
-      .Times(0);
-  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            "test_app", ExtensionDownloaderDelegate::FINISHED))
+                  kTestExtensionId, ExtensionDownloaderDelegate::FINISHED))
       .InSequence(sequence);
+
+  AddFetchDataToDownloader(&helper, std::move(fetch));
+
+  content::RunAllTasksUntilIdle();
+
+  testing::Mock::VerifyAndClearExpectations(&delegate);
+}
+
+// Test that failure callback was actually called in case of empty answer from
+// the update server. Regression for problem described/fixed in
+// crbug.com/938265.
+TEST_F(ExtensionDownloaderTest, TestNoUpdatesManifestReports) {
+  ExtensionDownloaderTestHelper helper;
+
+  std::unique_ptr<ManifestFetchData> fetch(CreateTestAppFetchData());
+  GURL fetch_url = fetch->full_url();
+
+  const std::string kManifest =
+      "<?xml version='1.0' encoding='UTF-8'?>"
+      "<gupdate xmlns='http://www.google.com/update2/response'"
+      "                protocol='2.0'>"
+      " <app appid='" +
+      std::string(kTestExtensionId) +
+      "'>"
+      "  <updatecheck info='bandwidth limit' status='noupdate' />"
+      " </app>"
+      "</gupdate>";
+  helper.test_url_loader_factory().AddResponse(fetch_url.spec(), kManifest,
+                                               net::HTTP_OK);
+
+  MockExtensionDownloaderDelegate& delegate = helper.delegate();
+  EXPECT_CALL(delegate, IsExtensionPending(kTestExtensionId))
+      .WillOnce(Return(true));
+  // TODO(burunduk) Also check error (second argument). By now we return
+  // CRX_FETCH_FAILED, but probably we may want to make another one.
+  EXPECT_CALL(delegate, OnExtensionDownloadFailed(kTestExtensionId, _, _, _));
 
   AddFetchDataToDownloader(&helper, std::move(fetch));
 

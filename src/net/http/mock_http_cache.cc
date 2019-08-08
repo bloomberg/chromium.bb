@@ -343,7 +343,7 @@ void MockDiskEntry::IgnoreCallbacks(bool value) {
     return;
   ignore_callbacks_ = value;
   if (!value)
-    StoreAndDeliverCallbacks(false, NULL, CompletionOnceCallback(), 0);
+    StoreAndDeliverCallbacks(false, nullptr, CompletionOnceCallback(), 0);
 }
 
 MockDiskEntry::~MockDiskEntry() = default;
@@ -404,7 +404,8 @@ bool MockDiskEntry::ignore_callbacks_ = false;
 //-----------------------------------------------------------------------------
 
 MockDiskCache::MockDiskCache()
-    : open_count_(0),
+    : Backend(DISK_CACHE),
+      open_count_(0),
       create_count_(0),
       doomed_count_(0),
       max_file_size_(std::numeric_limits<int>::max()),
@@ -420,10 +421,6 @@ MockDiskCache::MockDiskCache()
 
 MockDiskCache::~MockDiskCache() {
   ReleaseAll();
-}
-
-CacheType MockDiskCache::GetCacheType() const {
-  return DISK_CACHE;
 }
 
 int32_t MockDiskCache::GetEntryCount() const {
@@ -728,7 +725,7 @@ disk_cache::Backend* MockHttpCache::backend() {
   disk_cache::Backend* backend;
   int rv = http_cache_.GetBackend(&backend, cb.callback());
   rv = cb.GetResult(rv);
-  return (rv == OK) ? backend : NULL;
+  return (rv == OK) ? backend : nullptr;
 }
 
 MockDiskCache* MockHttpCache::disk_cache() {
@@ -864,10 +861,7 @@ int MockBackendNoCbFactory::CreateBackend(
 //-----------------------------------------------------------------------------
 
 MockBlockingBackendFactory::MockBlockingBackendFactory()
-    : backend_(NULL),
-      block_(true),
-      fail_(false) {
-}
+    : backend_(nullptr), block_(true), fail_(false) {}
 
 MockBlockingBackendFactory::~MockBlockingBackendFactory() = default;
 

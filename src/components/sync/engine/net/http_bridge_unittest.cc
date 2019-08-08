@@ -151,8 +151,7 @@ class ShuntedHttpBridge : public HttpBridge {
     ASSERT_TRUE(test_->GetIOThreadTaskRunner()->BelongsToCurrentThread());
 
     // Set up a dummy content response.
-    OnURLLoadCompleteInternal(200, net::OK, 0 /* content length, irrelevant */,
-                              GURL("http://www.google.com"),
+    OnURLLoadCompleteInternal(200, net::OK, GURL("http://www.google.com"),
                               std::make_unique<std::string>("success!"));
   }
   MAYBE_SyncHttpBridgeTest* test_;

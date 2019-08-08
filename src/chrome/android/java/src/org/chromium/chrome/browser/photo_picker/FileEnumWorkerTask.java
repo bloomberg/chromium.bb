@@ -70,9 +70,8 @@ class FileEnumWorkerTask extends AsyncTask<List<PickerBitmap>> {
     /**
      * Retrieves the DCIM/camera directory.
      */
-    private File getCameraDirectory() {
-        return new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
-                SAMPLE_DCIM_SOURCE_SUB_DIRECTORY);
+    private String getCameraDirectory() {
+        return Environment.DIRECTORY_DCIM + File.separator + SAMPLE_DCIM_SOURCE_SUB_DIRECTORY;
     }
 
     /**
@@ -88,29 +87,34 @@ class FileEnumWorkerTask extends AsyncTask<List<PickerBitmap>> {
 
         List<PickerBitmap> pickerBitmaps = new ArrayList<>();
 
+        // The DATA column is deprecated in the Android Q SDK. Replaced by relative_path.
+        String directoryColumnName =
+                BuildInfo.isAtLeastQ() ? "relative_path" : MediaStore.Images.Media.DATA;
         final String[] selectColumns = {MediaStore.Images.Media._ID,
-                MediaStore.Images.Media.DATE_TAKEN, MediaStore.Images.Media.DATA};
+                MediaStore.Images.Media.DATE_TAKEN, directoryColumnName};
 
-        String whereClause = null;
+        String whereClause = "(" + directoryColumnName + " LIKE ? OR " + directoryColumnName
+                + " LIKE ? OR " + directoryColumnName + " LIKE ?) AND " + directoryColumnName
+                + " NOT LIKE ?";
         String[] whereArgs = null;
-        // Looks like we loose access to the filter, starting with the Q SDK.
-        if (!BuildInfo.isAtLeastQ()) {
-            whereClause = "(" + MediaStore.Images.Media.DATA + " LIKE ? OR "
-                    + MediaStore.Images.Media.DATA + " LIKE ? OR " + MediaStore.Images.Media.DATA
-                    + " LIKE ?) AND " + MediaStore.Images.Media.DATA + " NOT LIKE ?";
 
-            whereArgs = new String[] {
-                    // Include:
-                    getCameraDirectory().toString() + "%",
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                            + "%",
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                            + "%",
-                    // Exclude low-quality sources, such as the screenshots directory:
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                            + "/Screenshots/"
-                            + "%"};
+        String cameraDir = getCameraDirectory();
+        String picturesDir = Environment.DIRECTORY_PICTURES;
+        String downloadsDir = Environment.DIRECTORY_DOWNLOADS;
+        String screenshotsDir = Environment.DIRECTORY_PICTURES + "/Screenshots";
+        if (!BuildInfo.isAtLeastQ()) {
+            cameraDir = Environment.getExternalStoragePublicDirectory(cameraDir).toString();
+            picturesDir = Environment.getExternalStoragePublicDirectory(picturesDir).toString();
+            downloadsDir = Environment.getExternalStoragePublicDirectory(downloadsDir).toString();
+            screenshotsDir =
+                    Environment.getExternalStoragePublicDirectory(screenshotsDir).toString();
         }
+
+        whereArgs = new String[] {
+                // Include:
+                cameraDir + "%", picturesDir + "%", downloadsDir + "%",
+                // Exclude low-quality sources, such as the screenshots directory:
+                screenshotsDir + "%"};
 
         final String orderBy = MediaStore.Images.Media.DATE_TAKEN + " DESC";
 
@@ -118,7 +122,6 @@ class FileEnumWorkerTask extends AsyncTask<List<PickerBitmap>> {
                 selectColumns, whereClause, whereArgs, orderBy);
 
         while (imageCursor.moveToNext()) {
-            int dataIndex = imageCursor.getColumnIndex(MediaStore.Images.Media.DATA);
             int dateTakenIndex = imageCursor.getColumnIndex(MediaStore.Images.Media.DATE_TAKEN);
             int idIndex = imageCursor.getColumnIndex(MediaStore.Images.ImageColumns._ID);
             Uri uri = ContentUris.withAppendedId(

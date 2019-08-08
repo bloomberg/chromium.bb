@@ -64,6 +64,11 @@ struct TemplateURLData {
   void SetURL(const std::string& url);
   const std::string& url() const { return url_; }
 
+  // Recomputes |sync_guid| using the same logic as in the constructor. This
+  // means a random GUID is generated, except for prepopulated search engines,
+  // which generate GUIDs deterministically based on |prepopulate_id|.
+  void GenerateSyncGUID();
+
   // Estimates dynamic memory usage.
   // See base/trace_event/memory_usage_estimator.h for more info.
   size_t EstimateMemoryUsage() const;

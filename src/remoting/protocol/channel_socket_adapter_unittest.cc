@@ -53,7 +53,7 @@ class TransportChannelSocketAdapterTest : public testing::Test {
 
   cricket::MockIceTransport channel_;
   std::unique_ptr<TransportChannelSocketAdapter> target_;
-  net::CompletionCallback callback_;
+  net::CompletionRepeatingCallback callback_;
   int callback_result_;
   base::MessageLoopForIO message_loop_;
 };

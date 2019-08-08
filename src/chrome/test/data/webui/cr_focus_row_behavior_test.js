@@ -90,6 +90,8 @@ suite('cr-focus-row-behavior-test', function() {
     const lastButton = document.createElement('button');
     lastButton.setAttribute('focus-type', 'fake-btn-two');
     testElement.lastFocused = lastButton;
+    MockInteractions.pressAndReleaseKeyOn(
+        testElement.$.control, '', null, 'ArrowDown');
 
     let focused = false;
     testElement.$.controlTwo.addEventListener('focus', function() {
@@ -117,6 +119,8 @@ suite('cr-focus-row-behavior-test', function() {
     const lastButton = document.createElement('button');
     lastButton.setAttribute('focus-type', 'fake-btn-three');
     testElement.lastFocused = lastButton;
+    MockInteractions.pressAndReleaseKeyOn(
+        testElement.$.control, '', null, 'ArrowDown');
 
     const wait = test_util.eventToPromise('focus', testElement);
     testElement.fire('focus');

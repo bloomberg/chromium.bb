@@ -34,7 +34,10 @@ class NGInlineChildLayoutContext {
   NGInlineLayoutStateStack* BoxStatesIfValidForItemIndex(
       const Vector<NGInlineItem>& items,
       unsigned item_index);
-  void SetItemIndex(const Vector<NGInlineItem>& items, unsigned item_index);
+  void SetItemIndex(const Vector<NGInlineItem>& items, unsigned item_index) {
+    items_ = &items;
+    item_index_ = item_index;
+  }
 
  private:
   base::Optional<NGInlineLayoutStateStack> box_states_;

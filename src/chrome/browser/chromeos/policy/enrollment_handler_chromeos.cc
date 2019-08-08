@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -28,10 +29,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/auth_policy_client.h"
+#include "chromeos/dbus/auth_policy/auth_policy_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/upstart_client.h"
+#include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -351,9 +352,7 @@ void EnrollmentHandlerChromeOS::OnRegistrationStateChanged(
         // Do nothing.
         break;
       case DEVICE_MODE_ENTERPRISE_AD:
-        chromeos::DBusThreadManager::Get()
-            ->GetUpstartClient()
-            ->StartAuthPolicyService();
+        chromeos::UpstartClient::Get()->StartAuthPolicyService();
         break;
       default:
         LOG(ERROR) << "Supplied device mode is not supported:" << device_mode_;
@@ -750,11 +749,9 @@ void EnrollmentHandlerChromeOS::OnDeviceAccountTokenStored() {
     // policy is accepted.
     chromeos::DeviceSettingsService::Get()->SetDeviceMode(
         install_attributes_->GetMode());
-    chromeos::DBusThreadManager::Get()
-        ->GetAuthPolicyClient()
-        ->RefreshDevicePolicy(base::BindOnce(
-            &EnrollmentHandlerChromeOS::HandleActiveDirectoryPolicyRefreshed,
-            weak_ptr_factory_.GetWeakPtr()));
+    chromeos::AuthPolicyClient::Get()->RefreshDevicePolicy(base::BindOnce(
+        &EnrollmentHandlerChromeOS::HandleActiveDirectoryPolicyRefreshed,
+        weak_ptr_factory_.GetWeakPtr()));
   } else {
     store_->InstallInitialPolicy(*policy_);
   }

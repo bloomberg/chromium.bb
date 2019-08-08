@@ -88,23 +88,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       function initXR() {
         xrButton = new XRDeviceButton({
           onRequestSession: onRequestSession,
-          onEndSession: onEndSession
+          onEndSession: onEndSession,
+          supportedSessionTypes: ['immersive-vr']
         });
         document.querySelector('header').appendChild(xrButton.domElement);
 
         if (navigator.xr) {
-          navigator.xr.supportsSessionMode('immersive-vr').then(() => {
-            xrButton.enabled = true;
-          });
-
           // Pick an arbitrary device for the magic window content and start
           // up a non-immersive session if possible.
-          navigator.xr.requestSession().then(onSessionStarted);
+          navigator.xr.requestSession('inline').then(onSessionStarted);
         }
       }
 
       function onRequestSession() {
-        navigator.xr.requestSession({ mode: 'immersive-vr' }).then((session) => {
+        navigator.xr.requestSession('immersive-vr').then((session) => {
           xrButton.setSession(session);
           onSessionStarted(session);
         });
@@ -137,6 +134,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         });
 
         session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' }).then((refSpace) => {
+          return refSpace;
+        }, (e) => {
+          if (!session.mode.startsWith('immersive')) {
+            // If we're in inline mode, our underlying platform may not support
+            // the stationary reference space, but an identity space is guaranteed.
+            return session.requestReferenceSpace({ type: 'identity' });
+          } else {
+            throw e;
+          }
+        }).then((refSpace) => {
           // Since we're dealing with multple sessions now we need to track
           // which XRReferenceSpace is associated with which XRSession.
           if (session.mode.startsWith('immersive')) {
@@ -188,7 +195,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             gl.viewport(viewport.x, viewport.y,
                         viewport.width, viewport.height);
 
-            scene.draw(view.projectionMatrix, view.viewMatrix);
+            scene.draw(view.projectionMatrix, view.transform.inverse.matrix);
           }
         }
 

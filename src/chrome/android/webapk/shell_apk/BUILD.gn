@@ -158,6 +158,7 @@ template("webapk_tmpl") {
     android_manifest = _manifest_output
     android_manifest_dep = ":$_manifest_target_name"
     never_incremental = true
+    enable_multidex = false
 
     # Force 32 bit mode on 64 bit devices.
     native_lib_placeholders = [ "libfoo.so" ]
@@ -264,6 +265,14 @@ webapk_tmpl("new_splash_webapk") {
   config_file = "manifest/bound_manifest_config.json"
   apk_name = "NewSplashWebApk"
   apk_package_name = "org.chromium.webapk.new.splash"
+}
+
+# Used by javatests
+webapk_tmpl("javatests_webapk") {
+  config_file = "manifest/bound_manifest_config.json"
+  delta_config_file = "manifest/javatest_manifest_config_delta.json"
+  apk_name = "JavatestsWebApk"
+  apk_package_name = "org.chromium.webapk.test"
 }
 
 # Used by webapk_shell_apk_h2o_junit_tests

@@ -50,6 +50,7 @@
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
   std::unique_ptr<SearchEngineObserverBridge> _searchEngineObserver;
 }
+@synthesize badgeState = _badgeState;
 
 - (instancetype)initWithLocationBarModel:(LocationBarModel*)locationBarModel {
   DCHECK(locationBarModel);
@@ -165,6 +166,12 @@
   [self.consumer displayInfobarBadge:display];
 }
 
+- (void)setBadgeState:(InfobarBadgeState)badgeState {
+  _badgeState = badgeState;
+  [self.consumer selectInfobarBadge:_badgeState & InfobarBadgeStateSelected];
+  [self.consumer activeInfobarBadge:_badgeState & InfobarBadgeStateAccepted];
+}
+
 #pragma mark - Setters
 
 - (void)setWebState:(web::WebState*)webState {
@@ -274,7 +281,7 @@
   }
 
   return GetLocationBarSecurityIconForSecurityState(
-      self.locationBarModel->GetSecurityLevel(true));
+      self.locationBarModel->GetSecurityLevel());
 }
 
 // Returns a location icon for offline pages.

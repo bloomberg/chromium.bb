@@ -44,6 +44,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     self.Fail('WebglExtension_EXT_color_buffer_float',
         ['win', 'mac'])
+    self.Fail('WebglExtension_EXT_float_blend',
+        ['win', 'passthrough', 'vulkan'])
     self.Fail('WebglExtension_WEBGL_multi_draw_instanced',
         ['passthrough', 'vulkan'], bug=2672) # angle bug ID
     # Skip these, rather than expect them to fail, to speed up test
@@ -59,12 +61,12 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'mac', 'linux', 'android'])
     self.Skip('WebglExtension_EXT_disjoint_timer_query',
         ['android'], bug=808744)
-    self.Fail('WebglExtension_EXT_disjoint_timer_query',
-        ['linux', 'intel'], bug=867675)
     self.Skip('WebglExtension_KHR_parallel_shader_compile',
         ['no_passthrough'], bug=849576)
 
     # Extensions not available under D3D9
+    self.Fail('WebglExtension_EXT_float_blend',
+        ['win', 'd3d9'])
     self.Fail('WebglExtension_EXT_sRGB',
         ['win', 'd3d9'])
     self.Fail('WebglExtension_EXT_disjoint_timer_query',
@@ -76,6 +78,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     # Android general
     self.Fail('WebglExtension_EXT_frag_depth',
+        ['android'])
+    self.Fail('WebglExtension_EXT_float_blend',
         ['android'])
     self.Fail('WebglExtension_EXT_shader_texture_lod',
         ['android'])
@@ -97,10 +101,11 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     self.Fail('conformance/extensions/oes-texture-float.html',
         bug=930993)
-
-    # Need to add detection of feedback loops with multiple render targets.
-    self.Fail('conformance/rendering/rendering-sampling-feedback-loop.html',
-        bug=660844)
+    # TODO(shrekshao): Remove this after applying the new draw buffer
+    # validation. And then uncomment the failure expectation for
+    # angle bug 1523 (L160)
+    self.Fail('conformance/extensions/webgl-draw-buffers.html',
+        bug=927908)
 
     # Need to implement new error semantics
     # https://github.com/KhronosGroup/WebGL/pull/2607
@@ -131,13 +136,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('conformance/rendering/texture-switch-performance.html',
         bug=735483)
 
-    # Too flaky with ANGLE's OpenGL backend to just mark Flaky
-    self.Fail('conformance/extensions/oes-vertex-array-object.html',
-        ['win', 'opengl'], bug=920033)
+    self.Fail('conformance/rendering/blending.html',
+        ['passthrough'], bug=951628)
 
     # Passthrough command decoder / OpenGL
-    self.Fail('conformance/renderbuffers/framebuffer-test.html',
-        ['passthrough', 'opengl'], bug=665521)
     self.Fail(
         'conformance/textures/canvas/tex-2d-alpha-alpha-unsigned_byte.html',
         ['passthrough', 'opengl'], bug=2952) # angle bug ID
@@ -145,13 +147,13 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         'tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html',
         ['passthrough', 'opengl'], bug=2952) # angle bug ID
 
-    # Passthrough command decoder / OpenGL / Intel
+    # Intel graphics driver issue. Passed on 25.20.100.6471
     self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
         ['passthrough', 'opengl', 'intel'], bug=665521)
 
     # Passthrough command decoder / OpenGL / AMD
-    self.Fail('conformance/extensions/webgl-draw-buffers.html',
-        ['passthrough', 'opengl', 'amd', 'linux'], bug=1523) # angle bug ID
+    # self.Fail('conformance/extensions/webgl-draw-buffers.html',
+    #     ['passthrough', 'opengl', 'amd', 'linux'], bug=1523) # angle bug ID
     self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
         ['passthrough', 'opengl', 'amd'], bug=665521)
     self.Fail('conformance/glsl/constructors/' +
@@ -201,6 +203,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win'], bug=478572)
     self.Fail('conformance/textures/misc/texture-active-bind.html',
         ['win'], bug=931006)
+    self.Fail('conformance/rendering/blending.html',
+        ['win', 'no_passthrough'], bug=951628)
 
     # Win NVIDIA failures
     self.Flaky('conformance/textures/misc/texture-npot-video.html',
@@ -258,8 +262,19 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'intel'], bug=825338)
     self.Flaky('conformance/glsl/misc/shader-with-non-reserved-words.html',
         ['win', 'intel'], bug=929009)
-    self.Fail('conformance/rendering/rendering-stencil-large-viewport.html',
-        ['win', 'intel', 'd3d11'], bug=782317)
+
+    # This is an OpenGL driver bug on Intel platform and it is fixed in
+    # Intel Driver 25.20.100.6444.
+    # Case no-over-optimization-on-uniform-array-09 always fail if run
+    # case biuDepthRange_001_to_002 first.
+    # Temporarily skip these two cases now because this issue blocks
+    # WEBGL_video_texture implementation.
+    self.Skip(
+        'conformance/ogles/GL/biuDepthRange/biuDepthRange_001_to_002.html',
+        ['win', 'intel', 'opengl', 'passthrough'], bug=907195)
+    self.Skip(
+        'conformance/uniforms/no-over-optimization-on-uniform-array-09.html',
+        ['win', 'intel', 'opengl', 'passthrough'], bug=907195)
 
     # Win7 / Intel failures
     self.Fail('conformance/textures/misc/' +
@@ -301,10 +316,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('conformance/glsl/misc/large-loop-compile.html',
         ['win', 'd3d9'], bug=674572)
 
-    # WIN / D3D9 / Intel failures
-    self.Fail('conformance/ogles/GL/cos/cos_001_to_006.html',
-        ['win', 'intel', 'd3d9'], bug=540538)
-
     # WIN / OpenGL / NVIDIA failures
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
         ['win', ('nvidia', 0x1cb3), 'opengl', 'passthrough'], bug=715001)
@@ -325,50 +336,26 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['win', 'amd', 'opengl'], bug=1506) # angle bug ID
+    # AMD RX 550 Failures
+    self.Skip('conformance/glsl/bugs/gl-fragcoord-multisampling-bug.html',
+        ['win', ('amd', 0x699f), 'opengl'], bug=950123)
+    self.Skip('conformance/glsl/misc/fragcolor-fragdata-invariant.html',
+        ['win', ('amd', 0x699f), 'opengl'], bug=950123)
+    self.Skip('conformance/glsl/samplers/glsl-function-texture2dprojlod.html',
+        ['win', ('amd', 0x699f), 'opengl'], bug=950123)
+    self.Fail('conformance/reading/read-pixels-test.html',
+        ['win', ('amd', 0x699f), 'opengl'], bug=951771)
+    self.Skip('conformance/rendering/line-rendering-quality.html',
+        ['win', ('amd', 0x699f), 'opengl'], bug=950123)
+    self.Skip('conformance/rendering/multisample-corruption.html',
+        ['win', ('amd', 0x699f), 'opengl', 'passthrough'], bug=952887)
 
     # Mark ANGLE's OpenGL as flaky on Windows Amd
     self.Flaky('conformance/*', ['win', 'amd', 'opengl'], bug=582083)
 
     # Win / OpenGL / Intel HD 530 / 630 failures
-    self.Fail('conformance/canvas/draw-webgl-to-canvas-test.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
-    self.Fail('conformance/extensions/angle-instanced-arrays.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
-    # self.Fail('conformance/extensions/ext-sRGB.html',
-    #     ['win10', 'intel', 'opengl', 'no_passthrough'], bug=680797)
-    self.Fail('conformance/extensions/ext-shader-texture-lod.html',
-        ['win10', 'intel', 'opengl', 'no_passthrough'], bug=680797)
-    self.Fail('conformance/extensions/oes-texture-float-with-canvas.html',
-        ['win10', 'intel', 'opengl', 'no_passthrough'], bug=680797)
-    self.Fail('conformance/extensions/oes-texture-half-float.html',
-        ['win10', 'intel', 'opengl', 'no_passthrough'], bug=680797)
-    self.Fail('conformance/extensions/oes-texture-half-float-with-canvas.html',
-        ['win10', 'intel', 'opengl', 'no_passthrough'], bug=680797)
-    self.Fail('conformance/glsl/bugs/' +
-        'array-of-struct-with-int-first-position.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
-    self.Fail('conformance/glsl/bugs/constant-precision-qualifier.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
-    self.Fail('conformance/glsl/matrices/matrix-compound-multiply.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
     self.Flaky('conformance/glsl/variables/gl-pointcoord.html',
         ['win10', 'intel', 'opengl'], bug=854100)
-    self.Fail('conformance/more/conformance/webGLArrays.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
-    self.Fail('conformance/ogles/GL/struct/struct_049_to_056.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
-    self.Fail('conformance/renderbuffers/framebuffer-state-restoration.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
-    self.Fail('conformance/rendering/draw-with-changing-start-vertex-bug.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
-    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
-        'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
-    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
-        'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
-    self.Fail('conformance/textures/misc/texture-fakeblack.html',
-        ['win10', 'intel', 'opengl', 'no_passthrough'], bug=680797)
 
     # Win / Intel / Passthrough command decoder
     self.Flaky('conformance/renderbuffers/framebuffer-state-restoration.html',
@@ -406,6 +393,11 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'vulkan'], bug=2708) # ANGLE bug ID
     self.Fail('conformance/canvas/canvas-test.html',
         ['win', 'passthrough', 'vulkan'], bug=2929) # ANGLE bug ID
+    self.Fail('conformance/canvas/' +
+        'draw-static-webgl-to-multiple-canvas-test.html',
+        ['win', 'passthrough', 'vulkan'], bug=2918) # ANGLE bug ID
+    self.Fail('conformance/canvas/draw-webgl-to-canvas-test.html',
+        ['win', 'passthrough', 'vulkan'], bug=2918) # ANGLE bug ID
     self.Fail('conformance/context/' +
         'context-attribute-preserve-drawing-buffer.html',
         ['win', 'passthrough', 'vulkan'], bug=2913) # ANGLE bug ID
@@ -453,7 +445,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'vulkan'], bug=2913) # ANGLE bug ID
     self.Fail('conformance/textures/misc/texture-mips.html',
         ['win', 'passthrough', 'vulkan'], bug=2722) # ANGLE bug ID
-    self.Fail('conformance/uniforms/out-of-bounds-uniform-array-access.html',
+    # Note: the following test crashes so it's skipped.  http://anglebug.com/3352
+    self.Skip('conformance/uniforms/out-of-bounds-uniform-array-access.html',
         ['win', 'passthrough', 'vulkan'], bug=2921) # ANGLE bug ID
     self.Fail('WebglExtension_ANGLE_instanced_arrays',
         ['win', 'passthrough', 'vulkan'], bug=2672) # ANGLE bug ID
@@ -491,11 +484,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'vulkan'], bug=3111) # ANGLE bug ID
 
     # Vulkan / Win / NVIDIA / Passthough command decoder
-    self.Fail('conformance/canvas/' +
-        'draw-static-webgl-to-multiple-canvas-test.html',
-        ['win', 'passthrough', 'vulkan', 'nvidia'], bug=2918) # ANGLE bug ID
-    self.Fail('conformance/canvas/draw-webgl-to-canvas-test.html',
-        ['win', 'passthrough', 'vulkan', 'nvidia'], bug=2918) # ANGLE bug ID
     self.Fail('conformance/canvas/to-data-url-test.html',
         ['win', 'passthrough', 'vulkan', 'nvidia'], bug=2918) # ANGLE bug ID
     self.Fail('conformance/context/premultiplyalpha-test.html',
@@ -514,8 +502,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Vulkan / Win / Intel / Passthough command decoder
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['win', 'passthrough', 'vulkan', 'intel'], bug=2722) # ANGLE bug ID
-    self.Fail('conformance/extensions/webgl-compressed-texture-astc.html',
-        ['win', 'passthrough', 'vulkan', 'intel'], bug=3005) # ANGLE bug ID
 
     # Vulkan / Win / AMD / Passthough command decoder
     self.Fail('conformance/buffers/buffer-data-dynamic-delay.html',
@@ -536,6 +522,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/' +
         'image_bitmap_from_canvas/tex-2d-rgb*.html',
         ['win', 'passthrough', 'vulkan', 'amd'], bug=931016)
+    self.Fail('conformance/glsl/bugs/assign-to-swizzled-twice-in-function.html',
+        ['win', 'passthrough', 'vulkan', 'amd'], bug=3343) # ANGLE bug ID
 
     # Mac failures
     self.Fail('conformance/glsl/misc/fragcolor-fragdata-invariant.html',
@@ -582,6 +570,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=784817)
     self.Fail('conformance/uniforms/uniform-samplers-test.html',
         ['mac', 'debug', ('nvidia', 0xfe9)], bug=871352)
+    self.Fail('conformance/glsl/misc/shader-with-non-reserved-words.html',
+        ['mac', 'debug', ('nvidia', 0xfe9)], bug=948218)
 
     # Already fixed with Mesa 17.1.6
     self.Fail('conformance/extensions/webgl-compressed-texture-astc.html',
@@ -626,10 +616,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
         ['linux', 'amd', 'no_passthrough'], bug=479952)
 
-    # Linux passthrough, all vendors
-    self.Fail('conformance/extensions/oes-vertex-array-object.html',
-        ['linux', 'passthrough'], bug=920033)
-
     # Linux passthrough AMD
     self.Fail('conformance/renderbuffers/' +
         'depth-renderbuffer-initialization.html',
@@ -663,6 +649,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/misc/' +
         'copytexsubimage2d-large-partial-copy-corruption.html',
         ['android', 'no_passthrough', 'qualcomm'], bug=679697)
+
+    self.Fail('conformance/rendering/blending.html',
+        ['android', 'no_passthrough'], bug=951628)
     # The following WebView crashes are causing problems with further
     # tests in the suite, so skip them for now.
     self.Skip('conformance/textures/video/' +

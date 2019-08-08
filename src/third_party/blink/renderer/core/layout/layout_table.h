@@ -185,8 +185,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   }
 
   LayoutTableSection* Header() const {
-    // TODO(mstensho): We should ideally DCHECK(!needsSectionRecalc()) here, but
-    // we currently cannot, due to crbug.com/693212
+    DCHECK(!NeedsSectionRecalc());
     return head_;
   }
   LayoutTableSection* Footer() const {

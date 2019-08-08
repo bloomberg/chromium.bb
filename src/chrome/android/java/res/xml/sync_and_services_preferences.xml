@@ -3,6 +3,10 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
+<!-- Note: If a synced pref is added/removed from this file, the method
+     |GetSyncedServicePrefNames| in
+     chrome/browser/unified_consent/unified_consent_service_factory.cc has to be
+     updated accordingly. -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <org.chromium.chrome.browser.preferences.SignInPreference
         android:key="sign_in"

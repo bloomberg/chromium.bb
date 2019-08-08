@@ -20,7 +20,6 @@ import android.view.inputmethod.InputConnection;
 
 import org.junit.Assert;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.ViewEventSinkImpl;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
@@ -32,6 +31,7 @@ import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.test.util.TestInputMethodManagerWrapper;
 import org.chromium.content_public.browser.test.util.TestInputMethodManagerWrapper.InputConnectionProvider;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.ui.base.ime.TextInputType;
 
@@ -143,12 +143,8 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
     }
 
     void fullyLoadUrl(final String url) throws Throwable {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                getActivity().getActiveShell().loadUrl(url);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { getActivity().getActiveShell().loadUrl(url); });
         waitForActiveShellToBeDoneLoading();
     }
 
@@ -306,13 +302,14 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
 
     ChromiumBaseInputConnection getInputConnection() {
         try {
-            return ThreadUtils.runOnUiThreadBlocking(new Callable<ChromiumBaseInputConnection>() {
-                @Override
-                public ChromiumBaseInputConnection call() {
-                    return (ChromiumBaseInputConnection) getImeAdapter()
-                            .getInputConnectionForTest();
-                }
-            });
+            return TestThreadUtils.runOnUiThreadBlocking(
+                    new Callable<ChromiumBaseInputConnection>() {
+                        @Override
+                        public ChromiumBaseInputConnection call() {
+                            return (ChromiumBaseInputConnection) getImeAdapter()
+                                    .getInputConnectionForTest();
+                        }
+                    });
         } catch (ExecutionException e) {
             e.printStackTrace();
             Assert.fail();
@@ -321,76 +318,42 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
     }
 
     void restartInput() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mImeAdapter.restartInput();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mImeAdapter.restartInput(); });
     }
 
     // After calling this method, we should call assertClipboardContents() to wait for the clipboard
     // to get updated. See cubug.com/621046
     void copy() {
         final WebContentsImpl webContents = (WebContentsImpl) getWebContents();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                webContents.copy();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { webContents.copy(); });
     }
 
     void cut() {
         final WebContentsImpl webContents = (WebContentsImpl) getWebContents();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                webContents.cut();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { webContents.cut(); });
     }
 
     void setClip(final CharSequence text) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                final ClipboardManager clipboardManager =
-                        (ClipboardManager) getActivity().getSystemService(
-                                Context.CLIPBOARD_SERVICE);
-                clipboardManager.setPrimaryClip(ClipData.newPlainText(null, text));
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            final ClipboardManager clipboardManager =
+                    (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+            clipboardManager.setPrimaryClip(ClipData.newPlainText(null, text));
         });
     }
 
     void paste() {
         final WebContentsImpl webContents = (WebContentsImpl) getWebContents();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                webContents.paste();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { webContents.paste(); });
     }
 
     void selectAll() {
         final WebContentsImpl webContents = (WebContentsImpl) getWebContents();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                webContents.selectAll();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { webContents.selectAll(); });
     }
 
     void collapseSelection() {
         final WebContentsImpl webContents = (WebContentsImpl) getWebContents();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                webContents.collapseSelection();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { webContents.collapseSelection(); });
     }
 
     /**
@@ -538,12 +501,7 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
     }
 
     void dispatchKeyEvent(final KeyEvent event) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mImeAdapter.dispatchKeyEvent(event);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mImeAdapter.dispatchKeyEvent(event); });
     }
 
     void attachPhysicalKeyboard() {
@@ -565,12 +523,8 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
     }
 
     private void onConfigurationChanged(final Configuration config) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ViewEventSinkImpl.from(getWebContents()).onConfigurationChanged(config);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { ViewEventSinkImpl.from(getWebContents()).onConfigurationChanged(config); });
     }
 
     /**

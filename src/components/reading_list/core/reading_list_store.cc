@@ -209,9 +209,9 @@ base::Optional<syncer::ModelError> ReadingListStore::MergeSyncData(
 
   // Merge sync to local data.
   for (const auto& change : entity_data) {
-    synced_entries.insert(change.storage_key());
+    synced_entries.insert(change->storage_key());
     const sync_pb::ReadingListSpecifics& specifics =
-        change.data().specifics.reading_list();
+        change->data().specifics.reading_list();
     // Deserialize entry.
     std::unique_ptr<ReadingListEntry> entry(
         ReadingListEntry::FromReadingListSpecifics(specifics, clock_->Now()));
@@ -291,15 +291,15 @@ base::Optional<syncer::ModelError> ReadingListStore::ApplySyncChanges(
       model_->BeginBatchUpdates();
   auto token = EnsureBatchCreated();
 
-  for (syncer::EntityChange& change : entity_changes) {
-    if (change.type() == syncer::EntityChange::ACTION_DELETE) {
-      batch_->DeleteData(change.storage_key());
+  for (const std::unique_ptr<syncer::EntityChange>& change : entity_changes) {
+    if (change->type() == syncer::EntityChange::ACTION_DELETE) {
+      batch_->DeleteData(change->storage_key());
       // Need to notify model that entry is deleted.
-      delegate_->SyncRemoveEntry(GURL(change.storage_key()));
+      delegate_->SyncRemoveEntry(GURL(change->storage_key()));
     } else {
       // Deserialize entry.
       const sync_pb::ReadingListSpecifics& specifics =
-          change.data().specifics.reading_list();
+          change->data().specifics.reading_list();
       std::unique_ptr<ReadingListEntry> entry(
           ReadingListEntry::FromReadingListSpecifics(specifics, clock_->Now()));
 

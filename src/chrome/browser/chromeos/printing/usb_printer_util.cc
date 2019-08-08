@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/big_endian.h"
-#include "base/md5.h"
+#include "base/hash/md5.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"

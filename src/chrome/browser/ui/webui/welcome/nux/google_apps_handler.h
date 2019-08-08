@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_GOOGLE_APPS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_GOOGLE_APPS_HANDLER_H_
 
-#include <array>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/values.h"
@@ -25,8 +25,6 @@ enum class GoogleAppsInteraction {
   kCount,
 };
 
-const size_t kGoogleAppCount = 5;
-
 class GoogleAppsHandler : public content::WebUIMessageHandler {
  public:
   GoogleAppsHandler();
@@ -40,7 +38,7 @@ class GoogleAppsHandler : public content::WebUIMessageHandler {
   void HandleGetGoogleAppsList(const base::ListValue* args);
 
  private:
-  std::array<BookmarkItem, kGoogleAppCount> google_apps_;
+  std::vector<BookmarkItem> google_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleAppsHandler);
 };

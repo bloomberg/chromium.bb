@@ -15,12 +15,14 @@ namespace blink {
 ScheduledNavigation::ScheduledNavigation(ClientNavigationReason reason,
                                          double delay,
                                          Document* origin_document,
-                                         bool is_location_change,
+                                         const KURL& url,
+                                         WebFrameLoadType frame_load_type,
                                          base::TimeTicks input_timestamp)
     : reason_(reason),
       delay_(delay),
       origin_document_(origin_document),
-      is_location_change_(is_location_change),
+      url_(url),
+      frame_load_type_(frame_load_type),
       input_timestamp_(input_timestamp) {
   if (LocalFrame::HasTransientUserActivation(
           origin_document ? origin_document->GetFrame() : nullptr))

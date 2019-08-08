@@ -62,8 +62,8 @@ class ChromeDownloadManagerDelegate
   static void DisableSafeBrowsing(download::DownloadItem* item);
 
   void SetDownloadManager(content::DownloadManager* dm);
-#if defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
   void ChooseDownloadLocation(
       gfx::NativeWindow native_window,
       int64_t total_bytes,
@@ -221,7 +221,7 @@ class ChromeDownloadManagerDelegate
   void ReturnNextId(const content::DownloadIdCallback& callback);
 
   void OnDownloadTargetDetermined(
-      int32_t download_id,
+      uint32_t download_id,
       const content::DownloadTargetCallback& callback,
       std::unique_ptr<DownloadTargetInfo> target_info);
 

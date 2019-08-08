@@ -56,8 +56,6 @@ test("components_unittests") {
   }
 
   if (is_android) {
-    enable_multidex = true
-
     # The tracing unittests require this for testing unwinding. See
     # stack_unwinder_android_unittest.cc.
     if (can_unwind_with_cfi_table && is_official_build) {
@@ -118,7 +116,6 @@ test("components_unittests") {
     "//components/language_usage_metrics:unit_tests",
     "//components/leveldb_proto:unit_tests",
     "//components/live_tab_count_metrics:unit_tests",
-    "//components/login:unit_tests",
     "//components/metrics:unit_tests",
     "//components/navigation_metrics:unit_tests",
     "//components/net_log:unit_tests",
@@ -160,8 +157,8 @@ test("components_unittests") {
     "//components/sync_bookmarks:unit_tests",
     "//components/sync_preferences:unit_tests",
     "//components/sync_sessions:unit_tests",
-    "//components/task_scheduler_util:unit_tests",
     "//components/test:run_all_unittests",
+    "//components/thread_pool_util:unit_tests",
     "//components/translate/core/browser:unit_tests",
     "//components/translate/core/common:unit_tests",
     "//components/translate/core/language_detection:unit_tests",
@@ -181,7 +178,7 @@ test("components_unittests") {
     "//components/webdata/common:unit_tests",
   ]
 
-  if (toolkit_views && use_aura) {
+  if (toolkit_views) {
     deps += [
       "//components/ui_devtools:unit_tests",
       "//components/ui_devtools/views:unit_tests",
@@ -201,6 +198,7 @@ test("components_unittests") {
       "//components/autofill/ios/browser:unit_tests",
       "//components/autofill/ios/form_util:unit_tests",
       "//components/image_fetcher/ios:unit_tests",
+      "//components/language/ios/browser:unit_tests",
       "//components/password_manager/ios:unit_tests",
       "//components/signin/ios/browser:unit_tests",
       "//components/translate/ios/browser:unit_tests",
@@ -369,8 +367,7 @@ test("components_unittests") {
   if (enable_print_preview) {
     deps += [ "//components/pwg_encoder:unit_tests" ]
   }
-
-  if (safe_browsing_mode == 1) {
+  if (safe_browsing_mode == 1 || safe_browsing_mode == 3) {
     deps += [ "//components/safe_browsing/db:unit_tests_desktop" ]
   } else if (safe_browsing_mode == 2) {
     deps += [ "//components/safe_browsing/android:unit_tests_mobile" ]
@@ -542,7 +539,6 @@ if (!is_ios) {
     }
 
     if (is_android) {
-      enable_multidex = true
       sources += [
         "autofill_assistant/browser/web_controller_browsertest.cc",
         "test/android/browsertests_apk/components_browser_tests_jni_onload.cc",
@@ -570,7 +566,9 @@ if (!is_ios) {
       # a MANUAL component_browsertest.
       sources += [ "dom_distiller/standalone/content_extractor_browsertest.cc" ]
       deps += [
+        "//components/keyed_service/core:test_support",
         "//components/leveldb_proto",
+        "//components/leveldb_proto/content:factory",
         "//components/prefs:test_support",
         "//components/sync_preferences:test_support",
       ]
@@ -625,7 +623,6 @@ if (!is_ios) {
     ]
 
     if (is_android) {
-      enable_multidex = true
       deps += [ "//ui/android:ui_java" ]
       if (use_v8_context_snapshot) {
         deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]

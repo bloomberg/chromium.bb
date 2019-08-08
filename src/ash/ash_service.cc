@@ -4,6 +4,7 @@
 
 #include "ash/ash_service.h"
 
+#include "ash/dbus/ash_dbus_helper.h"
 #include "ash/mojo_interface_factory.h"
 #include "ash/network_connect_delegate_mus.h"
 #include "ash/shell.h"
@@ -16,9 +17,9 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/hammerd/hammerd_client.h"
-#include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/dbus/power/power_policy_controller.h"
+#include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_handler.h"
@@ -85,16 +86,17 @@ AshService::~AshService() {
   chromeos::NetworkConnect::Shutdown();
   network_connect_delegate_.reset();
   chromeos::NetworkHandler::Shutdown();
+  chromeos::PowerPolicyController::Shutdown();
+  chromeos::CrasAudioHandler::Shutdown();
+
   device::BluetoothAdapterFactory::Shutdown();
   bluez::BluezDBusManager::Shutdown();
-  chromeos::PowerPolicyController::Shutdown();
 
+  chromeos::shill_clients::Shutdown();
   chromeos::SystemClockClient::Shutdown();
   chromeos::PowerManagerClient::Shutdown();
   chromeos::HammerdClient::Shutdown();
-  chromeos::CrasAudioHandler::Shutdown();
-
-  chromeos::DBusThreadManager::Shutdown();
+  chromeos::CrasAudioClient::Shutdown();
 
   // |gpu_host_| must be completely destroyed before Env as GpuHost depends on
   // Ozone, which Env owns.
@@ -129,6 +131,7 @@ void AshService::InitForMash() {
 
   // Must occur after mojo::ApplicationRunner has initialized AtExitManager, but
   // before WindowManager::Init(). Tests might initialize their own instance.
+  ash_dbus_helper_ = AshDBusHelper::Create();
   InitializeDBusClients();
 
   // TODO(jamescook): Refactor StatisticsProvider so we can get just the data
@@ -153,24 +156,31 @@ void AshService::InitForMash() {
 }
 
 void AshService::InitializeDBusClients() {
-  CHECK(!chromeos::DBusThreadManager::IsInitialized());
+  dbus::Bus* bus = ash_dbus_helper_->bus();
 
-  // TODO(stevenjb): Eliminate use of DBusThreadManager and initialize
-  // dbus::Thread, dbus::Bus and required clients directly.
-  chromeos::DBusThreadManager::Initialize(chromeos::DBusThreadManager::kShared);
-  dbus::Bus* bus = chromeos::DBusThreadManager::Get()->GetSystemBus();
+  if (bus) {
+    chromeos::CrasAudioClient::Initialize(bus);
+    chromeos::HammerdClient::Initialize(bus);
+    chromeos::PowerManagerClient::Initialize(bus);
+    chromeos::SystemClockClient::Initialize(bus);
+    chromeos::shill_clients::Initialize(bus);
+    // TODO(ortuno): Eliminate BluezDBusManager code from Ash, crbug.com/830893.
+    bluez::BluezDBusManager::Initialize(bus);
+  } else {
+    chromeos::CrasAudioClient::InitializeFake();
+    chromeos::HammerdClient::InitializeFake();
+    chromeos::PowerManagerClient::InitializeFake();
+    chromeos::SystemClockClient::InitializeFake();
+    chromeos::shill_clients::InitializeFakes();
+    // TODO(ortuno): Eliminate BluezDBusManager code from Ash, crbug.com/830893.
+    bluez::BluezDBusManager::InitializeFake();
+  }
 
-  // TODO(jamescook): Initialize real audio handler.
+  // TODO(https://crbug.com/644336): Initialize real audio handler.
   chromeos::CrasAudioHandler::InitializeForTesting();
-  chromeos::HammerdClient::Initialize(bus);
-  chromeos::PowerManagerClient::Initialize(bus);
-  chromeos::SystemClockClient::Initialize(bus);
 
   chromeos::PowerPolicyController::Initialize(
       chromeos::PowerManagerClient::Get());
-
-  // TODO(ortuno): Eliminate BluezDBusManager code from Ash, crbug.com/830893.
-  bluez::BluezDBusManager::Initialize();
 
   // TODO(stevenjb): Eliminate NetworkHandler code from Ash, crbug.com/644355.
   CHECK(!chromeos::NetworkHandler::IsInitialized());
@@ -182,8 +192,6 @@ void AshService::InitializeDBusClients() {
 void AshService::OnStart() {
   mojo_interface_factory::RegisterInterfaces(
       &registry_, base::ThreadTaskRunnerHandle::Get());
-  registry_.AddInterface(base::BindRepeating(&AshService::BindServiceFactory,
-                                             base::Unretained(this)));
 
   if (::features::IsMultiProcessMash())
     InitForMash();
@@ -196,24 +204,19 @@ void AshService::OnBindInterface(
   registry_.BindInterface(interface_name, std::move(handle));
 }
 
-void AshService::CreateService(
-    service_manager::mojom::ServiceRequest service,
-    const std::string& name,
-    service_manager::mojom::PIDReceiverPtr pid_receiver) {
-  DCHECK_EQ(name, ws::mojom::kServiceName);
-  Shell::Get()->window_service_owner()->BindWindowService(std::move(service));
+void AshService::CreatePackagedServiceInstance(
+    const std::string& service_name,
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver,
+    CreatePackagedServiceInstanceCallback callback) {
+  DCHECK_EQ(service_name, ws::mojom::kServiceName);
+  Shell::Get()->window_service_owner()->BindWindowService(std::move(receiver));
   if (::features::IsMultiProcessMash()) {
     ws::WindowService* window_service =
         Shell::Get()->window_service_owner()->window_service();
     input_device_controller_ = std::make_unique<ws::InputDeviceController>();
     input_device_controller_->AddInterface(window_service->registry());
   }
-  pid_receiver->SetPID(base::GetCurrentProcId());
-}
-
-void AshService::BindServiceFactory(
-    service_manager::mojom::ServiceFactoryRequest request) {
-  service_factory_bindings_.AddBinding(this, std::move(request));
+  std::move(callback).Run(base::GetCurrentProcId());
 }
 
 void AshService::CreateFrameSinkManager() {

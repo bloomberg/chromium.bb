@@ -20,21 +20,25 @@ namespace webrtc {
 
 BufferedFrameDecryptor::BufferedFrameDecryptor(
     OnDecryptedFrameCallback* decrypted_frame_callback,
-    OnDecryptionStatusChangeCallback* decryption_status_change_callback,
-    rtc::scoped_refptr<FrameDecryptorInterface> frame_decryptor)
+    OnDecryptionStatusChangeCallback* decryption_status_change_callback)
     : generic_descriptor_auth_experiment_(
           field_trial::IsEnabled("WebRTC-GenericDescriptorAuth")),
-      frame_decryptor_(std::move(frame_decryptor)),
       decrypted_frame_callback_(decrypted_frame_callback),
       decryption_status_change_callback_(decryption_status_change_callback) {}
 
 BufferedFrameDecryptor::~BufferedFrameDecryptor() {}
+
+void BufferedFrameDecryptor::SetFrameDecryptor(
+    rtc::scoped_refptr<FrameDecryptorInterface> frame_decryptor) {
+  frame_decryptor_ = std::move(frame_decryptor);
+}
 
 void BufferedFrameDecryptor::ManageEncryptedFrame(
     std::unique_ptr<video_coding::RtpFrameObject> encrypted_frame) {
   switch (DecryptFrame(encrypted_frame.get())) {
     case FrameDecision::kStash:
       if (stashed_frames_.size() >= kMaxStashedFrames) {
+        RTC_LOG(LS_WARNING) << "Encrypted frame stash full poping oldest item.";
         stashed_frames_.pop_front();
       }
       stashed_frames_.push_back(std::move(encrypted_frame));
@@ -52,9 +56,9 @@ BufferedFrameDecryptor::FrameDecision BufferedFrameDecryptor::DecryptFrame(
     video_coding::RtpFrameObject* frame) {
   // Optionally attempt to decrypt the raw video frame if it was provided.
   if (frame_decryptor_ == nullptr) {
-    RTC_LOG(LS_WARNING) << "Frame decryption required but not attached to this "
-                           "stream. Dropping frame.";
-    return FrameDecision::kDrop;
+    RTC_LOG(LS_INFO) << "Frame decryption required but not attached to this "
+                        "stream. Stashing frame.";
+    return FrameDecision::kStash;
   }
   // When using encryption we expect the frame to have the generic descriptor.
   absl::optional<RtpGenericFrameDescriptor> descriptor =
@@ -79,25 +83,25 @@ BufferedFrameDecryptor::FrameDecision BufferedFrameDecryptor::DecryptFrame(
   }
 
   // Attempt to decrypt the video frame.
-  size_t bytes_written = 0;
-  const int status = frame_decryptor_->Decrypt(
-      cricket::MEDIA_TYPE_VIDEO, /*csrcs=*/{}, additional_data, *frame,
-      inline_decrypted_bitstream, &bytes_written);
-
+  const FrameDecryptorInterface::Result decrypt_result =
+      frame_decryptor_->Decrypt(cricket::MEDIA_TYPE_VIDEO, /*csrcs=*/{},
+                                additional_data, *frame,
+                                inline_decrypted_bitstream);
   // Optionally call the callback if there was a change in status
-  if (status != last_status_) {
-    last_status_ = status;
-    decryption_status_change_callback_->OnDecryptionStatusChange(status);
+  if (decrypt_result.status != last_status_) {
+    last_status_ = decrypt_result.status;
+    decryption_status_change_callback_->OnDecryptionStatusChange(
+        decrypt_result.status);
   }
 
-  if (status != 0) {
+  if (!decrypt_result.IsOk()) {
     // Only stash frames if we have never decrypted a frame before.
     return first_frame_decrypted_ ? FrameDecision::kDrop
                                   : FrameDecision::kStash;
   }
-  RTC_CHECK_LE(bytes_written, max_plaintext_byte_size);
+  RTC_CHECK_LE(decrypt_result.bytes_written, max_plaintext_byte_size);
   // Update the frame to contain just the written bytes.
-  frame->set_size(bytes_written);
+  frame->set_size(decrypt_result.bytes_written);
 
   // Indicate that all future fail to decrypt frames should be dropped.
   if (!first_frame_decrypted_) {
@@ -108,6 +112,10 @@ BufferedFrameDecryptor::FrameDecision BufferedFrameDecryptor::DecryptFrame(
 }
 
 void BufferedFrameDecryptor::RetryStashedFrames() {
+  if (!stashed_frames_.empty()) {
+    RTC_LOG(LS_INFO) << "Retrying stashed encrypted frames. Count: "
+                     << stashed_frames_.size();
+  }
   for (auto& frame : stashed_frames_) {
     if (DecryptFrame(frame.get()) == FrameDecision::kDecrypted) {
       decrypted_frame_callback_->OnDecryptedFrame(std::move(frame));

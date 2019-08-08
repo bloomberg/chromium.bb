@@ -14,8 +14,7 @@ namespace blink {
 XRView::XRView(XRSession* session, XREye eye)
     : eye_(eye),
       session_(session),
-      projection_matrix_(DOMFloat32Array::Create(16)),
-      view_matrix_(DOMFloat32Array::Create(16)) {
+      projection_matrix_(DOMFloat32Array::Create(16)) {
   eye_string_ = (eye_ == kEyeLeft ? "left" : "right");
 }
 
@@ -23,13 +22,11 @@ XRView::XRView()
     : eye_(XREye::kEyeLeft),
       eye_string_("left"),
       session_(nullptr),
-      projection_matrix_(DOMFloat32Array::Create(16)),
-      view_matrix_(DOMFloat32Array::Create(16)) {}
+      projection_matrix_(DOMFloat32Array::Create(16)) {}
 
 // deep copy
 XRView::XRView(const XRView& other)
-    : projection_matrix_(DOMFloat32Array::Create(16)),
-      view_matrix_(DOMFloat32Array::Create(16)) {
+    : projection_matrix_(DOMFloat32Array::Create(16)) {
   *this = other;
 }
 
@@ -57,14 +54,10 @@ XRView& XRView::operator=(const XRView& other) {
 
 void XRView::AssignMatrices(const XRView& other) {
   const float* src_projection_data = other.projection_matrix_->Data();
-  const float* src_view_data = other.view_matrix_->Data();
-
   float* dst_projection_data = projection_matrix_->Data();
-  float* dst_view_data = view_matrix_->Data();
 
   for (int i = 0; i < 16; ++i) {
     dst_projection_data[i] = src_projection_data[i];
-    dst_view_data[i] = src_view_data[i];
   }
 }
 
@@ -172,10 +165,11 @@ std::unique_ptr<TransformationMatrix> XRView::UnprojectPointer(
   if (inv_projection_dirty_) {
     float* m = projection_matrix_->Data();
     std::unique_ptr<TransformationMatrix> projection =
-        TransformationMatrix::Create(m[0], m[1], m[2], m[3], m[4], m[5], m[6],
-                                     m[7], m[8], m[9], m[10], m[11], m[12],
-                                     m[13], m[14], m[15]);
-    inv_projection_ = TransformationMatrix::Create(projection->Inverse());
+        std::make_unique<TransformationMatrix>(
+            m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10],
+            m[11], m[12], m[13], m[14], m[15]);
+    inv_projection_ =
+        std::make_unique<TransformationMatrix>(projection->Inverse());
     inv_projection_dirty_ = false;
   }
 
@@ -212,38 +206,25 @@ std::unique_ptr<TransformationMatrix> XRView::UnprojectPointer(
 
   // LookAt matrices are view matrices (inverted), so invert before returning.
   std::unique_ptr<TransformationMatrix> pointer =
-      TransformationMatrix::Create(inv_pointer.Inverse());
+      std::make_unique<TransformationMatrix>(inv_pointer.Inverse());
 
   return pointer;
 }
 
-// Pass inv_pose_matrix by value because this method modifies its offset, but
+// Pass pose_matrix by value because this method modifies its offset, but
 // the calling code doesn't want it changed.
-void XRView::UpdateViewMatrix(TransformationMatrix inv_pose_matrix) {
-  // Transform by the negative offset, since we're operating on the inverted
-  // matrix
-  inv_pose_matrix.PostTranslate3d(-offset_.X(), -offset_.Y(), -offset_.Z());
-  view_matrix_ = transformationMatrixToDOMFloat32Array(inv_pose_matrix);
-
-  // transform's matrix is the inverse of the view matrix
-  // can't use the original pose matrix because it has translation applied
-  // after taking the inverse
-  // compute the inverse lazily
-  DCHECK(inv_pose_matrix.IsInvertible());
-  inv_pose_ = TransformationMatrix::Create(inv_pose_matrix);
+void XRView::UpdatePoseMatrix(TransformationMatrix pose_matrix) {
+  pose_matrix.Translate3d(offset_.X(), offset_.Y(), offset_.Z());
+  transform_ = MakeGarbageCollected<XRRigidTransform>(pose_matrix);
 }
 
-XRRigidTransform* XRView::transform() {
-  if (!transform_) {
-    transform_ = MakeGarbageCollected<XRRigidTransform>(inv_pose_->Inverse());
-  }
+XRRigidTransform* XRView::transform() const {
   return transform_;
 }
 
 void XRView::Trace(blink::Visitor* visitor) {
   visitor->Trace(session_);
   visitor->Trace(projection_matrix_);
-  visitor->Trace(view_matrix_);
   visitor->Trace(transform_);
   ScriptWrappable::Trace(visitor);
 }

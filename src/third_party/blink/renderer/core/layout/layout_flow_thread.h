@@ -70,7 +70,6 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
 
   bool IsLayoutFlowThread() const final { return true; }
   virtual bool IsLayoutMultiColumnFlowThread() const { return false; }
-  virtual bool IsLayoutPagedFlowThread() const { return false; }
 
   bool CreatesNewFormattingContext() const final {
     // The spec requires multicol containers to establish new formatting

@@ -38,7 +38,7 @@ std::string GetAccountId() {
 class UserConsentEqualityChecker : public SingleClientStatusChangeChecker {
  public:
   UserConsentEqualityChecker(
-      browser_sync::ProfileSyncService* service,
+      syncer::ProfileSyncService* service,
       FakeServer* fake_server,
       std::vector<UserConsentSpecifics> expected_specifics)
       : SingleClientStatusChangeChecker(service), fake_server_(fake_server) {

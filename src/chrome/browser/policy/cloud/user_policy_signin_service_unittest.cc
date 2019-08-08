@@ -15,7 +15,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -83,14 +82,13 @@ constexpr char kHostedDomainResponse[] = R"(
       "hd": "test.com"
     })";
 
-UserCloudPolicyManager* BuildCloudPolicyManager(
-    content::BrowserContext* context) {
-  MockUserCloudPolicyStore* store = new MockUserCloudPolicyStore();
+std::unique_ptr<UserCloudPolicyManager> BuildCloudPolicyManager() {
+  auto store = std::make_unique<MockUserCloudPolicyStore>();
   EXPECT_CALL(*store, Load()).Times(AnyNumber());
 
-  return new UserCloudPolicyManager(
-      std::unique_ptr<UserCloudPolicyStore>(store), base::FilePath(),
-      std::unique_ptr<CloudExternalDataManager>(),
+  return std::make_unique<UserCloudPolicyManager>(
+      std::move(store), base::FilePath(),
+      /*cloud_external_data_manager=*/nullptr,
       base::ThreadTaskRunnerHandle::Get(),
       network::TestNetworkConnectionTracker::CreateGetter());
 }
@@ -98,8 +96,7 @@ UserCloudPolicyManager* BuildCloudPolicyManager(
 class UserPolicySigninServiceTest : public testing::Test {
  public:
   UserPolicySigninServiceTest()
-      : mock_store_(NULL),
-        thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         test_account_id_(AccountId::FromUserEmailGaiaId(
             kTestUser,
             identity::GetTestGaiaIdForEmail(kTestUser))),
@@ -153,14 +150,6 @@ class UserPolicySigninServiceTest : public testing::Test {
         new sync_preferences::TestingPrefServiceSyncable());
     RegisterUserProfilePrefs(prefs->registry());
 
-    // UserCloudPolicyManagerFactory isn't a real
-    // BrowserContextKeyedServiceFactory (it derives from
-    // BrowserContextKeyedBaseFactory and exposes its own APIs to get
-    // instances) so we have to inject our testing factory via a special
-    // API before creating the profile.
-    UserCloudPolicyManagerFactory::GetInstance()->RegisterTestingFactory(
-        base::BindRepeating(&BuildCloudPolicyManager));
-
     TestingProfile::Builder builder;
     builder.SetPrefService(
         std::unique_ptr<sync_preferences::PrefServiceSyncable>(
@@ -168,16 +157,15 @@ class UserPolicySigninServiceTest : public testing::Test {
     builder.AddTestingFactory(
         ChromeSigninClientFactory::GetInstance(),
         base::BindRepeating(&signin::BuildTestSigninClient));
+    builder.SetUserCloudPolicyManager(BuildCloudPolicyManager());
     profile_ = IdentityTestEnvironmentProfileAdaptor::
         CreateProfileForIdentityTestEnvironment(builder);
 
     identity_test_env_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile_.get());
 
-    // Tests are responsible for freeing the UserCloudPolicyManager instances
-    // they inject.
-    manager_.reset(
-        UserCloudPolicyManagerFactory::GetForBrowserContext(profile_.get()));
+    manager_ = profile_->GetUserCloudPolicyManager();
+    DCHECK(manager_);
     manager_->Init(&schema_registry_);
     mock_store_ =
         static_cast<MockUserCloudPolicyStore*>(manager_->core()->store());
@@ -189,7 +177,7 @@ class UserPolicySigninServiceTest : public testing::Test {
 
   void TearDown() override {
     UserPolicySigninServiceFactory::SetDeviceManagementServiceForTesting(NULL);
-    UserCloudPolicyManagerFactory::GetInstance()->ClearTestingFactory();
+
     // Free the profile before we clear out the browser prefs.
     identity_test_env_adaptor_.reset();
     profile_.reset();
@@ -354,9 +342,9 @@ class UserPolicySigninServiceTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_env_adaptor_;
-  MockUserCloudPolicyStore* mock_store_;  // Not owned.
+  MockUserCloudPolicyStore* mock_store_ = nullptr;  // Not owned.
   SchemaRegistry schema_registry_;
-  std::unique_ptr<UserCloudPolicyManager> manager_;
+  UserCloudPolicyManager* manager_ = nullptr;  // Not owned.
 
   // BrowserPolicyConnector and UrlFetcherFactory want to initialize and free
   // various components asynchronously via tasks, so create fake threads here.

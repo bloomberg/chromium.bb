@@ -338,6 +338,18 @@ class TestShelfController : public ash::mojom::ShelfController {
                             ash::mojom::ShelfItemDelegatePtr) override {
     set_delegate_count_++;
   }
+  void GetAutoHideBehaviorForTesting(
+      int64_t display_id,
+      GetAutoHideBehaviorForTestingCallback callback) override {
+    std::move(callback).Run(auto_hide_behavior_);
+  }
+  void SetAutoHideBehaviorForTesting(
+      int64_t display_id,
+      ash::ShelfAutoHideBehavior behavior,
+      SetAutoHideBehaviorForTestingCallback callback) override {
+    auto_hide_behavior_ = behavior;
+    std::move(callback).Run();
+  }
 
   // Helper that waits for idle and extracts the non-default bitmap from the
   // last updated item in shelf controller.
@@ -376,6 +388,8 @@ class TestShelfController : public ash::mojom::ShelfController {
   base::OnceClosure updated_callback_;
   size_t set_delegate_count_ = 0;
   ash::ShelfItem last_item_;
+  ash::ShelfAutoHideBehavior auto_hide_behavior_ =
+      ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
 
   ash::mojom::ShelfObserverAssociatedPtr observer_;
   mojo::Binding<ash::mojom::ShelfController> binding_;
@@ -626,8 +640,8 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::TearDown();
   }
 
-  BrowserWindow* CreateBrowserWindow() override {
-    return CreateTestBrowserWindowAura();
+  std::unique_ptr<BrowserWindow> CreateBrowserWindow() override {
+    return std::unique_ptr<TestBrowserWindow>(CreateTestBrowserWindowAura());
   }
 
   std::unique_ptr<Browser> CreateBrowserWithTestWindowForProfile(
@@ -965,7 +979,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   }
 
   void SendListOfArcApps() {
-    arc_test_.app_instance()->RefreshAppList();
     arc_test_.app_instance()->SendRefreshAppList(arc_test_.fake_apps());
   }
 
@@ -974,7 +987,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   }
 
   void UninstallArcApps() {
-    arc_test_.app_instance()->RefreshAppList();
     arc_test_.app_instance()->SendRefreshAppList(
         std::vector<arc::mojom::AppInfo>());
   }
@@ -1372,6 +1384,7 @@ class ChromeLauncherControllerMultiProfileWithArcTest
 
 TEST_F(ChromeLauncherControllerTest, DefaultApps) {
   InitLauncherController();
+
   // The model should only contain the browser shortcut, app list and back
   // button items.
   EXPECT_EQ("Back, AppList, Chrome", GetPinnedAppStatus());
@@ -1385,8 +1398,14 @@ TEST_F(ChromeLauncherControllerTest, DefaultApps) {
   // Install default apps in reverse order, compared how they are declared.
   // However pin positions should be in the order as they declared. Note,
   // default apps appear on shelf between manually pinned App1.
+
+  // Prefs are not yet synced. No default pin appears.
   extension_service_->AddExtension(extensionYoutubeApp_.get());
+  EXPECT_EQ("Back, AppList, Chrome, App1", GetPinnedAppStatus());
+
+  StartPrefSyncService(syncer::SyncDataList());
   EXPECT_EQ("Back, AppList, Chrome, Youtube, App1", GetPinnedAppStatus());
+
   extension_service_->AddExtension(extensionDocApp_.get());
   EXPECT_EQ("Back, AppList, Chrome, Doc, Youtube, App1", GetPinnedAppStatus());
   extension_service_->AddExtension(extensionGmailApp_.get());
@@ -2035,7 +2054,6 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForSuspendedApp) {
   const std::string app_id = ArcAppTest::GetAppId(app);
 
   // Register app first.
-  arc_test_.app_instance()->RefreshAppList();
   arc_test_.app_instance()->SendRefreshAppList({app});
   arc_test_.StopArcInstance();
 
@@ -2050,7 +2068,6 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForSuspendedApp) {
 
   // Send app with suspended state.
   app.suspended = true;
-  arc_test_.app_instance()->RefreshAppList();
   arc_test_.app_instance()->SendRefreshAppList({app});
 
   // Controler automatically closed.
@@ -2791,6 +2808,8 @@ TEST_F(ChromeLauncherControllerTest,
        RestoreDefaultAndRunningV1AppsResyncOrder) {
   InitLauncherController();
 
+  StartPrefSyncService(syncer::SyncDataList());
+
   syncer::SyncChangeList sync_list;
   InsertAddPinChange(&sync_list, 0, extension1_->id());
   InsertAddPinChange(&sync_list, 1, extensionGmailApp_->id());
@@ -2827,7 +2846,9 @@ TEST_F(ChromeLauncherControllerTest,
   EXPECT_EQ("Back, AppList, Chrome, Gmail, App1, app2", GetPinnedAppStatus());
 
   // Removing an item should simply close it and everything should shift.
-  SendPinChanges(syncer::SyncChangeList(), true);
+  syncer::SyncChangeList sync_list3;
+  InsertRemovePinChange(&sync_list3, extension1_->id());
+  SendPinChanges(sync_list3, false /* reset_pin_model */);
   EXPECT_EQ("Back, AppList, Chrome, Gmail, app2", GetPinnedAppStatus());
 }
 
@@ -3014,6 +3035,7 @@ TEST_F(ChromeLauncherControllerTest, UnpinWithUninstall) {
   extension_service_->AddExtension(extensionDocApp_.get());
 
   InitLauncherController();
+  StartPrefSyncService(syncer::SyncDataList());
 
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extensionGmailApp_->id()));
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extensionDocApp_->id()));
@@ -3225,6 +3247,7 @@ TEST_F(ChromeLauncherControllerTest, V1AppMenuGeneration) {
   EXPECT_EQ(0, browser()->tab_strip_model()->count());
 
   InitLauncherControllerWithBrowser();
+  StartPrefSyncService(syncer::SyncDataList());
 
   // The model should only contain the browser shortcut, app list and back
   // button items.
@@ -3285,6 +3308,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
        V1AppMenuGenerationTwoUsers) {
   // Create a browser item in the LauncherController.
   InitLauncherController();
+  StartPrefSyncService(syncer::SyncDataList());
   chrome::NewTab(browser());
 
   // Installing |extensionGmailApp_| pins it to the launcher.
@@ -3602,6 +3626,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
 // Checks that the generated menu list properly activates items.
 TEST_F(ChromeLauncherControllerTest, V1AppMenuExecution) {
   InitLauncherControllerWithBrowser();
+  StartPrefSyncService(syncer::SyncDataList());
 
   // Add |extensionGmailApp_| to the launcher and add two items.
   GURL gmail = GURL("https://mail.google.com/mail/u");
@@ -3650,6 +3675,7 @@ TEST_F(ChromeLauncherControllerTest, V1AppMenuExecution) {
 // Checks that the generated menu list properly deletes items.
 TEST_F(ChromeLauncherControllerTest, V1AppMenuDeletionExecution) {
   InitLauncherControllerWithBrowser();
+  StartPrefSyncService(syncer::SyncDataList());
 
   // Add |extensionGmailApp_| to the launcher and add two items.
   const ash::ShelfID gmail_id(extensionGmailApp_->id());
@@ -3696,6 +3722,7 @@ TEST_F(ChromeLauncherControllerTest, V1AppMenuDeletionExecution) {
 // the manifest file.
 TEST_F(ChromeLauncherControllerTest, GmailMatching) {
   InitLauncherControllerWithBrowser();
+  StartPrefSyncService(syncer::SyncDataList());
 
   // Create a Gmail browser tab.
   chrome::NewTab(browser());
@@ -3726,6 +3753,8 @@ TEST_F(ChromeLauncherControllerTest, GmailMatching) {
 // Tests that the Gmail extension does not match the offline verison.
 TEST_F(ChromeLauncherControllerTest, GmailOfflineMatching) {
   InitLauncherControllerWithBrowser();
+
+  StartPrefSyncService(syncer::SyncDataList());
 
   // Create a Gmail browser tab.
   chrome::NewTab(browser());
@@ -3936,12 +3965,12 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcManaged) {
                    "Back, AppList, Chrome, Play Store");
 
   // ARC is managed and enabled, Play Store pin should be available.
-  // Note: NEGOTIATING_TERMS_OF_SERVICE here means that opt-in flow starts.
+  // Note: CHECKING_ANDROID_MANAGEMENT here means that opt-in flow is skipped.
   profile()->GetTestingPrefService()->SetManagedPref(
       arc::prefs::kArcEnabled, std::make_unique<base::Value>(true));
   base::RunLoop().RunUntilIdle();
   ValidateArcState(true, true,
-                   arc::ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
+                   arc::ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT,
                    "Back, AppList, Chrome, Play Store");
 
   // ARC is managed and disabled, Play Store pin should not be available.
@@ -3959,6 +3988,7 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcManaged) {
                    "Back, AppList, Chrome, Play Store");
 
   // ARC is not managed and enabled, Play Store pin should be available.
+  // Note: NEGOTIATING_TERMS_OF_SERVICE here means that opt-in flow starts.
   EnablePlayStore(true);
   ValidateArcState(true, false,
                    arc::ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,

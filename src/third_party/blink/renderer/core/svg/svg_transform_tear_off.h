@@ -63,6 +63,7 @@ class SVGTransformTearOff final : public SVGPropertyTearOff<SVGTransform> {
   static SVGTransformTearOff* CreateDetached();
   static SVGTransformTearOff* Create(SVGMatrixTearOff*);
 
+  SVGTransformTearOff(SVGMatrixTearOff*);
   SVGTransformTearOff(SVGTransform*,
                       SVGAnimatedPropertyBase* binding,
                       PropertyIsAnimValType);

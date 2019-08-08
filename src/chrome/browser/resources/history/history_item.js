@@ -104,7 +104,7 @@ cr.define('history', function() {
       for (let i = 0; i < e.path.length; i++) {
         const elem = e.path[i];
         if (elem.id != 'checkbox' &&
-            (elem.nodeName == 'A' || elem.nodeName == 'BUTTON')) {
+            (elem.nodeName == 'A' || elem.nodeName == 'CR-ICON-BUTTON')) {
           return;
         }
       }
@@ -189,7 +189,7 @@ cr.define('history', function() {
       }
 
       if (this.$$('#bookmark-star') == this.root.activeElement) {
-        this.$['menu-button'].focus();
+        cr.ui.focusWithoutInk(this.$['menu-button']);
       }
 
       const browserService = history.BrowserService.getInstance();

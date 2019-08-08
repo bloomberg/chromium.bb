@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/memory/ref_counted.h"
+#import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
 
 @protocol ManualFillContentDelegate;
 @protocol ManualFillPasswordConsumer;
@@ -17,8 +18,8 @@ namespace password_manager {
 class PasswordStore;
 }  // namespace password_manager
 
+class FaviconLoader;
 class GURL;
-
 class WebStateList;
 
 namespace manual_fill {
@@ -31,7 +32,8 @@ extern NSString* const SuggestPasswordAccessibilityIdentifier;
 
 // Object in charge of getting the passwords relevant for the manual fill
 // passwords UI.
-@interface ManualFillPasswordMediator : NSObject<UISearchResultsUpdating>
+@interface ManualFillPasswordMediator
+    : NSObject <TableViewFaviconDataSource, UISearchResultsUpdating>
 
 // The consumer for passwords updates. Setting it will trigger the consumer
 // methods with the current data.
@@ -48,7 +50,9 @@ extern NSString* const SuggestPasswordAccessibilityIdentifier;
 
 // The designated initializer. |passwordStore| must not be nil.
 - (instancetype)initWithPasswordStore:
-    (scoped_refptr<password_manager::PasswordStore>)passwordStore
+                    (scoped_refptr<password_manager::PasswordStore>)
+                        passwordStore
+                        faviconLoader:(FaviconLoader*)faviconLoader
     NS_DESIGNATED_INITIALIZER;
 
 // Unavailable. Use |initWithWebStateList:passwordStore:|.

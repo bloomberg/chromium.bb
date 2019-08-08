@@ -72,14 +72,14 @@ URLChecker::~URLChecker() = default;
 
 bool URLChecker::CheckURL(const GURL& url, CheckCallback callback) {
   if (base::FeatureList::IsEnabled(kAllowAllGoogleUrls)) {
-    // TODO(treib): Hack: For now, allow all Google URLs to save QPS.
+    // Hack: For now, allow all Google URLs to save QPS.
     if (google_util::IsGoogleDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
                                        google_util::ALLOW_NON_STANDARD_PORTS)) {
       std::move(callback).Run(url, Classification::SAFE, false);
       return true;
     }
-    // TODO(treib): Hack: For now, allow all YouTube URLs since YouTube has its
-    // own Safety Mode anyway.
+    // Hack: For now, allow all YouTube URLs since YouTube has its own Safety
+    // Mode anyway.
     if (google_util::IsYoutubeDomainUrl(
             url, google_util::ALLOW_SUBDOMAIN,
             google_util::ALLOW_NON_STANDARD_PORTS)) {

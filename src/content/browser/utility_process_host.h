@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/environment.h"
 #include "base/macros.h"
@@ -18,8 +19,11 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "ipc/ipc_sender.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 
 namespace base {
@@ -86,6 +90,13 @@ class CONTENT_EXPORT UtilityProcessHost
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe);
 
+  // Instructs the utility process to run an instance of the named service,
+  // bound to |receiver|.
+  void RunService(
+      const std::string& service_name,
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver,
+      service_manager::Service::CreatePackagedServiceInstanceCallback callback);
+
   // Sets the name of the process to appear in the task manager.
   void SetName(const base::string16& name);
 
@@ -99,11 +110,6 @@ class CONTENT_EXPORT UtilityProcessHost
   // Used when the utility process is going to host a service. |identity| is
   // the identity of the service being launched.
   void SetServiceIdentity(const service_manager::Identity& identity);
-
-  // Sets a single callback that will be invoked exactly once after process
-  // launch. If the process has already launched, the callback will not be
-  // called.
-  void SetLaunchCallback(base::OnceCallback<void(base::ProcessId)> callback);
 
  private:
   // Starts the child process if needed, returns true on success.
@@ -152,11 +158,20 @@ class CONTENT_EXPORT UtilityProcessHost
   // service.
   base::Optional<service_manager::Identity> service_identity_;
 
-  // Indicates whether the process has been successfully launched yet.
-  bool launched_ = false;
+  // Indicates whether the process has been successfully launched yet, or if
+  // launch failed.
+  enum class LaunchState {
+    kLaunchInProgress,
+    kLaunchComplete,
+    kLaunchFailed,
+  };
+  LaunchState launch_state_ = LaunchState::kLaunchInProgress;
 
-  // A callback to invoke on successful process launch.
-  base::OnceCallback<void(base::ProcessId)> launch_callback_;
+  // Collection of callbacks to be run once the process is actually started (or
+  // fails to start). These are used to notify the Service Manager about which
+  // process the corresponding services have been started within.
+  std::vector<service_manager::Service::CreatePackagedServiceInstanceCallback>
+      pending_run_service_callbacks_;
 
   // Used to vend weak pointers, and should always be declared last.
   base::WeakPtrFactory<UtilityProcessHost> weak_ptr_factory_;

@@ -51,8 +51,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDevice : public FidoBleDevice {
   ~FidoCableDevice() override;
 
   // FidoBleDevice:
-  void DeviceTransact(std::vector<uint8_t> command,
-                      DeviceCallback callback) override;
+  CancelToken DeviceTransact(std::vector<uint8_t> command,
+                             DeviceCallback callback) override;
   void OnResponseFrame(FrameCallback callback,
                        base::Optional<FidoBleFrame> frame) override;
   base::WeakPtr<FidoDevice> GetWeakPtr() override;

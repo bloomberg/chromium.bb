@@ -12,6 +12,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import org.junit.Assert;
 import org.junit.runner.Description;
@@ -19,11 +20,11 @@ import org.junit.runners.model.Statement;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt.CardUnmaskObserverForTest;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentRequestServiceObserverForTest;
@@ -33,7 +34,8 @@ import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestObserverForTest;
 import org.chromium.chrome.browser.widget.prefeditor.EditorObserverForTest;
 import org.chromium.chrome.browser.widget.prefeditor.EditorTextField;
-import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -59,7 +61,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Custom ActivityTestRule for integration test for payments.
  */
-public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedActivity>
+public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
         implements PaymentRequestObserverForTest, PaymentRequestServiceObserverForTest,
                    CardUnmaskObserverForTest, EditorObserverForTest {
     /** Flag for installing a payment app without instruments. */
@@ -105,6 +107,7 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     final PaymentsCallbackHelper<CardUnmaskPrompt> mReadyForUnmaskInput;
     final PaymentsCallbackHelper<CardUnmaskPrompt> mReadyToUnmask;
     final PaymentsCallbackHelper<CardUnmaskPrompt> mUnmaskValidationDone;
+    final PaymentsCallbackHelper<CardUnmaskPrompt> mSubmitRejected;
     final CallbackHelper mReadyToEdit;
     final CallbackHelper mEditorValidationError;
     final CallbackHelper mEditorTextUpdate;
@@ -116,6 +119,7 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     final CallbackHelper mHasEnrolledInstrumentQueryResponded;
     final CallbackHelper mExpirationMonthChange;
     final CallbackHelper mPaymentResponseReady;
+    PaymentRequestImpl mPaymentRequest;
     PaymentRequestUI mUI;
 
     private final AtomicReference<WebContents> mWebContentsRef;
@@ -127,7 +131,7 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     private final MainActivityStartCallback mCallback;
 
     public PaymentRequestTestRule(String testFileName, MainActivityStartCallback callback) {
-        super(ChromeTabbedActivity.class);
+        super();
         mReadyForInput = new PaymentsCallbackHelper<>();
         mReadyToPay = new PaymentsCallbackHelper<>();
         mSelectionChecked = new PaymentsCallbackHelper<>();
@@ -135,6 +139,7 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         mReadyForUnmaskInput = new PaymentsCallbackHelper<>();
         mReadyToUnmask = new PaymentsCallbackHelper<>();
         mUnmaskValidationDone = new PaymentsCallbackHelper<>();
+        mSubmitRejected = new PaymentsCallbackHelper<>();
         mReadyToEdit = new CallbackHelper();
         mEditorValidationError = new CallbackHelper();
         mEditorTextUpdate = new CallbackHelper();
@@ -162,7 +167,7 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         startMainActivityWithURL(mTestFilePath);
     }
 
-    private void openPage() throws InterruptedException, ExecutionException, TimeoutException {
+    protected void openPage() throws InterruptedException, ExecutionException, TimeoutException {
         onMainActivityStarted();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mWebContentsRef.set(getActivity().getCurrentWebContents());
@@ -194,6 +199,9 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     }
     public PaymentsCallbackHelper<CardUnmaskPrompt> getUnmaskValidationDone() {
         return mUnmaskValidationDone;
+    }
+    public PaymentsCallbackHelper<CardUnmaskPrompt> getSubmitRejected() {
+        return mSubmitRejected;
     }
     public CallbackHelper getReadyToEdit() {
         return mReadyToEdit;
@@ -276,6 +284,11 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         helper.waitForCallback(callCount);
     }
 
+    protected String executeJavaScriptAndWaitForResult(String script)
+            throws InterruptedException, TimeoutException {
+        return JavaScriptUtils.executeJavaScriptAndWaitForResult(mWebContentsRef.get(), script);
+    }
+
     /** Clicks on an HTML node. */
     protected void clickNodeAndWait(String nodeId, CallbackHelper helper)
             throws InterruptedException, TimeoutException {
@@ -285,11 +298,17 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     }
 
     /** Clicks on an element in the payments UI. */
-    protected void clickAndWait(final int resourceId, CallbackHelper helper)
+    protected void clickAndWait(int resourceId, CallbackHelper helper)
             throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(
-                (Runnable) () -> mUI.getDialogForTest().findViewById(resourceId).performClick());
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                boolean canClick = mUI.isAcceptingUserInput();
+                if (canClick) mUI.getDialogForTest().findViewById(resourceId).performClick();
+                return canClick;
+            }
+        });
         helper.waitForCallback(callCount);
     }
 
@@ -355,7 +374,7 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     protected void clickAndroidBackButtonInEditorAndWait(CallbackHelper helper)
             throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThread(() -> {
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             mUI.getEditorDialog().dispatchKeyEvent(
                     new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
             mUI.getEditorDialog().dispatchKeyEvent(
@@ -425,6 +444,12 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
                 .trim());
     }
 
+    /** Returns the amount text corresponding to the line item at the specified |index|. */
+    protected int getNumberOfLineItems() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(
+                () -> mUI.getOrderSummarySectionForTest().getNumberOfLineItemsForTest());
+    }
+
     /**
      * Returns the label corresponding to the contact detail suggestion at the specified
      * |suggestionIndex|.
@@ -485,6 +510,24 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
                 .getRightSummaryLabelForTest()
                 .getText()
                 .toString());
+    }
+
+    protected String getShippingAddressWarningLabel() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(() -> {
+            View view = mUI.getShippingAddressSectionForTest().findViewById(
+                    R.id.payments_warning_label);
+            return view != null && view instanceof TextView ? ((TextView) view).getText().toString()
+                                                            : null;
+        });
+    }
+
+    protected String getShippingAddressDescriptionLabel() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(() -> {
+            View view = mUI.getShippingAddressSectionForTest().findViewById(
+                    R.id.payments_description_label);
+            return view != null && view instanceof TextView ? ((TextView) view).getText().toString()
+                                                            : null;
+        });
     }
 
     /** Returns the focused view in the card editor view. */
@@ -760,8 +803,8 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
                     }
                     for (int i = 0; i < contents.length; i++) {
                         if (!result.contains(contents[i])) {
-                            updateFailureReason(
-                                    String.format("Result should contain '%s'", contents[i]));
+                            updateFailureReason(String.format(
+                                    "Result '" + result + "' should contain '%s'", contents[i]));
                             return false;
                         }
                     }
@@ -857,6 +900,12 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
                                    .findViewById(R.id.autofill_card_unmask_prompt));
     }
 
+    /** Allows to skip UI into paymenthandler for"basic-card". */
+    protected void enableSkipUIForBasicCard() {
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mPaymentRequest.setSkipUIForNonURLPaymentMethodIdentifiersForTest());
+    }
+
     @Override
     public void onPaymentRequestReadyForInput(PaymentRequestUI ui) {
         ThreadUtils.assertOnUiThread();
@@ -903,6 +952,12 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     public void onEditorDismiss() {
         ThreadUtils.assertOnUiThread();
         mDismissed.notifyCalled();
+    }
+
+    @Override
+    public void onPaymentRequestCreated(PaymentRequestImpl paymentRequest) {
+        ThreadUtils.assertOnUiThread();
+        mPaymentRequest = paymentRequest;
     }
 
     @Override
@@ -958,6 +1013,12 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     public void onCardUnmaskPromptValidationDone(CardUnmaskPrompt prompt) {
         ThreadUtils.assertOnUiThread();
         mUnmaskValidationDone.notifyCalled(prompt);
+    }
+
+    @Override
+    public void onCardUnmaskPromptSubmitRejected(CardUnmaskPrompt prompt) {
+        ThreadUtils.assertOnUiThread();
+        mSubmitRejected.notifyCalled(prompt);
     }
 
     @Override
@@ -1130,7 +1191,8 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
                 Map<String, PaymentMethodData> methodData, PaymentItem total,
                 List<PaymentItem> displayItems, Map<String, PaymentDetailsModifier> modifiers,
                 InstrumentDetailsCallback detailsCallback) {
-            detailsCallback.onInstrumentDetailsReady(mDefaultMethodName, "{\"transaction\": 1337}");
+            detailsCallback.onInstrumentDetailsReady(mDefaultMethodName,
+                    "{\"transaction\": 1337, \"total\": \"" + total.amount.value + "\"}");
         }
 
         @Override

@@ -317,7 +317,7 @@ public class TabPersistentStore extends TabPersister {
                 int id = tab.getId();
                 boolean incognito = tab.isIncognito();
                 try {
-                    TabState state = tab.getState();
+                    TabState state = TabState.from(tab);
                     if (state != null) {
                         TabState.saveState(getTabStateFile(id, incognito), state, incognito);
                     }
@@ -1141,7 +1141,7 @@ public class TabPersistentStore extends TabPersister {
         @Override
         protected void onPreExecute() {
             if (mDestroyed || isCancelled()) return;
-            mState = mTab.getState();
+            mState = TabState.from(mTab);
         }
 
         @Override
@@ -1217,7 +1217,7 @@ public class TabPersistentStore extends TabPersister {
         for (TabPersistentStoreObserver observer : mObservers) {
             // mergeState() starts an AsyncTask to call this and this calls
             // onTabStateInitialized which should be called from the UI thread.
-            ThreadUtils.runOnUiThread(() -> observer.onStateLoaded());
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> observer.onStateLoaded());
         }
     }
 

@@ -138,6 +138,8 @@ chromeos::CupsPrintJob::ErrorCode ErrorCodeFromReasons(
       case PrinterReason::TONER_EMPTY:
       case PrinterReason::TONER_LOW:
         return chromeos::CupsPrintJob::ErrorCode::OUT_OF_INK;
+      case PrinterReason::TIMED_OUT:
+        return chromeos::CupsPrintJob::ErrorCode::PRINTER_UNREACHABLE;
       default:
         break;
     }
@@ -446,7 +448,13 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
           NotifyJobStateUpdate(print_job->GetWeakPtr());
         }
 
-        if (print_job->PipelineDead()) {
+        if (print_job->IsExpired()) {
+          // Job needs to be forcibly cancelled.
+          RecordJobResult(TIMEOUT_CANCEL);
+          FinishPrintJob(print_job);
+          // Beware, print_job was removed from jobs_ and
+          // deleted.
+        } else if (print_job->PipelineDead()) {
           RecordJobResult(FILTER_FAILED);
           FinishPrintJob(print_job);
         } else if (print_job->IsJobFinished()) {
@@ -487,7 +495,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     jobs_.clear();
   }
 
-  // Notify observers that a state update has occured for |job|.
+  // Notify observers that a state update has occurred for |job|.
   void NotifyJobStateUpdate(base::WeakPtr<CupsPrintJob> job) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

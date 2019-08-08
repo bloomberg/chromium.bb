@@ -15,13 +15,18 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
+#include "components/google/core/common/google_util.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/ntp_tiles/constants.h"
+#include "components/ntp_tiles/features.h"
 #include "components/ntp_tiles/icon_cacher.h"
 #include "components/ntp_tiles/pref_names.h"
 #include "components/ntp_tiles/switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using history::TopSites;
 using suggestions::ChromeSuggestion;
@@ -184,6 +189,12 @@ bool MostVisitedSites::DoesSourceExist(TileSource source) const {
       return supervisor_ != nullptr;
     case TileSource::CUSTOM_LINKS:
       return custom_links_ != nullptr;
+    case TileSource::SEARCH_PAGE:
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+      return true;
+#else
+      return false;
+#endif
   }
   NOTREACHED();
   return false;
@@ -263,7 +274,6 @@ void MostVisitedSites::UninitializeCustomLinks() {
   custom_links_action_count_ = -1;
   custom_links_->Uninitialize();
   BuildCurrentTiles();
-  Refresh();
 }
 
 bool MostVisitedSites::IsCustomLinksInitialized() {
@@ -697,10 +707,63 @@ NTPTilesVector MostVisitedSites::InsertHomeTile(
   return new_tiles;
 }
 
+NTPTilesVector MostVisitedSites::InsertSearchTile(NTPTilesVector tiles) const {
+  DCHECK_GT(max_num_sites_, 0u);
+
+#if defined(OS_ANDROID)
+  return tiles;
+#else
+  NTPTilesVector new_tiles;
+  const GURL search_url(l10n_util::GetStringUTF16(IDS_NTP_DEFAULT_SEARCH_URL));
+  bool search_tile_added = false;
+
+  for (auto& tile : tiles) {
+    if (new_tiles.size() >= max_num_sites_) {
+      break;
+    }
+
+    // If there's a tile has the same host name with the search page, insert
+    // the tile to the first position of the list. This is also a deduplication.
+    if (google_util::IsGoogleHomePageUrl(tile.url) && !search_tile_added) {
+      tile.source = TileSource::SEARCH_PAGE;
+      search_tile_added = true;
+      new_tiles.insert(new_tiles.begin(), std::move(tile));
+      continue;
+    }
+    new_tiles.push_back(std::move(tile));
+  }
+
+  if (!search_tile_added) {
+    // Make room for the search tile.
+    if (new_tiles.size() >= max_num_sites_) {
+      new_tiles.pop_back();
+    }
+    NTPTile search_tile;
+    search_tile.url = search_url;
+    search_tile.title = l10n_util::GetStringUTF16(IDS_NTP_DEFAULT_SEARCH_TITLE);
+    search_tile.source = TileSource::SEARCH_PAGE;
+    search_tile.title_source = TileTitleSource::TITLE_TAG;
+
+    // Always insert |search_tile| to the front of |new_tiles| to ensure it's
+    // the first tile.
+    new_tiles.insert(new_tiles.begin(), std::move(search_tile));
+  }
+  return new_tiles;
+#endif
+}
+
 void MostVisitedSites::OnCustomLinksChanged() {
   DCHECK(custom_links_);
-  if (custom_links_enabled_ && custom_links_->IsInitialized())
+  if (!custom_links_enabled_)
+    return;
+
+  if (custom_links_->IsInitialized()) {
     BuildCustomLinks(custom_links_->GetLinks());
+  } else {
+    // Since custom links have been uninitialized (e.g. through Chrome sync), we
+    // should show the regular Most Visited tiles.
+    BuildCurrentTiles();
+  }
 }
 
 void MostVisitedSites::BuildCustomLinks(
@@ -741,6 +804,9 @@ void MostVisitedSites::InitiateNotificationForNewTiles(
     // Don't wait for the homepage title from history but immediately serve a
     // copy of new tiles.
     new_tiles = InsertHomeTile(std::move(new_tiles), base::string16());
+  }
+  if (base::FeatureList::IsEnabled(ntp_tiles::kDefaultSearchShortcut)) {
+    new_tiles = InsertSearchTile(std::move(new_tiles));
   }
   MergeMostVisitedTiles(std::move(new_tiles));
 }

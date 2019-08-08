@@ -29,12 +29,12 @@ class ScrollableAreaMockChromeClient : public EmptyChromeClient {
   }
 };
 
-}  // namespace {
+}  // namespace
 
 class PaintLayerScrollableAreaTestBase : public RenderingTest {
  public:
   PaintLayerScrollableAreaTestBase()
-      : RenderingTest(EmptyLocalFrameClient::Create()),
+      : RenderingTest(MakeGarbageCollected<EmptyLocalFrameClient>()),
         chrome_client_(MakeGarbageCollected<ScrollableAreaMockChromeClient>()) {
   }
 
@@ -1020,11 +1020,10 @@ TEST_P(PaintLayerScrollableAreaTest, CompositedStickyDescendant) {
     EXPECT_EQ(kPaintsIntoOwnBacking, scroller->Layer()->GetCompositingState());
   auto* sticky = ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"));
 
-  EXPECT_EQ(FloatSize(0, 0), sticky->FirstFragment()
-                                 .LocalBorderBoxProperties()
-                                 .Transform()
-                                 .Matrix()
-                                 .To2DTranslation());
+  EXPECT_TRUE(sticky->FirstFragment()
+                  .LocalBorderBoxProperties()
+                  .Transform()
+                  .IsIdentity());
 
   scrollable_area->SetScrollOffset(ScrollOffset(0, 50), kUserScroll);
   UpdateAllLifecyclePhasesForTest();
@@ -1032,8 +1031,7 @@ TEST_P(PaintLayerScrollableAreaTest, CompositedStickyDescendant) {
   EXPECT_EQ(FloatSize(0, 50), sticky->FirstFragment()
                                   .LocalBorderBoxProperties()
                                   .Transform()
-                                  .Matrix()
-                                  .To2DTranslation());
+                                  .Translation2D());
 }
 
 // Delayed scroll offset clamping should not crash. https://crbug.com/842495
@@ -1048,7 +1046,8 @@ TEST_P(PaintLayerScrollableAreaTest, IgnoreDelayedScrollOnDestroyedLayer) {
     PaintLayerScrollableArea::DelayScrollOffsetClampScope scope;
     PaintLayerScrollableArea::DelayScrollOffsetClampScope::SetNeedsClamp(
         scroller->GetLayoutBox()->GetScrollableArea());
-    scroller->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+    scroller->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                     CSSValueID::kNone);
     UpdateAllLifecyclePhasesForTest();
   }
 }
@@ -1107,7 +1106,7 @@ TEST_P(PaintLayerScrollableAreaTest, ScrollingBackgroundDisplayItemClient) {
     </div>
   )HTML");
 
-  EXPECT_EQ(LayoutRect(2, 3, 101, 200),
+  EXPECT_EQ(IntRect(2, 3, 101, 200),
             ToLayoutBox(GetLayoutObjectByElementId("scroller"))
                 ->GetScrollableArea()
                 ->GetScrollingBackgroundDisplayItemClient()
@@ -1151,7 +1150,7 @@ TEST_P(PaintLayerScrollableAreaTest, RtlScrollOriginSnapping) {
   EXPECT_EQ(scrollable_area->MaximumScrollOffsetInt(), IntSize(0, 100));
 
   Element* first_child = GetElementById("first-child");
-  first_child->RemoveInlineStyleProperty(CSSPropertyDisplay);
+  first_child->RemoveInlineStyleProperty(CSSPropertyID::kDisplay);
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(scrollable_area->MaximumScrollOffsetInt(), IntSize(0, 100));
 }

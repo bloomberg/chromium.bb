@@ -99,6 +99,12 @@ base::Optional<OneGoogleBarData> JsonToOGBData(const base::Value& value) {
     return base::nullopt;
   }
 
+  const base::Value* language = nullptr;
+  std::string language_code;
+  if (update->Get("language_code", &language)) {
+    language_code = language->GetString();
+  }
+
   const base::DictionaryValue* one_google_bar = nullptr;
   if (!update->GetDictionary("ogb", &one_google_bar)) {
     DVLOG(1) << "Parse error: no ogb";
@@ -106,6 +112,7 @@ base::Optional<OneGoogleBarData> JsonToOGBData(const base::Value& value) {
   }
 
   OneGoogleBarData result;
+  result.language_code = language_code;
 
   if (!safe_html::GetHtml(*one_google_bar, "html", &result.bar_html)) {
     DVLOG(1) << "Parse error: no html";

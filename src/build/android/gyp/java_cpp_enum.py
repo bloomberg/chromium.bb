@@ -385,7 +385,8 @@ ${ENUM_ENTRIES}
           comments_line_wrapper.wrap(enum_comments)))
       enum_entries_string.append('   */')
     enum_entries_string.append(enum_template.substitute(values))
-    enum_names.append(enum_definition.class_name + '.' + enum_name)
+    if enum_name != "NUM_ENTRIES":
+      enum_names.append(enum_definition.class_name + '.' + enum_name)
   enum_entries_string = '\n'.join(enum_entries_string)
 
   enum_names_indent = ' ' * 4

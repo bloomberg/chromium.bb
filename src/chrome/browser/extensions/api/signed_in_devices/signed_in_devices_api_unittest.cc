@@ -47,7 +47,8 @@ class MockDeviceInfoTracker : public DeviceInfoTracker {
     return std::make_unique<DeviceInfo>(
         device_info.guid(), device_info.client_name(),
         device_info.chrome_version(), device_info.sync_user_agent(),
-        device_info.device_type(), device_info.signin_scoped_device_id());
+        device_info.device_type(), device_info.signin_scoped_device_id(),
+        device_info.send_tab_to_self_receiving_enabled());
   }
 
   std::vector<std::unique_ptr<DeviceInfo>> GetAllDeviceInfo() const override {
@@ -70,6 +71,8 @@ class MockDeviceInfoTracker : public DeviceInfoTracker {
 
   void Add(const DeviceInfo* device) { devices_.push_back(device); }
 
+  void ForcePulseForTest() override { NOTREACHED(); }
+
  private:
   // DeviceInfo stored here are not owned.
   std::vector<const DeviceInfo*> devices_;
@@ -86,19 +89,13 @@ TEST(SignedInDevicesAPITest, GetSignedInDevices) {
   scoped_refptr<Extension> extension_test =
       extension_prefs.AddExtension(extension_name);
 
-  DeviceInfo device_info1(base::GenerateGUID(),
-                          "abc Device",
-                          "XYZ v1",
-                          "XYZ SyncAgent v1",
-                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                          "device_id");
+  DeviceInfo device_info1(
+      base::GenerateGUID(), "abc Device", "XYZ v1", "XYZ SyncAgent v1",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id", true);
 
-  DeviceInfo device_info2(base::GenerateGUID(),
-                          "def Device",
-                          "XYZ v2",
-                          "XYZ SyncAgent v2",
-                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                          "device_id");
+  DeviceInfo device_info2(
+      base::GenerateGUID(), "def Device", "XYZ v2", "XYZ SyncAgent v2",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id", true);
 
   device_tracker.Add(&device_info1);
   device_tracker.Add(&device_info2);
@@ -115,12 +112,9 @@ TEST(SignedInDevicesAPITest, GetSignedInDevices) {
 
   // Add a third device and make sure the first 2 ids are retained and a new
   // id is generated for the third device.
-  DeviceInfo device_info3(base::GenerateGUID(),
-                          "def Device",
-                          "jkl v2",
-                          "XYZ SyncAgent v2",
-                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                          "device_id");
+  DeviceInfo device_info3(
+      base::GenerateGUID(), "def Device", "jkl v2", "XYZ SyncAgent v2",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id", true);
 
   device_tracker.Add(&device_info3);
 
@@ -154,9 +148,6 @@ class MockDeviceInfoSyncService : public syncer::DeviceInfoSyncService {
       override {
     return nullptr;
   }
-  void InitLocalCacheGuid(const std::string& cache_guid,
-                          const std::string& session_name) override {}
-  void ClearLocalCacheGuid() override {}
 
  private:
   MockDeviceInfoTracker tracker_;
@@ -209,19 +200,13 @@ TEST_F(ExtensionSignedInDevicesTest, GetAll) {
           DeviceInfoSyncServiceFactory::GetForProfile(profile()))
           ->mock_tracker();
 
-  DeviceInfo device_info1(base::GenerateGUID(),
-                          "abc Device",
-                          "XYZ v1",
-                          "XYZ SyncAgent v1",
-                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                          "device_id");
+  DeviceInfo device_info1(
+      base::GenerateGUID(), "abc Device", "XYZ v1", "XYZ SyncAgent v1",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id", true);
 
-  DeviceInfo device_info2(base::GenerateGUID(),
-                          "def Device",
-                          "XYZ v2",
-                          "XYZ SyncAgent v2",
-                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                          "device_id");
+  DeviceInfo device_info2(
+      base::GenerateGUID(), "def Device", "XYZ v2", "XYZ SyncAgent v2",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id", true);
 
   device_tracker->Add(&device_info1);
   device_tracker->Add(&device_info2);

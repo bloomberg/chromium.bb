@@ -47,6 +47,7 @@ const char* const kPersistentPrefNames[] = {
     ash::prefs::kAccessibilityAutoclickDelayMs,
     ash::prefs::kAccessibilityAutoclickEventType,
     ash::prefs::kAccessibilityAutoclickRevertToLeftClick,
+    ash::prefs::kAccessibilityAutoclickStabilizePosition,
     ash::prefs::kAccessibilityAutoclickMovementThreshold,
     ash::prefs::kAccessibilityCaretHighlightEnabled,
     ash::prefs::kAccessibilityCursorHighlightEnabled,
@@ -54,14 +55,17 @@ const char* const kPersistentPrefNames[] = {
     ash::prefs::kAccessibilitySelectToSpeakEnabled,
     ash::prefs::kAccessibilitySwitchAccessEnabled,
     ash::prefs::kAccessibilityDictationEnabled,
-    ash::prefs::kDockedMagnifierEnabled, ash::prefs::kDockedMagnifierScale,
+    ash::prefs::kDockedMagnifierEnabled,
+    ash::prefs::kDockedMagnifierScale,
     ash::prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted,
     ash::prefs::kHighContrastAcceleratorDialogHasBeenAccepted,
     ash::prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted,
     ash::prefs::kShouldAlwaysShowAccessibilityMenu,
 #endif  // defined(OS_CHROMEOS)
 #if !defined(OS_ANDROID)
-    kAnimationPolicyAllowed, kAnimationPolicyOnce, kAnimationPolicyNone,
+    kAnimationPolicyAllowed,
+    kAnimationPolicyOnce,
+    kAnimationPolicyNone,
 #endif  // !defined(OS_ANDROID)
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     prefs::kAnimationPolicy,
@@ -81,14 +85,19 @@ const char* const kPersistentPrefNames[] = {
 
     // Metrics preferences are out of profile scope and are merged between
     // incognito and regular modes.
-    metrics::prefs::kInstallDate, metrics::prefs::kMetricsClientID,
-    metrics::prefs::kMetricsDefaultOptIn, metrics::prefs::kMetricsInitialLogs,
-    metrics::prefs::kMetricsLowEntropySource, metrics::prefs::kMetricsMachineId,
-    metrics::prefs::kMetricsOngoingLogs, metrics::prefs::kMetricsResetIds,
+    metrics::prefs::kInstallDate,
+    metrics::prefs::kMetricsClientID,
+    metrics::prefs::kMetricsDefaultOptIn,
+    metrics::prefs::kMetricsInitialLogs,
+    metrics::prefs::kMetricsLowEntropySource,
+    metrics::prefs::kMetricsMachineId,
+    metrics::prefs::kMetricsOngoingLogs,
+    metrics::prefs::kMetricsResetIds,
 
     metrics::prefs::kMetricsReportingEnabled,
     metrics::prefs::kMetricsReportingEnabledTimestamp,
-    metrics::prefs::kMetricsSessionID, metrics::prefs::kMetricsLastSeenPrefix,
+    metrics::prefs::kMetricsSessionID,
+    metrics::prefs::kMetricsLastSeenPrefix,
     metrics::prefs::kStabilityBreakpadRegistrationFail,
     metrics::prefs::kStabilityBreakpadRegistrationSuccess,
     metrics::prefs::kStabilityBrowserLastLiveTimeStamp,
@@ -123,8 +132,10 @@ const char* const kPersistentPrefNames[] = {
     metrics::prefs::kStabilityVersionMismatchCount,
     metrics::prefs::kUninstallLaunchCount,
     metrics::prefs::kUninstallMetricsPageLoadCount,
-    metrics::prefs::kUninstallMetricsUptimeSec, metrics::prefs::kUkmCellDataUse,
-    metrics::prefs::kUmaCellDataUse, metrics::prefs::kUserCellDataUse,
+    metrics::prefs::kUninstallMetricsUptimeSec,
+    metrics::prefs::kUkmCellDataUse,
+    metrics::prefs::kUmaCellDataUse,
+    metrics::prefs::kUserCellDataUse,
 
 #if defined(OS_ANDROID)
     // Clipboard modification state is updated over all profiles.
@@ -134,21 +145,27 @@ const char* const kPersistentPrefNames[] = {
     // Default browser bar's status is aggregated between regular and incognito
     // modes.
     prefs::kBrowserSuppressDefaultBrowserPrompt,
-    prefs::kDefaultBrowserLastDeclined, prefs::kDefaultBrowserSettingEnabled,
+    prefs::kDefaultBrowserLastDeclined,
+    prefs::kDefaultBrowserSettingEnabled,
     prefs::kResetCheckDefaultBrowser,
 
     // Devtools preferences are stored cross profiles as they are not storing
     // user data and just keep debugging environment settings.
-    prefs::kDevToolsAdbKey, prefs::kDevToolsAvailability,
-    prefs::kDevToolsDiscoverUsbDevicesEnabled, prefs::kDevToolsEditedFiles,
-    prefs::kDevToolsFileSystemPaths, prefs::kDevToolsPortForwardingEnabled,
+    prefs::kDevToolsAdbKey,
+    prefs::kDevToolsAvailability,
+    prefs::kDevToolsDiscoverUsbDevicesEnabled,
+    prefs::kDevToolsEditedFiles,
+    prefs::kDevToolsFileSystemPaths,
+    prefs::kDevToolsPortForwardingEnabled,
     prefs::kDevToolsPortForwardingDefaultSet,
-    prefs::kDevToolsPortForwardingConfig, prefs::kDevToolsPreferences,
+    prefs::kDevToolsPortForwardingConfig,
+    prefs::kDevToolsPreferences,
     prefs::kDevToolsDiscoverTCPTargetsEnabled,
     prefs::kDevToolsTCPDiscoveryConfig,
 
     // Google URL prefs don't store user data and just keep track of the URL.
-    prefs::kLastKnownGoogleURL, prefs::kLastPromptedGoogleURL,
+    prefs::kLastKnownGoogleURL,
+    prefs::kLastPromptedGoogleURL,
 
 #if defined(OS_WIN)
     // The total number of times that network profile warning is shown is
@@ -157,8 +174,10 @@ const char* const kPersistentPrefNames[] = {
 #endif
 
     // Tab stats metrics are aggregated between regular and incognio mode.
-    prefs::kTabStatsTotalTabCountMax, prefs::kTabStatsMaxTabsPerWindow,
-    prefs::kTabStatsWindowCountMax, prefs::kTabStatsDailySample,
+    prefs::kTabStatsTotalTabCountMax,
+    prefs::kTabStatsMaxTabsPerWindow,
+    prefs::kTabStatsWindowCountMax,
+    prefs::kTabStatsDailySample,
 
 #if defined(OS_MACOSX)
     prefs::kShowFullscreenToolbar,
@@ -173,7 +192,8 @@ const char* const kPersistentPrefNames[] = {
     // Rappor preferences are not used in incognito mode, but they are written
     // in startup if they don't exist. So if the startup would be in incognito,
     // they need to be persisted.
-    rappor::prefs::kRapporCohortSeed, rappor::prefs::kRapporSecret,
+    rappor::prefs::kRapporCohortSeed,
+    rappor::prefs::kRapporSecret,
 
     // Reading list preferences are common between incognito and regular mode.
     reading_list::prefs::kReadingListHasUnseenEntries,
@@ -181,7 +201,8 @@ const char* const kPersistentPrefNames[] = {
     // Although UKMs are not collected in incognito, theses preferences may be
     // changed by UMA/Sync/Unity consent, and need to be the same between
     // incognito and regular modes.
-    ukm::prefs::kUkmClientId, ukm::prefs::kUkmPersistedLogs,
+    ukm::prefs::kUkmClientId,
+    ukm::prefs::kUkmPersistedLogs,
     ukm::prefs::kUkmSessionId,
 
     // Variations preferences maybe changed from incognito mode and should be

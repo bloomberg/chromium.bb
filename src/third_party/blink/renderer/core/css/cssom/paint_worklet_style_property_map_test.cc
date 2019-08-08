@@ -10,6 +10,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
+#include "third_party/blink/renderer/core/css/cssom/css_keyword_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_input.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -100,48 +102,48 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
     DCHECK(!IsMainThread());
     thread_->InitializeOnThread();
 
-    const PaintWorkletStylePropertyMap* map = input->StyleMap();
+    PaintWorkletStylePropertyMap* map =
+        MakeGarbageCollected<PaintWorkletStylePropertyMap>(
+            input->StyleMapData());
     DCHECK(map);
     DummyExceptionStateForTesting exception_state;
     CheckNativeProperties(map, exception_state);
     CheckCustomProperties(map, exception_state);
 
-    const HashMap<String, std::unique_ptr<CrossThreadStyleValue>>& values =
-        map->ValuesForTest();
-    EXPECT_EQ(values.size(), 8u);
-    EXPECT_EQ(values.at("color")->ToCSSStyleValue()->CSSText(),
-              "rgb(0, 255, 0)");
-    EXPECT_EQ(values.at("color")->ToCSSStyleValue()->GetType(),
+    const PaintWorkletStylePropertyMap::CrossThreadData& data =
+        map->StyleMapDataForTest();
+    EXPECT_EQ(data.size(), 8u);
+    EXPECT_EQ(data.at("color")->ToCSSStyleValue()->CSSText(), "rgb(0, 255, 0)");
+    EXPECT_EQ(data.at("color")->ToCSSStyleValue()->GetType(),
               CSSStyleValue::StyleValueType::kUnknownType);
-    EXPECT_EQ(values.at("align-items")->ToCSSStyleValue()->CSSText(), "normal");
-    EXPECT_EQ(values.at("align-items")->ToCSSStyleValue()->GetType(),
+    EXPECT_EQ(data.at("align-items")->ToCSSStyleValue()->CSSText(), "normal");
+    EXPECT_EQ(data.at("align-items")->ToCSSStyleValue()->GetType(),
               CSSStyleValue::StyleValueType::kUnknownType);
     EXPECT_EQ(
-        static_cast<CSSKeywordValue*>(values.at("display")->ToCSSStyleValue())
+        static_cast<CSSKeywordValue*>(data.at("display")->ToCSSStyleValue())
             ->value(),
         "block");
-    EXPECT_EQ(values.at("display")->ToCSSStyleValue()->GetType(),
+    EXPECT_EQ(data.at("display")->ToCSSStyleValue()->GetType(),
               CSSStyleValue::StyleValueType::kKeywordType);
-    EXPECT_EQ(values.at("--foo")->ToCSSStyleValue()->CSSText(), "PaintWorklet");
-    EXPECT_EQ(values.at("--foo")->ToCSSStyleValue()->GetType(),
+    EXPECT_EQ(data.at("--foo")->ToCSSStyleValue()->CSSText(), "PaintWorklet");
+    EXPECT_EQ(data.at("--foo")->ToCSSStyleValue()->GetType(),
               CSSStyleValue::StyleValueType::kUnknownType);
-    EXPECT_EQ(values.at("--bar")->ToCSSStyleValue()->CSSText(), "");
-    EXPECT_EQ(values.at("--bar")->ToCSSStyleValue()->GetType(),
+    EXPECT_EQ(data.at("--bar")->ToCSSStyleValue()->CSSText(), "");
+    EXPECT_EQ(data.at("--bar")->ToCSSStyleValue()->GetType(),
               CSSStyleValue::StyleValueType::kUnknownType);
-    EXPECT_EQ(values.at("--keyword")->ToCSSStyleValue()->GetType(),
+    EXPECT_EQ(data.at("--keyword")->ToCSSStyleValue()->GetType(),
               CSSStyleValue::StyleValueType::kKeywordType);
     EXPECT_EQ(
-        To<CSSKeywordValue>(values.at("--keyword")->ToCSSStyleValue())->value(),
+        To<CSSKeywordValue>(data.at("--keyword")->ToCSSStyleValue())->value(),
         "test");
-    EXPECT_EQ(values.at("--x")->ToCSSStyleValue()->GetType(),
+    EXPECT_EQ(data.at("--x")->ToCSSStyleValue()->GetType(),
               CSSStyleValue::StyleValueType::kUnitType);
-    EXPECT_EQ(To<CSSUnitValue>(values.at("--x")->ToCSSStyleValue())->value(),
-              10);
-    EXPECT_EQ(To<CSSUnitValue>(values.at("--x")->ToCSSStyleValue())->unit(),
+    EXPECT_EQ(To<CSSUnitValue>(data.at("--x")->ToCSSStyleValue())->value(), 10);
+    EXPECT_EQ(To<CSSUnitValue>(data.at("--x")->ToCSSStyleValue())->unit(),
               "px");
-    EXPECT_EQ(values.at("--y")->ToCSSStyleValue()->GetType(),
+    EXPECT_EQ(data.at("--y")->ToCSSStyleValue()->GetType(),
               CSSStyleValue::StyleValueType::kUnknownType);
-    EXPECT_EQ(values.at("--y")->ToCSSStyleValue()->CSSText(), "rgb(0, 255, 0)");
+    EXPECT_EQ(data.at("--y")->ToCSSStyleValue()->CSSText(), "rgb(0, 255, 0)");
 
     waitable_event->Signal();
   }
@@ -150,68 +152,12 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
   std::unique_ptr<WebThreadSupportingGC> thread_;
 };
 
-TEST_F(PaintWorkletStylePropertyMapTest, NativePropertyAccessors) {
-  Vector<CSSPropertyID> native_properties(
-      {CSSPropertyColor, CSSPropertyAlignItems, CSSPropertyBackground});
-  Vector<AtomicString> empty_custom_properties;
-  GetDocument().documentElement()->style()->setProperty(
-      &GetDocument(), "color", "rgb(0, 255, 0)", "", ASSERT_NO_EXCEPTION);
-
-  UpdateAllLifecyclePhasesForTest();
-  Node* node = PageNode();
-
-  const PaintWorkletStylePropertyMap* map =
-      MakeGarbageCollected<PaintWorkletStylePropertyMap>(
-          GetDocument(), node->ComputedStyleRef(), node, native_properties,
-          empty_custom_properties);
-
-  const HashMap<String, std::unique_ptr<CrossThreadStyleValue>>& values =
-      map->ValuesForTest();
-  EXPECT_EQ(values.size(), 2u);
-  EXPECT_EQ(values.at("color")->ToCSSStyleValue()->CSSText(), "rgb(0, 255, 0)");
-  EXPECT_EQ(values.at("color")->ToCSSStyleValue()->GetType(),
-            CSSStyleValue::StyleValueType::kUnknownType);
-  EXPECT_EQ(values.at("align-items")->ToCSSStyleValue()->CSSText(), "normal");
-  EXPECT_EQ(values.at("align-items")->ToCSSStyleValue()->GetType(),
-            CSSStyleValue::StyleValueType::kUnknownType);
-
-  DummyExceptionStateForTesting exception_state;
-  CheckNativeProperties(map, exception_state);
-}
-
-TEST_F(PaintWorkletStylePropertyMapTest, CustomPropertyAccessors) {
-  Vector<CSSPropertyID> empty_native_properties;
-  Vector<AtomicString> custom_properties({"--foo", "--bar"});
-  GetDocument().documentElement()->style()->setProperty(
-      &GetDocument(), "--foo", "PaintWorklet", "", ASSERT_NO_EXCEPTION);
-
-  UpdateAllLifecyclePhasesForTest();
-  Node* node = PageNode();
-
-  const PaintWorkletStylePropertyMap* map =
-      MakeGarbageCollected<PaintWorkletStylePropertyMap>(
-          GetDocument(), node->ComputedStyleRef(), node,
-          empty_native_properties, custom_properties);
-
-  const HashMap<String, std::unique_ptr<CrossThreadStyleValue>>& values =
-      map->ValuesForTest();
-  EXPECT_EQ(values.size(), 2u);
-  EXPECT_EQ(values.at("--foo")->ToCSSStyleValue()->CSSText(), "PaintWorklet");
-  EXPECT_EQ(values.at("--foo")->ToCSSStyleValue()->GetType(),
-            CSSStyleValue::StyleValueType::kUnknownType);
-  EXPECT_EQ(values.at("--bar")->ToCSSStyleValue()->CSSText(), "");
-  EXPECT_EQ(values.at("--bar")->ToCSSStyleValue()->GetType(),
-            CSSStyleValue::StyleValueType::kUnknownType);
-
-  DummyExceptionStateForTesting exception_state;
-  CheckCustomProperties(map, exception_state);
-}
-
 // This test ensures that Blink::PaintWorkletInput can be safely passed cross
 // threads and no information is lost.
 TEST_F(PaintWorkletStylePropertyMapTest, PassValuesCrossThread) {
-  Vector<CSSPropertyID> native_properties(
-      {CSSPropertyColor, CSSPropertyAlignItems, CSSPropertyDisplay});
+  Vector<CSSPropertyID> native_properties({CSSPropertyID::kColor,
+                                           CSSPropertyID::kAlignItems,
+                                           CSSPropertyID::kDisplay});
   GetDocument().documentElement()->style()->setProperty(
       &GetDocument(), "color", "rgb(0, 255, 0)", "", ASSERT_NO_EXCEPTION);
   GetDocument().documentElement()->style()->setProperty(
@@ -236,16 +182,16 @@ TEST_F(PaintWorkletStylePropertyMapTest, PassValuesCrossThread) {
   UpdateAllLifecyclePhasesForTest();
   Node* node = PageNode();
 
-  CrossThreadPersistent<PaintWorkletStylePropertyMap> style_map =
-      MakeGarbageCollected<PaintWorkletStylePropertyMap>(
+  PaintWorkletStylePropertyMap::CrossThreadData data =
+      PaintWorkletStylePropertyMap::BuildCrossThreadData(
           GetDocument(), node->ComputedStyleRef(), node, native_properties,
           custom_properties);
   scoped_refptr<PaintWorkletInput> input =
       base::MakeRefCounted<PaintWorkletInput>("test", FloatSize(100, 100), 1.0f,
-                                              style_map);
+                                              1, std::move(data));
   DCHECK(input);
 
-  thread_ = WebThreadSupportingGC::Create(
+  thread_ = std::make_unique<WebThreadSupportingGC>(
       ThreadCreationParams(WebThreadType::kTestThread));
   base::WaitableEvent waitable_event;
   thread_->PostTask(

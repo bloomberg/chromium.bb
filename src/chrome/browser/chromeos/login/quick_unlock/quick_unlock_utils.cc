@@ -9,6 +9,7 @@
 
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
@@ -151,8 +152,8 @@ bool IsFingerprintEnabled(Profile* profile) {
   return base::FeatureList::IsEnabled(features::kQuickUnlockFingerprint);
 }
 
-void EnableForTesting() {
-  enable_for_testing_ = true;
+void EnabledForTesting(bool state) {
+  enable_for_testing_ = state;
 }
 
 bool IsEnabledForTesting() {

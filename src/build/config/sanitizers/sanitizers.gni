@@ -88,10 +88,6 @@ declare_args() {
   # is_ubsan.
   is_ubsan_security = false
 
-  # Compile for fuzzing with Dr. Fuzz
-  # See http://www.chromium.org/developers/testing/dr-fuzz
-  use_drfuzz = false
-
   # Helper variable for testing builds with disabled libfuzzer.
   # Not for client use.
   disable_libfuzzer = false
@@ -112,6 +108,14 @@ declare_args() {
 
   # Use blacklists from tools/memory/asan when compiling with asan.
   asan_use_blacklist = true
+
+  # When enabled, only relevant sanitizer defines are set, but compilation
+  # happens with no extra flags. This is useful when in component build
+  # enabling sanitizers only in some of the components.
+  use_sanitizer_configs_without_instrumentation = false
+
+  # When true, seed corpora archives are built.
+  archive_seed_corpus = true
 }
 
 # Disable sanitizers for non-default toolchains.
@@ -132,7 +136,6 @@ if (current_toolchain != default_toolchain) {
   use_afl = false
   use_cfi_diag = false
   use_cfi_recover = false
-  use_drfuzz = false
   use_libfuzzer = false
   use_prebuilt_instrumented_libraries = false
   use_locally_built_instrumented_libraries = false

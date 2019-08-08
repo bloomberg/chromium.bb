@@ -407,12 +407,20 @@ void PoissonAllocationSampler::RecordAlloc(void* address,
                                            size_t size,
                                            AllocatorType type,
                                            const char* context) {
-  if (UNLIKELY(!g_running.load(std::memory_order_relaxed)))
-    return;
   g_accumulated_bytes_tls += size;
   intptr_t accumulated_bytes = g_accumulated_bytes_tls;
   if (LIKELY(accumulated_bytes < 0))
     return;
+
+  if (UNLIKELY(!g_running.load(std::memory_order_relaxed))) {
+    // Sampling is in fact disabled. Put a large negative value into
+    // the accumulator. It needs to be large enough to have this code
+    // not trigger frequently, and small enough to eventually start collecting
+    // samples when the sampling is enabled.
+    g_accumulated_bytes_tls = -static_cast<intptr_t>(kWarmupInterval);
+    return;
+  }
+
   instance_->DoRecordAlloc(accumulated_bytes, size, address, type, context);
 }
 
@@ -475,6 +483,10 @@ void PoissonAllocationSampler::RecordFree(void* address) {
 void PoissonAllocationSampler::DoRecordFree(void* address) {
   if (UNLIKELY(ScopedMuteThreadSamples::IsMuted()))
     return;
+  // There is a rare case on macOS and Android when the very first thread_local
+  // access in ScopedMuteThreadSamples constructor may allocate and
+  // thus reenter DoRecordAlloc. However the call chain won't build up further
+  // as RecordAlloc accesses are guarded with pthread TLS-based ReentryGuard.
   ScopedMuteThreadSamples no_reentrancy_scope;
   AutoLock lock(mutex_);
   for (auto* observer : observers_)
@@ -523,6 +535,8 @@ void PoissonAllocationSampler::SuppressRandomnessForTest(bool suppress) {
 void PoissonAllocationSampler::AddSamplesObserver(SamplesObserver* observer) {
   ScopedMuteThreadSamples no_reentrancy_scope;
   AutoLock lock(mutex_);
+  DCHECK(std::find(observers_.begin(), observers_.end(), observer) ==
+         observers_.end());
   observers_.push_back(observer);
   InstallAllocatorHooksOnce();
   g_running = !observers_.empty();
@@ -533,7 +547,7 @@ void PoissonAllocationSampler::RemoveSamplesObserver(
   ScopedMuteThreadSamples no_reentrancy_scope;
   AutoLock lock(mutex_);
   auto it = std::find(observers_.begin(), observers_.end(), observer);
-  CHECK(it != observers_.end());
+  DCHECK(it != observers_.end());
   observers_.erase(it);
   g_running = !observers_.empty();
 }

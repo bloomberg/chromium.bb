@@ -23,8 +23,9 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 
-#include "libshaderc_util/common.h"
-#include "libshaderc_util/visibility.h"
+#include "shaderc/env.h"
+#include "shaderc/status.h"
+#include "shaderc/visibility.h"
 
 // An opaque handle to an object that manages all compiler state.
 typedef struct shaderc_spvc_compiler* shaderc_spvc_compiler_t;
@@ -66,14 +67,40 @@ shaderc_spvc_compile_options_clone(
 SHADERC_EXPORT void shaderc_spvc_compile_options_release(
     shaderc_spvc_compile_options_t options);
 
+// Sets the entry point.
+SHADERC_EXPORT void shaderc_spvc_compile_options_set_entry_point(
+    shaderc_spvc_compile_options_t options, const char* entry_point);
+
+// If true, unused variables will not appear in the output.
+SHADERC_EXPORT void shaderc_spvc_compile_options_set_remove_unused_variables(
+    shaderc_spvc_compile_options_t options, bool b);
+
 // Sets the target shader environment, affecting which warnings or errors will
 // be issued during validation.
 SHADERC_EXPORT void shaderc_spvc_compile_options_set_target_env(
     shaderc_spvc_compile_options_t options, shaderc_target_env target,
     shaderc_env_version version);
 
-// Set language version.  Default is 450.
-SHADERC_EXPORT void shaderc_spvc_compile_options_set_output_language_version(
+// If true, Vulkan GLSL features are used instead of GL-compatible features.
+SHADERC_EXPORT void shaderc_spvc_compile_options_set_vulkan_semantics(
+    shaderc_spvc_compile_options_t options, bool b);
+
+// If true, gl_PerVertex is explicitly redeclared in vertex, geometry and
+// tessellation shaders. The members of gl_PerVertex is determined by which
+// built-ins are declared by the shader.
+SHADERC_EXPORT void shaderc_spvc_compile_options_set_separate_shader_objects(
+    shaderc_spvc_compile_options_t options, bool b);
+
+// Flatten uniform or push constant variable into (i|u)vec4 array.
+SHADERC_EXPORT void shaderc_spvc_compile_options_set_flatten_ubo(
+    shaderc_spvc_compile_options_t options, bool b);
+
+// Set GLSL language version.  Default is 450 (i.e. 4.5).
+SHADERC_EXPORT void shaderc_spvc_compile_options_set_glsl_language_version(
+    shaderc_spvc_compile_options_t options, uint32_t version);
+
+// Set MSL language version.  Default is 10200 (i.e. 1.2).
+SHADERC_EXPORT void shaderc_spvc_compile_options_set_msl_language_version(
     shaderc_spvc_compile_options_t options, uint32_t version);
 
 // Set HLSL shader model.  Default is 30.

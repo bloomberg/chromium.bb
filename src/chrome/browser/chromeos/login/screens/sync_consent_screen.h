@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen_view.h"
 #include "components/sync/driver/sync_service_observer.h"
@@ -18,8 +19,6 @@
 class Profile;
 
 namespace chromeos {
-
-class BaseScreenDelegate;
 
 // This is Sync settings screen that is displayed as a part of user first
 // sign-in flow.
@@ -57,8 +56,7 @@ class SyncConsentScreen : public BaseScreen,
   // them after completing OOBE.
   static void MaybeLaunchSyncConsentSettings(Profile* profile);
 
-  SyncConsentScreen(BaseScreenDelegate* base_screen_delegate,
-                    SyncConsentScreenView* view,
+  SyncConsentScreen(SyncConsentScreenView* view,
                     const base::RepeatingClosure& exit_callback);
   ~SyncConsentScreen() override;
 
@@ -112,6 +110,10 @@ class SyncConsentScreen : public BaseScreen,
 
   SyncConsentScreenView* const view_;
   base::RepeatingClosure exit_callback_;
+
+  // Manages sync service observer lifetime.
+  ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
+      sync_service_observer_{this};
 
   // Primary user ind his Profile (if screen is shown).
   const user_manager::User* user_ = nullptr;

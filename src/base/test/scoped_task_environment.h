@@ -23,7 +23,7 @@ namespace base {
 
 class Clock;
 class FileDescriptorWatcher;
-class TaskScheduler;
+class ThreadPool;
 class TickClock;
 
 namespace test {
@@ -81,7 +81,7 @@ class ScopedTaskEnvironment {
     // The main thread doesn't pump system messages and uses a mock clock for
     // delayed tasks (controllable via FastForward*() methods).
     // TODO(gab): Make this the default |main_thread_type|.
-    // TODO(gab): Also mock the TaskScheduler's clock simultaneously (this
+    // TODO(gab): Also mock the ThreadPool's clock simultaneously (this
     // currently only mocks the main thread's clock).
     MOCK_TIME,
     // The main thread pumps UI messages.
@@ -149,8 +149,8 @@ class ScopedTaskEnvironment {
             trait_helpers::HasTrait<SubclassCreatesDefaultTaskRunner>(args...),
             trait_helpers::NotATraitTag()) {}
 
-  // Waits until no undelayed TaskScheduler tasks remain. Then, unregisters the
-  // TaskScheduler and the (Thread|Sequenced)TaskRunnerHandle.
+  // Waits until no undelayed ThreadPool tasks remain. Then, unregisters the
+  // ThreadPool and the (Thread|Sequenced)TaskRunnerHandle.
   virtual ~ScopedTaskEnvironment();
 
   // Returns a TaskRunner that schedules tasks on the main thread.
@@ -161,14 +161,28 @@ class ScopedTaskEnvironment {
   bool MainThreadIsIdle() const;
 
   // Runs tasks until both the (Thread|Sequenced)TaskRunnerHandle and the
-  // TaskScheduler's non-delayed queues are empty.
+  // ThreadPool's non-delayed queues are empty.
+  // While RunUntilIdle() is quite practical and sometimes even necessary -- for
+  // example, to flush all tasks bound to Unretained() state before destroying
+  // test members -- it should be used with caution per the following warnings:
+  //
+  // WARNING #1: This may run long (flakily timeout) and even never return! Do
+  //             not use this when repeating tasks such as animated web pages
+  //             are present.
+  // WARNING #2: This may return too early! For example, if used to run until an
+  //             incoming event has occurred but that event depends on a task in
+  //             a different queue -- e.g. a standalone base::Thread or a system
+  //             event.
+  //
+  // As such, prefer RunLoop::Run() with an explicit RunLoop::QuitClosure() when
+  // possible.
   void RunUntilIdle();
 
   // Only valid for instances with a MOCK_TIME MainThreadType. Fast-forwards
   // virtual time by |delta|, causing all tasks on the main thread with a
   // remaining delay less than or equal to |delta| to be executed before this
   // returns. |delta| must be non-negative.
-  // TODO(gab): Make this apply to TaskScheduler delayed tasks as well
+  // TODO(gab): Make this apply to ThreadPool delayed tasks as well
   // (currently only main thread time is mocked).
   void FastForwardBy(TimeDelta delta);
 
@@ -262,9 +276,9 @@ class ScopedTaskEnvironment {
   std::unique_ptr<FileDescriptorWatcher> file_descriptor_watcher_;
 #endif
 
-  const TaskScheduler* task_scheduler_ = nullptr;
+  const ThreadPool* thread_pool_ = nullptr;
 
-  // Owned by |task_scheduler_|.
+  // Owned by |thread_pool_|.
   TestTaskTracker* const task_tracker_;
 
   // Ensures destruction of lazy TaskRunners when this is destroyed.

@@ -73,7 +73,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) UsageTracker
   struct AccumulateInfo {
     AccumulateInfo();
     ~AccumulateInfo();
-    int pending_clients = 0;
+    size_t pending_clients = 0;
     int64_t usage = 0;
     int64_t unlimited_usage = 0;
     blink::mojom::UsageBreakdownPtr usage_breakdown =

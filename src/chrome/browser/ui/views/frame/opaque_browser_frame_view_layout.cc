@@ -85,7 +85,7 @@ void OpaqueBrowserFrameViewLayout::SetButtonOrdering(
   trailing_buttons_ = trailing_buttons;
 }
 
-gfx::Rect OpaqueBrowserFrameViewLayout::GetBoundsForTabStrip(
+gfx::Rect OpaqueBrowserFrameViewLayout::GetBoundsForTabStripRegion(
     const gfx::Size& tabstrip_preferred_size,
     int total_width) const {
   const int x = available_space_leading_x_;

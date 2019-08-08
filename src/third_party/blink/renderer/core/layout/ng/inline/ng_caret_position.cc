@@ -61,15 +61,15 @@ bool CanResolveCaretPositionBeforeFragment(const NGPaintFragment& fragment,
   if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
     return false;
   const NGPaintFragment* current_line_paint = fragment.ContainerLineBox();
-  const NGPhysicalLineBoxFragment& current_line =
-      ToNGPhysicalLineBoxFragment(current_line_paint->PhysicalFragment());
+  const auto& current_line =
+      To<NGPhysicalLineBoxFragment>(current_line_paint->PhysicalFragment());
   // A fragment after line wrap must be the first logical leaf in its line.
   if (&fragment.PhysicalFragment() != current_line.FirstLogicalLeaf())
     return true;
   const NGPaintFragment* last_line_paint =
       NGPaintFragmentTraversal::PreviousLineOf(*current_line_paint);
   return !last_line_paint ||
-         !ToNGPhysicalLineBoxFragment(last_line_paint->PhysicalFragment())
+         !To<NGPhysicalLineBoxFragment>(last_line_paint->PhysicalFragment())
               .HasSoftWrapToNextLine();
 }
 
@@ -80,8 +80,8 @@ bool CanResolveCaretPositionAfterFragment(const NGPaintFragment& fragment,
   if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
     return false;
   const NGPaintFragment* current_line_paint = fragment.ContainerLineBox();
-  const NGPhysicalLineBoxFragment& current_line =
-      ToNGPhysicalLineBoxFragment(current_line_paint->PhysicalFragment());
+  const auto& current_line =
+      To<NGPhysicalLineBoxFragment>(current_line_paint->PhysicalFragment());
   // A fragment before line wrap must be the last logical leaf in its line.
   if (&fragment.PhysicalFragment() != current_line.LastLogicalLeaf())
     return true;
@@ -95,9 +95,8 @@ CaretPositionResolution TryResolveCaretPositionInTextFragment(
     const NGPaintFragment& paint_fragment,
     unsigned offset,
     TextAffinity affinity) {
-  DCHECK(paint_fragment.PhysicalFragment().IsText());
-  const NGPhysicalTextFragment& fragment =
-      ToNGPhysicalTextFragment(paint_fragment.PhysicalFragment());
+  const auto& fragment =
+      To<NGPhysicalTextFragment>(paint_fragment.PhysicalFragment());
   if (fragment.IsAnonymousText())
     return CaretPositionResolution();
 
@@ -220,9 +219,8 @@ bool NeedsBidiAdjustment(const NGCaretPosition& caret_position) {
   if (caret_position.position_type != NGCaretPositionType::kAtTextOffset)
     return true;
   DCHECK(caret_position.text_offset.has_value());
-  DCHECK(caret_position.fragment->PhysicalFragment().IsText());
-  const NGPhysicalTextFragment& text_fragment =
-      ToNGPhysicalTextFragment(caret_position.fragment->PhysicalFragment());
+  const auto& text_fragment =
+      To<NGPhysicalTextFragment>(caret_position.fragment->PhysicalFragment());
   DCHECK_GE(*caret_position.text_offset, text_fragment.StartOffset());
   DCHECK_LE(*caret_position.text_offset, text_fragment.EndOffset());
   // Bidi adjustment is needed only for caret positions at bidi boundaries.
@@ -244,11 +242,10 @@ bool IsUpstreamAfterLineBreak(const NGCaretPosition& caret_position) {
     return false;
 
   DCHECK(caret_position.fragment);
-  DCHECK(caret_position.fragment->PhysicalFragment().IsText());
   DCHECK(caret_position.text_offset.has_value());
 
-  const NGPhysicalTextFragment& text_fragment =
-      ToNGPhysicalTextFragment(caret_position.fragment->PhysicalFragment());
+  const auto& text_fragment =
+      To<NGPhysicalTextFragment>(caret_position.fragment->PhysicalFragment());
   if (!text_fragment.IsLineBreak())
     return false;
   return *caret_position.text_offset == text_fragment.EndOffset();
@@ -352,14 +349,16 @@ PositionWithAffinity NGCaretPosition::ToPositionInDOMTreeWithAffinity() const {
       DCHECK(text_offset.has_value());
       const NGOffsetMapping* mapping =
           NGOffsetMapping::GetFor(fragment->GetLayoutObject());
-      const Position position = mapping->GetFirstPosition(*text_offset);
-      if (position.IsNull())
-        return PositionWithAffinity();
-      const NGPhysicalTextFragment& text_fragment =
-          ToNGPhysicalTextFragment(fragment->PhysicalFragment());
+      const auto& text_fragment =
+          To<NGPhysicalTextFragment>(fragment->PhysicalFragment());
       const TextAffinity affinity = *text_offset == text_fragment.EndOffset()
                                         ? TextAffinity::kUpstreamIfPossible
                                         : TextAffinity::kDownstream;
+      const Position position = affinity == TextAffinity::kDownstream
+                                    ? mapping->GetLastPosition(*text_offset)
+                                    : mapping->GetFirstPosition(*text_offset);
+      if (position.IsNull())
+        return PositionWithAffinity();
       return PositionWithAffinity(position, affinity);
   }
   NOTREACHED();

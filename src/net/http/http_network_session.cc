@@ -24,6 +24,7 @@
 #include "net/http/http_stream_factory.h"
 #include "net/http/url_security_manager.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/quic/platform/impl/quic_chromium_clock.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
 #include "net/quic/quic_stream_factory.h"
 #include "net/socket/client_socket_factory.h"
@@ -31,35 +32,22 @@
 #include "net/socket/next_proto.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/spdy_session_pool.h"
-#include "net/third_party/quic/core/crypto/quic_random.h"
-#include "net/third_party/quic/core/quic_packets.h"
-#include "net/third_party/quic/core/quic_tag.h"
-#include "net/third_party/quic/core/quic_utils.h"
-#include "net/third_party/quic/platform/impl/quic_chromium_clock.h"
+#include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
+#include "net/third_party/quiche/src/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quic/core/quic_tag.h"
+#include "net/third_party/quiche/src/quic/core/quic_utils.h"
 
 namespace net {
 
 namespace {
 
-std::unique_ptr<ClientSocketPoolManager> CreateSocketPoolManager(
-    HttpNetworkSession::SocketPoolType pool_type,
+SSLClientSocketContext CreateClientSocketContext(
     const HttpNetworkSession::Context& context,
-    SSLClientSessionCache* ssl_client_session_cache,
-    SSLClientSessionCache* ssl_client_session_cache_privacy_mode,
-    WebSocketEndpointLockManager* websocket_endpoint_lock_manager) {
-  // TODO(yutak): Differentiate WebSocket pool manager and allow more
-  // simultaneous connections for WebSockets.
-  return std::make_unique<ClientSocketPoolManagerImpl>(
-      context.net_log,
-      context.client_socket_factory ? context.client_socket_factory
-                                    : ClientSocketFactory::GetDefaultFactory(),
-      context.socket_performance_watcher_factory,
-      context.network_quality_estimator, context.host_resolver,
-      context.cert_verifier, context.channel_id_service,
-      context.transport_security_state, context.cert_transparency_verifier,
-      context.ct_policy_enforcer, ssl_client_session_cache,
-      ssl_client_session_cache_privacy_mode, context.ssl_config_service,
-      websocket_endpoint_lock_manager, context.proxy_delegate, pool_type);
+    SSLClientSessionCache* ssl_client_session_cache) {
+  return SSLClientSocketContext(
+      context.cert_verifier, context.transport_security_state,
+      context.cert_transparency_verifier, context.ct_policy_enforcer,
+      ssl_client_session_cache);
 }
 
 }  // unnamed namespace
@@ -107,6 +95,7 @@ HttpNetworkSession::Params::Params()
       time_func(&base::TimeTicks::Now),
       enable_http2_alternative_service(false),
       enable_websocket_over_http2(false),
+      enable_early_data(false),
       enable_quic(false),
       enable_quic_proxies_for_https_urls(false),
       quic_max_packet_length(quic::kDefaultMaxPacketSize),
@@ -145,7 +134,6 @@ HttpNetworkSession::Params::Params()
       quic_race_cert_verification(false),
       quic_estimate_initial_rtt(false),
       quic_headers_include_h2_stream_dependency(false),
-      enable_channel_id(false),
       http_09_on_non_default_ports_enabled(false),
       disable_idle_sockets_close_on_memory_pressure(false) {
   quic_supported_versions.push_back(quic::QUIC_VERSION_43);
@@ -159,12 +147,12 @@ HttpNetworkSession::Context::Context()
     : client_socket_factory(nullptr),
       host_resolver(nullptr),
       cert_verifier(nullptr),
-      channel_id_service(nullptr),
       transport_security_state(nullptr),
       cert_transparency_verifier(nullptr),
       ct_policy_enforcer(nullptr),
       proxy_resolution_service(nullptr),
       proxy_delegate(nullptr),
+      http_user_agent_settings(nullptr),
       ssl_config_service(nullptr),
       http_auth_handler_factory(nullptr),
       net_log(nullptr),
@@ -266,18 +254,18 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
   DCHECK(ssl_config_service_);
   CHECK(http_server_properties_);
 
-  normal_socket_pool_manager_ = CreateSocketPoolManager(
-      NORMAL_SOCKET_POOL, context, &ssl_client_session_cache_,
-      &ssl_client_session_cache_privacy_mode_,
-      &websocket_endpoint_lock_manager_);
-  websocket_socket_pool_manager_ = CreateSocketPoolManager(
-      WEBSOCKET_SOCKET_POOL, context, &ssl_client_session_cache_,
-      &ssl_client_session_cache_privacy_mode_,
-      &websocket_endpoint_lock_manager_);
+  normal_socket_pool_manager_ = std::make_unique<ClientSocketPoolManagerImpl>(
+      CreateCommonConnectJobParams(false /* for_websockets */),
+      CreateCommonConnectJobParams(true /* for_websockets */),
+      context_.ssl_config_service, NORMAL_SOCKET_POOL);
+  websocket_socket_pool_manager_ =
+      std::make_unique<ClientSocketPoolManagerImpl>(
+          CreateCommonConnectJobParams(false /* for_websockets */),
+          CreateCommonConnectJobParams(true /* for_websockets */),
+          context_.ssl_config_service, WEBSOCKET_SOCKET_POOL);
 
-  if (params_.enable_http2) {
+  if (params_.enable_http2)
     next_protos_.push_back(kProtoHTTP2);
-  }
 
   next_protos_.push_back(kProtoHTTP11);
 
@@ -313,7 +301,7 @@ void HttpNetworkSession::RemoveResponseDrainer(
   response_drainers_.erase(drainer);
 }
 
-TransportClientSocketPool* HttpNetworkSession::GetSocketPool(
+ClientSocketPool* HttpNetworkSession::GetSocketPool(
     SocketPoolType pool_type,
     const ProxyServer& proxy_server) {
   return GetSocketPoolManager(pool_type)->GetSocketPool(proxy_server);
@@ -451,12 +439,7 @@ void HttpNetworkSession::GetSSLConfig(const HttpRequestInfo& request,
   GetAlpnProtos(&server_config->alpn_protos);
   server_config->ignore_certificate_errors = params_.ignore_certificate_errors;
   *proxy_config = *server_config;
-  if (request.privacy_mode == PRIVACY_MODE_ENABLED) {
-    server_config->channel_id_enabled = false;
-  } else {
-    server_config->channel_id_enabled = params_.enable_channel_id;
-    proxy_config->channel_id_enabled = params_.enable_channel_id;
-  }
+  server_config->early_data_enabled = params_.enable_early_data;
 }
 
 void HttpNetworkSession::DumpMemoryStats(
@@ -503,6 +486,25 @@ void HttpNetworkSession::ClearSSLSessionCache() {
   ssl_client_session_cache_privacy_mode_.Flush();
 }
 
+CommonConnectJobParams HttpNetworkSession::CreateCommonConnectJobParams(
+    bool for_websockets) {
+  // Use null websocket_endpoint_lock_manager, which is only set for WebSockets,
+  // and only when not using a proxy.
+  return CommonConnectJobParams(
+      context_.client_socket_factory ? context_.client_socket_factory
+                                     : ClientSocketFactory::GetDefaultFactory(),
+      context_.host_resolver, &http_auth_cache_,
+      context_.http_auth_handler_factory, &spdy_session_pool_,
+      &params_.quic_supported_versions, &quic_stream_factory_,
+      context_.proxy_delegate, context_.http_user_agent_settings,
+      CreateClientSocketContext(context_, &ssl_client_session_cache_),
+      CreateClientSocketContext(context_,
+                                &ssl_client_session_cache_privacy_mode_),
+      context_.socket_performance_watcher_factory,
+      context_.network_quality_estimator, context_.net_log,
+      for_websockets ? &websocket_endpoint_lock_manager_ : nullptr);
+}
+
 ClientSocketPoolManager* HttpNetworkSession::GetSocketPoolManager(
     SocketPoolType pool_type) {
   switch (pool_type) {
@@ -514,7 +516,7 @@ ClientSocketPoolManager* HttpNetworkSession::GetSocketPoolManager(
       NOTREACHED();
       break;
   }
-  return NULL;
+  return nullptr;
 }
 
 void HttpNetworkSession::OnMemoryPressure(

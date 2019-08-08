@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_server.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_offer_options.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_session_description_init.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_web_rtc.h"
@@ -391,9 +392,9 @@ class RTCPeerConnectionTestWithPlatformTestingPlatformType
   MediaStreamTrack* CreateTrack(V8TestingScope& scope,
                                 MediaStreamSource::StreamType type,
                                 String id) {
-    MediaStreamSource* source =
-        MediaStreamSource::Create("sourceId", type, "sourceName", false);
-    MediaStreamComponent* component = MediaStreamComponent::Create(id, source);
+    auto* source = MakeGarbageCollected<MediaStreamSource>("sourceId", type,
+                                                           "sourceName", false);
+    auto* component = MakeGarbageCollected<MediaStreamComponent>(id, source);
     return MediaStreamTrack::Create(scope.GetExecutionContext(), component);
   }
 

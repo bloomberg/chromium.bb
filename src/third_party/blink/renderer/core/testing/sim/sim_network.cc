@@ -94,14 +94,17 @@ void SimNetwork::DidFinishLoading(WebURLLoaderClient* client,
 void SimNetwork::AddRequest(SimRequestBase& request) {
   requests_.insert(request.url_.GetString(), &request);
   WebURLResponse response(request.url_);
-  response.SetMIMEType(request.mime_type_);
+  response.SetMimeType(request.mime_type_);
 
   if (request.redirect_url_.IsEmpty()) {
     response.SetHttpStatusCode(200);
   } else {
     response.SetHttpStatusCode(302);
-    response.AddHTTPHeaderField("Location", request.redirect_url_);
+    response.AddHttpHeaderField("Location", request.redirect_url_);
   }
+
+  for (const auto& http_header : request.response_http_headers_)
+    response.AddHttpHeaderField(http_header.key, http_header.value);
 
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(request.url_,
                                                               response, "");
@@ -116,8 +119,11 @@ bool SimNetwork::FillNavigationParamsResponse(WebNavigationParams* params) {
   auto it = requests_.find(params->url.GetString());
   SimRequestBase* request = it->value;
   params->response = WebURLResponse(params->url);
-  params->response.SetMIMEType(request->mime_type_);
+  params->response.SetMimeType(request->mime_type_);
   params->response.SetHttpStatusCode(200);
+  for (const auto& http_header : request->response_http_headers_)
+    params->response.AddHttpHeaderField(http_header.key, http_header.value);
+
   auto body_loader = std::make_unique<StaticDataNavigationBodyLoader>();
   request->UsedForNavigation(body_loader.get());
   params->body_loader = std::move(body_loader);

@@ -29,17 +29,16 @@
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/navigation_policy.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
-#include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/resource_dispatcher.h"
-#include "content/renderer/loader/shared_memory_data_consumer_handle.h"
 #include "content/renderer/loader/sync_load_response.h"
-#include "content/renderer/loader/url_response_body_consumer.h"
 #include "content/renderer/loader/web_url_request_util.h"
 #include "net/base/data_url.h"
 #include "net/base/filename_util.h"
@@ -215,7 +214,12 @@ void SetSecurityStyleAndDetails(const GURL& url,
     return;
   }
   if (!url.SchemeIsCryptographic()) {
-    response->SetSecurityStyle(blink::kWebSecurityStyleNeutral);
+    // Some origins are considered secure even though they're not cryptographic,
+    // so treat them as secure in the UI.
+    if (IsOriginSecure(url))
+      response->SetSecurityStyle(blink::kWebSecurityStyleSecure);
+    else
+      response->SetSecurityStyle(blink::kWebSecurityStyleInsecure);
     return;
   }
 
@@ -359,8 +363,6 @@ std::unique_ptr<blink::WebURLLoader> WebURLLoaderFactoryImpl::CreateURLLoader(
 // deleted if it may have work to do after calling into the client.
 class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
  public:
-  using ReceivedData = RequestPeer::ReceivedData;
-
   Context(
       WebURLLoaderImpl* loader,
       ResourceDispatcher* resource_dispatcher,
@@ -388,46 +390,26 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
                           const network::ResourceResponseInfo& info);
   void OnReceivedResponse(const network::ResourceResponseInfo& info);
   void OnStartLoadingResponseBody(mojo::ScopedDataPipeConsumerHandle body);
-  void OnReceivedData(std::unique_ptr<ReceivedData> data);
   void OnTransferSizeUpdated(int transfer_size_diff);
   void OnReceivedCachedMetadata(const char* data, int len);
   void OnCompletedRequest(const network::URLLoaderCompletionStatus& status);
 
  private:
   friend class base::RefCounted<Context>;
+  // The maximal number of bytes consumed in a task. When there are more bytes
+  // in the data pipe, they will be consumed in following tasks. Setting a too
+  // small number will generate ton of tasks but setting a too large number will
+  // lead to thread janks. Also, some clients cannot handle too large chunks
+  // (512k for example).
+  static constexpr uint32_t kMaxNumConsumedBytesInTask = 64 * 1024;
+
   ~Context();
-
-  class ReceivedDataImpl : public ReceivedData {
-   public:
-    ReceivedDataImpl(const char* payload,
-                     int length,
-                     scoped_refptr<Context> context)
-        : payload_(payload), length_(length), context_(std::move(context)) {}
-
-    ~ReceivedDataImpl() override {
-      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-      context_->OnBodyHasBeenRead(length_);
-    }
-
-    const char* payload() override { return payload_; }
-    int length() override { return length_; }
-
-   private:
-    SEQUENCE_CHECKER(sequence_checker_);
-    const char* const payload_;
-    const int length_;
-    scoped_refptr<Context> context_;
-  };
 
   // Called when the body data stream is detached from the reader side.
   void CancelBodyStreaming();
-  // We can optimize the handling of data URLs in most cases.
-  bool CanHandleDataURLRequestLocally(const WebURLRequest& request) const;
 
   void OnBodyAvailable(MojoResult, const mojo::HandleSignalsState&);
   void OnBodyHasBeenRead(uint32_t read_bytes);
-
-  void MaybeCompleteRequest();
 
   static net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag(
       const blink::WebURLRequest& request);
@@ -435,7 +417,6 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   WebURLLoaderImpl* loader_;
 
   WebURL url_;
-  bool use_stream_on_response_;
   // Controls SetSecurityStyleAndDetails() in PopulateURLResponse(). Initially
   // set to WebURLRequest::ReportRawHeaders() in Start() and gets updated in
   // WillFollowRedirect() (by the InspectorNetworkAgent) while the new
@@ -452,7 +433,6 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   ResourceDispatcher* resource_dispatcher_;
   std::unique_ptr<WebResourceLoadingTaskRunnerHandle> task_runner_handle_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  std::unique_ptr<SharedMemoryDataConsumerHandle::Writer> body_stream_writer_;
   mojom::KeepAliveHandlePtr keep_alive_handle_;
   enum DeferState { NOT_DEFERRING, SHOULD_DEFER };
   DeferState defers_loading_;
@@ -460,10 +440,6 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   bool in_two_phase_read_ = false;
   bool is_in_on_body_available_ = false;
 
-  // Used when ResponseLoadViaDataPipe is enabled and
-  // |pass_response_pipe_to_client_| is false.
-  mojo::ScopedDataPipeConsumerHandle body_handle_;
-  mojo::SimpleWatcher body_watcher_;
   base::Optional<network::URLLoaderCompletionStatus> completion_status_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
@@ -485,7 +461,6 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
   void OnReceivedResponse(const network::ResourceResponseInfo& info) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
-  void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
   void OnReceivedCachedMetadata(const char* data, int len) override;
   void OnCompletedRequest(
@@ -526,7 +501,6 @@ class WebURLLoaderImpl::SinkPeer : public RequestPeer {
         base::BindRepeating(&SinkPeer::OnBodyAvailable,
                             base::Unretained(this)));
   }
-  void OnReceivedData(std::unique_ptr<ReceivedData> data) override {}
   void OnTransferSizeUpdated(int transfer_size_diff) override {}
   void OnReceivedCachedMetadata(const char* data, int len) override {}
   void OnCompletedRequest(
@@ -570,6 +544,9 @@ class WebURLLoaderImpl::SinkPeer : public RequestPeer {
 
 // WebURLLoaderImpl::Context --------------------------------------------------
 
+// static
+constexpr uint32_t WebURLLoaderImpl::Context::kMaxNumConsumedBytesInTask;
+
 WebURLLoaderImpl::Context::Context(
     WebURLLoaderImpl* loader,
     ResourceDispatcher* resource_dispatcher,
@@ -577,7 +554,6 @@ WebURLLoaderImpl::Context::Context(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     mojom::KeepAliveHandlePtr keep_alive_handle_ptr)
     : loader_(loader),
-      use_stream_on_response_(false),
       report_raw_headers_(false),
       client_(nullptr),
       resource_dispatcher_(resource_dispatcher),
@@ -586,9 +562,6 @@ WebURLLoaderImpl::Context::Context(
       keep_alive_handle_(std::move(keep_alive_handle_ptr)),
       defers_loading_(NOT_DEFERRING),
       request_id_(-1),
-      body_watcher_(FROM_HERE,
-                    mojo::SimpleWatcher::ArmingPolicy::MANUAL,
-                    task_runner_),
       url_loader_factory_(std::move(url_loader_factory)) {
   DCHECK(url_loader_factory_ || !resource_dispatcher);
 }
@@ -600,14 +573,6 @@ void WebURLLoaderImpl::Context::Cancel() {
       request_id_ != -1) {
     resource_dispatcher_->Cancel(request_id_, task_runner_);
     request_id_ = -1;
-  }
-
-  if (body_stream_writer_)
-    body_stream_writer_->Fail();
-
-  if (!in_two_phase_read_) {
-    body_handle_.reset();
-    body_watcher_.Cancel();
   }
 
   // Do not make any further calls to the client.
@@ -622,12 +587,6 @@ void WebURLLoaderImpl::Context::SetDefersLoading(bool value) {
     defers_loading_ = SHOULD_DEFER;
   } else if (!value && defers_loading_ != NOT_DEFERRING) {
     defers_loading_ = NOT_DEFERRING;
-
-    if (body_watcher_.IsWatching()) {
-      DCHECK(base::FeatureList::IsEnabled(
-          blink::features::kResourceLoadViaDataPipe));
-      body_watcher_.ArmOrNotify();
-    }
   }
 }
 
@@ -651,13 +610,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       ConvertWebKitPriorityToNetPriority(request.GetPriority()));
 
   url_ = request.Url();
-  use_stream_on_response_ = request.UseStreamOnResponse();
   report_raw_headers_ = request.ReportRawHeaders();
   pass_response_pipe_to_client_ = request.PassResponsePipeToClient();
-
-  // TODO(https://crbug.com/923779): Remove this once after we can confirm it's
-  // working well.
-  CHECK(!CanHandleDataURLRequestLocally(request));
 
   std::unique_ptr<NavigationResponseOverrideParameters> response_override;
   if (request.GetExtraData()) {
@@ -665,15 +619,6 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
         static_cast<RequestExtraData*>(request.GetExtraData());
     response_override = extra_data->TakeNavigationResponseOverrideOwnership();
   }
-
-
-  // PlzNavigate: outside of tests, the only navigation requests going through
-  // the WebURLLoader are the ones created by CommitNavigation. Several browser
-  // tests load HTML directly through a data url which will be handled by the
-  // block above.
-  DCHECK(response_override ||
-         request.GetFrameType() ==
-             network::mojom::RequestContextFrameType::kNone);
 
   // TODO(domfarolino): Retrieve the referrer in the form of a referrer member
   // instead of the header field. See https://crbug.com/850813.
@@ -711,14 +656,18 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
 
   resource_request->referrer_policy =
       Referrer::ReferrerPolicyForUrlRequest(request.GetReferrerPolicy());
-  resource_request->resource_type = WebURLRequestToResourceType(request);
+  resource_request->resource_type =
+      static_cast<int>(WebURLRequestToResourceType(request));
 
   resource_request->headers = GetWebURLRequestHeaders(request);
-  if (resource_request->resource_type == RESOURCE_TYPE_STYLESHEET) {
+  if (resource_request->resource_type ==
+      static_cast<int>(ResourceType::kStylesheet)) {
     resource_request->headers.SetHeader(network::kAcceptHeader,
                                         kStylesheetAcceptHeader);
-  } else if (resource_request->resource_type == RESOURCE_TYPE_FAVICON ||
-             resource_request->resource_type == RESOURCE_TYPE_IMAGE) {
+  } else if (resource_request->resource_type ==
+                 static_cast<int>(ResourceType::kFavicon) ||
+             resource_request->resource_type ==
+                 static_cast<int>(ResourceType::kImage)) {
     resource_request->headers.SetHeader(network::kAcceptHeader,
                                         kImageAcceptHeader);
   } else {
@@ -727,17 +676,29 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     resource_request->headers.SetHeaderIfMissing(network::kAcceptHeader,
                                                  network::kDefaultAcceptHeader);
   }
-  resource_request->requested_with_header =
-      WebString(request.GetRequestedWithHeader()).Utf8();
-  resource_request->client_data_header =
-      WebString(request.GetClientDataHeader()).Utf8();
+  // Set X-Requested-With header to cors_exempt_headers rather than headers to
+  // be exempted from CORS checks.
+  if (!request.GetRequestedWithHeader().IsEmpty()) {
+    resource_request->cors_exempt_headers.SetHeader(
+        kCorsExemptRequestedWithHeaderName,
+        WebString(request.GetRequestedWithHeader()).Utf8());
+  }
+  // Set Purpose header to cors_exempt_headers rather than headers to be
+  // exempted from CORS checks.
+  if (!request.GetPurposeHeader().IsEmpty()) {
+    resource_request->cors_exempt_headers.SetHeader(
+        kCorsExemptPurposeHeaderName,
+        WebString(request.GetPurposeHeader()).Utf8());
+  }
 
-  if (resource_request->resource_type == RESOURCE_TYPE_PREFETCH ||
-      resource_request->resource_type == RESOURCE_TYPE_FAVICON) {
+  if (resource_request->resource_type ==
+          static_cast<int>(ResourceType::kPrefetch) ||
+      resource_request->resource_type ==
+          static_cast<int>(ResourceType::kFavicon)) {
     resource_request->do_not_prompt_for_login = true;
   }
 
-  resource_request->load_flags = GetLoadFlagsForWebURLRequest(request);
+  resource_request->load_flags = request.GetLoadFlagsForWebUrlRequest();
 
   // |plugin_child_id| only needs to be non-zero if the request originates
   // outside the render process, so we can use requestorProcessID even
@@ -758,7 +719,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->fetch_request_context_type =
       static_cast<int>(GetRequestContextTypeForWebURLRequest(request));
 
-  resource_request->fetch_frame_type = request.GetFrameType();
+  resource_request->fetch_frame_type =
+      network::mojom::RequestContextFrameType::kNone;
   resource_request->request_body =
       GetRequestBodyForWebURLRequest(request).get();
   resource_request->keepalive = request.GetKeepalive();
@@ -781,6 +743,11 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   if (base::UnguessableToken window_id = request.GetFetchWindowId())
     resource_request->fetch_window_id = base::make_optional(window_id);
 
+  if (request.GetDevToolsId().has_value()) {
+    resource_request->devtools_request_id =
+        request.GetDevToolsId().value().Ascii();
+  }
+
   // The network request has already been made by the browser. The renderer
   // should bind the URLLoaderClientEndpoints stored in |response_override| to
   // an implementation of a URLLoaderClient to get the response body.
@@ -800,8 +767,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   if (request.IsDownloadToNetworkCacheOnly()) {
     peer = std::make_unique<SinkPeer>(this);
   } else {
-    const bool discard_body =
-        (resource_request->resource_type == RESOURCE_TYPE_PREFETCH);
+    const bool discard_body = (resource_request->resource_type ==
+                               static_cast<int>(ResourceType::kPrefetch));
     peer =
         std::make_unique<WebURLLoaderImpl::RequestPeerImpl>(this, discard_body);
   }
@@ -891,21 +858,6 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
   WebURLResponse response;
   PopulateURLResponse(url_, info, &response, report_raw_headers_, request_id_);
 
-  if (use_stream_on_response_) {
-    auto read_handle = std::make_unique<SharedMemoryDataConsumerHandle>(
-        base::BindOnce(&Context::CancelBodyStreaming, this),
-        &body_stream_writer_);
-
-    // Here |body_stream_writer_| has an indirect reference to |this| and that
-    // creates a reference cycle, but it is not a problem because the cycle
-    // will break if one of the following happens:
-    //  1) The body data transfer is done (with or without an error).
-    //  2) |read_handle| (and its reader) is detached.
-    client_->DidReceiveResponse(response, std::move(read_handle));
-    // TODO(yhirano): Support ftp listening and multipart
-    return;
-  }
-
   client_->DidReceiveResponse(response);
 
   // DidReceiveResponse() may have triggered a cancel, causing the |client_| to
@@ -916,40 +868,8 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
 
 void WebURLLoaderImpl::Context::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
-  if (!pass_response_pipe_to_client_) {
-    DCHECK(base::FeatureList::IsEnabled(
-        blink::features::kResourceLoadViaDataPipe));
-    body_handle_ = std::move(body);
-    body_watcher_.Watch(
-        body_handle_.get(),
-        MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-        MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
-        base::BindRepeating(&WebURLLoaderImpl::Context::OnBodyAvailable, this));
-    if (defers_loading_ == NOT_DEFERRING)
-      OnBodyAvailable(MOJO_RESULT_OK, {});
-    return;
-  }
-
   if (client_)
     client_->DidStartLoadingResponseBody(std::move(body));
-}
-
-void WebURLLoaderImpl::Context::OnReceivedData(
-    std::unique_ptr<ReceivedData> data) {
-  const char* payload = data->payload();
-  int data_length = data->length();
-  if (!client_)
-    return;
-
-  TRACE_EVENT_WITH_FLOW0(
-      "loading", "WebURLLoaderImpl::Context::OnReceivedData",
-      this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-
-  if (use_stream_on_response_) {
-    body_stream_writer_->AddData(std::move(data));
-  } else {
-    client_->DidReceiveData(payload, data_length);
-  }
 }
 
 void WebURLLoaderImpl::Context::OnTransferSizeUpdated(int transfer_size_diff) {
@@ -968,13 +888,24 @@ void WebURLLoaderImpl::Context::OnReceivedCachedMetadata(
 
 void WebURLLoaderImpl::Context::OnCompletedRequest(
     const network::URLLoaderCompletionStatus& status) {
-  if (completion_status_.has_value()) {
-    // |completion_status_| could be set before OnCompletedRequest() is called
-    // when Mojo error happens during reading the body.
-    return;
+  int64_t total_transfer_size = status.encoded_data_length;
+  int64_t encoded_body_size = status.encoded_body_length;
+
+  if (client_) {
+    TRACE_EVENT_WITH_FLOW0("loading",
+                           "WebURLLoaderImpl::Context::OnCompletedRequest",
+                           this, TRACE_EVENT_FLAG_FLOW_IN);
+
+    if (status.error_code != net::OK) {
+      client_->DidFail(PopulateURLError(status, url_), total_transfer_size,
+                       encoded_body_size, status.decoded_body_length);
+    } else {
+      client_->DidFinishLoading(status.completion_time, total_transfer_size,
+                                encoded_body_size, status.decoded_body_length,
+                                status.should_report_corb_blocking,
+                                status.cors_preflight_timing_info);
+    }
   }
-  completion_status_ = status;
-  MaybeCompleteRequest();
 }
 
 WebURLLoaderImpl::Context::~Context() {
@@ -985,10 +916,6 @@ WebURLLoaderImpl::Context::~Context() {
 void WebURLLoaderImpl::Context::CancelBodyStreaming() {
   scoped_refptr<Context> protect(this);
 
-  if (body_stream_writer_) {
-    body_stream_writer_->Fail();
-    body_stream_writer_.reset();
-  }
   if (client_) {
     // TODO(yhirano): Set |stale_copy_in_cache| appropriately if possible.
     client_->DidFail(WebURLError(net::ERR_ABORTED, url_),
@@ -997,145 +924,6 @@ void WebURLLoaderImpl::Context::CancelBodyStreaming() {
 
   // Notify the browser process that the request is canceled.
   Cancel();
-}
-
-bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally(
-    const WebURLRequest& request) const {
-  if (!request.Url().ProtocolIs(url::kDataScheme))
-    return false;
-
-  // The fast paths for data URL, Start() and HandleDataURL(), don't support
-  // the PassResponsePipeToClient option.
-  if (request.PassResponsePipeToClient())
-    return false;
-
-  // Data url requests from object tags may need to be intercepted as streams
-  // and so need to be sent to the browser.
-  if (request.GetRequestContext() == blink::mojom::RequestContextType::OBJECT)
-    return false;
-
-  // Optimize for the case where we can handle a data URL locally.  We must
-  // skip this for data URLs targetted at frames since those could trigger a
-  // download.
-  //
-  // NOTE: We special case MIME types we can render both for performance
-  // reasons as well as to support unit tests.
-
-  if (request.GetFrameType() !=
-          network::mojom::RequestContextFrameType::kTopLevel &&
-      request.GetFrameType() !=
-          network::mojom::RequestContextFrameType::kNested)
-    return true;
-
-  std::string mime_type, unused_charset;
-  if (net::DataURL::Parse(request.Url(), &mime_type, &unused_charset,
-                          nullptr) &&
-      blink::IsSupportedMimeType(mime_type))
-    return true;
-
-  return false;
-}
-
-void WebURLLoaderImpl::Context::OnBodyAvailable(
-    MojoResult,
-    const mojo::HandleSignalsState&) {
-  DCHECK(!is_in_on_body_available_);
-  // Cancel may happen so that we need to protect |this|.
-  scoped_refptr<Context> protect(this);
-  uint32_t read_bytes = 0;
-  base::AutoReset<bool> auto_reset(&is_in_on_body_available_, true);
-
-  // |client_| is nullptr when the request is canceled.
-  while (client_ && defers_loading_ == NOT_DEFERRING && !in_two_phase_read_) {
-    const void* buffer = nullptr;
-    uint32_t available_bytes = 0;
-    MojoResult rv = body_handle_->BeginReadData(&buffer, &available_bytes,
-                                                MOJO_READ_DATA_FLAG_NONE);
-    if (rv == MOJO_RESULT_SHOULD_WAIT) {
-      body_watcher_.ArmOrNotify();
-      return;
-    }
-    if (rv == MOJO_RESULT_FAILED_PRECONDITION) {
-      body_handle_.reset();
-      body_watcher_.Cancel();
-      MaybeCompleteRequest();
-      return;
-    }
-    if (rv != MOJO_RESULT_OK) {
-      body_handle_.reset();
-      body_watcher_.Cancel();
-      completion_status_ = network::URLLoaderCompletionStatus(net::ERR_FAILED);
-      MaybeCompleteRequest();
-      return;
-    }
-    in_two_phase_read_ = true;
-    DCHECK_EQ(MOJO_RESULT_OK, rv);
-    DCHECK_LE(read_bytes, URLResponseBodyConsumer::kMaxNumConsumedBytesInTask);
-    available_bytes = std::min(
-        available_bytes,
-        URLResponseBodyConsumer::kMaxNumConsumedBytesInTask - read_bytes);
-    if (available_bytes == 0) {
-      // We've already read kMaxNumConsumedBytesInTask bytes of the body in this
-      // task. Defer the remaining to the next task.
-      rv = body_handle_->EndReadData(0);
-      in_two_phase_read_ = false;
-      DCHECK_EQ(MOJO_RESULT_OK, rv);
-      body_watcher_.ArmOrNotify();
-      return;
-    }
-    read_bytes += available_bytes;
-    OnReceivedData(std::make_unique<ReceivedDataImpl>(
-        static_cast<const char*>(buffer), available_bytes, this));
-  }
-}
-
-void WebURLLoaderImpl::Context::OnBodyHasBeenRead(uint32_t read_bytes) {
-  DCHECK(in_two_phase_read_);
-  MojoResult rv = body_handle_->EndReadData(read_bytes);
-  DCHECK_EQ(MOJO_RESULT_OK, rv);
-  in_two_phase_read_ = false;
-  if (!client_) {
-    // The request has been cancelled.
-    body_handle_.reset();
-    body_watcher_.Cancel();
-  }
-  if (defers_loading_ == NOT_DEFERRING && !is_in_on_body_available_)
-    body_watcher_.ArmOrNotify();
-}
-
-void WebURLLoaderImpl::Context::MaybeCompleteRequest() {
-  if (!completion_status_.has_value() || body_handle_.is_valid()) {
-    DCHECK(base::FeatureList::IsEnabled(
-        blink::features::kResourceLoadViaDataPipe));
-    // OnCompletedRequest() hasn't been called yet or the body didn't reach to
-    // the end.
-    return;
-  }
-
-  int64_t total_transfer_size = completion_status_->encoded_data_length;
-  int64_t encoded_body_size = completion_status_->encoded_body_length;
-
-  if (body_stream_writer_ && completion_status_->error_code != net::OK)
-    body_stream_writer_->Fail();
-  body_stream_writer_.reset();
-
-  if (client_) {
-    TRACE_EVENT_WITH_FLOW0("loading",
-                           "WebURLLoaderImpl::Context::OnCompletedRequest",
-                           this, TRACE_EVENT_FLAG_FLOW_IN);
-
-    if (completion_status_->error_code != net::OK) {
-      client_->DidFail(PopulateURLError(*completion_status_, url_),
-                       total_transfer_size, encoded_body_size,
-                       completion_status_->decoded_body_length);
-    } else {
-      client_->DidFinishLoading(completion_status_->completion_time,
-                                total_transfer_size, encoded_body_size,
-                                completion_status_->decoded_body_length,
-                                completion_status_->should_report_corb_blocking,
-                                completion_status_->cors_preflight_timing_info);
-    }
-  }
 }
 
 // WebURLLoaderImpl::RequestPeerImpl ------------------------------------------
@@ -1163,13 +951,6 @@ void WebURLLoaderImpl::RequestPeerImpl::OnReceivedResponse(
 void WebURLLoaderImpl::RequestPeerImpl::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   context_->OnStartLoadingResponseBody(std::move(body));
-}
-
-void WebURLLoaderImpl::RequestPeerImpl::OnReceivedData(
-    std::unique_ptr<ReceivedData> data) {
-  if (discard_body_)
-    return;
-  context_->OnReceivedData(std::move(data));
 }
 
 void WebURLLoaderImpl::RequestPeerImpl::OnTransferSizeUpdated(
@@ -1224,7 +1005,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
     int request_id) {
   response->SetCurrentRequestUrl(url);
   response->SetResponseTime(info.response_time);
-  response->SetMIMEType(WebString::FromUTF8(info.mime_type));
+  response->SetMimeType(WebString::FromUTF8(info.mime_type));
   response->SetTextEncodingName(WebString::FromUTF8(info.charset));
   response->SetExpectedContentLength(info.content_length);
   response->SetHasMajorCertificateErrors(
@@ -1247,7 +1028,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
   response->SetWasFallbackRequiredByServiceWorker(
       info.was_fallback_required_by_service_worker);
   response->SetType(info.response_type);
-  response->SetURLListViaServiceWorker(info.url_list_via_service_worker);
+  response->SetUrlListViaServiceWorker(info.url_list_via_service_worker);
   response->SetCacheStorageCacheName(
       info.is_in_cache_storage
           ? blink::WebString::FromUTF8(info.cache_storage_cache_name)
@@ -1325,16 +1106,16 @@ void WebURLLoaderImpl::PopulateURLResponse(
     version = WebURLResponse::kHTTPVersion_1_1;
   else if (headers->GetHttpVersion() == net::HttpVersion(2, 0))
     version = WebURLResponse::kHTTPVersion_2_0;
-  response->SetHTTPVersion(version);
+  response->SetHttpVersion(version);
   response->SetHttpStatusCode(headers->response_code());
-  response->SetHTTPStatusText(WebString::FromLatin1(headers->GetStatusText()));
+  response->SetHttpStatusText(WebString::FromLatin1(headers->GetStatusText()));
 
   // Build up the header map.
   size_t iter = 0;
   std::string name;
   std::string value;
   while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
-    response->AddHTTPHeaderField(WebString::FromLatin1(name),
+    response->AddHttpHeaderField(WebString::FromLatin1(name),
                                  WebString::FromLatin1(value));
   }
 }
@@ -1429,6 +1210,10 @@ void WebURLLoaderImpl::SetDefersLoading(bool value) {
 void WebURLLoaderImpl::DidChangePriority(WebURLRequest::Priority new_priority,
                                          int intra_priority_value) {
   context_->DidChangePriority(new_priority, intra_priority_value);
+}
+
+scoped_refptr<base::SingleThreadTaskRunner> WebURLLoaderImpl::GetTaskRunner() {
+  return context_->task_runner();
 }
 
 // static

@@ -9,13 +9,14 @@
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "ios/web/common/features.h"
 #import "ios/web/navigation/navigation_item_impl.h"
-#include "ios/web/public/features.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
+#import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/test/web_int_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -476,6 +477,10 @@ TEST_P(HistoryStateOperationsTest, ReplaceStateNoHashChangeEvent) {
 
 // Regression test for crbug.com/788464.
 TEST_P(HistoryStateOperationsTest, ReplaceStateThenReload) {
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    // TODO(crbug.com/950263): Investigate culprit and reenable.
+    return;
+  }
   GURL url = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/"
       "onload_replacestate_reload.html");

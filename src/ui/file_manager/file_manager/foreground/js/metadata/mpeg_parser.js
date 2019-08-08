@@ -13,7 +13,9 @@ function MpegParser(parent) {
   this.mimeType = 'video/mpeg';
 }
 
-MpegParser.prototype = {__proto__: MetadataParser.prototype};
+MpegParser.prototype = {
+  __proto__: MetadataParser.prototype
+};
 
 /**
  * Size of the atom header.
@@ -65,8 +67,12 @@ MpegParser.createRootParser = metadata => {
   function findParentAtom(atom, name) {
     for (;;) {
       atom = atom.parent;
-      if (!atom) return null;
-      if (atom.name == name) return atom;
+      if (!atom) {
+        return null;
+      }
+      if (atom.name == name) {
+        return atom;
+      }
     }
   }
 
@@ -110,10 +116,10 @@ MpegParser.createRootParser = metadata => {
   // 'meta' atom can occur at one of the several places in the file structure.
   const parseMeta = {
     ilst: {
-      '©nam': { data: parseDataString.bind(null, 'title') },
-      '©alb': { data: parseDataString.bind(null, 'album') },
-      '©art': { data: parseDataString.bind(null, 'artist') },
-      'covr': { data: parseCovr }
+      '©nam': {data: parseDataString.bind(null, 'title')},
+      '©alb': {data: parseDataString.bind(null, 'album')},
+      '©art': {data: parseDataString.bind(null, 'artist')},
+      'covr': {data: parseCovr}
     },
     versioned: true
   };
@@ -127,15 +133,13 @@ MpegParser.createRootParser = metadata => {
         mdia: {
           hdlr: parseHdlr,
           minf: {
-            stbl: {
-              stsd: parseStsd
-            }
-          }
+            stbl: {stsd: parseStsd},
+          },
         },
         meta: parseMeta
       },
       udta: {
-        meta: parseMeta
+        meta: parseMeta,
       },
       meta: parseMeta
     },
@@ -153,8 +157,9 @@ MpegParser.prototype.parse = function(file, metadata, callback, onError) {
   const rootParser = MpegParser.createRootParser(metadata);
 
   // Kick off the processing by reading the first atom's header.
-  this.requestRead(rootParser, file, 0, MpegParser.HEADER_SIZE, null,
-      onError, callback.bind(null, metadata));
+  this.requestRead(
+      rootParser, file, 0, MpegParser.HEADER_SIZE, null, onError,
+      callback.bind(null, metadata));
 };
 
 /**
@@ -180,9 +185,10 @@ MpegParser.prototype.applyParser = function(parser, br, atom, filePos) {
     }
 
     const start = atom.start - MpegParser.HEADER_SIZE;
-    this.vlog(path + ': ' +
-              '@' + (filePos + start) + ':' + (atom.end - start),
-              action);
+    this.vlog(
+        path + ': ' +
+            '@' + (filePos + start) + ':' + (atom.end - start),
+        action);
   }
 
   if (parser) {
@@ -218,15 +224,13 @@ MpegParser.prototype.parseMpegAtomsInRange = function(
     const name = MpegParser.readAtomName(br, parentAtom.end);
 
     this.applyParser(
-        parser[name],
-        br,
-        { start: offset + MpegParser.HEADER_SIZE,
+        parser[name], br, {
+          start: offset + MpegParser.HEADER_SIZE,
           end: offset + size,
           name: name,
           parent: parentAtom
         },
-        filePos
-    );
+        filePos);
 
     offset += size;
   }
@@ -283,13 +287,9 @@ MpegParser.prototype.processTopLevelAtom = function(
     }
 
     // Process the top level atom.
-    if (name) { // name is null only the first time.
+    if (name) {  // name is null only the first time.
       this.applyParser(
-          rootParser[name],
-          br,
-          {start: 0, end: atomEnd, name: name},
-          filePos
-      );
+          rootParser[name], br, {start: 0, end: atomEnd, name: name}, filePos);
     }
 
     filePos += bufLength;
@@ -308,8 +308,8 @@ MpegParser.prototype.processTopLevelAtom = function(
         nextSize = MpegParser.HEADER_SIZE;
       }
 
-      this.requestRead(rootParser, file, filePos, nextSize, nextName,
-                       onError, onSuccess);
+      this.requestRead(
+          rootParser, file, filePos, nextSize, nextName, onError, onSuccess);
     } else {
       // The previous read did not return the next atom header, EOF reached.
       this.vlog('EOF @' + filePos);

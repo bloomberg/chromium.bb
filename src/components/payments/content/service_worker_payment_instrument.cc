@@ -174,7 +174,8 @@ ServiceWorkerPaymentInstrument::CreateCanMakePaymentEventData() {
   event_data->top_origin = top_origin_;
   event_data->payment_request_origin = frame_origin_;
 
-  for (const auto& modifier : spec_->details().modifiers) {
+  DCHECK(spec_->details().modifiers);
+  for (const auto& modifier : *spec_->details().modifiers) {
     if (base::ContainsKey(supported_url_methods,
                           modifier->method_data->supported_method)) {
       event_data->modifiers.emplace_back(modifier.Clone());
@@ -243,6 +244,10 @@ void ServiceWorkerPaymentInstrument::InvokePaymentApp(Delegate* delegate) {
   payment_request_delegate_->ShowProcessingSpinner();
 }
 
+void ServiceWorkerPaymentInstrument::OnPaymentAppWindowClosed() {
+  delegate_ = nullptr;
+}
+
 mojom::PaymentRequestEventDataPtr
 ServiceWorkerPaymentInstrument::CreatePaymentRequestEventData() {
   mojom::PaymentRequestEventDataPtr event_data =
@@ -263,7 +268,8 @@ ServiceWorkerPaymentInstrument::CreatePaymentRequestEventData() {
     supported_methods.insert(stored_payment_app_info_->enabled_methods.begin(),
                              stored_payment_app_info_->enabled_methods.end());
   }
-  for (const auto& modifier : spec_->details().modifiers) {
+  DCHECK(spec_->details().modifiers);
+  for (const auto& modifier : *spec_->details().modifiers) {
     if (base::ContainsKey(supported_methods,
                           modifier->method_data->supported_method)) {
       event_data->modifiers.emplace_back(modifier.Clone());
@@ -281,8 +287,6 @@ ServiceWorkerPaymentInstrument::CreatePaymentRequestEventData() {
 
 void ServiceWorkerPaymentInstrument::OnPaymentAppInvoked(
     mojom::PaymentHandlerResponsePtr response) {
-  DCHECK(delegate_);
-
   if (delegate_ != nullptr) {
     delegate_->OnInstrumentDetailsReady(response->method_name,
                                         response->stringified_details);

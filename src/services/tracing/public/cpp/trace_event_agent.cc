@@ -56,15 +56,10 @@ TraceEventAgent::TraceEventAgent()
         base::BindRepeating(&IsMetadataWhitelisted));
   }
 
-  base::trace_event::TraceLog::GetInstance()->AddAsyncEnabledStateObserver(
-      weak_ptr_factory_.GetWeakPtr());
-
   ProducerClient::Get()->AddDataSource(TraceEventDataSource::GetInstance());
 }
 
-TraceEventAgent::~TraceEventAgent() {
-  DCHECK(!tracing_enabled_callback_);
-}
+TraceEventAgent::~TraceEventAgent() = default;
 
 void TraceEventAgent::GetCategories(std::set<std::string>* category_set) {
   for (size_t i = base::trace_event::BuiltinCategories::kVisibleCategoryStart;
@@ -94,7 +89,6 @@ void TraceEventAgent::StartTracing(const std::string& config,
                                    StartTracingCallback callback) {
   DCHECK(!IsBoundForTesting() || !TracingUsesPerfettoBackend());
   DCHECK(!recorder_);
-  DCHECK(!tracing_enabled_callback_);
 #if defined(__native_client__)
   // NaCl and system times are offset by a bit, so subtract some time from
   // the captured timestamps. The value might be off by a bit due to messaging
@@ -136,30 +130,6 @@ void TraceEventAgent::RequestBufferStatus(
       base::trace_event::TraceLog::GetInstance()->GetStatus();
   std::move(callback).Run(status.event_capacity, status.event_count);
 }
-
-void TraceEventAgent::WaitForTracingEnabled(
-    Agent::WaitForTracingEnabledCallback callback) {
-  DCHECK(TracingUsesPerfettoBackend());
-  DCHECK(!tracing_enabled_callback_);
-  if (base::trace_event::TraceLog::GetInstance()->IsEnabled()) {
-    std::move(callback).Run();
-    return;
-  }
-
-  tracing_enabled_callback_ = std::move(callback);
-}
-
-// This callback will always come on the same sequence
-// that TraceLog::AddAsyncEnabledStateObserver was called
-// on to begin with, i.e. the same as any WaitForTracingEnabled()
-// calls are run on.
-void TraceEventAgent::OnTraceLogEnabled() {
-  if (tracing_enabled_callback_) {
-    std::move(tracing_enabled_callback_).Run();
-  }
-}
-
-void TraceEventAgent::OnTraceLogDisabled() {}
 
 void TraceEventAgent::OnTraceLogFlush(
     const scoped_refptr<base::RefCountedString>& events_str,

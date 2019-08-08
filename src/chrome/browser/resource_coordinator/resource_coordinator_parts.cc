@@ -19,8 +19,7 @@ ResourceCoordinatorParts::ResourceCoordinatorParts()
       ,
       tab_manager_(page_signal_receiver_.get(), &tab_load_tracker_),
       tab_lifecycle_unit_source_(tab_manager_.intervention_policy_database(),
-                                 tab_manager_.usage_clock(),
-                                 page_signal_receiver_.get())
+                                 tab_manager_.usage_clock())
 #endif
 {
 #if !defined(OS_ANDROID)

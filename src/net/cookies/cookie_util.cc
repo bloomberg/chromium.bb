@@ -7,6 +7,8 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
@@ -429,6 +431,40 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForRequest(
       same_site_context = CookieOptions::SameSiteCookieContext::CROSS_SITE;
   }
   return same_site_context;
+}
+
+base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
+IgnoreCookieStatusList(base::OnceCallback<void(const CookieList&)> callback) {
+  return base::BindOnce(
+      [](base::OnceCallback<void(const CookieList&)> callback,
+         const CookieList& cookies, const CookieStatusList& excluded_list) {
+        std::move(callback).Run(cookies);
+      },
+      std::move(callback));
+}
+
+base::OnceCallback<void(const CookieList&)> AddCookieStatusList(
+    base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
+        callback) {
+  return base::BindOnce(
+      [](base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
+             inner_callback,
+         const CookieList& cookies) {
+        std::move(inner_callback).Run(cookies, net::CookieStatusList());
+      },
+      std::move(callback));
+}
+
+base::OnceCallback<void(net::CanonicalCookie::CookieInclusionStatus)>
+AdaptCookieInclusionStatusToBool(base::OnceCallback<void(bool)> callback) {
+  return base::BindOnce(
+      [](base::OnceCallback<void(bool)> inner_callback,
+         const net::CanonicalCookie::CookieInclusionStatus status) {
+        bool success =
+            (status == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+        std::move(inner_callback).Run(success);
+      },
+      std::move(callback));
 }
 
 }  // namespace cookie_util

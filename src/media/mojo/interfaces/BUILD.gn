@@ -23,17 +23,17 @@ mojom("interfaces") {
     "demuxer_stream.mojom",
     "display_media_information.mojom",
     "interface_factory.mojom",
-    "jpeg_decode_accelerator.mojom",
-    "jpeg_encode_accelerator.mojom",
     "key_system_support.mojom",
     "media_log.mojom",
     "media_metrics_provider.mojom",
     "media_service.mojom",
     "media_types.mojom",
+    "mjpeg_decode_accelerator.mojom",
     "output_protection.mojom",
     "platform_verification.mojom",
     "provision_fetcher.mojom",
     "renderer.mojom",
+    "renderer_extensions.mojom",
     "video_decode_perf_history.mojom",
     "video_decode_stats_recorder.mojom",
     "video_decoder.mojom",
@@ -49,7 +49,7 @@ mojom("interfaces") {
   }
 
   if (is_chromecast) {
-    sources += [ "application_session_id_manager.mojom" ]
+    sources += [ "cast_application_media_info_manager.mojom" ]
   }
 
   public_deps = [
@@ -72,9 +72,13 @@ mojom("interfaces") {
   # classes. Enabling this for other builds would result in ODR violations.
   # TODO(crbug.com/921170): Remove this once the issue is resolved.
   if (is_win && is_component_build) {
-    export_class_attribute_blink = "PLATFORM_EXPORT"
+    export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
     export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
     export_header_blink = "third_party/blink/public/platform/web_common.h"
+  }
+
+  if (enable_cast_renderer) {
+    enabled_features = [ "enable_cast_renderer" ]
   }
 }
 

@@ -141,7 +141,7 @@ void VerifyMetadata(
   for (const auto& kv : expected_metadata) {
     auto it = actual_metadata.find(kv.first);
     ASSERT_TRUE(it != actual_metadata.end());
-    EXPECT_EQ(kv.second.SerializeAsString(), it->second.SerializeAsString());
+    EXPECT_EQ(kv.second.SerializeAsString(), it->second->SerializeAsString());
     actual_metadata.erase(it);
   }
   EXPECT_EQ(0U, actual_metadata.size());

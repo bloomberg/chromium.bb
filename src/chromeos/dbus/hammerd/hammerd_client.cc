@@ -159,27 +159,31 @@ class HammerdClientImpl : public HammerdClient {
 
 }  // namespace
 
-HammerdClient::HammerdClient() = default;
+HammerdClient::HammerdClient() {
+  CHECK(!g_instance);
+  g_instance = this;
+}
 
-HammerdClient::~HammerdClient() = default;
+HammerdClient::~HammerdClient() {
+  CHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
 
 // static
 void HammerdClient::Initialize(dbus::Bus* bus) {
-  CHECK(!g_instance);
-  if (bus) {
-    auto* instance = new HammerdClientImpl();
-    instance->Init(bus);
-    g_instance = instance;
-  } else {
-    g_instance = new FakeHammerdClient();
-  }
+  CHECK(bus);
+  (new HammerdClientImpl())->Init(bus);
+}
+
+// static
+void HammerdClient::InitializeFake() {
+  new FakeHammerdClient();
 }
 
 // static
 void HammerdClient::Shutdown() {
   CHECK(g_instance);
   delete g_instance;
-  g_instance = nullptr;
 }
 
 // static

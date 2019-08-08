@@ -30,7 +30,8 @@ class FakeFormFetcher : public FormFetcher {
 
   // Registers consumers to be notified when results are set. Unlike the
   // production version, assumes that results have not arrived yet, i.e., one
-  // has to first call AddConsumer and then SetNonFederated.
+  // has to first call AddConsumer, then setters and finally
+  // NotifyFetchCompleted().
   void AddConsumer(Consumer* consumer) override;
 
   void RemoveConsumer(Consumer* consumer) override;
@@ -53,48 +54,22 @@ class FakeFormFetcher : public FormFetcher {
   const std::vector<const autofill::PasswordForm*>& GetFederatedMatches()
       const override;
 
+  const std::vector<const autofill::PasswordForm*>& GetBlacklistedMatches()
+      const override;
+
   void set_federated(
       const std::vector<const autofill::PasswordForm*>& federated) {
     state_ = State::NOT_WAITING;
     federated_ = federated;
   }
 
-  const std::vector<const autofill::PasswordForm*>& GetSuppressedHTTPSForms()
-      const override;
-
-  // The pointees in |suppressed_forms| must outlive the fetcher.
-  void set_suppressed_https_forms(
-      const std::vector<const autofill::PasswordForm*>& suppressed_forms) {
-    suppressed_https_forms_ = suppressed_forms;
-  }
-
-  const std::vector<const autofill::PasswordForm*>&
-  GetSuppressedPSLMatchingForms() const override;
-
-  // The pointees in |suppressed_forms| must outlive the fetcher.
-  void set_suppressed_psl_matching_forms(
-      const std::vector<const autofill::PasswordForm*>& suppressed_forms) {
-    suppressed_psl_matching_forms_ = suppressed_forms;
-  }
-
-  const std::vector<const autofill::PasswordForm*>&
-  GetSuppressedSameOrganizationNameForms() const override;
-
-  // The pointees in |suppressed_forms| must outlive the fetcher.
-  void set_suppressed_same_organization_name_forms(
-      const std::vector<const autofill::PasswordForm*>& suppressed_forms) {
-    suppressed_same_organization_name_forms_ = suppressed_forms;
-  }
-
-  bool DidCompleteQueryingSuppressedForms() const override;
-
-  void set_did_complete_querying_suppressed_forms(bool value) {
-    did_complete_querying_suppressed_forms_ = value;
-  }
-
   void SetNonFederated(
-      const std::vector<const autofill::PasswordForm*>& non_federated,
-      size_t filtered_count);
+      const std::vector<const autofill::PasswordForm*>& non_federated);
+
+  void SetBlacklisted(
+      const std::vector<const autofill::PasswordForm*>& blacklisted);
+
+  void NotifyFetchCompleted();
 
   // Only sets the internal state to WAITING, no call to PasswordStore.
   void Fetch() override;
@@ -108,11 +83,7 @@ class FakeFormFetcher : public FormFetcher {
   std::vector<InteractionsStats> stats_;
   std::vector<const autofill::PasswordForm*> non_federated_;
   std::vector<const autofill::PasswordForm*> federated_;
-  std::vector<const autofill::PasswordForm*> suppressed_https_forms_;
-  std::vector<const autofill::PasswordForm*> suppressed_psl_matching_forms_;
-  std::vector<const autofill::PasswordForm*>
-      suppressed_same_organization_name_forms_;
-  bool did_complete_querying_suppressed_forms_ = false;
+  std::vector<const autofill::PasswordForm*> blacklisted_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeFormFetcher);
 };

@@ -8,6 +8,7 @@ source_set("fakes") {
 
   deps = [
     "//base",
+    "//ios/web/common",
     "//ios/web/public/download",
     "//ios/web/public/find_in_page",
     "//ios/web/test:test_constants",
@@ -26,6 +27,8 @@ source_set("fakes") {
   ]
 
   sources = [
+    "crw_fake_find_in_page_manager_delegate.h",
+    "crw_fake_find_in_page_manager_delegate.mm",
     "crw_fake_web_state_policy_decider.h",
     "crw_fake_web_state_policy_decider.mm",
     "crw_test_js_injection_receiver.h",

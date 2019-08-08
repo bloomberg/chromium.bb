@@ -40,7 +40,9 @@ class SequenceManagerTaskEnvironment : public base::Thread::TaskEnvironment {
     sequence_manager_->SetDefaultTaskRunner(default_task_runner_);
   }
 
-  ~SequenceManagerTaskEnvironment() override {}
+  ~SequenceManagerTaskEnvironment() override {
+    BrowserTaskExecutor::ResetForTesting();
+  }
 
   // Thread::TaskEnvironment:
   scoped_refptr<base::SingleThreadTaskRunner> GetDefaultTaskRunner() override {
@@ -111,7 +113,6 @@ class BrowserThreadTest : public testing::Test {
 
     BrowserThreadImpl::ResetGlobalsForTesting(BrowserThread::UI);
     BrowserThreadImpl::ResetGlobalsForTesting(BrowserThread::IO);
-    BrowserTaskExecutor::ResetForTesting();
   }
 
   // Prepares this BrowserThreadTest for Release() to be invoked. |on_release|

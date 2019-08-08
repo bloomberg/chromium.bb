@@ -16,7 +16,6 @@
 #include "content/browser/web_package/signed_exchange_prologue.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "net/base/completion_callback.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/log/net_log_with_source.h"
@@ -126,7 +125,8 @@ class CONTENT_EXPORT SignedExchangeHandler {
   void OnCertReceived(
       SignedExchangeLoadResult result,
       std::unique_ptr<SignedExchangeCertificateChain> cert_chain);
-  bool CheckCertExtension(const net::X509Certificate* verified_cert);
+  SignedExchangeLoadResult CheckCertRequirements(
+      const net::X509Certificate* verified_cert);
   bool CheckOCSPStatus(const net::OCSPVerifyResult& ocsp_result);
 
   void OnVerifyCert(int32_t error_code,
@@ -180,6 +180,7 @@ class SignedExchangeHandlerFactory {
   virtual ~SignedExchangeHandlerFactory() {}
 
   virtual std::unique_ptr<SignedExchangeHandler> Create(
+      const GURL& outer_url,
       std::unique_ptr<net::SourceStream> body,
       SignedExchangeHandler::ExchangeHeadersCallback headers_callback,
       std::unique_ptr<SignedExchangeCertFetcherFactory>

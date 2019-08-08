@@ -93,6 +93,10 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
                         const GURL& origin_url,
                         const GURL& top_origin_url,
                         bool* allowed);
+  void OnAllowCacheStorage(int render_frame_id,
+                           const GURL& origin_url,
+                           const GURL& top_origin_url,
+                           bool* allowed);
 #if BUILDFLAG(ENABLE_PLUGINS)
   void OnIsCrashReportingEnabled(bool* enabled);
 #endif

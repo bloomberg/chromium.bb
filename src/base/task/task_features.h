@@ -7,6 +7,7 @@
 
 #include "base/base_export.h"
 #include "base/metrics/field_trial_params.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -22,6 +23,13 @@ extern const BASE_EXPORT Feature kNoDetachBelowInitialCapacity;
 // Under this feature, workers blocked with MayBlock are replaced immediately
 // instead of waiting for a threshold.
 extern const BASE_EXPORT Feature kMayBlockWithoutDelay;
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+// Under this feature, ThreadPool will use a SchedulerWorkerPool backed by a
+// native thread pool implementation. The Windows Thread Pool API and
+// libdispatch are used on Windows and macOS/iOS respectively.
+extern const BASE_EXPORT Feature kUseNativeThreadPool;
+#endif
 
 }  // namespace base
 

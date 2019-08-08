@@ -19,10 +19,6 @@ namespace webrtc {
 
 VideoStreamDecoder::VideoStreamDecoder(
     vcm::VideoReceiver* video_receiver,
-    VCMFrameTypeCallback* vcm_frame_type_callback,
-    VCMPacketRequestCallback* vcm_packet_request_callback,
-    bool enable_nack,
-    bool enable_fec,
     ReceiveStatisticsProxy* receive_statistics_proxy,
     rtc::VideoSinkInterface<VideoFrame>* incoming_video_stream)
     : video_receiver_(video_receiver),
@@ -30,21 +26,7 @@ VideoStreamDecoder::VideoStreamDecoder(
       incoming_video_stream_(incoming_video_stream) {
   RTC_DCHECK(video_receiver_);
 
-  static const int kMaxPacketAgeToNack = 450;
-  static const int kMaxNackListSize = 250;
-  video_receiver_->SetNackSettings(kMaxNackListSize, kMaxPacketAgeToNack, 0);
   video_receiver_->RegisterReceiveCallback(this);
-  video_receiver_->RegisterFrameTypeCallback(vcm_frame_type_callback);
-  video_receiver_->RegisterReceiveStatisticsCallback(this);
-
-  VCMVideoProtection video_protection =
-      enable_nack ? (enable_fec ? kProtectionNackFEC : kProtectionNack)
-                  : kProtectionNone;
-
-  video_receiver_->SetVideoProtection(video_protection, true);
-  VCMPacketRequestCallback* packet_request_callback =
-      enable_nack ? vcm_packet_request_callback : nullptr;
-  video_receiver_->RegisterPacketRequestCallback(packet_request_callback);
 }
 
 VideoStreamDecoder::~VideoStreamDecoder() {
@@ -54,8 +36,6 @@ VideoStreamDecoder::~VideoStreamDecoder() {
 
   // Unset all the callback pointers that we set in the ctor.
   video_receiver_->RegisterPacketRequestCallback(nullptr);
-  video_receiver_->RegisterReceiveStatisticsCallback(nullptr);
-  video_receiver_->RegisterFrameTypeCallback(nullptr);
   video_receiver_->RegisterReceiveCallback(nullptr);
 }
 
@@ -86,35 +66,4 @@ void VideoStreamDecoder::OnDecoderImplementationName(
   receive_stats_callback_->OnDecoderImplementationName(implementation_name);
 }
 
-void VideoStreamDecoder::OnReceiveRatesUpdated(uint32_t bit_rate,
-                                               uint32_t frame_rate) {
-  receive_stats_callback_->OnIncomingRate(frame_rate, bit_rate);
-}
-
-void VideoStreamDecoder::OnDiscardedPacketsUpdated(int discarded_packets) {
-  receive_stats_callback_->OnDiscardedPacketsUpdated(discarded_packets);
-}
-
-void VideoStreamDecoder::OnFrameCountsUpdated(const FrameCounts& frame_counts) {
-  receive_stats_callback_->OnFrameCountsUpdated(frame_counts);
-}
-
-void VideoStreamDecoder::OnFrameBufferTimingsUpdated(int decode_ms,
-                                                     int max_decode_ms,
-                                                     int current_delay_ms,
-                                                     int target_delay_ms,
-                                                     int jitter_buffer_ms,
-                                                     int min_playout_delay_ms,
-                                                     int render_delay_ms) {}
-
-void VideoStreamDecoder::OnTimingFrameInfoUpdated(const TimingFrameInfo& info) {
-}
-
-void VideoStreamDecoder::OnCompleteFrame(bool is_keyframe,
-                                         size_t size_bytes,
-                                         VideoContentType content_type) {}
-
-void VideoStreamDecoder::UpdateRtt(int64_t max_rtt_ms) {
-  video_receiver_->SetReceiveChannelParameters(max_rtt_ms);
-}
 }  // namespace webrtc

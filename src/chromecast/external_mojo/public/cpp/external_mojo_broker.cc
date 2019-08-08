@@ -62,7 +62,7 @@ void OnInternalBindResult(
 
 class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
  public:
-  ConnectorImpl() = default;
+  ConnectorImpl() : connector_facade_(this) {}
 
   void InitializeChromium(
       std::unique_ptr<service_manager::Connector> connector,
@@ -102,6 +102,69 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
     service_manager::ServiceBinding service_binding_;
 
     DISALLOW_COPY_AND_ASSIGN(ExternalServiceProxy);
+  };
+
+  class ServiceManagerConnectorFacade
+      : public service_manager::mojom::Connector {
+   public:
+    explicit ServiceManagerConnectorFacade(
+        ExternalMojoBroker::ConnectorImpl* connector)
+        : connector_(connector) {
+      DCHECK(connector_);
+    }
+
+    void AddBinding(service_manager::mojom::ConnectorRequest request) {
+      bindings_.AddBinding(this, std::move(request));
+    }
+
+   private:
+    void BindInterface(const ::service_manager::ServiceFilter& filter,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe,
+                       service_manager::mojom::BindInterfacePriority priority,
+                       BindInterfaceCallback callback) override {
+      connector_->BindInterface(filter.service_name(), interface_name,
+                                std::move(interface_pipe));
+      std::move(callback).Run(service_manager::mojom::ConnectResult::SUCCEEDED,
+                              base::nullopt);
+    }
+
+    void QueryService(const std::string& service_name,
+                      QueryServiceCallback callback) override {
+      // TODO(kmackay) Could add a wrapper as needed.
+      NOTIMPLEMENTED();
+    }
+
+    void WarmService(const ::service_manager::ServiceFilter& filter,
+                     WarmServiceCallback callback) override {
+      std::move(callback).Run(service_manager::mojom::ConnectResult::SUCCEEDED,
+                              base::nullopt);
+    }
+
+    void RegisterServiceInstance(
+        const ::service_manager::Identity& identity,
+        mojo::ScopedMessagePipeHandle service,
+        service_manager::mojom::PIDReceiverRequest pid_receiver_request,
+        RegisterServiceInstanceCallback callback) override {
+      // TODO(kmackay) Could add a wrapper as needed.
+      NOTIMPLEMENTED();
+    }
+
+    void Clone(service_manager::mojom::ConnectorRequest request) override {
+      AddBinding(std::move(request));
+    }
+
+    void FilterInterfaces(
+        const std::string& spec,
+        const ::service_manager::Identity& source,
+        ::service_manager::mojom::InterfaceProviderRequest source_request,
+        ::service_manager::mojom::InterfaceProviderPtr target) override {
+      NOTREACHED() << "Call to deprecated FilterInterfaces";
+    }
+
+    ExternalMojoBroker::ConnectorImpl* const connector_;
+
+    mojo::BindingSet<service_manager::mojom::Connector> bindings_;
   };
 
   struct PendingBindRequest {
@@ -204,7 +267,8 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
   void BindChromiumConnector(
       mojo::ScopedMessagePipeHandle interface_pipe) override {
     if (!connector_) {
-      // TODO(kmackay) Provide a simulated ServiceManager instead.
+      connector_facade_.AddBinding(
+          service_manager::mojom::ConnectorRequest(std::move(interface_pipe)));
       return;
     }
 
@@ -243,6 +307,7 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
     services_.erase(service_name);
   }
 
+  ServiceManagerConnectorFacade connector_facade_;
   std::unique_ptr<service_manager::Connector> connector_;
 
   mojo::BindingSet<mojom::ExternalConnector> bindings_;

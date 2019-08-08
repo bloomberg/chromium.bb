@@ -25,6 +25,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Base64;
 
@@ -39,6 +40,9 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabThemeColorHelper;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.WebApkInfo;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.chrome.browser.webapps.WebappAuthenticator;
@@ -47,6 +51,7 @@ import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.content_public.common.ScreenOrientationConstants;
+import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.ui.widget.Toast;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
@@ -190,22 +195,31 @@ public class ShortcutHelper {
             final String userTitle, final String name, final String shortName, final String iconUrl,
             final Bitmap icon, boolean isIconAdaptive, @WebDisplayMode final int displayMode,
             final int orientation, final int source, final long themeColor,
-            final long backgroundColor, final String splashScreenUrl, final long callbackPointer) {
+            final long backgroundColor, final String splashScreenUrl, final long callbackPointer,
+            final boolean isShortcutAsWebapp) {
         new AsyncTask<Intent>() {
             @Override
             protected Intent doInBackground() {
                 // Encoding {@link icon} as a string and computing the mac are expensive.
 
+                // Shortcuts as Webapps on O+ launch into a non-exported component for verification.
+                boolean usesMacForVerification =
+                        !isShortcutAsWebapp || Build.VERSION.SDK_INT < Build.VERSION_CODES.O;
+
                 // Encode the icon as a base64 string (Launcher drops Bitmaps in the Intent).
                 String encodedIcon = encodeBitmapAsString(icon);
 
-                String nonEmptyScopeUrl =
-                        TextUtils.isEmpty(scopeUrl) ? getScopeFromUrl(url) : scopeUrl;
-                Intent shortcutIntent = createWebappShortcutIntent(id,
-                        sDelegate.getFullscreenAction(), url, nonEmptyScopeUrl, name, shortName,
-                        encodedIcon, WEBAPP_SHORTCUT_VERSION, displayMode, orientation, themeColor,
-                        backgroundColor, splashScreenUrl, iconUrl.isEmpty(), isIconAdaptive);
-                shortcutIntent.putExtra(EXTRA_MAC, getEncodedMac(url));
+                String action = usesMacForVerification
+                        ? sDelegate.getFullscreenAction()
+                        : WebappLauncherActivity.ACTION_START_SECURE_WEBAPP;
+                Intent shortcutIntent = createWebappShortcutIntent(id, action, url, scopeUrl, name,
+                        shortName, encodedIcon, WEBAPP_SHORTCUT_VERSION, displayMode, orientation,
+                        themeColor, backgroundColor, splashScreenUrl, iconUrl.isEmpty(),
+                        isIconAdaptive);
+
+                if (usesMacForVerification) {
+                    shortcutIntent.putExtra(EXTRA_MAC, getEncodedMac(url));
+                }
                 shortcutIntent.putExtra(EXTRA_SOURCE, source);
                 return shortcutIntent;
             }
@@ -216,11 +230,10 @@ public class ShortcutHelper {
                 // Store the webapp data so that it is accessible without the intent. Once this
                 // process is complete, call back to native code to start the splash image
                 // download.
-                WebappRegistry.getInstance().register(
-                        id, storage -> {
-                            storage.updateFromShortcutIntent(resultIntent);
-                            nativeOnWebappDataStored(callbackPointer);
-                        });
+                WebappRegistry.getInstance().register(id, storage -> {
+                    storage.updateFromShortcutIntent(resultIntent);
+                    if (callbackPointer != 0) nativeOnWebappDataStored(callbackPointer);
+                });
                 if (shouldShowToastWhenAddingShortcut()) {
                     showAddedToHomescreenToast(userTitle);
                 }
@@ -234,13 +247,23 @@ public class ShortcutHelper {
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private static void addShortcut(String id, String url, String userTitle, Bitmap icon,
-            boolean isIconAdaptive, int source) {
-        Context context = ContextUtils.getApplicationContext();
-        final Intent shortcutIntent = createShortcutIntent(url);
+    public static void addShortcut(@Nullable Tab tab, String id, String url, String userTitle,
+            Bitmap icon, boolean isIconAdaptive, int source, String iconUrl) {
+        if (FeatureUtilities.isNoTouchModeEnabled()) {
+            // There are no tabs in NoTouchMode, so we want to give shortcuts a more app-like
+            // experience.
+            long themeColor = (tab == null) ? MANIFEST_COLOR_INVALID_OR_MISSING
+                                            : TabThemeColorHelper.getColor(tab);
+            addWebapp(id, url, getScopeFromUrl(url), userTitle, userTitle, userTitle, iconUrl, icon,
+                    isIconAdaptive, WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT,
+                    source, themeColor, MANIFEST_COLOR_INVALID_OR_MISSING, "" /* splashScreenUrl */,
+                    0 /* callbackPointer */, true /* isShortcutAsWebapp */);
+            return;
+        }
+        Intent shortcutIntent = createShortcutIntent(url);
         shortcutIntent.putExtra(EXTRA_ID, id);
         shortcutIntent.putExtra(EXTRA_SOURCE, source);
-        shortcutIntent.setPackage(context.getPackageName());
+        shortcutIntent.setPackage(ContextUtils.getApplicationContext().getPackageName());
         sDelegate.addShortcutToHomescreen(userTitle, icon, isIconAdaptive, shortcutIntent);
         if (shouldShowToastWhenAddingShortcut()) {
             showAddedToHomescreenToast(userTitle);
@@ -253,6 +276,10 @@ public class ShortcutHelper {
         String id = shortcutIntent.getStringExtra(ShortcutHelper.EXTRA_ID);
         Context context = ContextUtils.getApplicationContext();
 
+        if (bitmap == null) {
+            Log.e(TAG, "Failed to find an icon for " + title + ", not adding.");
+            return;
+        }
         Icon icon = isMaskableIcon ? Icon.createWithAdaptiveBitmap(bitmap)
                                    : Icon.createWithBitmap(bitmap);
 
@@ -276,7 +303,12 @@ public class ShortcutHelper {
      */
     private static void showAddedToHomescreenToast(final String title) {
         Context applicationContext = ContextUtils.getApplicationContext();
-        String toastText = applicationContext.getString(R.string.added_to_homescreen, title);
+        String toastText;
+        if (FeatureUtilities.isNoTouchModeEnabled()) {
+            toastText = applicationContext.getString(R.string.added_to_apps, title);
+        } else {
+            toastText = applicationContext.getString(R.string.added_to_homescreen, title);
+        }
         showToast(toastText);
     }
 
@@ -633,12 +665,11 @@ public class ShortcutHelper {
     }
 
     /**
-     * Generates a scope URL based on the passed in URL. It should be used if the Web Manifest
-     * does not specify a scope URL.
+     * Generates a scope URL based on the passed in URL. Should only be used for legacy
+     * WebAPKs created prior to the usage of the Web App Manifest scope member.
      * @param url The url to convert to a scope.
      * @return The scope.
      */
-    @CalledByNative
     public static String getScopeFromUrl(String url) {
         // Scope URL is generated by:
         // - Removing last component of the URL if it does not end with a slash.
@@ -699,7 +730,7 @@ public class ShortcutHelper {
     }
 
     private static boolean shouldShowToastWhenAddingShortcut() {
-        return !isRequestPinShortcutSupported();
+        return !isRequestPinShortcutSupported() || FeatureUtilities.isNoTouchModeEnabled();
     }
 
     private static boolean isRequestPinShortcutSupported() {
@@ -768,7 +799,7 @@ public class ShortcutHelper {
                 // return value is non-null
                 WebApkInfo webApkInfo = WebApkInfo.create(packageInfo.packageName, "",
                         ShortcutSource.UNKNOWN, false /* forceNavigation */,
-                        false /* useTransparentSplash */, null /* shareData */);
+                        false /* isSplashProvidedByWebApk */, null /* shareData */);
                 if (webApkInfo != null) {
                     names.add(webApkInfo.name());
                     shortNames.add(webApkInfo.shortName());

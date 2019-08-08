@@ -46,7 +46,7 @@ HttpAuthHandlerMock::HttpAuthHandlerMock()
     : state_(State::WAIT_FOR_INIT),
       generate_async_(false),
       generate_rv_(OK),
-      auth_token_(NULL),
+      auth_token_(nullptr),
       first_round_(true),
       connection_based_(false),
       allows_default_credentials_(false),
@@ -112,7 +112,7 @@ int HttpAuthHandlerMock::GenerateAuthTokenImpl(
   request_url_ = request->url;
   if (generate_async_) {
     EXPECT_TRUE(callback_.is_null());
-    EXPECT_TRUE(auth_token_ == NULL);
+    EXPECT_TRUE(auth_token_ == nullptr);
     callback_ = std::move(callback);
     auth_token_ = auth_token;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -143,7 +143,7 @@ void HttpAuthHandlerMock::OnGenerateAuthToken() {
   } else {
     state_ = State::DONE;
   }
-  auth_token_ = NULL;
+  auth_token_ = nullptr;
   base::ResetAndReturn(&callback_).Run(generate_rv_);
 }
 

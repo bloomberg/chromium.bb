@@ -72,6 +72,7 @@ void SingleThreadProxy::Start() {
   DCHECK(settings.single_thread_proxy_scheduler ||
          !settings.enable_checker_imaging)
       << "Checker-imaging is not supported in synchronous single threaded mode";
+  host_impl_ = layer_tree_host_->CreateLayerTreeHostImpl(this);
   if (settings.single_thread_proxy_scheduler && !scheduler_on_impl_thread_) {
     SchedulerSettings scheduler_settings(settings.ToSchedulerSettings());
     scheduler_settings.commit_to_active_tree = CommitToActiveTree();
@@ -80,14 +81,13 @@ void SingleThreadProxy::Start() {
         new CompositorTimingHistory(
             scheduler_settings.using_synchronous_renderer_compositor,
             CompositorTimingHistory::BROWSER_UMA,
-            layer_tree_host_->rendering_stats_instrumentation()));
+            layer_tree_host_->rendering_stats_instrumentation(),
+            host_impl_->compositor_frame_reporting_controller()));
     scheduler_on_impl_thread_.reset(
         new Scheduler(this, scheduler_settings, layer_tree_host_->GetId(),
                       task_runner_provider_->MainThreadTaskRunner(),
                       std::move(compositor_timing_history)));
   }
-
-  host_impl_ = layer_tree_host_->CreateLayerTreeHostImpl(this);
 }
 
 SingleThreadProxy::~SingleThreadProxy() {
@@ -231,8 +231,8 @@ void SingleThreadProxy::CommitComplete() {
       << "Activation is expected to have synchronously occurred by now.";
 
   DebugScopedSetMainThread main(task_runner_provider_);
-  layer_tree_host_->DidBeginMainFrame();
   layer_tree_host_->CommitComplete();
+  layer_tree_host_->DidBeginMainFrame();
 
   next_frame_is_newly_committed_frame_ = true;
 }

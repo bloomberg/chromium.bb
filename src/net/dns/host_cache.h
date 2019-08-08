@@ -18,6 +18,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/numerics/clamped_math.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -26,6 +27,7 @@
 #include "net/base/address_list.h"
 #include "net/base/expiring_cache.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/host_resolver_source.h"
@@ -221,22 +223,23 @@ class NET_EXPORT HostCache {
     base::DictionaryValue GetAsValue(bool include_staleness) const;
 
     // The resolve results for this entry.
-    int error_;
+    int error_ = ERR_FAILED;
     base::Optional<AddressList> addresses_;
     base::Optional<std::vector<std::string>> text_records_;
     base::Optional<std::vector<HostPortPair>> hostnames_;
     // Where results were obtained (e.g. DNS lookup, hosts file, etc).
-    Source source_;
+    Source source_ = SOURCE_UNKNOWN;
     // TTL obtained from the nameserver. Negative if unknown.
-    base::TimeDelta ttl_;
+    base::TimeDelta ttl_ = base::TimeDelta::FromSeconds(-1);
 
     base::TimeTicks expires_;
     // Copied from the cache's network_changes_ when the entry is set; can
     // later be compared to it to see if the entry was received on the current
     // network.
-    int network_changes_;
-    int total_hits_;
-    int stale_hits_;
+    int network_changes_ = -1;
+    // Use clamped math to cap hit counts at INT_MAX.
+    base::ClampedNumeric<int> total_hits_ = 0;
+    base::ClampedNumeric<int> stale_hits_ = 0;
   };
 
   // Interface for interacting with persistent storage, to be provided by the

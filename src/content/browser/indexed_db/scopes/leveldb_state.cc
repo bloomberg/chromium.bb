@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <content/browser/indexed_db/scopes/leveldb_state.h>
+#include "content/browser/indexed_db/scopes/leveldb_state.h"
+
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
@@ -44,9 +45,27 @@ LevelDBState::LevelDBState(std::unique_ptr<leveldb::Env> optional_in_memory_env,
       idb_comparator_(idb_comparator),
       db_(std::move(database)),
       database_path_(std::move(database_path)),
-      name_for_tracing_(std::move(name_for_tracing)) {}
+      name_for_tracing_(std::move(name_for_tracing)),
+      destruction_requested_(false) {}
+
+bool LevelDBState::RequestDestruction(
+    base::OnceClosure on_state_destruction,
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  if (destruction_requested_.exchange(true, std::memory_order_relaxed))
+    return false;
+
+  DCHECK(!on_destruction_);
+  DCHECK(!on_destruction_task_runner_);
+  on_destruction_ = std::move(on_state_destruction);
+  on_destruction_task_runner_ = std::move(task_runner);
+  return true;
+}
 
 LevelDBState::~LevelDBState() {
+  if (on_destruction_) {
+    on_destruction_task_runner_->PostTask(FROM_HERE,
+                                          std::move(on_destruction_));
+  }
   if (!db_)
     return;
   base::TimeTicks begin_time = base::TimeTicks::Now();

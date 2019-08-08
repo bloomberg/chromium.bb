@@ -112,7 +112,7 @@ class Match {
    */
   addSelectHighlight() {
     for (let i = 0; i < this.nodes.length; ++i) {
-      this.nodes[i].className = (this.nodes[i].className || '') + ' findysel';
+      this.nodes[i].classList.add(CSS_CLASS_NAME_SELECT);
     }
   }
 
@@ -122,8 +122,7 @@ class Match {
    */
   removeSelectHighlight() {
     for (let i = 0; i < this.nodes.length; ++i) {
-      this.nodes[i].className =
-          (this.nodes[i].className || '').replace(/\sfindysel/g, '');
+      this.nodes[i].classList.remove(CSS_CLASS_NAME_SELECT);
     }
   }
 }
@@ -138,7 +137,7 @@ __gCrWeb.findInPage.matches = [];
  * Index of the current highlighted choice.  -1 means none.
  * @type {number}
  */
-__gCrWeb.findInPage.selectedMatchIndex = -1;
+let selectedMatchIndex_ = -1;
 
 /**
  * The ID for the next Match found in |allText_|. This ID is used for
@@ -318,10 +317,16 @@ const IGNORE_NODE_NAMES = new Set(['SCRIPT', 'STYLE', 'EMBED',
   'OBJECT', 'SELECT', 'TEXTAREA', 'IFRAME']);
 
 /**
- * Class name of CSS element.
+ * Class name of CSS element that highlights matches with yellow.
  * @type {string}
  */
 const CSS_CLASS_NAME = 'find_in_page';
+
+/**
+ * Class name of CSS element that selects a highlighted match with orange.
+ * @type {string}
+ */
+const CSS_CLASS_NAME_SELECT = 'find_selected';
 
 /**
  * ID of CSS style.
@@ -342,10 +347,14 @@ const TIMEOUT = -1;
 const REGEX_ESCAPER = /([.?*+^$[\]\\(){}|-])/g;
 
 /**
- * @return {Match} The currently selected Match.
+ * @return {Match} The currently selected Match. Returns null if no
+ * currently selected match.
  */
 function getCurrentSelectedMatch_() {
-  return __gCrWeb.findInPage.matches[__gCrWeb.findInPage.selectedMatchIndex];
+   if (selectedMatchIndex_ < 0) {
+    return null;
+   }
+  return __gCrWeb.findInPage.matches[selectedMatchIndex_];
 };
 
 /**
@@ -566,7 +575,7 @@ function cleanUp_() {
   sectionsIndex_ = 0;
 
   __gCrWeb.findInPage.matches = [];
-  __gCrWeb.findInPage.selectedMatchIndex = -1;
+  selectedMatchIndex_ = -1;
   matchId_ = 0;
   partialMatches_ = [];
 
@@ -575,143 +584,38 @@ function cleanUp_() {
 };
 
 /**
- * Increments the index of the current selected Match or, if the index is
- * already at the end, sets it to the index of the first Match in the page.
+ * Highlights the match at |index| and scrolls to that match. Clears currently
+ * highlighted match if one exists.
+ * @param {Number} index of match to highlight.
  */
-__gCrWeb.findInPage.incrementIndex = function() {
-  if (__gCrWeb.findInPage.selectedMatchIndex >=
-      __gCrWeb.findInPage.matches.length - 1) {
-    __gCrWeb.findInPage.selectedMatchIndex = 0;
-  } else {
-    __gCrWeb.findInPage.selectedMatchIndex++;
+__gCrWeb.findInPage.selectAndScrollToMatch = function(index) {
+  if (index >= __gCrWeb.findInPage.matches.length || index < 0) {
+    // Do nothing if invalid index is passed.
+    return;
   }
+
+  // Remove previous highlight.
+  let match = getCurrentSelectedMatch_();
+  if (match) {
+    match.removeSelectHighlight();
+  }
+
+  selectedMatchIndex_ = index;
+
+  getCurrentSelectedMatch_().addSelectHighlight();
+  scrollToCurrentlySelectedMatch_();
 };
 
 /**
- * Switches to the next result, animating a little highlight in the process.
- * @return {string} JSON encoded array of coordinates to scroll to, or blank if
- *     nothing happened.
+ * Scrolls to the position of the currently selected match.
  */
-__gCrWeb.findInPage.goNext = function() {
-  if (!__gCrWeb.findInPage.matches || __gCrWeb.findInPage.matches.length == 0) {
-    return '';
-  }
-  if (__gCrWeb.findInPage.selectedMatchIndex >= 0) {
-    // Remove previous highlight.
-    getCurrentSelectedMatch_().removeSelectHighlight();
-  }
-  // Iterate through to the next index, but because they might not be visible,
-  // keep trying until you find one that is.  Make sure we don't loop forever by
-  // stopping on what we are currently highlighting.
-  let oldIndex = __gCrWeb.findInPage.selectedMatchIndex;
-  __gCrWeb.findInPage.incrementIndex();
-  while (!getCurrentSelectedMatch_().visible()) {
-    if (oldIndex === __gCrWeb.findInPage.selectedMatchIndex) {
-      // Checked all matches but didn't find anything else visible.
-      return '';
-    }
-    __gCrWeb.findInPage.incrementIndex();
-    if (0 === __gCrWeb.findInPage.selectedMatchIndex && oldIndex < 0) {
-      // Didn't find anything visible and haven't highlighted anything yet.
-      return '';
-    }
-  }
-  // Return scroll dimensions.
-  return findScrollDimensions_();
-};
-
-/**
- * Decrements the index of the current selected Match or, if the index is
- * already at the beginning, sets it to the index of the last Match in the page.
- */
-__gCrWeb.findInPage.decrementIndex = function() {
-  if (__gCrWeb.findInPage.selectedMatchIndex <= 0) {
-    __gCrWeb.findInPage.selectedMatchIndex =
-        __gCrWeb.findInPage.matches.length - 1;
-  } else {
-    __gCrWeb.findInPage.selectedMatchIndex--;
-  }
-};
-
-/**
- * Switches to the previous result, animating a little highlight in the process.
- * @return {string} JSON encoded array of coordinates to scroll to, or blank if
- *     nothing happened.
- */
-__gCrWeb.findInPage.goPrev = function() {
-  if (!__gCrWeb.findInPage.matches || __gCrWeb.findInPage.matches.length == 0) {
-    return '';
-  }
-  if (__gCrWeb.findInPage.selectedMatchIndex >= 0) {
-    // Remove previous highlight.
-    getCurrentSelectedMatch_().removeSelectHighlight();
-  }
-  // Iterate through to the next index, but because they might not be visible,
-  // keep trying until you find one that is.  Make sure we don't loop forever by
-  // stopping on what we are currently highlighting.
-  let old = __gCrWeb.findInPage.selectedMatchIndex;
-  __gCrWeb.findInPage.decrementIndex();
-  while (!getCurrentSelectedMatch_().visible()) {
-    __gCrWeb.findInPage.decrementIndex();
-    if (old == __gCrWeb.findInPage.selectedMatchIndex) {
-      // Checked all matches but didn't find anything.
-      return '';
-    }
-  }
-
-  // Return scroll dimensions.
-  return findScrollDimensions_();
-};
-
-/**
- * Normalize coordinates according to the current document dimensions. Don't go
- * too far off the screen in either direction. Try to center if possible.
- * @param {Element} elem Element to find normalized coordinates for.
- * @return {Array<number>} Normalized coordinates.
- */
-function getNormalizedCoordinates_(elem) {
-  let pos = findAbsolutePosition_(elem);
-  let maxX = Math.max(getBodyWidth_(), pos[0] + elem.offsetWidth);
-  let maxY = Math.max(getBodyHeight_(), pos[1] + elem.offsetHeight);
-  // Don't go too far off the screen in either direction.  Try to center if
-  // possible.
-  let xPos = Math.max(
-      0, Math.min(maxX - window.innerWidth, pos[0] - (window.innerWidth / 2)));
-  let yPos = Math.max(
-      0,
-      Math.min(maxY - window.innerHeight, pos[1] - (window.innerHeight / 2)));
-  return [xPos, yPos];
-};
-
-/**
- * Scale coordinates according to the width of the screen, in case the screen
- * is zoomed out.
- * @param {Array<number>} coordinates Coordinates to scale.
- * @return {Array<number>} Scaled coordinates.
- */
-function scaleCoordinates_(coordinates) {
-  let scaleFactor = pageWidth_ / window.innerWidth;
-  return [coordinates[0] * scaleFactor, coordinates[1] * scaleFactor];
-};
-
-/**
- * Finds the position of the result.
- * @return {string} JSON encoded array of the scroll coordinates "[x, y]".
- */
-function findScrollDimensions_() {
+function scrollToCurrentlySelectedMatch_() {
   let match = getCurrentSelectedMatch_();
   if (!match) {
-    return '';
+    return;
   }
-  let normalized = getNormalizedCoordinates_(match.nodes[0]);
-  let xPos = normalized[0];
-  let yPos = normalized[1];
 
-  match.addSelectHighlight();
-  let scaled = scaleCoordinates_(normalized);
-  let index = match.visibleIndex;
-  scaled.unshift(index);
-  return __gCrWeb.stringify(scaled);
+  match.nodes[0].scrollIntoView();
 };
 
 /**
@@ -751,7 +655,7 @@ function addDocumentStyle_(thisDocument) {
           'padding:0px;margin:0px;' +
           'overflow:visible !important;');
   addCSSRule(
-      '.findysel',
+      '.' + CSS_CLASS_NAME_SELECT,
       'background-color:#ff9632 !important;' +
           'padding:0px;margin:0px;' +
           'overflow:visible !important;');
@@ -775,12 +679,12 @@ function removeStyle_() {
 
 /**
  * Disables the __gCrWeb.findInPage module.
- * Basically just removes the style and class names.
+ * Removes any matches and the style and class names.
  */
-__gCrWeb.findInPage.disable = function() {
+__gCrWeb.findInPage.stop = function() {
   if (styleElement_) {
     removeStyle_();
-    window.setTimeout(cleanUp_, 0);
+    cleanUp_();
   }
   __gCrWeb.findInPage.hasInitialized = false;
 };
@@ -914,6 +818,6 @@ function escapeRegex_(text) {
   return text.replace(REGEX_ESCAPER, '\\$1');
 };
 
-window.addEventListener('pagehide', __gCrWeb.findInPage.disable);
+window.addEventListener('pagehide', __gCrWeb.findInPage.stop);
 
 })();

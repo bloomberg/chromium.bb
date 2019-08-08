@@ -97,8 +97,7 @@ const std::map<std::string, std::string> CreatePathPrefixAliasesMap() {
 
 const std::map<int, std::string> CreateMojoResourceIdToAliasMap() {
   return std::map<int, std::string> {
-    {IDR_MOJO_MOJO_BINDINGS_JS, "js/mojo_bindings.js"},
-        {IDR_MOJO_MOJO_BINDINGS_LITE_JS, "js/mojo_bindings_lite.js"},
+    {IDR_MOJO_MOJO_BINDINGS_LITE_JS, "js/mojo_bindings_lite.js"},
         {IDR_MOJO_BIG_BUFFER_MOJOM_LITE_JS, "js/big_buffer.mojom-lite.js"},
         {IDR_MOJO_FILE_MOJOM_LITE_JS, "js/file.mojom-lite.js"},
         {IDR_MOJO_STRING16_MOJOM_LITE_JS, "js/string16.mojom-lite.js"},

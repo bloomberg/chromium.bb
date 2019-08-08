@@ -35,7 +35,7 @@ class VIEWS_EXPORT ContextMenuController {
                               ui::MenuSourceType source_type);
 
  protected:
-  virtual ~ContextMenuController() {}
+  virtual ~ContextMenuController() = default;
 
  private:
   // Subclasses should override this method.

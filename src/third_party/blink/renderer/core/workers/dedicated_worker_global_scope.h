@@ -44,6 +44,7 @@ class DedicatedWorkerObjectProxy;
 class DedicatedWorkerThread;
 class PostMessageOptions;
 class ScriptState;
+class WorkerClassicScriptLoader;
 struct GlobalScopeCreationParams;
 
 class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
@@ -63,7 +64,11 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   const AtomicString& InterfaceName() const override;
 
   // Implements WorkerGlobalScope.
-  void ImportModuleScript(
+  void FetchAndRunClassicScript(
+      const KURL& script_url,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      const v8_inspector::V8StackTraceId& stack_id) override;
+  void FetchAndRunModuleScript(
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       network::mojom::FetchCredentialsMode) override;
@@ -85,9 +90,12 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   void Trace(blink::Visitor*) override;
 
  private:
-  DedicatedWorkerObjectProxy& WorkerObjectProxy() const;
+  void DidReceiveResponseForClassicScript(
+      WorkerClassicScriptLoader* classic_script_loader);
+  void DidFetchClassicScript(WorkerClassicScriptLoader* classic_script_loader,
+                             const v8_inspector::V8StackTraceId& stack_id);
 
-  mojom::RequestContextType GetDestinationForMainScript() override;
+  DedicatedWorkerObjectProxy& WorkerObjectProxy() const;
 };
 
 template <>

@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/debug/alias.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -293,13 +292,12 @@ void OneCopyRasterBufferProvider::PlaybackToStagingBuffer(
     const RasterSource::PlaybackSettings& playback_settings,
     uint64_t previous_content_id,
     uint64_t new_content_id) {
-  // Allocate GpuMemoryBuffer if necessary. If using partial raster, we
-  // must allocate a buffer with BufferUsage CPU_READ_WRITE_PERSISTENT.
+  // Allocate GpuMemoryBuffer if necessary.
   if (!staging_buffer->gpu_memory_buffer) {
     staging_buffer->gpu_memory_buffer =
         gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
-            staging_buffer->size, BufferFormat(format), StagingBufferUsage(),
-            gpu::kNullSurfaceHandle);
+            staging_buffer->size, BufferFormat(format),
+            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, gpu::kNullSurfaceHandle);
   }
 
   gfx::Rect playback_rect = raster_full_rect;
@@ -482,12 +480,6 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
       viz::ClientResourceProvider::GenerateSyncTokenHelper(ri);
   staging_buffer->sync_token = out_sync_token;
   return out_sync_token;
-}
-
-gfx::BufferUsage OneCopyRasterBufferProvider::StagingBufferUsage() const {
-  return use_partial_raster_
-             ? gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT
-             : gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
 }
 
 bool OneCopyRasterBufferProvider::CheckRasterFinishedQueries() {

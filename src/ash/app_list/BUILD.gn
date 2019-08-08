@@ -94,8 +94,6 @@ component("app_list") {
     "views/search_result_view.h",
     "views/suggestion_chip_container_view.cc",
     "views/suggestion_chip_container_view.h",
-    "views/suggestion_chip_view.cc",
-    "views/suggestion_chip_view.h",
     "views/top_icon_animation_view.cc",
     "views/top_icon_animation_view.h",
   ]
@@ -131,6 +129,7 @@ component("app_list") {
     "//ui/aura",
     "//ui/base",
     "//ui/base/ime",
+    "//ui/base/ime/chromeos",
     "//ui/chromeos/search_box",
     "//ui/compositor",
     "//ui/display",

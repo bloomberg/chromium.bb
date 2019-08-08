@@ -38,7 +38,7 @@ TEST_P(BlockPainterTest, ScrollHitTestProperties) {
     </div>
   )HTML");
 
-  auto& container = ToLayoutBlock(*GetLayoutObjectByElementId("container"));
+  auto& container = To<LayoutBlock>(*GetLayoutObjectByElementId("container"));
   auto& child = *GetLayoutObjectByElementId("child");
 
   // The scroll hit test should be after the container background but before the
@@ -129,7 +129,7 @@ TEST_P(BlockPainterTest, FrameScrollHitTestProperties) {
   )HTML");
 
   auto& html =
-      ToLayoutBlock(*GetDocument().documentElement()->GetLayoutObject());
+      To<LayoutBlock>(*GetDocument().documentElement()->GetLayoutObject());
   auto& child = *GetLayoutObjectByElementId("child");
 
   // The scroll hit test should be after the document background but before the
@@ -192,7 +192,7 @@ TEST_P(BlockPainterTest, OverflowRectForCullRectTesting) {
       <div style='width: 50px; height: 5000px'></div>
     </div>
   )HTML");
-  auto* scroller = ToLayoutBlock(GetLayoutObjectByElementId("scroller"));
+  auto* scroller = To<LayoutBlock>(GetLayoutObjectByElementId("scroller"));
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(LayoutRect(0, 0, 50, 5000),
               BlockPainter(*scroller).OverflowRectForCullRectTesting(false));
@@ -208,7 +208,7 @@ TEST_P(BlockPainterTest, OverflowRectCompositedScrollingForCullRectTesting) {
       <div style='width: 50px; height: 5000px'></div>
     </div>
   )HTML");
-  auto* scroller = ToLayoutBlock(GetLayoutObjectByElementId("scroller"));
+  auto* scroller = To<LayoutBlock>(GetLayoutObjectByElementId("scroller"));
   EXPECT_EQ(LayoutRect(0, 0, 50, 5000),
             BlockPainter(*scroller).OverflowRectForCullRectTesting(false));
 }
@@ -607,7 +607,8 @@ TEST_F(BlockPainterTouchActionTest, ScrolledHitTestChunkProperties) {
   )HTML");
 
   const auto& scrolling_client = ViewScrollingBackgroundClient();
-  const auto* scroller = ToLayoutBlock(GetLayoutObjectByElementId("scroller"));
+  const auto* scroller =
+      To<LayoutBlock>(GetLayoutObjectByElementId("scroller"));
   const auto* child = GetLayoutObjectByElementId("child");
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
               ElementsAre(IsSameId(&scrolling_client, kDocumentBackgroundType),
@@ -640,12 +641,12 @@ TEST_F(BlockPainterTouchActionTest, ScrolledHitTestChunkProperties) {
               scrolled_hit_test_data)));
 
   const auto& scroller_paint_chunk = paint_chunks[1];
-  EXPECT_EQ(FloatRect(0, 0, 100, 100), scroller_paint_chunk.bounds);
+  EXPECT_EQ(IntRect(0, 0, 100, 100), scroller_paint_chunk.bounds);
   // The hit test rect for the scroller itself should not be scrolled.
   EXPECT_FALSE(scroller_paint_chunk.properties.Transform().ScrollNode());
 
   const auto& scrolled_paint_chunk = paint_chunks[2];
-  EXPECT_EQ(FloatRect(0, 0, 200, 50), scrolled_paint_chunk.bounds);
+  EXPECT_EQ(IntRect(0, 0, 200, 50), scrolled_paint_chunk.bounds);
   // The hit test rect for the scrolled contents should be scrolled.
   EXPECT_TRUE(scrolled_paint_chunk.properties.Transform().ScrollNode());
 }

@@ -4,12 +4,17 @@
 
 #include "chrome/browser/ui/views/feature_promos/reopen_tab_promo_controller.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/metrics/histogram_macros.h"
+#include "base/timer/timer.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/in_product_help/in_product_help.h"
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help.h"
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help_factory.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
+#include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_timeout.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
@@ -51,10 +56,22 @@ void ReopenTabPromoController::ShowPromo() {
   bool has_accelerator =
       browser_view_->GetAccelerator(IDC_RESTORE_TAB, &accelerator);
   DCHECK(has_accelerator);
-  promo_bubble_ = FeaturePromoBubbleView::CreateOwned(
-      app_menu_button, views::BubbleBorder::Arrow::TOP_RIGHT,
-      FeaturePromoBubbleView::ActivationAction::DO_NOT_ACTIVATE,
-      IDS_REOPEN_TAB_PROMO, IDS_REOPEN_TAB_PROMO_SCREENREADER, accelerator);
+
+  auto feature_promo_bubble_timeout =
+      std::make_unique<FeaturePromoBubbleTimeout>(base::TimeDelta(),
+                                                  base::TimeDelta());
+  promo_bubble_ =
+      disable_bubble_timeout_for_test_
+          ? FeaturePromoBubbleView::CreateOwned(
+                app_menu_button, views::BubbleBorder::Arrow::TOP_RIGHT,
+                FeaturePromoBubbleView::ActivationAction::DO_NOT_ACTIVATE,
+                IDS_REOPEN_TAB_PROMO, IDS_REOPEN_TAB_PROMO_SCREENREADER,
+                accelerator, std::move(feature_promo_bubble_timeout))
+          : FeaturePromoBubbleView::CreateOwned(
+                app_menu_button, views::BubbleBorder::Arrow::TOP_RIGHT,
+                FeaturePromoBubbleView::ActivationAction::DO_NOT_ACTIVATE,
+                IDS_REOPEN_TAB_PROMO, IDS_REOPEN_TAB_PROMO_SCREENREADER,
+                accelerator);
   promo_bubble_->set_close_on_deactivate(false);
   promo_bubble_->GetWidget()->AddObserver(this);
 }

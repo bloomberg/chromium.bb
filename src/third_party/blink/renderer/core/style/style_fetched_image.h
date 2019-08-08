@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/loader/resource/image_resource_observer.h"
 #include "third_party/blink/renderer/core/style/style_image.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -40,13 +41,6 @@ class StyleFetchedImage final : public StyleImage,
   USING_PRE_FINALIZER(StyleFetchedImage, Dispose);
 
  public:
-  static StyleFetchedImage* Create(const Document& document,
-                                   FetchParameters& params,
-                                   bool is_lazyload_deferred) {
-    return MakeGarbageCollected<StyleFetchedImage>(document, params,
-                                                   is_lazyload_deferred);
-  }
-
   StyleFetchedImage(const Document&,
                     FetchParameters&,
                     bool is_lazyload_deferred);
@@ -91,7 +85,12 @@ class StyleFetchedImage final : public StyleImage,
   const KURL url_;
 };
 
-DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleFetchedImage, IsImageResource());
+template <>
+struct DowncastTraits<StyleFetchedImage> {
+  static bool AllowFrom(const StyleImage& styleImage) {
+    return styleImage.IsImageResource();
+  }
+};
 
 }  // namespace blink
 #endif

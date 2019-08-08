@@ -11,6 +11,7 @@ import datetime
 import os
 import re
 
+from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -38,6 +39,7 @@ class CrOSTest(object):
     self.deploy = opts.deploy
     self.nostrip = opts.nostrip
     self.build_dir = opts.build_dir
+    self.mount = opts.mount
 
     self.catapult_tests = opts.catapult_tests
     self.guest = opts.guest
@@ -132,13 +134,9 @@ class CrOSTest(object):
     if self.cache_dir:
       deploy_cmd += ['--cache-dir', self.cache_dir]
     if self.nostrip:
-      deploy_cmd += [
-          '--nostrip',
-          # An unstripped Chrome likey won't fit on the default partition. So
-          # tell deploy_chrome to deploy to a separate partition and bind it
-          # at the default deploy dir.
-          '--mount',
-      ]
+      deploy_cmd += ['--nostrip']
+    if self.mount:
+      deploy_cmd += ['--mount']
     self._device.RunCommand(deploy_cmd)
     self._device.WaitForBoot()
 
@@ -192,23 +190,56 @@ class CrOSTest(object):
     Returns:
       cros_build_lib.CommandResult object.
     """
-    cmd = ['tast']
+    # Try using the Tast binaries that the SimpleChrome SDK downloads
+    # automatically.
+    tast_cache_dir = cros_chrome_sdk.SDKFetcher.GetCachePath(
+        'chromeos-base', self.cache_dir, self._device.board)
+    if tast_cache_dir:
+      tast_bin_dir = os.path.join(tast_cache_dir, 'tast-cmd', 'usr', 'bin')
+      cmd = [os.path.join(tast_bin_dir, 'tast')]
+      need_chroot = False
+    else:
+      # Silently fall back to using the chroot if there's no SimpleChrome SDK
+      # present.
+      cmd = ['tast']
+      need_chroot = True
+
     if self._device.log_level == 'debug':
       cmd += ['-verbose']
     cmd += ['run', '-build=false', '-waituntilready',]
+    if not need_chroot:
+      # The test runner needs to be pointed to the location of the test files
+      # when we're using those in the SimpleChrome cache.
+      remote_runner_path = os.path.join(tast_bin_dir, 'remote_test_runner')
+      remote_bundle_dir = os.path.join(
+          tast_cache_dir, 'tast-remote-tests-cros', 'usr', 'libexec', 'tast',
+          'bundles', 'remote')
+      remote_data_dir = os.path.join(
+          tast_cache_dir, 'tast-remote-tests-cros', 'usr', 'share', 'tast',
+          'data')
+      cmd += [
+          '-remoterunner=%s' % remote_runner_path,
+          '-remotebundledir=%s' % remote_bundle_dir,
+          '-remotedatadir=%s' % remote_data_dir,
+      ]
+      if self._device.private_key:
+        cmd += ['-keyfile', self._device.private_key]
     if self.test_timeout > 0:
       cmd += ['-timeout=%d' % self.test_timeout]
     if self._device.is_vm:
       cmd += ['-extrauseflags=tast_vm']
     if self.results_dir:
-      cmd += ['-resultsdir', path_util.ToChrootPath(self.results_dir)]
+      results_dir = self.results_dir
+      if need_chroot:
+        results_dir = path_util.ToChrootPath(self.results_dir)
+      cmd += ['-resultsdir', results_dir]
     if self._device.ssh_port:
       cmd += ['%s:%d' % (self._device.device, self._device.ssh_port)]
     else:
       cmd += [self._device.device]
     cmd += self.tast
     return self._device.RunCommand(
-        cmd, enter_chroot=not cros_build_lib.IsInsideChroot())
+        cmd, enter_chroot=need_chroot and not cros_build_lib.IsInsideChroot())
 
   def _RunTests(self):
     """Run tests.
@@ -357,6 +388,10 @@ def ParseCommandLine(argv):
                       '--build-dir must be specified.')
   parser.add_argument('--nostrip', action='store_true', default=False,
                       help="Don't strip symbols from binaries if deploying.")
+  parser.add_argument('--mount', action='store_true', default=False,
+                      help='Deploy chrome to the default target directory and '
+                      'bind it to the default mount directory. Useful for '
+                      'large Chrome binaries.')
   # type='path' converts a relative path for cwd into an absolute one on the
   # host, which we don't want.
   parser.add_argument('--cwd', help='Change working directory. '

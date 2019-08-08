@@ -126,6 +126,9 @@ void Parser::InitLayoutMap() {
     TOKEN(SKRECT,                       "SkRect");
     TOKEN(SKIRECT,                      "SkIRect");
     TOKEN(SKPMCOLOR,                    "SkPMColor");
+    TOKEN(BOOL,                         "bool");
+    TOKEN(INT,                          "int");
+    TOKEN(FLOAT,                        "float");
     #undef TOKEN
 }
 
@@ -737,6 +740,12 @@ Layout::CType Parser::layoutCType() {
                     return Layout::CType::kSkIRect;
                 case LayoutToken::SKPMCOLOR:
                     return Layout::CType::kSkPMColor;
+                case LayoutToken::BOOL:
+                    return Layout::CType::kBool;
+                case LayoutToken::INT:
+                    return Layout::CType::kInt32;
+                case LayoutToken::FLOAT:
+                    return Layout::CType::kFloat;
                 default:
                     break;
             }
@@ -943,18 +952,6 @@ Modifiers Parser::modifiers() {
                 flags |= Modifiers::kIn_Flag;
                 flags |= Modifiers::kOut_Flag;
                 break;
-            case Token::LOWP:
-                this->nextToken();
-                flags |= Modifiers::kLowp_Flag;
-                break;
-            case Token::MEDIUMP:
-                this->nextToken();
-                flags |= Modifiers::kMediump_Flag;
-                break;
-            case Token::HIGHP:
-                this->nextToken();
-                flags |= Modifiers::kHighp_Flag;
-                break;
             case Token::FLAT:
                 this->nextToken();
                 flags |= Modifiers::kFlat_Flag;
@@ -1047,10 +1044,7 @@ std::unique_ptr<ASTStatement> Parser::statement() {
             this->nextToken();
             return std::unique_ptr<ASTStatement>(new ASTBlock(start.fOffset,
                                                      std::vector<std::unique_ptr<ASTStatement>>()));
-        case Token::CONST:   // fall through
-        case Token::HIGHP:   // fall through
-        case Token::MEDIUMP: // fall through
-        case Token::LOWP: {
+        case Token::CONST: {
             auto decl = this->varDeclarations();
             if (!decl) {
                 return nullptr;

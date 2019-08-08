@@ -78,6 +78,7 @@ DeviceLogUI::DeviceLogUI(content::WebUI* web_ui)
   html->AddLocalizedString("logTypeUsbText", IDS_DEVICE_LOG_TYPE_USB);
   html->AddLocalizedString("logTypeHidText", IDS_DEVICE_LOG_TYPE_HID);
   html->AddLocalizedString("logTypePrinterText", IDS_DEVICE_LOG_TYPE_PRINTER);
+  html->AddLocalizedString("logTypeFidoText", IDS_DEVICE_LOG_TYPE_FIDO);
 
   html->AddLocalizedString("logEntryFormat", IDS_DEVICE_LOG_ENTRY);
   html->SetJsonPath("strings.js");

@@ -50,11 +50,8 @@ enum class BufferUsage {
   SCANOUT_CPU_READ_WRITE,
   SCANOUT_VDA_WRITE,
   GPU_READ_CPU_READ_WRITE,
-  // TODO(reveman): Merge this with GPU_READ_CPU_READ_WRITE when SurfaceTexture
-  // backed buffers are single buffered and support it.
-  GPU_READ_CPU_READ_WRITE_PERSISTENT,
 
-  LAST = GPU_READ_CPU_READ_WRITE_PERSISTENT
+  LAST = GPU_READ_CPU_READ_WRITE
 };
 
 struct BufferUsageAndFormat {

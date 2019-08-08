@@ -78,6 +78,8 @@ class UI_BASE_EXPORT Accelerator {
 
   base::TimeTicks time_stamp() const { return time_stamp_; }
 
+  int source_device_id() const { return source_device_id_; }
+
   bool IsShiftDown() const;
   bool IsCtrlDown() const;
   bool IsAltDown() const;
@@ -121,6 +123,9 @@ class UI_BASE_EXPORT Accelerator {
   // TOGGLE_APP_LIST and TOGGLE_APP_LIST_FULLSCREEN are disabled when mouse
   // press/release occurs between search key down and up. See crbug.com/665897)
   bool interrupted_by_mouse_event_;
+
+  // The |source_device_id_| of the KeyEvent.
+  int source_device_id_ = -1;
 };
 
 // An interface that classes that want to register for keyboard accelerators

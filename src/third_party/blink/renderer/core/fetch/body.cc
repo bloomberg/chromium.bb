@@ -166,7 +166,7 @@ ScriptPromise Body::arrayBuffer(ScriptState* script_state,
   if (!ExecutionContext::From(script_state))
     return ScriptPromise();
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   if (BodyBuffer()) {
     BodyBuffer()->StartLoading(
@@ -194,7 +194,7 @@ ScriptPromise Body::blob(ScriptState* script_state,
   if (!ExecutionContext::From(script_state))
     return ScriptPromise();
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   if (BodyBuffer()) {
     BodyBuffer()->StartLoading(
@@ -206,7 +206,7 @@ ScriptPromise Body::blob(ScriptState* script_state,
       return ScriptPromise();
     }
   } else {
-    std::unique_ptr<BlobData> blob_data = BlobData::Create();
+    auto blob_data = std::make_unique<BlobData>();
     blob_data->SetContentType(MimeType());
     resolver->Resolve(
         Blob::Create(BlobDataHandle::Create(std::move(blob_data), 0)));
@@ -224,7 +224,7 @@ ScriptPromise Body::formData(ScriptState* script_state,
   if (!ExecutionContext::From(script_state))
     return ScriptPromise();
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   const ParsedContentType parsedTypeWithParameters(ContentType());
   const String parsedType = parsedTypeWithParameters.MimeType().LowerASCII();
   ScriptPromise promise = resolver->Promise();
@@ -289,7 +289,7 @@ ScriptPromise Body::json(ScriptState* script_state,
   if (!ExecutionContext::From(script_state))
     return ScriptPromise();
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   if (BodyBuffer()) {
     BodyBuffer()->StartLoading(FetchDataLoader::CreateLoaderAsString(),
@@ -317,7 +317,7 @@ ScriptPromise Body::text(ScriptState* script_state,
   if (!ExecutionContext::From(script_state))
     return ScriptPromise();
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   if (BodyBuffer()) {
     BodyBuffer()->StartLoading(FetchDataLoader::CreateLoaderAsString(),

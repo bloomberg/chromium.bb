@@ -10,6 +10,7 @@
 #ifndef LIBANGLE_RENDERER_VULKAN_COMMAND_GRAPH_H_
 #define LIBANGLE_RENDERER_VULKAN_COMMAND_GRAPH_H_
 
+#include "libANGLE/renderer/vulkan/SecondaryCommandBuffer.h"
 #include "libANGLE/renderer/vulkan/vk_cache_utils.h"
 
 namespace rx
@@ -17,6 +18,7 @@ namespace rx
 
 namespace vk
 {
+
 enum class VisitedState
 {
     Unvisited,
@@ -61,18 +63,22 @@ class CommandBufferOwner
     ANGLE_INLINE void onCommandBufferFinished() { mCommandBuffer = nullptr; }
 
   protected:
-    vk::CommandBuffer *mCommandBuffer = nullptr;
+    CommandBuffer *mCommandBuffer = nullptr;
 };
 
 // Only used internally in the command graph. Kept in the header for better inlining performance.
 class CommandGraphNode final : angle::NonCopyable
 {
   public:
-    CommandGraphNode(CommandGraphNodeFunction function);
+    CommandGraphNode(CommandGraphNodeFunction function, angle::PoolAllocator *poolAllocator);
     ~CommandGraphNode();
 
     // Immutable queries for when we're walking the commands tree.
-    CommandBuffer *getOutsideRenderPassCommands();
+    CommandBuffer *getOutsideRenderPassCommands()
+    {
+        ASSERT(!mHasChildren);
+        return &mOutsideRenderPassCommands;
+    }
 
     CommandBuffer *getInsideRenderPassCommands()
     {
@@ -92,7 +98,26 @@ class CommandGraphNode final : angle::NonCopyable
     void storeRenderPassInfo(const Framebuffer &framebuffer,
                              const gl::Rectangle renderArea,
                              const vk::RenderPassDesc &renderPassDesc,
+                             const AttachmentOpsArray &renderPassAttachmentOps,
                              const std::vector<VkClearValue> &clearValues);
+
+    void clearRenderPassColorAttachment(size_t attachmentIndex, const VkClearColorValue &clearValue)
+    {
+        mRenderPassAttachmentOps[attachmentIndex].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        mRenderPassClearValues[attachmentIndex].color    = clearValue;
+    }
+
+    void clearRenderPassDepthAttachment(size_t attachmentIndex, float depth)
+    {
+        mRenderPassAttachmentOps[attachmentIndex].loadOp           = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        mRenderPassClearValues[attachmentIndex].depthStencil.depth = depth;
+    }
+
+    void clearRenderPassStencilAttachment(size_t attachmentIndex, uint32_t stencil)
+    {
+        mRenderPassAttachmentOps[attachmentIndex].stencilLoadOp      = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        mRenderPassClearValues[attachmentIndex].depthStencil.stencil = stencil;
+    }
 
     // Dependency commands order node execution in the command graph.
     // Once a node has commands that must happen after it, recording is stopped and the node is
@@ -108,9 +133,11 @@ class CommandGraphNode final : angle::NonCopyable
     static void SetHappensBeforeDependencies(CommandGraphNode **beforeNodes,
                                              size_t beforeNodesCount,
                                              CommandGraphNode *afterNode);
+
     static void SetHappensBeforeDependencies(CommandGraphNode *beforeNode,
                                              CommandGraphNode **afterNodes,
                                              size_t afterNodesCount);
+
     bool hasParents() const;
     bool hasChildren() const { return mHasChildren; }
 
@@ -120,7 +147,7 @@ class CommandGraphNode final : angle::NonCopyable
     angle::Result visitAndExecute(Context *context,
                                   Serial serial,
                                   RenderPassCache *renderPassCache,
-                                  CommandBuffer *primaryCommandBuffer);
+                                  PrimaryCommandBuffer *primaryCommandBuffer);
 
     // Only used in the command graph diagnostics.
     const std::vector<CommandGraphNode *> &getParentsForDiagnostics() const;
@@ -128,12 +155,15 @@ class CommandGraphNode final : angle::NonCopyable
 
     CommandGraphResourceType getResourceTypeForDiagnostics() const { return mResourceType; }
     uintptr_t getResourceIDForDiagnostics() const { return mResourceID; }
+    std::string dumpCommandsForDiagnostics(const char *separator) const;
 
-    const gl::Rectangle &getRenderPassRenderArea() const;
+    const gl::Rectangle &getRenderPassRenderArea() const { return mRenderPassRenderArea; }
 
     CommandGraphNodeFunction getFunction() const { return mFunction; }
 
     void setQueryPool(const QueryPool *queryPool, uint32_t queryIndex);
+    VkQueryPool getQueryPool() const { return mQueryPool; }
+    uint32_t getQueryIndex() const { return mQueryIndex; }
     void setFenceSync(const vk::Event &event);
     void setDebugMarker(GLenum source, std::string &&marker);
     const std::string &getDebugMarker() const { return mDebugMarker; }
@@ -166,12 +196,13 @@ class CommandGraphNode final : angle::NonCopyable
 
     // Only used if we need a RenderPass for these commands.
     RenderPassDesc mRenderPassDesc;
+    AttachmentOpsArray mRenderPassAttachmentOps;
     Framebuffer mRenderPassFramebuffer;
     gl::Rectangle mRenderPassRenderArea;
     gl::AttachmentArray<VkClearValue> mRenderPassClearValues;
 
     CommandGraphNodeFunction mFunction;
-
+    angle::PoolAllocator *mPoolAllocator;
     // Keep separate buffers for commands inside and outside a RenderPass.
     // TODO(jmadill): We might not need inside and outside RenderPass commands separate.
     CommandBuffer mOutsideRenderPassCommands;
@@ -257,28 +288,68 @@ class CommandGraphResource : angle::NonCopyable
                                   const Framebuffer &framebuffer,
                                   const gl::Rectangle &renderArea,
                                   const RenderPassDesc &renderPassDesc,
+                                  const AttachmentOpsArray &renderPassAttachmentOps,
                                   const std::vector<VkClearValue> &clearValues,
                                   CommandBuffer **commandBufferOut);
 
-    // Checks if we're in a RenderPass, returning true if so. Updates serial internally.
-    // Returns the started command buffer in commandBufferOut.
+    // Checks if we're in a RenderPass without children.
+    bool hasStartedRenderPass() const
+    {
+        return hasChildlessWritingNode() &&
+               mCurrentWritingNode->getInsideRenderPassCommands()->valid();
+    }
+
+    // Checks if we're in a RenderPass that encompasses renderArea, returning true if so. Updates
+    // serial internally. Returns the started command buffer in commandBufferOut.
     ANGLE_INLINE bool appendToStartedRenderPass(Serial currentQueueSerial,
+                                                const gl::Rectangle &renderArea,
                                                 CommandBuffer **commandBufferOut)
     {
         updateQueueSerial(currentQueueSerial);
         if (hasStartedRenderPass())
         {
-            *commandBufferOut = mCurrentWritingNode->getInsideRenderPassCommands();
-            return true;
+            if (mCurrentWritingNode->getRenderPassRenderArea().encloses(renderArea))
+            {
+                *commandBufferOut = mCurrentWritingNode->getInsideRenderPassCommands();
+                return true;
+            }
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
+    }
+
+    // Returns true if the render pass is started, but there are no commands yet recorded in it.
+    // This is useful to know if the render pass ops can be modified.
+    bool renderPassStartedButEmpty() const
+    {
+        return hasStartedRenderPass() &&
+               mCurrentWritingNode->getInsideRenderPassCommands()->empty();
+    }
+
+    void clearRenderPassColorAttachment(size_t attachmentIndex, const VkClearColorValue &clearValue)
+    {
+        ASSERT(renderPassStartedButEmpty());
+        mCurrentWritingNode->clearRenderPassColorAttachment(attachmentIndex, clearValue);
+    }
+
+    void clearRenderPassDepthAttachment(size_t attachmentIndex, float depth)
+    {
+        ASSERT(renderPassStartedButEmpty());
+        mCurrentWritingNode->clearRenderPassDepthAttachment(attachmentIndex, depth);
+    }
+
+    void clearRenderPassStencilAttachment(size_t attachmentIndex, uint32_t stencil)
+    {
+        ASSERT(renderPassStartedButEmpty());
+        mCurrentWritingNode->clearRenderPassStencilAttachment(attachmentIndex, stencil);
     }
 
     // Accessor for RenderPass RenderArea.
-    const gl::Rectangle &getRenderPassRenderArea() const;
+    const gl::Rectangle &getRenderPassRenderArea() const
+    {
+        ASSERT(hasStartedRenderPass());
+        return mCurrentWritingNode->getRenderPassRenderArea();
+    }
 
     // Called when 'this' object changes, but we'd like to start a new command buffer later.
     void finishCurrentCommands(RendererVk *renderer);
@@ -307,13 +378,6 @@ class CommandGraphResource : angle::NonCopyable
         return (mCurrentWritingNode != nullptr && !mCurrentWritingNode->hasChildren());
     }
 
-    // Checks if we're in a RenderPass without children.
-    bool hasStartedRenderPass() const
-    {
-        return hasChildlessWritingNode() &&
-               mCurrentWritingNode->getInsideRenderPassCommands()->valid();
-    }
-
     void startNewCommands(RendererVk *renderer);
 
     void onWriteImpl(CommandGraphNode *writingNode, Serial currentSerial);
@@ -338,13 +402,13 @@ class CommandGraphResource : angle::NonCopyable
 // ANGLE's CommandGraph (and CommandGraphNode) attempt to solve these problems using deferred
 // command submission. We also sometimes call this command re-ordering. A brief summary:
 //
-// During GL command processing, we record Vulkan commands into secondary command buffers, which
+// During GL command processing, we record Vulkan commands into SecondaryCommandBuffers, which
 // are stored in CommandGraphNodes, and these nodes are chained together via dependencies to
-// for a directed acyclic CommandGraph. When we need to submit the CommandGraph, say during a
+// form a directed acyclic CommandGraph. When we need to submit the CommandGraph, say during a
 // SwapBuffers or ReadPixels call, we begin a primary Vulkan CommandBuffer, and walk the
-// CommandGraph, starting at the most senior nodes, recording secondary CommandBuffers inside
+// CommandGraph, starting at the most senior nodes, recording SecondaryCommandBuffers inside
 // and outside RenderPasses as necessary, filled with the right load/store operations. Once
-// the primary CommandBuffer has recorded all of the secondary CommandBuffers from all the open
+// the primary CommandBuffer has recorded all of the SecondaryCommandBuffers from all the open
 // CommandGraphNodes, we submit the primary CommandBuffer to the VkQueue on the device.
 //
 // The Command Graph consists of an array of open Command Graph Nodes. It supports allocating new
@@ -353,7 +417,7 @@ class CommandGraphResource : angle::NonCopyable
 class CommandGraph final : angle::NonCopyable
 {
   public:
-    explicit CommandGraph(bool enableGraphDiagnostics);
+    explicit CommandGraph(bool enableGraphDiagnostics, angle::PoolAllocator *poolAllocator);
     ~CommandGraph();
 
     // Allocates a new CommandGraphNode and adds it to the list of current open nodes. No ordering
@@ -366,7 +430,7 @@ class CommandGraph final : angle::NonCopyable
                                  Serial serial,
                                  RenderPassCache *renderPassCache,
                                  CommandPool *commandPool,
-                                 CommandBuffer *primaryCommandBufferOut);
+                                 PrimaryCommandBuffer *primaryCommandBufferOut);
     bool empty() const;
     void clear();
 
@@ -384,8 +448,9 @@ class CommandGraph final : angle::NonCopyable
     void popDebugMarker();
 
   private:
-    CommandGraphNode *allocateBarrierNode(CommandGraphResourceType resourceType,
-                                          CommandGraphNodeFunction function);
+    CommandGraphNode *allocateBarrierNode(CommandGraphNodeFunction function,
+                                          CommandGraphResourceType resourceType,
+                                          uintptr_t resourceID);
     void setNewBarrier(CommandGraphNode *newBarrier);
     CommandGraphNode *getLastBarrierNode(size_t *indexOut);
     void addDependenciesToNextBarrier(size_t begin, size_t end, CommandGraphNode *nextBarrier);
@@ -394,6 +459,7 @@ class CommandGraph final : angle::NonCopyable
 
     std::vector<CommandGraphNode *> mNodes;
     bool mEnableGraphDiagnostics;
+    angle::PoolAllocator *mPoolAllocator;
 
     // A set of nodes (eventually) exist that act as barriers to guarantee submission order.  For
     // example, a glMemoryBarrier() calls would lead to such a barrier or beginning and ending a

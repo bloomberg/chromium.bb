@@ -17,6 +17,7 @@ found in the LICENSE file.
 
   <script src="chrome://resources/js/mojo_bindings_lite.js"></script>
   <script src="chrome://resources/js/util.js"></script>
+  <script src="url/mojom/url.mojom-lite.js"></script>
   <script src="feed_internals.mojom-lite.js"></script>
 
   <script src="feed_internals.js"></script>
@@ -29,6 +30,22 @@ found in the LICENSE file.
     <tr>
       <td>Is Feed Enabled</td>
       <td id="is-feed-enabled"></td>
+    </tr>
+    <tr>
+      <td>Is Feed Visible</td>
+      <td id="is-feed-visible"></td>
+    </tr>
+    <tr>
+      <td>Is Feed Allowed</td>
+      <td id="is-feed-allowed"></td>
+    </tr>
+    <tr>
+      <td>Is Prefetching Enabled</td>
+      <td id="is-prefetching-enabled"></td>
+    </tr>
+    <tr>
+      <td>Feed Fetch URL</td>
+      <td id="feed-fetch-url"></td>
     </tr>
   </table>
 
@@ -50,7 +67,11 @@ found in the LICENSE file.
   <button id="clear-user-classification">
     Clear User Classification
   </button>
+
   <h2>Feed Library Actions</h2>
+  <button id="refresh-feed">
+    Refresh Feed
+  </button>
   <button id="clear-cached-data">
     Clear Cache & Refresh Feed
   </button>
@@ -60,6 +81,10 @@ found in the LICENSE file.
     <tr>
       <td>Last Fetch Status</td>
       <td id="last-fetch-status"></td>
+    </tr>
+    <tr>
+      <td>Last Fetch Trigger</td>
+      <td id="last-fetch-trigger"></td>
     </tr>
     <tr>
       <td>Last Fetch Time</td>
@@ -97,6 +122,24 @@ found in the LICENSE file.
       </details>
     </template>
   </div>
+
+  <h2>Feed Histograms</h2>
+  <button id="load-feed-histograms">
+    Load Feed Histograms
+  </button>
+  <details id="feed-histograms-details">
+    <summary>Show/Hide</summary>
+    <pre id="feed-histograms-log"></pre>
+  </details>
+
+  <h2>Feed Process Scope</h2>
+  <button id="dump-feed-process-scope">
+    Dump Feed Process Scope
+  </button>
+  <details id="feed-process-scope-details">
+    <summary>Show/Hide</summary>
+    <pre id="feed-process-scope-dump"></pre>
+  </details>
 
 </body>
 </html>

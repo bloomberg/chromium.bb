@@ -471,9 +471,9 @@ class ChromeServiceWorkerLinkFetchTest : public ChromeServiceWorkerFetchTest {
         ->GetMainFrame()
         ->ExecuteJavaScriptForTests(
             base::ASCIIToUTF16(js),
-            base::Bind([](const base::Closure& quit_callback,
-                          const base::Value* result) { quit_callback.Run(); },
-                       run_loop.QuitClosure()));
+            base::BindOnce([](const base::Closure& quit_callback,
+                              base::Value result) { quit_callback.Run(); },
+                           run_loop.QuitClosure()));
     run_loop.Run();
   }
 

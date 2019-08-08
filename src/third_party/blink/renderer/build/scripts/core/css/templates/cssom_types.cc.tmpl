@@ -81,9 +81,9 @@ bool CSSOMTypes::IsCSSStyleValuePosition(const CSSStyleValue& value) {
 
 bool CSSOMTypes::IsPropertySupported(CSSPropertyID id) {
   switch (id) {
-    case CSSPropertyVariable:
+    case CSSPropertyID::kVariable:
   {% for property in properties if property.typedom_types %}
-    case {{property.property_id}}:
+    case CSSPropertyID::{{property.enum_key}}:
   {% endfor %}
       return true;
     default:
@@ -96,9 +96,9 @@ bool CSSOMTypes::PropertyCanTake(CSSPropertyID id,
                                  const PropertyRegistration* registration,
                                  const CSSStyleValue& value,
                                  const CSSSyntaxComponent*& match) {
-  DCHECK_EQ(id == CSSPropertyVariable, !custom_property_name.IsNull());
+  DCHECK_EQ(id == CSSPropertyID::kVariable, !custom_property_name.IsNull());
 
-  if (id == CSSPropertyVariable && registration) {
+  if (id == CSSPropertyID::kVariable && registration) {
     if (auto* unsupported_style_value =
             DynamicTo<CSSUnsupportedStyleValue>(value)) {
       return unsupported_style_value->IsValidFor(
@@ -120,11 +120,11 @@ bool CSSOMTypes::PropertyCanTake(CSSPropertyID id,
   }
 
   switch (id) {
-    case CSSPropertyVariable:
+    case CSSPropertyID::kVariable:
       return value.GetType() == CSSStyleValue::kUnparsedType;
     {% for property in properties if property.typedom_types %}
     {% if property.typedom_types != ['Keyword'] %}
-    case {{property.property_id}}:
+    case CSSPropertyID::{{property.enum_key}}:
       return (
           {% for type in property.typedom_types if type != 'Keyword' %}
           {{ "|| " if not loop.first }}CSSOMTypes::IsCSSStyleValue{{type}}(value)

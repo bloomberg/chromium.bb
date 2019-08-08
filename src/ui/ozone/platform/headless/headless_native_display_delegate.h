@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_HEADLESS_HEADLESS_NATIVE_DISPLAY_DELEGATE_H_
 #define UI_OZONE_PLATFORM_HEADLESS_HEADLESS_NATIVE_DISPLAY_DELEGATE_H_
 
+#include <memory>
+
 #include "base/observer_list.h"
 #include "ui/display/types/native_display_delegate.h"
 

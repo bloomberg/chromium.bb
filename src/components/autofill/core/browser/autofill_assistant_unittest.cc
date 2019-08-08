@@ -18,9 +18,9 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/mock_autocomplete_history_manager.h"
+#include "components/autofill/core/browser/payments/test_credit_card_save_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
-#include "components/autofill/core/browser/test_credit_card_save_manager.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -70,9 +70,9 @@ class AutofillAssistantTest : public testing::Test {
 
   void SetUp() {
     payments::TestPaymentsClient* payments_client =
-        new payments::TestPaymentsClient(
-            autofill_driver_.GetURLLoaderFactory(), autofill_client_.GetPrefs(),
-            autofill_client_.GetIdentityManager(), &pdm_);
+        new payments::TestPaymentsClient(autofill_driver_.GetURLLoaderFactory(),
+                                         autofill_client_.GetIdentityManager(),
+                                         &pdm_);
     autofill_client_.set_test_payments_client(
         std::unique_ptr<payments::TestPaymentsClient>(payments_client));
     TestCreditCardSaveManager* credit_card_save_manager =
@@ -101,7 +101,7 @@ class AutofillAssistantTest : public testing::Test {
   // Returns a valid credit card form.
   FormData CreateValidCreditCardFormData() {
     FormData form;
-    form.origin = GURL("https://myform.com");
+    form.url = GURL("https://myform.com");
     form.action = GURL("https://myform.com/submit");
 
     FormFieldData field;
@@ -202,7 +202,7 @@ TEST_F(AutofillAssistantTest, CanShowCreditCardAssist_FeatureOn_NotSecure) {
 
   // Cannot be shown if the context is not secure.
   FormData form = CreateValidCreditCardFormData();
-  form.origin = GURL("http://myform.com");
+  form.url = GURL("http://myform.com");
   form.action = GURL("http://myform.com/submit");
   auto form_structure = std::make_unique<FormStructure>(form);
   form_structure->DetermineHeuristicTypes();

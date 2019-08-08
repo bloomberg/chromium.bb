@@ -51,8 +51,7 @@ Checkbox::Checkbox(const base::string16& label, ButtonListener* listener)
   SetInstallFocusRingOnFocus(true);
 }
 
-Checkbox::~Checkbox() {
-}
+Checkbox::~Checkbox() = default;
 
 void Checkbox::SetChecked(bool checked) {
   if (checked_ != checked) {

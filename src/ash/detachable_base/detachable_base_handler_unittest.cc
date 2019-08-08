@@ -14,8 +14,8 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/hammerd/fake_hammerd_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -85,10 +85,10 @@ class DetachableBaseHandlerTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    chromeos::HammerdClient::Initialize(nullptr /* bus */);
+    chromeos::HammerdClient::InitializeFake();
     hammerd_client_ = chromeos::FakeHammerdClient::Get();
 
-    chromeos::PowerManagerClient::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
     chromeos::FakePowerManagerClient::Get()->SetTabletMode(
         chromeos::PowerManagerClient::TabletMode::OFF, base::TimeTicks());
 

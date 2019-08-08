@@ -277,7 +277,7 @@ void NaClForkDelegate::Init(const int sandboxdesc,
 
     // To avoid information leaks in Non-SFI mode, clear the environment for
     // the NaCl Helper process.
-    options.clear_environ = true;
+    options.clear_environment = true;
     AddPassthroughEnvToOptions(&options);
 
     base::Process process =
@@ -458,7 +458,7 @@ void NaClForkDelegate::AddPassthroughEnvToOptions(
   for (size_t i = 0; i < pass_through_vars.size(); ++i) {
     std::string temp;
     if (env->GetVar(pass_through_vars[i], &temp))
-      options->environ[pass_through_vars[i]] = temp;
+      options->environment[pass_through_vars[i]] = temp;
   }
 }
 

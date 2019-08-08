@@ -5,18 +5,18 @@
 #include "ash/wm/overview/scoped_overview_transform_window.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
-#include "ash/wm/overview/cleanup_animation_observer.h"
+#include "ash/wm/overview/delayed_animation_observer_impl.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
-#include "ash/wm/overview/start_animation_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_state.h"
@@ -179,9 +179,27 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
   type_ = GetWindowDimensionsType(window);
   original_event_targeting_policy_ = window_->event_targeting_policy();
   window_->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
+  window_->SetProperty(kIsShowingInOverviewKey, true);
+
+  // Hide transient children which have been specified to be hidden in overview
+  // mode.
+  std::vector<aura::Window*> transient_children_to_hide;
+  for (auto* transient : wm::GetTransientTreeIterator(window)) {
+    if (transient == window)
+      continue;
+
+    if (transient->GetProperty(kHideInOverviewKey))
+      transient_children_to_hide.push_back(transient);
+  }
+
+  if (!transient_children_to_hide.empty()) {
+    hidden_transient_children_ = std::make_unique<ScopedOverviewHideWindows>(
+        std::move(transient_children_to_hide), /*forced_hidden=*/true);
+  }
 }
 
 ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
+  window_->ClearProperty(ash::kIsShowingInOverviewKey);
   window_->SetEventTargetingPolicy(original_event_targeting_policy_);
   UpdateMask(/*show=*/false);
   StopObservingImplicitAnimations();
@@ -227,6 +245,13 @@ void ScopedOverviewTransformWindow::RestoreWindow(
     ScopedAnimationSettings animation_settings_list;
     BeginScopedAnimation(overview_item_->GetExitTransformAnimationType(),
                          &animation_settings_list);
+    for (auto& settings : animation_settings_list) {
+      auto exit_observer = std::make_unique<ExitAnimationObserver>();
+      settings->AddObserver(exit_observer.get());
+      Shell::Get()->overview_controller()->AddExitAnimationObserver(
+          std::move(exit_observer));
+    }
+
     // Use identity transform directly to reset window's transform when exiting
     // overview.
     SetTransform(GetOverviewWindow(), gfx::Transform());
@@ -253,18 +278,18 @@ void ScopedOverviewTransformWindow::BeginScopedAnimation(
   if (animation_type == OVERVIEW_ANIMATION_NONE)
     return;
 
-  for (auto* window : wm::GetTransientTreeIterator(GetOverviewWindow())) {
+  for (auto* window : GetVisibleTransientTreeIterator(GetOverviewWindow())) {
     auto settings = std::make_unique<ScopedOverviewAnimationSettings>(
         animation_type, window);
     settings->DeferPaint();
 
-    // Create a start animation observer if this is an enter overview layout
+    // Create an EnterAnimationObserver if this is an enter overview layout
     // animation.
     if (animation_type == OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_ENTER) {
-      auto start_observer = std::make_unique<StartAnimationObserver>();
-      settings->AddObserver(start_observer.get());
-      Shell::Get()->overview_controller()->AddStartAnimationObserver(
-          std::move(start_observer));
+      auto enter_observer = std::make_unique<EnterAnimationObserver>();
+      settings->AddObserver(enter_observer.get());
+      Shell::Get()->overview_controller()->AddEnterAnimationObserver(
+          std::move(enter_observer));
     }
 
     animation_settings->push_back(std::move(settings));
@@ -295,7 +320,7 @@ int ScopedOverviewTransformWindow::GetTopInset() const {
   // Mirror window doesn't have insets.
   if (minimized_widget_)
     return 0;
-  for (auto* window : wm::GetTransientTreeIterator(window_)) {
+  for (auto* window : GetVisibleTransientTreeIterator(window_)) {
     // If there are regular windows in the transient ancestor tree, all those
     // windows are shown in the same overview item and the header is not masked.
     if (window != window_ &&
@@ -311,7 +336,7 @@ void ScopedOverviewTransformWindow::OnWindowDestroyed() {
 }
 
 void ScopedOverviewTransformWindow::SetOpacity(float opacity) {
-  for (auto* window : wm::GetTransientTreeIterator(GetOverviewWindow()))
+  for (auto* window : GetVisibleTransientTreeIterator(GetOverviewWindow()))
     window->layer()->SetOpacity(opacity);
 }
 
@@ -412,7 +437,7 @@ void ScopedOverviewTransformWindow::PrepareForOverview() {
   // enter animation and the whole time during overview mode. For the exit
   // animation of overview mode, we need to add those requests again.
   if (features::IsTrilinearFilteringEnabled()) {
-    for (auto* window : wm::GetTransientTreeIterator(GetOverviewWindow())) {
+    for (auto* window : GetVisibleTransientTreeIterator(GetOverviewWindow())) {
       cached_and_filtered_layer_observers_.push_back(
           std::make_unique<LayerCachingAndFilteringObserver>(window->layer()));
     }
@@ -446,18 +471,26 @@ void ScopedOverviewTransformWindow::UpdateWindowDimensionsType() {
 }
 
 void ScopedOverviewTransformWindow::UpdateMask(bool show) {
-  if (!base::FeatureList::IsEnabled(features::kEnableOverviewRoundedCorners) ||
-      !show) {
-    mask_.reset();
-    return;
-  }
-
   // Add the mask which gives the overview item rounded corners, and add the
   // shadow around the window.
   ui::Layer* layer = minimized_widget_
                          ? minimized_widget_->GetNativeWindow()->layer()
                          : window_->layer();
-
+  if (ash::features::ShouldUseShaderRoundedCorner()) {
+    const float scale = layer->transform().Scale2d().x();
+    static constexpr std::array<uint32_t, 4> kEmptyRadii = {0, 0, 0, 0};
+    const std::array<uint32_t, 4> kRadii = {
+        kOverviewWindowRoundingDp / scale, kOverviewWindowRoundingDp / scale,
+        kOverviewWindowRoundingDp / scale, kOverviewWindowRoundingDp / scale};
+    layer->SetRoundedCornerRadius(show ? kRadii : kEmptyRadii);
+    layer->SetIsFastRoundedCorner(true);
+    return;
+  }
+  if (!base::FeatureList::IsEnabled(features::kEnableOverviewRoundedCorners) ||
+      !show) {
+    mask_.reset();
+    return;
+  }
   mask_ = std::make_unique<WindowMask>(GetOverviewWindow());
   mask_->layer()->SetBounds(layer->bounds());
   mask_->set_top_inset(GetTopInset());

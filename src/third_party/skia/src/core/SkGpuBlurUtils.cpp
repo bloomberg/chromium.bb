@@ -99,7 +99,8 @@ static GrPixelConfig get_blur_config(GrTextureProxy* proxy) {
              kRGB_888_GrPixelConfig == config || kRGBA_4444_GrPixelConfig == config ||
              kRGB_565_GrPixelConfig == config || kSRGBA_8888_GrPixelConfig == config ||
              kSBGRA_8888_GrPixelConfig == config || kRGBA_half_GrPixelConfig == config ||
-             kAlpha_8_GrPixelConfig == config || kRGBA_1010102_GrPixelConfig == config);
+             kAlpha_8_GrPixelConfig == config || kRGBA_1010102_GrPixelConfig == config ||
+             kRGBA_half_Clamped_GrPixelConfig == config);
 
     return config;
 }
@@ -318,8 +319,15 @@ static sk_sp<GrTextureProxy> decimate(GrRecordingContext* context,
                                                                 : mode;
 
             SkRect domain = SkRect::Make(*contentRect);
-            domain.inset((i < scaleFactorX) ? SK_ScalarHalf : 0.0f,
-                         (i < scaleFactorY) ? SK_ScalarHalf : 0.0f);
+            domain.inset((i < scaleFactorX) ? SK_ScalarHalf + SK_ScalarNearlyZero : 0.0f,
+                         (i < scaleFactorY) ? SK_ScalarHalf + SK_ScalarNearlyZero : 0.0f);
+            // Ensure that the insetting doesn't invert the domain rectangle.
+            if (domain.fRight < domain.fLeft) {
+                domain.fLeft = domain.fRight = SkScalarAve(domain.fLeft, domain.fRight);
+            }
+            if (domain.fBottom < domain.fTop) {
+                domain.fTop = domain.fBottom = SkScalarAve(domain.fTop, domain.fBottom);
+            }
             auto fp = GrTextureDomainEffect::Make(std::move(src),
                                                   SkMatrix::I(),
                                                   domain,

@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/hash/sha1.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -108,6 +108,7 @@ SyncedBookmarkTracker::SyncedBookmarkTracker(
     const std::string& sync_id = node_metadata.second->server_id();
     auto entity = std::make_unique<Entity>(node_metadata.first,
                                            std::move(node_metadata.second));
+    entity->set_commit_may_have_started(true);
     if (node_metadata.first) {
       // Non-null node means it's not a tombstone.
       bookmark_node_to_entities_map_[node_metadata.first] = entity.get();
@@ -264,6 +265,15 @@ void SyncedBookmarkTracker::UpdateServerVersion(const std::string& sync_id,
   Entity* entity = it->second.get();
   DCHECK(entity);
   entity->metadata()->set_server_version(server_version);
+}
+
+void SyncedBookmarkTracker::MarkCommitMayHaveStarted(
+    const std::string& sync_id) {
+  auto it = sync_id_to_entities_map_.find(sync_id);
+  DCHECK(it != sync_id_to_entities_map_.end());
+  Entity* entity = it->second.get();
+  DCHECK(entity);
+  entity->set_commit_may_have_started(true);
 }
 
 void SyncedBookmarkTracker::MarkDeleted(const std::string& sync_id) {

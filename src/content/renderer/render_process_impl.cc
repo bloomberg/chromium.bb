@@ -26,9 +26,9 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/system/sys_info.h"
-#include "base/task/task_scheduler/initialization_util.h"
+#include "base/task/thread_pool/initialization_util.h"
 #include "base/time/time.h"
-#include "content/common/task_scheduler.h"
+#include "content/common/thread_pool_util.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -62,19 +62,17 @@ void SetV8FlagIfHasSwitch(const char* switch_name, const char* v8_flag) {
   }
 }
 
-std::unique_ptr<base::TaskScheduler::InitParams>
-GetDefaultTaskSchedulerInitParams() {
+std::unique_ptr<base::ThreadPool::InitParams> GetDefaultThreadPoolInitParams() {
   constexpr int kMaxNumThreadsInBackgroundPool = 2;
   constexpr int kMaxNumThreadsInForegroundPoolLowerBound = 3;
   constexpr auto kSuggestedReclaimTime = base::TimeDelta::FromSeconds(30);
 
-  return std::make_unique<base::TaskScheduler::InitParams>(
+  return std::make_unique<base::ThreadPool::InitParams>(
       base::SchedulerWorkerPoolParams(kMaxNumThreadsInBackgroundPool,
                                       kSuggestedReclaimTime),
       base::SchedulerWorkerPoolParams(
-          std::max(
-              kMaxNumThreadsInForegroundPoolLowerBound,
-              content::GetMinThreadsInRendererTaskSchedulerForegroundPool()),
+          std::max(kMaxNumThreadsInForegroundPoolLowerBound,
+                   content::GetMinForegroundThreadsInRendererThreadPool()),
           kSuggestedReclaimTime));
 }
 
@@ -91,8 +89,8 @@ void V8DcheckCallbackHandler(const char* file, int line, const char* message) {
 namespace content {
 
 RenderProcessImpl::RenderProcessImpl(
-    std::unique_ptr<base::TaskScheduler::InitParams> task_scheduler_init_params)
-    : RenderProcess("Renderer", std::move(task_scheduler_init_params)),
+    std::unique_ptr<base::ThreadPool::InitParams> thread_pool_init_params)
+    : RenderProcess("Renderer", std::move(thread_pool_init_params)),
       enabled_bindings_(0) {
 #if defined(DCHECK_IS_CONFIGURABLE)
   // Some official builds ship with DCHECKs compiled in. Failing DCHECKs then
@@ -232,13 +230,13 @@ RenderProcessImpl::~RenderProcessImpl() {
 }
 
 std::unique_ptr<RenderProcess> RenderProcessImpl::Create() {
-  auto task_scheduler_init_params =
-      content::GetContentClient()->renderer()->GetTaskSchedulerInitParams();
-  if (!task_scheduler_init_params)
-    task_scheduler_init_params = GetDefaultTaskSchedulerInitParams();
+  auto thread_pool_init_params =
+      content::GetContentClient()->renderer()->GetThreadPoolInitParams();
+  if (!thread_pool_init_params)
+    thread_pool_init_params = GetDefaultThreadPoolInitParams();
 
   return base::WrapUnique(
-      new RenderProcessImpl(std::move(task_scheduler_init_params)));
+      new RenderProcessImpl(std::move(thread_pool_init_params)));
 }
 
 void RenderProcessImpl::AddBindings(int bindings) {

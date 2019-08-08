@@ -7,13 +7,11 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/grit/renderer_resources.h"
-#include "chrome/renderer/extensions/app_bindings.h"
 #include "chrome/renderer/extensions/app_hooks_delegate.h"
 #include "chrome/renderer/extensions/automation_internal_custom_bindings.h"
 #include "chrome/renderer/extensions/cast_streaming_native_handler.h"
@@ -29,7 +27,6 @@
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/permissions/manifest_permission_set.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -37,7 +34,6 @@
 #include "extensions/renderer/bindings/api_bindings_system.h"
 #include "extensions/renderer/css_native_handler.h"
 #include "extensions/renderer/dispatcher.h"
-#include "extensions/renderer/i18n_custom_bindings.h"
 #include "extensions/renderer/lazy_background_page_native_handler.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/native_handler.h"
@@ -65,11 +61,8 @@ ChromeExtensionsDispatcherDelegate::~ChromeExtensionsDispatcherDelegate() {
 void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
     extensions::Dispatcher* dispatcher,
     extensions::ModuleSystem* module_system,
-    extensions::ExtensionBindingsSystem* bindings_system,
+    extensions::NativeExtensionBindingsSystem* bindings_system,
     extensions::ScriptContext* context) {
-  module_system->RegisterNativeHandler(
-      "app", std::unique_ptr<NativeHandler>(
-                 new extensions::AppBindings(dispatcher, context)));
   module_system->RegisterNativeHandler(
       "sync_file_system",
       std::unique_ptr<NativeHandler>(
@@ -113,9 +106,6 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
   // TODO(devlin): We should clean this up. If an API is defined in Chrome,
   // there's no reason to have its native handlers residing and being compiled
   // in //extensions.
-  module_system->RegisterNativeHandler(
-      "i18n", std::unique_ptr<NativeHandler>(
-                  new extensions::I18NCustomBindings(context)));
   module_system->RegisterNativeHandler(
       "lazy_background_page",
       std::unique_ptr<NativeHandler>(
@@ -260,18 +250,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource(
       "components/mirroring/mojom/session_parameters.mojom",
       IDR_MIRRORING_SESSION_PARAMETERS_JS);
-
-  // These bindings are unnecessary with native bindings enabled.
-  if (!base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings)) {
-    source_map->RegisterSource("app", IDR_APP_CUSTOM_BINDINGS_JS);
-    source_map->RegisterSource("tabs", IDR_TABS_CUSTOM_BINDINGS_JS);
-
-    // Custom types sources.
-    source_map->RegisterSource("ChromeSetting", IDR_CHROME_SETTING_JS);
-    source_map->RegisterSource("ContentSetting", IDR_CONTENT_SETTING_JS);
-    source_map->RegisterSource("EasyUnlockProximityRequired",
-                               IDR_EASY_UNLOCK_PROXIMITY_REQUIRED_JS);
-  }
 }
 
 void ChromeExtensionsDispatcherDelegate::RequireWebViewModules(
@@ -292,7 +270,6 @@ void ChromeExtensionsDispatcherDelegate::OnActiveExtensionsUpdated(
 void ChromeExtensionsDispatcherDelegate::InitializeBindingsSystem(
     extensions::Dispatcher* dispatcher,
     extensions::NativeExtensionBindingsSystem* bindings_system) {
-  DCHECK(base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings));
   extensions::APIBindingsSystem* bindings = bindings_system->api_system();
   bindings->GetHooksForAPI("app")->SetDelegate(
       std::make_unique<extensions::AppHooksDelegate>(

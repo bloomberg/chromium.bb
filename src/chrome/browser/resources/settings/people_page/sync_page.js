@@ -291,30 +291,46 @@ Polymer({
   currentRouteChanged: function() {
     if (settings.getCurrentRoute() == settings.routes.SYNC) {
       this.onNavigateToPage_();
-    } else if (!settings.routes.SYNC.contains(settings.getCurrentRoute())) {
-      // When the user is about to cancel the sync setup, but hasn't confirmed
-      // the cancellation, navigate back and show the 'Cancel sync?' dialog.
-      if (this.unifiedConsentEnabled && this.syncStatus &&
-          this.syncStatus.setupInProgress && this.didAbort_ &&
-          !this.setupCancelConfirmed_) {
-        chrome.metricsPrivate.recordUserAction(
-            'Signin_Signin_BackOnAdvancedSyncSettings');
-        // Yield so that other |currentRouteChanged| observers are called,
-        // before triggering another navigation (and another round of observers
-        // firing). Triggering navigation from within an observer leads to some
-        // undefined behavior and runtime errors.
-        requestAnimationFrame(() => {
-          settings.navigateTo(settings.routes.SYNC);
-          this.showSetupCancelDialog_ = true;
-          // Flush to make sure that the setup cancel dialog is attached.
-          Polymer.dom.flush();
-          this.$$('#setupCancelDialog').showModal();
-        });
-      } else {
-        this.setupCancelConfirmed_ = false;
-        this.onNavigateAwayFromPage_();
-      }
+      return;
     }
+
+    if (settings.routes.SYNC.contains(settings.getCurrentRoute())) {
+      return;
+    }
+
+    const searchParams = settings.getQueryParameters().get('search');
+    if (searchParams) {
+      // User navigated away via searching. Cancel sync without showing
+      // confirmation dialog.
+      this.onNavigateAwayFromPage_();
+      return;
+    }
+
+    const userActionCancelsSetup =
+        this.syncStatus && this.syncStatus.setupInProgress && this.didAbort_;
+    if (this.unifiedConsentEnabled && userActionCancelsSetup &&
+        !this.setupCancelConfirmed_) {
+      chrome.metricsPrivate.recordUserAction(
+          'Signin_Signin_BackOnAdvancedSyncSettings');
+      // Show the 'Cancel sync?' dialog.
+      // Yield so that other |currentRouteChanged| observers are called,
+      // before triggering another navigation (and another round of observers
+      // firing). Triggering navigation from within an observer leads to some
+      // undefined behavior and runtime errors.
+      requestAnimationFrame(() => {
+        settings.navigateTo(settings.routes.SYNC);
+        this.showSetupCancelDialog_ = true;
+        // Flush to make sure that the setup cancel dialog is attached.
+        Polymer.dom.flush();
+        this.$$('#setupCancelDialog').showModal();
+      });
+      return;
+    }
+
+    // Reset variable.
+    this.setupCancelConfirmed_ = false;
+
+    this.onNavigateAwayFromPage_();
   },
 
   /**
@@ -401,18 +417,6 @@ Polymer({
         !this.syncPrefs.encryptAllDataAllowed ||
         (this.syncStatus && this.syncStatus.supervisedUser)) {
       this.creatingNewPassphrase_ = false;
-    }
-
-    // Focus the password input box if password is needed to start sync.
-    if (this.syncPrefs.passphraseRequired) {
-      // Wait for the dom-if templates to render and subpage to become visible.
-      listenOnce(document, 'show-container', () => {
-        const input = /** @type {!CrInputElement} */ (
-            this.$$('#existingPassphraseInput'));
-        if (!input.matches(':focus-within')) {
-          input.focus();
-        }
-      });
     }
   },
 
@@ -528,18 +532,6 @@ Polymer({
     return this.syncPrefs.encryptAllData || this.creatingNewPassphrase_ ?
         RadioButtonNames.ENCRYPT_WITH_PASSPHRASE :
         RadioButtonNames.ENCRYPT_WITH_GOOGLE;
-  },
-
-  /**
-   * Computed binding returning text of the prompt for entering the passphrase.
-   * @private
-   */
-  enterPassphrasePrompt_: function() {
-    if (this.syncPrefs && this.syncPrefs.passphraseTypeIsCustom) {
-      return this.syncPrefs.enterPassphraseBody;
-    }
-
-    return this.syncPrefs.enterGooglePassphraseBody;
   },
 
   /**
@@ -696,6 +688,19 @@ Polymer({
           'Signin_Signin_CancelAdvancedSyncSettings');
     }
     settings.navigateTo(settings.routes.BASIC);
+  },
+
+  /**
+   * Focuses the passphrase input element if it is available and the page is
+   * visible.
+   * @private
+   */
+  focusPassphraseInput_: function() {
+    const passphraseInput =
+        /** @type {!CrInputElement} */ (this.$$('#existingPassphraseInput'));
+    if (passphraseInput && settings.getCurrentRoute() == settings.routes.SYNC) {
+      passphraseInput.focus();
+    }
   },
 });
 

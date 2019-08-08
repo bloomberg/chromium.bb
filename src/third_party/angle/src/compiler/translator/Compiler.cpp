@@ -68,7 +68,7 @@ void DumpFuzzerCase(char const *const *shaderStrings,
 {
     static int fileIndex = 0;
 
-    std::ostringstream o;
+    std::ostringstream o = sh::InitializeStream<std::ostringstream>();
     o << "corpus/" << fileIndex++ << ".sample";
     std::string s = o.str();
 
@@ -565,7 +565,7 @@ bool TCompiler::checkAndSimplifyAST(TIntermBlock *root,
     }
 
     if ((compileOptions & SH_INITIALIZE_BUILTINS_FOR_INSTANCED_MULTIVIEW) &&
-        parseContext.isExtensionEnabled(TExtension::OVR_multiview) &&
+        parseContext.isExtensionEnabled(TExtension::OVR_multiview2) &&
         getShaderType() != GL_COMPUTE_SHADER)
     {
         DeclareAndInitBuiltinsForInstancedMultiview(root, mNumViews, mShaderType, compileOptions,
@@ -940,7 +940,7 @@ bool TCompiler::initBuiltInSymbolTable(const ShBuiltInResources &resources)
 
 void TCompiler::setResourceString()
 {
-    std::ostringstream strstream;
+    std::ostringstream strstream = sh::InitializeStream<std::ostringstream>();
 
     // clang-format off
     strstream << ":MaxVertexAttribs:" << mResources.MaxVertexAttribs
@@ -967,7 +967,7 @@ void TCompiler::setResourceString()
         << ":EXT_shader_framebuffer_fetch:" << mResources.EXT_shader_framebuffer_fetch
         << ":NV_shader_framebuffer_fetch:" << mResources.NV_shader_framebuffer_fetch
         << ":ARM_shader_framebuffer_fetch:" << mResources.ARM_shader_framebuffer_fetch
-        << ":OVR_multiview:" << mResources.OVR_multiview
+        << ":OVR_multiview2:" << mResources.OVR_multiview2
         << ":EXT_YUV_target:" << mResources.EXT_YUV_target
         << ":EXT_geometry_shader:" << mResources.EXT_geometry_shader
         << ":MaxVertexOutputVectors:" << mResources.MaxVertexOutputVectors
@@ -1094,7 +1094,7 @@ bool TCompiler::checkCallDepth()
 
     for (size_t i = 0; i < mCallDag.size(); i++)
     {
-        int depth    = 0;
+        int depth                     = 0;
         const CallDAG::Record &record = mCallDag.getRecordFromIndex(i);
 
         for (const int &calleeIndex : record.callees)
@@ -1107,7 +1107,7 @@ bool TCompiler::checkCallDepth()
         if (depth >= mResources.MaxCallStackDepth)
         {
             // Trace back the function chain to have a meaningful info log.
-            std::stringstream errorStream;
+            std::stringstream errorStream = sh::InitializeStream<std::stringstream>();
             errorStream << "Call stack too deep (larger than " << mResources.MaxCallStackDepth
                         << ") with the following call chain: "
                         << record.node->getFunction()->name();

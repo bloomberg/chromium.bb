@@ -21,7 +21,8 @@ CacheEntryHandlerImpl::~CacheEntryHandlerImpl() = default;
 
 std::unique_ptr<PutContext> CacheEntryHandlerImpl::CreatePutContext(
     blink::mojom::FetchAPIRequestPtr request,
-    blink::mojom::FetchAPIResponsePtr response) {
+    blink::mojom::FetchAPIResponsePtr response,
+    int64_t trace_id) {
   blink::mojom::BlobPtr response_blob;
   uint64_t response_blob_size = blink::BlobUtils::kUnknownSize;
   blink::mojom::BlobPtr request_blob;
@@ -38,7 +39,7 @@ std::unique_ptr<PutContext> CacheEntryHandlerImpl::CreatePutContext(
 
   return std::make_unique<PutContext>(
       std::move(request), std::move(response), std::move(response_blob),
-      response_blob_size, std::move(request_blob), request_blob_size);
+      response_blob_size, std::move(request_blob), request_blob_size, trace_id);
 }
 
 void CacheEntryHandlerImpl::PopulateBody(

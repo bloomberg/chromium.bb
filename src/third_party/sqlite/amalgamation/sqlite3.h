@@ -8407,29 +8407,6 @@ SQLITE_API int sqlite3_strnicmp(const char *, const char *, int);
 */
 SQLITE_API int sqlite3_strglob(const char *zGlob, const char *zStr);
 
-/* Begin WebDatabase patch for Chromium */
-/* Expose some SQLite internals for the WebDatabase vfs.
-** DO NOT EXTEND THE USE OF THIS.
-*/
-#ifndef CHROMIUM_SQLITE_API
-#define CHROMIUM_SQLITE_API SQLITE_API
-#endif
-#if defined(CHROMIUM_SQLITE_INTERNALS)
-#ifdef _WIN32
-CHROMIUM_SQLITE_API
-void chromium_sqlite3_initialize_win_sqlite3_file(sqlite3_file* file, HANDLE handle);
-#else  /* _WIN32 */
-CHROMIUM_SQLITE_API
-int chromium_sqlite3_fill_in_unix_sqlite3_file(sqlite3_vfs* pVfs,
-                                               int fd,
-                                               sqlite3_file* pFile,
-                                               const char* zPath,
-                                               int noLock,
-                                               int flags);
-#endif  /* _WIN32 */
-#endif  /* CHROMIUM_SQLITE_INTERNALS */
-/* End WebDatabase patch for Chromium */
-
 /*
 ** CAPI3REF: String LIKE Matching
 *

@@ -571,7 +571,7 @@ static bool IsLastLineInInlineBlock(const NGPaintFragment& line) {
 }
 
 static bool IsBeforeSoftLineBreak(const NGPaintFragment& fragment) {
-  if (ToNGPhysicalTextFragmentOrDie(fragment.PhysicalFragment()).IsLineBreak())
+  if (To<NGPhysicalTextFragment>(fragment.PhysicalFragment()).IsLineBreak())
     return false;
 
   // TODO(yoichio): InlineBlock should not be container line box.
@@ -580,8 +580,8 @@ static bool IsBeforeSoftLineBreak(const NGPaintFragment& fragment) {
   DCHECK(container_line_box);
   if (IsLastLineInInlineBlock(*container_line_box))
     return false;
-  const NGPhysicalLineBoxFragment& physical_line_box =
-      ToNGPhysicalLineBoxFragment(container_line_box->PhysicalFragment());
+  const auto& physical_line_box =
+      To<NGPhysicalLineBoxFragment>(container_line_box->PhysicalFragment());
   const NGPhysicalFragment* last_leaf = physical_line_box.LastLogicalLeaf();
   DCHECK(last_leaf);
   if (&fragment.PhysicalFragment() != last_leaf)
@@ -689,8 +689,8 @@ LayoutSelectionStatus LayoutSelection::ComputeSelectionStatus(
   Document& document = frame_selection_->GetDocument();
   DCHECK_GE(document.Lifecycle().GetState(), DocumentLifecycle::kLayoutClean);
   DCHECK(!document.IsSlotAssignmentOrLegacyDistributionDirty());
-  const NGPhysicalTextFragment& text_fragment =
-      ToNGPhysicalTextFragmentOrDie(fragment.PhysicalFragment());
+  const auto& text_fragment =
+      To<NGPhysicalTextFragment>(fragment.PhysicalFragment());
   // We don't paint selection on ellipsis.
   if (text_fragment.StyleVariant() == NGStyleVariant::kEllipsis)
     return {0, 0, SelectSoftLineBreak::kNotSelected};

@@ -11,6 +11,7 @@ import subprocess
 from telemetry.core import android_platform
 from telemetry.core import exceptions
 from telemetry.core import util
+from telemetry import compat_mode_options
 from telemetry import decorators
 from telemetry.internal.forwarders import android_forwarder
 from telemetry.internal.platform import android_device
@@ -61,23 +62,27 @@ _DEVICE_CLEAR_SYSTEM_CACHE_TOOL_LOCATION = '/data/local/tmp/clear_system_cache'
 
 class AndroidPlatformBackend(
     linux_based_platform_backend.LinuxBasedPlatformBackend):
-  def __init__(self, device):
+  def __init__(self, device, require_root):
     assert device, (
         'AndroidPlatformBackend can only be initialized from remote device')
     super(AndroidPlatformBackend, self).__init__(device)
     self._device = device_utils.DeviceUtils(device.device_id)
-    # Trying to root the device, if possible.
-    if not self._device.HasRoot():
-      try:
-        self._device.EnableRoot()
-      except device_errors.CommandFailedError:
-        logging.warning('Unable to root %s', str(self._device))
-    self._can_elevate_privilege = (
-        self._device.HasRoot() or self._device.NeedsSU())
-    assert self._can_elevate_privilege, (
-        'Android device must have root access to run Telemetry')
+    self._require_root = require_root
+    if self._require_root:
+      # Trying to root the device, if possible.
+      if not self._device.HasRoot():
+        try:
+          self._device.EnableRoot()
+        except device_errors.CommandFailedError:
+          logging.warning('Unable to root %s', str(self._device))
+      self._can_elevate_privilege = (
+          self._device.HasRoot() or self._device.NeedsSU())
+      assert self._can_elevate_privilege, (
+          'Android device must have root access to run Telemetry')
+      self._enable_performance_mode = device.enable_performance_mode
+    else:
+      self._enable_performance_mode = False
     self._battery = battery_utils.BatteryUtils(self._device)
-    self._enable_performance_mode = device.enable_performance_mode
     self._surface_stats_collector = None
     self._perf_tests_setup = perf_control.PerfControl(self._device)
     self._thermal_throttle = thermal_throttle.ThermalThrottle(self._device)
@@ -107,7 +112,9 @@ class AndroidPlatformBackend(
   @classmethod
   def CreatePlatformForDevice(cls, device, finder_options):
     assert cls.SupportsDevice(device)
-    platform_backend = AndroidPlatformBackend(device)
+    require_root = (compat_mode_options.DONT_REQUIRE_ROOTED_DEVICE not in
+                    finder_options.browser_options.compatibility_mode)
+    platform_backend = AndroidPlatformBackend(device, require_root)
     return android_platform.AndroidPlatform(platform_backend)
 
   def _CreateForwarderFactory(self):
@@ -368,8 +375,9 @@ class AndroidPlatformBackend(
   def CanLaunchApplication(self, application):
     return bool(self._device.GetApplicationPaths(application))
 
-  def InstallApplication(self, application):
-    self._device.Install(application)
+  # pylint: disable=arguments-differ
+  def InstallApplication(self, application, modules=None):
+    self._device.Install(application, modules=modules)
 
   def CanMonitorPower(self):
     return self._power_monitor.CanMonitorPower()
@@ -551,7 +559,10 @@ class AndroidPlatformBackend(
     Args:
       package: The full package name string of the application.
     """
-    return '/data/data/%s/' % package
+    if self._require_root:
+      return '/data/data/%s/' % package
+    else:
+      return '/data/local/tmp/%s/' % package
 
   def SetDebugApp(self, package):
     """Set application to debugging.
@@ -594,6 +605,9 @@ class AndroidPlatformBackend(
     and stack info from tombstone files, all concatenated into one string.
     """
     def Decorate(title, content):
+      if not content or content.isspace():
+        content = ('**EMPTY** - could be explained by log messages '
+                   'preceding the previous python Traceback - best wishes')
       return "%s\n%s\n%s\n" % (title, content, '*' * 80)
 
     # Get the UI nodes that can be found on the screen
@@ -695,6 +709,9 @@ class AndroidPlatformBackend(
           m = package_re.match(line)
           if m:
             last_package = m.group('package_name')
+            # The package name may have a trailing process name in it,
+            # for example: "org.chromium.chrome:privileged_process0".
+            last_package = last_package.split(':')[0]
     return last_package
 
   @staticmethod

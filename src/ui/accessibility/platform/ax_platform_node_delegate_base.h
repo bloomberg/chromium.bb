@@ -8,6 +8,7 @@
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 
 #include <set>
+#include <vector>
 
 namespace ui {
 
@@ -51,13 +52,22 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   // Get the child of a node given a 0-based index.
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
 
-  // Get the bounds of this node in screen coordinates, applying clipping
-  // to all bounding boxes so that the resulting rect is within the window.
-  gfx::Rect GetClippedScreenBoundsRect() const override;
+  gfx::Rect GetBoundsRect(const AXCoordinateSystem coordinate_system,
+                          const AXClippingBehavior clipping_behavior,
+                          AXOffscreenResult* offscreen_result) const override;
 
-  // Get the bounds of this node in screen coordinates without applying
-  // any clipping; it may be outside of the window or offscreen.
-  gfx::Rect GetUnclippedScreenBoundsRect() const override;
+  gfx::Rect GetRangeBoundsRect(
+      const int start_offset,
+      const int end_offset,
+      const AXCoordinateSystem coordinate_system,
+      const AXClippingBehavior clipping_behavior,
+      AXOffscreenResult* offscreen_result) const override;
+
+  // Derivative utils for AXPlatformNodeDelegate::GetBoundsRect
+  gfx::Rect GetClippedScreenBoundsRect(
+      AXOffscreenResult* offscreen_result = nullptr) const;
+  gfx::Rect GetUnclippedScreenBoundsRect(
+      AXOffscreenResult* offscreen_result = nullptr) const;
 
   // Do a *synchronous* hit test of the given location in global screen
   // coordinates, and the node within this node's subtree (inclusive) that's
@@ -110,10 +120,13 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
 
   const AXUniqueId& GetUniqueId() const override;
 
-  AXPlatformNodeDelegate::EnclosingBoundaryOffsets FindTextBoundariesAtOffset(
+  base::Optional<int> FindTextBoundary(
       TextBoundaryType boundary_type,
       int offset,
+      TextBoundaryDirection direction,
       ax::mojom::TextAffinity affinity) const override;
+
+  const std::vector<gfx::NativeViewAccessible> GetDescendants() const override;
 
   //
   // Tables. All of these should be called on a node that's a table-like
@@ -149,6 +162,10 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   int32_t GetCellId(int32_t row_index, int32_t col_index) const override;
   int32_t CellIndexToId(int32_t cell_index) const override;
 
+  // Helper methods to check if a cell is an ARIA-1.1+ 'cell' or 'gridcell'
+  bool IsCellOrHeaderOfARIATable() const override;
+  bool IsCellOrHeaderOfARIAGrid() const override;
+
   // Ordered-set-like and item-like nodes.
   bool IsOrderedSetItem() const override;
   bool IsOrderedSet() const override;
@@ -178,6 +195,8 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   base::string16 GetLocalizedStringForImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus status) const override;
   base::string16 GetLocalizedRoleDescriptionForUnlabeledImage() const override;
+  base::string16 GetLocalizedStringForLandmarkType() const override;
+  base::string16 GetStyleNameAttributeAsLocalizedString() const override;
 
   //
   // Testing.

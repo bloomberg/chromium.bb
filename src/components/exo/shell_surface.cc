@@ -7,6 +7,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
@@ -23,6 +24,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/core/window_util.h"
 
 namespace exo {
@@ -136,7 +138,7 @@ ShellSurface::ShellSurface(Surface* surface)
                        gfx::Point(),
                        true,
                        true,
-                       ash::kShellWindowId_DefaultContainer) {}
+                       ash::desks_util::GetActiveDeskContainerId()) {}
 
 ShellSurface::~ShellSurface() {
   DCHECK(!scoped_configure_);
@@ -272,9 +274,9 @@ void ShellSurface::OnSetParent(Surface* parent, const gfx::Point& position) {
       parent ? views::Widget::GetTopLevelWidgetForNativeView(parent->window())
              : nullptr;
   if (parent_widget) {
-    // Set parent window if using default container and the container itself
-    // is not the parent.
-    if (container_ == ash::kShellWindowId_DefaultContainer)
+    // Set parent window if using one of the desks container and the container
+    // itself is not the parent.
+    if (ash::desks_util::IsDeskContainerId(container_))
       SetParentWindow(parent_widget->GetNativeWindow());
 
     origin_ = position;
@@ -314,6 +316,9 @@ void ShellSurface::InitializeWindowState(ash::wm::WindowState* window_state) {
   window_state->set_allow_set_bounds_direct(emulate_x11_override_redirect);
   widget_->set_movement_disabled(movement_disabled_);
   window_state->set_ignore_keyboard_bounds_change(movement_disabled_);
+
+  // If this window is a child of some window, it should be made transient.
+  MaybeMakeTransient();
 }
 
 base::Optional<gfx::Rect> ShellSurface::GetWidgetBounds() const {
@@ -522,6 +527,40 @@ void ShellSurface::OnWindowActivated(ActivationReason reason,
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShellSurface, private:
+
+void ShellSurface::SetParentWindow(aura::Window* parent) {
+  if (parent_) {
+    parent_->RemoveObserver(this);
+    if (widget_) {
+      aura::Window* child_window = widget_->GetNativeWindow();
+      wm::TransientWindowManager::GetOrCreate(child_window)
+          ->set_parent_controls_visibility(false);
+      wm::RemoveTransientChild(parent_, child_window);
+    }
+  }
+  parent_ = parent;
+  if (parent_) {
+    parent_->AddObserver(this);
+    MaybeMakeTransient();
+  }
+
+  // If |parent_| is set effects the ability to maximize the window.
+  if (widget_)
+    widget_->OnSizeConstraintsChanged();
+}
+
+void ShellSurface::MaybeMakeTransient() {
+  if (!parent_ || !widget_)
+    return;
+  aura::Window* child_window = widget_->GetNativeWindow();
+  wm::AddTransientChild(parent_, child_window);
+  // In the case of activatable non-popups, we also want the parent to control
+  // the child's visibility.
+  if (!widget_->is_top_level() || !widget_->CanActivate())
+    return;
+  wm::TransientWindowManager::GetOrCreate(child_window)
+      ->set_parent_controls_visibility(true);
+}
 
 void ShellSurface::Configure(bool ends_drag) {
   // Delay configure callback if |scoped_configure_| is set.

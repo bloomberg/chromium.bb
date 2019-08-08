@@ -43,7 +43,7 @@ class URLLoaderFactoryBundleInfo;
 
 namespace content {
 
-class HostChildURLLoaderFactoryBundle;
+class ChildURLLoaderFactoryBundle;
 class WebApplicationCacheHostImpl;
 struct NavigationResponseOverrideParameters;
 
@@ -70,7 +70,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
           main_script_loader_factory,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-          subresource_loader_factories,
+          subresource_loader_factory_bundle_info,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       blink::mojom::SharedWorkerHostPtr host,
       blink::mojom::SharedWorkerRequest request,
@@ -85,7 +85,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   void WorkerScriptLoaded() override;
   void WorkerScriptLoadFailed() override;
   void WorkerScriptEvaluated(bool success) override;
-  void SelectAppCacheID(long long) override;
+  void SelectAppCacheID(int64_t) override;
   std::unique_ptr<blink::WebApplicationCacheHost> CreateApplicationCacheHost(
       blink::WebApplicationCacheHostClient*) override;
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
@@ -139,7 +139,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   blink::mojom::ControllerServiceWorkerInfoPtr controller_info_;
 
   // The factory bundle used for loading subresources for this shared worker.
-  scoped_refptr<HostChildURLLoaderFactoryBundle> subresource_loader_factories_;
+  scoped_refptr<ChildURLLoaderFactoryBundle> subresource_loader_factory_bundle_;
 
   // NetworkService (PlzWorker): The response override parameters used for
   // taking a resource pre-requested by the browser process.

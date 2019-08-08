@@ -41,19 +41,10 @@
   if (window.internals) {
     internals.settings.setMockScrollbarsEnabled(false);
   }
-  if (window.testRunner) {
-    testRunner.waitUntilDone();
-    testRunner.dumpAsTextWithPixelResults(); // This is only useful as a pixel test.
-  }
 
   function doTest()
   {
     window.scrollTo(400,300);
-    window.setTimeout(function() {
-      if (window.testRunner) {
-        testRunner.notifyDone();
-      }
-    }, 0);
   }
 
   window.addEventListener("load", doTest, false);

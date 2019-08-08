@@ -18,7 +18,7 @@
 #include "components/prefs/pref_service.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
-#include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -69,7 +69,7 @@ ChromeBrowserMainExtraPartsViewsLinux::
 
 void ChromeBrowserMainExtraPartsViewsLinux::PreEarlyInitialization() {
   views::LinuxUI* gtk_ui = BuildGtkUi();
-  gtk_ui->SetNativeThemeOverride(base::Bind(&GetNativeThemeForWindow));
+  gtk_ui->SetNativeThemeOverride(base::BindRepeating(&GetNativeThemeForWindow));
   views::LinuxUI::SetInstance(gtk_ui);
 }
 

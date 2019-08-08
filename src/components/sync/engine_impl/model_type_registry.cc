@@ -22,6 +22,7 @@
 #include "components/sync/engine_impl/directory_commit_contributor.h"
 #include "components/sync/engine_impl/directory_update_handler.h"
 #include "components/sync/engine_impl/model_type_worker.h"
+#include "components/sync/nigori/keystore_keys_handler.h"
 #include "components/sync/syncable/read_transaction.h"
 #include "components/sync/syncable/syncable_base_transaction.h"
 
@@ -61,11 +62,13 @@ ModelTypeRegistry::ModelTypeRegistry(
     UserShare* user_share,
     NudgeHandler* nudge_handler,
     const UssMigrator& uss_migrator,
-    CancelationSignal* cancelation_signal)
+    CancelationSignal* cancelation_signal,
+    KeystoreKeysHandler* keystore_keys_handler)
     : user_share_(user_share),
       nudge_handler_(nudge_handler),
       uss_migrator_(uss_migrator),
       cancelation_signal_(cancelation_signal),
+      keystore_keys_handler_(keystore_keys_handler),
       weak_ptr_factory_(this) {
   for (size_t i = 0u; i < workers.size(); ++i) {
     workers_map_.insert(
@@ -133,7 +136,7 @@ void ModelTypeRegistry::ConnectNonBlockingType(
       // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
       UMA_HISTOGRAM_ENUMERATION("Sync.USSMigrationSuccess",
                                 ModelTypeToHistogramInt(type),
-                                static_cast<int>(MODEL_TYPE_COUNT));
+                                static_cast<int>(ModelType::NUM_ENTRIES));
       // If we succesfully migrated, purge the directory of data for the type.
       // Purging removes the directory's local copy of the data only.
       directory()->PurgeEntriesWithTypeIn(ModelTypeSet(type), ModelTypeSet(),
@@ -142,7 +145,7 @@ void ModelTypeRegistry::ConnectNonBlockingType(
       // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
       UMA_HISTOGRAM_ENUMERATION("Sync.USSMigrationFailure",
                                 ModelTypeToHistogramInt(type),
-                                static_cast<int>(MODEL_TYPE_COUNT));
+                                static_cast<int>(ModelType::NUM_ENTRIES));
     }
 
     // Note that a partial failure may still contribute to the counts histogram.
@@ -276,6 +279,10 @@ UpdateHandlerMap* ModelTypeRegistry::update_handler_map() {
 
 CommitContributorMap* ModelTypeRegistry::commit_contributor_map() {
   return &commit_contributor_map_;
+}
+
+KeystoreKeysHandler* ModelTypeRegistry::keystore_keys_handler() {
+  return keystore_keys_handler_;
 }
 
 void ModelTypeRegistry::RegisterDirectoryTypeDebugInfoObserver(

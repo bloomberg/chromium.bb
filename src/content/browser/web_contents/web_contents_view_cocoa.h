@@ -31,7 +31,6 @@ CONTENT_EXPORT
   ui::ViewsHostableView* viewsHostableView_;
 
   base::scoped_nsobject<WebDragSource> dragSource_;
-  base::scoped_nsobject<id> accessibilityParent_;
   BOOL mouseDownCanMoveWindow_;
 }
 
@@ -40,12 +39,6 @@ CONTENT_EXPORT
 - (void)setClient:(content::mojom::WebContentsNSViewClient*)client;
 
 - (void)setMouseDownCanMoveWindow:(BOOL)canMove;
-
-// Sets |accessibilityParent| as the object returned when the
-// receiver is queried for its accessibility parent.
-// TODO(lgrey/ellyjones): Remove this in favor of setAccessibilityParent:
-// when we switch to the new accessibility API.
-- (void)setAccessibilityParentElement:(id)accessibilityParent;
 
 // Returns the available drag operations. This is a required method for
 // NSDraggingSource. It is supposedly deprecated, but the non-deprecated API

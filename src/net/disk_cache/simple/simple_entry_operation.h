@@ -45,11 +45,9 @@ class SimpleEntryOperation {
   ~SimpleEntryOperation();
 
   static SimpleEntryOperation OpenOperation(SimpleEntryImpl* entry,
-                                            OpenEntryIndexEnum index_state,
                                             CompletionOnceCallback,
                                             Entry** out_entry);
   static SimpleEntryOperation CreateOperation(SimpleEntryImpl* entry,
-                                              OpenEntryIndexEnum index_state,
                                               CompletionOnceCallback callback,
                                               Entry** out_entry);
   static SimpleEntryOperation OpenOrCreateOperation(
@@ -100,7 +98,6 @@ class SimpleEntryOperation {
 
   Entry** out_entry() { return out_entry_; }
   EntryWithOpened* entry_struct() { return entry_struct_; }
-  bool have_index() const { return index_state_ != INDEX_NOEXIST; }
   OpenEntryIndexEnum index_state() const { return index_state_; }
   int index() const { return index_; }
   int offset() const { return offset_; }
@@ -146,9 +143,7 @@ class SimpleEntryOperation {
   int64_t* const out_start_;
 
   const EntryOperationType type_;
-  // Used in open and create operations.
-  // For TYPE_CREATE, only distinguishes whether index exists or NOEXIST.
-  // Otherwise also indicates whether entry is HIT or MISS in the index.
+  // Used in the "open or create" operation.
   const OpenEntryIndexEnum index_state_;
   // Used in write and read operations.
   const unsigned int index_;

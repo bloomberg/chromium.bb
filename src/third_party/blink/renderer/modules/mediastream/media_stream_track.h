@@ -111,7 +111,8 @@ class MODULES_EXPORT MediaStreamTrack
   // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;
 
-  std::unique_ptr<AudioSourceProvider> CreateWebAudioSource();
+  std::unique_ptr<AudioSourceProvider> CreateWebAudioSource(
+      int context_sample_rate);
 
   void Trace(blink::Visitor*) override;
 

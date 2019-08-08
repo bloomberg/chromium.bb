@@ -183,7 +183,7 @@ fil{
         MF{"Saint Martin"}
         MG{"Madagascar"}
         MH{"Marshall Islands"}
-        MK{"Macedonia (FYROM)"}
+        MK{"North Macedonia"}
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
@@ -287,6 +287,8 @@ fil{
         VU{"Vanuatu"}
         WF{"Wallis & Futuna"}
         WS{"Samoa"}
+        XA{"Mga Pseudo-Accent"}
+        XB{"Pseudo-Bidi"}
         XK{"Kosovo"}
         YE{"Yemen"}
         YT{"Mayotte"}
@@ -307,5 +309,5 @@ fil{
         CZ{"Czech Republic"}
         TL{"East Timor"}
     }
-    Version{"2.1.44.91"}
+    Version{"2.1.49.82"}
 }

@@ -26,6 +26,9 @@ APP_LIST_EXPORT bool IsUnhandledUpDownKeyEvent(const ui::KeyEvent& event);
 // (unmodified by ctrl, shift, or alt)
 APP_LIST_EXPORT bool IsUnhandledArrowKeyEvent(const ui::KeyEvent& event);
 
+// Returns whether the event is an arrow key event.
+APP_LIST_EXPORT bool IsArrowKeyEvent(const ui::KeyEvent& event);
+
 // Returns true if the arrow key event should move focus away from the
 // |textfield|. This is usually when the insertion point would move away from
 // text.

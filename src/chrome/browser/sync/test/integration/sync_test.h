@@ -20,7 +20,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/test/fake_server/fake_server.h"
-#include "components/sync/test/local_sync_test_server.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -46,7 +45,6 @@
 #define E2E_ENABLED(test_name) MACRO_CONCAT(test_name, E2ETest)
 
 class ProfileSyncServiceHarness;
-class P2PInvalidationForwarder;
 class P2PSyncRefresher;
 
 namespace arc {
@@ -58,14 +56,14 @@ class CommandLine;
 class ScopedTempDir;
 }  // namespace base
 
-namespace browser_sync {
-class ProfileSyncService;
-}  // namespace browser_sync
-
 namespace fake_server {
 class FakeServer;
 class FakeServerInvalidationService;
 }  // namespace fake_server
+
+namespace syncer {
+class ProfileSyncService;
+}  // namespace syncer
 
 // This is the base class for integration tests for all sync data types. Derived
 // classes must be defined for each sync data type. Individual tests are defined
@@ -78,37 +76,19 @@ class SyncTest : public InProcessBrowserTest {
     // sanity level tests.
     SINGLE_CLIENT,
 
-    // Tests that use one client profile and are not compatible with
-    // FakeServer.
-    // TODO(pvalenzuela): Delete this value when all SINGLE_CLIENT_LEGACY tests
-    // are compatible with FakeServer and switched to SINGLE_CLIENT. See
-    // crbug.com/323265.
-    SINGLE_CLIENT_LEGACY,
-
     // Tests where two client profiles are synced with the server. Typically
     // functionality level tests.
     TWO_CLIENT,
-
-    // Tests that use two client profiles and are not compatible with
-    // FakeServer.
-    // TODO(pvalenzuela): Delete this value when all TWO_CLIENT_LEGACY tests are
-    // compatible with FakeServer and switched to TWO_CLIENT. See
-    // crbug.com/323265.
-    TWO_CLIENT_LEGACY
   };
 
   // The type of server we're running against.
   enum ServerType {
     SERVER_TYPE_UNDECIDED,
-    LOCAL_PYTHON_SERVER,   // The mock python server that runs locally and is
-                           // part of the Chromium checkout.
     EXTERNAL_LIVE_SERVER,  // A remote server that the test code has no control
                            // over whatsoever; cross your fingers that the
                            // account state is initially clean.
     IN_PROCESS_FAKE_SERVER,  // The fake Sync server (FakeServer) running
-                             // in-process (bypassing HTTP calls). This
-                             // ServerType will eventually replace
-                             // LOCAL_PYTHON_SERVER.
+                             // in-process (bypassing HTTP calls).
   };
 
   // A SyncTest must be associated with a particular test type.
@@ -116,11 +96,8 @@ class SyncTest : public InProcessBrowserTest {
 
   ~SyncTest() override;
 
-  // Validates command line parameters and creates a local python test server if
-  // specified.
   void SetUp() override;
 
-  // Brings down local python test server if one was created.
   void TearDown() override;
 
   // Sets up command line flags required for sync tests.
@@ -157,10 +134,10 @@ class SyncTest : public InProcessBrowserTest {
   std::vector<ProfileSyncServiceHarness*> GetSyncClients();
 
   // Returns a ProfileSyncService at the given index.
-  browser_sync::ProfileSyncService* GetSyncService(int index);
+  syncer::ProfileSyncService* GetSyncService(int index);
 
   // Returns the set of ProfileSyncServices.
-  std::vector<browser_sync::ProfileSyncService*> GetSyncServices();
+  std::vector<syncer::ProfileSyncService*> GetSyncServices();
 
   // Returns a pointer to the sync profile that is used to verify changes to
   // individual sync profiles. Callee owns the object and manages its lifetime.
@@ -207,31 +184,11 @@ class SyncTest : public InProcessBrowserTest {
   // Returns true if we are running tests against external servers.
   bool UsingExternalServers();
 
-  // Returns true if the server being used supports controlling
-  // notifications.
-  bool ServerSupportsNotificationControl() const;
-
-  // Disable notifications on the server.  This operation is available
-  // only if ServerSupportsNotificationControl() returned true.
-  void DisableNotifications();
-
-  // Enable notifications on the server.  This operation is available
-  // only if ServerSupportsNotificationControl() returned true.
-  void EnableNotifications();
-
   // Sets the mock gaia response for when an OAuth2 token is requested.
   // Each call to this method will overwrite responses that were previously set.
   void SetOAuth2TokenResponse(const std::string& response_data,
                               net::HttpStatusCode response_code,
                               net::URLRequestStatus::Status status);
-
-  // Trigger a notification to be sent to all clients.  This operation
-  // is available only if ServerSupportsNotificationControl() returned
-  // true.
-  void TriggerNotification(syncer::ModelTypeSet changed_types);
-
-  // Returns true if the server being used supports injecting errors.
-  bool ServerSupportsErrorTriggering() const;
 
   // Triggers a migration for one or more datatypes, and waits
   // for the server to complete it.  This operation is available
@@ -345,14 +302,6 @@ class SyncTest : public InProcessBrowserTest {
   // Helper method that starts up a sync test server if required.
   void SetUpTestServerIfRequired();
 
-  // Helper method used to start up a local python test server. Returns true if
-  // successful.
-  bool SetUpLocalPythonTestServer();
-
-  // Helper method used to destroy the local python sync test server if one was
-  // created. Returns true if successful.
-  bool TearDownLocalPythonTestServer();
-
   // Helper method used to set up fake responses for kClientLoginUrl,
   // kIssueAuthTokenUrl, kGetUserInfoUrl and kSearchDomainCheckUrl in order to
   // mock out calls to GAIA servers.
@@ -388,9 +337,6 @@ class SyncTest : public InProcessBrowserTest {
 
   // Locally available plain text file in which GAIA credentials are stored.
   base::FilePath password_file_;
-
-  // Python sync test server, started on demand.
-  syncer::LocalSyncTestServer sync_server_;
 
   // Helper class to whitelist the notification port.
   std::unique_ptr<net::ScopedPortException> xmpp_port_;
@@ -441,11 +387,6 @@ class SyncTest : public InProcessBrowserTest {
 
   // Mapping from client indexes to decryption passphrases to use for them.
   std::map<int, std::string> client_decryption_passphrases_;
-
-  // A set of objects to listen for commit activity and broadcast
-  // notifications of this activity to its peer sync clients.
-  std::vector<std::unique_ptr<P2PInvalidationForwarder>>
-      invalidation_forwarders_;
 
   // A set of objects to listen for commit activity and broadcast refresh
   // notifications of this activity to its peer sync clients.

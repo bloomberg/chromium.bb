@@ -49,6 +49,13 @@ component("sql") {
       "CoreServices.framework",
     ]
   }
+
+  if (is_fuchsia) {
+    sources += [
+      "vfs_wrapper_fuchsia.cc",
+      "vfs_wrapper_fuchsia.h",
+    ]
+  }
 }
 
 static_library("test_support") {
@@ -92,6 +99,8 @@ test("sql_unittests") {
     "sqlite_features_unittest.cc",
     "statement_id_unittest.cc",
     "statement_unittest.cc",
+    "test/database_test_peer.cc",
+    "test/database_test_peer.h",
     "test/paths.cc",
     "test/paths.h",
     "test/run_all_unittests.cc",

@@ -6,12 +6,10 @@
 
 #include <utility>
 
-#include "base/feature_list.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "components/sync/driver/sync_driver_switches.h"
-#include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/user_events/user_event_sync_bridge.h"
 
@@ -62,14 +60,9 @@ bool NavigationPresenceValid(UserEventSpecifics::EventCase event_case,
 }  // namespace
 
 UserEventServiceImpl::UserEventServiceImpl(
-    SyncService* sync_service,
     std::unique_ptr<UserEventSyncBridge> bridge)
-    : sync_service_(sync_service),
-      bridge_(std::move(bridge)),
-      session_id_(base::RandUint64()),
-      trial_recorder_(this) {
+    : bridge_(std::move(bridge)), session_id_(base::RandUint64()) {
   DCHECK(bridge_);
-  DCHECK(sync_service_);
 }
 
 UserEventServiceImpl::~UserEventServiceImpl() {}
@@ -94,33 +87,6 @@ ModelTypeSyncBridge* UserEventServiceImpl::GetSyncBridge() {
   return bridge_.get();
 }
 
-// static
-bool UserEventServiceImpl::MightRecordEvents(bool off_the_record,
-                                             SyncService* sync_service) {
-  return !off_the_record && sync_service &&
-         base::FeatureList::IsEnabled(switches::kSyncUserEvents);
-}
-
-bool UserEventServiceImpl::CanRecordHistory() {
-  // Before the engine is initialized, Sync doesn't know if there is a
-  // secondary passphrase. Similarly, unless the Sync feature is enabled,
-  // GetPreferredDataTypes() isn't meaningful.
-  return sync_service_->IsEngineInitialized() &&
-         !sync_service_->GetUserSettings()->IsUsingSecondaryPassphrase() &&
-         sync_service_->IsSyncFeatureEnabled() &&
-         sync_service_->GetPreferredDataTypes().Has(HISTORY_DELETE_DIRECTIVES);
-}
-
-bool UserEventServiceImpl::IsUserEventsDatatypeEnabled() {
-  // Before the engine is initialized, Sync doesn't know if there is a
-  // secondary passphrase. Similarly, unless the Sync feature is enabled,
-  // GetPreferredDataTypes() isn't meaningful.
-  return sync_service_->IsEngineInitialized() &&
-         !sync_service_->GetUserSettings()->IsUsingSecondaryPassphrase() &&
-         sync_service_->IsSyncFeatureEnabled() &&
-         sync_service_->GetPreferredDataTypes().Has(USER_EVENTS);
-}
-
 bool UserEventServiceImpl::ShouldRecordEvent(
     const UserEventSpecifics& specifics) {
   if (specifics.event_case() == UserEventSpecifics::EVENT_NOT_SET) {
@@ -129,21 +95,6 @@ bool UserEventServiceImpl::ShouldRecordEvent(
 
   if (!NavigationPresenceValid(specifics.event_case(),
                                specifics.has_navigation_id())) {
-    return false;
-  }
-
-  // TODO(vitaliii): Checking HISTORY_DELETE_DIRECTIVES directly should not be
-  // needed once USER_CONSENTS are fully launched. Then USER_EVENTS datatype
-  // should depend on History in Sync layers instead of here.
-  if (specifics.has_navigation_id() && !CanRecordHistory()) {
-    return false;
-  }
-
-  // TODO(vitaliii): Checking USER_EVENTS directly should not be needed once
-  // https://crbug.com/830535 is fixed. Then disabling USER_EVENTS should be
-  // honored by the processor and it should drop all events.
-  if (!IsUserEventsDatatypeEnabled()) {
-    DCHECK(!specifics.has_user_consent());
     return false;
   }
 

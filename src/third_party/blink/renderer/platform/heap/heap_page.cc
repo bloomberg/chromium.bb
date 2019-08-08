@@ -136,9 +136,8 @@ void BaseArena::TakeSnapshot(const String& dump_base_name,
   size_t page_count = 0;
   BasePage::HeapSnapshotInfo heap_info;
   for (BasePage* page = first_unswept_page_; page; page = page->Next()) {
-    String dump_name = dump_base_name +
-                       String::Format("/pages/page_%lu",
-                                      static_cast<unsigned long>(page_count++));
+    String dump_name =
+        dump_base_name + String::Format("/pages/page_%zu", page_count++);
     base::trace_event::MemoryAllocatorDump* page_dump =
         BlinkGCMemoryDumpProvider::Instance()
             ->CreateMemoryAllocatorDumpForCurrentGC(dump_name);
@@ -1237,8 +1236,7 @@ bool FreeList::TakeSnapshot(const String& dump_base_name) {
     }
 
     String dump_name =
-        dump_base_name + String::Format("/buckets/bucket_%lu",
-                                        static_cast<unsigned long>(1 << i));
+        dump_base_name + "/buckets/bucket_" + String::Number(1 << i);
     base::trace_event::MemoryAllocatorDump* bucket_dump =
         BlinkGCMemoryDumpProvider::Instance()
             ->CreateMemoryAllocatorDumpForCurrentGC(dump_name);
@@ -1581,11 +1579,6 @@ void NormalPage::VerifyObjectStartBitmapIsConsistentWithPayload() {
 }
 
 void NormalPage::VerifyMarking() {
-  DCHECK(!ArenaForNormalPage()
-              ->GetThreadState()
-              ->Heap()
-              .GetStackFrameDepth()
-              .IsSafeToRecurse());
   DCHECK(!ArenaForNormalPage()->CurrentAllocationPoint());
   MarkingVerifier verifier(ArenaForNormalPage()->GetThreadState());
   for (Address header_address = Payload(); header_address < PayloadEnd();) {

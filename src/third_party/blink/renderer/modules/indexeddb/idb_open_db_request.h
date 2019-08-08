@@ -39,14 +39,9 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IDBOpenDBRequest* Create(ScriptState*,
-                                  IDBDatabaseCallbacks*,
-                                  int64_t transaction_id,
-                                  int64_t version,
-                                  IDBRequest::AsyncTraceState metrics);
-
   IDBOpenDBRequest(ScriptState*,
                    IDBDatabaseCallbacks*,
+                   std::unique_ptr<WebIDBTransaction> transaction_backend,
                    int64_t transaction_id,
                    int64_t version,
                    IDBRequest::AsyncTraceState metrics);
@@ -82,6 +77,7 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
 
  private:
   Member<IDBDatabaseCallbacks> database_callbacks_;
+  std::unique_ptr<WebIDBTransaction> transaction_backend_;
   const int64_t transaction_id_;
   int64_t version_;
 };

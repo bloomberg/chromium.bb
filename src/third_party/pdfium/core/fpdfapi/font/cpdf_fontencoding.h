@@ -41,9 +41,7 @@ class CPDF_FontEncoding {
   CPDF_FontEncoding();
   explicit CPDF_FontEncoding(int PredefinedEncoding);
 
-  void LoadEncoding(CPDF_Object* pEncoding);
-
-  bool IsIdentical(CPDF_FontEncoding* pAnother) const;
+  bool IsIdentical(const CPDF_FontEncoding* pAnother) const;
 
   wchar_t UnicodeFromCharCode(uint8_t charcode) const {
     return m_Unicodes[charcode];
@@ -54,9 +52,9 @@ class CPDF_FontEncoding {
     m_Unicodes[charcode] = unicode;
   }
 
-  std::unique_ptr<CPDF_Object> Realize(WeakPtr<ByteStringPool> pPool);
+  std::unique_ptr<CPDF_Object> Realize(WeakPtr<ByteStringPool> pPool) const;
 
- public:
+ private:
   wchar_t m_Unicodes[kEncodingTableSize];
 };
 

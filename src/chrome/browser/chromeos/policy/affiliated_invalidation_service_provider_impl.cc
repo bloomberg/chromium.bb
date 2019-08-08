@@ -15,7 +15,6 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/ticl_device_settings_provider.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_identity_provider.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
@@ -27,7 +26,6 @@
 #include "components/invalidation/impl/invalidator_storage.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/impl/ticl_invalidation_service.h"
-#include "components/invalidation/impl/ticl_settings_provider.h"
 #include "components/invalidation/public/identity_provider.h"
 #include "components/invalidation/public/invalidation_handler.h"
 #include "components/invalidation/public/invalidation_service.h"
@@ -352,8 +350,6 @@ AffiliatedInvalidationServiceProviderImpl::FindConnectedInvalidationService() {
     device_invalidation_service_ =
         std::make_unique<invalidation::TiclInvalidationService>(
             GetUserAgent(), identity_provider_.get(),
-            std::unique_ptr<invalidation::TiclSettingsProvider>(
-                new TiclDeviceSettingsProvider),
             g_browser_process->gcm_driver(),
             base::BindRepeating(&RequestProxyResolvingSocketFactory),
             base::CreateSingleThreadTaskRunnerWithTraits(

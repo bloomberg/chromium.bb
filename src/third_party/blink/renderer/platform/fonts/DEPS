@@ -6,6 +6,7 @@ include_rules = [
     "+third_party/blink/renderer/platform/fonts",
 
     # Dependencies.
+    "+base/mac",
     "+cc",
     "+third_party/blink/renderer/platform/font_family_names.h",
     "+third_party/blink/renderer/platform/geometry",
@@ -13,7 +14,6 @@ include_rules = [
     "+third_party/blink/renderer/platform/histogram.h",
     "+third_party/blink/renderer/platform/instrumentation",
     "+third_party/blink/renderer/platform/language.h",
-    "+third_party/blink/renderer/platform/mac/version_util_mac.h",
     "+third_party/blink/renderer/platform/platform_export.h",
     "+third_party/blink/renderer/platform/resolution_units.h",
     "+third_party/blink/renderer/platform/runtime_enabled_features.h",

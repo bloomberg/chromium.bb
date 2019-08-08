@@ -43,7 +43,7 @@ constexpr char kMojoChannelToken[] = "mojo-channel-token";
 // |mojo_channel_token| - token for creating the Mojo pipe.
 base::Process LaunchNSSDecrypterChildProcess(
     const base::FilePath& nss_path,
-    base::ScopedFD mojo_channel_fd,
+    mojo::PlatformChannel* channel,
     const std::string& mojo_channel_token) {
   base::CommandLine cl(*base::CommandLine::ForCurrentProcess());
   cl.AppendSwitchASCII(switches::kTestChildProcess, "NSSDecrypterChildProcess");
@@ -53,10 +53,8 @@ base::Process LaunchNSSDecrypterChildProcess(
   // See "chrome/utility/importer/nss_decryptor_mac.mm" for an explanation of
   // why we need this.
   base::LaunchOptions options;
-  options.environ["DYLD_FALLBACK_LIBRARY_PATH"] = nss_path.value();
-  options.fds_to_remap.push_back(std::pair<int, int>(
-      mojo_channel_fd.get(), service_manager::kMojoIPCChannel +
-                                 base::GlobalDescriptors::kBaseDescriptor));
+  options.environment["DYLD_FALLBACK_LIBRARY_PATH"] = nss_path.value();
+  channel->PrepareToPassRemoteEndpoint(&options, &cl);
 
   return base::LaunchProcess(cl.argv(), options);
 }
@@ -197,9 +195,7 @@ bool FFUnitTestDecryptorProxy::Setup(const base::FilePath& nss_path) {
 
   // Spawn child and set up mojo connection.
   mojo::PlatformChannel channel;
-  child_process_ = LaunchNSSDecrypterChildProcess(
-      nss_path, channel.TakeRemoteEndpoint().TakePlatformHandle().TakeFD(),
-      token);
+  child_process_ = LaunchNSSDecrypterChildProcess(nss_path, &channel, token);
   channel.RemoteProcessLaunchAttempted();
   if (child_process_.IsValid()) {
     mojo::OutgoingInvitation::Send(std::move(invitation),
@@ -246,13 +242,12 @@ std::vector<autofill::PasswordForm> FFUnitTestDecryptorProxy::ParseSignons(
 MULTIPROCESS_TEST_MAIN(NSSDecrypterChildProcess) {
   base::MessageLoopForIO main_message_loop;
 
-  auto invitation = mojo::IncomingInvitation::Accept(
-      mojo::PlatformChannelEndpoint(mojo::PlatformHandle(
-          base::ScopedFD(service_manager::kMojoIPCChannel +
-                         base::GlobalDescriptors::kBaseDescriptor))));
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  auto endpoint = mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
+      *command_line);
+  auto invitation = mojo::IncomingInvitation::Accept(std::move(endpoint));
   mojo::ScopedMessagePipeHandle request_pipe = invitation.ExtractMessagePipe(
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          kMojoChannelToken));
+      command_line->GetSwitchValueASCII(kMojoChannelToken));
 
   firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptorRequest request(
       std::move(request_pipe));

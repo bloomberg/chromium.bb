@@ -11,6 +11,7 @@ include_rules = [
   "+third_party/blink/public/platform/web_gesture_event.h",
   "+third_party/blink/public/platform/web_input_event.h",
   "+third_party/blink/public/platform/web_keyboard_event.h",
+  "+third_party/blink/public/platform/web_mouse_event.h",
   "+third_party/blink/public/platform/web_mouse_wheel_event.h",
   "+third_party/blink/public/platform/web_point.h",
   "+third_party/blink/public/platform/web_pointer_event.h",

@@ -112,7 +112,7 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
   void OpenChannelToPlugin(Client* client);
 
   BrowserPpapiHostImpl* host_impl() { return host_impl_.get(); }
-  const BrowserChildProcessHostImpl* process() { return process_.get(); }
+  BrowserChildProcessHostImpl* process() { return process_.get(); }
   const base::Optional<url::Origin>& origin_lock() const {
     return origin_lock_;
   }

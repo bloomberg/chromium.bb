@@ -4758,17 +4758,6 @@ TEST_F(GLES2FormatTest, LoseContextCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-TEST_F(GLES2FormatTest, InsertFenceSyncCHROMIUM) {
-  cmds::InsertFenceSyncCHROMIUM& cmd =
-      *GetBufferAs<cmds::InsertFenceSyncCHROMIUM>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint64>(11));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::InsertFenceSyncCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint64>(11), cmd.release_count());
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
 TEST_F(GLES2FormatTest, UnpremultiplyAndDitherCopyCHROMIUM) {
   cmds::UnpremultiplyAndDitherCopyCHROMIUM& cmd =
       *GetBufferAs<cmds::UnpremultiplyAndDitherCopyCHROMIUM>();
@@ -5738,15 +5727,14 @@ TEST_F(GLES2FormatTest, SetReadbackBufferShadowAllocationINTERNAL) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-TEST_F(GLES2FormatTest, FramebufferTextureMultiviewLayeredANGLE) {
-  cmds::FramebufferTextureMultiviewLayeredANGLE& cmd =
-      *GetBufferAs<cmds::FramebufferTextureMultiviewLayeredANGLE>();
+TEST_F(GLES2FormatTest, FramebufferTextureMultiviewOVR) {
+  cmds::FramebufferTextureMultiviewOVR& cmd =
+      *GetBufferAs<cmds::FramebufferTextureMultiviewOVR>();
   void* next_cmd =
       cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLenum>(12),
               static_cast<GLuint>(13), static_cast<GLint>(14),
               static_cast<GLint>(15), static_cast<GLsizei>(16));
-  EXPECT_EQ(static_cast<uint32_t>(
-                cmds::FramebufferTextureMultiviewLayeredANGLE::kCmdId),
+  EXPECT_EQ(static_cast<uint32_t>(cmds::FramebufferTextureMultiviewOVR::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
@@ -5792,7 +5780,7 @@ TEST_F(GLES2FormatTest, CreateAndTexStorage2DSharedImageINTERNALImmediate) {
   cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
       *GetBufferAs<cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate>();
   void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLuint>(11), data, static_cast<GLenum>(12));
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLenum>(12), data);
   EXPECT_EQ(
       static_cast<uint32_t>(
           cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate::kCmdId),

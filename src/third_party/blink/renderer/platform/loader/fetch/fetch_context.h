@@ -38,11 +38,9 @@
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
-#include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -62,9 +60,7 @@ enum class ResourceType : uint8_t;
 class ClientHintsPreferences;
 class KURL;
 class PlatformProbeSink;
-class ResourceError;
 class ResourceFetcherProperties;
-class ResourceResponse;
 class ResourceTimingInfo;
 class WebScopedVirtualTimePauser;
 
@@ -109,10 +105,6 @@ class PLATFORM_EXPORT FetchContext
       ResourceType,
       FetchParameters::DeferOption) const;
 
-  virtual void DispatchDidChangeResourcePriority(unsigned long identifier,
-                                                 ResourceLoadPriority,
-                                                 int intra_priority_value);
-
   // This internally dispatches WebLocalFrameClient::WillSendRequest and hooks
   // request interceptors like ServiceWorker and ApplicationCache.
   // This may modify the request.
@@ -120,49 +112,10 @@ class PLATFORM_EXPORT FetchContext
   // create a new WebScopedVirtualTimePauser and set it to
   // |virtual_time_pauser|.
   // This is called on initial and every redirect request.
-  enum class RedirectType { kForRedirect, kNotForRedirect };
   virtual void PrepareRequest(ResourceRequest&,
                               const FetchInitiatorInfo&,
                               WebScopedVirtualTimePauser& virtual_time_pauser,
-                              RedirectType,
                               ResourceType);
-
-  // The last callback before a request is actually sent to the browser process.
-  // This is called on initial and every redirect request.
-  virtual void DispatchWillSendRequest(
-      unsigned long identifier,
-      const ResourceRequest&,
-      const ResourceResponse& redirect_response,
-      ResourceType,
-      const FetchInitiatorInfo& = FetchInitiatorInfo());
-  enum class ResourceResponseType { kNotFromMemoryCache, kFromMemoryCache };
-  // |request| and |resource| are provided separately because when it's from
-  // the memory cache |request| and |resource->GetResourceRequest()| don't
-  // match. |response| may not yet be set to |resource| when this function is
-  // called.
-  virtual void DispatchDidReceiveResponse(unsigned long identifier,
-                                          const ResourceRequest& request,
-                                          const ResourceResponse& response,
-                                          Resource* resource,
-                                          ResourceResponseType);
-  virtual void DispatchDidReceiveData(unsigned long identifier,
-                                      const char* data,
-                                      uint64_t data_length);
-  virtual void DispatchDidReceiveEncodedData(unsigned long identifier,
-                                             size_t encoded_data_length);
-  virtual void DispatchDidDownloadToBlob(unsigned long identifier,
-                                         BlobDataHandle*);
-  virtual void DispatchDidFinishLoading(unsigned long identifier,
-                                        TimeTicks finish_time,
-                                        int64_t encoded_data_length,
-                                        int64_t decoded_body_length,
-                                        bool should_report_corb_blocking,
-                                        ResourceResponseType);
-  virtual void DispatchDidFail(const KURL&,
-                               unsigned long identifier,
-                               const ResourceError&,
-                               int64_t encoded_data_length,
-                               bool is_internal_request);
 
   bool ShouldLoadNewResource(ResourceType) const;
 
@@ -171,8 +124,6 @@ class PLATFORM_EXPORT FetchContext
   virtual void RecordLoadingActivity(const ResourceRequest&,
                                      ResourceType,
                                      const AtomicString& fetch_initiator_name);
-
-  virtual void DidObserveLoadingBehavior(WebLoadingBehaviorFlag);
 
   virtual void AddResourceTiming(const ResourceTimingInfo&);
   virtual bool AllowImage(bool, const KURL&) const { return false; }
@@ -233,9 +184,6 @@ class PLATFORM_EXPORT FetchContext
                                         ResourceType type) {
     return false;
   }
-
-  // Called when IdlenessDetector emits its network idle signal.
-  virtual void DispatchNetworkQuiet() {}
 
  private:
   Member<PlatformProbeSink> platform_probe_sink_;

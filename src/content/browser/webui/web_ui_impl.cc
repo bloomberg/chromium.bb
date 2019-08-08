@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
@@ -291,7 +292,8 @@ void WebUIImpl::ExecuteJavascript(const base::string16& javascript) {
   if (!CanCallJavascript())
     return;
 
-  web_contents_->GetMainFrame()->ExecuteJavaScript(javascript);
+  web_contents_->GetMainFrame()->ExecuteJavaScript(javascript,
+                                                   base::NullCallback());
 }
 
 void WebUIImpl::DisallowJavascriptOnAllHandlers() {

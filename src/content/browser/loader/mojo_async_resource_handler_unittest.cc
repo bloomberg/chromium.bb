@@ -178,7 +178,7 @@ class MojoAsyncResourceHandlerWithStubOperations
                                  rdh,
                                  std::move(mojo_request),
                                  std::move(url_loader_client),
-                                 RESOURCE_TYPE_MAIN_FRAME,
+                                 ResourceType::kMainFrame,
                                  options),
         task_runner_(new base::TestSimpleTaskRunner) {}
   ~MojoAsyncResourceHandlerWithStubOperations() override {}
@@ -308,7 +308,7 @@ class MojoAsyncResourceHandlerTestBase {
     request_->set_upload(std::move(upload_stream));
     ResourceRequestInfo::AllocateForTesting(
         request_.get(),                          // request
-        RESOURCE_TYPE_XHR,                       // resource_type
+        ResourceType::kXhr,                      // resource_type
         browser_context_->GetResourceContext(),  // context
         kChildId,                                // render_process_id
         kRouteId,                                // render_view_id

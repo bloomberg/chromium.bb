@@ -115,6 +115,7 @@ class WebString;
 class WebURL;
 class WebURLResponse;
 class WebUserMediaClient;
+struct FramePolicy;
 struct WebConsoleMessage;
 struct WebContextMenuData;
 struct WebFullscreenOptions;
@@ -154,6 +155,7 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // May return null.
   virtual std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
+      WebDocumentLoader*,
       WebApplicationCacheHostClient*) {
     return nullptr;
   }
@@ -224,23 +226,25 @@ class BLINK_EXPORT WebLocalFrameClient {
   // to prevent the new child frame from being attached. Otherwise, embedders
   // should create a new WebLocalFrame, insert it into the frame tree, and
   // return the created frame.
-  virtual WebLocalFrame* CreateChildFrame(
-      WebLocalFrame* parent,
-      WebTreeScopeType,
-      const WebString& name,
-      const WebString& fallback_name,
-      WebSandboxFlags sandbox_flags,
-      const ParsedFeaturePolicy& container_policy,
-      const WebFrameOwnerProperties&,
-      FrameOwnerElementType) {
+  virtual WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
+                                          WebTreeScopeType,
+                                          const WebString& name,
+                                          const WebString& fallback_name,
+                                          const FramePolicy&,
+                                          const WebFrameOwnerProperties&,
+                                          FrameOwnerElementType) {
     return nullptr;
   }
 
   // Request the creation of a new portal.
   virtual std::pair<WebRemoteFrame*, base::UnguessableToken> CreatePortal(
-      mojo::ScopedMessagePipeHandle pipe) {
+      mojo::ScopedInterfaceEndpointHandle pipe) {
     return std::pair<WebRemoteFrame*, base::UnguessableToken>(
         nullptr, base::UnguessableToken());
+  }
+  virtual blink::WebRemoteFrame* AdoptPortal(
+      const base::UnguessableToken& portal_token) {
+    return nullptr;
   }
 
   // Called when Blink cannot find a frame with the given name in the frame's
@@ -278,10 +282,8 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // The sandbox flags or container policy have changed for a child frame of
   // this frame.
-  virtual void DidChangeFramePolicy(
-      WebFrame* child_frame,
-      WebSandboxFlags flags,
-      const ParsedFeaturePolicy& container_policy) {}
+  virtual void DidChangeFramePolicy(WebFrame* child_frame, const FramePolicy&) {
+  }
 
   // Called when a Feature-Policy or Content-Security-Policy HTTP header (for
   // sandbox flags) is encountered while loading the frame's document.
@@ -512,6 +514,12 @@ class BLINK_EXPORT WebLocalFrameClient {
   // ever having received a user gesture.
   virtual void DidBlockFramebust(const WebURL&) {}
 
+  // Tells the embedder to navigate back or forward in session history by
+  // the given offset (relative to the current position in session
+  // history). |has_user_gesture| tells whether or not this is the consequence
+  // of a user action.
+  virtual void NavigateBackForwardSoon(int offset, bool has_user_gesture) {}
+
   // Returns token to be used as a frame id in the devtools protocol.
   // It is derived from the content's devtools_frame_token, is
   // defined by the browser and passed into Blink upon frame creation.
@@ -642,6 +650,10 @@ class BLINK_EXPORT WebLocalFrameClient {
   // was spent in tasks on the frame.
   virtual void DidChangeCpuTiming(base::TimeDelta time) {}
 
+  // The set of active features affecting scheduling for this frame changed.
+  virtual void DidChangeActiveSchedulerTrackedFeatures(uint64_t features_mask) {
+  }
+
   virtual void VisibilityChanged(blink::mojom::FrameVisibility visibility) {}
 
   // UseCounter ----------------------------------------------------------
@@ -668,6 +680,22 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Reports that visible elements in the frame shifted (bit.ly/lsm-explainer).
   virtual void DidObserveLayoutJank(double jank_fraction) {}
+
+  enum class LazyLoadBehavior {
+    kDeferredImage,    // An image is being deferred by the lazy load feature.
+    kDeferredFrame,    // A frame is being deferred by the lazy load feature.
+    kLazyLoadedImage,  // An image that was previously deferred by the lazy load
+                       // feature is being fully loaded.
+    kLazyLoadedFrame   // A frame that was previously deferred by the lazy load
+                       // feature is being fully loaded.
+  };
+
+  // Reports lazy loaded behavior when the frame or image is fully deferred or
+  // if the frame or image is loaded after being deferred. Called every time the
+  // behavior occurs. This does not apply to images that were loaded as
+  // placeholders.
+  virtual void DidObserveLazyLoadBehavior(
+      WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) {}
 
   // Script notifications ------------------------------------------------
 
@@ -788,8 +816,8 @@ class BLINK_EXPORT WebLocalFrameClient {
   // provided via the callbacks.
   virtual void CheckIfAudioSinkExistsAndIsAuthorized(
       const WebString& sink_id,
-      std::unique_ptr<WebSetSinkIdCallbacks> callbacks) {
-    callbacks->OnError(WebSetSinkIdError::kNotSupported);
+      WebSetSinkIdCompleteCallback callback) {
+    std::move(callback).Run(WebSetSinkIdError::kNotSupported);
   }
 
   // Visibility ----------------------------------------------------------
@@ -821,10 +849,11 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Returns true when the contents of plugin are handled externally. This means
   // the plugin element will own a content frame but the frame is than used
-  // externally to load the required handelrs.
-  virtual bool IsPluginHandledExternally(const WebElement& plugin_element,
-                                         const WebURL& url,
-                                         const WebString& suggested_mime_type) {
+  // externally to load the required handelrs (MimeHandlerView).
+  virtual bool MaybeCreateMimeHandlerView(
+      const WebElement& plugin_element,
+      const WebURL& url,
+      const WebString& suggested_mime_type) {
     return false;
   }
 

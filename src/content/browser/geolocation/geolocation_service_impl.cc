@@ -8,6 +8,7 @@
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 namespace content {
@@ -35,8 +36,6 @@ void GeolocationServiceImplContext::RequestPermission(
   request_id_ = permission_controller_->RequestPermission(
       PermissionType::GEOLOCATION, render_frame_host,
       render_frame_host->GetLastCommittedOrigin().GetURL(), user_gesture,
-      // NOTE: The permission request is canceled in the destructor, so it is
-      // safe to pass |this| as Unretained.
       base::Bind(&GeolocationServiceImplContext::HandlePermissionStatus,
                  weak_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -71,23 +70,33 @@ void GeolocationServiceImpl::Bind(
 
 void GeolocationServiceImpl::CreateGeolocation(
     mojo::InterfaceRequest<device::mojom::Geolocation> request,
-    bool user_gesture) {
+    bool user_gesture,
+    CreateGeolocationCallback callback) {
   if (!render_frame_host_->IsFeatureEnabled(
           blink::mojom::FeaturePolicyFeature::kGeolocation)) {
+    std::move(callback).Run(blink::mojom::PermissionStatus::DENIED);
     return;
   }
+
+  // If the geolocation service is destroyed before the callback is run, ensure
+  // it is called with DENIED status.
+  auto scoped_callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      std::move(callback), blink::mojom::PermissionStatus::DENIED);
 
   binding_set_.dispatch_context()->RequestPermission(
       render_frame_host_, user_gesture,
       // There is an assumption here that the GeolocationServiceImplContext will
       // outlive the GeolocationServiceImpl.
       base::Bind(&GeolocationServiceImpl::CreateGeolocationWithPermissionStatus,
-                 base::Unretained(this), base::Passed(&request)));
+                 base::Unretained(this), base::Passed(&request),
+                 base::Passed(&scoped_callback)));
 }
 
 void GeolocationServiceImpl::CreateGeolocationWithPermissionStatus(
     device::mojom::GeolocationRequest request,
+    CreateGeolocationCallback callback,
     blink::mojom::PermissionStatus permission_status) {
+  std::move(callback).Run(permission_status);
   if (permission_status != blink::mojom::PermissionStatus::GRANTED)
     return;
 

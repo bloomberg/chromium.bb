@@ -10,14 +10,18 @@
 
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
-#include "components/autofill/core/browser/password_requirements_spec_fetcher.h"
 #include "components/autofill/core/browser/proto/password_requirements.pb.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/password_manager/core/browser/generation/password_requirements_spec_fetcher.h"
 #include "url/gurl.h"
 
 namespace autofill {
 class PasswordRequirementsSpec;
+}
+
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace password_manager {
@@ -75,6 +79,9 @@ class PasswordRequirementsService : public KeyedService {
 
   DISALLOW_COPY_AND_ASSIGN(PasswordRequirementsService);
 };
+
+std::unique_ptr<PasswordRequirementsService> CreatePasswordRequirementsService(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
 }  // namespace password_manager
 

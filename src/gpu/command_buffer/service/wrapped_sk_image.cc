@@ -4,8 +4,9 @@
 
 #include "gpu/command_buffer/service/wrapped_sk_image.h"
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
@@ -88,7 +89,8 @@ class WrappedSkImage : public SharedImageBacking {
  protected:
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
       SharedImageManager* manager,
-      MemoryTypeTracker* tracker) override;
+      MemoryTypeTracker* tracker,
+      scoped_refptr<SharedContextState> context_state) override;
 
  private:
   friend class gpu::raster::WrappedSkImageFactory;
@@ -105,7 +107,8 @@ class WrappedSkImage : public SharedImageBacking {
                            size,
                            color_space,
                            usage,
-                           estimated_size),
+                           estimated_size,
+                           false /* is_thread_safe */),
         context_state_(context_state) {
     DCHECK(!!context_state_);
   }
@@ -188,7 +191,6 @@ class WrappedSkImageRepresentation : public SharedImageRepresentationSkia {
   ~WrappedSkImageRepresentation() override { DCHECK(!write_surface_); }
 
   sk_sp<SkSurface> BeginWriteAccess(
-      GrContext* gr_context,
       int final_msaa_count,
       const SkSurfaceProps& surface_props) override {
     SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
@@ -207,7 +209,7 @@ class WrappedSkImageRepresentation : public SharedImageRepresentationSkia {
     write_surface_ = nullptr;
   }
 
-  sk_sp<SkPromiseImageTexture> BeginReadAccess(SkSurface* sk_surface) override {
+  sk_sp<SkPromiseImageTexture> BeginReadAccess() override {
     return wrapped_sk_image()->promise_texture();
   }
 
@@ -235,7 +237,9 @@ std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
-    uint32_t usage) {
+    uint32_t usage,
+    bool is_thread_safe) {
+  DCHECK(!is_thread_safe);
   return CreateSharedImage(mailbox, format, size, color_space, usage,
                            base::span<uint8_t>());
 }
@@ -275,7 +279,9 @@ std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
 
 std::unique_ptr<SharedImageRepresentationSkia> WrappedSkImage::ProduceSkia(
     SharedImageManager* manager,
-    MemoryTypeTracker* tracker) {
+    MemoryTypeTracker* tracker,
+    scoped_refptr<SharedContextState> context_state) {
+  DCHECK_EQ(context_state_, context_state.get());
   return std::make_unique<WrappedSkImageRepresentation>(manager, this, tracker);
 }
 

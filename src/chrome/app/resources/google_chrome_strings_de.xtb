@@ -25,6 +25,7 @@
 <translation id="1585657529869845941">Klicken Sie auf <ph name="BEGIN_BOLD" />Trotzdem wechseln<ph name="END_BOLD" />, falls die Schaltfläche angezeigt wird</translation>
 <translation id="1587223624401073077">Google Chrome verwendet Ihre Kamera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> ist schädlich und wurde daher von Chrome blockiert.</translation>
+<translation id="1590588151039584890">Zum Aktualisieren muss Chrome auf diesem Computer geschlossen werden. Nicht gespeicherte Änderungen von anderen Nutzern, die auf diesem Computer angemeldet sind, gehen dann eventuell verloren.</translation>
 <translation id="1619887657840448962">Um Chrome sicherer zu machen, haben wir die folgende Erweiterung deaktiviert. Sie ist nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> aufgeführt und wurde möglicherweise ohne Ihr Wissen hinzugefügt.</translation>
 <translation id="1628000112320670027">Hilfe für Chrome aufrufen</translation>
 <translation id="1662639173275167396">Chrome OS und <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" /> werden durch zusätzliche <ph name="BEGIN_LINK_CROS_OSS" />Open-Source-Software<ph name="END_LINK_CROS_OSS" /> möglich gemacht.</translation>
@@ -38,6 +39,7 @@
 <translation id="1773601347087397504">Hilfe für Chrome OS aufrufen</translation>
 <translation id="1795405610103747296">Installieren Sie Chrome auf Ihrem Smartphone. Wir senden Ihnen eine SMS an: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">Wenn Sie diese Einstellung deaktivieren, können Sie sich auf Websites von Google wie beispielsweise Gmail anmelden, ohne sich auch in Chrome anmelden zu müssen</translation>
+<translation id="1815759068706561639"><ph name="FILE_NAME" /> ist schädlich und wurde von Chrome blockiert. Sie werden durch das erweiterte Sicherheitsprogramm geschützt.</translation>
 <translation id="1860536484129686729">Chrome benötigt für diese Website die Berechtigung, auf Ihre Kamera zuzugreifen</translation>
 <translation id="1873233029667955273">Google Chrome ist nicht als Ihr Standardbrowser festgelegt</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
@@ -56,7 +58,6 @@
 <translation id="2290014774651636340">Google API-Schlüssel fehlen. Einige Funktionen von Google Chrome sind deaktiviert.</translation>
 <translation id="2290095356545025170">Möchten Sie Google Chrome wirklich deinstallieren?</translation>
 <translation id="2309047409763057870">Dies ist eine Zweitinstallation, daher kann Google Chrome nicht als Standardbrowser festgelegt werden.</translation>
-<translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Alle Rechte vorbehalten.</translation>
 <translation id="2346876346033403680">Auf diesem Computer war zuvor ein Nutzer mit dem Konto <ph name="ACCOUNT_EMAIL_LAST" /> in Chrome angemeldet. Falls dies nicht Ihr Konto ist, erstellen Sie einen neuen Chrome-Nutzer, um Ihre Daten getrennt zu verwenden.
 
 Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Verlauf und andere Einstellungen in <ph name="ACCOUNT_EMAIL_NEW" /> zusammengeführt.</translation>
@@ -64,6 +65,7 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="2429317896000329049">Google Chrome konnte Ihre Daten nicht synchronisieren, da die Synchronisierung für Ihre Domain nicht zur Verfügung steht.</translation>
 <translation id="2467438592969358367">Google Chrome möchte Ihre Passwörter exportieren. Wenn Sie dies zulassen möchten, geben Sie Ihr Windows-Passwort ein.</translation>
 <translation id="2485422356828889247">Deinstallieren</translation>
+<translation id="2521856951867783208">Diese Datei ist eventuell schädlich und wurde von Chrome blockiert. Sie werden durch das erweiterte Sicherheitsprogramm geschützt.</translation>
 <translation id="2534507159460261402">Google Pay (in Chrome kopiert)</translation>
 <translation id="2535429035253759792">Laut Ihrem Administrator sollten Sie Chrome neu starten, um dieses Update durchzuführen</translation>
 <translation id="2580411288591421699">Die Google Chrome-Version kann nicht installiert werden, da sie aktuell ausgeführt wird. Schließen Sie Google Chrome und versuchen Sie es erneut.</translation>
@@ -100,6 +102,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="3451115285585441894">Wird zu Chrome hinzugefügt...</translation>
 <translation id="345171907106878721">Mich zu Chrome hinzufügen</translation>
 <translation id="3479552764303398839">Jetzt nicht</translation>
+<translation id="3481286511616257896"><ph name="FILE_NAME" /> ist eventuell schädlich und wurde von Chrome blockiert. Sie werden durch das erweiterte Sicherheitsprogramm geschützt.</translation>
 <translation id="34857402635545079">Daten aus Chrome ebenfalls löschen (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome benötigt Zugriff auf Ihren Standort, um ihn mit dieser Website zu teilen</translation>
 <translation id="3576528680708590453">Ihr Systemadministrator hat Google Chrome so konfiguriert, dass <ph name="TARGET_URL_HOSTNAME" /> in einem alternativen Browser geöffnet wird.</translation>
@@ -112,7 +115,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Aus Chrome entfernen...</translation>
 <translation id="386202838227397562">Schließen Sie alle Google Chrome-Fenster und versuchen Sie es erneut.</translation>
-<translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Link in Chrome-Inkognito-Fenster öffnen</translation>
 <translation id="3889417619312448367">Google Chrome deinstallieren</translation>
 <translation id="3898493977366060150">Smart surfen mit Google</translation>
@@ -139,7 +141,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="4600710005438004015">Chrome konnte nicht auf die neueste Version aktualisiert werden. In Ihrer Version fehlen daher einige neue Funktionen und Sicherheitspatches.</translation>
 <translation id="4631713731678262610">Ins Chrome-Menü verschieben</translation>
 <translation id="4633000520311261472">Um Chrome sicherer zu machen, haben wir einige Erweiterungen deaktiviert, die nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> aufgeführt sind und möglicherweise ohne Ihr Wissen hinzugefügt wurden.</translation>
-<translation id="4700157086864140907">Google Chrome bietet eine intelligentere Rechtschreibprüfung: Dabei sendet der Browser das, was Sie eingeben, an die Google-Server. So steht Ihnen dieselbe Technologie zur Rechtschreibprüfung zur Verfügung, die bei der Google-Suche zum Einsatz kommt.</translation>
 <translation id="4728575227883772061">Installation aufgrund von unbekanntem Fehler fehlgeschlagen. Falls Google Chrome bereits ausgeführt wird, schließen Sie es und versuchen Sie es erneut.</translation>
 <translation id="4750550185319565338">Chrome neu starten, um <ph name="PLUGIN_NAME" /> zu aktivieren</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -164,10 +165,12 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="5386244825306882791">Die Erweiterung legt auch fest, welche Seite beim Start von Chrome oder bei der Suche über die Omnibox angezeigt wird.</translation>
 <translation id="5430073640787465221">Ihre Einstellungsdatei ist beschädigt oder ungültig. Google Chrome kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome wird jetzt neu gestartet}=1{Chrome wird in 1 Sekunde neu gestartet}other{Chrome wird in # Sekunden neu gestartet}}</translation>
+<translation id="5543953544073077331">Andere Instanzen von Chrome sind noch aktiv. Bitte schließen Sie diese, um den Browser zu aktualisieren.</translation>
 <translation id="556024056938947818">Google Chrome versucht, Passwörter anzuzeigen.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> ist möglicherweise schädlich und wurde daher von Chrome blockiert.</translation>
 <translation id="5686916850681061684">Sie können Google Chrome anpassen und Einstellungen festlegen. Etwas erfordert Ihre Aufmerksamkeit – klicken Sie, um mehr zu erfahren.</translation>
+<translation id="5690427481109656848">Google LLC</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome wird in 1 Sekunde neu gestartet}other{Google Chrome wird in # Sekunden neu gestartet}}</translation>
 <translation id="573759479754913123">Über Chrome OS</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
@@ -222,12 +225,16 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="7459554271817304652">Richten Sie die Synchronisierung ein, um Ihre personalisierten Browserfunktionen online zu speichern und über Google Chrome auf jedem Computer darauf zuzugreifen.</translation>
 <translation id="7473136999113284234">Chrome wird automatisch aktualisiert, sodass Sie immer über die neueste Version verfügen.</translation>
 <translation id="7486227612705979895">Chrome greift auf Google Drive zu, um in der Adressleiste Vorschläge zu machen</translation>
+<translation id="748945194546522577">Diese Datei ist schädlich und wurde von Chrome blockiert. Sie werden durch das erweiterte Sicherheitsprogramm geschützt.</translation>
+<translation id="7531671357096394523">Alle Instanzen von Chrome schließen.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Chrome OS in dieser Sprache anzeigen</translation>
 <translation id="7561940363513215021">{0,plural, =1{Chrome wird in 1 Minute neu gestartet}other{Chrome wird in # Minuten neu gestartet}}</translation>
 <translation id="7589360514048265910">Für diesen Computer wird es keine weiteren Google Chrome-Updates mehr geben, da Mac OS X 10.9 nicht mehr unterstützt wird.</translation>
 <translation id="7592736734348559088">Google Chrome konnte Ihre Daten nicht synchronisieren, da die Anmeldedaten Ihres Kontos nicht mehr aktuell sind.</translation>
 <translation id="7626032353295482388">Willkommen bei Chrome</translation>
+<translation id="7636297873481318396">Diese Datei ist schädlich und wurde von Chrome blockiert. Sie werden durch das erweiterte Sicherheitsprogramm geschützt.</translation>
+<translation id="7641148173327520642">Ihr Systemadministrator hat Google Chrome so konfiguriert, dass <ph name="ALTERNATIVE_BROWSER_NAME" /> für den Zugriff auf <ph name="TARGET_URL_HOSTNAME" /> geöffnet wird.</translation>
 <translation id="7651907282515937834">Logo von Chrome Enterprise</translation>
 <translation id="7747138024166251722">Das Installationsprogramm konnte kein temporäres Verzeichnis erstellen. Überprüfen Sie, ob freier Speicherplatz und die Rechte zum Installieren von Software vorhanden sind.</translation>
 <translation id="7761834446675418963">Klicken Sie auf Ihren Namen, um Chrome zu öffnen und im Web zu surfen.</translation>
@@ -257,6 +264,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="8286862437124483331">Google Chrome möchte Passwörter anzeigen. Geben Sie Ihr Windows-Passwort ein, um dies zuzulassen.</translation>
 <translation id="8290100596633877290">Google Chrome ist abgestürzt. Jetzt neu starten?</translation>
 <translation id="8342675569599923794">Diese Datei ist schädlich und wurde von Chrome blockiert.</translation>
+<translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC Alle Rechte vorbehalten.</translation>
 <translation id="8380166467911888159">Um Tippfehler zu beheben, sendet Chrome den eingegebenen Text an Google</translation>
 <translation id="840084489713044809">Google Chrome möchte Ihre Passwörter exportieren.</translation>
 <translation id="8406086379114794905">Zur Verbesserung von Chrome beitragen</translation>
@@ -275,6 +283,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Die Erweiterung legt auch die Seite fest, die beim Start von Chrome angezeigt wird.</translation>
 <translation id="870251953148363156">&amp;Google Chrome aktualisieren</translation>
+<translation id="8704255848199359374">Es wird dieselbe Rechtschreibprüfung wie in der Google-Suche verwendet. Der in den Browser eingegebene Text wird an Google gesendet. Sie können dies jederzeit in den Einstellungen ändern.</translation>
 <translation id="873133009373065397">Google Chrome kann den Standardbrowser nicht bestimmen oder festlegen</translation>
 <translation id="8736674169840206667">Laut Ihrem Administrator müssen Sie Chrome neu starten, um ein Update durchzuführen</translation>
 <translation id="8788264404293392165">Diese Sprache wird für die Chrome OS-UI verwendet</translation>

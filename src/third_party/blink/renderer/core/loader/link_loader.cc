@@ -31,7 +31,7 @@
 
 #include "third_party/blink/renderer/core/loader/link_loader.h"
 
-#include "third_party/blink/public/platform/web_prerender.h"
+#include "third_party/blink/public/common/prerender/prerender_rel_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -42,16 +42,16 @@
 #include "third_party/blink/renderer/core/loader/private/prerender_handle.h"
 #include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_finish_observer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/subresource_integrity.h"
 #include "third_party/blink/renderer/platform/prerender.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
-class NetworkHintsInterface;
+class WebPrescientNetworking;
 
 namespace {
 
@@ -169,10 +169,8 @@ Resource* LinkLoader::GetResourceForTesting() {
   return finish_observer_ ? finish_observer_->GetResource() : nullptr;
 }
 
-bool LinkLoader::LoadLink(
-    const LinkLoadParameters& params,
-    Document& document,
-    const NetworkHintsInterface& network_hints_interface) {
+bool LinkLoader::LoadLink(const LinkLoadParameters& params,
+                          Document& document) {
   // If any loading process is in progress, abort it.
   Abort();
 
@@ -180,11 +178,9 @@ bool LinkLoader::LoadLink(
     return false;
 
   PreloadHelper::DnsPrefetchIfNeeded(params, &document, document.GetFrame(),
-                                     network_hints_interface,
                                      PreloadHelper::kLinkCalledFromMarkup);
 
   PreloadHelper::PreconnectIfNeeded(params, &document, document.GetFrame(),
-                                    network_hints_interface,
                                     PreloadHelper::kLinkCalledFromMarkup);
 
   Resource* resource = PreloadHelper::PreloadIfNeeded(
@@ -229,7 +225,7 @@ void LinkLoader::LoadStylesheet(const LinkLoadParameters& params,
   mojom::FetchImportanceMode importance_mode =
       GetFetchImportanceAttributeValue(params.importance);
   DCHECK(importance_mode == mojom::FetchImportanceMode::kImportanceAuto ||
-         origin_trials::PriorityHintsEnabled(&document));
+         RuntimeEnabledFeatures::PriorityHintsEnabled(&document));
   resource_request.SetFetchImportanceMode(importance_mode);
 
   ResourceLoaderOptions options;

@@ -263,6 +263,12 @@ void PreviewsUITabHelper::DidStartNavigation(
     return;
   if (!previews_user_data_)
     return;
+  if (!previews_user_data_->HasCommittedPreviewsType())
+    return;
+  if (previews_user_data_->coin_flip_holdback_result() ==
+      previews::CoinFlipHoldbackResult::kHoldback) {
+    return;
+  }
 
   PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
@@ -371,7 +377,9 @@ void PreviewsUITabHelper::DidFinishNavigation(
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
   // Check for committed main frame preview.
-  if (previews_user_data_ && previews_user_data_->HasCommittedPreviewsType()) {
+  if (previews_user_data_ && previews_user_data_->HasCommittedPreviewsType() &&
+      previews_user_data_->coin_flip_holdback_result() !=
+          previews::CoinFlipHoldbackResult::kHoldback) {
     previews::PreviewsType main_frame_preview =
         previews_user_data_->committed_previews_type();
     if (ShouldShowUIForPreviewsType(main_frame_preview)) {

@@ -83,22 +83,24 @@ class ServiceWorkerGlobalScopeProxy final
   void BindServiceWorkerHost(
       mojo::ScopedInterfaceEndpointHandle service_worker_host) override;
   void SetRegistration(WebServiceWorkerRegistrationObjectInfo info) override;
+  void SetFetchHandlerExistence(
+      FetchHandlerExistence fetch_handler_existence) override;
   // Must be called after the above BindServiceWorkerHost() and
   // SetRegistration() got called.
   void ReadyToEvaluateScript() override;
   void DispatchActivateEvent(int) override;
   void DispatchBackgroundFetchAbortEvent(
       int event_id,
-      const WebBackgroundFetchRegistration& registration) override;
+      WebBackgroundFetchRegistration registration) override;
   void DispatchBackgroundFetchClickEvent(
       int event_id,
-      const WebBackgroundFetchRegistration& registration) override;
+      WebBackgroundFetchRegistration registration) override;
   void DispatchBackgroundFetchFailEvent(
       int event_id,
-      const WebBackgroundFetchRegistration& registration) override;
+      WebBackgroundFetchRegistration registration) override;
   void DispatchBackgroundFetchSuccessEvent(
       int event_id,
-      const WebBackgroundFetchRegistration& registration) override;
+      WebBackgroundFetchRegistration registration) override;
   void DispatchCookieChangeEvent(
       int event_id,
       const WebCanonicalCookie& cookie,
@@ -151,7 +153,7 @@ class ServiceWorkerGlobalScopeProxy final
   void ReportException(const String& error_message,
                        std::unique_ptr<SourceLocation>,
                        int exception_id) override;
-  void ReportConsoleMessage(MessageSource,
+  void ReportConsoleMessage(mojom::ConsoleMessageSource,
                             mojom::ConsoleMessageLevel,
                             const String& message,
                             SourceLocation*) override;

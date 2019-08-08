@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_CROSTINI_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_CROSTINI_HANDLER_H_
 
+#include <vector>
+
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/usb/cros_usb_detector.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
 class Profile;
@@ -19,15 +22,16 @@ namespace chromeos {
 namespace settings {
 
 class CrostiniHandler : public ::settings::SettingsPageUIHandler,
-                        public crostini::InstallerViewStatusObserver {
+                        public crostini::InstallerViewStatusObserver,
+                        public chromeos::SharedUsbDeviceObserver {
  public:
   explicit CrostiniHandler(Profile* profile);
   ~CrostiniHandler() override;
 
   // SettingsPageUIHandler
   void RegisterMessages() override;
-  void OnJavascriptAllowed() override {}
-  void OnJavascriptDisallowed() override {}
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
 
  private:
   void HandleRequestCrostiniInstallerView(const base::ListValue* args);
@@ -38,6 +42,13 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
   void HandleGetCrostiniSharedPathsDisplayText(const base::ListValue* args);
   // Remove a specified path from being shared.
   void HandleRemoveCrostiniSharedPath(const base::ListValue* args);
+  // Returns a list of available USB devices.
+  void HandleGetCrostiniSharedUsbDevices(const base::ListValue* args);
+  // Set the share state of a USB device.
+  void HandleSetCrostiniUsbDeviceShared(const base::ListValue* args);
+  // chromeos::SharedUsbDeviceObserver.
+  void OnSharedUsbDevicesChanged(
+      const std::vector<SharedUsbDeviceInfo> shared_usbs) override;
   // Export the crostini container.
   void HandleExportCrostiniContainer(const base::ListValue* args);
   // Import the crostini container.

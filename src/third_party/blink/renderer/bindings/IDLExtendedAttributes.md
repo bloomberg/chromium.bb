@@ -112,19 +112,17 @@ The remaining extended attribute, `[ImplementedAs]`, is mandatory. A partial
 interface must have `[ImplementedAs]` extended attribute to specify a static-only C++ class.
 This is stored internally via `[PartialInterfaceImplementedAs]` (see below).
 
-### implements
+### interface mixins
 
-Extended attributes on members of an implemented interface work as normal. However, only the following 5 extended attributes can be used on the implemented interface itself; otherwise extended attributes should appear on the main (implementing) interface definition:
+Extended attributes on members of an interface mixin work as normal. However, only the following 4 extended attributes can be used on the interface mixin itself; otherwise extended attributes should appear on the main (including) interface definition:
 
-* `[LegacyTreatAsPartialInterface]` is part of an ongoing change, as implemented interfaces used to be treated internally as partial interfaces.
+* `[LegacyTreatAsPartialInterface]` is part of an ongoing change, as interface mixins used to be treated internally as partial interfaces.
 
-* `[ImplementedAs]` is only necessary for these legacy files: otherwise the class (C++) implementing (IDL) implemented interfaces does not need to be specified, as this is handled in Blink C++.
+* `[ImplementedAs]` is only necessary for these legacy files: otherwise the class (C++) implementing (IDL) interface mixins does not need to be specified, as this is handled in Blink C++.
 
 * `[OriginTrialEnabled]` behaves as for partial interfaces.
 
 * `[RuntimeEnabled]` behaves as for partial interfaces.
-
-* `[NoInterfaceObject]` is _always_ specified on implemented interfaces.
 
 ### Inheritance
 
@@ -1493,7 +1491,7 @@ These extended attributes are _temporary_ and are only in use while some change 
 
 ### [LegacyTreatAsPartialInterface] _(i)_
 
-Summary: `[LegacyTreatAsPartialInterface]` on an interface that is the target of an `implements` statement means that the interface is treated as a partial interface, meaning members are accessed via static member functions in a separate class, rather than as instance methods on the instance object `*impl` or class methods on the C++ class implementing the (main) interface. This is legacy from original implementation of `implements`, and is being removed ([Bug 360435](https://crbug.com/360435), nbarth@).
+Summary: `[LegacyTreatAsPartialInterface]` on an interface mixin means that the mixin is treated as a partial interface, meaning members are accessed via static member functions in a separate class, rather than as instance methods on the instance object `*impl` or class methods on the C++ class implementing the (main) interface. This is legacy from original implementation of mixins, and is being removed ([Bug 360435](https://crbug.com/360435), nbarth@).
 
 
 ### [CachedAccessor] _(a)_
@@ -1634,7 +1632,6 @@ Added to members of a partial interface definition (and implemented interfaces w
 ***
 
 * `[ImmutablePrototype]`
-* `[LegacyInterfaceTypeChecking]`
 * `[LogAllWorlds]`
 * `[PerWorldBindings]` :: interacts with `[LogActivity]`
 

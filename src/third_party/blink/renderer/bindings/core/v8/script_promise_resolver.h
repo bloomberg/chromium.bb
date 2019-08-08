@@ -41,10 +41,6 @@ class CORE_EXPORT ScriptPromiseResolver
   USING_GARBAGE_COLLECTED_MIXIN(ScriptPromiseResolver);
 
  public:
-  static ScriptPromiseResolver* Create(ScriptState* script_state) {
-    return MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  }
-
   explicit ScriptPromiseResolver(ScriptState*);
   virtual ~ScriptPromiseResolver();
 

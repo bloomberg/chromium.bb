@@ -172,8 +172,16 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
 
   auto* main_graphics_layer = mapping->MainGraphicsLayer();
   if (main_graphics_layer->ContentsLayer()) {
-    main_graphics_layer->SetContentsPropertyTreeState(
-        fragment_data.ContentsProperties());
+    IntPoint offset;
+    // The offset should be zero when the layer has ReplacedContentTransform,
+    // because the offset has been baked into ReplacedContentTransform.
+    if (!fragment_data.PaintProperties() ||
+        !fragment_data.PaintProperties()->ReplacedContentTransform()) {
+      offset = main_graphics_layer->ContentsRect().Location() +
+               main_graphics_layer->GetOffsetFromTransformNode();
+    }
+    main_graphics_layer->SetContentsLayerState(
+        fragment_data.ContentsProperties(), offset);
   }
 
   if (auto* squashing_layer = mapping->SquashingLayer()) {

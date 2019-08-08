@@ -1,12 +1,15 @@
 [
     "libs/android_arch_core_common",
     "libs/android_arch_lifecycle_common",
+    "libs/android_arch_lifecycle_common_java8",
     "libs/android_arch_lifecycle_runtime",
     "libs/androidx_annotation_annotation",
     "libs/androidx_lifecycle_lifecycle_common",
     "libs/androidx_test_core",
     "libs/androidx_test_ext_junit",
     "libs/androidx_test_monitor",
+    "libs/androidx_test_rules",
+    "libs/androidx_test_runner",
     "libs/com_android_support_animated_vector_drawable",
     "libs/com_android_support_appcompat_v7",
     "libs/com_android_support_cardview_v7",
@@ -65,6 +68,7 @@
     "libs/com_squareup_javapoet",
     "libs/javax_annotation_jsr250_api",
     "libs/javax_inject_javax_inject",
+    "libs/net_sf_kxml_kxml2",
     "libs/org_checkerframework_checker_compat_qual",
     "libs/org_codehaus_mojo_animal_sniffer_annotations"
 ]

@@ -34,8 +34,14 @@ class ArcAppShortcutsSearchProvider : public SearchProvider {
   void Train(const std::string& id, RankingItemType type) override;
 
  private:
+  // QueryBased: filter and rerank results for non-empty queries
   void OnGetAppShortcutGlobalQueryItems(
       std::vector<arc::mojom::AppShortcutItemPtr> shortcut_items);
+  // ZeroState: filter and rerank results for empty queries
+  void UpdateRecomendedResults(
+      std::vector<arc::mojom::AppShortcutItemPtr> shortcut_items);
+  bool ShouldRerankZeroState() const;
+  bool ShouldReRankQueryBased() const;
 
   const int max_results_;
   Profile* const profile_;                            // Owned by ProfileInfo.

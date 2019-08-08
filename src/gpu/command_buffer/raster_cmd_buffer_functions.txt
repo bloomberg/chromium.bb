@@ -17,10 +17,6 @@ GL_APICALL void         GL_APIENTRY glGetQueryObjectuivEXT (GLidQuery id, GLenum
 
 // Non-GL commands.
 GL_APICALL void         GL_APIENTRY glLoseContextCHROMIUM (GLenumResetStatus current, GLenumResetStatus other);
-GL_APICALL GLuint64     GL_APIENTRY glInsertFenceSyncCHROMIUM (void);
-GL_APICALL void         GL_APIENTRY glGenUnverifiedSyncTokenCHROMIUM (GLbyte* sync_token);
-GL_APICALL void         GL_APIENTRY glVerifySyncTokensCHROMIUM (GLbyte** sync_tokens, GLsizei count);
-GL_APICALL void         GL_APIENTRY glWaitSyncTokenCHROMIUM (const GLbyte* sync_token);
 
 // Extension KHR_robustness
 GL_APICALL GLenum	GL_APIENTRY glGetGraphicsResetStatusKHR (void);

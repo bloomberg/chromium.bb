@@ -112,6 +112,8 @@ jumbo_source_set("internal") {
     "policy_loader_win.h",
     "policy_map.cc",
     "policy_map.h",
+    "policy_merger.cc",
+    "policy_merger.h",
     "policy_namespace.cc",
     "policy_namespace.h",
     "policy_proto_decoders.cc",
@@ -154,7 +156,6 @@ jumbo_source_set("internal") {
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//components/account_id",
-    "//components/crash/core/common:crash_key",  # Remove once https://crbug.com/685996 is fixed.
     "//components/data_use_measurement/core",
     "//components/prefs",
     "//components/strings",
@@ -168,6 +169,12 @@ jumbo_source_set("internal") {
     "//third_party/libxml",
     "//third_party/re2",
     "//url",
+  ]
+
+  allow_circular_includes_from = [
+    # Generated files use policy_details.h and policy_map.h from this target.
+    # TODO(https://crbug.com/945868) - refactor so we don't have dep cycles.
+    "//components/policy:generated",
   ]
 
   if (is_win) {

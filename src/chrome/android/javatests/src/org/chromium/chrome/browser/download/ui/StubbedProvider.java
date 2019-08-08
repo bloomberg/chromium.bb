@@ -28,6 +28,7 @@ import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
 import org.chromium.components.offline_items_collection.OfflineItemState;
+import org.chromium.components.offline_items_collection.RenameResult;
 import org.chromium.components.offline_items_collection.ShareCallback;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
@@ -101,6 +102,10 @@ public class StubbedProvider implements BackendProvider {
 
         @Override
         public void updateLastAccessTime(String downloadGuid, boolean isOffTheRecord) {}
+
+        @Override
+        public void renameDownload(ContentId id, String name,
+                Callback<Integer /*RenameResult*/> callback, boolean isOffTheRecord) {}
     }
 
     /** Stubs out the OfflineContentProvider. */
@@ -170,6 +175,12 @@ public class StubbedProvider implements BackendProvider {
         @Override
         public void getShareInfoForItem(ContentId id, ShareCallback callback) {
             mHandler.post(() -> callback.onShareInfoAvailable(id, null));
+        }
+
+        @Override
+        public void renameItem(
+                ContentId id, String name, Callback<Integer /*RenameResult*/> callback) {
+            mHandler.post(() -> callback.onResult(RenameResult.SUCCESS));
         }
     }
 

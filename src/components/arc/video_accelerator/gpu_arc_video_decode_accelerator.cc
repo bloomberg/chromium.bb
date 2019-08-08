@@ -524,7 +524,7 @@ void GpuArcVideoDecodeAccelerator::ImportBufferForPicture(
     auto protected_native_pixmap =
         protected_buffer_manager_->GetProtectedNativePixmapHandleFor(
             std::move(handle_fd));
-    if (protected_native_pixmap.fds.size() == 0) {
+    if (protected_native_pixmap.planes.size() == 0) {
       VLOGF(1) << "No protected native pixmap found for handle";
       client_->NotifyError(
           mojom::VideoDecodeAccelerator::Result::PLATFORM_FAILURE);
@@ -554,18 +554,15 @@ void GpuArcVideoDecodeAccelerator::ImportBufferForPicture(
         return;
       }
     }
-    for (size_t i = 0; i < num_planes; ++i) {
-      gmb_handle.native_pixmap_handle.fds.push_back(
-          base::FileDescriptor(scoped_fds[i].release(), true));
-    }
 
-    for (const auto& plane : planes) {
-      gmb_handle.native_pixmap_handle.planes.emplace_back(plane.stride,
-                                                          plane.offset, 0);
+    for (size_t i = 0; i < planes.size(); ++i) {
+      gmb_handle.native_pixmap_handle.planes.emplace_back(
+          planes[i].stride, planes[i].offset, 0, std::move(scoped_fds[i]));
     }
   }
 
-  vda_->ImportBufferForPicture(picture_buffer_id, pixel_format, gmb_handle);
+  vda_->ImportBufferForPicture(picture_buffer_id, pixel_format,
+                               std::move(gmb_handle));
 }
 
 void GpuArcVideoDecodeAccelerator::ReusePictureBuffer(

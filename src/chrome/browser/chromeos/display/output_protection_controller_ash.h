@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/display/output_protection_delegate.h"
+#include "ui/display/manager/display_configurator.h"
 
 namespace chromeos {
 
@@ -28,7 +29,7 @@ class OutputProtectionControllerAsh
       const OutputProtectionDelegate::SetProtectionCallback& callback) override;
 
  private:
-  const uint64_t client_id_;
+  const display::DisplayConfigurator::ContentProtectionClientId client_id_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputProtectionControllerAsh);

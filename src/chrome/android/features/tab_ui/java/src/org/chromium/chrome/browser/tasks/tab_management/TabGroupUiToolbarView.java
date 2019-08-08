@@ -6,13 +6,13 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.ui.widget.ChromeImageView;
 
@@ -76,8 +76,8 @@ public class TabGroupUiToolbarView extends FrameLayout {
     }
 
     void setTint(ColorStateList tint) {
-        DrawableCompat.setTintList(mLeftButton.getDrawable(), tint);
-        DrawableCompat.setTintList(mRightButton.getDrawable(), tint);
+        ApiCompatibilityUtils.setImageTintList(mLeftButton, tint);
+        ApiCompatibilityUtils.setImageTintList(mRightButton, tint);
         if (mTitleTextView != null) mTitleTextView.setTextColor(tint);
     }
 }

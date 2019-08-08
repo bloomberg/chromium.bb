@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import optparse
 import os
 import re
@@ -33,8 +35,8 @@ def TestAppStartup(options, crx_path, app_path, profile_path):
     if expected_result.Matches(corpus_errors.BAD_MANIFEST):
       return True
     else:
-      print "'%s': %s," % (
-          corpus_utils.Sha1FromFilename(crx_path), corpus_errors.BAD_MANIFEST)
+      print("'%s': %s," % (corpus_utils.Sha1FromFilename(crx_path),
+                           corpus_errors.BAD_MANIFEST))
       return False
   start_url = 'chrome-extension://%s/%s' % (
       corpus_utils.ChromeAppIdFromPath(app_path), start_path)
@@ -69,15 +71,15 @@ def TestAppStartup(options, crx_path, app_path, profile_path):
     result = result.Merge(corpus_errors.MODULE_DIDNT_START)
   # Check if result is what we expect.
   if not expected_result.Matches(result):
-    print "'%s': %s," % (corpus_utils.Sha1FromFilename(crx_path), result)
+    print("'%s': %s," % (corpus_utils.Sha1FromFilename(crx_path), result))
     if options.verbose:
-      print '-' * 70
-      print 'Return code: %s' % retcode
-      print '>>> STDOUT'
-      print process_stdout
-      print '>>> STDERR'
-      print process_stderr
-      print '-' * 70
+      print('-' * 70)
+      print('Return code: %s' % retcode)
+      print('>>> STDOUT')
+      print(process_stdout)
+      print('>>> STDERR')
+      print(process_stderr)
+      print('-' * 70)
     return False
   return True
 

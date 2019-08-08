@@ -44,6 +44,7 @@ class FontLoader : public SkFontConfigInterface,
                        SkString* out_family_name,
                        SkFontStyle* out_style) override;
   SkStreamAsset* openStream(const FontIdentity& identity) override;
+  sk_sp<SkTypeface> makeTypeface(const FontIdentity& identity) override;
 
   // Additional cross-thread accessible methods below.
 

@@ -37,7 +37,7 @@
 #elif DestIsUint
 #define DestType uvec4
 #else
-#error "Not all destinatoin formats are accounted for"
+#error "Not all destination formats are accounted for"
 #endif
 
 layout(set = 0, binding = 0) uniform SRC_RESOURCE(SRC_RESOURCE_NAME) src;

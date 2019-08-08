@@ -52,7 +52,8 @@ PrefetchURLLoader::PrefetchURLLoader(
       accept_langs_(accept_langs) {
   DCHECK(network_loader_factory_);
 
-  if (signed_exchange_utils::IsSignedExchangeHandlingEnabled()) {
+  if (signed_exchange_utils::IsSignedExchangeHandlingEnabled(
+          resource_context_)) {
     // Set the SignedExchange accept header.
     // (https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#internet-media-type-applicationsigned-exchange).
     resource_request_.headers.SetHeader(
@@ -119,7 +120,9 @@ void PrefetchURLLoader::ResumeReadingBodyFromNet() {
 
 void PrefetchURLLoader::OnReceiveResponse(
     const network::ResourceResponseHead& response) {
-  if (signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(
+  if (signed_exchange_utils::IsSignedExchangeHandlingEnabled(
+          resource_context_) &&
+      signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(
           resource_request_.url, response)) {
     DCHECK(!signed_exchange_prefetch_handler_);
 

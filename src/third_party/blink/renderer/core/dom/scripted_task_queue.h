@@ -47,7 +47,7 @@ class CORE_EXPORT ScriptedTaskQueue final : public ScriptWrappable,
   void AbortTask(CallbackId id);
 
   class WrappedCallback;
-  HeapHashMap<CallbackId, TraceWrapperMember<WrappedCallback>> pending_tasks_;
+  HeapHashMap<CallbackId, Member<WrappedCallback>> pending_tasks_;
   CallbackId next_callback_id_ = 1;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };

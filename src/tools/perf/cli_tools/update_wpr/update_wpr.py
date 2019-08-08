@@ -70,6 +70,66 @@ def _OpenEditor(filepath):
   subprocess.check_call([os.environ['EDITOR'], filepath])
 
 
+def _PrepareEnv():
+  # Enforce the same local settings for recording and replays on the bots.
+  env = os.environ.copy()
+  env['LC_ALL'] = 'en_US.UTF-8'
+  return env
+
+
+def _ExtractLogFile(out_file):
+  # This method extracts the name of the chrome log file from the
+  # run_benchmark output log and copies it to the temporary directory next to
+  # the log file, which ensures that it is not overridden by the next run.
+  try:
+    line = subprocess.check_output(
+      ['grep', 'Chrome log file will be saved in', out_file])
+    os.rename(line.split()[-1], out_file + '.chrome.log')
+  except subprocess.CalledProcessError as e:
+    cli_helpers.Error('Could not find log file: {error}', error=e)
+
+
+def _PrintResultsHTMLInfo(out_file):
+  results_file = out_file + '.results.html'
+  histogram_json = out_file + '.hist.json'
+  histogram_csv = out_file + '.hist.csv'
+
+  cli_helpers.Run(
+      [RESULTS2JSON, results_file, histogram_json], env=_PrepareEnv())
+  cli_helpers.Run(
+      [HISTOGRAM2CSV, histogram_json, histogram_csv], env=_PrepareEnv())
+
+  cli_helpers.Info('Metrics results: file://{path}', path=results_file)
+  names = set([
+      'console:error:network',
+      'console:error:js',
+      'console:error:all',
+      'console:error:security'])
+  with open(histogram_csv) as f:
+    for line in f.readlines():
+      line = line.split(',')
+      if line[0] in names:
+        cli_helpers.Info('    %-26s%s' % ('[%s]:' % line[0], line[2]))
+
+
+def _UploadArchiveToGoogleStorage(archive):
+  """Uploads specified WPR archive to the GS."""
+  cli_helpers.Run([
+    'upload_to_google_storage.py', '--bucket=chrome-partner-telemetry',
+    archive])
+
+
+def _GitAddArtifactHash(archive):
+  """Stages changes into SHA1 file for commit."""
+  archive_sha1 = archive + '.sha1'
+  if not os.path.exists(archive_sha1):
+    cli_helpers.Error(
+        'Could not find upload artifact: {sha}', sha=archive_sha1)
+    return False
+  cli_helpers.Run(['git', 'add', archive_sha1])
+  return True
+
+
 class WprUpdater(object):
   def __init__(self, args):
     self.story = args.story
@@ -83,15 +143,6 @@ class WprUpdater(object):
     self.bug_id = args.bug_id
     self.reviewers = args.reviewers or DEFAULT_REVIEWERS
 
-  def _PrepareEnv(self):
-    # Enforce the same local settings for recording and replays on the bots.
-    env = os.environ.copy()
-    env['LC_ALL'] = 'en_US.UTF-8'
-    return env
-
-  def _Run(self, command, ok_fail=False):
-    return cli_helpers.Run(command, ok_fail=ok_fail, env=self._PrepareEnv())
-
   def _CheckLog(self, command, log_name):
     # This is a wrapper around cli_helpers.CheckLog that adds timestamp to the
     # log filename and substitutes placeholders such as {src}, {story},
@@ -102,14 +153,19 @@ class WprUpdater(object):
         for c in command]
     timestamp = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
     log_path = os.path.join(self.output_dir, '%s_%s' % (log_name, timestamp))
-    cli_helpers.CheckLog(command, log_path=log_path, env=self._PrepareEnv())
+    cli_helpers.CheckLog(command, log_path=log_path, env=_PrepareEnv())
     return log_path
 
   def _IsDesktop(self):
     return self.device_id is None
 
   def _ExistingWpr(self):
-    """Returns a path to the current WPR archive for specified story."""
+    """Parses JSON story config to extract info about WPR archive.
+
+    Returns:
+      A 2-tuple with path to the current WPR archive for specified story and
+      whether it is used by other benchmarks too.
+    """
     config_file = os.path.join(DATA_DIR, 'system_health_%s.json' % (
         'desktop' if self._IsDesktop() else 'mobile'))
     with open(config_file) as f:
@@ -117,14 +173,17 @@ class WprUpdater(object):
     archives = config['archives']
     archive = archives.get(self.story)
     if archive is None:
-      return None
+      return None, False
     archive = archive['DEFAULT']
-    return os.path.join(DATA_DIR, archive)
+    used_in_other_stories = any(
+        archive in config.values() for story, config in archives.iteritems()
+        if story != self.story)
+    return os.path.join(DATA_DIR, archive), used_in_other_stories
 
   def _DeleteExistingWpr(self):
     """Deletes current WPR archive."""
-    archive = self._ExistingWpr()
-    if archive is None:
+    archive, used_elsewhere = self._ExistingWpr()
+    if archive is None or used_elsewhere:
       return
     cli_helpers.Info('Deleting WPR: {archive}', archive=archive)
     if os.path.exists(archive):
@@ -132,17 +191,6 @@ class WprUpdater(object):
     archive_sha1 = archive + '.sha1'
     if os.path.exists(archive_sha1):
       os.remove(archive_sha1)
-
-  def _ExtractLogFile(self, out_file):
-    # This method extracts the name of the chrome log file from the
-    # run_benchmark output log and copies it to the temporary directory next to
-    # the log file, which ensures that it is not overridden by the next run.
-    try:
-      line = subprocess.check_output(
-        ['grep', 'Chrome log file will be saved in', out_file])
-      os.rename(line.split()[-1], out_file + '.chrome.log')
-    except subprocess.CalledProcessError as e:
-      cli_helpers.Error('Could not find log file: {error}', error=e)
 
   def _ExtractResultsFile(self, out_file):
     results_file = out_file + '.results.html'
@@ -166,7 +214,7 @@ class WprUpdater(object):
     if self._IsDesktop():
       args.append('system_health.memory_desktop')
     else:
-      args.extend('system_health.memory_mobile')
+      args.extend(['system_health.memory_mobile', '--device={device_id}'])
 
 
     args.extend([
@@ -179,33 +227,14 @@ class WprUpdater(object):
       args.append('--use-live-sites')
     out_file = self._CheckLog(args, log_name=log_name)
     self._ExtractResultsFile(out_file)
-    self._ExtractLogFile(out_file)
+    if self._IsDesktop():  # Mobile test runner does not product the log file.
+      _ExtractLogFile(out_file)
     return out_file
-
-  def _PrintResultsHTMLInfo(self, out_file):
-    results_file = out_file + '.results.html'
-    histogram_json = out_file + '.hist.json'
-    histogram_csv = out_file + '.hist.csv'
-
-    self._Run([RESULTS2JSON, results_file, histogram_json])
-    self._Run([HISTOGRAM2CSV, histogram_json, histogram_csv])
-
-    cli_helpers.Info('Metrics results: file://{path}', path=results_file)
-    names = set([
-        'console:error:network',
-        'console:error:js',
-        'console:error:all',
-        'console:error:security'])
-    with open(histogram_csv) as f:
-      for line in f.readlines():
-        line = line.split(',')
-        if line[0] in names:
-          cli_helpers.Info('    %-26s%s' % ('[%s]:' % line[0], line[2]))
 
   def _PrintRunInfo(self, out_file, results_details=True):
     try:
       if results_details:
-        self._PrintResultsHTMLInfo(out_file)
+        _PrintResultsHTMLInfo(out_file)
     except Exception as e:
       cli_helpers.Error('Could not print results.html tests: %s' % e)
 
@@ -223,7 +252,8 @@ class WprUpdater(object):
         cli_helpers.Info('    %-16s%-8s  %s' % ('[%s]:' % name, output, cmd))
 
     cli_helpers.Info('Stdout/Stderr Log: %s' % out_file)
-    cli_helpers.Info('Chrome Log: %s.chrome.log' % out_file)
+    if self._IsDesktop():  # Mobile test runner does not product the log file.
+      cli_helpers.Info('Chrome Log: %s.chrome.log' % out_file)
     cli_helpers.Info(
         '    Total output:   %s' %
         subprocess.check_output(['wc', '-l', out_file]).rstrip())
@@ -238,22 +268,6 @@ class WprUpdater(object):
       cmd = 'grep "Uncaught .*Error" "%s"' % chrome_log
       count = shell(cmd + '| wc -l')
       cli_helpers.Info('    %-16s%-8s  %s' % ('[javascript]:', count, cmd))
-
-  def _UploadArchiveToGoogleStorage(self, archive):
-    """Uploads specified WPR archive to the GS."""
-    cli_helpers.Run([
-      'upload_to_google_storage.py', '--bucket=chrome-partner-telemetry',
-      archive])
-
-  def _GitAddArtifactHash(self, archive):
-    """Stages changes into SHA1 file for commit."""
-    archive_sha1 = archive + '.sha1'
-    if not os.path.exists(archive_sha1):
-      cli_helpers.Error(
-          'Could not find upload artifact: {sha}', sha=archive_sha1)
-      return False
-    cli_helpers.Run(['git', 'add', archive_sha1])
-    return True
 
   def _GetBranchIssueUrl(self):
     output_file = os.path.join(self.output_dir, 'git_cl_issue.json')
@@ -363,11 +377,11 @@ class WprUpdater(object):
 
   def UploadWpr(self):
     cli_helpers.Step('UPLOAD WPR: %s' % self.story)
-    archive = self._ExistingWpr()
+    archive, _ = self._ExistingWpr()
     if archive is None:
       cli_helpers.Error('NO WPR FOUND, use the "record" subcommand')
-    self._UploadArchiveToGoogleStorage(archive)
-    return self._GitAddArtifactHash(archive)
+    _UploadArchiveToGoogleStorage(archive)
+    return _GitAddArtifactHash(archive)
 
   def UploadCL(self, short_description=False):
     cli_helpers.Step('UPLOAD CL: %s' % self.story)
@@ -379,7 +393,8 @@ class WprUpdater(object):
           'with tools/perf/update_wpr script' % self.story)
     if self.bug_id:
       commit_message += '\n\nBug: %s' % self.bug_id
-    cli_helpers.Run(['git', 'commit', '-a', '-m', commit_message])
+    if subprocess.call(['git', 'diff', '--quiet']):
+      cli_helpers.Run(['git', 'commit', '-a', '-m', commit_message])
     commit_msg_file = os.path.join(self.output_dir, 'commit_message.tmp')
     with open(commit_msg_file, 'w') as fd:
       fd.write(commit_message)
@@ -396,7 +411,7 @@ class WprUpdater(object):
       if self._IsDesktop():
         configs = ['linux-perf', 'win-10-perf', 'mac-10_12_laptop_low_end-perf']
       else:
-        configs = ['Android Nexus5 Perf']
+        configs = ['android-nexus5x-perf']
     for config in configs:
       job_url = self._StartPinpointJob(config)
       if not job_url:

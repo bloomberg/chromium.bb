@@ -14,6 +14,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeUnchecked;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.NetError;
@@ -167,6 +168,11 @@ public class AwContentsClientBridge {
         // thrown by the application callback won't have to be propagated through a native call
         // stack.
         new Handler().post(() -> mClient.onReceivedSslError(callback, sslError));
+
+        // Record UMA on ssl error
+        // Use sparse histogram in case new values are added in future releases
+        RecordHistogram.recordSparseHistogram(
+                "Android.WebView.onReceivedSslError.ErrorCode", sslError.getPrimaryError());
         return true;
     }
 
@@ -211,6 +217,10 @@ public class AwContentsClientBridge {
         final ClientCertificateRequestCallback callback =
                 new ClientCertificateRequestCallback(id, host, port);
         mClient.onReceivedClientCertRequest(callback, keyTypes, principals, host, port);
+
+        // Record UMA for onReceivedClientCertRequest.
+        AwHistogramRecorder.recordCallbackInvocation(
+                AwHistogramRecorder.WebViewCallbackType.ON_RECEIVED_CLIENT_CERT_REQUEST);
     }
 
     @CalledByNative
@@ -267,11 +277,19 @@ public class AwContentsClientBridge {
             String mimeType, long contentLength) {
         mClient.getCallbackHelper().postOnDownloadStart(
                 url, userAgent, contentDisposition, mimeType, contentLength);
+
+        // Record UMA for onDownloadStart.
+        AwHistogramRecorder.recordCallbackInvocation(
+                AwHistogramRecorder.WebViewCallbackType.ON_DOWNLOAD_START);
     }
 
     @CalledByNative
     private void newLoginRequest(String realm, String account, String args) {
         mClient.getCallbackHelper().postOnReceivedLoginRequest(realm, account, args);
+
+        // Record UMA for onReceivedLoginRequest.
+        AwHistogramRecorder.recordCallbackInvocation(
+                AwHistogramRecorder.WebViewCallbackType.ON_RECEIVED_LOGIN_REQUEST);
     }
 
     @CalledByNative
@@ -335,8 +353,12 @@ public class AwContentsClientBridge {
                                 response.action(), response.reporting(), requestId));
         // clang-format on
 
-        mClient.getCallbackHelper().postOnSafeBrowsingHit(
-                request, AwSafeBrowsingConversionHelper.convertThreatType(threatType), callback);
+        int webViewThreatType = AwSafeBrowsingConversionHelper.convertThreatType(threatType);
+        mClient.getCallbackHelper().postOnSafeBrowsingHit(request, webViewThreatType, callback);
+
+        // Record UMA on threat type
+        RecordHistogram.recordEnumeratedHistogram("Android.WebView.onSafeBrowsingHit.ThreatType",
+                webViewThreatType, AwSafeBrowsingConversionHelper.SAFE_BROWSING_THREAT_BOUNDARY);
     }
 
     @CalledByNative
@@ -367,6 +389,10 @@ public class AwContentsClientBridge {
         AwWebResourceResponse response = new AwWebResourceResponse(
                 mimeType, encoding, null, statusCode, reasonPhrase, responseHeaders);
         mClient.getCallbackHelper().postOnReceivedHttpError(request, response);
+
+        // Record UMA on http response status.
+        RecordHistogram.recordSparseHistogram(
+                "Android.WebView.onReceivedHttpError.StatusCode", statusCode);
     }
 
     @CalledByNativeUnchecked

@@ -134,24 +134,24 @@ class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
   gfx::Rect title_bounds_;
 
   // Not owned.
-  Widget* frame_;
+  Widget* frame_ = nullptr;
 
   // The icon of this window. May be NULL.
-  ImageButton* window_icon_;
+  ImageButton* window_icon_ = nullptr;
 
   // Window caption buttons.
-  ImageButton* minimize_button_;
-  ImageButton* maximize_button_;
-  ImageButton* restore_button_;
-  ImageButton* close_button_;
+  ImageButton* minimize_button_ = nullptr;
+  ImageButton* maximize_button_ = nullptr;
+  ImageButton* restore_button_ = nullptr;
+  ImageButton* close_button_ = nullptr;
 
   // Background painter for the window frame.
   std::unique_ptr<FrameBackground> frame_background_;
 
   // The horizontal boundaries for the title bar to layout within. Restricted
   // by the space used by the leading and trailing buttons.
-  int minimum_title_bar_x_;
-  int maximum_title_bar_x_;
+  int minimum_title_bar_x_ = 0;
+  int maximum_title_bar_x_ = -1;
 
   // True if the frame containing this frameview is currently active. Updated in
   // ActivationChanged().

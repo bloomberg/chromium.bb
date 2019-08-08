@@ -17,6 +17,7 @@
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/authenticator_supported_options.h"
+#include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
 namespace device {
@@ -69,6 +70,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
                               MakeCredentialCallback callback) = 0;
   virtual void GetAssertion(CtapGetAssertionRequest request,
                             GetAssertionCallback callback) = 0;
+  // GetNextAssertion fetches the next assertion from a device that indicated in
+  // the response to |GetAssertion| that multiple results were available.
+  virtual void GetNextAssertion(GetAssertionCallback callback);
   // GetTouch causes an (external) authenticator to flash and wait for a touch.
   virtual void GetTouch(base::OnceCallback<void()> callback);
   // GetRetries gets the number of PIN attempts remaining before an
@@ -100,6 +104,47 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
                          const std::string& new_pin,
                          pin::KeyAgreementResponse& peer_key,
                          SetPINCallback callback);
+
+  // MakeCredentialPINDisposition enumerates the possible interactions between
+  // a user-verification level, the PIN configuration of an authenticator, and
+  // whether the embedder is capable of collecting PINs from the user.
+  enum class MakeCredentialPINDisposition {
+    // kNoPIN means that a PIN will not be needed to make this credential.
+    kNoPIN,
+    // kUsePIN means that a PIN must be gathered and used to make this
+    // credential.
+    kUsePIN,
+    // kSetPIN means that the operation should set and then use a PIN to
+    // make this credential.
+    kSetPIN,
+    // kUnsatisfiable means that the request cannot be satisfied by this
+    // authenticator.
+    kUnsatisfiable,
+  };
+  // WillNeedPINToMakeCredential returns what type of PIN intervention will be
+  // needed to serve the given request on this authenticator.
+  virtual MakeCredentialPINDisposition WillNeedPINToMakeCredential(
+      const CtapMakeCredentialRequest& request,
+      const FidoRequestHandlerBase::Observer* observer);
+
+  // GetAssertionPINDisposition enumerates the possible interactions between
+  // a user-verification level and the PIN support of an authenticator when
+  // getting an assertion.
+  enum class GetAssertionPINDisposition {
+    // kNoPIN means that a PIN will not be needed for this assertion.
+    kNoPIN,
+    // kUsePIN means that a PIN must be gathered and used for this assertion.
+    kUsePIN,
+    // kUnsatisfiable means that the request cannot be satisfied by this
+    // authenticator.
+    kUnsatisfiable,
+  };
+  // WillNeedPINToGetAssertion returns whether a PIN prompt will be needed to
+  // serve the given request on this authenticator.
+  virtual GetAssertionPINDisposition WillNeedPINToGetAssertion(
+      const CtapGetAssertionRequest& request,
+      const FidoRequestHandlerBase::Observer* observer);
+
   // Reset triggers a reset operation on the authenticator. This erases all
   // stored resident keys and any configured PIN.
   virtual void Reset(ResetCallback callback);

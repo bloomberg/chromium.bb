@@ -20,15 +20,7 @@
     "additional_compile_targets": [
       "all"
     ],
-    "scripts": [
-      {
-        "args": [
-          "linux-release-64/sizes"
-        ],
-        "name": "sizes",
-        "script": "sizes.py"
-      }
-    ]
+    "scripts": []
   },
   "mac-dbg": {
     "additional_compile_targets": [
@@ -39,15 +31,7 @@
     "additional_compile_targets": [
       "all"
     ],
-    "scripts": [
-      {
-        "args": [
-          "mac-release/sizes"
-        ],
-        "name": "sizes",
-        "script": "sizes.py"
-      }
-    ]
+    "scripts": []
   },
   "win-dbg": {
     "additional_compile_targets": [

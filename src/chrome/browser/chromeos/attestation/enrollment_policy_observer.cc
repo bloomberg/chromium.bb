@@ -19,7 +19,7 @@
 #include "chrome/browser/chromeos/attestation/attestation_key_payload.pb.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/account_id/account_id.h"
@@ -130,7 +130,7 @@ void EnrollmentPolicyObserver::Start() {
   request_in_flight_ = true;
 
   if (!cryptohome_client_)
-    cryptohome_client_ = DBusThreadManager::Get()->GetCryptohomeClient();
+    cryptohome_client_ = CryptohomeClient::Get();
 
   GetEnrollmentId();
 }

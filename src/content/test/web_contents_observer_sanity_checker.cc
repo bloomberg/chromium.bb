@@ -55,12 +55,14 @@ void WebContentsObserverSanityChecker::RenderFrameCreated(
                  << Format(render_frame_host);
   }
 
+  CHECK(render_frame_host->IsRenderFrameCreated())
+      << "RenderFrameCreated was called for a RenderFrameHost that has not been"
+         "marked created.";
   CHECK(render_frame_host->GetProcess()->IsInitializedAndNotDead())
       << "RenderFrameCreated was called for a RenderFrameHost whose render "
          "process is not currently live, so there's no way for the RenderFrame "
          "to have been created.";
-  CHECK(
-      static_cast<RenderFrameHostImpl*>(render_frame_host)->IsRenderFrameLive())
+  CHECK(render_frame_host->IsRenderFrameLive())
       << "RenderFrameCreated called on for a RenderFrameHost that thinks it is "
          "not alive.";
 
@@ -81,6 +83,13 @@ void WebContentsObserverSanityChecker::RenderFrameCreated(
 void WebContentsObserverSanityChecker::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
   CHECK(!web_contents_destroyed_);
+  CHECK(!render_frame_host->IsRenderFrameCreated())
+      << "RenderFrameDeleted was called for a RenderFrameHost that is"
+         "(still) marked as created.";
+  CHECK(!render_frame_host->IsRenderFrameLive())
+      << "RenderFrameDeleted was called for a RenderFrameHost that is"
+         "still live.";
+
   GlobalRoutingID routing_pair = GetRoutingPair(render_frame_host);
   bool was_live = !!live_routes_.erase(routing_pair);
   bool was_dead_already = !deleted_routes_.insert(routing_pair).second;

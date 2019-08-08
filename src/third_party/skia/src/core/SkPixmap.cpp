@@ -217,8 +217,8 @@ bool SkPixmap::scalePixels(const SkPixmap& actualDst, SkFilterQuality quality) c
 
     // We'll create a shader to do this draw so we have control over the bicubic clamp.
     sk_sp<SkShader> shader = SkImageShader::Make(SkImage::MakeFromBitmap(bitmap),
-                                                 SkShader::kClamp_TileMode,
-                                                 SkShader::kClamp_TileMode,
+                                                 SkTileMode::kClamp,
+                                                 SkTileMode::kClamp,
                                                  &scale,
                                                  clampAsIfUnpremul);
 
@@ -305,6 +305,7 @@ SkColor SkPixmap::getColor(int x, int y) const {
                  | (uint32_t)( b * 255.0f ) <<  0
                  | (uint32_t)( a * 255.0f ) << 24;
         }
+        case kRGBA_F16Norm_SkColorType:
         case kRGBA_F16_SkColorType: {
             const uint64_t* addr =
                 (const uint64_t*)fPixels + y * (fRowBytes >> 3) + x;

@@ -39,11 +39,10 @@ class VIEWS_EXPORT ImageViewBase : public View {
   void SetVerticalAlignment(Alignment va);
   Alignment GetVerticalAlignment() const;
 
-  // Set / Get the tooltip text.
+  // Set the tooltip text.
   void set_tooltip_text(const base::string16& tooltip) {
     tooltip_text_ = tooltip;
   }
-  const base::string16& tooltip_text() const { return tooltip_text_; }
 
   // Set / Get the accessible name text.
   void SetAccessibleName(const base::string16& name);
@@ -53,8 +52,7 @@ class VIEWS_EXPORT ImageViewBase : public View {
   void OnPaint(gfx::Canvas* canvas) override = 0;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   const char* GetClassName() const override = 0;
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
+  base::string16 GetTooltipText(const gfx::Point& p) const override;
   gfx::Size CalculatePreferredSize() const override;
   views::PaintInfo::ScaleType GetPaintScaleType() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;

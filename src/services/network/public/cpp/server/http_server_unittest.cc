@@ -211,7 +211,7 @@ class HttpServerTest : public testing::Test, public HttpServer::Delegate {
     NOTREACHED();
   }
 
-  void OnWebSocketMessage(int connection_id, const std::string& data) override {
+  void OnWebSocketMessage(int connection_id, std::string data) override {
     NOTREACHED();
   }
 
@@ -296,8 +296,7 @@ class WebSocketTest : public HttpServerTest {
     HttpServerTest::OnHttpRequest(connection_id, info);
   }
 
-  void OnWebSocketMessage(int connection_id, const std::string& data) override {
-  }
+  void OnWebSocketMessage(int connection_id, std::string data) override {}
 };
 
 TEST_F(HttpServerTest, SetNonexistingConnectionBuffer) {

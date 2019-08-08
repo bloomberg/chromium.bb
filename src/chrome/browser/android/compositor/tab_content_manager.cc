@@ -169,8 +169,12 @@ scoped_refptr<ThumbnailLayer> TabContentManager::GetOrCreateStaticLayer(
   return static_layer;
 }
 
-void TabContentManager::AttachLiveLayer(int tab_id,
-                                        scoped_refptr<cc::Layer> layer) {
+void TabContentManager::AttachTab(JNIEnv* env,
+                                  const JavaParamRef<jobject>& obj,
+                                  const JavaParamRef<jobject>& jtab,
+                                  jint tab_id) {
+  TabAndroid* tab = TabAndroid::GetNativeTab(env, jtab);
+  scoped_refptr<cc::Layer> layer = tab->GetContentLayer();
   if (!layer.get())
     return;
 
@@ -179,14 +183,18 @@ void TabContentManager::AttachLiveLayer(int tab_id,
     live_layer_list_[tab_id] = layer;
 }
 
-void TabContentManager::DetachLiveLayer(int tab_id,
-                                        scoped_refptr<cc::Layer> layer) {
+void TabContentManager::DetachTab(JNIEnv* env,
+                                  const JavaParamRef<jobject>& obj,
+                                  const JavaParamRef<jobject>& jtab,
+                                  jint tab_id) {
   scoped_refptr<cc::Layer> current_layer = live_layer_list_[tab_id];
   if (!current_layer.get()) {
     // Empty cached layer should not exist but it is ok if it happens.
     return;
   }
 
+  TabAndroid* tab = TabAndroid::GetNativeTab(env, jtab);
+  scoped_refptr<cc::Layer> layer = tab->GetContentLayer();
   // We need to remove if we're getting a detach for our current layer or we're
   // getting a detach with NULL and we have a current layer, which means remove
   //  all layers.

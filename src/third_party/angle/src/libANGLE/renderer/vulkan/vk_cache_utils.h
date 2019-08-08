@@ -115,6 +115,8 @@ class AttachmentOpsArray final
 
     // Initializes an attachment op with whatever values. Used for compatible RenderPass checks.
     void initDummyOp(size_t index, VkImageLayout initialLayout, VkImageLayout finalLayout);
+    // Initialize an attachment op with all load and store operations.
+    void initWithLoadStore(size_t index, VkImageLayout initialLayout, VkImageLayout finalLayout);
 
     size_t hash() const;
 
@@ -326,8 +328,8 @@ class GraphicsPipelineDesc final
                                      const RenderPass &compatibleRenderPass,
                                      const PipelineLayout &pipelineLayout,
                                      const gl::AttributesMask &activeAttribLocationsMask,
-                                     const ShaderModule &vertexModule,
-                                     const ShaderModule &fragmentModule,
+                                     const ShaderModule *vertexModule,
+                                     const ShaderModule *fragmentModule,
                                      Pipeline *pipelineOut) const;
 
     // Vertex input state. For ES 3.1 this should be separated into binding and attribute.
@@ -365,11 +367,22 @@ class GraphicsPipelineDesc final
                               const gl::BlendState &blendState);
     void setColorWriteMask(VkColorComponentFlags colorComponentFlags,
                            const gl::DrawBufferMask &alphaMask);
+    void setSingleColorWriteMask(uint32_t colorIndex, VkColorComponentFlags colorComponentFlags);
     void updateColorWriteMask(GraphicsPipelineTransitionBits *transition,
                               VkColorComponentFlags colorComponentFlags,
                               const gl::DrawBufferMask &alphaMask);
 
     // Depth/stencil states.
+    void setDepthTestEnabled(bool enabled);
+    void setDepthWriteEnabled(bool enabled);
+    void setDepthFunc(VkCompareOp op);
+    void setStencilTestEnabled(bool enabled);
+    void setStencilFrontFuncs(uint8_t reference, VkCompareOp compareOp, uint8_t compareMask);
+    void setStencilBackFuncs(uint8_t reference, VkCompareOp compareOp, uint8_t compareMask);
+    void setStencilFrontOps(VkStencilOp failOp, VkStencilOp passOp, VkStencilOp depthFailOp);
+    void setStencilBackOps(VkStencilOp failOp, VkStencilOp passOp, VkStencilOp depthFailOp);
+    void setStencilFrontWriteMask(uint8_t mask);
+    void setStencilBackWriteMask(uint8_t mask);
     void updateDepthTestEnabled(GraphicsPipelineTransitionBits *transition,
                                 const gl::DepthStencilState &depthStencilState,
                                 const gl::Framebuffer *drawFramebuffer);
@@ -726,8 +739,8 @@ class GraphicsPipelineCache final : angle::NonCopyable
                                            const vk::RenderPass &compatibleRenderPass,
                                            const vk::PipelineLayout &pipelineLayout,
                                            const gl::AttributesMask &activeAttribLocationsMask,
-                                           const vk::ShaderModule &vertexModule,
-                                           const vk::ShaderModule &fragmentModule,
+                                           const vk::ShaderModule *vertexModule,
+                                           const vk::ShaderModule *fragmentModule,
                                            const vk::GraphicsPipelineDesc &desc,
                                            const vk::GraphicsPipelineDesc **descPtrOut,
                                            vk::PipelineHelper **pipelineOut)
@@ -751,8 +764,8 @@ class GraphicsPipelineCache final : angle::NonCopyable
                                  const vk::RenderPass &compatibleRenderPass,
                                  const vk::PipelineLayout &pipelineLayout,
                                  const gl::AttributesMask &activeAttribLocationsMask,
-                                 const vk::ShaderModule &vertexModule,
-                                 const vk::ShaderModule &fragmentModule,
+                                 const vk::ShaderModule *vertexModule,
+                                 const vk::ShaderModule *fragmentModule,
                                  const vk::GraphicsPipelineDesc &desc,
                                  const vk::GraphicsPipelineDesc **descPtrOut,
                                  vk::PipelineHelper **pipelineOut);

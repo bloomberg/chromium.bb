@@ -11,9 +11,9 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
 #include "chrome/browser/chromeos/file_manager/documents_provider_root_manager.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_file_system_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -26,12 +26,15 @@ namespace {
 class TestObserver : public DocumentsProviderRootManager::Observer {
  public:
   // DocumentsProviderRootManager::Observer overrides:
-  void OnDocumentsProviderRootAdded(const std::string& authority,
-                                    const std::string& root_id,
-                                    const std::string& document_id,
-                                    const std::string& title,
-                                    const std::string& summary,
-                                    const GURL& icon_url) override {
+  void OnDocumentsProviderRootAdded(
+      const std::string& authority,
+      const std::string& root_id,
+      const std::string& document_id,
+      const std::string& title,
+      const std::string& summary,
+      const GURL& icon_url,
+      bool read_only,
+      const std::vector<std::string>& mime_types) override {
     added_authorities_.push_back(authority);
   }
   void OnDocumentsProviderRootRemoved(const std::string& authority,

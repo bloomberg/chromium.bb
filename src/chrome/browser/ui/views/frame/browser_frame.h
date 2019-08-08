@@ -56,9 +56,9 @@ class BrowserFrame : public views::Widget,
   // left edge of the window. Used in our Non-Client View's Layout.
   int GetMinimizeButtonOffset() const;
 
-  // Retrieves the bounds, in non-client view coordinates for the specified
-  // TabStrip view.
-  gfx::Rect GetBoundsForTabStrip(const views::View* tabstrip) const;
+  // Retrieves the bounds in non-client view coordinates for the
+  // TabStripRegionView that contains the specified TabStrip view.
+  gfx::Rect GetBoundsForTabStripRegion(const views::View* tabstrip) const;
 
   // Returns the inset of the topmost view in the client view from the top of
   // the non-client view. The topmost view depends on the window type. The

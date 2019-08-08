@@ -168,6 +168,12 @@ std::vector<PathImpl *> ContextGL::createPaths(GLsizei range)
     return ret;
 }
 
+MemoryObjectImpl *ContextGL::createMemoryObject()
+{
+    UNREACHABLE();
+    return nullptr;
+}
+
 angle::Result ContextGL::flush(const gl::Context *context)
 {
     return mRenderer->flush();
@@ -478,7 +484,7 @@ void ContextGL::stencilThenCoverStrokePathInstanced(const std::vector<gl::Path *
                                                    transformType, transformValues);
 }
 
-GLenum ContextGL::getResetStatus()
+gl::GraphicsResetStatus ContextGL::getResetStatus()
 {
     return mRenderer->getResetStatus();
 }
@@ -608,4 +614,10 @@ angle::Result ContextGL::memoryBarrierByRegion(const gl::Context *context, GLbit
 {
     return mRenderer->memoryBarrierByRegion(barriers);
 }
+
+void ContextGL::setMaxShaderCompilerThreads(GLuint count)
+{
+    mRenderer->setMaxShaderCompilerThreads(count);
+}
+
 }  // namespace rx

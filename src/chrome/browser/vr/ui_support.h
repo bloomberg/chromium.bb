@@ -45,6 +45,8 @@ enum VrIconId {
   kVrDaydreamControllerAppButtonIcon,
   kVrDaydreamControllerHomeButtonIcon,
   kVrOpenInBrowserIcon,
+  kVrUsbIcon,
+  kVrMidiIcon,
 };
 
 VR_BASE_EXPORT const gfx::VectorIcon& GetVrIcon(VrIconId icon);

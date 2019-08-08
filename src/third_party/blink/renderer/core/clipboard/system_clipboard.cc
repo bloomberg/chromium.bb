@@ -100,14 +100,14 @@ String SystemClipboard::ReadPlainText(mojom::ClipboardBuffer buffer) {
 }
 
 void SystemClipboard::WritePlainText(const String& plain_text,
-                                     SmartReplaceOption) {
-  // FIXME: add support for smart replace
+                                             SmartReplaceOption) {
+  // TODO(https://crbug.com/106449): add support for smart replace, which is
+  // currently under-specified.
   String text = plain_text;
 #if defined(OS_WIN)
   ReplaceNewlinesWithWindowsStyleNewlines(text);
 #endif
   clipboard_->WriteText(mojom::ClipboardBuffer::kStandard, NonNullString(text));
-  clipboard_->CommitWrite(mojom::ClipboardBuffer::kStandard);
 }
 
 String SystemClipboard::ReadHTML(KURL& url,
@@ -142,7 +142,6 @@ void SystemClipboard::WriteHTML(const String& markup,
   clipboard_->WriteText(mojom::ClipboardBuffer::kStandard, NonNullString(text));
   if (smart_replace_option == kCanSmartReplace)
     clipboard_->WriteSmartPasteMarker(mojom::ClipboardBuffer::kStandard);
-  clipboard_->CommitWrite(mojom::ClipboardBuffer::kStandard);
 }
 
 String SystemClipboard::ReadRTF() {
@@ -161,8 +160,8 @@ SkBitmap SystemClipboard::ReadImage(mojom::ClipboardBuffer buffer) {
 }
 
 void SystemClipboard::WriteImageWithTag(Image* image,
-                                        const KURL& url,
-                                        const String& title) {
+                                                const KURL& url,
+                                                const String& title) {
   DCHECK(image);
 
   PaintImage paint_image = image->PaintImageForCurrentFrame();
@@ -188,12 +187,10 @@ void SystemClipboard::WriteImageWithTag(Image* image,
     clipboard_->WriteHtml(mojom::ClipboardBuffer::kStandard,
                           URLToImageMarkup(url, title), KURL());
   }
-  clipboard_->CommitWrite(mojom::ClipboardBuffer::kStandard);
 }
 
 void SystemClipboard::WriteImage(const SkBitmap& bitmap) {
   clipboard_->WriteImage(mojom::ClipboardBuffer::kStandard, bitmap);
-  clipboard_->CommitWrite(mojom::ClipboardBuffer::kStandard);
 }
 
 String SystemClipboard::ReadCustomData(const String& type) {
@@ -235,6 +232,9 @@ void SystemClipboard::WriteDataObject(DataObject* data_object) {
     clipboard_->WriteCustomData(mojom::ClipboardBuffer::kStandard,
                                 std::move(custom_data));
   }
+}
+
+void SystemClipboard::CommitWrite() {
   clipboard_->CommitWrite(mojom::ClipboardBuffer::kStandard);
 }
 

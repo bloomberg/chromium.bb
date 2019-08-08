@@ -10,6 +10,7 @@ group("all") {
     ":system_api-biod-protos",
     ":system_api-bootlockbox-protos",
     ":system_api-chaps-protos",
+    ":system_api-cryptohome-goprotos",
     ":system_api-cryptohome-protos",
     ":system_api-dlcservice-protos",
     ":system_api-kerberos-protos",
@@ -23,9 +24,10 @@ group("all") {
     ":system_api-power_manager-protos",
     ":system_api-protos",
     ":system_api-runtime_probe-protos",
+    ":system_api-seneschal-goprotos",
     ":system_api-seneschal-protos",
     ":system_api-smbprovider-protos",
-    ":system_api-update_engine-protos",
+    ":system_api-u2f-protos",
     ":system_api-vm_applications-protos",
     ":system_api-vm_cicerone-goprotos",
     ":system_api-vm_cicerone-protos",
@@ -87,6 +89,15 @@ proto_library("system_api-cryptohome-protos") {
     "${proto_in_dir}/signed_secret.proto",
   ]
   standalone = true
+}
+
+goproto_library("system_api-cryptohome-goprotos") {
+  proto_in_dir = "dbus/cryptohome"
+  proto_out_dir = "go/src/chromiumos/system_api/cryptohome_proto"
+  sources = [
+    "${proto_in_dir}/key.proto",
+    "${proto_in_dir}/rpc.proto",
+  ]
 }
 
 proto_library("system_api-authpolicy-protos") {
@@ -235,6 +246,14 @@ proto_library("system_api-seneschal-protos") {
   standalone = true
 }
 
+goproto_library("system_api-seneschal-goprotos") {
+  proto_in_dir = "dbus/seneschal"
+  proto_out_dir = "go/src/chromiumos/system_api/seneschal_proto"
+  sources = [
+    "${proto_in_dir}/seneschal_service.proto",
+  ]
+}
+
 proto_library("system_api-oobe_config-protos") {
   proto_in_dir = "dbus/oobe_config"
   proto_out_dir = "include/oobe_config/proto_bindings"
@@ -249,15 +268,6 @@ proto_library("system_api-runtime_probe-protos") {
   proto_out_dir = "include/runtime_probe/proto_bindings"
   sources = [
     "${proto_in_dir}/runtime_probe.proto",
-  ]
-  standalone = true
-}
-
-proto_library("system_api-update_engine-protos") {
-  proto_in_dir = "dbus/update_engine"
-  proto_out_dir = "include/update_engine/proto_bindings"
-  sources = [
-    "${proto_in_dir}/update_engine.proto",
   ]
   standalone = true
 }
@@ -285,6 +295,15 @@ proto_library("system_api-vm_plugin_dispatcher-protos") {
   proto_out_dir = "include/vm_plugin_dispatcher/proto_bindings"
   sources = [
     "${proto_in_dir}/service.proto",
+  ]
+  standalone = true
+}
+
+proto_library("system_api-u2f-protos") {
+  proto_in_dir = "dbus/u2f"
+  proto_out_dir = "include/u2f/proto_bindings"
+  sources = [
+    "${proto_in_dir}/interface.proto",
   ]
   standalone = true
 }

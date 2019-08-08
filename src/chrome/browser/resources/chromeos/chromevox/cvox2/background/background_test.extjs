@@ -1786,12 +1786,13 @@ TEST_F('ChromeVoxBackgroundTest', 'ListName', function() {
 TEST_F('ChromeVoxBackgroundTest', 'LayoutTable', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*
-    <table><tr><td>start</td></tr></table>
+    <table><tr><td>start</td></tr></table><p>end</p>
   */}, function(root) {
-    mockFeedback.expectSpeech(
-            'start',
-            'row 1 column 1',
-            'Table , 1 by 1')
+    mockFeedback.expectSpeech('start')
+        .call(doCmd('nextObject'))
+        .expectNextSpeechUtteranceIsNot('row 1 column 1')
+        .expectNextSpeechUtteranceIsNot('Table , 1 by 1')
+        .expectSpeech('end')
         .replay();
   });
 });

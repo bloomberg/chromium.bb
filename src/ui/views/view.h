@@ -15,6 +15,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -39,6 +42,8 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/metadata/metadata_macros.h"
+#include "ui/views/metadata/metadata_types.h"
 #include "ui/views/paint_info.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/views_export.h"
@@ -89,6 +94,56 @@ class RootView;
 class ScopedChildrenLock;
 }  // namespace internal
 
+// Struct used to describe how a View hierarchy has changed. See
+// View::ViewHierarchyChanged.
+// TODO(pbos): Move to a separate view_hierarchy_changed_details.h header.
+struct VIEWS_EXPORT ViewHierarchyChangedDetails {
+  ViewHierarchyChangedDetails()
+      : ViewHierarchyChangedDetails(false, nullptr, nullptr, nullptr) {}
+
+  ViewHierarchyChangedDetails(bool is_add,
+                              View* parent,
+                              View* child,
+                              View* move_view)
+      : is_add(is_add), parent(parent), child(child), move_view(move_view) {}
+
+  bool is_add;
+  // New parent if |is_add| is true, old parent if |is_add| is false.
+  View* parent;
+  // The view being added or removed.
+  View* child;
+  // If this is a move (reparent), meaning AddChildViewAt() is invoked with an
+  // existing parent, then a notification for the remove is sent first,
+  // followed by one for the add.  This case can be distinguished by a
+  // non-NULL |move_view|.
+  // For the remove part of move, |move_view| is the new parent of the View
+  // being removed.
+  // For the add part of move, |move_view| is the old parent of the View being
+  // added.
+  View* move_view;
+};
+
+// Used to identify the CallbackList<> within the PropertyChangedVectors map.
+using PropertyKey = const void*;
+
+using PropertyChangedCallbacks = base::CallbackList<void()>;
+using PropertyChangedCallback = PropertyChangedCallbacks::CallbackType;
+using PropertyChangedSubscription =
+    std::unique_ptr<PropertyChangedCallbacks::Subscription>;
+
+// The elements in PropertyEffects represent bits which define what effect(s) a
+// changed Property has on the containing class. Additional elements should
+// use the next most significant bit.
+enum PropertyEffects {
+  kPropertyEffectsNone = 0,
+  // Any changes to the property should cause the container to invalidate the
+  // current layout state.
+  kPropertyEffectsLayout = 0x00000001,
+  // Changes to the property should cause the container to schedule a painting
+  // update.
+  kPropertyEffectsPaint = 0x00000002,
+};
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // View class
@@ -113,15 +168,113 @@ class ScopedChildrenLock;
 //   Unless otherwise documented, views is not thread safe and should only be
 //   accessed from the main thread.
 //
+//   Properties ------------------
+//
+//   Properties which are intended to be dynamically visible through metadata to
+//   other subsystems, such as dev-tools must adhere to a naming convention,
+//   usage and implementation patterns.
+//
+//   Properties start with their base name, such as "Frobble" (note the
+//   capitalization). The method to set the property must be called SetXXXX and
+//   the method to retrieve the value is called GetXXXX. For the aforementioned
+//   Frobble property, this would be SetFrobble and GetFrobble.
+//
+//   void SetFrobble(bool is_frobble);
+//   bool GetFrobble() const;
+//
+//   In the SetXXXX method, after the value storage location has been updated,
+//   OnPropertyChanged() must be called using the address of the storage
+//   location as a key. Additionally, any combination of PropertyEffects are
+//   also passed in. This will ensure that any desired side effects are properly
+//   invoked.
+//
+//   void View::SetFrobble(bool is_frobble) {
+//     if (is_frobble == frobble_)
+//       return;
+//     frobble_ = is_frobble;
+//     OnPropertyChanged(&frobble_, kPropertyEffectsPaint);
+//   }
+//
+//   Each property should also have a way to "listen" to changes by registering
+//   a callback.
+//
+//   PropertyChangedSubscription AddFrobbleChangedCallback(
+//       PropertyChangedCallback callback) WARN_UNUSED_RETURN;
+//
+//   Each callback uses the the existing base::Bind mechanisms which allow for
+//   various kinds of callbacks; object methods, normal functions and lambdas.
+//
+//   Example:
+//
+//   class FrobbleView : public View {
+//    ...
+//    private:
+//     void OnFrobbleChanged();
+//     PropertyChangeSubscription frobble_changed_subscription_;
+//   }
+//
+//   ...
+//     frobble_changed_subscription_ = AddFrobbleChangedCallback(
+//         base::BindRepeating(&FrobbleView::OnFrobbleChanged,
+//         base::Unretained(this)));
+//
+//   Example:
+//
+//   void MyView::ValidateFrobbleChanged() {
+//     bool frobble_changed = false;
+//     PropertyChangedSubscription subscription =
+//       frobble_view_->AddFrobbleChangedCallback(
+//           base::BindRepeating([](bool* frobble_changed_ptr) {
+//             *frobble_changed_ptr = true;
+//           }, &frobble_changed));
+//     frobble_view_->SetFrobble(!frobble_view_->GetFrobble());
+//     LOG() << frobble_changed ? "Frobble changed" : "Frobble NOT changed!";
+//   }
+//
+//   Property metadata -----------
+//
+//   For Views that expose properties which are intended to be dynamically
+//   discoverable by other subsystems, each View and its descendants must
+//   include metadata. These other subsystems, such as dev tools or a delarative
+//   layout system, can then enumerate the properties on any given instance or
+//   class. Using the enumerated information, the actual values of the
+//   properties can be read or written. This will be done by getting and setting
+//   the values using string representations. The metadata can also be used to
+//   instantiate and initialize a View (or descendant) class from a declarative
+//   "script".
+//
+//   For each View class in their respective header declaration, place the macro
+//   METADATA_HEADER(<classname>) in the public section.
+//
+//   In the implementing .cc file, add the following macros to the same
+//   namespace in which the class resides.
+//
+//   BEGIN_METADATA(View)
+//   ADD_PROPERTY_METADATA(View, bool, Frobble)
+//   END_METADATA()
+//
+//   For each property, add a definition using ADD_PROPERTY_METADATA() between
+//   the begin and end macros.
+//
+//   Descendant classes must add the METADATA_PARENT_CLASS() macro to the
+//   similar block in the respective implementing file.
+//
+//   BEGIN_METADATA(MyView)
+//   METADATA_PARENT_CLASS(views::View);
+//   ADD_PROPERTY_METADATA(MyView, int, Bobble)
+//   END_METADATA()
 /////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT View : public ui::LayerDelegate,
                           public ui::LayerOwner,
                           public ui::AcceleratorTarget,
                           public ui::EventTarget,
                           public ui::EventHandler,
-                          public ui::PropertyHandler {
+                          public ui::PropertyHandler,
+                          public views::metadata::MetaDataProvider {
  public:
   using Views = std::vector<View*>;
+
+  METADATA_HEADER(View);
 
   enum class FocusBehavior {
     // Use when the View is never focusable. Default.
@@ -133,38 +286,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
     // Use when the View is focusable only during accessibility mode.
     ACCESSIBLE_ONLY,
-  };
-
-  struct ViewHierarchyChangedDetails {
-    ViewHierarchyChangedDetails()
-        : is_add(false),
-          parent(NULL),
-          child(NULL),
-          move_view(NULL) {}
-
-    ViewHierarchyChangedDetails(bool is_add,
-                                View* parent,
-                                View* child,
-                                View* move_view)
-        : is_add(is_add),
-          parent(parent),
-          child(child),
-          move_view(move_view) {}
-
-    bool is_add;
-    // New parent if |is_add| is true, old parent if |is_add| is false.
-    View* parent;
-    // The view being added or removed.
-    View* child;
-    // If this is a move (reparent), meaning AddChildViewAt() is invoked with an
-    // existing parent, then a notification for the remove is sent first,
-    // followed by one for the add.  This case can be distinguished by a
-    // non-NULL |move_view|.
-    // For the remove part of move, |move_view| is the new parent of the View
-    // being removed.
-    // For the add part of move, |move_view| is the old parent of the View being
-    // added.
-    View* move_view;
   };
 
   // During paint, the origin of each view in physical pixel is calculated by
@@ -193,8 +314,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // working with offsets.
   class LayerOffsetData {
    public:
-    LayerOffsetData(float device_scale_factor = 1.f,
-                    const gfx::Vector2d& offset = gfx::Vector2d())
+    explicit LayerOffsetData(float device_scale_factor = 1.f,
+                             const gfx::Vector2d& offset = gfx::Vector2d())
         : device_scale_factor_(device_scale_factor) {
       AddOffset(offset);
     }
@@ -295,8 +416,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // for new code.
   template <typename T>
   T* AddChildView(T* view) {
-    if (static_cast<View*>(view)->parent_ != this)
-      AddChildViewAtImpl(view, child_count());
+    AddChildViewAtImpl(view, int{children_.size()});
     return view;
   }
   template <typename T>
@@ -309,22 +429,23 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // the view at the end.
   void ReorderChildView(View* view, int index);
 
-  // Removes |view| from this view. The view's parent will change to NULL.
+  // Removes |view| from this view. The view's parent will change to null.
   void RemoveChildView(View* view);
 
   // Removes all the children from this view. If |delete_children| is true,
   // the views are deleted, unless marked as not parent owned.
   void RemoveAllChildViews(bool delete_children);
 
+  // TODO(https://crbug.com/940135): Remove child_count() and child_at() in
+  // favor of this.
+  const Views& children() const { return children_; }
+
   int child_count() const { return static_cast<int>(children_.size()); }
-  // See also |GetChildrenInZOrder()| below that returns |children_|
-  // in reverse z-order.
-  bool has_children() const { return !children_.empty(); }
 
   // Returns the child view at |index|.
   const View* child_at(int index) const {
     DCHECK_GE(index, 0);
-    DCHECK_LT(index, child_count());
+    DCHECK_LT(size_t{index}, children_.size());
     return children_[index];
   }
   View* child_at(int index) {
@@ -338,6 +459,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Returns true if |view| is contained within this View's hierarchy, even as
   // an indirect descendant. Will return true if child is also this view.
   bool Contains(const View* view) const;
+
+  // Returns an iterator pointing to |view|, or children_.cend() if |view| is
+  // not a child of this view.
+  Views::const_iterator FindChild(const View* view) const;
 
   // Returns the index of |view|, or -1 if |view| is not a child of this view.
   int GetIndexOf(const View* view) const;
@@ -439,12 +564,23 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Returns true if this view is drawn on screen.
   virtual bool IsDrawn() const;
 
+  // The |Enabled| property. See comment above for instructions on declaring and
+  // implementing a property.
+  //
   // Set whether this view is enabled. A disabled view does not receive keyboard
   // or mouse inputs. If |enabled| differs from the current value, SchedulePaint
   // is invoked. Also, clears focus if the focused view is disabled.
-  void SetEnabled(bool enabled);
-
+  void SetEnabled(bool is_enabled);
   // Returns whether the view is enabled.
+  bool GetEnabled() const { return enabled_; }
+
+  // Adds a callback subscription associated with the above |Enabled| property.
+  // The callback will be invoked whenever the property changes.
+  PropertyChangedSubscription AddEnabledChangedCallback(
+      PropertyChangedCallback callback) WARN_UNUSED_RESULT;
+
+  // NOTE: Deprecated. Please use GetEnabled() which is the getter for the
+  // |Enabled| property.
   bool enabled() const { return enabled_; }
 
   // Returns the child views ordered in reverse z-order. That is, views later in
@@ -454,7 +590,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // subclass if the paint order should differ from that of |children_|.
   // This order is taken into account by painting and targeting implementations.
   // NOTE: see SetPaintToLayer() for details on painting and views with layers.
-  virtual View::Views GetChildrenInZOrder();
+  virtual Views GetChildrenInZOrder();
 
   // Transformations -----------------------------------------------------------
 
@@ -480,8 +616,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // regardless of the ordering returned by GetChildrenInZOrder().
   void SetPaintToLayer(ui::LayerType layer_type = ui::LAYER_TEXTURED);
 
-  // Please refer to the comments above the DestroyLayerImpl() function for
-  // details.
+  // Cancels layer painting triggered by a call to |SetPaintToLayer()|. Note
+  // that this will not actually destroy the layer if the view paints to a layer
+  // for another reason.
   void DestroyLayer();
 
   // Overridden from ui::LayerOwner:
@@ -719,16 +856,16 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // RTL painting --------------------------------------------------------------
 
   // This method determines whether the gfx::Canvas object passed to
-  // View::Paint() needs to be transformed such that anything drawn on the
-  // canvas object during View::Paint() is flipped horizontally.
+  // Paint() needs to be transformed such that anything drawn on the canvas
+  // object during Paint() is flipped horizontally.
   bool flip_canvas_on_paint_for_rtl_ui() const {
     return flip_canvas_on_paint_for_rtl_ui_;
   }
 
-  // Enables or disables flipping of the gfx::Canvas during View::Paint().
-  // Note that if canvas flipping is enabled, the canvas will be flipped only
-  // if the UI layout is right-to-left; that is, the canvas will be flipped
-  // only if base::i18n::IsRTL() returns true.
+  // Enables or disables flipping of the gfx::Canvas during Paint(). Note that
+  // if canvas flipping is enabled, the canvas will be flipped only if the UI
+  // layout is right-to-left; that is, the canvas will be flipped only if
+  // base::i18n::IsRTL() returns true.
   //
   // Enabling canvas flipping is useful for leaf views that draw an image that
   // needs to be flipped horizontally when the UI layout is right-to-left
@@ -1018,18 +1155,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Tooltips ------------------------------------------------------------------
 
   // Gets the tooltip for this View. If the View does not have a tooltip,
-  // return false. If the View does have a tooltip, copy the tooltip into
-  // the supplied string and return true.
+  // the returned value should be empty.
   // Any time the tooltip text that a View is displaying changes, it must
   // invoke TooltipTextChanged.
   // |p| provides the coordinates of the mouse (relative to this view).
-  virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const;
-
-  // Returns the location (relative to this View) for the text on the tooltip
-  // to display. If false is returned (the default), the tooltip is placed at
-  // a default position.
-  virtual bool GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* loc) const;
+  virtual base::string16 GetTooltipText(const gfx::Point& p) const;
 
   // Context menus -------------------------------------------------------------
 
@@ -1241,9 +1371,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // an opportunity to do a fresh layout if that makes sense.
   virtual void ChildVisibilityChanged(View* child) {}
 
-  // Invalidates the layout and calls ChildPreferredSizeChanged on the parent
-  // if there is one. Be sure to call View::PreferredSizeChanged when
-  // overriding such that the layout is properly invalidated.
+  // Invalidates the layout and calls ChildPreferredSizeChanged() on the parent
+  // if there is one. Be sure to call PreferredSizeChanged() when overriding
+  // such that the layout is properly invalidated.
   virtual void PreferredSizeChanged();
 
   // Override returning true when the view needs to be notified when its visible
@@ -1429,6 +1559,14 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // hierarchy).
   virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) {}
 
+  // Property Support ----------------------------------------------------------
+
+  PropertyChangedSubscription AddPropertyChangedCallback(
+      PropertyKey property,
+      PropertyChangedCallback callback);
+  void OnPropertyChanged(PropertyKey property,
+                         PropertyEffects property_effects);
+
  private:
   friend class internal::PreEventDispatchHandler;
   friend class internal::PostEventDispatchHandler;
@@ -1437,24 +1575,20 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   friend class FocusManager;
   friend class ViewLayerTest;
   friend class ViewLayerPixelCanvasTest;
+  friend class ViewTestApi;
   friend class Widget;
   FRIEND_TEST_ALL_PREFIXES(ViewTest, PaintWithMovedViewUsesCache);
   FRIEND_TEST_ALL_PREFIXES(ViewTest, PaintWithMovedViewUsesCacheInRTL);
   FRIEND_TEST_ALL_PREFIXES(ViewTest, PaintWithUnknownInvalidation);
 
+  using PropertyChangedVectors =
+      std::map<PropertyKey, std::unique_ptr<PropertyChangedCallbacks>>;
+
   // Painting  -----------------------------------------------------------------
-
-  enum SchedulePaintType {
-    // Indicates the size is the same (only the origin changed).
-    SCHEDULE_PAINT_SIZE_SAME,
-
-    // Indicates the size changed (and possibly the origin).
-    SCHEDULE_PAINT_SIZE_CHANGED
-  };
 
   // Invoked before and after the bounds change to schedule painting the old and
   // new bounds.
-  void SchedulePaintBoundsChanged(SchedulePaintType type);
+  void SchedulePaintBoundsChanged(bool size_changed);
 
   // Schedules a paint on the parent View if it exists.
   void SchedulePaintOnParent();
@@ -1539,10 +1673,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Registers/unregisters accelerators as necessary and calls
   // VisibilityChanged().
   void VisibilityChangedImpl(View* starting_from, bool is_visible);
-
-  // Responsible for propagating bounds change notifications to relevant
-  // views.
-  void BoundsChanged(const gfx::Rect& previous_bounds);
 
   // Visible bounds notification registration.
   // When a view is added to a hierarchy, it and all its children are asked if
@@ -1630,10 +1760,13 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // change is sent to the parents.
   void DestroyLayerImpl(LayerChangeNotifyBehavior notify_parents);
 
+  // Determines whether we need to be painting to a layer, checks whether we
+  // currently have a layer, and creates or destroys the layer if necessary.
+  void CreateOrDestroyLayer();
+
   // Notifies parents about layering changes in the view. This includes layer
   // creation and destruction.
   void NotifyParentsOfLayerChange();
-
 
   // Orphans the layers in this subtree that are parented to layers outside of
   // this subtree.
@@ -1666,9 +1799,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Focus ---------------------------------------------------------------------
 
-  // Initialize the previous/next focusable views of the specified view relative
-  // to the view at the specified index.
-  void InitFocusSiblings(View* view, int index);
+  // Sets previous/next focusable views for both |view| and other children
+  // assuming we've just inserted |view| at |pos|.
+  void SetFocusSiblings(View* view, Views::const_iterator pos);
 
   // Helper function to advance focus, in case the currently focused view has
   // become unfocusable.
@@ -1704,6 +1837,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   bool DoDrag(const ui::LocatedEvent& event,
               const gfx::Point& press_pt,
               ui::DragDropTypes::DragEventSource source);
+
+  // Property support ----------------------------------------------------------
+
+  // Called from OnPropertyChanged with the given set of property effects. This
+  // function is NOT called if effects == kPropertyEffectsNone.
+  void HandlePropertyChangeEffects(PropertyEffects effects);
 
   //////////////////////////////////////////////////////////////////////////////
 
@@ -1812,14 +1951,18 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // RTL painting --------------------------------------------------------------
 
-  // Indicates whether or not the gfx::Canvas object passed to View::Paint()
-  // is going to be flipped horizontally (using the appropriate transform) on
+  // Indicates whether or not the gfx::Canvas object passed to Paint() is going
+  // to be flipped horizontally (using the appropriate transform) on
   // right-to-left locales for this View.
   bool flip_canvas_on_paint_for_rtl_ui_ = false;
 
   // Accelerated painting ------------------------------------------------------
 
-  bool paint_to_layer_ = false;
+  // Whether layer painting was explicitly set by a call to |SetPaintToLayer()|.
+  bool paint_to_layer_explicitly_set_ = false;
+
+  // Whether we are painting to a layer because of a non-identity transform.
+  bool paint_to_layer_for_transform_ = false;
 
   // Accelerators --------------------------------------------------------------
 
@@ -1861,9 +2004,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Manages the accessibility interface for this View.
   std::unique_ptr<ViewAccessibility> view_accessibility_;
 
-  // Observers -------------------------------------------------------------
+  // Observers -----------------------------------------------------------------
 
   base::ObserverList<ViewObserver>::Unchecked observers_;
+
+  // Property Changed Callbacks ------------------------------------------------
+  PropertyChangedVectors property_changed_vectors_;
 
   DISALLOW_COPY_AND_ASSIGN(View);
 };

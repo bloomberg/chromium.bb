@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("../../gn/fuzzer.gni")
 import("../../gn/perfetto.gni")
 import("../../gn/wasm.gni")
-import("../../gn/fuzzer.gni")
 
 wasm_lib("trace_processor_wasm") {
   name = "trace_processor"
@@ -52,8 +52,10 @@ source_set("lib") {
     "chunked_trace_reader.h",
     "clock_tracker.cc",
     "clock_tracker.h",
-    "counters_table.cc",
-    "counters_table.h",
+    "counter_definitions_table.cc",
+    "counter_definitions_table.h",
+    "counter_values_table.cc",
+    "counter_values_table.h",
     "event_tracker.cc",
     "event_tracker.h",
     "filtered_row_index.cc",
@@ -64,6 +66,7 @@ source_set("lib") {
     "ftrace_utils.h",
     "instants_table.cc",
     "instants_table.h",
+    "null_term_string_view.h",
     "process_table.cc",
     "process_table.h",
     "process_tracker.cc",
@@ -89,6 +92,8 @@ source_set("lib") {
     "span_join_operator_table.h",
     "sql_stats_table.cc",
     "sql_stats_table.h",
+    "sqlite3_str_split.cc",
+    "sqlite3_str_split.h",
     "sqlite_utils.h",
     "stats.h",
     "stats_table.cc",
@@ -99,13 +104,22 @@ source_set("lib") {
     "storage_schema.h",
     "storage_table.cc",
     "storage_table.h",
+    "string_pool.cc",
+    "string_pool.h",
     "string_table.cc",
     "string_table.h",
+    "syscall_tracker.cc",
+    "syscall_tracker.h",
+    "syscalls_aarch32.h",
+    "syscalls_aarch64.h",
+    "syscalls_armeabi.h",
+    "syscalls_x86_64.h",
     "table.cc",
     "table.h",
     "thread_table.cc",
     "thread_table.h",
     "trace_blob_view.h",
+    "trace_parser.h",
     "trace_processor.cc",
     "trace_processor_context.cc",
     "trace_processor_context.h",
@@ -119,13 +133,19 @@ source_set("lib") {
     "window_operator_table.cc",
     "window_operator_table.h",
   ]
+
   deps = [
     "../../buildtools:sqlite",
     "../../gn:default_deps",
     "../../include/perfetto/traced:sys_stats_counters",
-    "../../protos/perfetto/trace:lite",
-    "../../protos/perfetto/trace/ftrace:lite",
-    "../../protos/perfetto/trace_processor:lite",
+    "../../protos/perfetto/common:zero",
+    "../../protos/perfetto/trace:zero",
+    "../../protos/perfetto/trace/android:zero",
+    "../../protos/perfetto/trace/ftrace:zero",
+    "../../protos/perfetto/trace/power:zero",
+    "../../protos/perfetto/trace/profiling:zero",
+    "../../protos/perfetto/trace/ps:zero",
+    "../../protos/perfetto/trace/sys_stats:zero",
     "../base",
     "../protozero",
   ]
@@ -136,6 +156,10 @@ source_set("lib") {
     sources += [
       "json_trace_parser.cc",
       "json_trace_parser.h",
+      "json_trace_tokenizer.cc",
+      "json_trace_tokenizer.h",
+      "json_trace_utils.cc",
+      "json_trace_utils.h",
     ]
     deps += [ "../../gn:jsoncpp_deps" ]
   }
@@ -146,7 +170,6 @@ if (current_toolchain == host_toolchain) {
     deps = [
       ":lib",
       "../../gn:default_deps",
-      "../../protos/perfetto/trace_processor:lite",
       "../base",
     ]
     if (perfetto_build_standalone) {
@@ -179,10 +202,10 @@ source_set("unittests") {
   testonly = true
   sources = [
     "clock_tracker_unittest.cc",
-    "counters_table_unittest.cc",
     "event_tracker_unittest.cc",
     "filtered_row_index_unittest.cc",
     "ftrace_utils_unittest.cc",
+    "null_term_string_view_unittest.cc",
     "process_table_unittest.cc",
     "process_tracker_unittest.cc",
     "proto_trace_parser_unittest.cc",
@@ -190,6 +213,9 @@ source_set("unittests") {
     "sched_slice_table_unittest.cc",
     "slice_tracker_unittest.cc",
     "span_join_operator_table_unittest.cc",
+    "sqlite3_str_split_unittest.cc",
+    "string_pool_unittest.cc",
+    "syscall_tracker_unittest.cc",
     "thread_table_unittest.cc",
     "trace_processor_impl_unittest.cc",
     "trace_sorter_unittest.cc",
@@ -199,11 +225,19 @@ source_set("unittests") {
     "../../buildtools:sqlite",
     "../../gn:default_deps",
     "../../gn:gtest_deps",
-    "../../protos/perfetto/trace:lite",
+    "../../protos/perfetto/common:zero",
+    "../../protos/perfetto/trace:zero",
+    "../../protos/perfetto/trace/ftrace:zero",
+    "../../protos/perfetto/trace/ps:zero",
+    "../../protos/perfetto/trace/sys_stats:zero",
     "../base",
+    "../protozero",
   ]
   if (perfetto_build_standalone) {
-    sources += [ "json_trace_parser_unittest.cc" ]
+    sources += [
+      "json_trace_tokenizer_unittest.cc",
+      "json_trace_utils_unittest.cc",
+    ]
     deps += [ "../../gn:jsoncpp_deps" ]
   }
 }
@@ -223,6 +257,9 @@ source_set("integrationtests") {
     "../base",
     "../base:test_support",
   ]
+  if (perfetto_build_standalone) {
+    deps += [ "../../gn:jsoncpp_deps" ]
+  }
 }
 
 perfetto_fuzzer_test("trace_processor_fuzzer") {

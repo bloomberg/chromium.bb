@@ -57,8 +57,7 @@
 
 namespace blink {
 
-static bool HasOverflowClip(
-    const PaintLayer& layer) {
+static bool HasOverflowClip(const PaintLayer& layer) {
   if (!layer.GetLayoutObject().IsBox())
     return false;
   const LayoutBox& box = ToLayoutBox(layer.GetLayoutObject());

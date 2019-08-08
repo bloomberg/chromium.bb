@@ -30,6 +30,7 @@
 #include "net/http/http_stream_factory.h"
 #include "net/net_buildflags.h"
 #include "net/quic/quic_stream_factory.h"
+#include "net/socket/connect_job.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/spdy/spdy_session_pool.h"
@@ -52,8 +53,8 @@ namespace net {
 
 class CTPolicyEnforcer;
 class CertVerifier;
-class ChannelIDService;
 class ClientSocketFactory;
+class ClientSocketPool;
 class ClientSocketPoolManager;
 class CTVerifier;
 class HostResolver;
@@ -61,6 +62,7 @@ class HttpAuthHandlerFactory;
 class HttpNetworkSessionPeer;
 class HttpResponseBodyDrainer;
 class HttpServerProperties;
+class HttpUserAgentSettings;
 class NetLog;
 #if BUILDFLAG(ENABLE_REPORTING)
 class NetworkErrorLoggingService;
@@ -75,7 +77,6 @@ class ReportingService;
 #endif
 class SocketPerformanceWatcherFactory;
 class SSLConfigService;
-class TransportClientSocketPool;
 class TransportSecurityState;
 
 // Specifies the maximum HPACK dynamic table size the server is allowed to set.
@@ -125,6 +126,9 @@ class NET_EXPORT HttpNetworkSession {
     bool enable_http2_alternative_service;
     // Whether to enable Websocket over HTTP/2.
     bool enable_websocket_over_http2;
+
+    // Enables 0-RTT support.
+    bool enable_early_data;
 
     // Enables QUIC support.
     bool enable_quic;
@@ -230,9 +234,6 @@ class NET_EXPORT HttpNetworkSession {
     // If non-empty, QUIC will only be spoken to hosts in this list.
     base::flat_set<std::string> quic_host_whitelist;
 
-    // Enable Channel ID. Channel ID is being deprecated.
-    bool enable_channel_id;
-
     // Enable HTTP/0.9 for HTTP/HTTPS on ports other than the default one for
     // each protocol.
     bool http_09_on_non_default_ports_enabled;
@@ -251,12 +252,12 @@ class NET_EXPORT HttpNetworkSession {
     ClientSocketFactory* client_socket_factory;
     HostResolver* host_resolver;
     CertVerifier* cert_verifier;
-    ChannelIDService* channel_id_service;
     TransportSecurityState* transport_security_state;
     CTVerifier* cert_transparency_verifier;
     CTPolicyEnforcer* ct_policy_enforcer;
     ProxyResolutionService* proxy_resolution_service;
     ProxyDelegate* proxy_delegate;
+    const HttpUserAgentSettings* http_user_agent_settings;
     SSLConfigService* ssl_config_service;
     HttpAuthHandlerFactory* http_auth_handler_factory;
     HttpServerProperties* http_server_properties;
@@ -298,8 +299,8 @@ class NET_EXPORT HttpNetworkSession {
   // Returns the socket pool of the given type for use with the specified
   // ProxyServer. Use ProxyServer::Direct() to get the pool for use with direct
   // connections.
-  TransportClientSocketPool* GetSocketPool(SocketPoolType pool_type,
-                                           const ProxyServer& proxy_server);
+  ClientSocketPool* GetSocketPool(SocketPoolType pool_type,
+                                  const ProxyServer& proxy_server);
 
   CertVerifier* cert_verifier() { return cert_verifier_; }
   ProxyResolutionService* proxy_resolution_service() {
@@ -375,7 +376,13 @@ class NET_EXPORT HttpNetworkSession {
 
   // Clear the SSL session cache.
   void ClearSSLSessionCache();
-  void ClearSSLSessionCachePrivacyMode();
+
+  // Returns a CommonConnectJobParams that references the NetworkSession's
+  // components. If |for_websockets| is true, the Params'
+  // |websocket_endpoint_lock_manager| field will be populated. Otherwise, it
+  // will be nullptr.
+  CommonConnectJobParams CreateCommonConnectJobParams(
+      bool for_websockets = false);
 
  private:
   friend class HttpNetworkSessionPeer;

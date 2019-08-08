@@ -12,6 +12,7 @@ import "services/viz/public/interfaces/compositing/surface_info.mojom";
 import "services/ws/public/mojom/window_manager.mojom";
 import "services/ws/public/mojom/screen_provider_observer.mojom";
 import "services/ws/public/mojom/window_tree_constants.mojom";
+import "ui/base/ime/mojo/ime.mojom";
 import "ui/base/mojo/cursor.mojom";
 import "ui/base/mojo/ui_base_types.mojom";
 import "ui/events/mojo/event.mojom";
@@ -176,6 +177,9 @@ interface WindowTree {
 
   // Sets the opacity of the specified window to |opacity|.
   SetWindowOpacity(uint32 change_id, uint64 window_id, float opacity);
+
+  // Sets the transparent status of the specified window to |transparent|.
+  SetWindowTransparent(uint32 change_id, uint64 window_id, bool transparent);
 
   // Attaches a CompositorFrameSink to a particular window.
   AttachCompositorFrameSink(
@@ -445,6 +449,12 @@ interface WindowTree {
   // all outstanding pause requests are cleared, server will re-compute
   // occlusion states for the tracked windows and send back updates.
   UnpauseWindowOcclusionTracking();
+
+  // Called by the client every time the focus changes, to build the connection
+  // between the client and the IME. And Window Service makes sure that only
+  // focused client can have the connection.
+  ConnectToImeEngine(ime.mojom.ImeEngine& engine_request,
+                     ime.mojom.ImeEngineClient client);
 };
 
 // Changes to windows are not sent to the connection that originated the
@@ -509,11 +519,14 @@ interface WindowTreeClient {
       bool parent_drawn,
       viz.mojom.LocalSurfaceIdAllocation local_surface_id_allocation);
 
-  // Invoked when a window's bounds have changed. |local_surface_id_allocation|
-  // is only supplied for roots.
+  // Invoked when a window's bounds have changed. |state| is supplied for roots,
+  // and SHOW_STATE_DEFAULT for non-roots. It allows the client to
+  // simultaneously update both bounds and show state, e.g. after a maximize
+  // operation. |local_surface_id_allocation| is only supplied for roots.
   OnWindowBoundsChanged(
       uint64 window,
       gfx.mojom.Rect new_bounds,
+      ui.mojom.WindowShowState state,
       viz.mojom.LocalSurfaceIdAllocation? local_surface_id_allocation);
 
   OnWindowTransformChanged(uint64 window,
@@ -550,9 +563,6 @@ interface WindowTreeClient {
 
   // Invoked when the visibility of the specified window changes.
   OnWindowVisibilityChanged(uint64 window, bool visible);
-
-  // Invoked when the opacity of the specified window has changed.
-  OnWindowOpacityChanged(uint64 window, float new_opacity);
 
   // Invoked when the window moves to a new display. This is only called on
   // a top-level window or an embedded root.

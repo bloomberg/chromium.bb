@@ -56,6 +56,19 @@ found in the LICENSE file.
         left: -9999px;
       }
 
+      #terms-and-conditions::before {
+          content: "before";
+      }
+
+      #with_inner_text span::before {
+          content: "before";
+      }
+
+      #button::before {
+          content: "before";
+          display: none;
+      }
+
       label[for="terms-and-conditions"] {
         padding-left: 48px;
         position: relative;
@@ -148,6 +161,34 @@ found in the LICENSE file.
       <input id="input6" type="field" value="" />
     </div>
 
+    <div>
+      <input id="input_js_event_listener" type="text">
+      <!-- Uses the 'key' property of a keydown event. -->
+      <script>
+        var t = document.getElementById("input_js_event_listener");
+        t.addEventListener('keydown', e => {
+          var value = e.target.value;
+          e.preventDefault();
+          e.target.value = value + e.key;
+        });
+      </script>
+    </div>
+
+    <div>
+      <input id="input_js_event_with_timeout" type="text">
+      <!-- Uses the 'key' property of a keydown event. -->
+      <script>
+        var t = document.getElementById("input_js_event_with_timeout");
+        t.addEventListener('keydown', e => {
+        var value = e.target.value;
+        if (value.length === 3) {
+          e.preventDefault();
+          setTimeout(() => {e.target.value = value + ' ' + e.key}, 10);
+        }
+      });
+      </script>
+    </div>
+
     <div id="testOuterHtml"><span>Span</span><p>Paragraph</p></div>
 
     <div id="hidden" style="display: none;">This text is hidden</div>
@@ -166,5 +207,11 @@ found in the LICENSE file.
         upperCaseInput.value = upperCaseInput.value.toUpperCase();
       });
     </script>
+
+    <div id="with_inner_text">
+      <span>hello</span>
+      <span>hello, world</span>
+      <span style="display: none">world</span>
+    </div>
   </body>
 </html>

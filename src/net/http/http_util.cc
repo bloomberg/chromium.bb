@@ -998,7 +998,7 @@ bool HttpUtil::HeadersIterator::GetNext() {
 }
 
 bool HttpUtil::HeadersIterator::AdvanceTo(const char* name) {
-  DCHECK(name != NULL);
+  DCHECK(name != nullptr);
   DCHECK_EQ(0, base::ToLowerASCII(name).compare(name))
       << "the header name must be in all lower case";
 

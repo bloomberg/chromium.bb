@@ -1643,23 +1643,31 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
     RETURN_ON_HR_FAILURE(hr, "Failed to pass D3D manager to decoder", false);
   }
 
+  if (!gl::GLSurfaceEGL::IsPixelFormatFloatSupported())
+    use_fp16_ = false;
+
   EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
 
   while (true) {
-    EGLint config_attribs[] = {EGL_BUFFER_SIZE,  32,
-                               EGL_RED_SIZE,     use_fp16_ ? 16 : 8,
-                               EGL_GREEN_SIZE,   use_fp16_ ? 16 : 8,
-                               EGL_BLUE_SIZE,    use_fp16_ ? 16 : 8,
-                               EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
-                               EGL_ALPHA_SIZE,   0,
-                               EGL_NONE};
+    std::vector<EGLint> config_attribs = {EGL_BUFFER_SIZE,  32,
+                                          EGL_RED_SIZE,     use_fp16_ ? 16 : 8,
+                                          EGL_GREEN_SIZE,   use_fp16_ ? 16 : 8,
+                                          EGL_BLUE_SIZE,    use_fp16_ ? 16 : 8,
+                                          EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+                                          EGL_ALPHA_SIZE,   0};
+    if (use_fp16_) {
+      config_attribs.push_back(EGL_COLOR_COMPONENT_TYPE_EXT);
+      config_attribs.push_back(EGL_COLOR_COMPONENT_TYPE_FLOAT_EXT);
+    }
+    config_attribs.push_back(EGL_NONE);
 
     EGLint num_configs = 0;
 
-    if (eglChooseConfig(egl_display, config_attribs, NULL, 0, &num_configs) &&
+    if (eglChooseConfig(egl_display, config_attribs.data(), NULL, 0,
+                        &num_configs) &&
         num_configs > 0) {
       std::vector<EGLConfig> configs(num_configs);
-      if (eglChooseConfig(egl_display, config_attribs, configs.data(),
+      if (eglChooseConfig(egl_display, config_attribs.data(), configs.data(),
                           num_configs, &num_configs)) {
         egl_config_ = configs[0];
         for (int i = 0; i < num_configs; i++) {

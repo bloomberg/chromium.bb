@@ -16,6 +16,8 @@
 #include <string>
 
 #include "absl/strings/string_view.h"
+#include "api/test/stats_observer_interface.h"
+#include "api/test/video_quality_analyzer_interface.h"
 #include "api/video/video_frame.h"
 #include "api/video/video_sink_interface.h"
 #include "api/video_codecs/video_decoder_factory.h"
@@ -23,12 +25,10 @@
 #include "test/frame_generator.h"
 #include "test/pc/e2e/analyzer/video/encoded_image_data_injector.h"
 #include "test/pc/e2e/analyzer/video/id_generator.h"
-#include "test/pc/e2e/api/stats_observer_interface.h"
-#include "test/pc/e2e/api/video_quality_analyzer_interface.h"
 #include "test/testsupport/video_frame_writer.h"
 
 namespace webrtc {
-namespace test {
+namespace webrtc_pc_e2e {
 
 // Provides factory methods for components, that will be used to inject
 // VideoQualityAnalyzerInterface into PeerConnection pipeline.
@@ -44,6 +44,7 @@ class VideoQualityAnalyzerInjectionHelper : public StatsObserverInterface {
   // before encoding and encoded images after.
   std::unique_ptr<VideoEncoderFactory> WrapVideoEncoderFactory(
       std::unique_ptr<VideoEncoderFactory> delegate,
+      double bitrate_multiplier,
       std::map<std::string, absl::optional<int>> stream_required_spatial_index)
       const;
   // Wraps video decoder factory to give video quality analyzer access to
@@ -54,15 +55,15 @@ class VideoQualityAnalyzerInjectionHelper : public StatsObserverInterface {
   // Wraps frame generator, so video quality analyzer will gain access to the
   // captured frames. If |writer| in not nullptr, will dump captured frames
   // with provided writer.
-  std::unique_ptr<FrameGenerator> WrapFrameGenerator(
+  std::unique_ptr<test::FrameGenerator> WrapFrameGenerator(
       std::string stream_label,
-      std::unique_ptr<FrameGenerator> delegate,
-      VideoFrameWriter* writer) const;
+      std::unique_ptr<test::FrameGenerator> delegate,
+      test::VideoFrameWriter* writer) const;
   // Creates sink, that will allow video quality analyzer to get access to the
   // rendered frames. If |writer| in not nullptr, will dump rendered frames
   // with provided writer.
   std::unique_ptr<rtc::VideoSinkInterface<VideoFrame>> CreateVideoSink(
-      VideoFrameWriter* writer) const;
+      test::VideoFrameWriter* writer) const;
 
   void Start(std::string test_case_name, int max_threads_count);
 
@@ -82,7 +83,7 @@ class VideoQualityAnalyzerInjectionHelper : public StatsObserverInterface {
   std::unique_ptr<IdGenerator<int>> encoding_entities_id_generator_;
 };
 
-}  // namespace test
+}  // namespace webrtc_pc_e2e
 }  // namespace webrtc
 
 #endif  // TEST_PC_E2E_ANALYZER_VIDEO_VIDEO_QUALITY_ANALYZER_INJECTION_HELPER_H_

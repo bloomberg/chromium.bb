@@ -33,9 +33,9 @@ void InfoBarContainerIOS::PlatformSpecificAddInfoBar(infobars::InfoBar* infobar,
     // Only InfobarUIReboot Infobars should be presented using the non legacy
     // consumer.
     DCHECK(IsInfobarUIRebootEnabled());
-    [consumer_ addInfoBarWithDelegate:delegate position:position];
+    [consumer_ addInfoBarWithDelegate:delegate];
   } else {
-    [legacyConsumer_ addInfoBarWithDelegate:delegate position:position];
+    [legacyConsumer_ addInfoBarWithDelegate:delegate];
   }
 }
 

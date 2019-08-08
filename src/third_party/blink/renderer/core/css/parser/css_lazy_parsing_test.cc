@@ -107,8 +107,7 @@ TEST_F(CSSLazyParsingTest, ShouldConsiderForMatchingRulesSimple) {
 // document from the StyleSheetContents without changing the UseCounter. This
 // test ensures that the new UseCounter is used when doing new parsing work.
 TEST_F(CSSLazyParsingTest, ChangeDocuments) {
-  std::unique_ptr<DummyPageHolder> dummy_holder =
-      DummyPageHolder::Create(IntSize(500, 500));
+  auto dummy_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
   Page::InsertOrdinaryPageForTesting(&dummy_holder->GetPage());
 
   CSSParserContext* context = CSSParserContext::Create(
@@ -134,18 +133,17 @@ TEST_F(CSSLazyParsingTest, ChangeDocuments) {
               cached_contents_->SingleOwnerDocument());
     UseCounter& use_counter1 =
         dummy_holder->GetDocument().Loader()->GetUseCounter();
-    EXPECT_TRUE(use_counter1.IsCounted(CSSPropertyBackgroundColor));
-    EXPECT_FALSE(use_counter1.IsCounted(CSSPropertyColor));
+    EXPECT_TRUE(use_counter1.IsCounted(CSSPropertyID::kBackgroundColor));
+    EXPECT_FALSE(use_counter1.IsCounted(CSSPropertyID::kColor));
 
     // Change owner document.
     cached_contents_->UnregisterClient(sheet);
     dummy_holder.reset();
   }
   // Ensure no stack references to oilpan objects.
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
-  std::unique_ptr<DummyPageHolder> dummy_holder2 =
-      DummyPageHolder::Create(IntSize(500, 500));
+  auto dummy_holder2 = std::make_unique<DummyPageHolder>(IntSize(500, 500));
   Page::InsertOrdinaryPageForTesting(&dummy_holder2->GetPage());
   CSSStyleSheet* sheet2 =
       CSSStyleSheet::Create(cached_contents_, dummy_holder2->GetDocument());
@@ -162,8 +160,8 @@ TEST_F(CSSLazyParsingTest, ChangeDocuments) {
   UseCounter& use_counter2 =
       dummy_holder2->GetDocument().Loader()->GetUseCounter();
   EXPECT_TRUE(sheet2);
-  EXPECT_TRUE(use_counter2.IsCounted(CSSPropertyColor));
-  EXPECT_FALSE(use_counter2.IsCounted(CSSPropertyBackgroundColor));
+  EXPECT_TRUE(use_counter2.IsCounted(CSSPropertyID::kColor));
+  EXPECT_FALSE(use_counter2.IsCounted(CSSPropertyID::kBackgroundColor));
 }
 
 }  // namespace blink

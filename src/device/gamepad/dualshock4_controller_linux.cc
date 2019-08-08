@@ -8,7 +8,8 @@
 
 namespace device {
 
-Dualshock4ControllerLinux::Dualshock4ControllerLinux(int fd) : fd_(fd) {}
+Dualshock4ControllerLinux::Dualshock4ControllerLinux(const base::ScopedFD& fd)
+    : fd_(fd.get()) {}
 
 Dualshock4ControllerLinux::~Dualshock4ControllerLinux() = default;
 

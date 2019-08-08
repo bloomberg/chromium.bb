@@ -25,9 +25,9 @@ PaintWorkletImageProvider& PaintWorkletImageProvider::operator=(
 
 ImageProvider::ScopedResult PaintWorkletImageProvider::GetPaintRecordResult(
     PaintWorkletInput* input) {
-  std::pair<PaintRecord*, base::OnceCallback<void()>> record_and_callback =
-      cache_->GetPaintRecordAndRef(input);
-  return ImageProvider::ScopedResult(record_and_callback.first,
+  std::pair<sk_sp<PaintRecord>, base::OnceCallback<void()>>
+      record_and_callback = cache_->GetPaintRecordAndRef(input);
+  return ImageProvider::ScopedResult(std::move(record_and_callback.first),
                                      std::move(record_and_callback.second));
 }
 

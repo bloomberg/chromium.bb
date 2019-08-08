@@ -6,6 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -284,6 +288,11 @@ void ResourceFetcherImpl::SetHeader(const std::string& header,
   }
 }
 
+void ResourceFetcherImpl::SetFetchRequestMode(
+    network::mojom::FetchRequestMode fetch_request_mode) {
+  request_.fetch_request_mode = fetch_request_mode;
+}
+
 void ResourceFetcherImpl::Start(
     blink::WebLocalFrame* frame,
     blink::mojom::RequestContextType request_context,
@@ -311,7 +320,8 @@ void ResourceFetcherImpl::Start(
     SetHeader(kAccessControlAllowOriginHeader,
               blink::WebSecurityOrigin::CreateUnique().ToString().Ascii());
   }
-  request_.resource_type = RequestContextToResourceType(request_context);
+  request_.resource_type =
+      static_cast<int>(RequestContextToResourceType(request_context));
 
   client_ = std::make_unique<ClientImpl>(
       this, std::move(callback), maximum_download_size,

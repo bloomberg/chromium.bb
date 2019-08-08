@@ -149,7 +149,6 @@
     ],
     "name": "Patch failure",
     "~followup_annotations": [
-      "step returned non-zero exit code: 1",
       "@@@STEP_TEXT@See attached log. Try rebasing?@@@",
       "@@@STEP_LOG_LINE@patch error@Downloading patch...@@@",
       "@@@STEP_LOG_LINE@patch error@Applying the patch...@@@",

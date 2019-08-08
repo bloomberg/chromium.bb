@@ -8,6 +8,7 @@ include_rules = [
   "+chrome/install_static",
   "+chrome/installer/util",
   "+chrome/notification_helper/notification_helper_constants.h",
+  "+chrome/services/app_service/public/mojom",
   "+chrome/services/cups_ipp_parser/public",
   "+chrome/services/diagnosticsd/public",
   "+chrome/services/file_util/public",
@@ -25,7 +26,6 @@ include_rules = [
   # Use identity_manager.h instead of the below files;
   # see https://groups.google.com/a/chromium.org/d/msg/chromium-dev/dgFLuxqZt1o/iEqkyoQQBwAJ for help and info.
   "!components/signin/core/browser/fake_profile_oauth2_token_service.h",
-  "!components/signin/core/browser/profile_oauth2_token_service.h",
   "!components/signin/core/browser/signin_manager.h",
   "!components/signin/core/browser/signin_manager_base.h",
   "+content/public/browser",
@@ -193,16 +193,8 @@ include_rules = [
 
   # Allow mojo generated files in WebKit. These files use STL types and
   # don't use WTF types.
-  "+third_party/blink/public/platform/modules/badging/badging.mojom.h",
   "+third_party/blink/public/platform/modules/budget_service/budget_service.mojom.h",
-  "+third_party/blink/public/platform/modules/insecure_input/insecure_input_service.mojom.h",
-  "+third_party/blink/public/platform/modules/installation/installation.mojom.h",
-  "+third_party/blink/public/platform/modules/installedapp/installed_app_provider.mojom.h",
-  "+third_party/blink/public/platform/modules/permissions/permission_status.mojom.h",
   "+third_party/blink/public/platform/modules/presentation/presentation.mojom.h",
-  "+third_party/blink/public/platform/modules/webauthn/authenticator.mojom.h",
-  "+third_party/blink/public/platform/modules/webshare/webshare.mojom.h",
-  "+third_party/blink/public/web/window_features.mojom.h",
 
   # The following restrictions are for ChromeOS and in particular mus/mash where
   # Ozone does not run in process. If the linux build transitions to Ozone then

@@ -5,7 +5,6 @@
 #ifndef CC_TEST_MOCK_LAYER_CLIENT_H_
 #define CC_TEST_MOCK_LAYER_CLIENT_H_
 
-#include "base/macros.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/layers/layer_client.h"
@@ -16,14 +15,14 @@ namespace cc {
 class MockLayerClient : public LayerClient {
  public:
   MockLayerClient();
+  MockLayerClient(const MockLayerClient&) = delete;
   ~MockLayerClient() override;
+
+  MockLayerClient& operator=(const MockLayerClient&) = delete;
 
   MOCK_METHOD1(TakeDebugInfo,
                std::unique_ptr<base::trace_event::TracedValue>(Layer*));
   MOCK_METHOD1(didChangeScrollbarsHiddenIfOverlay, void(bool));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockLayerClient);
 };
 
 }  // namespace cc

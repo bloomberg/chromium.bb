@@ -5,6 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_ICE_TRANSPORT_ADAPTER_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_ICE_TRANSPORT_ADAPTER_IMPL_H_
 
+#include <memory>
+#include <vector>
+
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter.h"
 #include "third_party/webrtc/api/ice_transport_interface.h"
 
@@ -24,6 +27,15 @@ class IceTransportAdapterImpl final : public IceTransportAdapter,
       std::unique_ptr<cricket::PortAllocator> port_allocator,
       std::unique_ptr<webrtc::AsyncResolverFactory> async_resolver_factory,
       rtc::Thread* thread);
+
+  // Create an IceTransportAdapter for an existing |ice_transport_channel|
+  // object. In this case, |port_allocator_|, |async_resolver_factory_| and
+  // |quic_packet_transport_adapter_| are not used (and null).
+  IceTransportAdapterImpl(
+      Delegate* delegate,
+      rtc::scoped_refptr<webrtc::IceTransportInterface> ice_transport_channel,
+      rtc::Thread* thread);
+
   ~IceTransportAdapterImpl() override;
 
   // IceTransportAdapter overrides.
@@ -42,9 +54,10 @@ class IceTransportAdapterImpl final : public IceTransportAdapter,
   P2PQuicPacketTransport* packet_transport() const override;
 
  private:
-  cricket::IceTransportInternal* p2p_transport_channel() {
+  cricket::IceTransportInternal* ice_transport_channel() {
     return ice_transport_channel_->internal();
   }
+  void SetupIceTransportChannel();
   // Callbacks from P2PTransportChannel.
   void OnGatheringStateChanged(cricket::IceTransportInternal* transport);
   void OnCandidateGathered(cricket::IceTransportInternal* transport,

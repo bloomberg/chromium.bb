@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/geometry/double_point.h"
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
@@ -113,6 +114,17 @@ class VisualViewportTest : public testing::Test,
   void UpdateAllLifecyclePhases() {
     WebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
         WebWidget::LifecycleUpdateReason::kTest);
+  }
+
+  void UpdateAllLifecyclePhasesExceptPaint() {
+    WebView()->MainFrameWidget()->UpdateLifecycle(
+        WebWidget::LifecycleUpdate::kPrePaint,
+        WebWidget::LifecycleUpdateReason::kTest);
+  }
+
+  PaintArtifactCompositor* paint_artifact_compositor() {
+    LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
+    return frame_view.GetPaintArtifactCompositorForTesting();
   }
 
   void ForceFullCompositingUpdate() { UpdateAllLifecyclePhases(); }
@@ -376,8 +388,8 @@ TEST_P(VisualViewportTest, TestResizeAfterVerticalScroll) {
     UpdateAllLifecyclePhases();
     EXPECT_EQ(TransformationMatrix().Scale(2),
               visual_viewport.GetPageScaleNode()->Matrix());
-    EXPECT_EQ(TransformationMatrix().Translate(0, -300),
-              visual_viewport.GetScrollTranslationNode()->Matrix());
+    EXPECT_EQ(FloatSize(0, -300),
+              visual_viewport.GetScrollTranslationNode()->Translation2D());
     EXPECT_EQ(TransformationMatrix().Scale(2).Translate(0, -300),
               GeometryMapper::SourceToDestinationProjection(
                   *visual_viewport.GetScrollTranslationNode(),
@@ -401,8 +413,8 @@ TEST_P(VisualViewportTest, TestResizeAfterVerticalScroll) {
     UpdateAllLifecyclePhases();
     EXPECT_EQ(TransformationMatrix().Scale(4),
               visual_viewport.GetPageScaleNode()->Matrix());
-    EXPECT_EQ(TransformationMatrix().Translate(0, -75),
-              visual_viewport.GetScrollTranslationNode()->Matrix());
+    EXPECT_EQ(FloatSize(0, -75),
+              visual_viewport.GetScrollTranslationNode()->Translation2D());
     EXPECT_EQ(TransformationMatrix().Scale(4).Translate(0, -75),
               GeometryMapper::SourceToDestinationProjection(
                   *visual_viewport.GetScrollTranslationNode(),
@@ -466,8 +478,8 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
     UpdateAllLifecyclePhases();
     EXPECT_EQ(TransformationMatrix().Scale(2),
               visual_viewport.GetPageScaleNode()->Matrix());
-    EXPECT_EQ(TransformationMatrix().Translate(-150, 0),
-              visual_viewport.GetScrollTranslationNode()->Matrix());
+    EXPECT_EQ(FloatSize(-150, 0),
+              visual_viewport.GetScrollTranslationNode()->Translation2D());
     EXPECT_EQ(TransformationMatrix().Scale(2).Translate(-150, 0),
               GeometryMapper::SourceToDestinationProjection(
                   *visual_viewport.GetScrollTranslationNode(),
@@ -490,8 +502,8 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
     UpdateAllLifecyclePhases();
     EXPECT_EQ(TransformationMatrix().Scale(4),
               visual_viewport.GetPageScaleNode()->Matrix());
-    EXPECT_EQ(TransformationMatrix().Translate(-150, 0),
-              visual_viewport.GetScrollTranslationNode()->Matrix());
+    EXPECT_EQ(FloatSize(-150, 0),
+              visual_viewport.GetScrollTranslationNode()->Translation2D());
     EXPECT_EQ(TransformationMatrix().Scale(4).Translate(-150, 0),
               GeometryMapper::SourceToDestinationProjection(
                   *visual_viewport.GetScrollTranslationNode(),
@@ -580,32 +592,6 @@ TEST_P(VisualViewportTest, TestVisibleRect) {
   expected_rect.SetLocation(FloatPoint(0.25f, 0.333f));
   visual_viewport.SetLocation(expected_rect.Location());
   EXPECT_FLOAT_RECT_EQ(expected_rect, visual_viewport.VisibleRect());
-}
-
-// Make sure that the visibleRectInDocument method acurately reflects the scale
-// and scroll location of the viewport relative to the document.
-TEST_P(VisualViewportTest, TestVisibleRectInDocument) {
-  InitializeWithDesktopSettings();
-  WebView()->MainFrameWidget()->Resize(IntSize(100, 400));
-
-  RegisterMockedHttpURLLoad("200-by-800-viewport.html");
-  NavigateTo(base_url_ + "200-by-800-viewport.html");
-
-  VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
-
-  // Scale the viewport to 2X and move it.
-  visual_viewport.SetScale(2);
-  visual_viewport.SetLocation(FloatPoint(10, 15));
-  EXPECT_FLOAT_RECT_EQ(FloatRect(10, 15, 50, 200),
-                       visual_viewport.VisibleRectInDocument());
-
-  // Scroll the layout viewport. Ensure its offset is reflected in
-  // visibleRectInDocument().
-  LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
-  frame_view.LayoutViewport()->SetScrollOffset(ScrollOffset(40, 100),
-                                               kProgrammaticScroll);
-  EXPECT_FLOAT_RECT_EQ(FloatRect(50, 115, 50, 200),
-                       visual_viewport.VisibleRectInDocument());
 }
 
 TEST_P(VisualViewportTest, TestFractionalScrollOffsetIsNotOverwritten) {
@@ -1349,7 +1335,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustment) {
 
   // Simulate bringing down the browser controls by 20px.
   WebView()->MainFrameWidget()->ApplyViewportChanges(
-      {gfx::ScrollOffset(), gfx::Vector2dF(), 1, 1,
+      {gfx::ScrollOffset(), gfx::Vector2dF(), 1, false, 1,
        cc::BrowserControlsState::kBoth});
   EXPECT_EQ(FloatSize(500, 430), visual_viewport.VisibleRect().Size());
 
@@ -1368,7 +1354,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustment) {
 
   // Simulate bringing up the browser controls by 10.5px.
   WebView()->MainFrameWidget()->ApplyViewportChanges(
-      {gfx::ScrollOffset(), gfx::Vector2dF(), 1, -10.5f / 20,
+      {gfx::ScrollOffset(), gfx::Vector2dF(), 1, false, -10.5f / 20,
        cc::BrowserControlsState::kBoth});
   EXPECT_FLOAT_SIZE_EQ(FloatSize(500, 440.5f),
                        visual_viewport.VisibleRect().Size());
@@ -1404,7 +1390,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentWithScale) {
   // the browser controls take up half as much space (in document-space) than
   // they do at an unzoomed level.
   WebView()->MainFrameWidget()->ApplyViewportChanges(
-      {gfx::ScrollOffset(), gfx::Vector2dF(), 1, 1,
+      {gfx::ScrollOffset(), gfx::Vector2dF(), 1, false, 1,
        cc::BrowserControlsState::kBoth});
   EXPECT_EQ(FloatSize(250, 215), visual_viewport.VisibleRect().Size());
 
@@ -1422,7 +1408,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentWithScale) {
   // Scale back out, LocalFrameView max scroll shouldn't have changed. Visual
   // viewport should be moved up to accomodate larger view.
   WebView()->MainFrameWidget()->ApplyViewportChanges(
-      {gfx::ScrollOffset(), gfx::Vector2dF(), 0.5f, 0,
+      {gfx::ScrollOffset(), gfx::Vector2dF(), 0.5f, false, 0,
        cc::BrowserControlsState::kBoth});
   EXPECT_EQ(1, visual_viewport.Scale());
   EXPECT_EQ(expected, frame_view.LayoutViewport()->GetScrollOffset());
@@ -1436,13 +1422,13 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentWithScale) {
 
   // Scale out, use a scale that causes fractional rects.
   WebView()->MainFrameWidget()->ApplyViewportChanges(
-      {gfx::ScrollOffset(), gfx::Vector2dF(), 0.8f, -1,
+      {gfx::ScrollOffset(), gfx::Vector2dF(), 0.8f, false, -1,
        cc::BrowserControlsState::kBoth});
   EXPECT_EQ(FloatSize(625, 562.5), visual_viewport.VisibleRect().Size());
 
   // Bring out the browser controls by 11
   WebView()->MainFrameWidget()->ApplyViewportChanges(
-      {gfx::ScrollOffset(), gfx::Vector2dF(), 1, 11 / 20.f,
+      {gfx::ScrollOffset(), gfx::Vector2dF(), 1, false, 11 / 20.f,
        cc::BrowserControlsState::kBoth});
   EXPECT_EQ(FloatSize(625, 548.75), visual_viewport.VisibleRect().Size());
 
@@ -1611,7 +1597,7 @@ TEST_P(VisualViewportTest, TestTopControlHidingResizeDoesntClampMainFrame) {
   WebView()->ResizeWithBrowserControls(WebView()->MainFrameWidget()->Size(),
                                        500, 0, false);
   WebView()->MainFrameWidget()->ApplyViewportChanges(
-      {gfx::ScrollOffset(), gfx::Vector2dF(), 1, 1,
+      {gfx::ScrollOffset(), gfx::Vector2dF(), 1, false, 1,
        cc::BrowserControlsState::kBoth});
   WebView()->ResizeWithBrowserControls(WebSize(1000, 1000), 500, 0, true);
 
@@ -1623,7 +1609,7 @@ TEST_P(VisualViewportTest, TestTopControlHidingResizeDoesntClampMainFrame) {
   // controls on the compositor side so the max scroll position should account
   // for the full viewport height.
   WebView()->MainFrameWidget()->ApplyViewportChanges(
-      {gfx::ScrollOffset(), gfx::Vector2dF(), 1, -1,
+      {gfx::ScrollOffset(), gfx::Vector2dF(), 1, false, -1,
        cc::BrowserControlsState::kBoth});
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
   frame_view.LayoutViewport()->SetScrollOffset(ScrollOffset(0, 10000),
@@ -1819,7 +1805,9 @@ TEST_P(VisualViewportTest, visualViewportIsInert) {
   EXPECT_EQ(200, html->clientWidth());
   EXPECT_EQ(300, html->clientHeight());
 
-  visual_viewport.SetScrollOffset(ScrollOffset(10, 15), kProgrammaticScroll);
+  visual_viewport.SetScrollOffset(ScrollOffset(10, 15), kProgrammaticScroll,
+                                  kScrollBehaviorInstant,
+                                  ScrollableArea::ScrollCallback());
 
   ASSERT_EQ(10, visual_viewport.GetScrollOffset().Width());
   ASSERT_EQ(15, visual_viewport.GetScrollOffset().Height());
@@ -1904,7 +1892,7 @@ TEST_P(VisualViewportTest, SlowScrollAfterImplScroll) {
 
   // Apply some scroll and scale from the impl-side.
   WebView()->MainFrameWidget()->ApplyViewportChanges(
-      {gfx::ScrollOffset(300, 200), gfx::Vector2dF(0, 0), 2, 0,
+      {gfx::ScrollOffset(300, 200), gfx::Vector2dF(0, 0), 2, false, 0,
        cc::BrowserControlsState::kBoth});
 
   EXPECT_EQ(FloatSize(300, 200), visual_viewport.GetScrollOffset());
@@ -1912,7 +1900,7 @@ TEST_P(VisualViewportTest, SlowScrollAfterImplScroll) {
   // Send a scroll event on the main thread path.
   WebGestureEvent gsb(
       WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
-      WebInputEvent::GetStaticTimeStampForTests(), kWebGestureDeviceTouchpad);
+      WebInputEvent::GetStaticTimeStampForTests(), WebGestureDevice::kTouchpad);
   gsb.SetFrameScale(1);
   gsb.data.scroll_begin.delta_x_hint = -50;
   gsb.data.scroll_begin.delta_x_hint = -60;
@@ -1921,7 +1909,7 @@ TEST_P(VisualViewportTest, SlowScrollAfterImplScroll) {
 
   WebGestureEvent gsu(
       WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
-      WebInputEvent::GetStaticTimeStampForTests(), kWebGestureDeviceTouchpad);
+      WebInputEvent::GetStaticTimeStampForTests(), WebGestureDevice::kTouchpad);
   gsu.SetFrameScale(1);
   gsu.data.scroll_update.delta_x = -50;
   gsu.data.scroll_update.delta_y = -60;
@@ -2091,7 +2079,9 @@ TEST_P(VisualViewportTest, ResizeAnchoringWithRootScroller) {
                                                   kProgrammaticScroll);
 
   VisualViewport& visual_viewport = WebView()->GetPage()->GetVisualViewport();
-  visual_viewport.SetScrollOffset(ScrollOffset(0, 400), kProgrammaticScroll);
+  visual_viewport.SetScrollOffset(ScrollOffset(0, 400), kProgrammaticScroll,
+                                  kScrollBehaviorInstant,
+                                  ScrollableArea::ScrollCallback());
 
   WebView()->MainFrameWidget()->Resize(IntSize(800, 500));
 
@@ -2416,7 +2406,9 @@ TEST_P(VisualViewportTest, EnsureOverscrollElasticityTransformNode) {
 
 // Ensure we create effect node for scrollbar properly.
 TEST_P(VisualViewportTest, EnsureEffectNodeForScrollbars) {
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+      // TODO(wangxianzhu): Should this work for CompositeAfterPaint?
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   InitializeWithAndroidSettings();
@@ -2528,7 +2520,7 @@ TEST_F(VisualViewportSimTest, ScrollingContentsSmallerThanContainer) {
   }
 
   WebView().MainFrameWidget()->ApplyViewportChanges(
-      {gfx::ScrollOffset(1, 1), gfx::Vector2dF(), 2, 1,
+      {gfx::ScrollOffset(1, 1), gfx::Vector2dF(), 2, false, 1,
        cc::BrowserControlsState::kBoth});
   EXPECT_EQ(gfx::Size(400, 600), visual_viewport.ContainerLayer()->Size());
   EXPECT_EQ(gfx::Size(400, 600),
@@ -2557,14 +2549,80 @@ TEST_P(VisualViewportTest, DeviceEmulationTransformNode) {
   UpdateAllLifecyclePhases();
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
-  EXPECT_EQ(visual_viewport.GetDeviceEmulationTransformNode()->Matrix(),
-            emulation_transform);
+  EXPECT_EQ(visual_viewport.GetDeviceEmulationTransformNode()->Translation2D(),
+            emulation_transform.To2DTranslation());
 
   // Set an identity device emulation transform and ensure the transform
   // paint property node is cleared.
   WebView()->SetDeviceEmulationTransform(TransformationMatrix());
   UpdateAllLifecyclePhases();
   EXPECT_EQ(visual_viewport.GetDeviceEmulationTransformNode(), nullptr);
+}
+
+// When a pinch-zoom occurs, the viewport scale and translation nodes can be
+// directly updated without a PaintArtifactCompositor update.
+TEST_P(VisualViewportTest, DirectPinchZoomPropertyUpdate) {
+  // TODO(crbug.com/953322): Implement this optimization for
+  // CompositeAfterPaint.
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  InitializeWithAndroidSettings();
+
+  RegisterMockedHttpURLLoad("200-by-800-viewport.html");
+  NavigateTo(base_url_ + "200-by-800-viewport.html");
+
+  WebView()->MainFrameWidget()->Resize(IntSize(100, 200));
+
+  // Scroll visual viewport to the right edge of the frame
+  VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
+  visual_viewport.SetScaleAndLocation(2.f, true, FloatPoint(150, 10));
+
+  EXPECT_FLOAT_SIZE_EQ(FloatSize(150, 10), visual_viewport.GetScrollOffset());
+  EXPECT_EQ(2.f, visual_viewport.Scale());
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(paint_artifact_compositor()->NeedsUpdate());
+
+  // Update the scale and location and ensure that a PaintArtifactCompositor
+  // update is not required.
+  visual_viewport.SetScaleAndLocation(3.f, true, FloatPoint(120, 10));
+  UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_FALSE(paint_artifact_compositor()->NeedsUpdate());
+
+  EXPECT_FLOAT_SIZE_EQ(FloatSize(120, 10), visual_viewport.GetScrollOffset());
+  EXPECT_EQ(3.f, visual_viewport.Scale());
+}
+
+// |TransformPaintPropertyNode::in_subtree_of_page_scale| should be false for
+// the page scale transform node and all ancestors, and should be true for
+// descendants of the page scale transform node.
+TEST_P(VisualViewportTest, InSubtreeOfPageScale) {
+  InitializeWithAndroidSettings();
+  RegisterMockedHttpURLLoad("200-by-800-viewport.html");
+  NavigateTo(base_url_ + "200-by-800-viewport.html");
+
+  UpdateAllLifecyclePhases();
+
+  VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
+  const auto* page_scale = visual_viewport.GetPageScaleNode();
+  // The page scale is not in its own subtree.
+  EXPECT_FALSE(page_scale->IsInSubtreeOfPageScale());
+  // Ancestors of the page scale are not in the page scale's subtree.
+  for (const auto* ancestor = page_scale->Parent(); ancestor;
+       ancestor = ancestor->Parent()) {
+    EXPECT_FALSE(ancestor->IsInSubtreeOfPageScale());
+  }
+
+  const auto* view = GetFrame()->View()->GetLayoutView();
+  const auto& view_contents_transform =
+      view->FirstFragment().ContentsProperties().Transform();
+  // Descendants of the page scale node should have |IsInSubtreeOfPageScale|.
+  EXPECT_TRUE(view_contents_transform.IsInSubtreeOfPageScale());
+  for (const auto* ancestor = view_contents_transform.Parent();
+       ancestor != page_scale; ancestor = ancestor->Parent()) {
+    EXPECT_TRUE(ancestor->IsInSubtreeOfPageScale());
+  }
 }
 
 }  // namespace

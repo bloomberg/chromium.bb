@@ -17,7 +17,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/net/cookies/cookie_store_ios_persistent.h"
 #import "ios/net/cookies/system_cookie_store.h"
-#include "ios/web/public/features.h"
+#include "ios/web/common/features.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "net/cookies/cookie_monster.h"
@@ -58,8 +58,7 @@ std::unique_ptr<net::CookieMonster> CreateCookieMonster(
     net::NetLog* net_log) {
   if (config.path.empty()) {
     // Empty path means in-memory store.
-    return std::make_unique<net::CookieMonster>(
-        nullptr /* store */, nullptr /* channel_id_service */, net_log);
+    return std::make_unique<net::CookieMonster>(nullptr /* store */, net_log);
   }
 
   const bool restore_old_session_cookies =
@@ -67,8 +66,8 @@ std::unique_ptr<net::CookieMonster> CreateCookieMonster(
   scoped_refptr<net::SQLitePersistentCookieStore> persistent_store =
       CreatePersistentCookieStore(config.path, restore_old_session_cookies,
                                   config.crypto_delegate);
-  std::unique_ptr<net::CookieMonster> cookie_monster(new net::CookieMonster(
-      persistent_store.get(), nullptr /* channel_id_service */, net_log));
+  std::unique_ptr<net::CookieMonster> cookie_monster(
+      new net::CookieMonster(persistent_store.get(), net_log));
   if (restore_old_session_cookies)
     cookie_monster->SetPersistSessionCookies(true);
   return cookie_monster;

@@ -44,10 +44,6 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
   USING_GARBAGE_COLLECTED_MIXIN(SelectionEditor);
 
  public:
-  static SelectionEditor* Create(LocalFrame& frame) {
-    return MakeGarbageCollected<SelectionEditor>(frame);
-  }
-
   explicit SelectionEditor(LocalFrame&);
   virtual ~SelectionEditor();
   void Dispose();

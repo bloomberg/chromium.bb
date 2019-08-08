@@ -48,7 +48,7 @@ source_set("scenic") {
     "//third_party/fuchsia-sdk/sdk:ui_gfx",
     "//third_party/fuchsia-sdk/sdk:ui_scenic",
     "//ui/base",
-    "//ui/display/manager",
+    "//ui/display/fake",
     "//ui/events:dom_keycode_converter",
     "//ui/events/ozone:events_ozone_layout",
     "//ui/gfx/geometry",

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event_handler.h"
 
 namespace base {
@@ -47,7 +48,7 @@ class ASH_EXPORT PowerButtonScreenshotController : public ui::EventHandler {
   bool InterceptScreenshotChord();
 
   // Called by |volume_down_timer_| to perform volume down accelerator.
-  void OnVolumeDownTimeout();
+  void OnVolumeDownTimeout(const ui::Accelerator& accelerator);
 
   // True if volume down key is pressed.
   bool volume_down_key_pressed_ = false;

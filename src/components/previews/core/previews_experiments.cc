@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
+#include "google_apis/google_api_keys.h"
 
 namespace previews {
 
@@ -45,6 +46,8 @@ const char kSessionMaxECTTrigger[] = "session_max_ect_trigger";
 // Inflation parameters for estimating NoScript data savings.
 const char kNoScriptInflationPercent[] = "NoScriptInflationPercent";
 const char kNoScriptInflationBytes[] = "NoScriptInflationBytes";
+
+const char kOptimizationGuideServiceURL[] = "";
 
 // Inflation parameters for estimating ResourceLoadingHints data savings.
 const char kResourceLoadingHintsInflationPercent[] =
@@ -111,9 +114,10 @@ size_t MaxInMemoryHostsInBlackList() {
                               "max_hosts_in_blacklist", 100);
 }
 
-size_t MaxOnePlatformUpdateHosts() {
-  return GetFieldTrialParamByFeatureAsInt(features::kPreviewsOnePlatformHints,
-                                          "max_oneplatform_update_hosts", 30);
+size_t MaxHostsForOptimizationGuideServiceHintsFetch() {
+  return GetFieldTrialParamByFeatureAsInt(
+      features::kOptimizationHintsFetching,
+      "max_hosts_for_optimization_guide_service_hints_fetch", 30);
 }
 
 int PerHostBlackListOptOutThreshold() {
@@ -224,9 +228,32 @@ GURL GetLitePagePreviewsDomainURL() {
   return GURL("https://litepages.googlezip.net/");
 }
 
-std::string LitePageRedirectPreviewExperiment() {
-  return GetFieldTrialParamValueByFeature(features::kLitePageServerPreviews,
-                                          "lite_page_preview_experiment");
+std::string GetOptimizationGuideServiceAPIKey() {
+  // Command line override takes priority.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kOptimizationGuideServiceAPIKey)) {
+    return command_line->GetSwitchValueASCII(
+        switches::kOptimizationGuideServiceAPIKey);
+  }
+
+  return google_apis::GetAPIKey();
+}
+
+GURL GetOptimizationGuideServiceURL() {
+  // Command line override takes priority.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kOptimizationGuideServiceURL)) {
+    // Assume the command line switch is correct and return it.
+    return GURL(command_line->GetSwitchValueASCII(
+        switches::kOptimizationGuideServiceURL));
+  }
+
+  std::string url = base::GetFieldTrialParamValueByFeature(
+      features::kOptimizationHintsFetching, "optimization_guide_service_url");
+  if (url.empty())
+    return GURL(kOptimizationGuideServiceURL);
+
+  return GURL(url);
 }
 
 bool IsInLitePageRedirectControl() {
@@ -332,8 +359,8 @@ bool IsOptimizationHintsEnabled() {
   return base::FeatureList::IsEnabled(features::kOptimizationHints);
 }
 
-bool IsOnePlatformHintsEnabled() {
-  return base::FeatureList::IsEnabled(features::kPreviewsOnePlatformHints);
+bool IsHintsFetchingEnabled() {
+  return base::FeatureList::IsEnabled(features::kOptimizationHintsFetching);
 }
 
 int NoScriptPreviewsInflationPercent() {
@@ -358,6 +385,11 @@ int ResourceLoadingHintsPreviewsInflationPercent() {
 int ResourceLoadingHintsPreviewsInflationBytes() {
   return GetFieldTrialParamByFeatureAsInt(
       features::kResourceLoadingHints, kResourceLoadingHintsInflationBytes, 0);
+}
+
+bool ShouldOverrideCoinFlipHoldbackResult() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kCoinFlipHoldback, "force_coin_flip_always_holdback", false);
 }
 
 }  // namespace params

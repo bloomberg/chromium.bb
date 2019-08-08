@@ -8,6 +8,7 @@
 <translation id="1664224225747386870">未记录任何数据</translation>
 <translation id="1862930711583847113">无法导出“<ph name="FILE" />”</translation>
 <translation id="2036868001356139588">定时器时长</translation>
+<translation id="2050339315714019657">纵向</translation>
 <translation id="2064538373111010176">已切换到<ph name="CAMERA" /></translation>
 <translation id="229579744168541441">导出到磁盘</translation>
 <translation id="2501278716633472235">返回</translation>
@@ -20,14 +21,19 @@
 <translation id="3081586908890909590">切换到录制视频模式</translation>
 <translation id="3183731565330012717">网格类型</translation>
 <translation id="3227137524299004712">麦克风</translation>
+<translation id="3517926952904427380">无法拍摄纵向照片</translation>
 <translation id="3569311554794739032">确定要移除“<ph name="FILE" />”吗？</translation>
+<translation id="3810838688059735925">视频</translation>
 <translation id="4279490309300973883">正在镜像</translation>
+<translation id="4329152592498422850">切换到正方形照片拍摄模式</translation>
 <translation id="4445542136948522167">停止拍照</translation>
+<translation id="4628948037717959914">照片</translation>
 <translation id="4649291346448517080">无法保存文件</translation>
 <translation id="4890010094662541459">3 x 3</translation>
 <translation id="5057360777601936059">您的摄像头目前不可用。
         请检查此摄像头是否连接正确。</translation>
 <translation id="5152121255775685072">打开图库</translation>
+<translation id="5671277269877808209">方形</translation>
 <translation id="5869546221129391014">网格</translation>
 <translation id="6073451960410192870">停止录制</translation>
 <translation id="6233780560267770709">3 x 3</translation>
@@ -46,6 +52,7 @@
 <translation id="8145038249676204903">切换到拍照模式</translation>
 <translation id="8261506727792406068">删除</translation>
 <translation id="8428213095426709021">设置</translation>
+<translation id="8815966864175525708">切换到纵向照片拍摄模式</translation>
 <translation id="8870695351537079478">无法开始录制</translation>
 <translation id="9045155556724273246">10 秒</translation>
 <translation id="945522503751344254">发送反馈</translation>

@@ -47,31 +47,14 @@ CanvasColorParams::CanvasColorParams(CanvasColorSpace color_space,
 CanvasColorParams::CanvasColorParams(const SkImageInfo& info)
     : CanvasColorParams(info.refColorSpace(), info.colorType()) {}
 
-bool CanvasColorParams::NeedsSkColorSpaceXformCanvas() const {
-  return color_space_ == kSRGBCanvasColorSpace &&
-         pixel_format_ == kRGBA8CanvasPixelFormat;
-}
-
-std::unique_ptr<cc::PaintCanvas> CanvasColorParams::WrapCanvas(
-    SkCanvas* canvas) const {
-  if (NeedsSkColorSpaceXformCanvas())
-    return std::make_unique<cc::SkiaPaintCanvas>(canvas, GetSkColorSpace());
-  // |canvas| already does its own color correction.
-  return std::make_unique<cc::SkiaPaintCanvas>(canvas);
-}
-
 sk_sp<SkColorSpace> CanvasColorParams::GetSkColorSpaceForSkSurfaces() const {
-  if (NeedsSkColorSpaceXformCanvas())
-    return nullptr;
   return GetSkColorSpace();
 }
 
 bool CanvasColorParams::NeedsColorConversion(
     const CanvasColorParams& dest_color_params) const {
   if ((color_space_ == dest_color_params.ColorSpace() &&
-       pixel_format_ == dest_color_params.PixelFormat()) ||
-      (NeedsSkColorSpaceXformCanvas() &&
-       dest_color_params.NeedsSkColorSpaceXformCanvas()))
+       pixel_format_ == dest_color_params.PixelFormat()))
     return false;
   return true;
 }

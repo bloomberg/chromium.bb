@@ -41,7 +41,7 @@ class PreviewsLitePageURLLoaderInterceptorTest : public testing::Test {
 
   void SetUp() override {
     interceptor_ = std::make_unique<PreviewsLitePageURLLoaderInterceptor>(
-        shared_factory_, 1);
+        shared_factory_, 1, 2);
   }
 
   void SetFakeResponse(const GURL& url,
@@ -62,7 +62,7 @@ class PreviewsLitePageURLLoaderInterceptorTest : public testing::Test {
 
   void ResetTest() {
     interceptor_ = std::make_unique<PreviewsLitePageURLLoaderInterceptor>(
-        shared_factory_, 1);
+        shared_factory_, 1, 2);
     callback_was_empty_ = base::nullopt;
   }
 
@@ -85,7 +85,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
 
   network::ResourceRequest request;
   request.url = GURL("https://google.com");
-  request.resource_type = static_cast<int>(content::RESOURCE_TYPE_MAIN_FRAME);
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.method = "GET";
 
   SetFakeResponse(
@@ -133,7 +133,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest, InterceptRequestRedirect) {
   base::HistogramTester histogram_tester;
   network::ResourceRequest request;
   request.url = GURL("https://google.com");
-  request.resource_type = static_cast<int>(content::RESOURCE_TYPE_MAIN_FRAME);
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.method = "GET";
   request.previews_state = content::LITE_PAGE_REDIRECT_ON;
   SetFakeResponse(
@@ -158,7 +158,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
   base::HistogramTester histogram_tester;
   network::ResourceRequest request;
   request.url = GURL("https://google.com");
-  request.resource_type = static_cast<int>(content::RESOURCE_TYPE_MAIN_FRAME);
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.method = "GET";
   request.previews_state = content::LITE_PAGE_REDIRECT_ON;
   SetFakeResponse(
@@ -184,7 +184,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest,
   base::HistogramTester histogram_tester;
   network::ResourceRequest request;
   request.url = GURL("https://google.com");
-  request.resource_type = static_cast<int>(content::RESOURCE_TYPE_MAIN_FRAME);
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.method = "GET";
   request.previews_state = content::LITE_PAGE_REDIRECT_ON;
   SetFakeResponse(
@@ -208,7 +208,7 @@ TEST_F(PreviewsLitePageURLLoaderInterceptorTest, NetStackError) {
   base::HistogramTester histogram_tester;
   network::ResourceRequest request;
   request.url = GURL("https://google.com");
-  request.resource_type = static_cast<int>(content::RESOURCE_TYPE_MAIN_FRAME);
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.method = "GET";
   request.previews_state = content::LITE_PAGE_REDIRECT_ON;
   SetFakeResponse(

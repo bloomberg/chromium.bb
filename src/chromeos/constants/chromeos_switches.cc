@@ -106,7 +106,9 @@ const char kArcDisableAppSync[] = "arc-disable-app-sync";
 
 // Flag that disables ARC locale sync with Android container. Used in autotest
 // to prevent conditions when certain apps, including Play Store may get
-// restarted. Restarting Play Store may case random test failures.
+// restarted. Restarting Play Store may cause random test failures. Enabling
+// this flag would also forces ARC container to use 'en-US' as a locale and
+// 'en-US,en' as preferred languages.
 const char kArcDisableLocaleSync[] = "arc-disable-locale-sync";
 
 // Flag that disables ARC Play Auto Install flow that installs set of predefined
@@ -142,9 +144,6 @@ const char kArcStartMode[] = "arc-start-mode";
 // crbug.com/761348.
 const char kArcTransitionMigrationRequired[] =
     "arc-transition-migration-required";
-
-// Screenshot testing: specifies the directoru where artifacts will be stored.
-const char kArtifactsDir[] = "artifacts-dir";
 
 // If this flag is set, it indicates that this device is a "Cellular First"
 // device. Cellular First devices use cellular telephone data networks as
@@ -204,13 +203,6 @@ const char kDisableArcDataWipe[] = "disable-arc-data-wipe";
 
 // Disables ARC Opt-in verification process and ARC is enabled by default.
 const char kDisableArcOptInVerification[] = "disable-arc-opt-in-verification";
-
-// Disables bypass proxy for captive portal authorization.
-const char kDisableCaptivePortalBypassProxy[] =
-    "disable-captive-portal-bypass-proxy";
-
-// Disables cloud backup feature.
-const char kDisableCloudImport[] = "disable-cloud-import";
 
 // Disables the Chrome OS demo.
 const char kDisableDemoMode[] = "disable-demo-mode";
@@ -279,10 +271,6 @@ const char kDisableSigninFrameClientCerts[] =
 const char kDisableSigninFrameClientCertUserSelection[] =
     "disable-signin-frame-client-cert-user-selection";
 
-// Disables SystemTimezoneAutomaticDetection policy.
-const char kDisableSystemTimezoneAutomaticDetectionPolicy[] =
-    "disable-system-timezone-automatic-detection";
-
 // Disables volume adjust sound.
 const char kDisableVolumeAdjustSound[] = "disable-volume-adjust-sound";
 
@@ -312,6 +300,7 @@ const char kEnableEncryptionMigration[] = "enable-encryption-migration";
 const char kEnableExtensionAssetsSharing[] = "enable-extension-assets-sharing";
 
 // Enables animated transitions during first-run tutorial.
+// TODO(https://crbug.com/945966): Remove this.
 const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
 
 // Enables the marketing opt-in screen in OOBE.
@@ -324,10 +313,6 @@ const char kEnablePhysicalKeyboardAutocorrect[] =
 // Enables request of tablet site (via user agent override).
 const char kEnableRequestTabletSite[] = "enable-request-tablet-site";
 
-// Enables using screenshots in tests and seets mode.
-const char kEnableScreenshotTestingWithMode[] =
-    "enable-screenshot-testing-with-mode";
-
 // Enables the touch calibration option in MD settings UI for valid touch
 // displays.
 const char kEnableTouchCalibrationSetting[] =
@@ -336,10 +321,6 @@ const char kEnableTouchCalibrationSetting[] =
 // Enables touchpad three-finger-click as middle button.
 const char kEnableTouchpadThreeFingerClick[] =
     "enable-touchpad-three-finger-click";
-
-// Enables the chromecast support for video player app.
-const char kEnableVideoPlayerChromecastSupport[] =
-    "enable-video-player-chromecast-support";
 
 // Disables ARC for managed accounts.
 const char kEnterpriseDisableArc[] = "enterprise-disable-arc";
@@ -409,9 +390,8 @@ const char kForceLoginManagerInTests[] = "force-login-manager-in-tests";
 // Force system compositor mode when set.
 const char kForceSystemCompositorMode[] = "force-system-compositor-mode";
 
-// Screenshot testing: specifies the directory where the golden screenshots are
-// stored.
-const char kGoldenScreenshotsDir[] = "golden-screenshots-dir";
+// Forces to use chrome camera app when camera icon is clicked.
+const char kForceUseChromeCamera[] = "force-use-chrome-camera";
 
 // Indicates that the browser is in "browse without sign-in" (Guest session)
 // mode. Should completely disable extensions, sync and bookmarks.
@@ -441,6 +421,9 @@ const char kHomedir[] = "homedir";
 // turn on multi-profile feature on ChromeOS.
 const char kIgnoreUserProfileMappingForTests[] =
     "ignore-user-profile-mapping-for-tests";
+
+// URL prefix that can be launched by Kiosk Next Home.
+const char kKioskNextHomeUrlPrefix[] = "kiosk-next-home-url-prefix";
 
 // Enables Chrome-as-a-login-manager behavior.
 const char kLoginManager[] = "login-manager";
@@ -493,8 +476,15 @@ const char kOobeTimerInterval[] = "oobe-timer-interval";
 // must succeed, otherwise session restart should fail).
 const char kProfileRequiresPolicy[] = "profile-requires-policy";
 
+// Redirects libassistant logging to /var/log/chrome/.
+const char kRedirectLibassistantLogging[] = "redirect-libassistant-logging";
+
 // The rlz ping delay (in seconds) that overwrites the default value.
 const char kRlzPingDelay[] = "rlz-ping-delay";
+
+// Password change url for SAML users. Remove when https://crbug.com/941489 is
+// fixed.
+const char kSamlPasswordChangeUrl[] = "saml-password-change-url";
 
 // App window previews when hovering over the shelf.
 const char kShelfHoverPreviews[] = "shelf-hover-previews";
@@ -543,6 +533,11 @@ const char kWaitForInitialPolicyFetchForTest[] =
 // Enables wake on wifi packet feature, which wakes the device on the receipt
 // of network packets from whitelisted sources.
 const char kWakeOnWifiPacket[] = "wake-on-wifi-packet";
+
+// Prevents any CPU restrictions being set on the ARC container. Only meant to
+// be used by tests as some tests may time out if the ARC container is
+// throttled.
+const char kDisableArcCpuRestriction[] = "disable-arc-cpu-restriction";
 
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
@@ -650,6 +645,11 @@ bool ShouldSkipOobePostLogin() {
 bool IsGaiaServicesDisabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableGaiaServices);
+}
+
+bool IsArcCpuRestrictionDisabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kDisableArcCpuRestriction);
 }
 
 }  // namespace switches

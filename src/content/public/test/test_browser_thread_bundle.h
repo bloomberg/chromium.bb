@@ -13,7 +13,7 @@
 // By default, BrowserThread::UI/IO are backed by a single shared MessageLoop on
 // the main thread. If a test truly needs BrowserThread::IO tasks to run on a
 // separate thread, it can pass the REAL_IO_THREAD option to the constructor.
-// TaskScheduler tasks always run on dedicated threads.
+// ThreadPool tasks always run on dedicated threads.
 //
 // To synchronously run tasks from the shared MessageLoop:
 //
@@ -21,8 +21,8 @@
 //    base::RunLoop::RunUntilIdle();
 //
 // ... until there are no undelayed tasks in the shared MessageLoop, in
-// TaskScheduler (excluding tasks not posted from the shared MessageLoop's
-// thread or TaskScheduler):
+// ThreadPool (excluding tasks not posted from the shared MessageLoop's
+// thread or ThreadPool):
 //    content::RunAllTasksUntilIdle();
 //
 // ... until a condition is met:
@@ -32,19 +32,19 @@
 //    // run_loop.QuitClosure() must be kept somewhere accessible by that task).
 //    run_loop.Run();
 //
-// To wait until there are no pending undelayed tasks in TaskScheduler, without
+// To wait until there are no pending undelayed tasks in ThreadPool, without
 // running tasks from the shared MessageLoop:
-//    base::TaskScheduler::GetInstance()->FlushForTesting();
+//    base::ThreadPool::GetInstance()->FlushForTesting();
 //
 // The destructor of TestBrowserThreadBundle runs remaining UI/IO tasks and
-// remaining task scheduler tasks.
+// remaining thread pool tasks.
 //
 // If a test needs to pump IO messages on the main thread, it should use the
 // IO_MAINLOOP option. Most of the time, IO_MAINLOOP avoids needing to use a
 // REAL_IO_THREAD.
 //
 // For some tests it is important to emulate real browser startup. During real
-// browser startup, the main MessageLoop and the TaskScheduler are created
+// browser startup, the main MessageLoop and the ThreadPool are created
 // before browser threads. Passing DONT_CREATE_BROWSER_THREADS to constructor
 // will delay creating browser threads until the test explicitly calls
 // CreateBrowserThreads().
@@ -54,7 +54,7 @@
 //
 // TestBrowserThreadBundle may be instantiated in a scope where there is already
 // a base::test::ScopedTaskEnvironment. In that case, it will use the
-// MessageLoop and the TaskScheduler provided by this
+// MessageLoop and the ThreadPool provided by this
 // base::test::ScopedTaskEnvironment instead of creating its own. The ability to
 // have a base::test::ScopedTaskEnvironment and a TestBrowserThreadBundle in the
 // same scope is useful when a fixture that inherits from a fixture that
@@ -137,10 +137,10 @@ class TestBrowserThreadBundle : public base::test::ScopedTaskEnvironment {
             UseRealIOThread(
                 base::trait_helpers::GetOptionalEnum<Options>(args...))) {}
 
-  // Runs all tasks posted to TaskScheduler and main thread until idle.
+  // Runs all tasks posted to ThreadPool and main thread until idle.
   // Note: At the moment, this will not process BrowserThread::IO if this
   // TestBrowserThreadBundle is using a REAL_IO_THREAD.
-  // TODO(robliao): fix this by making TaskScheduler aware of all MessageLoops.
+  // TODO(robliao): fix this by making ThreadPool aware of all MessageLoops.
   //
   // Note that this is not the cleanest way to run until idle as it will return
   // early if it depends on an async condition that isn't guaranteed to have

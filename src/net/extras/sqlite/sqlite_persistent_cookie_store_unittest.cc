@@ -177,7 +177,7 @@ class SQLitePersistentCookieStoreTest : public TestWithScopedTaskEnvironment {
                  const base::Time& creation) {
     store_->AddCookie(CanonicalCookie(
         name, value, domain, path, creation, creation, base::Time(), false,
-        false, CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
+        false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT));
   }
 
   void AddCookieWithExpiration(const std::string& name,
@@ -188,7 +188,7 @@ class SQLitePersistentCookieStoreTest : public TestWithScopedTaskEnvironment {
                                const base::Time& expiration) {
     store_->AddCookie(CanonicalCookie(
         name, value, domain, path, creation, expiration, base::Time(), false,
-        false, CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
+        false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT));
   }
 
   std::string ReadRawDBContents() {
@@ -466,7 +466,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
                              NetLogEventPhase::NONE);
 }
 
-TEST_F(SQLitePersistentCookieStoreTest, TestBeforeFlushCallback) {
+TEST_F(SQLitePersistentCookieStoreTest, TestBeforeCommitCallback) {
   InitializeStore(false, false);
 
   struct Counter {
@@ -475,8 +475,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestBeforeFlushCallback) {
   };
 
   Counter counter;
-  store_->SetBeforeFlushCallback(
-      base::Bind(&Counter::increment, base::Unretained(&counter)));
+  store_->SetBeforeCommitCallback(
+      base::BindRepeating(&Counter::increment, base::Unretained(&counter)));
 
   // The implementation of SQLitePersistentCookieStore::Backend flushes changes
   // after 30s or 512 pending operations. Add 512 cookies to the store to test
@@ -528,7 +528,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadOldSessionCookies) {
   store_->AddCookie(
       CanonicalCookie("C", "D", "sessioncookie.com", "/", base::Time::Now(),
                       base::Time(), base::Time(), false, false,
-                      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
+                      CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT));
 
   // Force the store to write its data to the disk.
   DestroyStore();
@@ -555,7 +555,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestDontLoadOldSessionCookies) {
   store_->AddCookie(
       CanonicalCookie("C", "D", "sessioncookie.com", "/", base::Time::Now(),
                       base::Time(), base::Time(), false, false,
-                      CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
+                      CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT));
 
   // Force the store to write its data to the disk.
   DestroyStore();
@@ -657,14 +657,14 @@ TEST_F(SQLitePersistentCookieStoreTest, PersistIsPersistent) {
   // Add a session cookie.
   store_->AddCookie(CanonicalCookie(
       kSessionName, "val", "sessioncookie.com", "/", base::Time::Now(),
-      base::Time(), base::Time(), false, false, CookieSameSite::DEFAULT_MODE,
+      base::Time(), base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
       COOKIE_PRIORITY_DEFAULT));
   // Add a persistent cookie.
   store_->AddCookie(CanonicalCookie(
       kPersistentName, "val", "sessioncookie.com", "/",
       base::Time::Now() - base::TimeDelta::FromDays(1),
       base::Time::Now() + base::TimeDelta::FromDays(1), base::Time(), false,
-      false, CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
+      false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT));
 
   // Force the store to write its data to the disk.
   DestroyStore();
@@ -705,21 +705,21 @@ TEST_F(SQLitePersistentCookieStoreTest, PriorityIsPersistent) {
       kLowName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::TimeDelta::FromMinutes(1),
       base::Time::Now() + base::TimeDelta::FromDays(1), base::Time(), false,
-      false, CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_LOW));
+      false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_LOW));
 
   // Add a medium-priority persistent cookie.
   store_->AddCookie(CanonicalCookie(
       kMediumName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::TimeDelta::FromMinutes(2),
       base::Time::Now() + base::TimeDelta::FromDays(1), base::Time(), false,
-      false, CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_MEDIUM));
+      false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_MEDIUM));
 
   // Add a high-priority peristent cookie.
   store_->AddCookie(CanonicalCookie(
       kHighName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::TimeDelta::FromMinutes(3),
       base::Time::Now() + base::TimeDelta::FromDays(1), base::Time(), false,
-      false, CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_HIGH));
+      false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_HIGH));
 
   // Force the store to write its data to the disk.
   DestroyStore();
@@ -785,7 +785,7 @@ TEST_F(SQLitePersistentCookieStoreTest, SameSiteIsPersistent) {
   // Force the store to write its data to the disk.
   DestroyStore();
 
-  // Create a store that loads session cookie and test that the priority
+  // Create a store that loads session cookie and test that the SameSite
   // attribute values are restored.
   CanonicalCookieVector cookies;
   CreateAndLoad(false, true, &cookies);
@@ -980,27 +980,27 @@ bool AddV9CookiesToDB(sql::Database* db) {
   std::vector<CanonicalCookie> cookies;
   cookies.push_back(CanonicalCookie(
       "A", "B", "example.com", "/", cookie_time, cookie_time, cookie_time,
-      false, false, CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
+      false, false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT));
   cookie_time += base::TimeDelta::FromMicroseconds(1);
   cookies.push_back(CanonicalCookie(
       "C", "B", "example.com", "/", cookie_time, cookie_time, cookie_time,
-      false, false, CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
+      false, false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT));
   cookie_time += base::TimeDelta::FromMicroseconds(1);
   cookies.push_back(CanonicalCookie(
       "A", "B", "example2.com", "/", cookie_time, cookie_time, cookie_time,
-      false, false, CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
+      false, false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT));
   cookie_time += base::TimeDelta::FromMicroseconds(1);
   cookies.push_back(CanonicalCookie(
       "C", "B", "example2.com", "/", cookie_time, cookie_time, cookie_time,
-      false, false, CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
+      false, false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT));
   cookie_time += base::TimeDelta::FromMicroseconds(1);
   cookies.push_back(CanonicalCookie(
       "A", "B", "example.com", "/path", cookie_time, cookie_time, cookie_time,
-      false, false, CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
+      false, false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT));
   cookie_time += base::TimeDelta::FromMicroseconds(1);
   cookies.push_back(CanonicalCookie(
       "C", "B", "example.com", "/path", cookie_time, cookie_time, cookie_time,
-      false, false, CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
+      false, false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT));
   cookie_time += base::TimeDelta::FromMicroseconds(1);
   return AddV9CookiesToDBImpl(db, cookies);
 }
@@ -1124,7 +1124,7 @@ TEST_F(SQLitePersistentCookieStoreTest, UpgradeToSchemaVersion10Corrupted) {
   base::Time old_time2 = base::Time::Now() - base::TimeDelta::FromMinutes(91);
   CanonicalCookie old_cookie1(
       "A", "old_value", "example.com", "/", old_time, old_time, old_time, false,
-      false, CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
+      false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT);
   AddV9CookiesToDBImpl(&connection, {old_cookie1});
 
   // Add the same set of cookies twice to create duplicates.
@@ -1134,7 +1134,7 @@ TEST_F(SQLitePersistentCookieStoreTest, UpgradeToSchemaVersion10Corrupted) {
   // Add some others as well.
   CanonicalCookie old_cookie2(
       "A", "old_value", "example.com", "/path", old_time2, old_time2, old_time2,
-      false, false, CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
+      false, false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT);
   AddV9CookiesToDBImpl(&connection, {old_cookie2});
 
   connection.Close();
@@ -1227,8 +1227,12 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   // Create a cookie on a scheme that doesn't handle cookies by default,
   // and save it.
   std::unique_ptr<CookieMonster> cookie_monster =
-      std::make_unique<CookieMonster>(store_.get(), nullptr, nullptr);
-  cookie_monster->SetCookieableSchemes({"gopher", "http"});
+      std::make_unique<CookieMonster>(store_.get(), nullptr);
+  ResultSavingCookieCallback<bool> cookie_scheme_callback1;
+  cookie_monster->SetCookieableSchemes({"gopher", "http"},
+                                       cookie_scheme_callback1.MakeCallback());
+  cookie_scheme_callback1.WaitUntilDone();
+  EXPECT_TRUE(cookie_scheme_callback1.result());
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       set_cookie_callback;
   cookie_monster->SetCookieWithOptionsAsync(
@@ -1267,9 +1271,12 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   // instances, so they should complete before the new PersistentCookieStore
   // starts looking at the state on disk.
   Create(false, false, true /* want current thread to invoke cookie monster */);
-  cookie_monster =
-      std::make_unique<CookieMonster>(store_.get(), nullptr, nullptr);
-  cookie_monster->SetCookieableSchemes({"gopher", "http"});
+  cookie_monster = std::make_unique<CookieMonster>(store_.get(), nullptr);
+  ResultSavingCookieCallback<bool> cookie_scheme_callback2;
+  cookie_monster->SetCookieableSchemes({"gopher", "http"},
+                                       cookie_scheme_callback2.MakeCallback());
+  cookie_scheme_callback2.WaitUntilDone();
+  EXPECT_TRUE(cookie_scheme_callback2.result());
 
   // Now try to get the cookie back.
   GetCookieListCallback get_callback;
@@ -1293,7 +1300,7 @@ TEST_F(SQLitePersistentCookieStoreTest, OpsIfInitFailed) {
       base::CreateDirectory(temp_dir_.GetPath().Append(kCookieFilename)));
   Create(false, false, true /* want current thread to invoke cookie monster */);
   std::unique_ptr<CookieMonster> cookie_monster =
-      std::make_unique<CookieMonster>(store_.get(), nullptr, nullptr);
+      std::make_unique<CookieMonster>(store_.get(), nullptr);
 
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       set_cookie_callback;

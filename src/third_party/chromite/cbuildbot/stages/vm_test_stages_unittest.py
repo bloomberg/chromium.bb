@@ -299,6 +299,8 @@ class MoblabVMTestStageTestCase(
         gs, 'GSContext', autospec=True, return_value=mock_gs_context)
     mock_buildbot_link = self.PatchObject(cros_logging, 'PrintBuildbotLink')
     mock_generate_payloads = self.PatchObject(commands, 'GeneratePayloads')
+    mock_qp_payloads = self.PatchObject(commands,
+                                        'GenerateQuickProvisionPayloads')
     self.PatchObject(commands, 'BuildAutotestTarballsForHWTest')
     #self.PatchObject(vm_test_stages, 'StageArtifactsOnMoblab', autospec=True)
     mock_run_moblab_tests = self.PatchObject(
@@ -366,11 +368,16 @@ class MoblabVMTestStageTestCase(
     mock_moblab_vm.Create.assert_called_once_with(mock.ANY, mock.ANY)
     self.assertEqual(mock_moblab_vm.Start.call_count, 1)
     self.assertEqual(mock_generate_payloads.call_count, 1)
+    self.assertEqual(mock_qp_payloads.call_count, 1)
     generate_payloads_kwargs = mock_generate_payloads.call_args_list[0][1]
     self.assertTrue(os.path.isdir(generate_payloads_kwargs['archive_dir']))
-    self.assertTrue(os.path.isdir(generate_payloads_kwargs['build_root']))
     self.assertTrue(
         os.path.isfile(generate_payloads_kwargs['target_image_path']))
+    mock_qp_kwargs = mock_qp_payloads.call_args_list[0][1]
+    print(mock_qp_kwargs)
+    self.assertTrue(
+        os.path.isfile(mock_qp_kwargs['target_image_path']))
+    self.assertTrue(os.path.isdir(mock_qp_kwargs['archive_dir']))
     self.assertEqual(mock_run_moblab_tests.call_count, 1)
     run_moblab_tests_kwargs = mock_run_moblab_tests.call_args_list[0][1]
     self.assertEqual(run_moblab_tests_kwargs['moblab_board'],

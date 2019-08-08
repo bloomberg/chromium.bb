@@ -97,7 +97,7 @@ class PostTaskTestWithExecutor : public ::testing::Test {
   test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
-TEST_F(PostTaskTestWithExecutor, PostTaskToTaskScheduler) {
+TEST_F(PostTaskTestWithExecutor, PostTaskToThreadPool) {
   // Tasks without extension should not go to the TestTaskExecutor.
   EXPECT_TRUE(PostTask(FROM_HERE, DoNothing()));
   EXPECT_FALSE(executor_.runner()->HasPendingTask());
@@ -122,8 +122,8 @@ TEST_F(PostTaskTestWithExecutor, PostTaskToTaskExecutor) {
   // Tasks with extension should go to the executor.
   {
     TaskTraits traits = {TestExtensionBoolTrait()};
-    TaskTraits traits_with_explicit_priority =
-        TaskTraits::Override(traits, {TaskPriority::USER_VISIBLE});
+    TaskTraits traits_with_explicit_priority = traits;
+    traits_with_explicit_priority.UpdatePriority(TaskPriority::USER_VISIBLE);
     EXPECT_CALL(executor_, PostDelayedTaskWithTraitsMock(
                                _, traits_with_explicit_priority, _, _))
         .Times(1);
@@ -134,8 +134,8 @@ TEST_F(PostTaskTestWithExecutor, PostTaskToTaskExecutor) {
 
   {
     TaskTraits traits = {MayBlock(), TestExtensionBoolTrait()};
-    TaskTraits traits_with_explicit_priority =
-        TaskTraits::Override(traits, {TaskPriority::USER_VISIBLE});
+    TaskTraits traits_with_explicit_priority = traits;
+    traits_with_explicit_priority.UpdatePriority(TaskPriority::USER_VISIBLE);
     EXPECT_CALL(executor_, PostDelayedTaskWithTraitsMock(
                                _, traits_with_explicit_priority, _, _))
         .Times(1);
@@ -146,8 +146,8 @@ TEST_F(PostTaskTestWithExecutor, PostTaskToTaskExecutor) {
 
   {
     TaskTraits traits = {TestExtensionEnumTrait::kB, TestExtensionBoolTrait()};
-    TaskTraits traits_with_explicit_priority =
-        TaskTraits::Override(traits, {TaskPriority::USER_VISIBLE});
+    TaskTraits traits_with_explicit_priority = traits;
+    traits_with_explicit_priority.UpdatePriority(TaskPriority::USER_VISIBLE);
     EXPECT_CALL(executor_, PostDelayedTaskWithTraitsMock(
                                _, traits_with_explicit_priority, _, _))
         .Times(1);
@@ -159,8 +159,8 @@ TEST_F(PostTaskTestWithExecutor, PostTaskToTaskExecutor) {
   // Task runners with extension should be the executor's.
   {
     TaskTraits traits = {TestExtensionBoolTrait()};
-    TaskTraits traits_with_explicit_priority =
-        TaskTraits::Override(traits, {TaskPriority::USER_VISIBLE});
+    TaskTraits traits_with_explicit_priority = traits;
+    traits_with_explicit_priority.UpdatePriority(TaskPriority::USER_VISIBLE);
     EXPECT_CALL(executor_,
                 CreateTaskRunnerWithTraits(traits_with_explicit_priority))
         .Times(1);

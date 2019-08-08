@@ -17,8 +17,8 @@ namespace blink {
 namespace {
 
 struct SameSizeAsNGPhysicalContainerFragment : NGPhysicalFragment {
-  wtf_size_t size;
   void* pointer;
+  wtf_size_t size;
 };
 
 static_assert(sizeof(NGPhysicalContainerFragment) ==
@@ -34,6 +34,7 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     NGFragmentType type,
     unsigned sub_type)
     : NGPhysicalFragment(builder, type, sub_type),
+      buffer_(buffer),
       num_children_(builder->children_.size()) {
   has_floating_descendants_ = builder->HasFloatingDescendants();
 
@@ -66,10 +67,11 @@ void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(
     // added when we iterate the continuation chain.
     // See NGPhysicalBoxFragment::AddSelfOutlineRects().
     if (LayoutObject* child_layout_object = child->GetLayoutObject()) {
+      auto* child_layout_block_flow =
+          DynamicTo<LayoutBlockFlow>(child_layout_object);
       if (child_layout_object->IsElementContinuation() ||
-          (child_layout_object->IsLayoutBlockFlow() &&
-           ToLayoutBlockFlow(child_layout_object)
-               ->IsAnonymousBlockContinuation()))
+          (child_layout_block_flow &&
+           child_layout_block_flow->IsAnonymousBlockContinuation()))
         continue;
     }
 
@@ -86,8 +88,8 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
   if (descendant->IsText() || descendant->IsListMarker())
     return;
 
-  if (const NGPhysicalBoxFragment* descendant_box =
-          ToNGPhysicalBoxFragmentOrNull(descendant.get())) {
+  if (const auto* descendant_box =
+          DynamicTo<NGPhysicalBoxFragment>(descendant.get())) {
     LayoutObject* descendant_layout_object = descendant_box->GetLayoutObject();
     DCHECK(descendant_layout_object);
 
@@ -126,8 +128,8 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
     return;
   }
 
-  if (const NGPhysicalLineBoxFragment* descendant_line_box =
-          ToNGPhysicalLineBoxFragmentOrNull(descendant.get())) {
+  if (const auto* descendant_line_box =
+          DynamicTo<NGPhysicalLineBoxFragment>(descendant.get())) {
     descendant_line_box->AddOutlineRectsForNormalChildren(
         outline_rects, additional_offset + descendant.Offset().ToLayoutPoint(),
         outline_type);

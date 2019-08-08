@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -36,7 +37,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "extensions/test/test_extension_dir.h"
@@ -406,6 +406,44 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
     ExtensionManagementPolicyUpdater pref(&policy_provider_);
     pref.AddPolicyBlockedHost("*", "*://example.com");
   }
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionTest("content_scripts/policy")) << message_;
+}
+
+class ContentScriptPolicyStartupTest : public ExtensionApiTest {
+ public:
+  // We need to do this work here because the runtime host policy values are
+  // checked pretty early on in the startup of the ExtensionService, which
+  // happens between SetUpInProcessBrowserTestFixture and SetUpOnMainThread.
+  void SetUpInProcessBrowserTestFixture() override {
+    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+
+    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
+        &policy_provider_);
+    // ExtensionManagementPolicyUpdater requires a single-threaded context to
+    // call RunLoop::RunUntilIdle internally, and it isn't ready at this setup
+    // moment.
+    base::test::ScopedTaskEnvironment env;
+    ExtensionManagementPolicyUpdater management_policy(&policy_provider_);
+    management_policy.AddPolicyBlockedHost("*", "*://example.com");
+  }
+
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
+ private:
+  policy::MockConfigurationPolicyProvider policy_provider_;
+};
+
+// Regression test for: https://crbug.com/954215.
+IN_PROC_BROWSER_TEST_F(ContentScriptPolicyStartupTest, RuntimeBlockedHosts) {
+  // Tests that default scoped runtime blocked host policy values for the
+  // ExtensionSettings policy are applied at startup.
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("content_scripts/policy")) << message_;
 }
@@ -929,36 +967,8 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, InifiniteLoopInGetEffectiveURL) {
   EXPECT_EQ(123, content::EvalJs(web_contents, "123"));
 }
 
-namespace {
-
-enum class BindingsType { kNative, kJavaScript };
-
-// Test fixture for testing messaging APIs. Is parameterized to allow testing
-// with and without native (C++-based) extension bindings.
-class ContentScriptMessagingApiTest
-    : public ContentScriptApiTest,
-      public ::testing::WithParamInterface<BindingsType> {
- protected:
-  ContentScriptMessagingApiTest() {
-    if (GetParam() == BindingsType::kNative) {
-      scoped_feature_list_.InitAndEnableFeature(
-          extensions_features::kNativeCrxBindings);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          extensions_features::kNativeCrxBindings);
-    }
-  }
-
-  ~ContentScriptMessagingApiTest() override = default;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-}  // namespace
-
 // Verifies how the messaging API works with content scripts.
-IN_PROC_BROWSER_TEST_P(ContentScriptMessagingApiTest, Test) {
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, Test) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "content_scripts/other_extensions/message_echoer_allows_by_default")));
@@ -968,11 +978,6 @@ IN_PROC_BROWSER_TEST_P(ContentScriptMessagingApiTest, Test) {
       "content_scripts/other_extensions/message_echoer_denies")));
   ASSERT_TRUE(RunExtensionTest("content_scripts/messaging")) << message_;
 }
-
-INSTANTIATE_TEST_SUITE_P(,
-                         ContentScriptMessagingApiTest,
-                         testing::Values(BindingsType::kNative,
-                                         BindingsType::kJavaScript));
 
 // Test fixture which sets a custom NTP Page.
 // TODO(karandeepb): Similar logic to set up a custom NTP is used elsewhere as

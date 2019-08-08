@@ -128,7 +128,7 @@ namespace dawn_native {
     }
 
     void BufferBase::CallMapReadCallback(uint32_t serial,
-                                         dawnBufferMapAsyncStatus status,
+                                         DawnBufferMapAsyncStatus status,
                                          const void* pointer,
                                          uint32_t dataLength) {
         ASSERT(!IsError());
@@ -136,14 +136,14 @@ namespace dawn_native {
             ASSERT(mMapWriteCallback == nullptr);
             // Tag the callback as fired before firing it, otherwise it could fire a second time if
             // for example buffer.Unmap() is called inside the application-provided callback.
-            dawnBufferMapReadCallback callback = mMapReadCallback;
+            DawnBufferMapReadCallback callback = mMapReadCallback;
             mMapReadCallback = nullptr;
             callback(status, pointer, dataLength, mMapUserdata);
         }
     }
 
     void BufferBase::CallMapWriteCallback(uint32_t serial,
-                                          dawnBufferMapAsyncStatus status,
+                                          DawnBufferMapAsyncStatus status,
                                           void* pointer,
                                           uint32_t dataLength) {
         ASSERT(!IsError());
@@ -151,7 +151,7 @@ namespace dawn_native {
             ASSERT(mMapReadCallback == nullptr);
             // Tag the callback as fired before firing it, otherwise it could fire a second time if
             // for example buffer.Unmap() is called inside the application-provided callback.
-            dawnBufferMapWriteCallback callback = mMapWriteCallback;
+            DawnBufferMapWriteCallback callback = mMapWriteCallback;
             mMapWriteCallback = nullptr;
             callback(status, pointer, dataLength, mMapUserdata);
         }
@@ -168,8 +168,8 @@ namespace dawn_native {
         }
     }
 
-    void BufferBase::MapReadAsync(dawnBufferMapReadCallback callback,
-                                  dawnCallbackUserdata userdata) {
+    void BufferBase::MapReadAsync(DawnBufferMapReadCallback callback,
+                                  DawnCallbackUserdata userdata) {
         if (GetDevice()->ConsumedError(ValidateMap(dawn::BufferUsageBit::MapRead))) {
             callback(DAWN_BUFFER_MAP_ASYNC_STATUS_ERROR, nullptr, 0, userdata);
             return;
@@ -207,8 +207,8 @@ namespace dawn_native {
         return {};
     }
 
-    void BufferBase::MapWriteAsync(dawnBufferMapWriteCallback callback,
-                                   dawnCallbackUserdata userdata) {
+    void BufferBase::MapWriteAsync(DawnBufferMapWriteCallback callback,
+                                   DawnCallbackUserdata userdata) {
         if (GetDevice()->ConsumedError(ValidateMap(dawn::BufferUsageBit::MapWrite))) {
             callback(DAWN_BUFFER_MAP_ASYNC_STATUS_ERROR, nullptr, 0, userdata);
             return;
@@ -235,8 +235,7 @@ namespace dawn_native {
         if (mState == BufferState::Mapped) {
             Unmap();
         }
-        DestroyImpl();
-        mState = BufferState::Destroyed;
+        DestroyInternal();
     }
 
     void BufferBase::Unmap() {
@@ -329,6 +328,13 @@ namespace dawn_native {
     MaybeError BufferBase::ValidateDestroy() const {
         DAWN_TRY(GetDevice()->ValidateObject(this));
         return {};
+    }
+
+    void BufferBase::DestroyInternal() {
+        if (mState != BufferState::Destroyed) {
+            DestroyImpl();
+        }
+        mState = BufferState::Destroyed;
     }
 
 }  // namespace dawn_native

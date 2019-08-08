@@ -73,7 +73,10 @@ class PeerConnection : public PeerConnectionInternal,
     ICE_STATE_CONNECTED = 0x200,
     CLOSE_CALLED = 0x400,
     PRIVATE_CANDIDATE_COLLECTED = 0x800,
-    MAX_VALUE = 0x1000,
+    REMOTE_PRIVATE_CANDIDATE_ADDED = 0x1000,
+    MDNS_CANDIDATE_COLLECTED = 0x2000,
+    REMOTE_MDNS_CANDIDATE_ADDED = 0x4000,
+    MAX_VALUE = 0x8000,
   };
 
   explicit PeerConnection(PeerConnectionFactory* factory,
@@ -221,20 +224,22 @@ class PeerConnection : public PeerConnectionInternal,
     return factory_->signaling_thread();
   }
 
-  std::string session_id() const override { return session_id_; }
+  std::string session_id() const override {
+    RTC_DCHECK_RUN_ON(signaling_thread());
+    return session_id_;
+  }
 
   bool initial_offerer() const override {
+    RTC_DCHECK_RUN_ON(signaling_thread());
     return transport_controller_ && transport_controller_->initial_offerer();
   }
 
   std::vector<
       rtc::scoped_refptr<RtpTransceiverProxyWithInternal<RtpTransceiver>>>
   GetTransceiversInternal() const override {
+    RTC_DCHECK_RUN_ON(signaling_thread());
     return transceivers_;
   }
-
-  absl::string_view GetLocalTrackIdBySsrc(uint32_t ssrc) override;
-  absl::string_view GetRemoteTrackIdBySsrc(uint32_t ssrc) override;
 
   sigslot::signal1<DataChannel*>& SignalDataChannelCreated() override {
     return SignalDataChannelCreated_;
@@ -246,10 +251,12 @@ class PeerConnection : public PeerConnectionInternal,
 
   std::vector<rtc::scoped_refptr<DataChannel>> sctp_data_channels()
       const override {
+    RTC_DCHECK_RUN_ON(signaling_thread());
     return sctp_data_channels_;
   }
 
   absl::optional<std::string> sctp_content_name() const override {
+    RTC_DCHECK_RUN_ON(signaling_thread());
     return sctp_mid_;
   }
 
@@ -271,6 +278,7 @@ class PeerConnection : public PeerConnectionInternal,
   bool GetSslRole(const std::string& content_name, rtc::SSLRole* role) override;
 
   void ReturnHistogramVeryQuicklyForTesting() {
+    RTC_DCHECK_RUN_ON(signaling_thread());
     return_histogram_very_quickly_ = true;
   }
   void RequestUsagePatternReportForTesting();
@@ -311,10 +319,10 @@ class PeerConnection : public PeerConnectionInternal,
       RTC_RUN_ON(signaling_thread());
 
   std::vector<rtc::scoped_refptr<RtpSenderProxyWithInternal<RtpSenderInternal>>>
-  GetSendersInternal() const;
+  GetSendersInternal() const RTC_RUN_ON(signaling_thread());
   std::vector<
       rtc::scoped_refptr<RtpReceiverProxyWithInternal<RtpReceiverInternal>>>
-  GetReceiversInternal() const;
+  GetReceiversInternal() const RTC_RUN_ON(signaling_thread());
 
   rtc::scoped_refptr<RtpTransceiverProxyWithInternal<RtpTransceiver>>
   GetAudioTransceiver() const RTC_RUN_ON(signaling_thread());
@@ -322,7 +330,7 @@ class PeerConnection : public PeerConnectionInternal,
   GetVideoTransceiver() const RTC_RUN_ON(signaling_thread());
 
   rtc::scoped_refptr<RtpTransceiverProxyWithInternal<RtpTransceiver>>
-  GetFirstAudioTransceiver() const;
+  GetFirstAudioTransceiver() const RTC_RUN_ON(signaling_thread());
 
   void CreateAudioReceiver(MediaStreamInterface* stream,
                            const RtpSenderInfo& remote_sender_info)
@@ -350,7 +358,8 @@ class PeerConnection : public PeerConnectionInternal,
   // AddTrack implementation when Unified Plan is specified.
   RTCErrorOr<rtc::scoped_refptr<RtpSenderInterface>> AddTrackUnifiedPlan(
       rtc::scoped_refptr<MediaStreamTrackInterface> track,
-      const std::vector<std::string>& stream_ids);
+      const std::vector<std::string>& stream_ids)
+      RTC_RUN_ON(signaling_thread());
   // AddTrack implementation when Plan B is specified.
   RTCErrorOr<rtc::scoped_refptr<RtpSenderInterface>> AddTrackPlanB(
       rtc::scoped_refptr<MediaStreamTrackInterface> track,
@@ -361,10 +370,12 @@ class PeerConnection : public PeerConnectionInternal,
   // transceiver is available.
   rtc::scoped_refptr<RtpTransceiverProxyWithInternal<RtpTransceiver>>
   FindFirstTransceiverForAddedTrack(
-      rtc::scoped_refptr<MediaStreamTrackInterface> track);
+      rtc::scoped_refptr<MediaStreamTrackInterface> track)
+      RTC_RUN_ON(signaling_thread());
 
   rtc::scoped_refptr<RtpTransceiverProxyWithInternal<RtpTransceiver>>
-  FindTransceiverBySender(rtc::scoped_refptr<RtpSenderInterface> sender);
+  FindTransceiverBySender(rtc::scoped_refptr<RtpSenderInterface> sender)
+      RTC_RUN_ON(signaling_thread());
 
   // Internal implementation for AddTransceiver family of methods. If
   // |fire_callback| is set, fires OnRenegotiationNeeded callback if successful.
@@ -390,7 +401,7 @@ class PeerConnection : public PeerConnectionInternal,
   CreateAndAddTransceiver(
       rtc::scoped_refptr<RtpSenderProxyWithInternal<RtpSenderInternal>> sender,
       rtc::scoped_refptr<RtpReceiverProxyWithInternal<RtpReceiverInternal>>
-          receiver);
+          receiver) RTC_RUN_ON(signaling_thread());
 
   void SetIceConnectionState(IceConnectionState new_state)
       RTC_RUN_ON(signaling_thread());
@@ -512,7 +523,8 @@ class PeerConnection : public PeerConnectionInternal,
       rtc::scoped_refptr<RtpReceiverInternal> receiver,
       const std::vector<std::string>& stream_ids,
       std::vector<rtc::scoped_refptr<MediaStreamInterface>>* added_streams,
-      std::vector<rtc::scoped_refptr<MediaStreamInterface>>* removed_streams);
+      std::vector<rtc::scoped_refptr<MediaStreamInterface>>* removed_streams)
+      RTC_RUN_ON(signaling_thread());
 
   // Runs the algorithm **process the removal of a remote track** specified in
   // the WebRTC specification.
@@ -526,12 +538,14 @@ class PeerConnection : public PeerConnectionInternal,
       rtc::scoped_refptr<RtpTransceiverProxyWithInternal<RtpTransceiver>>
           transceiver,
       std::vector<rtc::scoped_refptr<RtpTransceiverInterface>>* remove_list,
-      std::vector<rtc::scoped_refptr<MediaStreamInterface>>* removed_streams);
+      std::vector<rtc::scoped_refptr<MediaStreamInterface>>* removed_streams)
+      RTC_RUN_ON(signaling_thread());
 
   void RemoveRemoteStreamsIfEmpty(
       const std::vector<rtc::scoped_refptr<MediaStreamInterface>>&
           remote_streams,
-      std::vector<rtc::scoped_refptr<MediaStreamInterface>>* removed_streams);
+      std::vector<rtc::scoped_refptr<MediaStreamInterface>>* removed_streams)
+      RTC_RUN_ON(signaling_thread());
 
   void OnNegotiationNeeded();
 
@@ -560,11 +574,12 @@ class PeerConnection : public PeerConnectionInternal,
   RTCError HandleLegacyOfferOptions(const RTCOfferAnswerOptions& options)
       RTC_RUN_ON(signaling_thread());
   void RemoveRecvDirectionFromReceivingTransceiversOfType(
-      cricket::MediaType media_type);
+      cricket::MediaType media_type) RTC_RUN_ON(signaling_thread());
   void AddUpToOneReceivingTransceiverOfType(cricket::MediaType media_type);
   std::vector<
       rtc::scoped_refptr<RtpTransceiverProxyWithInternal<RtpTransceiver>>>
-  GetReceivingTransceiversOfType(cricket::MediaType media_type);
+  GetReceivingTransceiversOfType(cricket::MediaType media_type)
+      RTC_RUN_ON(signaling_thread());
 
   // Returns a MediaSessionOptions struct with options decided by
   // |constraints|, the local MediaStreams and DataChannels.
@@ -591,22 +606,23 @@ class PeerConnection : public PeerConnectionInternal,
       absl::optional<size_t>* audio_index,
       absl::optional<size_t>* video_index,
       absl::optional<size_t>* data_index,
-      cricket::MediaSessionOptions* session_options);
+      cricket::MediaSessionOptions* session_options)
+      RTC_RUN_ON(signaling_thread());
 
   // Generates the active MediaDescriptionOptions for the local data channel
   // given the specified MID.
   cricket::MediaDescriptionOptions GetMediaDescriptionOptionsForActiveData(
-      const std::string& mid) const;
+      const std::string& mid) const RTC_RUN_ON(signaling_thread());
 
   // Generates the rejected MediaDescriptionOptions for the local data channel
   // given the specified MID.
   cricket::MediaDescriptionOptions GetMediaDescriptionOptionsForRejectedData(
-      const std::string& mid) const;
+      const std::string& mid) const RTC_RUN_ON(signaling_thread());
 
   // Returns the MID for the data section associated with either the
   // RtpDataChannel or SCTP data channel, if it has been set. If no data
   // channels are configured this will return nullopt.
-  absl::optional<std::string> GetDataMid() const;
+  absl::optional<std::string> GetDataMid() const RTC_RUN_ON(signaling_thread());
 
   // Remove all local and remote senders of type |media_type|.
   // Called when a media type is rejected (m-line set to port 0).
@@ -667,14 +683,16 @@ class PeerConnection : public PeerConnectionInternal,
   // has been removed from the local SessionDescription and the stream can be
   // mapped to a MediaStreamTrack in a MediaStream in |local_streams_|.
   void OnLocalSenderRemoved(const RtpSenderInfo& sender_info,
-                            cricket::MediaType media_type);
+                            cricket::MediaType media_type)
+      RTC_RUN_ON(signaling_thread());
 
-  void UpdateLocalRtpDataChannels(const cricket::StreamParamsVec& streams);
+  void UpdateLocalRtpDataChannels(const cricket::StreamParamsVec& streams)
+      RTC_RUN_ON(signaling_thread());
   void UpdateRemoteRtpDataChannels(const cricket::StreamParamsVec& streams)
       RTC_RUN_ON(signaling_thread());
   void UpdateClosingRtpDataChannels(
       const std::vector<std::string>& active_channels,
-      bool is_local_update);
+      bool is_local_update) RTC_RUN_ON(signaling_thread());
   void CreateRemoteRtpDataChannel(const std::string& label,
                                   uint32_t remote_ssrc)
       RTC_RUN_ON(signaling_thread());
@@ -686,12 +704,13 @@ class PeerConnection : public PeerConnectionInternal,
       const InternalDataChannelInit* config) RTC_RUN_ON(signaling_thread());
 
   // Checks if any data channel has been added.
-  bool HasDataChannels() const;
+  bool HasDataChannels() const RTC_RUN_ON(signaling_thread());
 
-  void AllocateSctpSids(rtc::SSLRole role);
-  void OnSctpDataChannelClosed(DataChannel* channel);
+  void AllocateSctpSids(rtc::SSLRole role) RTC_RUN_ON(signaling_thread());
+  void OnSctpDataChannelClosed(DataChannel* channel)
+      RTC_RUN_ON(signaling_thread());
 
-  void OnDataChannelDestroyed();
+  void OnDataChannelDestroyed() RTC_RUN_ON(signaling_thread());
   // Called when a valid data channel OPEN message is received.
   void OnDataChannelOpenMessage(const std::string& label,
                                 const InternalDataChannelInit& config)
@@ -726,15 +745,18 @@ class PeerConnection : public PeerConnectionInternal,
 
   // Return the RtpSender with the given track attached.
   rtc::scoped_refptr<RtpSenderProxyWithInternal<RtpSenderInternal>>
-  FindSenderForTrack(MediaStreamTrackInterface* track) const;
+  FindSenderForTrack(MediaStreamTrackInterface* track) const
+      RTC_RUN_ON(signaling_thread());
 
   // Return the RtpSender with the given id, or null if none exists.
   rtc::scoped_refptr<RtpSenderProxyWithInternal<RtpSenderInternal>>
-  FindSenderById(const std::string& sender_id) const;
+  FindSenderById(const std::string& sender_id) const
+      RTC_RUN_ON(signaling_thread());
 
   // Return the RtpReceiver with the given id, or null if none exists.
   rtc::scoped_refptr<RtpReceiverProxyWithInternal<RtpReceiverInternal>>
-  FindReceiverById(const std::string& receiver_id) const;
+  FindReceiverById(const std::string& receiver_id) const
+      RTC_RUN_ON(signaling_thread());
 
   std::vector<RtpSenderInfo>* GetRemoteSenderInfos(
       cricket::MediaType media_type);
@@ -746,10 +768,14 @@ class PeerConnection : public PeerConnectionInternal,
 
   // Returns the specified SCTP DataChannel in sctp_data_channels_,
   // or nullptr if not found.
-  DataChannel* FindDataChannelBySid(int sid) const;
+  DataChannel* FindDataChannelBySid(int sid) const
+      RTC_RUN_ON(signaling_thread());
 
   // Called when first configuring the port allocator.
-  bool InitializePortAllocator_n(
+  struct InitializePortAllocatorResult {
+    bool enable_ipv6;
+  };
+  InitializePortAllocatorResult InitializePortAllocator_n(
       const cricket::ServerAddresses& stun_servers,
       const std::vector<cricket::RelayServerConfig>& turn_servers,
       const RTCConfiguration& configuration);
@@ -762,7 +788,8 @@ class PeerConnection : public PeerConnectionInternal,
       int candidate_pool_size,
       bool prune_turn_ports,
       webrtc::TurnCustomizer* turn_customizer,
-      absl::optional<int> stun_candidate_keepalive_interval);
+      absl::optional<int> stun_candidate_keepalive_interval,
+      bool have_local_description);
 
   // Starts output of an RTC event log to the given output object.
   // This function should only be called from the worker thread.
@@ -788,7 +815,9 @@ class PeerConnection : public PeerConnectionInternal,
   };
 
   // Returns the last error in the session. See the enum above for details.
-  SessionError session_error() const { return session_error_; }
+  SessionError session_error() const RTC_RUN_ON(signaling_thread()) {
+    return session_error_;
+  }
   const std::string& session_error_desc() const { return session_error_desc_; }
 
   cricket::ChannelInterface* GetChannel(const std::string& content_name);
@@ -826,11 +855,13 @@ class PeerConnection : public PeerConnectionInternal,
 
   // Non-const versions of local_description()/remote_description(), for use
   // internally.
-  SessionDescriptionInterface* mutable_local_description() {
+  SessionDescriptionInterface* mutable_local_description()
+      RTC_RUN_ON(signaling_thread()) {
     return pending_local_description_ ? pending_local_description_.get()
                                       : current_local_description_.get();
   }
-  SessionDescriptionInterface* mutable_remote_description() {
+  SessionDescriptionInterface* mutable_remote_description()
+      RTC_RUN_ON(signaling_thread()) {
     return pending_remote_description_ ? pending_remote_description_.get()
                                        : current_remote_description_.get();
   }
@@ -845,7 +876,9 @@ class PeerConnection : public PeerConnectionInternal,
   // down to all of the channels.
   RTCError PushdownMediaDescription(SdpType type, cricket::ContentSource source)
       RTC_RUN_ON(signaling_thread());
-  bool PushdownSctpParameters_n(cricket::ContentSource source);
+  bool PushdownSctpParameters_n(cricket::ContentSource source,
+                                int local_sctp_port,
+                                int remote_sctp_port);
 
   RTCError PushdownTransportDescription(cricket::ContentSource source,
                                         SdpType type);
@@ -860,16 +893,17 @@ class PeerConnection : public PeerConnectionInternal,
   // Enables media channels to allow sending of media.
   // This enables media to flow on all configured audio/video channels and the
   // RtpDataChannel.
-  void EnableSending();
+  void EnableSending() RTC_RUN_ON(signaling_thread());
 
   // Destroys all BaseChannels and destroys the SCTP data channel, if present.
-  void DestroyAllChannels();
+  void DestroyAllChannels() RTC_RUN_ON(signaling_thread());
 
   // Returns the media index for a local ice candidate given the content name.
   // Returns false if the local session description does not have a media
   // content called  |content_name|.
   bool GetLocalCandidateMediaIndex(const std::string& content_name,
-                                   int* sdp_mline_index);
+                                   int* sdp_mline_index)
+      RTC_RUN_ON(signaling_thread());
   // Uses all remote candidates in |remote_desc| in this session.
   bool UseCandidatesInSessionDescription(
       const SessionDescriptionInterface* remote_desc)
@@ -877,6 +911,9 @@ class PeerConnection : public PeerConnectionInternal,
   // Uses |candidate| in this session.
   bool UseCandidate(const IceCandidateInterface* candidate)
       RTC_RUN_ON(signaling_thread());
+  RTCErrorOr<const cricket::ContentInfo*> FindContentInfo(
+      const SessionDescriptionInterface* description,
+      const IceCandidateInterface* candidate) RTC_RUN_ON(signaling_thread());
   // Deletes the corresponding channel of contents that don't exist in |desc|.
   // |desc| can be null. This means that all channels are deleted.
   void RemoveUnusedChannels(const cricket::SessionDescription* desc)
@@ -950,11 +987,11 @@ class PeerConnection : public PeerConnectionInternal,
   // index is valid.
   bool ReadyToUseRemoteCandidate(const IceCandidateInterface* candidate,
                                  const SessionDescriptionInterface* remote_desc,
-                                 bool* valid);
+                                 bool* valid) RTC_RUN_ON(signaling_thread());
 
   // Returns true if SRTP (either using DTLS-SRTP or SDES) is required by
   // this session.
-  bool SrtpRequired() const;
+  bool SrtpRequired() const RTC_RUN_ON(signaling_thread());
 
   // JsepTransportController signal handlers.
   void OnTransportControllerConnectionState(cricket::IceConnectionState state)
@@ -971,7 +1008,7 @@ class PeerConnection : public PeerConnectionInternal,
   void OnTransportControllerDtlsHandshakeError(rtc::SSLHandshakeError error);
 
   const char* SessionErrorToString(SessionError error) const;
-  std::string GetSessionErrorMsg();
+  std::string GetSessionErrorMsg() RTC_RUN_ON(signaling_thread());
 
   // Report the UMA metric SdpFormatReceived for the given remote offer.
   void ReportSdpFormatReceived(const SessionDescriptionInterface& remote_offer);
@@ -982,20 +1019,22 @@ class PeerConnection : public PeerConnectionInternal,
 
   // Invoked when TransportController connection completion is signaled.
   // Reports stats for all transports in use.
-  void ReportTransportStats();
+  void ReportTransportStats() RTC_RUN_ON(signaling_thread());
 
   // Gather the usage of IPv4/IPv6 as best connection.
   void ReportBestConnectionState(const cricket::TransportStats& stats);
 
   void ReportNegotiatedCiphers(const cricket::TransportStats& stats,
-                               const std::set<cricket::MediaType>& media_types);
+                               const std::set<cricket::MediaType>& media_types)
+      RTC_RUN_ON(signaling_thread());
 
   void NoteUsageEvent(UsageEvent event);
   void ReportUsagePattern() const RTC_RUN_ON(signaling_thread());
 
   void OnSentPacket_w(const rtc::SentPacket& sent_packet);
 
-  const std::string GetTransportName(const std::string& content_name);
+  const std::string GetTransportName(const std::string& content_name)
+      RTC_RUN_ON(signaling_thread());
 
   // Destroys and clears the BaseChannel associated with the given transceiver,
   // if such channel is set.
@@ -1004,7 +1043,7 @@ class PeerConnection : public PeerConnectionInternal,
           transceiver);
 
   // Destroys the RTP data channel and/or the SCTP data channel and clears it.
-  void DestroyDataChannel();
+  void DestroyDataChannel() RTC_RUN_ON(signaling_thread());
 
   // Destroys the given ChannelInterface.
   // The channel cannot be accessed after this method is called.
@@ -1030,7 +1069,8 @@ class PeerConnection : public PeerConnectionInternal,
   CryptoOptions GetCryptoOptions() RTC_RUN_ON(signaling_thread());
 
   // Returns rtp transport, result can not be nullptr.
-  RtpTransportInternal* GetRtpTransport(const std::string& mid) {
+  RtpTransportInternal* GetRtpTransport(const std::string& mid)
+      RTC_RUN_ON(signaling_thread()) {
     auto rtp_transport = transport_controller_->GetRtpTransport(mid);
     RTC_DCHECK(rtp_transport);
     return rtp_transport;
@@ -1051,6 +1091,9 @@ class PeerConnection : public PeerConnectionInternal,
         << ", (media_transport != nullptr)=" << (media_transport != nullptr);
     return media_transport;
   }
+
+  void UpdateNegotiationNeeded();
+  bool CheckIfNegotiationIsNeeded();
 
   sigslot::signal1<DataChannel*> SignalDataChannelCreated_
       RTC_GUARDED_BY(signaling_thread());
@@ -1095,72 +1138,112 @@ class PeerConnection : public PeerConnectionInternal,
 
   // TODO(zstein): |async_resolver_factory_| can currently be nullptr if it
   // is not injected. It should be required once chromium supplies it.
-  std::unique_ptr<AsyncResolverFactory> async_resolver_factory_;
-  std::unique_ptr<cricket::PortAllocator> port_allocator_;
-  std::unique_ptr<rtc::SSLCertificateVerifier> tls_cert_verifier_;
-  int port_allocator_flags_ = 0;
+  std::unique_ptr<AsyncResolverFactory> async_resolver_factory_
+      RTC_GUARDED_BY(signaling_thread());
+  std::unique_ptr<cricket::PortAllocator>
+      port_allocator_;  // TODO(bugs.webrtc.org/9987): Accessed on both
+                        // signaling and network thread.
+  std::unique_ptr<rtc::SSLCertificateVerifier>
+      tls_cert_verifier_;  // TODO(bugs.webrtc.org/9987): Accessed on both
+                           // signaling and network thread.
 
   // One PeerConnection has only one RTCP CNAME.
   // https://tools.ietf.org/html/draft-ietf-rtcweb-rtp-usage-26#section-4.9
-  std::string rtcp_cname_;
+  const std::string rtcp_cname_;
 
   // Streams added via AddStream.
-  rtc::scoped_refptr<StreamCollection> local_streams_;
+  const rtc::scoped_refptr<StreamCollection> local_streams_
+      RTC_GUARDED_BY(signaling_thread());
   // Streams created as a result of SetRemoteDescription.
-  rtc::scoped_refptr<StreamCollection> remote_streams_;
+  const rtc::scoped_refptr<StreamCollection> remote_streams_
+      RTC_GUARDED_BY(signaling_thread());
 
-  std::vector<std::unique_ptr<MediaStreamObserver>> stream_observers_;
+  std::vector<std::unique_ptr<MediaStreamObserver>> stream_observers_
+      RTC_GUARDED_BY(signaling_thread());
 
   // These lists store sender info seen in local/remote descriptions.
-  std::vector<RtpSenderInfo> remote_audio_sender_infos_;
-  std::vector<RtpSenderInfo> remote_video_sender_infos_;
-  std::vector<RtpSenderInfo> local_audio_sender_infos_;
-  std::vector<RtpSenderInfo> local_video_sender_infos_;
+  std::vector<RtpSenderInfo> remote_audio_sender_infos_
+      RTC_GUARDED_BY(signaling_thread());
+  std::vector<RtpSenderInfo> remote_video_sender_infos_
+      RTC_GUARDED_BY(signaling_thread());
+  std::vector<RtpSenderInfo> local_audio_sender_infos_
+      RTC_GUARDED_BY(signaling_thread());
+  std::vector<RtpSenderInfo> local_video_sender_infos_
+      RTC_GUARDED_BY(signaling_thread());
 
-  SctpSidAllocator sid_allocator_;
+  SctpSidAllocator sid_allocator_ RTC_GUARDED_BY(signaling_thread());
   // label -> DataChannel
-  std::map<std::string, rtc::scoped_refptr<DataChannel>> rtp_data_channels_;
-  std::vector<rtc::scoped_refptr<DataChannel>> sctp_data_channels_;
-  std::vector<rtc::scoped_refptr<DataChannel>> sctp_data_channels_to_free_;
+  std::map<std::string, rtc::scoped_refptr<DataChannel>> rtp_data_channels_
+      RTC_GUARDED_BY(signaling_thread());
+  std::vector<rtc::scoped_refptr<DataChannel>> sctp_data_channels_
+      RTC_GUARDED_BY(signaling_thread());
+  std::vector<rtc::scoped_refptr<DataChannel>> sctp_data_channels_to_free_
+      RTC_GUARDED_BY(signaling_thread());
 
-  bool remote_peer_supports_msid_ = false;
+  bool remote_peer_supports_msid_ RTC_GUARDED_BY(signaling_thread()) = false;
 
-  std::unique_ptr<Call> call_;
-  std::unique_ptr<StatsCollector> stats_;  // A pointer is passed to senders_
-  rtc::scoped_refptr<RTCStatsCollector> stats_collector_;
+  // The unique_ptr belongs to the worker thread, but the Call object manages
+  // its own thread safety.
+  std::unique_ptr<Call> call_ RTC_GUARDED_BY(worker_thread());
+
+  // Points to the same thing as `call_`. Since it's const, we may read the
+  // pointer from any thread.
+  Call* const call_ptr_;
+
+  std::unique_ptr<StatsCollector> stats_
+      RTC_GUARDED_BY(signaling_thread());  // A pointer is passed to senders_
+  rtc::scoped_refptr<RTCStatsCollector> stats_collector_
+      RTC_GUARDED_BY(signaling_thread());
 
   std::vector<
       rtc::scoped_refptr<RtpTransceiverProxyWithInternal<RtpTransceiver>>>
-      transceivers_;
+      transceivers_;  // TODO(bugs.webrtc.org/9987): Accessed on both signaling
+                      // and network thread.
+
   // In Unified Plan, if we encounter remote SDP that does not contain an a=msid
   // line we create and use a stream with a random ID for our receivers. This is
   // to support legacy endpoints that do not support the a=msid attribute (as
   // opposed to streamless tracks with "a=msid:-").
-  rtc::scoped_refptr<MediaStreamInterface> missing_msid_default_stream_;
+  rtc::scoped_refptr<MediaStreamInterface> missing_msid_default_stream_
+      RTC_GUARDED_BY(signaling_thread());
   // MIDs will be generated using this generator which will keep track of
   // all the MIDs that have been seen over the life of the PeerConnection.
-  rtc::UniqueStringGenerator mid_generator_;
+  rtc::UniqueStringGenerator mid_generator_ RTC_GUARDED_BY(signaling_thread());
 
-  SessionError session_error_ = SessionError::kNone;
-  std::string session_error_desc_;
+  SessionError session_error_ RTC_GUARDED_BY(signaling_thread()) =
+      SessionError::kNone;
+  std::string session_error_desc_ RTC_GUARDED_BY(signaling_thread());
 
-  std::string session_id_;
+  std::string session_id_ RTC_GUARDED_BY(signaling_thread());
 
-  std::unique_ptr<JsepTransportController> transport_controller_;
-  std::unique_ptr<cricket::SctpTransportInternalFactory> sctp_factory_;
+  std::unique_ptr<JsepTransportController>
+      transport_controller_;  // TODO(bugs.webrtc.org/9987): Accessed on both
+                              // signaling and network thread.
+  std::unique_ptr<cricket::SctpTransportInternalFactory>
+      sctp_factory_;  // TODO(bugs.webrtc.org/9987): Accessed on both
+                      // signaling and network thread.
   // |rtp_data_channel_| is used if in RTP data channel mode, |sctp_transport_|
   // when using SCTP.
-  cricket::RtpDataChannel* rtp_data_channel_ = nullptr;
+  cricket::RtpDataChannel* rtp_data_channel_ =
+      nullptr;  // TODO(bugs.webrtc.org/9987): Accessed on both
+                // signaling and some other thread.
 
   cricket::SctpTransportInternal* cricket_sctp_transport() {
     return sctp_transport_->internal();
   }
-  rtc::scoped_refptr<SctpTransport> sctp_transport_;
+  rtc::scoped_refptr<SctpTransport>
+      sctp_transport_;  // TODO(bugs.webrtc.org/9987): Accessed on both
+                        // signaling and network thread.
+
   // |sctp_mid_| is the content name (MID) in SDP.
-  absl::optional<std::string> sctp_mid_;
+  absl::optional<std::string>
+      sctp_mid_;  // TODO(bugs.webrtc.org/9987): Accessed on both signaling
+                  // and network thread.
+
   // Value cached on signaling thread. Only updated when SctpReadyToSendData
   // fires on the signaling thread.
-  bool sctp_ready_to_send_data_ = false;
+  bool sctp_ready_to_send_data_ RTC_GUARDED_BY(signaling_thread()) = false;
+
   // Same as signals provided by SctpTransport, but these are guaranteed to
   // fire on the signaling thread, whereas SctpTransport fires on the networking
   // thread.
@@ -1170,29 +1253,38 @@ class PeerConnection : public PeerConnectionInternal,
   // TODO(deadbeef): Use a proxy object to ensure that method calls/signals
   // are marshalled to the right thread. Could almost use proxy.h for this,
   // but it doesn't have a mechanism for marshalling sigslot::signals
-  std::unique_ptr<rtc::AsyncInvoker> sctp_invoker_;
-  sigslot::signal1<bool> SignalSctpReadyToSendData;
+  std::unique_ptr<rtc::AsyncInvoker> sctp_invoker_
+      RTC_GUARDED_BY(network_thread());
+  sigslot::signal1<bool> SignalSctpReadyToSendData
+      RTC_GUARDED_BY(signaling_thread());
   sigslot::signal2<const cricket::ReceiveDataParams&,
                    const rtc::CopyOnWriteBuffer&>
-      SignalSctpDataReceived;
-  sigslot::signal1<int> SignalSctpClosingProcedureStartedRemotely;
-  sigslot::signal1<int> SignalSctpClosingProcedureComplete;
+      SignalSctpDataReceived RTC_GUARDED_BY(signaling_thread());
+  sigslot::signal1<int> SignalSctpClosingProcedureStartedRemotely
+      RTC_GUARDED_BY(signaling_thread());
+  sigslot::signal1<int> SignalSctpClosingProcedureComplete
+      RTC_GUARDED_BY(signaling_thread());
 
   // Whether this peer is the caller. Set when the local description is applied.
   absl::optional<bool> is_caller_ RTC_GUARDED_BY(signaling_thread());
 
   // Content name (MID) for media transport data channels in SDP.
-  absl::optional<std::string> media_transport_data_mid_;
+  absl::optional<std::string>
+      media_transport_data_mid_;  // TODO(bugs.webrtc.org/9987): Accessed on
+                                  // both signaling and network thread.
 
   // Media transport used for data channels.  Thread-safe.
-  MediaTransportInterface* media_transport_ = nullptr;
+  MediaTransportInterface* media_transport_ =
+      nullptr;  // TODO(bugs.webrtc.org/9987): Object is thread safe, but
+                // pointer accessed on both signaling and network thread.
 
   // Cached value of whether the media transport is ready to send.
   bool media_transport_ready_to_send_data_ RTC_GUARDED_BY(signaling_thread()) =
       false;
 
   // Used to invoke media transport signals on the signaling thread.
-  std::unique_ptr<rtc::AsyncInvoker> media_transport_invoker_;
+  std::unique_ptr<rtc::AsyncInvoker> media_transport_invoker_
+      RTC_GUARDED_BY(network_thread());
 
   // Identical to the signals for SCTP, but from media transport:
   sigslot::signal1<bool> SignalMediaTransportWritable_s
@@ -1205,11 +1297,15 @@ class PeerConnection : public PeerConnectionInternal,
   sigslot::signal1<int> SignalMediaTransportChannelClosed_s
       RTC_GUARDED_BY(signaling_thread());
 
-  std::unique_ptr<SessionDescriptionInterface> current_local_description_;
-  std::unique_ptr<SessionDescriptionInterface> pending_local_description_;
-  std::unique_ptr<SessionDescriptionInterface> current_remote_description_;
-  std::unique_ptr<SessionDescriptionInterface> pending_remote_description_;
-  bool dtls_enabled_ = false;
+  std::unique_ptr<SessionDescriptionInterface> current_local_description_
+      RTC_GUARDED_BY(signaling_thread());
+  std::unique_ptr<SessionDescriptionInterface> pending_local_description_
+      RTC_GUARDED_BY(signaling_thread());
+  std::unique_ptr<SessionDescriptionInterface> current_remote_description_
+      RTC_GUARDED_BY(signaling_thread());
+  std::unique_ptr<SessionDescriptionInterface> pending_remote_description_
+      RTC_GUARDED_BY(signaling_thread());
+  bool dtls_enabled_ RTC_GUARDED_BY(signaling_thread()) = false;
   // Specifies which kind of data channel is allowed. This is controlled
   // by the chrome command-line flag and constraints:
   // 1. If chrome command-line switch 'enable-sctp-data-channels' is enabled,
@@ -1217,24 +1313,41 @@ class PeerConnection : public PeerConnectionInternal,
   // not set or false, SCTP is allowed (DCT_SCTP);
   // 2. If constraint kEnableRtpDataChannels is true, RTP is allowed (DCT_RTP);
   // 3. If both 1&2 are false, data channel is not allowed (DCT_NONE).
-  cricket::DataChannelType data_channel_type_ = cricket::DCT_NONE;
-  // List of content names for which the remote side triggered an ICE restart.
-  std::set<std::string> pending_ice_restarts_;
+  cricket::DataChannelType data_channel_type_ =
+      cricket::DCT_NONE;  // TODO(bugs.webrtc.org/9987): Accessed on both
+                          // signaling and network thread.
 
-  std::unique_ptr<WebRtcSessionDescriptionFactory> webrtc_session_desc_factory_;
+  // List of content names for which the remote side triggered an ICE restart.
+  std::set<std::string> pending_ice_restarts_
+      RTC_GUARDED_BY(signaling_thread());
+
+  std::unique_ptr<WebRtcSessionDescriptionFactory> webrtc_session_desc_factory_
+      RTC_GUARDED_BY(signaling_thread());
 
   // Member variables for caching global options.
-  cricket::AudioOptions audio_options_;
-  cricket::VideoOptions video_options_;
+  cricket::AudioOptions audio_options_ RTC_GUARDED_BY(signaling_thread());
+  cricket::VideoOptions video_options_ RTC_GUARDED_BY(signaling_thread());
 
-  int usage_event_accumulator_ = 0;
-  bool return_histogram_very_quickly_ = false;
+  int usage_event_accumulator_ RTC_GUARDED_BY(signaling_thread()) = 0;
+  bool return_histogram_very_quickly_ RTC_GUARDED_BY(signaling_thread()) =
+      false;
 
   // This object should be used to generate any SSRC that is not explicitly
   // specified by the user (or by the remote party).
   // The generator is not used directly, instead it is passed on to the
   // channel manager and the session description factory.
-  rtc::UniqueRandomIdGenerator ssrc_generator_;
+  rtc::UniqueRandomIdGenerator ssrc_generator_
+      RTC_GUARDED_BY(signaling_thread());
+
+  // A video bitrate allocator factory.
+  // This can injected using the PeerConnectionDependencies,
+  // or else the CreateBuiltinVideoBitrateAllocatorFactory() will be called.
+  // Note that one can still choose to override this in a MediaEngine
+  // if one wants too.
+  std::unique_ptr<webrtc::VideoBitrateAllocatorFactory>
+      video_bitrate_allocator_factory_;
+
+  bool is_negotiation_needed_ RTC_GUARDED_BY(signaling_thread()) = false;
 };
 
 }  // namespace webrtc

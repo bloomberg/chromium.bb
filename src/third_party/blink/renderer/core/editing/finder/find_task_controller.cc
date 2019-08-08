@@ -27,15 +27,6 @@ constexpr TimeDelta kFindTaskTestTimeout = TimeDelta::FromSeconds(10);
 class FindTaskController::IdleFindTask
     : public ScriptedIdleTaskController::IdleTask {
  public:
-  static IdleFindTask* Create(FindTaskController* controller,
-                              Document* document,
-                              int identifier,
-                              const WebString& search_text,
-                              const mojom::blink::FindOptions& options) {
-    return MakeGarbageCollected<IdleFindTask>(controller, document, identifier,
-                                              search_text, options);
-  }
-
   IdleFindTask(FindTaskController* controller,
                Document* document,
                int identifier,
@@ -62,8 +53,9 @@ class FindTaskController::IdleFindTask
   }
 
   void ForceInvocationForTesting() {
-    invoke(IdleDeadline::Create(CurrentTimeTicks() + kFindTaskTestTimeout,
-                                IdleDeadline::CallbackType::kCalledWhenIdle));
+    invoke(MakeGarbageCollected<IdleDeadline>(
+        CurrentTimeTicks() + kFindTaskTestTimeout,
+        IdleDeadline::CallbackType::kCalledWhenIdle));
   }
 
   void Trace(Visitor* visitor) override {
@@ -106,9 +98,9 @@ class FindTaskController::IdleFindTask
         return;
     }
 
-    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+    // TODO(editing-dev): Use of UpdateStyleAndLayout
     // needs to be audited.  see http://crbug.com/590369 for more details.
-    search_start.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+    search_start.GetDocument()->UpdateStyleAndLayout();
 
     int match_count = 0;
     bool full_range_searched = false;
@@ -203,8 +195,8 @@ void FindTaskController::RequestIdleFindTask(
     const WebString& search_text,
     const mojom::blink::FindOptions& options) {
   DCHECK_EQ(idle_find_task_, nullptr);
-  idle_find_task_ = IdleFindTask::Create(this, GetLocalFrame()->GetDocument(),
-                                         identifier, search_text, options);
+  idle_find_task_ = MakeGarbageCollected<IdleFindTask>(
+      this, GetLocalFrame()->GetDocument(), identifier, search_text, options);
   // If it's for testing, run the task immediately.
   // TODO(rakina): Change to use general solution when it's available.
   // https://crbug.com/875203

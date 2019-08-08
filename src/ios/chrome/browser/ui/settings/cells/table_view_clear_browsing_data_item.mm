@@ -143,15 +143,18 @@ const CGFloat kImageHeight = 30;
       [_textLabel.leadingAnchor
           constraintEqualToAnchor:_labelContainerGuide.leadingAnchor],
       [_textLabel.trailingAnchor
-          constraintEqualToAnchor:_labelContainerGuide.trailingAnchor],
+          constraintLessThanOrEqualToAnchor:_labelContainerGuide
+                                                .trailingAnchor],
       [_detailTextLabel.leadingAnchor
           constraintEqualToAnchor:_labelContainerGuide.leadingAnchor],
       [_detailTextLabel.trailingAnchor
-          constraintEqualToAnchor:_labelContainerGuide.trailingAnchor],
+          constraintLessThanOrEqualToAnchor:_labelContainerGuide
+                                                .trailingAnchor],
       [_optionalTextLabel.leadingAnchor
           constraintEqualToAnchor:_labelContainerGuide.leadingAnchor],
       [_optionalTextLabel.trailingAnchor
-          constraintEqualToAnchor:_labelContainerGuide.trailingAnchor],
+          constraintLessThanOrEqualToAnchor:_labelContainerGuide
+                                                .trailingAnchor],
       [_labelContainerGuide.trailingAnchor
           constraintEqualToAnchor:self.contentView.trailingAnchor
                          constant:-kTableViewHorizontalSpacing],
@@ -178,6 +181,21 @@ const CGFloat kImageHeight = 30;
                   self.traitCollection.preferredContentSizeCategory)];
   }
   return self;
+}
+
+- (void)layoutSubviews {
+  // So that the text labels' width never shrink when the accessory view is set.
+  CGFloat leadingSpace = kTableViewHorizontalSpacing;
+  if (self.imageView.image != nil) {
+    leadingSpace += (kImageWidth + kImageTrailingPadding);
+  }
+  CGFloat width =
+      self.bounds.size.width -
+      (kTableViewAccessoryWidth + kTableViewHorizontalSpacing + leadingSpace);
+  self.textLabel.preferredMaxLayoutWidth = width;
+  self.detailTextLabel.preferredMaxLayoutWidth = width;
+  self.optionalTextLabel.preferredMaxLayoutWidth = width;
+  [super layoutSubviews];
 }
 
 - (void)setImage:(UIImage*)image {
@@ -230,12 +248,12 @@ const CGFloat kImageHeight = 30;
 }
 
 - (NSString*)accessibilityValue {
-  if (self.optionalTextLabel && self.detailTextLabel) {
-    return [@[ self.detailTextLabel.text, self.optionalTextLabel.text ]
-        componentsJoinedByString:@". "];
-  } else {
-    return self.detailTextLabel.text;
+  NSString* value = self.detailTextLabel.text;
+  if (self.optionalTextLabel.text) {
+    value = [NSString
+        stringWithFormat:@"%@.%@", value, self.optionalTextLabel.text];
   }
+  return value;
 }
 
 @end

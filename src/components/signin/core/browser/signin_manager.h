@@ -40,7 +40,6 @@
 #include "net/cookies/canonical_cookie.h"
 
 class GaiaCookieManagerService;
-class GoogleServiceAuthError;
 class PrefService;
 
 namespace identity {
@@ -109,17 +108,15 @@ class SigninManager : public SigninManagerBase,
   void FinalizeInitBeforeLoadingRefreshTokens(
       PrefService* local_state) override;
 
-  void Shutdown() override;
+  // Signs a user in. SigninManager assumes that |username| can be used to look
+  // up the corresponding account_id and gaia_id for this email.
+  void SignIn(const std::string& username);
 
-  // Invoked from SigninManagerAndroid to indicate that the sign-in process
-  // has completed for the email |username|.  SigninManager assumes that
-  // |username| can be used to look up the corresponding account_id and gaia_id
-  // for this email.
-  void OnExternalSigninCompleted(const std::string& username);
-
-  // Returns whether sign-in is allowed.
-  // TODO(crbug.com/806778): Remove method in super-class.
-  bool IsSigninAllowed() const override;
+  // Returns true if a signin to Chrome is allowed (by policy or pref).
+  // TODO(crbug.com/806778): this method should not be used externally,
+  // instead the value of the kSigninAllowed preference should be checked.
+  // Once all external code has been modified, this method will be removed.
+  bool IsSigninAllowed() const;
 
   // Sets whether sign-in is allowed or not.
   void SetSigninAllowed(bool allowed);
@@ -145,11 +142,6 @@ class SigninManager : public SigninManagerBase,
 
   // OAuth2TokenService::Observer:
   void OnRefreshTokensLoaded() override;
-
-  // Called to handle an error from a GAIA auth fetch.  Sets the last error
-  // to |error|, sends out a notification of login failure and clears the
-  // transient signin data.
-  void HandleAuthError(const GoogleServiceAuthError& error);
 
   // Starts the sign out process.
   void StartSignOut(signin_metrics::ProfileSignout signout_source_metric,

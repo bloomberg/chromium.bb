@@ -1352,6 +1352,9 @@ TEST_P(TextureCubeTest, CubeMapFBO)
     // http://anglebug.com/3145
     ANGLE_SKIP_TEST_IF(IsFuchsia() && IsIntel() && IsVulkan());
 
+    // http://anglebug.com/2822
+    ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
+
     GLFramebuffer fbo;
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
@@ -1716,6 +1719,50 @@ TEST_P(Texture2DTest, NPOTSubImageParameters)
     glTexSubImage2D(GL_TEXTURE_2D, 1, 0, 0, 3, 3, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
 
     EXPECT_GL_NO_ERROR();
+}
+
+// Regression test for http://crbug.com/949985 to make sure dirty bits are propagated up from
+// TextureImpl and the texture is synced before being used in a draw call.
+TEST_P(Texture2DTestES3, TextureImplPropogatesDirtyBits)
+{
+    ANGLE_SKIP_TEST_IF(IsIntel() && IsOpenGL());
+    // Flaky hangs on Win10 AMD RX 550 GL. http://anglebug.com/3371
+    ANGLE_SKIP_TEST_IF(IsWindows() && IsAMD() && IsOpenGL());
+
+    // The workaround in the GL backend required to trigger this bug generates driver warning
+    // messages.
+    ScopedIgnorePlatformMessages ignoreMessages;
+
+    setUpProgram();
+    glUseProgram(mProgram);
+    glActiveTexture(GL_TEXTURE0 + mTexture2DUniformLocation);
+
+    GLTexture dest;
+    glBindTexture(GL_TEXTURE_2D, dest);
+
+    GLTexture source;
+    glBindTexture(GL_TEXTURE_2D, source);
+
+    // Put data in mip 0 and 1
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 GLColor::red.data());
+    glTexImage2D(GL_TEXTURE_2D, 1, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 GLColor::green.data());
+
+    // Disable mipmapping so source is complete
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Force the dirty bits to be synchronized in source
+    drawQuad(mProgram, "position", 1.0f);
+
+    // Copy from mip 1 of the source.  In the GL backend this internally sets the base level to mip
+    // 1 and sets a dirty bit.
+    glCopyTextureCHROMIUM(source, 1, GL_TEXTURE_2D, dest, 0, GL_RGBA, GL_UNSIGNED_BYTE, GL_FALSE,
+                          GL_FALSE, GL_FALSE);
+
+    // Draw again, assertions are generated if the texture has internal dirty bits at draw time
+    drawQuad(mProgram, "position", 1.0f);
 }
 
 // Test to check that texture completeness is determined correctly when the texture base level is
@@ -2703,8 +2750,8 @@ TEST_P(SamplerInStructTest, SamplerInStruct)
 // Use a sampler in a uniform struct that's passed as a function parameter.
 TEST_P(SamplerInStructAsFunctionParameterTest, SamplerInStructAsFunctionParameter)
 {
-    // TODO(ynovikov): re-enable once root cause of http://anglebug.com/1427 is fixed
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsAdreno() && IsOpenGLES());
+    // Fails on Nexus 5X due to a driver bug. http://anglebug.com/1427
+    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsOpenGLES());
 
     runSamplerInStructTest();
 }
@@ -2713,8 +2760,8 @@ TEST_P(SamplerInStructAsFunctionParameterTest, SamplerInStructAsFunctionParamete
 // parameter.
 TEST_P(SamplerInStructArrayAsFunctionParameterTest, SamplerInStructArrayAsFunctionParameter)
 {
-    // TODO(ynovikov): re-enable once root cause of http://anglebug.com/1427 is fixed
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsAdreno() && IsOpenGLES());
+    // Fails on Nexus 5X due to a driver bug. http://anglebug.com/1427
+    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsOpenGLES());
 
     runSamplerInStructTest();
 }
@@ -2723,8 +2770,8 @@ TEST_P(SamplerInStructArrayAsFunctionParameterTest, SamplerInStructArrayAsFuncti
 // parameter.
 TEST_P(SamplerInNestedStructAsFunctionParameterTest, SamplerInNestedStructAsFunctionParameter)
 {
-    // TODO(ynovikov): re-enable once root cause of http://anglebug.com/1427 is fixed
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsAdreno() && IsOpenGLES());
+    // Fails on Nexus 5X due to a driver bug. http://anglebug.com/1427
+    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsOpenGLES());
 
     runSamplerInStructTest();
 }
@@ -3687,8 +3734,8 @@ TEST_P(Texture2DNorm16TestES3, TextureNorm16Test)
 // GLES 3.0.4 section 3.8.3.
 TEST_P(Texture2DTestES3, UnpackSkipImages2D)
 {
-    // TODO(ynovikov): re-enable once root cause of http://anglebug.com/1429 is fixed
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsAdreno() && IsOpenGLES());
+    // Crashes on Nexus 5X due to a driver bug. http://anglebug.com/1429
+    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsOpenGLES());
 
     glBindTexture(GL_TEXTURE_2D, mTexture2D);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -3816,6 +3863,9 @@ TEST_P(Texture2DTestES3, DepthTexturesWithMipmaps)
     // TODO(zmo) this is faling on Win Intel HD 530 Debug.
     // http://anglebug.com/1706
     ANGLE_SKIP_TEST_IF(IsIntel() && IsWindows() && IsOpenGL());
+
+    // Seems to fail on AMD D3D11. Possibly driver bug. http://anglebug.com/3342
+    ANGLE_SKIP_TEST_IF(IsAMD() && IsWindows() && IsD3D11());
 
     const int size = getWindowWidth();
 

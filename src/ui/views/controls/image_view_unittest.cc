@@ -38,7 +38,7 @@ namespace views {
 class ImageViewTest : public ViewsTestBase,
                       public ::testing::WithParamInterface<Axis> {
  public:
-  ImageViewTest() {}
+  ImageViewTest() = default;
 
   // ViewsTestBase:
   void SetUp() override {

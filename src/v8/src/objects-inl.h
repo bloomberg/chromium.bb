@@ -222,8 +222,6 @@ bool HeapObject::IsPromiseReactionJobTask() const {
   return IsPromiseFulfillReactionJobTask() || IsPromiseRejectReactionJobTask();
 }
 
-bool HeapObject::IsEnumCache() const { return IsTuple2(); }
-
 bool HeapObject::IsFrameArray() const { return IsFixedArrayExact(); }
 
 bool HeapObject::IsArrayList() const {
@@ -381,6 +379,16 @@ double Object::Number() const {
   DCHECK(IsNumber());
   return IsSmi() ? static_cast<double>(Smi(this->ptr())->value())
                  : HeapNumber::unchecked_cast(*this)->value();
+}
+
+// static
+bool Object::SameNumberValue(double value1, double value2) {
+  // SameNumberValue(NaN, NaN) is true.
+  if (value1 != value2) {
+    return std::isnan(value1) && std::isnan(value2);
+  }
+  // SameNumberValue(0.0, -0.0) is false.
+  return (std::signbit(value1) == std::signbit(value2));
 }
 
 bool Object::IsNaN() const {
@@ -584,16 +592,8 @@ ObjectSlot HeapObject::RawField(int byte_offset) const {
   return ObjectSlot(FIELD_ADDR(*this, byte_offset));
 }
 
-ObjectSlot HeapObject::RawField(const HeapObject obj, int byte_offset) {
-  return ObjectSlot(FIELD_ADDR(obj, byte_offset));
-}
-
 MaybeObjectSlot HeapObject::RawMaybeWeakField(int byte_offset) const {
   return MaybeObjectSlot(FIELD_ADDR(*this, byte_offset));
-}
-
-MaybeObjectSlot HeapObject::RawMaybeWeakField(HeapObject obj, int byte_offset) {
-  return MaybeObjectSlot(FIELD_ADDR(obj, byte_offset));
 }
 
 MapWord MapWord::FromMap(const Map map) { return MapWord(map.ptr()); }
@@ -614,33 +614,18 @@ HeapObject MapWord::ToForwardingAddress() {
 #ifdef VERIFY_HEAP
 void HeapObject::VerifyObjectField(Isolate* isolate, int offset) {
   VerifyPointer(isolate, READ_FIELD(*this, offset));
-#ifdef V8_COMPRESS_POINTERS
-  STATIC_ASSERT(kTaggedSize == kSystemPointerSize);
-  // Ensure upper 32-bits are zeros.
-  Address value = *(FullObjectSlot(FIELD_ADDR(*this, offset)).location());
-  CHECK_EQ(kNullAddress, RoundDown<kPtrComprIsolateRootAlignment>(value));
-#endif
+  STATIC_ASSERT(!COMPRESS_POINTERS_BOOL || kTaggedSize == kInt32Size);
 }
 
 void HeapObject::VerifyMaybeObjectField(Isolate* isolate, int offset) {
   MaybeObject::VerifyMaybeObjectPointer(isolate,
                                         READ_WEAK_FIELD(*this, offset));
-#ifdef V8_COMPRESS_POINTERS
-  STATIC_ASSERT(kTaggedSize == kSystemPointerSize);
-  // Ensure upper 32-bits are zeros.
-  Address value = *(FullObjectSlot(FIELD_ADDR(*this, offset)).location());
-  CHECK_EQ(kNullAddress, RoundDown<kPtrComprIsolateRootAlignment>(value));
-#endif
+  STATIC_ASSERT(!COMPRESS_POINTERS_BOOL || kTaggedSize == kInt32Size);
 }
 
 void HeapObject::VerifySmiField(int offset) {
   CHECK(READ_FIELD(*this, offset)->IsSmi());
-#ifdef V8_COMPRESS_POINTERS
-  STATIC_ASSERT(kTaggedSize == kSystemPointerSize);
-  // Ensure upper 32-bits are zeros.
-  Address value = *(FullObjectSlot(FIELD_ADDR(*this, offset)).location());
-  CHECK_EQ(kNullAddress, RoundDown<kPtrComprIsolateRootAlignment>(value));
-#endif
+  STATIC_ASSERT(!COMPRESS_POINTERS_BOOL || kTaggedSize == kInt32Size);
 }
 
 #endif
@@ -822,6 +807,7 @@ WriteBarrierMode HeapObject::GetWriteBarrierMode(
   return GetWriteBarrierModeForObject(*this, &promise);
 }
 
+// static
 AllocationAlignment HeapObject::RequiredAlignment(Map map) {
 #ifdef V8_COMPRESS_POINTERS
   // TODO(ishell, v8:8875): Consider using aligned allocations once the

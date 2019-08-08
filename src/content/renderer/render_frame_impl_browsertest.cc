@@ -228,8 +228,9 @@ TEST_F(RenderFrameImplTest, FrameResize) {
 TEST_F(RenderFrameImplTest, FrameWasShown) {
   RenderFrameTestObserver observer(frame());
 
-  WidgetMsg_WasShown was_shown_message(0, base::TimeTicks(),
-                                       false /* was_evicted */);
+  WidgetMsg_WasShown was_shown_message(
+      0, base::TimeTicks(), false /* was_evicted */,
+      base::TimeTicks() /* tab_switch_start_time */);
   frame_widget()->OnMessageReceived(was_shown_message);
 
   EXPECT_FALSE(frame_widget()->is_hidden());
@@ -266,26 +267,13 @@ TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
 
   RenderFrameTestObserver observer(grandchild);
 
-  WidgetMsg_WasShown was_shown_message(0, base::TimeTicks(),
-                                       false /* was_evicted */);
+  WidgetMsg_WasShown was_shown_message(
+      0, base::TimeTicks(), false /* was_evicted */,
+      base::TimeTicks() /* tab_switch_start_time */);
   frame_widget()->OnMessageReceived(was_shown_message);
 
   EXPECT_FALSE(frame_widget()->is_hidden());
   EXPECT_TRUE(observer.visible());
-}
-
-// Ensure that a RenderFrameImpl does not crash if the RenderView receives
-// a WasShown message after the frame's widget has been closed.
-TEST_F(RenderFrameImplTest, FrameWasShownAfterWidgetClose) {
-  WidgetMsg_Close close_message(0);
-  frame_widget()->OnMessageReceived(close_message);
-
-  WidgetMsg_WasShown was_shown_message(0, base::TimeTicks(),
-                                       false /* was_evicted */);
-  // Test passes if this does not crash.
-  RenderWidget* render_widget =
-      static_cast<RenderViewImpl*>(view_)->GetWidget();
-  render_widget->OnMessageReceived(was_shown_message);
 }
 
 // Test that LoFi state only updates for new main frame documents. Subframes
@@ -451,7 +439,7 @@ TEST_F(RenderFrameImplTest, DownloadUrlLimit) {
   render_thread_->sink().ClearMessages();
 
   WebURLRequest request;
-  request.SetURL(GURL("http://test/test.pdf"));
+  request.SetUrl(GURL("http://test/test.pdf"));
   request.SetRequestorOrigin(
       blink::WebSecurityOrigin::Create(GURL("http://test")));
 
@@ -509,7 +497,7 @@ TEST_F(RenderFrameImplTest, NoCrashWhenDeletingFrameDuringFind) {
       1, "foo", true /* match_case */, true /* forward */,
       false /* find_next */, true /* force */, false /* wrap_within_frame */);
 
-  FrameMsg_Delete delete_message(0);
+  FrameMsg_Delete delete_message(0, FrameDeleteIntention::kNotMainFrame);
   frame()->OnMessageReceived(delete_message);
 }
 
@@ -609,7 +597,7 @@ TEST_F(RenderFrameImplTest, PreviewsStateAfterWillSendRequest) {
     SetPreviewsState(frame(), test.frame_previews_state);
 
     WebURLRequest request;
-    request.SetURL(GURL("http://example.com"));
+    request.SetUrl(GURL("http://example.com"));
     request.SetPreviewsState(test.initial_request_previews_state);
 
     frame()->WillSendRequest(request);
@@ -698,7 +686,7 @@ TEST_F(RenderFrameImplTest, FileUrlPathAlias) {
 
   for (const auto& test_case : kTestCases) {
     WebURLRequest request;
-    request.SetURL(GURL(test_case.original));
+    request.SetUrl(GURL(test_case.original));
     GetMainRenderFrame()->WillSendRequest(request);
     EXPECT_EQ(test_case.transformed, request.Url().GetString().Utf8());
   }
@@ -798,8 +786,8 @@ constexpr char kFrameEventDidCreateNewFrame[] = "did-create-new-frame";
 constexpr char kFrameEventDidCreateNewDocument[] = "did-create-new-document";
 constexpr char kFrameEventDidCreateDocumentElement[] =
     "did-create-document-element";
-constexpr char kFrameEventWillCommitProvisionalLoad[] =
-    "will-commit-provisional-load";
+constexpr char kFrameEventReadyToCommitNavigation[] =
+    "ready-to-commit-navigation";
 constexpr char kFrameEventDidCommitProvisionalLoad[] =
     "did-commit-provisional-load";
 constexpr char kFrameEventDidCommitSameDocumentLoad[] =
@@ -867,6 +855,12 @@ class TestSimpleDocumentInterfaceBrokerImpl
   }
   void GetAudioContextManager(
       blink::mojom::AudioContextManagerRequest) override {}
+  void GetCredentialManager(
+      blink::mojom::CredentialManagerRequest request) override {}
+  void GetAuthenticator(blink::mojom::AuthenticatorRequest request) override {}
+  void GetVirtualAuthenticatorManager(
+      blink::test::mojom::VirtualAuthenticatorManagerRequest request) override {
+  }
 
   mojo::Binding<blink::mojom::DocumentInterfaceBroker> binding_;
   BinderCallback binder_callback_;
@@ -941,8 +935,8 @@ class FrameHostTestInterfaceRequestIssuer : public RenderFrameObserver {
     RequestTestInterfaceOnFrameEvent(kFrameEventDidCreateNewDocument);
   }
 
-  void WillCommitProvisionalLoad() override {
-    RequestTestInterfaceOnFrameEvent(kFrameEventWillCommitProvisionalLoad);
+  void ReadyToCommitNavigation(blink::WebDocumentLoader* loader) override {
+    RequestTestInterfaceOnFrameEvent(kFrameEventReadyToCommitNavigation);
   }
 
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
@@ -1236,7 +1230,7 @@ TEST_F(RenderFrameRemoteInterfacesTest, ChildFrameAtFirstCommittedLoad) {
         {{GURL(kNoDocumentMarkerURL), kFrameEventDidCreateNewFrame},
          {initial_empty_url, kFrameEventDidCreateNewDocument},
          {initial_empty_url, kFrameEventDidCreateDocumentElement},
-         {initial_empty_url, kFrameEventWillCommitProvisionalLoad},
+         {initial_empty_url, kFrameEventReadyToCommitNavigation},
          // TODO(https://crbug.com/555773): It seems strange that the new
          // document is created and DidCreateNewDocument is invoked *before* the
          // provisional load would have even committed.
@@ -1301,7 +1295,7 @@ TEST_F(RenderFrameRemoteInterfacesTest,
         main_frame_exerciser
             .document_interface_broker_request_for_initial_empty_document(),
         {{initial_empty_url, kFrameEventDidCreateNewFrame},
-         {initial_empty_url, kFrameEventWillCommitProvisionalLoad},
+         {initial_empty_url, kFrameEventReadyToCommitNavigation},
          {new_window_url, kFrameEventDidCreateNewDocument}});
     ExpectPendingInterfaceRequestsFromSources(
         main_frame_exerciser.interface_request_for_first_document(),
@@ -1359,7 +1353,7 @@ TEST_F(RenderFrameRemoteInterfacesTest,
       {{GURL(kNoDocumentMarkerURL), kFrameEventDidCreateNewFrame},
        {initial_empty_url, kFrameEventDidCreateNewDocument},
        {initial_empty_url, kFrameEventDidCreateDocumentElement},
-       {initial_empty_url, kFrameEventWillCommitProvisionalLoad},
+       {initial_empty_url, kFrameEventReadyToCommitNavigation},
        {child_frame_url, kFrameEventDidCreateNewDocument},
        {child_frame_url, kFrameEventDidCommitProvisionalLoad},
        {child_frame_url, kFrameEventDidCreateDocumentElement}});
@@ -1405,7 +1399,7 @@ TEST_F(RenderFrameRemoteInterfacesTest, ReplacedOnNonSameDocumentNavigation) {
       std::move(interface_provider_request_for_first_document),
       std::move(document_interface_broker_request_for_first_document),
       {{GURL(kTestFirstURL), kFrameEventAfterCommit},
-       {GURL(kTestFirstURL), kFrameEventWillCommitProvisionalLoad},
+       {GURL(kTestFirstURL), kFrameEventReadyToCommitNavigation},
        {GURL(kTestSecondURL), kFrameEventDidCreateNewDocument}});
 
   ASSERT_TRUE(interface_provider_request_for_second_document.is_pending());

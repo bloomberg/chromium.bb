@@ -19,7 +19,6 @@ import android.webkit.WebSettings;
 import org.chromium.android_webview.settings.ForceDarkMode;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.WebContents;
@@ -226,6 +225,10 @@ public class AwSettings {
         void updateWebkitPreferencesLocked() {
             runOnUiThreadBlockingAndLocked(() -> updateWebkitPreferencesOnUiThreadLocked());
         }
+
+        void updateCookiePolicyLocked() {
+            runOnUiThreadBlockingAndLocked(() -> updateCookiePolicyOnUiThreadLocked());
+        }
     }
 
     interface ZoomSupportChangeListener {
@@ -353,6 +356,7 @@ public class AwSettings {
         if (TRACE) Log.i(LOGTAG, "setAcceptThirdPartyCookies=" + accept);
         synchronized (mAwSettingsLock) {
             mAcceptThirdPartyCookies = accept;
+            mEventHandler.updateCookiePolicyLocked();
         }
     }
 
@@ -374,6 +378,12 @@ public class AwSettings {
         synchronized (mAwSettingsLock) {
             return mAcceptThirdPartyCookies;
         }
+    }
+
+    @CalledByNative
+    private boolean getAcceptThirdPartyCookiesLocked() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        return mAcceptThirdPartyCookies;
     }
 
     /**
@@ -408,6 +418,7 @@ public class AwSettings {
     /**
      * See {@link android.webkit.WebSettings#getAllowFileAccess}.
      */
+    @CalledByNative
     public boolean getAllowFileAccess() {
         synchronized (mAwSettingsLock) {
             return mAllowFileUrlAccess;
@@ -1755,7 +1766,6 @@ public class AwSettings {
         }
     }
 
-    @VisibleForTesting
     public void updateAcceptLanguages() {
         synchronized (mAwSettingsLock) {
             mEventHandler.runOnUiThreadBlockingAndLocked(() -> {
@@ -1827,6 +1837,14 @@ public class AwSettings {
         }
     }
 
+    private void updateCookiePolicyOnUiThreadLocked() {
+        assert mEventHandler.mHandler != null;
+        ThreadUtils.assertOnUiThread();
+        if (mNativeAwSettings != 0) {
+            nativeUpdateCookiePolicyLocked(mNativeAwSettings);
+        }
+    }
+
     private native long nativeInit(WebContents webContents);
 
     private native void nativeDestroy(long nativeAwSettings);
@@ -1852,4 +1870,6 @@ public class AwSettings {
     private native void nativeUpdateOffscreenPreRasterLocked(long nativeAwSettings);
 
     private native void nativeUpdateWillSuppressErrorStateLocked(long nativeAwSettings);
+
+    private native void nativeUpdateCookiePolicyLocked(long nativeAwSettings);
 }

@@ -26,7 +26,6 @@ class CORE_EXPORT DevToolsEmulator final
  public:
   explicit DevToolsEmulator(WebViewImpl*);
   ~DevToolsEmulator();
-  static DevToolsEmulator* Create(WebViewImpl*);
   void Trace(blink::Visitor*);
 
   // Settings overrides.

@@ -18,7 +18,7 @@ async_test((t) => {
     t.step(() => assert_false(container.displayLock.locked, "initial context is unlocked"));
 
     let acquire_promise = container.displayLock.acquire({ timeout: Infinity });
-    t.step(() => assert_false(container.displayLock.locked, "context before acquire finishes is unlocked"));
+    t.step(() => assert_true(container.displayLock.locked, "context before acquire finishes is locked"));
 
     await acquire_promise;
     t.step(() => assert_true(container.displayLock.locked, "context after acquire finishes is locked"));

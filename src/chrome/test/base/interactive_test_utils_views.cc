@@ -34,7 +34,7 @@ void ClickOnView(const Browser* browser, ViewID vid) {
   base::RunLoop loop;
   MoveMouseToCenterAndPress(view, ui_controls::LEFT,
                             ui_controls::DOWN | ui_controls::UP,
-                            loop.QuitWhenIdleClosure());
+                            loop.QuitClosure());
   loop.Run();
 }
 

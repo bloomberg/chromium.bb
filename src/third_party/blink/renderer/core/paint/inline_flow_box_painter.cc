@@ -44,8 +44,7 @@ InlineFlowBoxPainter::InlineFlowBoxPainter(const InlineFlowBox& flow_box)
           GetNode(GetBoxModelObject(flow_box)),
           flow_box.GetLineLayoutItem().StyleRef(),
           flow_box.GetLineLayoutItem().StyleRef(flow_box.IsFirstLineStyle())),
-      inline_flow_box_(flow_box) {
-}
+      inline_flow_box_(flow_box) {}
 
 void InlineFlowBoxPainter::Paint(const PaintInfo& paint_info,
                                  const LayoutPoint& paint_offset,
@@ -343,7 +342,7 @@ void InlineFlowBoxPainter::RecordHitTestData(const PaintInfo& paint_info,
   if (layout_object->StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
-  auto touch_action = layout_object->EffectiveWhitelistedTouchAction();
+  auto touch_action = layout_object->EffectiveAllowedTouchAction();
   if (touch_action == TouchAction::kTouchActionAuto)
     return;
 

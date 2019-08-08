@@ -200,8 +200,7 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
   }
 
  protected:
-  void Preload(std::unique_ptr<PreloadRequest> preload_request,
-               const NetworkHintsInterface&) override {
+  void Preload(std::unique_ptr<PreloadRequest> preload_request) override {
     preload_request_ = std::move(preload_request);
   }
 
@@ -257,8 +256,9 @@ class HTMLPreloadScannerTest : public PageTestBase {
     GetDocument().GetSettings()->SetDoHtmlPreloadScanning(preload_state ==
                                                           kPreloadEnabled);
     GetDocument().SetReferrerPolicy(document_referrer_policy);
-    scanner_ = HTMLPreloadScanner::Create(
-        options, document_url, CachedDocumentParameters::Create(&GetDocument()),
+    scanner_ = std::make_unique<HTMLPreloadScanner>(
+        options, document_url,
+        std::make_unique<CachedDocumentParameters>(&GetDocument()),
         CreateMediaValuesData(),
         TokenPreloadScanner::ScannerType::kMainDocument);
   }
@@ -1224,6 +1224,21 @@ TEST_F(HTMLPreloadScannerTest, LazyImageLoadDisabledForSmallImages) {
       {"<img src='foo.jpg' style='width: 1px;'>", false},
   };
 
+  for (const auto& test_case : test_cases)
+    Test(test_case);
+}
+
+TEST_F(HTMLPreloadScannerTest, LazyImageLoadAttributePassed) {
+  ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
+  LazyImageLoadTestCase test_cases[] = {
+      {"<img src='foo.jpg' loading='auto'>", false},
+      {"<img src='foo.jpg' loading='lazy'>", false},
+      {"<img src='foo.jpg' loading='eager'>", true},
+      // loading=lazy should override other conditions.
+      {"<img src='foo.jpg' style='height: 1px;' loading='lazy'>", false},
+      {"<img src='foo.jpg' style='height: 1px; width: 1px' loading='lazy'>",
+       false},
+  };
   for (const auto& test_case : test_cases)
     Test(test_case);
 }

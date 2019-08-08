@@ -8,15 +8,13 @@
 
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
-#include "ui/gfx/x/x11.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 
 namespace views {
 
-X11TopmostWindowFinder::X11TopmostWindowFinder() : toplevel_(x11::None) {}
+X11TopmostWindowFinder::X11TopmostWindowFinder() = default;
 
-X11TopmostWindowFinder::~X11TopmostWindowFinder() {
-}
+X11TopmostWindowFinder::~X11TopmostWindowFinder() = default;
 
 aura::Window* X11TopmostWindowFinder::FindLocalProcessWindowAt(
     const gfx::Point& screen_loc_in_pixels,
@@ -34,7 +32,7 @@ aura::Window* X11TopmostWindowFinder::FindLocalProcessWindowAt(
     }
   }
   if (!found_local_process_window)
-    return NULL;
+    return nullptr;
 
   ui::EnumerateTopLevelWindows(this);
   return DesktopWindowTreeHostX11::GetContentWindowForXID(toplevel_);

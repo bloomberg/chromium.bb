@@ -22,8 +22,8 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
          referrer_policy == request.referrer_policy &&
          is_prerendering == request.is_prerendering &&
          headers.ToString() == request.headers.ToString() &&
-         requested_with_header == request.requested_with_header &&
-         client_data_header == request.client_data_header &&
+         cors_exempt_headers.ToString() ==
+             request.cors_exempt_headers.ToString() &&
          load_flags == request.load_flags &&
          allow_credentials == request.allow_credentials &&
          plugin_child_id == request.plugin_child_id &&
@@ -33,7 +33,6 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
          should_reset_appcache == request.should_reset_appcache &&
          is_external_request == request.is_external_request &&
          cors_preflight_policy == request.cors_preflight_policy &&
-         service_worker_provider_id == request.service_worker_provider_id &&
          originated_from_service_worker ==
              request.originated_from_service_worker &&
          skip_service_worker == request.skip_service_worker &&
@@ -65,7 +64,8 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
              request.custom_proxy_post_cache_headers.ToString() &&
          custom_proxy_use_alternate_proxy_list ==
              request.custom_proxy_use_alternate_proxy_list &&
-         fetch_window_id == request.fetch_window_id;
+         fetch_window_id == request.fetch_window_id &&
+         devtools_request_id == request.devtools_request_id;
 }
 
 }  // namespace network

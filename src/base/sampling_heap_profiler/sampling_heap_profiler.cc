@@ -105,12 +105,18 @@ uint32_t SamplingHeapProfiler::Start() {
     return 0;
   }
 #endif
-  PoissonAllocationSampler::Get()->AddSamplesObserver(this);
+
+  AutoLock lock(start_stop_mutex_);
+  if (!running_sessions_++)
+    PoissonAllocationSampler::Get()->AddSamplesObserver(this);
   return last_sample_ordinal_;
 }
 
 void SamplingHeapProfiler::Stop() {
-  PoissonAllocationSampler::Get()->RemoveSamplesObserver(this);
+  AutoLock lock(start_stop_mutex_);
+  DCHECK_GT(running_sessions_, 0);
+  if (!--running_sessions_)
+    PoissonAllocationSampler::Get()->RemoveSamplesObserver(this);
 }
 
 void SamplingHeapProfiler::SetSamplingInterval(size_t sampling_interval) {
@@ -134,13 +140,8 @@ const char* SamplingHeapProfiler::CachedThreadName() {
 void** SamplingHeapProfiler::CaptureStackTrace(void** frames,
                                                size_t max_entries,
                                                size_t* count) {
-  // Skip 5 top frames related to the profiler itself, e.g.:
-  //   base::debug::CollectStackTrace
-  //   heap_profiling::CaptureStackTrace
-  //   heap_profiling::RecordAndSendAlloc
-  //   SamplingProfilerWrapper::SampleAdded
-  //   sampling_heap_profiler::PoissonAllocationSampler::DoRecordAlloc
-  size_t skip_frames = 5;
+  // Skip top frames as they correspond to the profiler itself.
+  size_t skip_frames = 3;
 #if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
     defined(OFFICIAL_BUILD)
   size_t frame_count =
@@ -168,6 +169,10 @@ void SamplingHeapProfiler::SampleAdded(
     size_t total,
     PoissonAllocationSampler::AllocatorType type,
     const char* context) {
+  // CaptureStack and allocation context tracking may use TLS.
+  // Bail out if it has been destroyed.
+  if (UNLIKELY(base::ThreadLocalStorage::HasBeenDestroyed()))
+    return;
   DCHECK(PoissonAllocationSampler::ScopedMuteThreadSamples::IsMuted());
   AutoLock lock(mutex_);
   Sample sample(size, total, ++last_sample_ordinal_);
@@ -187,9 +192,6 @@ void SamplingHeapProfiler::SampleAdded(
 
 void SamplingHeapProfiler::CaptureMixedStack(const char* context,
                                              Sample* sample) {
-  // Allocation context is tracked in TLS. Return nothing if TLS was destroyed.
-  if (UNLIKELY(base::ThreadLocalStorage::HasBeenDestroyed()))
-    return;
   auto* tracker =
       trace_event::AllocationContextTracker::GetInstanceForCurrentThread();
   if (!tracker)
@@ -228,10 +230,6 @@ void SamplingHeapProfiler::CaptureNativeStack(const char* context,
 
   if (record_thread_names_)
     sample->thread_name = CachedThreadName();
-
-  // Task context require access to TLS.
-  if (UNLIKELY(base::ThreadLocalStorage::HasBeenDestroyed()))
-    return;
 
   if (!context) {
     const auto* tracker =

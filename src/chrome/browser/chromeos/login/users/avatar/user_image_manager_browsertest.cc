@@ -40,7 +40,6 @@
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -50,10 +49,10 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
-#include "chromeos/dbus/cryptohome_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -612,8 +611,7 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
                                    public policy::CloudPolicyStore::Observer {
  protected:
   UserImageManagerPolicyTest()
-      : owner_key_util_(new ownership::MockOwnerKeyUtil()),
-        fake_session_manager_client_(new chromeos::FakeSessionManagerClient) {}
+      : owner_key_util_(new ownership::MockOwnerKeyUtil()) {}
 
   // UserImageManagerTest overrides:
   void SetUpInProcessBrowserTestFixture() override {
@@ -622,9 +620,10 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
         ->SetOwnerKeyUtilForTesting(owner_key_util_);
     owner_key_util_->SetPublicKeyFromPrivateKey(
         *device_policy_.GetSigningKey());
-    fake_session_manager_client_->set_device_policy(device_policy_.GetBlob());
-    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
+    // Override FakeSessionManagerClient. This will be shut down by the browser.
+    SessionManagerClient::InitializeFakeInMemory();
+    FakeSessionManagerClient::Get()->set_device_policy(
+        device_policy_.GetBlob());
 
     UserImageManagerTest::SetUpInProcessBrowserTestFixture();
   }
@@ -690,7 +689,6 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
   policy::UserPolicyBuilder user_policy_;
   policy::DevicePolicyBuilder device_policy_;
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
-  FakeSessionManagerClient* fake_session_manager_client_;
 
   std::unique_ptr<gfx::ImageSkia> policy_image_;
 
@@ -723,8 +721,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
   user_policy_.payload().mutable_useravatarimage()->set_value(
       ConstructPolicy(test::kUserAvatarImage2RelativePath));
   user_policy_.Build();
-  fake_session_manager_client_->set_user_policy(cryptohome_id_,
-                                                user_policy_.GetBlob());
+  FakeSessionManagerClient::Get()->set_user_policy(cryptohome_id_,
+                                                   user_policy_.GetBlob());
   run_loop_.reset(new base::RunLoop);
   store->Load();
   run_loop_->Run();
@@ -748,8 +746,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
   // image.
   user_policy_.payload().Clear();
   user_policy_.Build();
-  fake_session_manager_client_->set_user_policy(cryptohome_id_,
-                                                user_policy_.GetBlob());
+  FakeSessionManagerClient::Get()->set_user_policy(cryptohome_id_,
+                                                   user_policy_.GetBlob());
   run_loop_.reset(new base::RunLoop);
   store->AddObserver(this);
   store->Load();
@@ -830,8 +828,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PolicyOverridesUser) {
   user_policy_.payload().mutable_useravatarimage()->set_value(
       ConstructPolicy(test::kUserAvatarImage2RelativePath));
   user_policy_.Build();
-  fake_session_manager_client_->set_user_policy(cryptohome_id_,
-                                                user_policy_.GetBlob());
+  FakeSessionManagerClient::Get()->set_user_policy(cryptohome_id_,
+                                                   user_policy_.GetBlob());
   run_loop_.reset(new base::RunLoop);
   store->Load();
   run_loop_->Run();
@@ -877,8 +875,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, UserDoesNotOverridePolicy) {
   user_policy_.payload().mutable_useravatarimage()->set_value(
       ConstructPolicy(test::kUserAvatarImage2RelativePath));
   user_policy_.Build();
-  fake_session_manager_client_->set_user_policy(cryptohome_id_,
-                                                user_policy_.GetBlob());
+  FakeSessionManagerClient::Get()->set_user_policy(cryptohome_id_,
+                                                   user_policy_.GetBlob());
   run_loop_.reset(new base::RunLoop);
   store->Load();
   run_loop_->Run();

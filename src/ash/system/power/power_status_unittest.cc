@@ -9,7 +9,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/gfx/image/image.h"
@@ -47,7 +47,7 @@ class PowerStatusTest : public testing::Test {
   ~PowerStatusTest() override = default;
 
   void SetUp() override {
-    chromeos::PowerManagerClient::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
     PowerStatus::Initialize();
     power_status_ = PowerStatus::Get();
     test_observer_.reset(new TestObserver);

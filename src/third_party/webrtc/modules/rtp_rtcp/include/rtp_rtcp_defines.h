@@ -15,11 +15,11 @@
 #include <list>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "absl/types/variant.h"
 #include "api/audio_codecs/audio_format.h"
 #include "api/rtp_headers.h"
 #include "api/transport/network_types.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "modules/include/module_common_types.h"
 #include "system_wrappers/include/clock.h"
 
@@ -44,6 +44,9 @@ const uint8_t kRtpHeaderSize = 12;
 enum ProtectionType { kUnprotectedPacket, kProtectedPacket };
 
 enum StorageType { kDontRetransmit, kAllowRetransmission };
+
+bool IsLegalMidName(absl::string_view name);
+bool IsLegalRsidName(absl::string_view name);
 
 // This enum must not have any gaps, i.e., all integers between
 // kRtpExtensionNone and kRtpExtensionNumberOfExtensions must be valid enum
@@ -97,7 +100,7 @@ enum RTCPPacketType : uint32_t {
 
 enum KeyFrameRequestMethod { kKeyFrameReqPliRtcp, kKeyFrameReqFirRtcp };
 
-enum RtpRtcpPacketType { kPacketRtp = 0, kPacketKeepAlive = 1 };
+enum RtpRtcpPacketType { kPacketRtp = 0 };
 
 enum RtxMode {
   kRtxOff = 0x0,
@@ -181,6 +184,18 @@ class RtcpIntraFrameObserver {
   virtual ~RtcpIntraFrameObserver() {}
 
   virtual void OnReceivedIntraFrameRequest(uint32_t ssrc) = 0;
+};
+
+// Observer for incoming LossNotification RTCP messages.
+// See the documentation of LossNotification for details.
+class RtcpLossNotificationObserver {
+ public:
+  virtual ~RtcpLossNotificationObserver() = default;
+
+  virtual void OnReceivedLossNotification(uint32_t ssrc,
+                                          uint16_t seq_num_of_last_decodable,
+                                          uint16_t seq_num_of_last_received,
+                                          bool decodability_flag) = 0;
 };
 
 class RtcpBandwidthObserver {
@@ -445,6 +460,10 @@ struct StreamDataCounters {
   }
 
   int64_t first_packet_time_ms;    // Time when first packet is sent/received.
+  // The timestamp at which the last packet was received, i.e. the time of the
+  // local clock when it was received - not the RTP timestamp of that packet.
+  // https://w3c.github.io/webrtc-stats/#dom-rtcinboundrtpstreamstats-lastpacketreceivedtimestamp
+  absl::optional<int64_t> last_packet_received_timestamp_ms;
   RtpPacketCounter transmitted;    // Number of transmitted packets/bytes.
   RtpPacketCounter retransmitted;  // Number of retransmitted packets/bytes.
   RtpPacketCounter fec;            // Number of redundancy packets/bytes.

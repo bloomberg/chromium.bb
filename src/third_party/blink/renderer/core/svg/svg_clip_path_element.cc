@@ -22,16 +22,17 @@
 #include "third_party/blink/renderer/core/svg/svg_clip_path_element.h"
 
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_clipper.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 inline SVGClipPathElement::SVGClipPathElement(Document& document)
     : SVGGraphicsElement(svg_names::kClipPathTag, document),
-      clip_path_units_(
-          SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::Create(
-              this,
-              svg_names::kClipPathUnitsAttr,
-              SVGUnitTypes::kSvgUnitTypeUserspaceonuse)) {
+      clip_path_units_(MakeGarbageCollected<
+                       SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>>(
+          this,
+          svg_names::kClipPathUnitsAttr,
+          SVGUnitTypes::kSvgUnitTypeUserspaceonuse)) {
   AddToPropertyMap(clip_path_units_);
 }
 
@@ -68,7 +69,8 @@ void SVGClipPathElement::ChildrenChanged(const ChildrenChange& change) {
   }
 }
 
-LayoutObject* SVGClipPathElement::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* SVGClipPathElement::CreateLayoutObject(const ComputedStyle&,
+                                                     LegacyLayout) {
   return new LayoutSVGResourceClipper(this);
 }
 

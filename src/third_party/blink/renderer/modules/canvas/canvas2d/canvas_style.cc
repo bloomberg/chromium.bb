@@ -66,7 +66,7 @@ static Color CurrentColor(HTMLCanvasElement* canvas) {
     return Color::kBlack;
   Color color = Color::kBlack;
   CSSParser::ParseColor(
-      color, canvas->InlineStyle()->GetPropertyValue(CSSPropertyColor));
+      color, canvas->InlineStyle()->GetPropertyValue(CSSPropertyID::kColor));
   return color;
 }
 

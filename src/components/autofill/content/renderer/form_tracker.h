@@ -86,8 +86,6 @@ class FormTracker : public content::RenderFrameObserver {
   FRIEND_TEST_ALL_PREFIXES(FormAutocompleteTest,
                            FormSubmittedBySameDocumentNavigation);
 
-  class FormElementObserverCallback;
-
   // content::RenderFrameObserver:
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                 ui::PageTransition transition) override;
@@ -112,6 +110,10 @@ class FormTracker : public content::RenderFrameObserver {
   void TrackElement();
 
   void ResetLastInteractedElements();
+
+  // Invoked when the observed element was either removed from the DOM or it's
+  // computed style changed to display: none.
+  void ElementWasHiddenOrRemoved();
 
   base::ObserverList<Observer>::Unchecked observers_;
   bool ignore_control_changes_ = false;

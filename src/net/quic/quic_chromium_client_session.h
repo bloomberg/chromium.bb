@@ -39,12 +39,12 @@
 #include "net/spdy/http2_priority_dependencies.h"
 #include "net/spdy/multiplexed_session.h"
 #include "net/spdy/server_push_delegate.h"
-#include "net/third_party/quic/core/http/quic_client_push_promise_index.h"
-#include "net/third_party/quic/core/http/quic_spdy_client_session_base.h"
-#include "net/third_party/quic/core/quic_crypto_client_stream.h"
-#include "net/third_party/quic/core/quic_packets.h"
-#include "net/third_party/quic/core/quic_server_id.h"
-#include "net/third_party/quic/core/quic_time.h"
+#include "net/third_party/quiche/src/quic/core/http/quic_client_push_promise_index.h"
+#include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_session_base.h"
+#include "net/third_party/quiche/src/quic/core/quic_crypto_client_stream.h"
+#include "net/third_party/quiche/src/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quic/core/quic_server_id.h"
+#include "net/third_party/quiche/src/quic/core/quic_time.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {

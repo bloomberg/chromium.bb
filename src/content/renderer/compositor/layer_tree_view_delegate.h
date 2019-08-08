@@ -14,13 +14,8 @@
 
 namespace cc {
 class LayerTreeFrameSink;
-class SwapPromise;
 struct ElementId;
 }  // namespace cc
-
-namespace viz {
-class CopyOutputRequest;
-}
 
 namespace content {
 
@@ -67,6 +62,9 @@ class LayerTreeViewDelegate {
   // Notifies that the draw commands for a committed frame have been issued.
   virtual void DidCommitAndDrawCompositorFrame() = 0;
 
+  // Notifies that a compositor frame commit operation is about to start.
+  virtual void WillCommitCompositorFrame() = 0;
+
   // Notifies about a compositor frame commit operation having finished.
   virtual void DidCommitCompositorFrame() = 0;
 
@@ -84,6 +82,11 @@ class LayerTreeViewDelegate {
   virtual void RecordStartOfFrameMetrics() = 0;
   virtual void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) = 0;
 
+  // Notification of the beginning and end of LayerTreeHost::UpdateLayers, for
+  // metrics collection.
+  virtual void BeginUpdateLayers() = 0;
+  virtual void EndUpdateLayers() = 0;
+
   // Requests a visual frame-based update to the state of the delegate if there
   // is an update available.
   virtual void UpdateVisualState() = 0;
@@ -94,11 +97,6 @@ class LayerTreeViewDelegate {
   // we are in a frame that shoujld capture metrics data, and the local frame's
   // UKM aggregator must be informed that the frame is starting.
   virtual void WillBeginCompositorFrame() = 0;
-
-  // For use in web test mode only, attempts to copy the full content of the
-  // compositor.
-  virtual std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForWebTest(
-      std::unique_ptr<viz::CopyOutputRequest> request) = 0;
 
  protected:
   virtual ~LayerTreeViewDelegate() {}

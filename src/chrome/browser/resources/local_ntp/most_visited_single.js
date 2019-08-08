@@ -9,7 +9,7 @@
 
 /**
  * Enum for key codes.
- * @enum {int}
+ * @enum {number}
  * @const
  */
 const KEYCODES = {
@@ -156,7 +156,7 @@ const MD_NUM_TILES_ALWAYS_VISIBLE = 6;
  * or 'chrome-search://local-ntp' for the local NTP.
  * @const {string}
  */
-var DOMAIN_ORIGIN = '{{ORIGIN}}';
+const DOMAIN_ORIGIN = '{{ORIGIN}}';
 
 
 /**
@@ -313,8 +313,9 @@ var handleCommand = function(data) {
   if (cmd == 'tile') {
     addTile(data);
   } else if (cmd == 'show') {
-    // TODO(treib): If this happens before we have finished loading the previous
-    // tiles, we probably get into a bad state.
+    // TODO(crbug.com/946225): If this happens before we have finished loading
+    // the previous tiles, we probably get into a bad state. If/when the iframe
+    // is removed this might no longer be a concern.
     showTiles(data);
   } else if (cmd == 'updateTheme') {
     updateTheme(data);
@@ -328,7 +329,7 @@ var handleCommand = function(data) {
 
 /**
  * Handler for the 'show' message from the host page.
- * @param {object} info Data received in the message.
+ * @param {!Object} info Data received in the message.
  */
 var showTiles = function(info) {
   logEvent(LOG_TYPE.NTP_ALL_TILES_RECEIVED);
@@ -339,7 +340,7 @@ var showTiles = function(info) {
 
 /**
  * Handler for the 'updateTheme' message from the host page.
- * @param {object} info Data received in the message.
+ * @param {!Object} info Data received in the message.
  */
 var updateTheme = function(info) {
   document.body.style.setProperty('--tile-title-color', info.tileTitleColor);
@@ -360,7 +361,7 @@ var updateTheme = function(info) {
  * Handler for 'focusMenu' message from the host page. Focuses the edited tile's
  * menu or the add shortcut tile after closing the custom link edit dialog
  * without saving.
- * @param {object} info Data received in the message.
+ * @param {!Object} info Data received in the message.
  */
 var focusTileMenu = function(info) {
   let tile = document.querySelector(`a.md-tile[data-tid="${info.tid}"]`);
@@ -401,6 +402,9 @@ var swapInNewTiles = function() {
       'title': queryArgs['addLink'],
       'url': '',
       'isAddButton': true,
+      'dataGenerationTime': new Date(),
+      'tileSource': -1,
+      'tileTitleSource': -1
     };
     tiles.appendChild(renderMaterialDesignTile(data));
   }
@@ -440,7 +444,7 @@ var swapInNewTiles = function() {
   // getComputedStyle causes the initial style (opacity 0) to be applied, so
   // that when we then set it to 1, that triggers the CSS transition.
   if (fadeIn) {
-    window.getComputedStyle(cur).opacity;
+    const style = window.getComputedStyle(cur).opacity;
   }
   cur.style.opacity = 1.0;
 
@@ -474,7 +478,7 @@ function updateTileVisibility() {
  * Handler for the 'show' message from the host page, called when it wants to
  * add a suggestion tile.
  * It's also used to fill up our tiles to |maxNumTiles| if necessary.
- * @param {object} args Data for the tile to be rendered.
+ * @param {?MostVisitedData} args Data for the tile to be rendered.
  */
 var addTile = function(args) {
   if (isFinite(args.rid)) {
@@ -594,23 +598,28 @@ function setupReorder(tile) {
 
       // Cancel the timeout if the user drags the mouse off the tile and
       // releases or if the mouse if released.
-      let dragend = document.addEventListener('dragend', () => {
+      let dragend = () => {
         window.clearTimeout(timeout);
-      }, {once: true});
-      let mouseup = document.addEventListener('mouseup', () => {
+      };
+      document.addEventListener('dragend', dragend, {once: true});
+
+      let mouseup = () => {
         if (event.button == 0 /* LEFT CLICK */) {
           window.clearTimeout(timeout);
         }
-      }, {once: true});
+      };
+      document.addEventListener('mouseup', mouseup, {once: true});
 
-      // Wait for |REORDER_TIMEOUT_DELAY| before starting the reorder flow.
-      timeout = window.setTimeout(() => {
+      let timeoutFunc = (dragend_in, mouseup_in) => {
         if (!reordering) {
           startReorder(tile);
         }
-        document.removeEventListener('dragend', dragend);
-        document.removeEventListener('mouseup', mouseup);
-      }, REORDER_TIMEOUT_DELAY);
+        document.removeEventListener('dragend', dragend_in);
+        document.removeEventListener('mouseup', mouseup_in);
+      };
+      // Wait for |REORDER_TIMEOUT_DELAY| before starting the reorder flow.
+      timeout = window.setTimeout(
+          timeoutFunc.bind(dragend, mouseup), REORDER_TIMEOUT_DELAY);
     }
   });
 
@@ -638,10 +647,11 @@ function setupReorder(tile) {
 
 /**
  * Renders a MostVisited tile to the DOM.
- * @param {object} data Object containing rid, url, title, favicon, thumbnail,
- *     and optionally isAddButton. isAddButton is true if you want to construct
- *     an add custom link button. data is null if you want to construct an
- *     empty tile. isAddButton can only be set if custom links is enabled.
+ * @param {?MostVisitedData} data Object containing rid, url, title, favicon,
+ *     thumbnail, and optionally isAddButton. isAddButton is true if you want to
+ *     construct an add custom link button. data is null if you want to
+ *     construct an empty tile. isAddButton can only be set if custom links is
+ *     enabled.
  */
 var renderTile = function(data) {
   return renderMaterialDesignTile(data);
@@ -650,9 +660,10 @@ var renderTile = function(data) {
 
 /**
  * Renders a MostVisited tile with Material Design styles.
- * @param {object} data Object containing rid, url, title, favicon, and
- *     optionally isAddButton. isAddButton is if you want to construct an add
- *     custom link button. data is null if you want to construct an empty tile.
+ * @param {?MostVisitedData} data Object containing rid, url, title, favicon,
+ *     and optionally isAddButton. isAddButton is if you want to construct an
+ *     add custom link button. data is null if you want to construct an empty
+ *     tile.
  * @return {Element}
  */
 function renderMaterialDesignTile(data) {
@@ -683,7 +694,7 @@ function renderMaterialDesignTile(data) {
 
   mdTile.addEventListener('click', function(ev) {
     if (data.isAddButton) {
-      editCustomLink();
+      editCustomLink(null);
       logEvent(LOG_TYPE.NTP_CUSTOMIZE_ADD_SHORTCUT_CLICKED);
     } else {
       logMostVisitedNavigation(
@@ -819,7 +830,7 @@ function renderMaterialDesignTile(data) {
     // Don't allow the event to bubble out to the containing tile, as that would
     // trigger navigation to the tile URL.
     mdMenu.addEventListener('keydown', function(ev) {
-      event.stopPropagation();
+      ev.stopPropagation();
     });
     utils.disableOutlineOnMouseClick(mdMenu);
 

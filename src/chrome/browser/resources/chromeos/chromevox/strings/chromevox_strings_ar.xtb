@@ -98,6 +98,7 @@
 <translation id="1616111909442424068">قمحي</translation>
 <translation id="1618597272655350600">الإعلان عن وصف كامل للموضع الحالي</translation>
 <translation id="1627222324347828322">أبيض شاحب</translation>
+<translation id="1630688379087270943">الإشارة إلى مائل:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{علامة أكبر من واحدة}zero{# greater than signs}two{علامتا أكبر من (#)}few{# علامات أكبر من}many{# علامة أكبر من}other{# من علامات أكبر من}}</translation>
 <translation id="1653266918374749391">عنوان المستوى الثالث السابق</translation>
 <translation id="1657616855184033958">عرض فلاتر بث الحدث</translation>
@@ -212,6 +213,7 @@
 <translation id="2626530649491650971">قابل للنقر</translation>
 <translation id="2628764385451019380">ليس هناك مربع تحرير وسرد سابق.</translation>
 <translation id="2637227747952042642">رياضيات</translation>
+<translation id="2638785836053527382">تم استئناف تنزيل <ph name="FILE_NAME" />.</translation>
 <translation id="2639750663247012216">‏مفتاح تعديل ChromeVox</translation>
 <translation id="2644542693584024604">misspelled</translation>
 <translation id="2661530546602071611">ملاحظة</translation>
@@ -251,6 +253,7 @@
 <translation id="287383510823843610">برتقالي داكن</translation>
 <translation id="2879867157561757640">التمرير السريع بثلاثة أصابع إلى الأسفل</translation>
 <translation id="288178314850623291">‏استخدم أوامر الانتقال السريع للتخطي إلى أنواع محددة من العناصر. للانتقال السريع للأمام بين العناوين، اضغط على بحث + H، أو للانتقال السريع للخلف، اضغط على بحث + Shift + H.</translation>
+<translation id="2885764457467528513">{COUNT,plural, =1{دقيقة واحدة}zero{دقائق}two{دقيقتان}few{دقائق}many{دقيقةً}other{دقيقة}}</translation>
 <translation id="2894654529758326923">المعلومات</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{قوس كبير أيسر واحد}zero{# left braces}two{قوسان كبيران أيسران (#)}few{# أقواس كبيرة يسرى}many{# قوسًا كبيرًا أيسرًا}other{# من الأقواس الكبيرة اليسرى}}</translation>
 <translation id="2911433807131383493">‏فتح برنامج ChromeVox التعليمي</translation>
@@ -285,6 +288,7 @@
 <translation id="3084806535845658316">ليس هناك صدى للكتابة</translation>
 <translation id="3086746722712840547">note</translation>
 <translation id="308895241372589742">ليس هناك تعبير رياضي تالٍ.</translation>
+<translation id="3090227230165225418">الإعلان عن تنزيل الإشعارات</translation>
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">المَعلم التالي</translation>
 <translation id="3096671415663099226">cbo</translation>
@@ -319,6 +323,7 @@
 <translation id="3286390186030710347">شريط تمرير</translation>
 <translation id="3299925995433437805">ليس هناك رابط تالٍ تم الانتقال إليه.</translation>
 <translation id="3300348286427369683">‏دعم نص منسق. يدعم ChromeVox الآن حقول النص المنسق، بما في ذلك أوامر الانتقال السريع وتوجيه مؤشر لغة برايل والاختيار والمزيد.</translation>
+<translation id="3304756947457041303">تخصيص إشارة النص المنسَّق</translation>
 <translation id="3307886118343381874">الانتقال إلى نهاية الجدول</translation>
 <translation id="3311969765485641742">‏اضغط على Alt+Shift+A لمراجعة التنبيهات</translation>
 <translation id="3312997241656799641">الرابط التالي الذي تم الانتقال إليه</translation>
@@ -405,6 +410,7 @@
 <translation id="3930498801443296724">اقتباس مستمد</translation>
 <translation id="3936394396199829062">أرجواني فاتح</translation>
 <translation id="3941269780691800708">نطق النص أسفل الماوس.</translation>
+<translation id="394953087167197343">الإشارة إلى الأخطاء الإملائية:</translation>
 <translation id="3962990492275676168">بدء القراءة من الموقع الحالي</translation>
 <translation id="3970951409746498040">بني رملي</translation>
 <translation id="3989324057180830702">زر التبديل</translation>
@@ -435,6 +441,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{قوس كبير أيمن واحد}zero{# right braces}two{قوسان كبيران أيمنان (#)}few{# أقواس كبيرة يمنى}many{# قوسًا كبيرًا أيمنًا}other{# من الأقواس الكبيرة اليمنى}}</translation>
 <translation id="4158704014418536539">حساس لحالة الأحرف.</translation>
 <translation id="4159784952369912983">أرجواني</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{ثانية واحدة}zero{ثوانٍ}two{ثانيتان}few{ثوانٍ}many{ثانية}other{ثانية}}</translation>
 <translation id="4161663686871496107">‏تعليقات ChromeVox المنطوقة جاهزة</translation>
 <translation id="4173994908659439270">ليس هناك حقل تالٍ قابل للتعديل.</translation>
 <translation id="4176463684765177261">غير مفعّل</translation>
@@ -451,6 +458,7 @@
 <translation id="42164919740161077">أزرق رمادي</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{شرطة واحدة}zero{# dashes}two{شرطتان (#)}few{# شرطات}many{# شرطة}other{# من الشرطات}}</translation>
 <translation id="421884353938374759">علبة الألوان</translation>
+<translation id="4221071177874897997">الإشارة إلى غامق:</translation>
 <translation id="4229646983878045487">تاريخ ووقت</translation>
 <translation id="4230834257931120629">رمادي فاتح مائل إلى الأزرق</translation>
 <translation id="4231102694147661229">تفعيل خيارات المطوّرين</translation>
@@ -613,6 +621,7 @@
 <translation id="5349770431644471053">رابط رجوع</translation>
 <translation id="536031132345979795">الرجوع إلى الخلف أثناء القراءة المتواصلة</translation>
 <translation id="5368000168321181111">‏تم إيقاف Earcons</translation>
+<translation id="5368505757342402527">اكتمل تنزيل الملف <ph name="FILE_NAME" /> بنسبة <ph name="PROGRESS" />%. يتبقى حوالي <ph name="TIME" /> <ph name="UNITS" />.</translation>
 <translation id="5374320867641260420">ليس هناك زر تالٍ.</translation>
 <translation id="5376407118396657359">‏يُرجى الضغط على بحث+Ctrl+Alt مع استخدام الأسهم للتنقل بين الخلايا.</translation>
 <translation id="5382299583965267720">ليس هناك عنوان تالٍ من المستوى الأول.</translation>
@@ -646,6 +655,7 @@
 <translation id="5574412348552378458">‏وضع التعلّم في ChromeVox</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5585044216466955529">تعديل النص، إدخال البريد الإلكتروني</translation>
+<translation id="5586942249556966598">عدم فعل شيء</translation>
 <translation id="5597170376237141345">مربع الاختيار التالي</translation>
 <translation id="5597933780944041114">ليس هناك عنوان تالٍ.</translation>
 <translation id="5598905979683743333">تم إلغاء تحديد زر الاختيار <ph name="NAME" /></translation>
@@ -750,6 +760,7 @@
 <translation id="6348869651006731065">رمادي خافت</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{تعداد نقطي واحد}zero{# تعداد نقطي}two{تعدادن نقطيان (#)}few{# تعدادات نقطية}many{# تعدادًا نقطيًا}other{# تعداد نقطي}}</translation>
 <translation id="6355910664415701303">ليس هناك عنصر قائمة سابق.</translation>
+<translation id="6360318852623800555">سمات النص المنسَّق</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">العنوان السابق</translation>
 <translation id="6376999910001533545">كستنائي</translation>
@@ -791,6 +802,7 @@
 <translation id="667999046851023355">مستند</translation>
 <translation id="6688209025607531203">تنبيه غير نمطي</translation>
 <translation id="6689672606256159458">برتقالي وردي داكن</translation>
+<translation id="669617842401078250">تم إيقاف تنزيل <ph name="FILE_NAME" /> مؤقتًا.</translation>
 <translation id="6696967141280706829">تمهيد</translation>
 <translation id="6697092096875747123">مربع التحرير والسرد السابق</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{علامة تعجب واحدة}zero{# علامة تعجب}two{علامتا تعجب (#)}few{# علامات تعجب}many{# علامة تعجب}other{# علامة تعجب}}</translation>
@@ -924,10 +936,12 @@
 <translation id="762020119231868829">إيقاف كل أدوات الوسائط التي يتم تشغيلها حاليًا مؤقتًا</translation>
 <translation id="7625690649919402823">الجدول التالي</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />)، الدرجة <ph name="GRADE" /></translation>
+<translation id="763535765081585392">الإشارة إلى تسطير:</translation>
 <translation id="7639968568612851608">رمادي داكن</translation>
 <translation id="7641134354185483015">ليس هناك عنوان سابق من المستوى الثالث.</translation>
 <translation id="7659376057562985921">مربع نص <ph name="NAME" />، بالقيمة <ph name="VALUE" /></translation>
 <translation id="7663318257180412551">العنوان الثاني</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{ساعة واحدة}zero{ساعات}two{ساعتان}few{ساعات}many{ساعة}other{ساعة}}</translation>
 <translation id="7674576868851035240">الرابط التالي</translation>
 <translation id="7674768236845044097">علامة</translation>
 <translation id="7684431668231950609">‏تعديل النص، إدخال عنوان URL</translation>
@@ -942,6 +956,7 @@
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
+<translation id="7763537600611320912">بدأ تنزيل <ph name="FILE_NAME" />.</translation>
 <translation id="7770823902658038748">مربع نص كلمة المرور <ph name="NAME" />، بالقيمة <ph name="VALUE" /></translation>
 <translation id="7776293189010177726">‏فتح قوائم ChromeVox</translation>
 <translation id="7800558923657349506">تتِّمة</translation>
@@ -1066,6 +1081,7 @@
 <translation id="8096975275316362544">زبدي</translation>
 <translation id="8098587210054821856">رمادي مائل إلى الأزرق</translation>
 <translation id="8110647606445335195">‏ليست هناك معالم ARIA.</translation>
+<translation id="812886159861361726">تم إيقاف تنزيل <ph name="FILE_NAME" />.</translation>
 <translation id="8138880386467279117">اللمس</translation>
 <translation id="8153880621934657047">ليس بداخل الجدول.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{شرطة سفلية واحدة}zero{# underscores}two{شرطتان سفليتان (#)}few{# شرطات سفلية}many{# شرطة سفلية}other{# من الشرطات السفلية}}</translation>
@@ -1135,6 +1151,7 @@
 <translation id="8743786158317878347">دخول إلى المحتوى المنظم، مثل الجداول</translation>
 <translation id="8747966237988593539">قائمة مرتبة</translation>
 <translation id="8749988712346667988">فضي</translation>
+<translation id="875769700429317857">اكتمل تنزيل <ph name="FILE_NAME" />.</translation>
 <translation id="8759334257841767240">ليس هناك رابط تالٍ.</translation>
 <translation id="8767968232364267681">عنوان المستوى الرابع التالي</translation>
 <translation id="8770473310765924354">خروج من المحتوى المنظم، مثل الجداول</translation>
@@ -1159,6 +1176,7 @@
 <translation id="8943175951035496220">ليست هناك خلية في اليمين.</translation>
 <translation id="8943282376843390568">ليموني</translation>
 <translation id="8946628535652548639">ص<ph name="TABLECELLROWINDEX" />ع<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8957142051395645063">الإعلان</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">حذف</translation>
 <translation id="900114243503212879">file</translation>

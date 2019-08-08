@@ -35,10 +35,18 @@ enum class DeepLinkType {
 
 // Enumeration of deep link parameters.
 enum class DeepLinkParam {
+  kAction,
+  kClientId,
   kId,
   kPage,
   kQuery,
   kRelaunch,
+};
+
+// Enumeration of deep link parameter reminder action.
+enum class ReminderAction {
+  kCreate,
+  kEdit,
 };
 
 // Returns a deep link to send an Assistant query.
@@ -69,6 +77,13 @@ base::Optional<std::string> GetDeepLinkParam(
 COMPONENT_EXPORT(ASSISTANT_UTIL)
 base::Optional<bool> GetDeepLinkParamAsBool(
     const std::map<std::string, std::string>& params,
+    DeepLinkParam param);
+
+// Returns a specific ReminderAction |param| from the given parameters. If the
+// desired parameter is not found, an empty value is returned.
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+base::Optional<ReminderAction> GetDeepLinkParamAsRemindersAction(
+    const std::map<std::string, std::string> params,
     DeepLinkParam param);
 
 // Returns the deep link type of the specified |url|. If the specified url is
@@ -114,7 +129,9 @@ base::Optional<GURL> GetWebUrl(
 COMPONENT_EXPORT(ASSISTANT_UTIL) bool IsWebDeepLink(const GURL& deep_link);
 
 // Returns true if the specified deep link |type| is a web deep link.
-COMPONENT_EXPORT(ASSISTANT_UTIL) bool IsWebDeepLinkType(DeepLinkType type);
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+bool IsWebDeepLinkType(DeepLinkType type,
+                       const std::map<std::string, std::string>& params);
 
 }  // namespace util
 }  // namespace assistant

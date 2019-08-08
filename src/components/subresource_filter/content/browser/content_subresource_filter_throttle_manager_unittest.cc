@@ -846,18 +846,18 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAdForTesting(subframe));
 
   SimulateStartAndExpectResult(content::NavigationThrottle::PROCEED);
-
   subframe =
       SimulateCommitAndExpectResult(content::NavigationThrottle::PROCEED);
   EXPECT_TRUE(subframe);
-
   ExpectActivationSignalForFrame(subframe, true /* expect_activation */,
                                  true /* is_ad_subframe */);
 
   // A non-ad navigation for the same frame should be considered an ad
   // subframe as well.
   CreateTestNavigation(GURL("https://example.com/allowed2.html"), subframe);
-  SimulateCommitAndExpectResult(content::NavigationThrottle::PROCEED);
+  subframe =
+      SimulateCommitAndExpectResult(content::NavigationThrottle::PROCEED);
+  EXPECT_TRUE(subframe);
   ExpectActivationSignalForFrame(subframe, true /* expect_activation */,
                                  true /* is_ad_subframe */);
 }

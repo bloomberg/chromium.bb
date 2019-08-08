@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.explore_sites;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -38,6 +39,7 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
     private static final int MAX_TILE_COUNT = 8;
     private static final int MAX_ROWS = 2;
 
+    private final ExploreSitesSiteViewBinder mSiteViewBinder;
     private TextView mTitleView;
     private TileGridLayout mTileView;
     private RoundedIconGenerator mIconGenerator;
@@ -48,9 +50,30 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
             mModelChangeProcessors;
     private ExploreSitesCategory mCategory;
     private int mCategoryCardIndex;
+    private int mTileViewLayout;
 
-    private class CategoryCardInteractionDelegate
-            implements ContextMenuManager.Delegate, OnClickListener, OnCreateContextMenuListener {
+    public View getTileViewAt(int tilePosition) {
+        return mTileView.getChildAt(tilePosition);
+    }
+
+    public int getFocusedTileIndex(int defaultIndex) {
+        if (mTileView.getFocusedChild() != null) {
+            for (int i = 0; i < mTileView.getChildCount(); i++) {
+                if (mTileView.getChildAt(i).hasFocus()) {
+                    return i;
+                }
+            }
+        }
+        return defaultIndex;
+    }
+
+    public void setTileResource(int tileResource) {
+        mTileViewLayout = tileResource;
+    }
+
+    protected class CategoryCardInteractionDelegate
+            implements ContextMenuManager.Delegate, OnClickListener, OnCreateContextMenuListener,
+                       OnFocusChangeListener {
         private String mSiteUrl;
         private int mTileIndex;
 
@@ -92,28 +115,49 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
             // should reset the tile indexes for views we keep.
             updateTileViews(mCategory);
         }
+
         @Override
         public String getUrl() {
             return mSiteUrl;
         }
 
         @Override
-        public boolean isItemSupported(@ContextMenuManager.ContextMenuItemId int menuItemId) {
-            if (menuItemId == ContextMenuManager.ContextMenuItemId.LEARN_MORE) {
-                return false;
-            }
-            return true;
+        public String getContextMenuTitle() {
+            return null;
         }
 
         @Override
-        public void onContextMenuCreated(){};
+        public boolean isItemSupported(@ContextMenuManager.ContextMenuItemId int menuItemId) {
+            return menuItemId != ContextMenuManager.ContextMenuItemId.LEARN_MORE;
+        }
+
+        @Override
+        public void onContextMenuCreated() {}
+
+        @Override
+        public void onFocusChange(View v, boolean hasFocus) {
+            if (hasFocus) {
+                // Ensures the whole category card is scrolled to view when a child site has focus.
+                // Immediate should be false so scrolling will not interfere with any existing
+                // scrollers running to make the view visible.
+                getParent().requestChildRectangleOnScreen(ExploreSitesCategoryCardView.this,
+                        new Rect(/* left= */ 0, /* top= */ 0, /* right= */ getWidth(),
+                                /* bottom= */ getHeight()),
+                        /* immediate= */ false);
+            }
+        }
+    }
+
+    protected CategoryCardInteractionDelegate createInteractionDelegate(PropertyModel model) {
+        return new CategoryCardInteractionDelegate(
+                model.get(ExploreSitesSite.URL_KEY), model.get(ExploreSitesSite.TILE_INDEX_KEY));
     }
 
     // We use the MVC paradigm for the site tiles inside the category card.  We don't use the MVC
     // paradigm for the category card view itself since it is mismatched to the needs of the
     // recycler view that we use for category cards.  The controller for MVC is actually here, the
     // bind code inside the view class.
-    private class ExploreSitesSiteViewBinder
+    protected class ExploreSitesSiteViewBinder
             implements PropertyModelChangeProcessor
                                .ViewBinder<PropertyModel, ExploreSitesTileView, PropertyKey> {
         @Override
@@ -126,10 +170,11 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
             } else if (key == ExploreSitesSite.URL_KEY) {
                 // Attach click handlers.
                 CategoryCardInteractionDelegate interactionDelegate =
-                        new CategoryCardInteractionDelegate(model.get(ExploreSitesSite.URL_KEY),
-                                model.get(ExploreSitesSite.TILE_INDEX_KEY));
+                        createInteractionDelegate(model);
                 view.setOnClickListener(interactionDelegate);
                 view.setOnCreateContextMenuListener(interactionDelegate);
+                ContextMenuManager.registerViewForTouchlessContextMenu(view, interactionDelegate);
+                view.setOnFocusChangeListener(interactionDelegate);
             }
         }
     }
@@ -137,6 +182,7 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
     public ExploreSitesCategoryCardView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mModelChangeProcessors = new ArrayList<>(MAX_TILE_COUNT);
+        mSiteViewBinder = new ExploreSitesSiteViewBinder();
     }
 
     @Override
@@ -157,8 +203,8 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
         mCategoryCardIndex = categoryCardIndex;
         mCategory = category;
 
-        updateTitle(category.getTitle());
-        updateTileViews(category);
+        updateTitle(mCategory.getTitle());
+        updateTileViews(mCategory);
     }
 
     public void updateTitle(String categoryTitle) {
@@ -191,7 +237,7 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
         if (mTileView.getChildCount() < tileMax) {
             for (int i = mTileView.getChildCount(); i < tileMax; i++) {
                 mTileView.addView(LayoutInflater.from(getContext())
-                                          .inflate(R.layout.explore_sites_tile_view, mTileView,
+                                          .inflate(mTileViewLayout, mTileView,
                                                   /* attachToRoot = */ false));
             }
         }
@@ -209,8 +255,8 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
 
             siteModel.set(ExploreSitesSite.TILE_INDEX_KEY, tileIndex);
 
-            mModelChangeProcessors.add(PropertyModelChangeProcessor.create(
-                    siteModel, tileView, new ExploreSitesSiteViewBinder()));
+            mModelChangeProcessors.add(
+                    PropertyModelChangeProcessor.create(siteModel, tileView, mSiteViewBinder));
 
             // Fetch icon if not present already.
             if (siteModel.get(ExploreSitesSite.ICON_KEY) == null) {
@@ -232,8 +278,8 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
 
     /**
      * Records UMA data for how far down the EoS page the picked tile was.
-     * @param cardNumber The number card (zero based) of the tile that was picked.
-     * @param tileNumber The number of the tile within the card.
+     * @param cardIndex The number card (zero based) of the tile that was picked.
+     * @param tileIndex The number of the tile within the card.
      */
     public static void recordTileIndexClick(int cardIndex, int tileIndex) {
         // TODO(petewil): Should I get the number of sites in this category from the model instead

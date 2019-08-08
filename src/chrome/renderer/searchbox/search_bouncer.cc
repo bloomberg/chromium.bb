@@ -12,6 +12,14 @@
 namespace {
 base::LazyInstance<SearchBouncer>::Leaky g_search_bouncer =
     LAZY_INSTANCE_INITIALIZER;
+
+GURL RemoveQueryAndRef(const GURL& url) {
+  url::Replacements<char> replacements;
+  replacements.ClearQuery();
+  replacements.ClearRef();
+  return url.ReplaceComponents(replacements);
+}
+
 }  // namespace
 
 SearchBouncer::SearchBouncer() : search_bouncer_binding_(this) {}
@@ -36,11 +44,9 @@ bool SearchBouncer::ShouldFork(const GURL& url) const {
 }
 
 bool SearchBouncer::IsNewTabPage(const GURL& url) const {
-  // TODO(treib): Ignore query and ref. It's still an NTP even if those don't
-  // match.
-  // TODO(treib): Figure out if this should also handle the local NTP. Or are
-  // chrome-search:// URLs handled elsewhere?
-  return url.is_valid() && url == new_tab_page_url_;
+  GURL url_no_query_or_ref = RemoveQueryAndRef(url);
+  return url_no_query_or_ref.is_valid() &&
+         url_no_query_or_ref == new_tab_page_url_;
 }
 
 void SearchBouncer::SetNewTabPageURL(const GURL& new_tab_page_url) {

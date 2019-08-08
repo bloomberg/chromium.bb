@@ -21,7 +21,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/vr/vr_controller.h"
 #include "third_party/blink/renderer/modules/vr/vr_display.h"
-#include "third_party/blink/renderer/modules/vr/vr_get_devices_callback.h"
 #include "third_party/blink/renderer/modules/vr/vr_pose.h"
 #include "third_party/blink/renderer/modules/xr/xr.h"
 
@@ -36,10 +35,23 @@ const char kNotAssociatedWithDocumentMessage[] =
     "The object is no longer associated with a document.";
 
 const char kCannotUseBothNewAndOldAPIMessage[] =
-    "Cannot use navigator.getVRDisplays if the XR API is already in "
-    "use.";
+    "Cannot use navigator.getVRDisplays if the XR API is already in use.";
 
 }  // namespace
+
+bool NavigatorVR::HasWebVrBeenUsed(Document& document) {
+  if (!document.GetFrame() || !document.GetFrame()->DomWindow())
+    return false;
+  Navigator& navigator = *document.GetFrame()->DomWindow()->navigator();
+
+  NavigatorVR* supplement = Supplement<Navigator>::From<NavigatorVR>(navigator);
+  if (!supplement) {
+    // No supplement means neither WebVR nor WebXR have been used.
+    return false;
+  }
+
+  return NavigatorVR::From(navigator).did_use_webvr_;
+}
 
 NavigatorVR* NavigatorVR::From(Document& document) {
   if (!document.GetFrame() || !document.GetFrame()->DomWindow())
@@ -85,32 +97,16 @@ XR* NavigatorVR::xr() {
     if (controller_) {
       if (frame->GetDocument()) {
         frame->GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-            kOtherMessageSource, mojom::ConsoleMessageLevel::kError,
+            mojom::ConsoleMessageSource::kOther,
+            mojom::ConsoleMessageLevel::kError,
             "Cannot use navigator.xr if the legacy VR API is already in use."));
       }
       return nullptr;
     }
 
-    xr_ = XR::Create(*frame, ukm_source_id_);
-    MaybeLogDidUseGamepad();
+    xr_ = XR::Create(*frame, GetSourceId());
   }
   return xr_;
-}
-
-void NavigatorVR::SetDidUseGamepad() {
-  did_use_gamepad_ = true;
-  MaybeLogDidUseGamepad();
-}
-
-void NavigatorVR::MaybeLogDidUseGamepad() {
-  // If we have used WebXR and Gamepad, and haven't already logged the metric,
-  // record that Gamepad is used.
-  if (xr_ && did_use_gamepad_ && !did_log_did_use_gamepad_) {
-    ukm::builders::XR_WebXR(ukm_source_id_)
-        .SetDidGetGamepads(1)
-        .Record(GetDocument()->UkmRecorder());
-    did_log_did_use_gamepad_ = true;
-  }
 }
 
 ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state,
@@ -124,6 +120,8 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state,
 }
 
 ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state) {
+  did_use_webvr_ = true;
+
   if (!GetDocument()) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
@@ -133,7 +131,7 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state) {
   if (!did_log_getVRDisplays_ && GetDocument()->IsInMainFrame()) {
     did_log_getVRDisplays_ = true;
 
-    ukm::builders::XR_WebXR(GetDocument()->UkmSourceID())
+    ukm::builders::XR_WebXR(GetSourceId())
         .SetDidRequestAvailableDevices(1)
         .Record(GetDocument()->UkmRecorder());
   }
@@ -167,7 +165,7 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state) {
   Platform::Current()->RecordRapporURL("VR.WebVR.GetDisplays",
                                        GetDocument()->Url());
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   Controller()->GetDisplays(resolver);
 
@@ -203,18 +201,9 @@ void NavigatorVR::Trace(blink::Visitor* visitor) {
 NavigatorVR::NavigatorVR(Navigator& navigator)
     : Supplement<Navigator>(navigator),
       FocusChangedObserver(navigator.GetFrame()->GetPage()),
-      ukm_source_id_(ukm::UkmRecorder::GetNewSourceID()) {
+      ukm_source_id_(GetDocument()->UkmSourceID()) {
   navigator.GetFrame()->DomWindow()->RegisterEventListenerObserver(this);
   FocusedFrameChanged();
-
-  if (navigator.GetFrame() && WebFrame::FromFrame(navigator.GetFrame())) {
-    WebFrame* main_frame = WebFrame::FromFrame(navigator.GetFrame())->Top();
-    if (main_frame) {
-      url::Origin main_frame_origin = main_frame->GetSecurityOrigin();
-      GetDocument()->UkmRecorder()->UpdateSourceURL(ukm_source_id_,
-                                                    main_frame_origin.GetURL());
-    }
-  }
 }
 
 int64_t NavigatorVR::GetSourceId() const {

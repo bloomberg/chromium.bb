@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/core/dom/mutation_observer_registration.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -112,7 +111,7 @@ void NodeRareData::IncrementConnectedSubframeCount() {
 }
 
 NodeListsNodeData& NodeRareData::CreateNodeLists() {
-  node_lists_ = NodeListsNodeData::Create();
+  node_lists_ = MakeGarbageCollected<NodeListsNodeData>();
   return *node_lists_;
 }
 

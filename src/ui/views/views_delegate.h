@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -57,11 +58,11 @@ class NativeWidgetDelegate;
 class VIEWS_EXPORT ViewsDelegate {
  public:
   using NativeWidgetFactory =
-      base::Callback<NativeWidget*(const Widget::InitParams&,
-                                   internal::NativeWidgetDelegate*)>;
+      base::RepeatingCallback<NativeWidget*(const Widget::InitParams&,
+                                            internal::NativeWidgetDelegate*)>;
 #if defined(USE_AURA)
   using DesktopWindowTreeHostFactory =
-      base::Callback<std::unique_ptr<DesktopWindowTreeHost>(
+      base::RepeatingCallback<std::unique_ptr<DesktopWindowTreeHost>(
           const Widget::InitParams&,
           internal::NativeWidgetDelegate*,
           DesktopNativeWidgetAura*)>;
@@ -93,8 +94,8 @@ class VIEWS_EXPORT ViewsDelegate {
 
   // Call this method to set a factory callback that will be used to construct
   // NativeWidget implementations overriding the platform defaults.
-  void set_native_widget_factory(const NativeWidgetFactory& factory) {
-    native_widget_factory_ = factory;
+  void set_native_widget_factory(NativeWidgetFactory factory) {
+    native_widget_factory_ = std::move(factory);
   }
   const NativeWidgetFactory& native_widget_factory() const {
     return native_widget_factory_;
@@ -102,8 +103,8 @@ class VIEWS_EXPORT ViewsDelegate {
 
 #if defined(USE_AURA)
   void set_desktop_window_tree_host_factory(
-      const DesktopWindowTreeHostFactory& factory) {
-    desktop_window_tree_host_factory_ = factory;
+      DesktopWindowTreeHostFactory factory) {
+    desktop_window_tree_host_factory_ = std::move(factory);
   }
   const DesktopWindowTreeHostFactory& desktop_window_tree_host_factory() const {
     return desktop_window_tree_host_factory_;
@@ -187,7 +188,7 @@ class VIEWS_EXPORT ViewsDelegate {
   //
   // The return value is a bitmask of AppbarAutohideEdge.
   virtual int GetAppbarAutohideEdges(HMONITOR monitor,
-                                     const base::Closure& callback);
+                                     base::OnceClosure callback);
 #endif
 
  protected:

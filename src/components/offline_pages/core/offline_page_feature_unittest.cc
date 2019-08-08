@@ -31,17 +31,6 @@ TEST(OfflinePageFeatureTest, OfflinePagesLivePageSharing) {
   EXPECT_TRUE(offline_pages::IsOfflinePagesLivePageSharingEnabled());
 }
 
-TEST(OfflinePageFeatureTest, OfflinePagesSvelteConcurrentLoading) {
-  // Disabled by default.
-  EXPECT_FALSE(offline_pages::IsOfflinePagesSvelteConcurrentLoadingEnabled());
-
-  // Check if helper method works correctly when the features is enabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      kOfflinePagesSvelteConcurrentLoadingFeature);
-  EXPECT_TRUE(offline_pages::IsOfflinePagesSvelteConcurrentLoadingEnabled());
-}
-
 TEST(OfflinePageFeatureTest, OfflinePagesLoadSignalCollecting) {
   // Disabled by default.
   EXPECT_FALSE(offline_pages::IsOfflinePagesLoadSignalCollectingEnabled());
@@ -54,13 +43,14 @@ TEST(OfflinePageFeatureTest, OfflinePagesLoadSignalCollecting) {
 }
 
 TEST(OfflinePageFeatureTest, OfflinePagesPrefetching) {
-  // Disabled by default.
-  EXPECT_FALSE(offline_pages::IsPrefetchingOfflinePagesEnabled());
+  // Enabled by default.
+  EXPECT_EQ(offline_pages::IsOfflinePagesEnabled(),
+            offline_pages::IsPrefetchingOfflinePagesEnabled());
 
-  // Check if helper method works correctly when the features is enabled.
+  // Check if helper method works correctly when the features is disabled.
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kPrefetchingOfflinePagesFeature);
-  EXPECT_TRUE(offline_pages::IsPrefetchingOfflinePagesEnabled());
+  scoped_feature_list.InitAndDisableFeature(kPrefetchingOfflinePagesFeature);
+  EXPECT_FALSE(offline_pages::IsPrefetchingOfflinePagesEnabled());
 }
 
 TEST(OfflinePageFeatureTest, OfflinePagesInDownloadHomeOpenInCct) {

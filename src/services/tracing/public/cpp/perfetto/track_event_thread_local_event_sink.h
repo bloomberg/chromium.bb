@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/component_export.h"
 #include "base/time/time.h"
@@ -18,11 +19,6 @@
 
 namespace perfetto {
 class StartupTraceWriter;
-namespace protos {
-namespace pbzero {
-class DebugAnnotation;
-}  // namespace pbzero
-}  // namespace protos
 }  // namespace perfetto
 
 namespace tracing {
@@ -34,7 +30,8 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
   TrackEventThreadLocalEventSink(
       std::unique_ptr<perfetto::StartupTraceWriter> trace_writer,
       uint32_t session_id,
-      bool disable_interning);
+      bool disable_interning,
+      bool proto_writer_filtering_enabled);
   ~TrackEventThreadLocalEventSink() override;
 
   // ThreadLocalEventSink implementation:
@@ -47,27 +44,27 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
   void Flush() override;
 
  private:
-  void AddConvertableToTraceFormat(
-      base::trace_event::ConvertableToTraceFormat* value,
-      perfetto::protos::pbzero::DebugAnnotation* annotation);
-
-  static constexpr size_t kMaxCompleteEventDepth = 20;
+  static constexpr size_t kMaxCompleteEventDepth = 30;
 
   // TODO(eseckler): Make it possible to register new indexes for use from
   // TRACE_EVENT macros.
   InterningIndex<const char*> interned_event_categories_;
   InterningIndex<const char*, std::string> interned_event_names_;
   InterningIndex<const char*, std::string> interned_annotation_names_;
-  InterningIndex<void*> interned_source_locations_;
+  InterningIndex<std::pair<const char*, const char*>>
+      interned_source_locations_;
 
   bool reset_incremental_state_ = true;
   base::TimeTicks last_timestamp_;
   base::ThreadTicks last_thread_time_;
   int process_id_;
   int thread_id_;
+  int events_since_last_incremental_state_reset_ = 0;
 
   base::trace_event::TraceEvent complete_event_stack_[kMaxCompleteEventDepth];
   uint32_t current_stack_depth_ = 0;
+
+  bool privacy_filtering_enabled_;
 };
 
 }  // namespace tracing

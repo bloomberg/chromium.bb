@@ -106,17 +106,24 @@ const CGFloat kClearButtonSize = 28.0f;
   self.textField.placeholder = l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
   [self setupClearButton];
 
+  [NSNotificationCenter.defaultCenter
+      addObserver:self
+         selector:@selector(textInputModeDidChange)
+             name:UITextInputCurrentInputModeDidChangeNotification
+           object:nil];
+
   // TODO(crbug.com/866446): Use UITextFieldDelegate instead.
   [[NSNotificationCenter defaultCenter]
       addObserver:self
          selector:@selector(textFieldDidBeginEditing)
              name:UITextFieldTextDidBeginEditingNotification
            object:self.textField];
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(textFieldDidChange)
-             name:UITextFieldTextDidChangeNotification
-           object:self.textField];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
+
+  [self.view attachLayoutGuides];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -166,7 +173,10 @@ const CGFloat kClearButtonSize = 28.0f;
 #pragma mark - private
 
 - (void)updateLeadingImageVisibility {
-  [self.view setLeadingImageHidden:!IsRegularXRegularSizeClass(self)];
+  BOOL newOmniboxPopupLayout =
+      base::FeatureList::IsEnabled(kNewOmniboxPopupLayout);
+  [self.view setLeadingImageHidden:!newOmniboxPopupLayout &&
+                                   !IsRegularXRegularSizeClass(self)];
 }
 
 // Tint color for the textfield placeholder and the clear button.
@@ -185,13 +195,21 @@ const CGFloat kClearButtonSize = 28.0f;
   [self.view setLeadingImage:self.textField.text.length
                                  ? self.defaultLeadingImage
                                  : self.emptyTextLeadingImage];
+
+  self.semanticContentAttribute = [self.textField bestSemanticContentAttribute];
 }
 
-- (void)textFieldDidChange {
-  // If the text is empty, update the leading image.
-  if (self.textField.text.length == 0) {
-    [self.view setLeadingImage:self.emptyTextLeadingImage];
+// Called on UITextInputCurrentInputModeDidChangeNotification for self.textField
+- (void)textInputModeDidChange {
+  // Only respond to language changes when the omnibox is first responder.
+  if (![self.textField isFirstResponder]) {
+    return;
   }
+
+  [self.textField updateTextDirection];
+  self.semanticContentAttribute = [self.textField bestSemanticContentAttribute];
+
+  [self.delegate omniboxViewControllerTextInputModeDidChange:self];
 }
 
 #pragma mark clear button
@@ -241,14 +259,19 @@ const CGFloat kClearButtonSize = 28.0f;
     [self.textField setText:@""];
     // Calling setText: does not trigger UIControlEventEditingChanged, so update
     // the clear button visibility manually.
-    [self updateClearButtonVisibility];
-    [self textFieldDidChange];
+    [self.textField sendActionsForControlEvents:UIControlEventEditingChanged];
   }
 }
 
 // Called on textField's UIControlEventEditingChanged.
 - (void)textFieldDidChange:(UITextField*)textField {
+  // If the text is empty, update the leading image.
+  if (self.textField.text.length == 0) {
+    [self.view setLeadingImage:self.emptyTextLeadingImage];
+  }
+
   [self updateClearButtonVisibility];
+  self.semanticContentAttribute = [self.textField bestSemanticContentAttribute];
 }
 
 // Hides the clear button if the textfield is empty; shows it otherwise.
@@ -256,6 +279,20 @@ const CGFloat kClearButtonSize = 28.0f;
   BOOL hasText = self.textField.text.length > 0;
   [self.textField setRightViewMode:hasText ? UITextFieldViewModeAlways
                                            : UITextFieldViewModeNever];
+}
+
+// Handle the updates to semanticContentAttribute by passing the changes along
+// to the necessary views.
+- (void)setSemanticContentAttribute:
+    (UISemanticContentAttribute)semanticContentAttribute {
+  _semanticContentAttribute = semanticContentAttribute;
+
+  if (!base::FeatureList::IsEnabled(kNewOmniboxPopupLayout)) {
+    return;
+  }
+
+  self.view.semanticContentAttribute = self.semanticContentAttribute;
+  self.textField.semanticContentAttribute = self.semanticContentAttribute;
 }
 
 #pragma mark - UIMenuItem

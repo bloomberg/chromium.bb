@@ -112,6 +112,7 @@ MojoVideoDecoder::MojoVideoDecoder(
     GpuVideoAcceleratorFactories* gpu_factories,
     MediaLog* media_log,
     mojom::VideoDecoderPtr remote_decoder,
+    VideoDecoderImplementation implementation,
     const RequestOverlayInfoCB& request_overlay_info_cb,
     const gfx::ColorSpace& target_color_space)
     : task_runner_(task_runner),
@@ -124,6 +125,7 @@ MojoVideoDecoder::MojoVideoDecoder(
       media_log_binding_(&media_log_service_),
       request_overlay_info_cb_(request_overlay_info_cb),
       target_color_space_(target_color_space),
+      video_decoder_implementation_(implementation),
       weak_factory_(this) {
   DVLOG(1) << __func__;
   weak_this_ = weak_factory_.GetWeakPtr();
@@ -154,9 +156,9 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   InitCB bound_init_cb =
       base::Bind(&ReportMojoVideoDecoderInitializeStatusToUMAAndRunCB, init_cb);
-
   // Fail immediately if we know that the remote side cannot support |config|.
-  if (gpu_factories_ && !gpu_factories_->IsDecoderConfigSupported(config)) {
+  if (gpu_factories_ && !gpu_factories_->IsDecoderConfigSupported(
+                            video_decoder_implementation_, config)) {
     task_runner_->PostTask(FROM_HERE,
                            base::BindRepeating(bound_init_cb, false));
     return;
@@ -352,11 +354,11 @@ void MojoVideoDecoder::BindRemoteDecoder() {
     }
   }
 
-  remote_decoder_->Construct(std::move(client_ptr_info),
-                             std::move(media_log_ptr_info),
-                             std::move(video_frame_handle_releaser_request),
-                             std::move(remote_consumer_handle),
-                             std::move(command_buffer_id), target_color_space_);
+  remote_decoder_->Construct(
+      std::move(client_ptr_info), std::move(media_log_ptr_info),
+      std::move(video_frame_handle_releaser_request),
+      std::move(remote_consumer_handle), std::move(command_buffer_id),
+      video_decoder_implementation_, target_color_space_);
 }
 
 void MojoVideoDecoder::OnWaiting(WaitingReason reason) {

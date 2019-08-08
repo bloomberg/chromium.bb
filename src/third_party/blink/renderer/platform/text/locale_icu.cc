@@ -45,7 +45,7 @@
 namespace blink {
 
 std::unique_ptr<Locale> Locale::Create(const String& locale) {
-  return LocaleICU::Create(locale.Utf8().data());
+  return std::make_unique<LocaleICU>(locale.Utf8().data());
 }
 
 LocaleICU::LocaleICU(const char* locale)
@@ -64,10 +64,6 @@ LocaleICU::~LocaleICU() {
   udat_close(short_date_format_);
   udat_close(medium_time_format_);
   udat_close(short_time_format_);
-}
-
-std::unique_ptr<LocaleICU> LocaleICU::Create(const char* locale_string) {
-  return base::WrapUnique(new LocaleICU(locale_string));
 }
 
 String LocaleICU::DecimalSymbol(UNumberFormatSymbol symbol) {

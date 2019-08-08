@@ -9,17 +9,20 @@ from __future__ import print_function
 
 import os
 import re
-import shutil
 
 from chromite.cbuildbot import commands
+
 from chromite.cli import command
 from chromite.cli import flash
+
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import dev_server_wrapper
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import remote_access
+
+from chromite.lib.paygen import paygen_payload_lib
+from chromite.lib.paygen import paygen_stateful_payload_lib
 
 
 MOBLAB_STATIC_DIR = '/mnt/moblab/static'
@@ -208,11 +211,11 @@ NOTES:
     Args:
       tempdir: Temporary Directory to store the generated payloads.
     """
-    dev_server_wrapper.GetUpdatePayloadsFromLocalPath(
-        self.options.image, tempdir, static_dir=flash.DEVSERVER_STATIC_DIR)
-    rootfs_payload = os.path.join(tempdir, dev_server_wrapper.ROOTFS_FILENAME)
     # Devservers will look for a file named *_full_*.
-    shutil.move(rootfs_payload, os.path.join(tempdir, 'update_full_dev.bin'))
+    payload = os.path.join(tempdir, 'update_full_dev.bin')
+    paygen_payload_lib.GenerateUpdatePayload(self.options.image, payload)
+    paygen_stateful_payload_lib.GenerateStatefulPayload(self.options.image,
+                                                        tempdir)
 
   def _GenerateTestBits(self, tempdir):
     """Generate and transfer to the Moblab the test bits we require.

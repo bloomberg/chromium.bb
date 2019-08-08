@@ -21,6 +21,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">nå</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minutt}other{# minutter}}</translation>
+<translation id="1756116796893109054">Sender fane …</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Periode</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 måned}other{# måneder}}</translation>
@@ -34,6 +35,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Marker &amp;alt</translation>
 <translation id="1938451708255335766">For å justere visningstettheten for vinduer, start appen på nytt.</translation>
+<translation id="208586643495776849">Prøv igjen</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}other{# d}}</translation>
 <translation id="2148716181193084225">I dag</translation>
 <translation id="2168039046890040389">Opp 1 s.</translation>
@@ -51,11 +53,14 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">Kalibreringen er ferdig</translation>
 <translation id="252373100621549798">Ukjent skjerm</translation>
+<translation id="2573731672208488250">{HOURS,plural, =1{om 1 t}other{om # t}}</translation>
 <translation id="2583543531130364912">Kalibrer berøringsskjermen din</translation>
 <translation id="2666092431469916601">Topp</translation>
+<translation id="2701330563083355633">Delt fra <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">Kopiér til utklippstavlen</translation>
 <translation id="2803313416453193357">Åpne mappen</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{for 1 år siden}other{for # år siden}}</translation>
+<translation id="2907671656515444832">{DAYS,plural, =1{om 1 d}other{om # d}}</translation>
 <translation id="2931838996092594335">klikk</translation>
 <translation id="3036649622769666520">Åpne filer</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
@@ -67,6 +72,7 @@
 <translation id="3234408098842461169">Pil ned</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dag}other{# dager}}</translation>
 <translation id="335581015389089642">Tale</translation>
+<translation id="3443810440409579745">Fane er mottatt.</translation>
 <translation id="3479552764303398839">Ikke nå</translation>
 <translation id="348799646910989694">Hyllen skjules automatisk</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dag igjen}other{# dager igjen}}</translation>
@@ -96,6 +102,7 @@
 <translation id="4730374152663651037">OFTE BRUKT</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 måned igjen}other{# måneder igjen}}</translation>
 <translation id="4841881773802181781">Innsetting</translation>
+<translation id="4881695831933465202">Åpne</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekund}other{# sekunder}}</translation>
 <translation id="4971687151119236543">Media – forrige spor</translation>
 <translation id="5046499563572181734">Trykk her</translation>
@@ -103,6 +110,7 @@
 <translation id="5137751499640340777">Start Google-assistenten</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Trekant for mer innhold</translation>
+<translation id="5278860589123563674">Kunne ikke sende</translation>
 <translation id="528468243742722775">Avslutt</translation>
 <translation id="5329858601952122676">&amp;Slett</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> oppå <ph name="IN_PLACE_APP" /> – slipp for å opprette en mappe.</translation>
@@ -114,6 +122,7 @@
 <translation id="5613020302032141669">Pil venstre</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dag og }other{# dager og }}</translation>
+<translation id="5866104238061687188">{YEARS,plural, =1{om 1 år}other{om # år}}</translation>
 <translation id="5895138241574237353">Start på nytt</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 sekund igjen}other{# sekunder igjen}}</translation>
 <translation id="5941711191222866238">Minimer</translation>
@@ -145,7 +154,6 @@
 <translation id="6808150112686056157">Media – stopp</translation>
 <translation id="6845383723252244143">Velg mappe</translation>
 <translation id="6845533974506654842">trykk</translation>
-<translation id="686304767576508198">Delt av</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 time igjen}other{# timer igjen}}</translation>
 <translation id="688711909580084195">Nettside uten tittel</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB per sek</translation>
@@ -170,6 +178,7 @@
 <translation id="7907591526440419938">Åpne filen</translation>
 <translation id="7969046989155602842">Kommando</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Mer enn 1 ulest varsel}other{Mer enn # uleste varsler}}</translation>
+<translation id="8086866675552927481">{MINUTES,plural, =1{om 1 m}other{om # m}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{For 1 time siden}other{For # timer siden}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sek igjen}other{# sek igjen}}</translation>
@@ -198,6 +207,7 @@
 <translation id="8806053966018712535">Mappen <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Kommenter bildet</translation>
 <translation id="8841375032071747811">Tilbakeknapp</translation>
+<translation id="8876215549894133151">Format:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="8926951137623668982">Hyllen skjules alltid</translation>
 <translation id="9002566407876343676">åpne</translation>

@@ -55,8 +55,8 @@ FunctionSequence.prototype.setFailureCallback = function(failureCallback) {
  * @private
  */
 FunctionSequence.prototype.onError_ = function(err) {
-  this.logger.vlog('Failed step: ' + this.steps_[this.currentStepIdx_].name +
-                   ': ' + err);
+  this.logger.vlog(
+      'Failed step: ' + this.steps_[this.currentStepIdx_].name + ': ' + err);
   if (!this.failed_) {
     this.failed_ = true;
     this.failureCallback_(err);
@@ -94,9 +94,9 @@ FunctionSequence.prototype.nextStep_ = function(var_args) {
     this.logger.vlog('Sequence ended');
     this.callback_.apply(this, arguments);
   } else {
-    this.logger.vlog('Attempting to start step [' +
-                     this.steps_[this.currentStepIdx_].name +
-                     ']');
+    this.logger.vlog(
+        'Attempting to start step [' + this.steps_[this.currentStepIdx_].name +
+        ']');
     try {
       this.steps_[this.currentStepIdx_].apply(this, arguments);
     } catch (e) {

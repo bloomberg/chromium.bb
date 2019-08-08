@@ -26,10 +26,10 @@
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/heartbeat_scheduler.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_commands_factory_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
+#include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/browser/chromeos/policy/system_log_uploader.h"
 #include "chrome/common/pref_names.h"
@@ -419,7 +419,8 @@ void DeviceCloudPolicyManagerChromeOS::CreateStatusUploader() {
           DeviceStatusCollector::CPUStatisticsFetcher(),
           DeviceStatusCollector::CPUTempFetcher(),
           DeviceStatusCollector::AndroidStatusFetcher(),
-          DeviceStatusCollector::TpmStatusFetcher(), kActivityDayStart,
+          DeviceStatusCollector::TpmStatusFetcher(),
+          DeviceStatusCollector::EMMCLifetimeFetcher(), kActivityDayStart,
           true /* is_enterprise_device */),
       task_runner_, kDeviceStatusUploadFrequency));
 }

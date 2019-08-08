@@ -131,7 +131,7 @@ bool DownloadCollectionBridge::FileNameExists(const base::FilePath& file_name) {
 }
 
 // static
-bool DownloadCollectionBridge::renameDownloadUri(
+bool DownloadCollectionBridge::RenameDownloadUri(
     const base::FilePath& download_uri,
     const base::FilePath& new_display_name) {
   JNIEnv* env = base::android::AttachCurrentThread();

@@ -46,6 +46,7 @@ component("webrtc") {
       "//third_party/webrtc/api/audio:aec3_factory",
       "//third_party/webrtc/modules/audio_processing/aec_dump:aec_dump",
       "//third_party/webrtc/rtc_base:rtc_task_queue",
+      "//third_party/webrtc_overrides:task_queue_factory",
     ]
 
     public_configs = [ ":audio_processing_build_flag" ]

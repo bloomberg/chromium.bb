@@ -25,10 +25,6 @@ SnapCoordinator::SnapCoordinator() : snap_container_map_() {}
 
 SnapCoordinator::~SnapCoordinator() = default;
 
-SnapCoordinator* SnapCoordinator::Create() {
-  return MakeGarbageCollected<SnapCoordinator>();
-}
-
 // Returns the scroll container that can be affected by this snap area.
 static LayoutBox* FindSnapContainer(const LayoutBox& snap_area) {
   // According to the new spec
@@ -106,7 +102,7 @@ static cc::ScrollSnapType GetPhysicalSnapType(const LayoutBox& snap_container) {
   return scroll_snap_type;
 }
 
-void SnapCoordinator::UpdateSnapContainerData(const LayoutBox& snap_container) {
+void SnapCoordinator::UpdateSnapContainerData(LayoutBox& snap_container) {
   if (snap_container.Style()->GetScrollSnapType().is_none)
     return;
 
@@ -169,6 +165,11 @@ void SnapCoordinator::UpdateSnapContainerData(const LayoutBox& snap_container) {
           CalculateSnapAreaData(*snap_area, snap_container));
     }
   }
+
+  auto old_snap_container_data = GetSnapContainerData(snap_container);
+  if (old_snap_container_data != snap_container_data)
+    snap_container.SetNeedsPaintPropertyUpdate();
+
   snap_container_map_.Set(&snap_container, snap_container_data);
 }
 
@@ -240,7 +241,9 @@ cc::SnapAreaData SnapCoordinator::CalculateSnapAreaData(
 base::Optional<FloatPoint> SnapCoordinator::GetSnapPosition(
     const LayoutBox& snap_container,
     const cc::SnapSelectionStrategy& strategy) const {
-  auto iter = snap_container_map_.find(&snap_container);
+  // const_cast is safe here because we only need to modify the type to match
+  // the key type, not actually mutating the object.
+  auto iter = snap_container_map_.find(&const_cast<LayoutBox&>(snap_container));
   if (iter == snap_container_map_.end())
     return base::nullopt;
 
@@ -349,7 +352,9 @@ void SnapCoordinator::SnapContainerDidChange(
 
 base::Optional<cc::SnapContainerData> SnapCoordinator::GetSnapContainerData(
     const LayoutBox& snap_container) const {
-  auto iter = snap_container_map_.find(&snap_container);
+  // const_cast is safe here because we only need to modify the type to match
+  // the key type, not actually mutating the object.
+  auto iter = snap_container_map_.find(&const_cast<LayoutBox&>(snap_container));
   if (iter != snap_container_map_.end()) {
     return iter->value;
   }
@@ -373,7 +378,9 @@ void SnapCoordinator::ShowSnapAreasFor(const LayoutBox* container) {
 }
 
 void SnapCoordinator::ShowSnapDataFor(const LayoutBox* snap_container) {
-  auto iter = snap_container_map_.find(snap_container);
+  // const_cast is safe here because we only need to modify the type to match
+  // the key type, not actually mutating the object.
+  auto iter = snap_container_map_.find(const_cast<LayoutBox*>(snap_container));
   if (iter == snap_container_map_.end())
     return;
   LOG(INFO) << iter->value;

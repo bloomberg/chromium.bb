@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/mac/availability.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/process/environment_internal.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
@@ -230,10 +231,13 @@ Process LaunchProcess(const std::vector<std::string>& argv,
     argv_cstr.push_back(const_cast<char*>(arg.c_str()));
   argv_cstr.push_back(nullptr);
 
-  std::unique_ptr<char* []> owned_environ;
-  char** new_environ = options.clear_environ ? nullptr : *_NSGetEnviron();
-  if (!options.environ.empty()) {
-    owned_environ = AlterEnvironment(new_environ, options.environ);
+  std::unique_ptr<char*[]> owned_environ;
+  char* empty_environ = nullptr;
+  char** new_environ =
+      options.clear_environment ? &empty_environ : *_NSGetEnviron();
+  if (!options.environment.empty()) {
+    owned_environ =
+        internal::AlterEnvironment(new_environ, options.environment);
     new_environ = owned_environ.get();
   }
 
@@ -242,7 +246,7 @@ Process LaunchProcess(const std::vector<std::string>& argv,
                                     : argv_cstr[0];
 
   // If the new program has specified its PWD, change the thread-specific
-  // working directory. The new process will inherit it during posix_spawn().
+  // working directory. The new process will inherit it during posix_spawnp().
   if (!options.current_directory.empty()) {
     int rv =
         ChangeCurrentThreadDirectory(options.current_directory.value().c_str());
@@ -255,19 +259,21 @@ Process LaunchProcess(const std::vector<std::string>& argv,
   int rv;
   pid_t pid;
   {
-    Optional<AutoLock> rendezvous_lock;
-    if (!options.mach_ports_for_rendezvous.empty()) {
-      // The server's lock must be held for the duration of posix_spawn so that
-      // new child's PID can be recorded with the set of ports.
-      rendezvous_lock.emplace(
-          MachPortRendezvousServer::GetInstance()->GetLock());
-    }
+    // If |options.mach_ports_for_rendezvous| is specified : the server's lock
+    // must be held for the duration of posix_spawnp() so that new child's PID
+    // can be recorded with the set of ports.
+    const bool has_mac_ports_for_rendezvous =
+        !options.mach_ports_for_rendezvous.empty();
+    AutoLockMaybe rendezvous_lock(
+        has_mac_ports_for_rendezvous
+            ? &MachPortRendezvousServer::GetInstance()->GetLock()
+            : nullptr);
 
     // Use posix_spawnp as some callers expect to have PATH consulted.
     rv = posix_spawnp(&pid, executable_path, file_actions.get(), attr.get(),
                       &argv_cstr[0], new_environ);
 
-    if (!options.mach_ports_for_rendezvous.empty()) {
+    if (has_mac_ports_for_rendezvous) {
       auto* rendezvous = MachPortRendezvousServer::GetInstance();
       if (rv == 0) {
         rendezvous->RegisterPortsForPid(pid, options.mach_ports_for_rendezvous);

@@ -12,10 +12,10 @@
 
 namespace media {
 
-// It's not a full featured JPEG parser implememtation. It only parses JPEG
-// baseline sequential process. For explanations of each struct and its
-// members, see JPEG specification at
-// http://www.w3.org/Graphics/JPEG/itu-t81.pdf.
+// It's not a full featured JPEG parser implementation. It only parses JPEG
+// baseline sequential process (invalid or progressive JPEGs should fail but not
+// crash). For explanations of each struct and its members, see JPEG
+// specification at http://www.w3.org/Graphics/JPEG/itu-t81.pdf.
 
 enum JpegMarker {
   JPEG_SOF0 = 0xC0,   // start of frame (baseline)

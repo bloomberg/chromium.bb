@@ -113,7 +113,7 @@ class MockCanvas : public SkCanvas {
 // Simple Painter that will be used to test BorderPainter.
 class MockPainter : public views::Painter {
  public:
-  MockPainter() {}
+  MockPainter() = default;
 
   // Gets the canvas given to the last call to Paint().
   gfx::Canvas* given_canvas() const { return given_canvas_; }
@@ -155,12 +155,12 @@ class BorderTest : public ViewsTestBase {
   void SetUp() override {
     ViewsTestBase::SetUp();
 
-    view_.reset(new views::View());
+    view_ = std::make_unique<views::View>();
     view_->SetSize(gfx::Size(100, 50));
-    recorder_.reset(new cc::PaintRecorder());
-    canvas_.reset(new gfx::Canvas(
+    recorder_ = std::make_unique<cc::PaintRecorder>();
+    canvas_ = std::make_unique<gfx::Canvas>(
         recorder_->beginRecording(SkRect::MakeWH(kCanvasWidth, kCanvasHeight)),
-        1.0f));
+        1.0f);
   }
 
   void TearDown() override {

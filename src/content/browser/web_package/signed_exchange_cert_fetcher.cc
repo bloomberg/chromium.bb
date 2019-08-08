@@ -112,7 +112,8 @@ SignedExchangeCertFetcher::SignedExchangeCertFetcher(
   // |request_initiator| is used for cookie checks, but cert requests don't use
   // cookies. So just set an opaque Origin.
   resource_request_->request_initiator = url::Origin();
-  resource_request_->resource_type = RESOURCE_TYPE_SUB_RESOURCE;
+  resource_request_->resource_type =
+      static_cast<int>(ResourceType::kSubResource);
   // Cert requests should not send credential informartion, because the default
   // credentials mode of Fetch is "omit".
   resource_request_->load_flags = net::LOAD_DO_NOT_SEND_AUTH_DATA |
@@ -151,6 +152,8 @@ void SignedExchangeCertFetcher::Start() {
 void SignedExchangeCertFetcher::Abort() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeCertFetcher::Abort");
+  MaybeNotifyCompletionToDevtools(
+      network::URLLoaderCompletionStatus(net::ERR_ABORTED));
   DCHECK(callback_);
   url_loader_ = nullptr;
   body_.reset();
@@ -192,6 +195,10 @@ void SignedExchangeCertFetcher::OnDataComplete() {
   url_loader_ = nullptr;
   body_.reset();
   handle_watcher_ = nullptr;
+
+  // Notify the completion to the devtools here because |this| may be deleted
+  // before OnComplete() is called.
+  MaybeNotifyCompletionToDevtools(network::URLLoaderCompletionStatus(net::OK));
 
   std::unique_ptr<SignedExchangeCertificateChain> cert_chain =
       SignedExchangeCertificateChain::Parse(
@@ -308,12 +315,18 @@ void SignedExchangeCertFetcher::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeCertFetcher::OnComplete");
-  if (devtools_proxy_) {
-    DCHECK(cert_request_id_);
-    devtools_proxy_->CertificateRequestCompleted(*cert_request_id_, status);
-  }
+  MaybeNotifyCompletionToDevtools(status);
   if (!handle_watcher_)
     Abort();
+}
+
+void SignedExchangeCertFetcher::MaybeNotifyCompletionToDevtools(
+    const network::URLLoaderCompletionStatus& status) {
+  if (!devtools_proxy_ || has_notified_completion_to_devtools_)
+    return;
+  DCHECK(cert_request_id_);
+  devtools_proxy_->CertificateRequestCompleted(*cert_request_id_, status);
+  has_notified_completion_to_devtools_ = true;
 }
 
 // static

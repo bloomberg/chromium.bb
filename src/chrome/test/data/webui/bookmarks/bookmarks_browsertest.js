@@ -182,20 +182,6 @@ TEST_F('BookmarksFolderNodeTest', 'All', function() {
   mocha.run();
 });
 
-function BookmarksToastManagerTest() {}
-
-BookmarksToastManagerTest.prototype = {
-  __proto__: BookmarksBrowserTest.prototype,
-
-  extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
-    'toast_manager_test.js',
-  ]),
-};
-
-TEST_F('BookmarksToastManagerTest', 'All', function() {
-  mocha.run();
-});
-
 function BookmarksPolicyTest() {}
 
 BookmarksPolicyTest.prototype = {
@@ -254,5 +240,41 @@ BookmarksUtilTest.prototype = {
 };
 
 TEST_F('BookmarksUtilTest', 'All', function() {
+  mocha.run();
+});
+
+function BookmarksExtensionAPITest() {}
+
+BookmarksExtensionAPITest.prototype = {
+  __proto__: BookmarksBrowserTest.prototype,
+
+  extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
+    'extension_api_test.js',
+  ]),
+
+  testGenPreamble: () => {
+    GEN('SetupExtensionAPITest();');
+  }
+};
+
+TEST_F('BookmarksExtensionAPITest', 'All', function() {
+  mocha.run();
+});
+
+function BookmarksExtensionAPIEditDisabledTest() {}
+
+BookmarksExtensionAPIEditDisabledTest.prototype = {
+  __proto__: BookmarksBrowserTest.prototype,
+
+  extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
+    'extension_api_test_edit_disabled.js',
+  ]),
+
+  testGenPreamble: () => {
+    GEN('SetupExtensionAPIEditDisabledTest();');
+  }
+};
+
+TEST_F('BookmarksExtensionAPIEditDisabledTest', 'All', function() {
   mocha.run();
 });

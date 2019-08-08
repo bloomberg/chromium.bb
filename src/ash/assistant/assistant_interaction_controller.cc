@@ -32,6 +32,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "components/prefs/pref_service.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
@@ -114,6 +115,39 @@ void AssistantInteractionController::OnDeepLinkReceived(
     // Currently the only way to trigger this deeplink is via suggestion chip.
     // TODO(b/119841827): Use source specified from deep link.
     StartScreenContextInteraction(AssistantQuerySource::kSuggestionChip);
+    return;
+  }
+
+  if (type == DeepLinkType::kReminders) {
+    using ReminderAction = assistant::util::ReminderAction;
+    const base::Optional<ReminderAction>& action =
+        GetDeepLinkParamAsRemindersAction(params, DeepLinkParam::kAction);
+
+    // We treat reminders deeplinks without an action as web deep links.
+    if (!action)
+      return;
+
+    switch (action.value()) {
+      case ReminderAction::kCreate:
+        StartTextInteraction(
+            l10n_util::GetStringUTF8(IDS_ASSISTANT_CREATE_REMINDER_QUERY),
+            /*allow_tts=*/model_.response() && model_.response()->has_tts(),
+            /*query_source=*/AssistantQuerySource::kDeepLink);
+        break;
+
+      case ReminderAction::kEdit:
+        const base::Optional<std::string>& client_id =
+            GetDeepLinkParam(params, DeepLinkParam::kClientId);
+        if (client_id && !client_id.value().empty()) {
+          StopActiveInteraction(false);
+          model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(
+              l10n_util::GetStringUTF8(IDS_ASSISTANT_EDIT_REMINDER_QUERY),
+              /*query_source=*/AssistantQuerySource::kDeepLink));
+          assistant_->StartEditReminderInteraction(client_id.value());
+        }
+        break;
+    }
+
     return;
   }
 
@@ -544,11 +578,31 @@ void AssistantInteractionController::OnTtsStarted(bool due_to_error) {
   }
 
   model_.pending_response()->set_has_tts(true);
+
   // We have an agreement with the server that TTS will always be the last part
   // of an interaction to be processed. To be timely in updating UI, we use
   // this as an opportunity to begin processing the Assistant response.
   // TODO(xiaohuic): sometimes we actually do receive additional TTS responses,
   // need to properly handle those cases.
+  OnProcessPendingResponse();
+}
+
+void AssistantInteractionController::OnWaitStarted() {
+  if (model_.interaction_state() != InteractionState::kActive)
+    return;
+
+  // Commit the pending query in whatever state it's in. Note that the server
+  // guarantees that if a wait occurs, it is as part of a routine's execution
+  // and it will be the last event prior to the current interaction being
+  // finished and the response will not contain any TTS. Upon finishing
+  // execution of the current interaction, a new interaction will automatically
+  // be started for the next leg of the routine's execution.
+  if (model_.pending_query().type() != AssistantQueryType::kNull)
+    model_.CommitPendingQuery();
+
+  // Finalize the pending response so that the UI is flushed to the screen while
+  // the wait occurs, giving the user time to digest the current response before
+  // the routine begins its next leg in the next interaction.
   OnProcessPendingResponse();
 }
 
@@ -607,13 +661,13 @@ void AssistantInteractionController::OnProcessPendingResponse() {
 
   // Bind an interface to a navigable contents factory that is needed for
   // processing card elements.
-  content::mojom::NavigableContentsFactoryPtr contents_factory;
+  mojo::Remote<content::mojom::NavigableContentsFactory> factory;
   assistant_controller_->GetNavigableContentsFactory(
-      mojo::MakeRequest(&contents_factory));
+      factory.BindNewPipeAndPassReceiver());
 
   // Start processing.
   model_.pending_response()->Process(
-      std::move(contents_factory),
+      std::move(factory),
       base::BindOnce(
           &AssistantInteractionController::OnPendingResponseProcessed,
           weak_factory_.GetWeakPtr()));

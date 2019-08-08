@@ -51,7 +51,8 @@ public final class OfflineItemBridge {
             String mimeType, String pageUrl, String originalUrl, boolean isOffTheRecord,
             @OfflineItemState int state, @PendingState int pendingState, boolean isResumable,
             boolean allowMetered, long receivedBytes, long progressValue, long progressMax,
-            @OfflineItemProgressUnit int progressUnit, long timeRemainingMs, boolean isDangerous) {
+            @OfflineItemProgressUnit int progressUnit, long timeRemainingMs, boolean isDangerous,
+            boolean canRename) {
         OfflineItem item = new OfflineItem();
         item.id.namespace = nameSpace;
         item.id.id = id;
@@ -83,7 +84,7 @@ public final class OfflineItemBridge {
                 progressValue, progressMax == -1 ? null : progressMax, progressUnit);
         item.timeRemainingMs = timeRemainingMs;
         item.isDangerous = isDangerous;
-
+        item.canRename = canRename;
         if (list != null) list.add(item);
         return item;
     }

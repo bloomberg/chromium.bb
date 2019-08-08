@@ -14,24 +14,7 @@
 #include <stddef.h>  // For size_t
 #include <cstdint>
 
-// TODO(bugs.webrtc.org/7660): Delete include once downstream code is updated.
-#include "api/video/video_codec_type.h"
-
-#if defined(_MSC_VER)
-// Disable "new behavior: elements of array will be default initialized"
-// warning. Affects OverUseDetectorOptions.
-#pragma warning(disable : 4351)
-#endif
-
 namespace webrtc {
-
-enum FrameType {
-  kEmptyFrame = 0,
-  kAudioFrameSpeech = 1,
-  kAudioFrameCN = 2,
-  kVideoFrameKey = 3,
-  kVideoFrameDelta = 4,
-};
 
 // Statistics for RTCP packet types.
 struct RtcpPacketTypeCounter {
@@ -158,27 +141,6 @@ enum { kRtpCsrcSize = 15 };  // RFC 3550 page 13
 // ==================================================================
 // Video specific types
 // ==================================================================
-
-// TODO(nisse): Delete, and switch to fourcc values everywhere?
-// Supported video types.
-enum class VideoType {
-  kUnknown,
-  kI420,
-  kIYUV,
-  kRGB24,
-  kABGR,
-  kARGB,
-  kARGB4444,
-  kRGB565,
-  kARGB1555,
-  kYUY2,
-  kYV12,
-  kUYVY,
-  kMJPEG,
-  kNV21,
-  kNV12,
-  kBGRA,
-};
 
 // TODO(magjed): Move this and other H264 related classes out to their own file.
 namespace H264 {

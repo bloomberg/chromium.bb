@@ -218,15 +218,15 @@ class MockRequireCTDelegate : public TransportSecurityState::RequireCTDelegate {
 
 void CompareCertificateChainWithList(
     const scoped_refptr<X509Certificate>& cert_chain,
-    const base::ListValue* cert_list) {
+    const base::Value* cert_list) {
   ASSERT_TRUE(cert_chain);
+  ASSERT_TRUE(cert_list->is_list());
   std::vector<std::string> pem_encoded_chain;
   cert_chain->GetPEMEncodedChain(&pem_encoded_chain);
-  EXPECT_EQ(pem_encoded_chain.size(), cert_list->GetSize());
+  ASSERT_EQ(pem_encoded_chain.size(), cert_list->GetList().size());
 
   for (size_t i = 0; i < pem_encoded_chain.size(); i++) {
-    std::string list_cert;
-    ASSERT_TRUE(cert_list->GetString(i, &list_cert));
+    const std::string& list_cert = cert_list->GetList()[i].GetString();
     EXPECT_EQ(pem_encoded_chain[i], list_cert);
   }
 }
@@ -239,50 +239,49 @@ void CheckHPKPReport(
     const scoped_refptr<X509Certificate>& served_certificate_chain,
     const scoped_refptr<X509Certificate>& validated_certificate_chain,
     const HashValueVector& known_pins) {
-  std::unique_ptr<base::Value> value(base::JSONReader::ReadDeprecated(report));
-  ASSERT_TRUE(value);
-  ASSERT_TRUE(value->is_dict());
+  base::Optional<base::Value> value = base::JSONReader::Read(report);
+  ASSERT_TRUE(value.has_value());
+  const base::Value& report_dict = value.value();
+  ASSERT_TRUE(report_dict.is_dict());
 
-  base::DictionaryValue* report_dict;
-  ASSERT_TRUE(value->GetAsDictionary(&report_dict));
+  const std::string* report_hostname = report_dict.FindStringKey("hostname");
+  ASSERT_TRUE(report_hostname);
+  EXPECT_EQ(host_port_pair.host(), *report_hostname);
 
-  std::string report_hostname;
-  EXPECT_TRUE(report_dict->GetString("hostname", &report_hostname));
-  EXPECT_EQ(host_port_pair.host(), report_hostname);
+  base::Optional<int> report_port = report_dict.FindIntKey("port");
+  ASSERT_TRUE(report_port.has_value());
+  EXPECT_EQ(host_port_pair.port(), report_port.value());
 
-  int report_port;
-  EXPECT_TRUE(report_dict->GetInteger("port", &report_port));
-  EXPECT_EQ(host_port_pair.port(), report_port);
+  base::Optional<bool> report_include_subdomains =
+      report_dict.FindBoolKey("include-subdomains");
+  ASSERT_TRUE(report_include_subdomains.has_value());
+  EXPECT_EQ(include_subdomains, report_include_subdomains.value());
 
-  bool report_include_subdomains;
-  EXPECT_TRUE(report_dict->GetBoolean("include-subdomains",
-                                      &report_include_subdomains));
-  EXPECT_EQ(include_subdomains, report_include_subdomains);
-
-  std::string report_noted_hostname;
-  EXPECT_TRUE(report_dict->GetString("noted-hostname", &report_noted_hostname));
-  EXPECT_EQ(noted_hostname, report_noted_hostname);
+  const std::string* report_noted_hostname =
+      report_dict.FindStringKey("noted-hostname");
+  ASSERT_TRUE(report_noted_hostname);
+  EXPECT_EQ(noted_hostname, *report_noted_hostname);
 
   // TODO(estark): check times in RFC3339 format.
 
-  std::string report_expiration;
-  EXPECT_TRUE(
-      report_dict->GetString("effective-expiration-date", &report_expiration));
-  EXPECT_FALSE(report_expiration.empty());
+  const std::string* report_expiration =
+      report_dict.FindStringKey("effective-expiration-date");
+  ASSERT_TRUE(report_expiration);
+  EXPECT_FALSE(report_expiration->empty());
 
-  std::string report_date;
-  EXPECT_TRUE(report_dict->GetString("date-time", &report_date));
-  EXPECT_FALSE(report_date.empty());
+  const std::string* report_date = report_dict.FindStringKey("date-time");
+  ASSERT_TRUE(report_date);
+  EXPECT_FALSE(report_date->empty());
 
-  base::ListValue* report_served_certificate_chain;
-  EXPECT_TRUE(report_dict->GetList("served-certificate-chain",
-                                   &report_served_certificate_chain));
+  const base::Value* report_served_certificate_chain =
+      report_dict.FindKey("served-certificate-chain");
+  ASSERT_TRUE(report_served_certificate_chain);
   ASSERT_NO_FATAL_FAILURE(CompareCertificateChainWithList(
       served_certificate_chain, report_served_certificate_chain));
 
-  base::ListValue* report_validated_certificate_chain;
-  EXPECT_TRUE(report_dict->GetList("validated-certificate-chain",
-                                   &report_validated_certificate_chain));
+  const base::Value* report_validated_certificate_chain =
+      report_dict.FindKey("validated-certificate-chain");
+  ASSERT_TRUE(report_validated_certificate_chain);
   ASSERT_NO_FATAL_FAILURE(CompareCertificateChainWithList(
       validated_certificate_chain, report_validated_certificate_chain));
 }
@@ -2620,7 +2619,6 @@ TEST_F(TransportSecurityStateStaticTest, Preloaded) {
   EXPECT_TRUE(StaticShouldRedirect("plus.google.com"));
   EXPECT_TRUE(StaticShouldRedirect("groups.google.com"));
   EXPECT_TRUE(StaticShouldRedirect("apis.google.com"));
-  EXPECT_FALSE(StaticShouldRedirect("chart.apis.google.com"));
   EXPECT_TRUE(StaticShouldRedirect("ssl.google-analytics.com"));
   EXPECT_TRUE(StaticShouldRedirect("google"));
   EXPECT_TRUE(StaticShouldRedirect("foo.google"));

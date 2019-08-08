@@ -22,6 +22,7 @@
 namespace net {
 
 class NetLogWithSource;
+class SocketTag;
 
 typedef base::RepeatingCallback<int(const AddressList&,
                                     const NetLogWithSource& net_log)>
@@ -35,11 +36,9 @@ class NET_EXPORT_PRIVATE TransportSocketParams
   // connection will be aborted with that value.
   TransportSocketParams(
       const HostPortPair& host_port_pair,
-      bool disable_resolver_cache,
       const OnHostResolutionCallback& host_resolution_callback);
 
   const HostPortPair& destination() const { return destination_; }
-  bool disable_resolver_cache() const { return disable_resolver_cache_; }
   const OnHostResolutionCallback& host_resolution_callback() const {
     return host_resolution_callback_;
   }
@@ -49,7 +48,6 @@ class NET_EXPORT_PRIVATE TransportSocketParams
   ~TransportSocketParams();
 
   const HostPortPair destination_;
-  const bool disable_resolver_cache_;
   const OnHostResolutionCallback host_resolution_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportSocketParams);
@@ -90,12 +88,14 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
   static std::unique_ptr<ConnectJob> CreateTransportConnectJob(
       scoped_refptr<TransportSocketParams> transport_client_params,
       RequestPriority priority,
-      const CommonConnectJobParams& common_connect_job_params,
+      const SocketTag& socket_tag,
+      const CommonConnectJobParams* common_connect_job_params,
       ConnectJob::Delegate* delegate,
       const NetLogWithSource* net_log);
 
   TransportConnectJob(RequestPriority priority,
-                      const CommonConnectJobParams& common_connect_job_params,
+                      const SocketTag& socket_tag,
+                      const CommonConnectJobParams* common_connect_job_params,
                       const scoped_refptr<TransportSocketParams>& params,
                       Delegate* delegate,
                       const NetLogWithSource* net_log);
@@ -104,7 +104,7 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
   // ConnectJob methods.
   LoadState GetLoadState() const override;
   bool HasEstablishedConnection() const override;
-  void GetAdditionalErrorState(ClientSocketHandle* handle) override;
+  ConnectionAttempts GetConnectionAttempts() const override;
 
   // Rolls |addrlist| forward until the first IPv4 address, if any.
   // WARNING: this method should only be used to implement the prefer-IPv4 hack.

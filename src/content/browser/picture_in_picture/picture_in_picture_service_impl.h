@@ -8,6 +8,7 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/frame_service_base.h"
+#include "content/public/browser/media_player_id.h"
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom.h"
 
 namespace content {

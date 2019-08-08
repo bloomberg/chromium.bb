@@ -7,10 +7,7 @@ import os
 
 from telemetry.core import exceptions
 from telemetry.core import platform as platform_module
-from telemetry import decorators
 from telemetry.internal.backends.chrome import gpu_compositing_checker
-from telemetry.internal.browser import browser_finder
-from telemetry.internal.browser import browser_finder_exceptions
 from telemetry.internal.browser import browser_info as browser_info_module
 from telemetry.internal.browser import browser_interval_profiling_controller
 from telemetry.page import cache_temperature
@@ -28,8 +25,9 @@ class SharedPageState(story_module.SharedState):
 
   _device_type = None
 
-  def __init__(self, test, finder_options, story_set):
-    super(SharedPageState, self).__init__(test, finder_options, story_set)
+  def __init__(self, test, finder_options, story_set, possible_browser):
+    super(SharedPageState, self).__init__(
+        test, finder_options, story_set, possible_browser)
     self._page_test = None
     if issubclass(type(test), legacy_page_test.LegacyPageTest):
       # We only need a page_test for legacy measurements that involve running
@@ -51,7 +49,6 @@ class SharedPageState(story_module.SharedState):
 
     self._browser = None
     self._finder_options = finder_options
-    self._possible_browser = self._GetPossibleBrowser()
 
     self._first_browser = True
     self._previous_page = None
@@ -82,34 +79,8 @@ class SharedPageState(story_module.SharedState):
     return self._interval_profiling_controller
 
   @property
-  def possible_browser(self):
-    return self._possible_browser
-
-  @property
   def browser(self):
     return self._browser
-
-  def _GetPossibleBrowser(self):
-    """Return a possible_browser with the given options."""
-    possible_browser = browser_finder.FindBrowser(self._finder_options)
-    if not possible_browser:
-      raise browser_finder_exceptions.BrowserFinderException(
-          'Cannot find browser of type %s. \n\nAvailable browsers:\n%s\n' % (
-              self._finder_options.browser_options.browser_type,
-              '\n'.join(browser_finder.GetAllAvailableBrowserTypes(
-                  self._finder_options))))
-
-    self._finder_options.browser_options.browser_type = (
-        possible_browser.browser_type)
-
-    if self._page_test:
-      # Check for Enabled/Disabled decorators on page_test.
-      skip, msg = decorators.ShouldSkip(self._page_test, possible_browser)
-      if skip and not self._finder_options.run_disabled_tests:
-        logging.warning(msg)
-        logging.warning('You are trying to run a disabled test.')
-
-    return possible_browser
 
   def DumpStateUponFailure(self, page, results):
     # Dump browser standard output and log.
@@ -199,6 +170,8 @@ class SharedPageState(story_module.SharedState):
 
     if self._first_browser:
       self._first_browser = False
+      # Cut back on mostly redundant logs length per crbug.com/943650.
+      self._finder_options.browser_options.trim_logs = True
     self._AllowInteractionForStage('after-start-browser')
 
   def WillRunStory(self, page):

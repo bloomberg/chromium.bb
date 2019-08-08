@@ -618,12 +618,34 @@ LayerImplList::reverse_iterator LayerTreeImpl::rend() {
   return layer_list_.rend();
 }
 
-bool LayerTreeImpl::IsElementInLayerList(ElementId element_id) const {
+bool LayerTreeImpl::IsElementInPropertyTree(ElementId element_id) const {
   return elements_in_property_trees_.count(element_id);
 }
 
 ElementListType LayerTreeImpl::GetElementTypeForAnimation() const {
   return IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING;
+}
+
+void LayerTreeImpl::AddToElementPropertyTreeList(ElementId element_id) {
+#if DCHECK_IS_ON()
+  bool element_id_collision_detected =
+      elements_in_property_trees_.count(element_id);
+
+  DCHECK(!element_id_collision_detected);
+#endif
+
+  elements_in_property_trees_.insert(element_id);
+
+  DCHECK(settings().use_layer_lists);
+  host_impl_->mutator_host()->RegisterElement(element_id,
+                                              GetElementTypeForAnimation());
+}
+
+void LayerTreeImpl::RemoveFromElementPropertyTreeList(ElementId element_id) {
+  DCHECK(settings().use_layer_lists);
+  host_impl_->mutator_host()->UnregisterElement(element_id,
+                                                GetElementTypeForAnimation());
+  elements_in_property_trees_.erase(element_id);
 }
 
 void LayerTreeImpl::AddToElementLayerList(ElementId element_id,
@@ -635,19 +657,13 @@ void LayerTreeImpl::AddToElementLayerList(ElementId element_id,
                "LayerTreeImpl::AddToElementLayerList", "element",
                element_id.AsValue().release());
 
-#if DCHECK_IS_ON()
-  bool element_id_collision_detected =
-      elements_in_property_trees_.count(element_id);
+  if (!settings().use_layer_lists) {
+    elements_in_property_trees_.insert(element_id);
+    host_impl_->mutator_host()->RegisterElement(element_id,
+                                                GetElementTypeForAnimation());
+  }
 
-  DCHECK(!element_id_collision_detected);
-#endif
-
-  elements_in_property_trees_.insert(element_id);
-
-  host_impl_->mutator_host()->RegisterElement(element_id,
-                                              GetElementTypeForAnimation());
-
-  if (layer && layer->scrollable())
+  if (layer->scrollable())
     AddScrollableLayer(layer);
 }
 
@@ -659,10 +675,12 @@ void LayerTreeImpl::RemoveFromElementLayerList(ElementId element_id) {
                "LayerTreeImpl::RemoveFromElementLayerList", "element",
                element_id.AsValue().release());
 
-  host_impl_->mutator_host()->UnregisterElement(element_id,
-                                                GetElementTypeForAnimation());
+  if (!settings().use_layer_lists) {
+    elements_in_property_trees_.erase(element_id);
+    host_impl_->mutator_host()->UnregisterElement(element_id,
+                                                  GetElementTypeForAnimation());
+  }
 
-  elements_in_property_trees_.erase(element_id);
   element_id_to_scrollable_layer_.erase(element_id);
 }
 
@@ -843,8 +861,10 @@ void LayerTreeImpl::UpdateTransformAnimation(ElementId element_id,
                                                                   list_type);
       if (node->has_potential_animation != has_potential_animation) {
         node->has_potential_animation = has_potential_animation;
-        node->has_only_translation_animations =
-            mutator_host()->HasOnlyTranslationTransforms(element_id, list_type);
+        node->maximum_animation_scale =
+            mutator_host()->MaximumTargetScale(element_id, list_type);
+        node->starting_animation_scale =
+            mutator_host()->AnimationStartScale(element_id, list_type);
         transform_tree.set_needs_update(true);
         set_needs_update_draw_properties();
       }
@@ -1720,49 +1740,6 @@ void LayerTreeImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   state->EndArray();
 }
 
-bool LayerTreeImpl::DistributeRootScrollOffset(
-    const gfx::ScrollOffset& desired_root_offset) {
-  if (!InnerViewportScrollNode() || !OuterViewportScrollLayer())
-    return false;
-
-  gfx::ScrollOffset root_offset = desired_root_offset;
-  ScrollTree& scroll_tree = property_trees()->scroll_tree;
-
-  // If we get here, we have both inner/outer viewports, and need to distribute
-  // the scroll offset between them.
-  gfx::ScrollOffset inner_viewport_offset =
-      scroll_tree.current_scroll_offset(InnerViewportScrollNode()->element_id);
-  gfx::ScrollOffset outer_viewport_offset =
-      OuterViewportScrollLayer()->CurrentScrollOffset();
-  DCHECK(inner_viewport_offset + outer_viewport_offset == TotalScrollOffset());
-
-  // Setting the root scroll offset is driven by user actions so prevent
-  // it if it is not user scrollable in certain directions.
-  if (!InnerViewportScrollNode()->user_scrollable_horizontal)
-    root_offset.set_x(inner_viewport_offset.x() + outer_viewport_offset.x());
-
-  if (!InnerViewportScrollNode()->user_scrollable_vertical)
-    root_offset.set_y(inner_viewport_offset.y() + outer_viewport_offset.y());
-
-  // It may be nothing has changed.
-  if (inner_viewport_offset + outer_viewport_offset == root_offset)
-    return false;
-
-  gfx::ScrollOffset max_outer_viewport_scroll_offset =
-      OuterViewportScrollLayer()->MaxScrollOffset();
-
-  outer_viewport_offset = root_offset - inner_viewport_offset;
-  outer_viewport_offset.SetToMin(max_outer_viewport_scroll_offset);
-  outer_viewport_offset.SetToMax(gfx::ScrollOffset());
-
-  OuterViewportScrollLayer()->SetCurrentScrollOffset(outer_viewport_offset);
-  inner_viewport_offset = root_offset - outer_viewport_offset;
-  if (scroll_tree.SetScrollOffset(InnerViewportScrollNode()->element_id,
-                                  inner_viewport_offset))
-    DidUpdateScrollOffset(InnerViewportScrollNode()->element_id);
-  return true;
-}
-
 void LayerTreeImpl::QueueSwapPromise(
     std::unique_ptr<SwapPromise> swap_promise) {
   DCHECK(swap_promise);
@@ -2156,10 +2133,7 @@ LayerImpl* LayerTreeImpl::FindFirstScrollingLayerOrScrollbarThatIsHitByPoint(
 }
 
 struct HitTestVisibleScrollableOrTouchableFunctor {
-  bool operator()(LayerImpl* layer) const {
-    return layer->scrollable() || layer->ShouldHitTest() ||
-           !layer->touch_action_region().region().IsEmpty();
-  }
+  bool operator()(LayerImpl* layer) const { return layer->HitTestable(); }
 };
 
 LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPoint(

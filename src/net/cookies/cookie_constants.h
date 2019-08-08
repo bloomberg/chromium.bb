@@ -21,11 +21,13 @@ enum CookiePriority {
 // See https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-00
 // and https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis for
 // information about same site cookie restrictions.
+// Note: Don't renumber, as these values are persisted to a database.
 enum class CookieSameSite {
+  UNSPECIFIED = -1,
   NO_RESTRICTION = 0,
   LAX_MODE = 1,
   STRICT_MODE = 2,
-  DEFAULT_MODE = NO_RESTRICTION
+  EXTENDED_MODE = 3
 };
 
 // Returns the Set-Cookie header priority token corresponding to |priority|.
@@ -42,7 +44,7 @@ NET_EXPORT CookiePriority StringToCookiePriority(const std::string& priority);
 NET_EXPORT std::string CookieSameSiteToString(CookieSameSite same_site);
 
 // Converts the Set-Cookie header SameSite token |same_site| to a
-// CookieSameSite. Defaults to CookieSameSite::DEFAULT_MODE for empty or
+// CookieSameSite. Defaults to CookieSameSite::NO_RESTRICTION for empty or
 // unrecognized strings.
 NET_EXPORT CookieSameSite StringToCookieSameSite(const std::string& same_site);
 

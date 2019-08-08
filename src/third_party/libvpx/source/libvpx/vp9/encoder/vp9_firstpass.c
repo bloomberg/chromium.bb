@@ -49,7 +49,6 @@
 #define MIN_DECAY_FACTOR 0.01
 #define NEW_MV_MODE_PENALTY 32
 #define DARK_THRESH 64
-#define SECTION_NOISE_DEF 250.0
 #define LOW_I_THRESH 24000
 
 #define NCOUNT_INTRA_THRESH 8192
@@ -851,6 +850,7 @@ void vp9_first_pass_encode_tile_mb_row(VP9_COMP *cpi, ThreadData *td,
 
   xd->mi = cm->mi_grid_visible + xd->mi_stride * (mb_row << 1) + mb_col_start;
   xd->mi[0] = cm->mi + xd->mi_stride * (mb_row << 1) + mb_col_start;
+  xd->tile = tile;
 
   for (i = 0; i < MAX_MB_PLANE; ++i) {
     p[i].coeff = ctx->coeff_pbuf[i][1];
@@ -915,6 +915,8 @@ void vp9_first_pass_encode_tile_mb_row(VP9_COMP *cpi, ThreadData *td,
     // are available.  Required by vp9_predict_intra_block().
     xd->above_mi = (mb_row != 0) ? &mi_above : NULL;
     xd->left_mi = ((mb_col << 1) > tile.mi_col_start) ? &mi_left : NULL;
+    xd->mi_row = mb_row << 1;
+    xd->mi_col = mb_col << 1;
 
     // Do intra 16x16 prediction.
     x->skip_encode = 0;
@@ -1481,9 +1483,9 @@ void vp9_first_pass(VP9_COMP *cpi, const struct lookahead_entry *source) {
   if (cpi->use_svc) vp9_inc_frame_in_layer(cpi);
 }
 
-static const double q_pow_term[(QINDEX_RANGE >> 5) + 1] = {
-  0.65, 0.70, 0.75, 0.85, 0.90, 0.90, 0.90, 1.00, 1.25
-};
+static const double q_pow_term[(QINDEX_RANGE >> 5) + 1] = { 0.65, 0.70, 0.75,
+                                                            0.85, 0.90, 0.90,
+                                                            0.90, 1.00, 1.25 };
 
 static double calc_correction_factor(double err_per_mb, double err_divisor,
                                      int q) {
@@ -2656,6 +2658,10 @@ static void define_gf_group(VP9_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   // Calculate the bits to be allocated to the gf/arf group as a whole
   gf_group_bits = calculate_total_gf_group_bits(cpi, gf_group_err);
 
+  // Store the average moise level measured for the group
+  twopass->gf_group.group_noise_energy =
+      (int)(gf_group_noise / rc->baseline_gf_interval);
+
   // Calculate an estimate of the maxq needed for the group.
   // We are more aggressive about correcting for sections
   // where there could be significant overshoot than for easier
@@ -2746,11 +2752,54 @@ static int slide_transition(const FIRSTPASS_STATS *this_frame,
          (this_frame->coded_error > (next_frame->coded_error * ERROR_SPIKE));
 }
 
+// This test looks for anomalous changes in the nature of the intra signal
+// related to the previous and next frame as an indicator for coding a key
+// frame. This test serves to detect some additional scene cuts,
+// especially in lowish motion and low contrast sections, that are missed
+// by the other tests.
+static int intra_step_transition(const FIRSTPASS_STATS *this_frame,
+                                 const FIRSTPASS_STATS *last_frame,
+                                 const FIRSTPASS_STATS *next_frame) {
+  double last_ii_ratio;
+  double this_ii_ratio;
+  double next_ii_ratio;
+  double last_pcnt_intra = 1.0 - last_frame->pcnt_inter;
+  double this_pcnt_intra = 1.0 - this_frame->pcnt_inter;
+  double next_pcnt_intra = 1.0 - next_frame->pcnt_inter;
+  double mod_this_intra = this_pcnt_intra + this_frame->pcnt_neutral;
+
+  // Calculate ii ratio for this frame last frame and next frame.
+  last_ii_ratio =
+      last_frame->intra_error / DOUBLE_DIVIDE_CHECK(last_frame->coded_error);
+  this_ii_ratio =
+      this_frame->intra_error / DOUBLE_DIVIDE_CHECK(this_frame->coded_error);
+  next_ii_ratio =
+      next_frame->intra_error / DOUBLE_DIVIDE_CHECK(next_frame->coded_error);
+
+  // Return true the intra/inter ratio for the current frame is
+  // low but better in the next and previous frame and the relative useage of
+  // intra in the current frame is markedly higher than the last and next frame.
+  if ((this_ii_ratio < 2.0) && (last_ii_ratio > 2.25) &&
+      (next_ii_ratio > 2.25) && (this_pcnt_intra > (3 * last_pcnt_intra)) &&
+      (this_pcnt_intra > (3 * next_pcnt_intra)) &&
+      ((this_pcnt_intra > 0.075) || (mod_this_intra > 0.85))) {
+    return 1;
+    // Very low inter intra ratio (i.e. not much gain from inter coding), most
+    // blocks neutral on coding method and better inter prediction either side
+  } else if ((this_ii_ratio < 1.25) && (mod_this_intra > 0.85) &&
+             (this_ii_ratio < last_ii_ratio * 0.9) &&
+             (this_ii_ratio < next_ii_ratio * 0.9)) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
 // Minimum % intra coding observed in first pass (1.0 = 100%)
 #define MIN_INTRA_LEVEL 0.25
 // Threshold for use of the lagging second reference frame. Scene cuts do not
 // usually have a high second ref useage.
-#define SECOND_REF_USEAGE_THRESH 0.125
+#define SECOND_REF_USEAGE_THRESH 0.2
 // Hard threshold where the first pass chooses intra for almost all blocks.
 // In such a case even if the frame is not a scene cut coding a key frame
 // may be a good option.
@@ -2777,8 +2826,9 @@ static int test_candidate_kf(TWO_PASS *twopass,
       (this_frame->pcnt_second_ref < SECOND_REF_USEAGE_THRESH) &&
       ((this_frame->pcnt_inter < VERY_LOW_INTER_THRESH) ||
        (slide_transition(this_frame, last_frame, next_frame)) ||
-       (((this_frame->coded_error > (next_frame->coded_error * 1.1)) &&
-         (this_frame->coded_error > (last_frame->coded_error * 1.1))) &&
+       (intra_step_transition(this_frame, last_frame, next_frame)) ||
+       (((this_frame->coded_error > (next_frame->coded_error * 1.2)) &&
+         (this_frame->coded_error > (last_frame->coded_error * 1.2))) &&
         (pcnt_intra > MIN_INTRA_LEVEL) &&
         ((pcnt_intra + this_frame->pcnt_neutral) > 0.5) &&
         ((this_frame->intra_error /

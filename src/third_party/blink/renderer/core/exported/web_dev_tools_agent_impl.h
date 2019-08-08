@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/devtools_agent.h"
@@ -82,10 +83,10 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   void FlushProtocolNotifications();
 
   bool HasOverlays() const { return !overlay_agents_.IsEmpty(); }
-  void UpdateOverlays();
+  void UpdateOverlaysPrePaint();
   void PaintOverlays(GraphicsContext&);  // For CompositeAfterPaint.
 
-  bool HandleInputEvent(const WebInputEvent&);
+  WebInputEventResult HandleInputEvent(const WebInputEvent&);
   void DispatchBufferedTouchEvents();
   void BindRequest(mojom::blink::DevToolsAgentHostAssociatedPtrInfo,
                    mojom::blink::DevToolsAgentAssociatedRequest);

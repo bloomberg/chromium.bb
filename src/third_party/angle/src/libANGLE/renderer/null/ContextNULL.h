@@ -128,7 +128,7 @@ class ContextNULL : public ContextImpl
                                              const GLfloat *transformValues) override;
 
     // Device loss
-    GLenum getResetStatus() override;
+    gl::GraphicsResetStatus getResetStatus() override;
 
     // Vendor and description strings.
     std::string getVendorString() const override;
@@ -197,6 +197,9 @@ class ContextNULL : public ContextImpl
     ProgramPipelineImpl *createProgramPipeline(const gl::ProgramPipelineState &data) override;
 
     std::vector<PathImpl *> createPaths(GLsizei range) override;
+
+    // Memory object creation.
+    MemoryObjectImpl *createMemoryObject() override;
 
     angle::Result dispatchCompute(const gl::Context *context,
                                   GLuint numGroupsX,

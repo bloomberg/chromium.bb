@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/core/html/list_item_ordinal.h"
 
+#include "base/numerics/clamped_math.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/html/html_olist_element.h"
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
@@ -169,7 +170,7 @@ int ListItemOrdinal::CalcValue(const Node& item_node) const {
   // FIXME: This recurses to a possible depth of the length of the list.
   // That's not good -- we need to change this to an iterative algorithm.
   if (NodeAndOrdinal previous = PreviousListItem(list, &item_node))
-    return ClampAdd(previous.ordinal->Value(*previous.node), value_step);
+    return base::ClampAdd(previous.ordinal->Value(*previous.node), value_step);
 
   if (o_list_element)
     return o_list_element->StartConsideringItemCount();

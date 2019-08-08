@@ -34,7 +34,6 @@
 #include "gin/public/isolate_holder.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_global_value_map.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -205,25 +204,12 @@ class PLATFORM_EXPORT V8PerIsolateData {
     return active_script_wrappables_.Get();
   }
 
-  ScriptWrappableMarkingVisitor* GetScriptWrappableMarkingVisitor() const {
-    return script_wrappable_visitor_.get();
-  }
-
-  void SwapScriptWrappableMarkingVisitor(
-      std::unique_ptr<ScriptWrappableMarkingVisitor>& other) {
-    script_wrappable_visitor_.swap(other);
-  }
-
   UnifiedHeapController* GetUnifiedHeapController() const {
     return unified_heap_controller_.get();
   }
 
   v8::EmbedderHeapTracer* GetEmbedderHeapTracer() const {
-    return RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled()
-               ? static_cast<v8::EmbedderHeapTracer*>(
-                     GetUnifiedHeapController())
-               : static_cast<v8::EmbedderHeapTracer*>(
-                     GetScriptWrappableMarkingVisitor());
+    return static_cast<v8::EmbedderHeapTracer*>(GetUnifiedHeapController());
   }
 
  private:
@@ -293,7 +279,6 @@ class PLATFORM_EXPORT V8PerIsolateData {
   std::unique_ptr<Data> thread_debugger_;
 
   Persistent<ActiveScriptWrappableSet> active_script_wrappables_;
-  std::unique_ptr<ScriptWrappableMarkingVisitor> script_wrappable_visitor_;
   std::unique_ptr<UnifiedHeapController> unified_heap_controller_;
 
   RuntimeCallStats runtime_call_stats_;

@@ -66,16 +66,19 @@
 
   <!-- Lookalike URL warning -->
   <message name="IDS_LOOKALIKE_URL_TITLE" desc="Tab title. Context: the requested URL looks like a more popular URL.">
-    Did you mean?
+    Continue to <ph name="DOMAIN">$1<ex>example.com</ex></ph>?
   </message>
   <message name="IDS_LOOKALIKE_URL_HEADING" desc="Large heading. Context: the error page that's shown when the requested URL looks like a more popular URL.">
-    Did you mean &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN">$1<ex>example.com</ex></ph>&lt;/a&gt;?
+    Continue to &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN">$1<ex>example.com</ex></ph>&lt;/a&gt;?
   </message>
-  <message name="IDS_LOOKALIKE_URL_IGNORE" desc="Button text. Context: the error page that's shown when the requested URL looks like a more popular URL. This button continues on to the originally-requested URL.">
+  <message name="IDS_LOOKALIKE_URL_IGNORE" desc="Button text. Context: the error page that's shown when the requested URL looks like a more popular URL. This button dismisses the interstitial and navigates to the originally-requested URL.">
     Ignore
   </message>
+  <message name="IDS_LOOKALIKE_URL_CONTINUE" desc="Button text. Context: the error page that's shown when the requested URL looks like a more popular URL. This button dismisses the interstitial and navigates to the suggested (safe) URL.">
+    Continue
+  </message>
   <message name="IDS_LOOKALIKE_URL_PRIMARY_PARAGRAPH" desc="Main paragraph of an error message. Context: the error page that's shown when the requested URL looks like a more popular URL.">
-    The link you originally opened is unusual
+    The link you opened goes to a site you don't usually visit. It might be trying to confuse you.
   </message>
 
   <!-- Clock errors -->

@@ -36,7 +36,6 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "components/autofill/ios/browser/autofill_driver_ios_webframe.h"
-#include "components/autofill/ios/browser/autofill_switches.h"
 #include "components/autofill/ios/browser/autofill_util.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/form_suggestion_provider.h"
@@ -342,7 +341,7 @@ autofillManagerFromWebState:(web::WebState*)webState
 
   web::WebFrame* frame =
       web::GetWebFrameWithId(webState_, base::SysNSStringToUTF8(frameID));
-  if (!frame && autofill::switches::IsAutofillIFrameMessagingEnabled()) {
+  if (!frame) {
     completion(NO);
     return;
   }
@@ -566,9 +565,8 @@ autofillManagerFromWebState:(web::WebState*)webState
 - (void)webStateWasShown:(web::WebState*)webState {
   DCHECK_EQ(webState_, webState);
   if (pendingFormData_.second) {
-    // If IsAutofillIFrameMessagingEnabled, the frameID cannot be empty.
-    DCHECK(!autofill::switches::IsAutofillIFrameMessagingEnabled() ||
-           !pendingFormData_.first.empty());
+    // The frameID cannot be empty.
+    DCHECK(!pendingFormData_.first.empty());
     web::WebFrame* frame = nullptr;
     if (!pendingFormData_.first.empty()) {
       frame = web::GetWebFrameWithId(webState_, pendingFormData_.first);
@@ -589,10 +587,6 @@ autofillManagerFromWebState:(web::WebState*)webState
     [self processPage:webState];
     return;
   }
-  if (!autofill::switches::IsAutofillIFrameMessagingEnabled()) {
-    // iFrame support is disabled.
-    return;
-  }
   // Check that the main frame has already been processed.
   if (!web::GetMainWebFrame(webState)) {
     return;
@@ -603,24 +597,6 @@ autofillManagerFromWebState:(web::WebState*)webState
     return;
   }
   [self processFrame:web_frame inWebState:webState];
-}
-
-- (void)webState:(web::WebState*)webState
-    didStartNavigation:(web::NavigationContext*)navigation {
-  DCHECK_EQ(webState_, webState);
-  // Ignore navigations within the same document, e.g., history.pushState().
-  if (navigation->IsSameDocument())
-    return;
-  if (!autofill::switches::IsAutofillIFrameMessagingEnabled()) {
-    // Reset AutofillManager before processing the new page.
-    web::WebFrame* frame = web::GetMainWebFrame(webState);
-    autofill::AutofillManager* autofillManager =
-        [self autofillManagerFromWebState:webState webFrame:frame];
-    DCHECK(autofillManager);
-    autofillManager->Reset();
-    autofill::AutofillDriverIOS::FromWebStateAndWebFrame(webState, nullptr)
-        ->set_processed(false);
-  }
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
@@ -654,14 +630,11 @@ autofillManagerFromWebState:(web::WebState*)webState
     return;
   }
   [self processFrame:framesManager->GetMainWebFrame() inWebState:webState];
-  if (autofill::switches::IsAutofillIFrameMessagingEnabled()) {
-    [self processFrame:framesManager->GetMainWebFrame() inWebState:webState];
-    for (auto* frame : framesManager->GetAllWebFrames()) {
-      if (frame->IsMainFrame()) {
-        continue;
-      }
-      [self processFrame:frame inWebState:webState];
+  for (auto* frame : framesManager->GetAllWebFrames()) {
+    if (frame->IsMainFrame()) {
+      continue;
     }
+    [self processFrame:frame inWebState:webState];
   }
 }
 
@@ -687,10 +660,7 @@ autofillManagerFromWebState:(web::WebState*)webState
 
   [jsAutofillManager_ toggleTrackingFormMutations:YES inFrame:frame];
 
-  [jsAutofillManager_ toggleTrackingUserEditedFields:
-                          base::FeatureList::IsEnabled(
-                              autofill::features::kAutofillPrefilledFields)
-                                             inFrame:frame];
+  [jsAutofillManager_ toggleTrackingUserEditedFields:true inFrame:frame];
 
   [self scanFormsInWebState:webState inFrame:frame];
 }
@@ -806,20 +776,18 @@ autofillManagerFromWebState:(web::WebState*)webState
       [self autofillManagerFromWebState:webState webFrame:frame];
   if (!autofillManager || !success || forms.empty())
     return;
-  if (autofill::switches::IsAutofillIFrameMessagingEnabled()) {
-    // AutofillDriverIOSWebFrame will keep a refcountable AutofillDriverIOS.
-    // This is a workaround crbug.com/892612. On submission,
-    // AutofillDownloadManager and CreditCardSaveManager expect AutofillManager
-    // and AutofillDriver to live after web frame deletion so AutofillAgent will
-    // keep the latest submitted AutofillDriver alive.
-    // TODO(crbug.com/892612): remove this workaround once life cycle of
-    // AutofillManager is fixed.
-    DCHECK(frame);
-    last_submitted_autofill_driver_ =
-        autofill::AutofillDriverIOSWebFrame::FromWebFrame(frame)
-            ->GetRetainableDriver();
-    DCHECK(last_submitted_autofill_driver_);
-  }
+  // AutofillDriverIOSWebFrame will keep a refcountable AutofillDriverIOS.
+  // This is a workaround crbug.com/892612. On submission,
+  // AutofillDownloadManager and CreditCardSaveManager expect AutofillManager
+  // and AutofillDriver to live after web frame deletion so AutofillAgent will
+  // keep the latest submitted AutofillDriver alive.
+  // TODO(crbug.com/892612): remove this workaround once life cycle of
+  // AutofillManager is fixed.
+  DCHECK(frame);
+  last_submitted_autofill_driver_ =
+      autofill::AutofillDriverIOSWebFrame::FromWebFrame(frame)
+          ->GetRetainableDriver();
+  DCHECK(last_submitted_autofill_driver_);
   DCHECK(forms.size() <= 1) << "Only one form should be extracted.";
   [self notifyAutofillManager:autofillManager
              ofFormsSubmitted:forms

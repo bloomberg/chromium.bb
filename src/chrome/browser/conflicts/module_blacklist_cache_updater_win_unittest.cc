@@ -15,11 +15,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
+#include "base/hash/sha1.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/path_service.h"
-#include "base/sha1.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
@@ -32,6 +32,7 @@
 #include "chrome/browser/conflicts/module_list_filter_win.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/install_static/install_util.h"
+#include "content/public/common/process_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -46,11 +47,12 @@ constexpr base::FilePath::CharType kDllPath1[] =
 constexpr base::FilePath::CharType kDllPath2[] =
     FILE_PATH_LITERAL("c:\\some\\shellextension.dll");
 
-// Returns a new ModuleInfoData marked as loaded into the process but otherwise
-// empty.
+// Returns a new ModuleInfoData marked as loaded into the browser process but
+// otherwise empty.
 ModuleInfoData CreateLoadedModuleInfoData() {
   ModuleInfoData module_data;
   module_data.module_properties |= ModuleInfoData::kPropertyLoadedModule;
+  module_data.process_types |= ProcessTypeToBit(content::PROCESS_TYPE_BROWSER);
   module_data.inspection_result = base::make_optional<ModuleInspectionResult>();
   return module_data;
 }

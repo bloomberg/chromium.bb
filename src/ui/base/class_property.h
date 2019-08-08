@@ -93,10 +93,16 @@ class UI_BASE_EXPORT PropertyHandler {
  protected:
   friend class subtle::PropertyHelper;
 
+  // Called from SetPropertyInternal() prior to changing the value. If
+  // |is_value_changing| is false, the new value is the same as the old value
+  // (in other words, the value isn't really changing, but observers will
+  // still be notified).
+  virtual std::unique_ptr<PropertyData> BeforePropertyChange(
+      const void* key,
+      bool is_value_changing);
   virtual void AfterPropertyChange(const void* key,
                                    int64_t old_value,
                                    std::unique_ptr<PropertyData> data) {}
-  virtual std::unique_ptr<PropertyData> BeforePropertyChange(const void* key);
   void ClearProperties();
 
   // Called by the public {Set,Get,Clear}Property functions.

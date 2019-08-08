@@ -21,12 +21,6 @@
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
-#if defined(OS_ANDROID)
-#include "base/metrics/histogram_functions.h"
-#include "base/strings/string_number_conversions.h"
-#include "net/android/network_library.h"
-#endif
-
 #if defined(OS_WIN)
 #include "net/base/network_change_notifier_win.h"
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -47,10 +41,10 @@ namespace {
 // in ways that would require us to place locks around access to this object.
 // (The prohibition on global non-POD objects makes it tricky to do such a thing
 // anyway.)
-NetworkChangeNotifier* g_network_change_notifier = NULL;
+NetworkChangeNotifier* g_network_change_notifier = nullptr;
 
 // Class factory singleton.
-NetworkChangeNotifierFactory* g_network_change_notifier_factory = NULL;
+NetworkChangeNotifierFactory* g_network_change_notifier_factory = nullptr;
 
 class MockNetworkChangeNotifier : public NetworkChangeNotifier {
  public:
@@ -183,7 +177,7 @@ class NetworkChangeNotifier::NetworkChangeCalculator
 NetworkChangeNotifier::~NetworkChangeNotifier() {
   network_change_calculator_.reset();
   DCHECK_EQ(this, g_network_change_notifier);
-  g_network_change_notifier = NULL;
+  g_network_change_notifier = nullptr;
 }
 
 // static
@@ -406,29 +400,6 @@ const char* NetworkChangeNotifier::ConnectionTypeToString(
   return kConnectionTypeNames[type];
 }
 
-// static
-void NetworkChangeNotifier::FinalizingMetricsLogRecord() {
-  if (!g_network_change_notifier)
-    return;
-  g_network_change_notifier->OnFinalizingMetricsLogRecord();
-}
-
-// static
-void NetworkChangeNotifier::LogOperatorCodeHistogram(ConnectionType type) {
-#if defined(OS_ANDROID)
-  // On a connection type change to cellular, log the network operator MCC/MNC.
-  // Log zero in other cases.
-  unsigned mcc_mnc = 0;
-  if (NetworkChangeNotifier::IsConnectionCellular(type)) {
-    // Log zero if not perfectly converted.
-    if (!base::StringToUint(android::GetTelephonyNetworkOperator(), &mcc_mnc)) {
-      mcc_mnc = 0;
-    }
-  }
-  base::UmaHistogramSparse("NCN.NetworkOperatorMCCMNC", mcc_mnc);
-#endif
-}
-
 #if defined(OS_LINUX)
 // static
 const internal::AddressTrackerLinux*
@@ -484,13 +455,11 @@ NetworkChangeNotifier::ConnectionTypeFromInterfaceList(
       continue;
 #endif
 #if defined(OS_MACOSX)
-    // Ignore tunnel and airdrop interfaces.
-    if (base::StartsWith(interfaces[i].friendly_name, "utun",
-                         base::CompareCase::SENSITIVE) ||
-        base::StartsWith(interfaces[i].friendly_name, "awdl",
-                         base::CompareCase::SENSITIVE)) {
+    // Ignore link-local addresses as they aren't globally routable.
+    // Mac assigns these to disconnected interfaces like tunnel interfaces
+    // ("utun"), airdrop interfaces ("awdl"), and ethernet ports ("en").
+    if (interfaces[i].address.IsLinkLocal())
       continue;
-    }
 #endif
 
     // Remove VMware network interfaces as they're internal and should not be
@@ -864,7 +833,7 @@ void NetworkChangeNotifier::NotifyObserversOfSpecificNetworkChangeImpl(
 NetworkChangeNotifier::DisableForTest::DisableForTest()
     : network_change_notifier_(g_network_change_notifier) {
   DCHECK(g_network_change_notifier);
-  g_network_change_notifier = NULL;
+  g_network_change_notifier = nullptr;
 }
 
 NetworkChangeNotifier::DisableForTest::~DisableForTest() {

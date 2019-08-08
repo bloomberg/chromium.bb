@@ -48,6 +48,10 @@ ui::EventDispatchDetails MockInputMethod::DispatchKeyEvent(
   return delegate_->DispatchKeyEventPostIME(event, base::NullCallback());
 }
 
+AsyncKeyDispatcher* MockInputMethod::GetAsyncKeyDispatcher() {
+  return nullptr;
+}
+
 void MockInputMethod::OnFocus() {
   for (InputMethodObserver& observer : observer_list_)
     observer.OnFocus();

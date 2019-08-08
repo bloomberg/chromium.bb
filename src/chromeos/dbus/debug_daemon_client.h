@@ -88,24 +88,18 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DebugDaemonClient
                              int file_descriptor,
                              DBusMethodCallback<uint64_t> callback) = 0;
 
-  // Callback type for GetScrubbedLogs(), GetAllLogs() or GetUserLogFiles().
+  // Callback type for GetAllLogs()
   using GetLogsCallback =
-      base::Callback<void(bool succeeded,
-                          const std::map<std::string, std::string>& logs)>;
-
-  // Gets scrubbed logs from debugd.
-  virtual void GetScrubbedLogs(const GetLogsCallback& callback) = 0;
+      base::OnceCallback<void(bool succeeded,
+                              const std::map<std::string, std::string>& logs)>;
 
   // Gets the scrubbed logs from debugd that are very large and cannot be
   // returned directly from D-Bus. These logs will include ARC and cheets
   // system information.
-  virtual void GetScrubbedBigLogs(const GetLogsCallback& callback) = 0;
+  virtual void GetScrubbedBigLogs(GetLogsCallback callback) = 0;
 
   // Gets all logs collected by debugd.
-  virtual void GetAllLogs(const GetLogsCallback& callback) = 0;
-
-  // Gets list of user log files that must be read by Chrome.
-  virtual void GetUserLogFiles(const GetLogsCallback& callback) = 0;
+  virtual void GetAllLogs(GetLogsCallback callback) = 0;
 
   // Gets an individual log source provided by debugd.
   virtual void GetLog(const std::string& log_name,
@@ -212,14 +206,14 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DebugDaemonClient
       CupsAddPrinterCallback callback) = 0;
 
   // A callback to handle the result of CupsRemovePrinter.
-  using CupsRemovePrinterCallback = base::Callback<void(bool success)>;
+  using CupsRemovePrinterCallback = base::OnceCallback<void(bool success)>;
 
   // Calls CupsRemovePrinter.  |name| is the printer name as registered in
   // CUPS.  |callback| is called with true if removing the printer from CUPS was
   // successful and false if there was an error.  |error_callback| will be
   // called if there was an error in communicating with debugd.
   virtual void CupsRemovePrinter(const std::string& name,
-                                 const CupsRemovePrinterCallback& callback,
+                                 CupsRemovePrinterCallback callback,
                                  const base::Closure& error_callback) = 0;
 
   // A callback to handle the result of StartConcierge/StopConcierge.
@@ -230,6 +224,16 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DebugDaemonClient
   // Calls debugd::kStopVmConcierge, which stops the Concierge service.
   // |callback| is called when the method finishes.
   virtual void StopConcierge(ConciergeCallback callback) = 0;
+
+  // A callback to handle the result of
+  // StartPluginVmDispatcher/StopPluginVmDispatcher.
+  using PluginVmDispatcherCallback = base::OnceCallback<void(bool success)>;
+  // Calls debugd::kStartVmPluginDispatcher, which starts the PluginVm
+  // dispatcher service. |callback| is called when the method finishes.
+  virtual void StartPluginVmDispatcher(PluginVmDispatcherCallback callback) = 0;
+  // Calls debug::kStopVmPluginDispatcher, which stops the PluginVm dispatcher
+  // service. |callback| is called when the method finishes.
+  virtual void StopPluginVmDispatcher(PluginVmDispatcherCallback callback) = 0;
 
   // A callback to handle the result of SetRlzPingSent.
   using SetRlzPingSentCallback = base::OnceCallback<void(bool success)>;

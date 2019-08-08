@@ -53,10 +53,9 @@
 #include "net/spdy/spdy_log_util.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_stream.h"
-#include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
-#include "net/third_party/quic/core/http/spdy_utils.h"
+#include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_frame_builder.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 #include "url/url_constants.h"
@@ -667,6 +666,7 @@ int SpdyStreamRequest::StartRequest(
     SpdyStreamType type,
     const base::WeakPtr<SpdySession>& session,
     const GURL& url,
+    bool can_send_early,
     RequestPriority priority,
     const SocketTag& socket_tag,
     const NetLogWithSource& net_log,
@@ -681,18 +681,25 @@ int SpdyStreamRequest::StartRequest(
   type_ = type;
   session_ = session;
   url_ = SimplifyUrlForRequest(url);
+  can_send_early_ = can_send_early;
   priority_ = priority;
   socket_tag_ = socket_tag;
   net_log_ = net_log;
   callback_ = std::move(callback);
   traffic_annotation_ = MutableNetworkTrafficAnnotationTag(traffic_annotation);
 
+  next_state_ = STATE_WAIT_FOR_CONFIRMATION;
+  int rv = DoLoop(OK);
+  if (rv != OK)
+    return rv;
+
   base::WeakPtr<SpdyStream> stream;
-  int rv = session->TryCreateStream(weak_ptr_factory_.GetWeakPtr(), &stream);
-  if (rv == OK) {
-    Reset();
-    stream_ = stream;
-  }
+  rv = session->TryCreateStream(weak_ptr_factory_.GetWeakPtr(), &stream);
+  if (rv != OK)
+    return rv;
+
+  Reset();
+  stream_ = stream;
   return rv;
 }
 
@@ -755,11 +762,74 @@ void SpdyStreamRequest::Reset() {
   session_.reset();
   stream_.reset();
   url_ = GURL();
+  can_send_early_ = false;
   priority_ = MINIMUM_PRIORITY;
   socket_tag_ = SocketTag();
   net_log_ = NetLogWithSource();
   callback_.Reset();
   traffic_annotation_.reset();
+  next_state_ = STATE_NONE;
+}
+
+void SpdyStreamRequest::OnIOComplete(int rv) {
+  if (rv != OK) {
+    OnRequestCompleteFailure(rv);
+  } else {
+    DoLoop(rv);
+  }
+}
+
+int SpdyStreamRequest::DoLoop(int rv) {
+  do {
+    State state = next_state_;
+    next_state_ = STATE_NONE;
+    switch (state) {
+      case STATE_WAIT_FOR_CONFIRMATION:
+        CHECK_EQ(OK, rv);
+        return DoWaitForConfirmation();
+        break;
+      case STATE_REQUEST_STREAM:
+        CHECK_EQ(OK, rv);
+        return DoRequestStream(rv);
+        break;
+      default:
+        NOTREACHED() << "next_state_: " << next_state_;
+        break;
+    }
+  } while (next_state_ != STATE_NONE && next_state_ && rv != ERR_IO_PENDING);
+  return rv;
+}
+
+int SpdyStreamRequest::DoWaitForConfirmation() {
+  if (can_send_early_) {
+    next_state_ = STATE_NONE;
+    return OK;
+  }
+
+  int rv = session_->ConfirmHandshake(base::BindOnce(
+      &SpdyStreamRequest::OnIOComplete, weak_ptr_factory_.GetWeakPtr()));
+  // If ConfirmHandshake returned synchronously, exit the state machine early
+  // so StartRequest can call TryCreateStream synchronously. Otherwise,
+  // TryCreateStream will be called asynchronously as part of the confirmation
+  // state machine.
+  next_state_ = rv == ERR_IO_PENDING ? STATE_REQUEST_STREAM : STATE_NONE;
+  return rv;
+}
+
+int SpdyStreamRequest::DoRequestStream(int rv) {
+  DCHECK_NE(ERR_IO_PENDING, rv);
+  next_state_ = STATE_NONE;
+  if (rv < 0)
+    return rv;
+
+  base::WeakPtr<SpdyStream> stream;
+  rv = session_->TryCreateStream(weak_ptr_factory_.GetWeakPtr(), &stream);
+  if (rv == OK) {
+    OnRequestCompleteSuccess(stream);
+  } else if (rv != ERR_IO_PENDING) {
+    OnRequestCompleteFailure(rv);
+  }
+  return rv;
 }
 
 // static
@@ -777,12 +847,6 @@ bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
   if (ssl_info.client_cert_sent &&
       !(ssl_config_service.CanShareConnectionWithClientCerts(old_hostname) &&
         ssl_config_service.CanShareConnectionWithClientCerts(new_hostname))) {
-    return false;
-  }
-
-  if (ssl_info.channel_id_sent &&
-      ChannelIDService::GetDomainForHost(new_hostname) !=
-          ChannelIDService::GetDomainForHost(old_hostname)) {
     return false;
   }
 
@@ -841,7 +905,7 @@ SpdySession::SpdySession(
     NetLog* net_log)
     : in_io_loop_(false),
       spdy_session_key_(spdy_session_key),
-      pool_(NULL),
+      pool_(nullptr),
       http_server_properties_(http_server_properties),
       transport_security_state_(transport_security_state),
       ssl_config_service_(ssl_config_service),
@@ -861,6 +925,7 @@ SpdySession::SpdySession(
       error_on_close_(OK),
       initial_settings_(initial_settings),
       greased_http2_frame_(greased_http2_frame),
+      in_confirm_handshake_(false),
       max_concurrent_streams_(kInitialMaxConcurrentStreams),
       max_concurrent_pushed_streams_(
           initial_settings.at(spdy::SETTINGS_MAX_CONCURRENT_STREAMS)),
@@ -921,6 +986,8 @@ SpdySession::SpdySession(
 SpdySession::~SpdySession() {
   CHECK(!in_io_loop_);
   DcheckDraining();
+
+  DCHECK(waiting_for_confirmation_callbacks_.empty());
 
   // TODO(akalin): Check connection->is_initialized().
   DCHECK(socket_);
@@ -1038,6 +1105,20 @@ void SpdySession::EnqueueStreamWrite(
          frame_type == spdy::SpdyFrameType::DATA);
   EnqueueWrite(stream->priority(), frame_type, std::move(producer), stream,
                stream->traffic_annotation());
+}
+
+int SpdySession::ConfirmHandshake(CompletionOnceCallback callback) {
+  int rv = ERR_IO_PENDING;
+  if (!in_confirm_handshake_) {
+    rv = socket_->ConfirmHandshake(
+        base::BindOnce(&SpdySession::NotifyRequestsOfConfirmation,
+                       weak_factory_.GetWeakPtr()));
+  }
+  if (rv == ERR_IO_PENDING) {
+    in_confirm_handshake_ = true;
+    waiting_for_confirmation_callbacks_.push_back(std::move(callback));
+  }
+  return rv;
 }
 
 std::unique_ptr<spdy::SpdySerializedFrame> SpdySession::CreateHeaders(
@@ -2402,6 +2483,15 @@ int SpdySession::DoWriteComplete(int result) {
   return OK;
 }
 
+void SpdySession::NotifyRequestsOfConfirmation(int rv) {
+  for (auto& callback : waiting_for_confirmation_callbacks_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), rv));
+  }
+  waiting_for_confirmation_callbacks_.clear();
+  in_confirm_handshake_ = false;
+}
+
 void SpdySession::SendInitialData() {
   DCHECK(enable_sending_initial_data_);
   DCHECK(buffered_spdy_framer_.get());
@@ -2790,6 +2880,10 @@ void SpdySession::DoDrainSession(Error err, const std::string& description) {
     return;
   }
   MakeUnavailable();
+
+  // Notify any requests waiting for handshake confirmation that there is an
+  // error.
+  NotifyRequestsOfConfirmation(err);
 
   // Mark host_port_pair requiring HTTP/1.1 for subsequent connections.
   if (err == ERR_HTTP_1_1_REQUIRED) {

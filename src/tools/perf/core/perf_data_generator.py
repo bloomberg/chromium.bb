@@ -5,19 +5,19 @@
 
 # pylint: disable=too-many-lines
 
-"""Script to generate chromium.perf.json in
-the src/testing/buildbot directory and benchmark.csv in the src/tools/perf
-directory. Maintaining these files by hand is too unwieldy.
-Note: chromium.perf.fyi.json is updated manually for now until crbug.com/757933
-is complete.
+"""Generates chromium.perf{,.fyi}.json from a set of condensed configs.
+
+This file contains condensed configurations for the perf bots along with
+logic to inflate those into the full (unwieldy) configurations in
+//testing/buildbot that are consumed by the chromium recipe code.
 """
+
 import argparse
 import collections
 import csv
 import filecmp
 import json
 import os
-import shutil
 import sys
 import tempfile
 import textwrap
@@ -32,556 +32,616 @@ path_util.AddTelemetryToPath()
 from telemetry import decorators
 
 
-# Additional compile targets to add to builders.
+# The condensed configurations below get inflated into the perf builder
+# configurations in //testing/buildbot. The expected format of these is:
+#
+#   {
+#     'builder_name1': {
+#       # Targets that the builder should compile in addition to those
+#       # required for tests, as a list of strings.
+#       'additional_compile_targets': ['target1', 'target2', ...],
+#
+#       'tests': [
+#         {
+#           # Arguments to pass to the test suite as a list of strings.
+#           'extra_args': ['--arg1', '--arg2', ...],
+#
+#           # Name of the isolate to run as a string.
+#           'isolate': 'isolate_name',
+#
+#           # Name of the test suite as a string.
+#           # If not present, will default to `isolate`.
+#           'name': 'presentation_name',
+#
+#           # The number of shards for this test as an int.
+#           'num_shards': 2,
+#
+#           # Whether this is a telemetry test, as a boolean.
+#           # Defaults to True.
+#           'telemetry': True,
+#         },
+#         ...
+#       ],
+#
+#       # Testing platform, as a string. Used in determining the browser
+#       # argument to pass to telemetry.
+#       'platform': 'platform_name',
+#
+#       # Dimensions to pass to swarming, as a dict of string keys & values.
+#       'dimension': {
+#         'dimension1_name': 'dimension1_value',
+#         ...
+#       },
+#     },
+#     ...
+#   }
+
+# TODO(crbug.com/902089): automatically generate --test-shard-map-filename
+# arguments once we track all the perf FYI builders to core/bot_platforms.py
+FYI_BUILDERS = {
+  'android-nexus5x-perf-fyi': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'extra_args': [
+          '--output-format=histograms',
+          '--test-shard-map-filename=android-nexus5x-perf-fyi_map.json',
+        ],
+        'num_shards': 4
+      }
+    ],
+    'platform': 'android-chrome',
+    'dimension': {
+      'pool': 'chrome.tests.perf-fyi',
+      'os': 'Android',
+      'device_type': 'bullhead',
+      'device_os': 'MMB29Q',
+      'device_os_flavor': 'google',
+    },
+  },
+  'android-pixel2_webview-perf': {
+    'tests': [
+      {
+        'isolate': 'performance_webview_test_suite',
+        'extra_args': [
+          '--test-shard-map-filename=android-pixel2_webview-perf_map.json',
+        ],
+        'num_shards': 7
+      }
+    ],
+    'platform': 'android-webview-google',
+    'dimension': {
+      'pool': 'chrome.tests.perf-webview-fyi',
+      'os': 'Android',
+      'device_type': 'walleye',
+      'device_os': 'O',
+      'device_os_flavor': 'google',
+    },
+  },
+  'android-pixel2-perf': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'extra_args': [
+          '--run-ref-build',
+          '--test-shard-map-filename=android-pixel2-perf_map.json',
+        ],
+        'num_shards': 7
+      }
+    ],
+    'platform': 'android-chrome',
+    'dimension': {
+      'pool': 'chrome.tests.perf-fyi',
+      'os': 'Android',
+      'device_type': 'walleye',
+      'device_os': 'O',
+      'device_os_flavor': 'google',
+    },
+  },
+  'linux-perf-fyi': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'extra_args': [
+            '--benchmarks=%s' % ','.join((
+                'blink_perf.layout_ng',
+                'blink_perf.paint_layout_ng',
+                'loading.desktop_layout_ng',
+            )),
+            '--output-format=histograms',
+        ],
+        'name': 'blink_perf.layout_ng',
+      }
+    ],
+    'platform': 'linux',
+    'dimension': {
+      'gpu': '10de',
+      'id': 'build186-b7',
+      'pool': 'chrome.tests.perf-fyi',
+    },
+  },
+}
+
+# These configurations are taken from chromium_perf.py in
+# build/scripts/slave/recipe_modules/chromium_tests and must be kept in sync
+# to generate the correct json for each tester
+#
 # On desktop builders, chromedriver is added as an additional compile target.
 # The perf waterfall builds this target for each commit, and the resulting
 # ChromeDriver is archived together with Chrome for use in bisecting.
 # This can be used by Chrome test team, as well as by google3 teams for
 # bisecting Chrome builds with their web tests. For questions or to report
 # issues, please contact johnchen@chromium.org.
-BUILDER_ADDITIONAL_COMPILE_TARGETS = {
-    'android-builder-perf': [
-        'microdump_stackwalk', 'angle_perftests', 'chrome_apk'
+BUILDERS = {
+  'android-builder-perf': {
+    'additional_compile_targets': [
+      'microdump_stackwalk', 'angle_perftests', 'chrome_apk'
     ],
-    'android_arm64-builder-perf': [
-        'microdump_stackwalk', 'angle_perftests', 'chrome_apk'
+  },
+  'android_arm64-builder-perf': {
+    'additional_compile_targets': [
+      'microdump_stackwalk', 'angle_perftests', 'chrome_apk'
     ],
-    'linux-builder-perf': ['chromedriver'],
-    'mac-builder-perf': ['chromedriver'],
-    'win32-builder-perf': ['chromedriver'],
-    'win64-builder-perf': ['chromedriver'],
+  },
+  'linux-builder-perf': {
+    'additional_compile_targets': ['chromedriver'],
+  },
+  'mac-builder-perf': {
+    'additional_compile_targets': ['chromedriver'],
+  },
+  'win32-builder-perf': {
+    'additional_compile_targets': ['chromedriver'],
+  },
+  'win64-builder-perf': {
+    'additional_compile_targets': ['chromedriver'],
+  },
+
+  'android-go-perf': {
+    'tests': [
+      {
+        'name': 'performance_test_suite',
+        'isolate': 'performance_test_suite',
+        'extra_args': [
+          '--run-ref-build',
+          '--test-shard-map-filename=android-go-perf_map.json',
+        ],
+        'num_shards': 19
+      }
+    ],
+    'platform': 'android-chrome',
+    'dimension': {
+      'device_os': 'O',
+      'device_type': 'gobo',
+      'device_os_flavor': 'google',
+      'pool': 'chrome.tests.perf',
+      'os': 'Android',
+    },
+  },
+  'android-go_webview-perf': {
+    'tests': [
+      {
+        'isolate': 'performance_webview_test_suite',
+        'extra_args': [
+            '--test-shard-map-filename=android-go_webview-perf_map.json',
+        ],
+        'num_shards': 25
+      }
+    ],
+    'platform': 'android-webview-google',
+    'dimension': {
+      'pool': 'chrome.tests.perf-webview',
+      'os': 'Android',
+      'device_type': 'gobo',
+      'device_os': 'O',
+      'device_os_flavor': 'google',
+    },
+  },
+  'android-nexus5x-perf': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'num_shards': 16,
+        'extra_args': [
+            '--run-ref-build',
+            '--test-shard-map-filename=android-nexus5x-perf_map.json',
+            '--assert-gpu-compositing',
+        ],
+      },
+      {
+        'isolate': 'media_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'components_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'tracing_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'gpu_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'angle_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+        'extra_args': [
+            '--shard-timeout=300'
+        ],
+      },
+      {
+        'isolate': 'base_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      }
+    ],
+    'platform': 'android',
+    'dimension': {
+      'pool': 'chrome.tests.perf',
+      'os': 'Android',
+      'device_type': 'bullhead',
+      'device_os': 'MMB29Q',
+      'device_os_flavor': 'google',
+    },
+  },
+  'Android Nexus5 Perf': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'num_shards': 16,
+        'extra_args': [
+            '--run-ref-build',
+            '--test-shard-map-filename=android_nexus5_perf_map.json',
+            '--assert-gpu-compositing',
+        ],
+      },
+      {
+        'isolate': 'tracing_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'components_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'gpu_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+    ],
+    'platform': 'android',
+    'dimension': {
+      'pool': 'chrome.tests.perf',
+      'os': 'Android',
+      'device_type': 'hammerhead',
+      'device_os': 'KOT49H',
+      'device_os_flavor': 'google',
+    },
+  },
+  'Android Nexus5X WebView Perf': {
+    'tests': [
+      {
+        'isolate': 'performance_webview_test_suite',
+        'num_shards': 16,
+        'extra_args': [
+            '--test-shard-map-filename=android_nexus5x_webview_perf_map.json',
+            '--assert-gpu-compositing',
+        ],
+      }
+    ],
+    'platform': 'android-webview',
+    'dimension': {
+      'pool': 'chrome.tests.perf-webview',
+      'os': 'Android',
+      'device_type': 'bullhead',
+      'device_os': 'MOB30K',
+      'device_os_flavor': 'aosp',
+    },
+  },
+  'Android Nexus6 WebView Perf': {
+    'tests': [
+      {
+        'isolate': 'performance_webview_test_suite',
+        'num_shards': 12,
+        'extra_args': [
+            '--test-shard-map-filename=android_nexus6_webview_perf_map.json',
+            '--assert-gpu-compositing',
+        ],
+      }
+    ],
+    'platform': 'android-webview',
+    'dimension': {
+      'pool': 'chrome.tests.perf-webview',
+      'os': 'Android',
+      'device_type': 'shamu',
+      'device_os': 'MOB30K',
+      'device_os_flavor': 'aosp',
+    },
+  },
+  'win-10-perf': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'num_shards': 26,
+        'extra_args': [
+            '--run-ref-build',
+            '--test-shard-map-filename=win-10-perf_map.json',
+            '--assert-gpu-compositing',
+        ],
+      },
+      {
+        'isolate': 'angle_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+        'extra_args': [
+            '--shard-timeout=300'
+        ],
+      },
+      {
+        'isolate': 'media_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'components_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'views_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'base_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      }
+    ],
+    'platform': 'win',
+    'target_bits': 64,
+    'dimension': {
+      'pool': 'chrome.tests.perf',
+      'os': 'Windows-10',
+      'gpu': '8086:5912'
+    },
+  },
+  'Win 7 Perf': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'num_shards': 5,
+        'extra_args': [
+            '--run-ref-build',
+            '--test-shard-map-filename=win_7_perf_map.json',
+        ],
+      },
+      {
+        'isolate': 'load_library_perf_tests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'components_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'media_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      }
+    ],
+    'platform': 'win',
+    'target_bits': 32,
+    'dimension': {
+      'pool': 'chrome.tests.perf',
+      'os': 'Windows-2008ServerR2-SP1',
+      'gpu': '102b:0532'
+    },
+  },
+  'Win 7 Nvidia GPU Perf': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'num_shards': 5,
+        'extra_args': [
+            '--run-ref-build',
+            '--test-shard-map-filename=win_7_nvidia_gpu_perf_map.json',
+            '--assert-gpu-compositing',
+        ],
+      },
+      {
+        'isolate': 'load_library_perf_tests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'angle_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'media_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'name': 'passthrough_command_buffer_perftests',
+        'isolate': 'command_buffer_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+        'extra_args': [
+            '--use-cmd-decoder=passthrough',
+            '--use-angle=gl-null',
+        ],
+      },
+      {
+        'name': 'validating_command_buffer_perftests',
+        'isolate': 'command_buffer_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+        'extra_args': [
+            '--use-cmd-decoder=validating',
+            '--use-stub',
+        ],
+      },
+    ],
+    'platform': 'win',
+    'target_bits': 64,
+    'dimension': {
+      'pool': 'chrome.tests.perf',
+      'os': 'Windows-2008ServerR2-SP1',
+      'gpu': '10de:1cb3'
+    },
+  },
+  'mac-10_12_laptop_low_end-perf': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'num_shards': 26,
+        'extra_args': [
+            '--run-ref-build',
+            ('--test-shard-map-filename='
+             'mac-10_12_laptop_low_end-perf_map.json'),
+            '--assert-gpu-compositing',
+        ],
+      },
+      {
+        'isolate': 'performance_browser_tests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'load_library_perf_tests',
+        'num_shards': 1,
+        'telemetry': False,
+      }
+    ],
+    'platform': 'mac',
+    'dimension': {
+      'pool': 'chrome.tests.perf',
+      'os': 'Mac-10.12',
+      'gpu': '8086:1626'
+    },
+  },
+  'linux-perf': {
+    'tests': [
+      # Add views_perftests, crbug.com/811766
+      {
+        'isolate': 'performance_test_suite',
+        'num_shards': 26,
+        'extra_args': [
+            '--run-ref-build',
+            '--test-shard-map-filename=linux-perf_map.json',
+            '--assert-gpu-compositing',
+        ],
+      },
+      {
+        'isolate': 'performance_browser_tests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'load_library_perf_tests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'net_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'tracing_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'media_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'base_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      }
+    ],
+    'platform': 'linux',
+    'dimension': {
+      'gpu': '10de:1cb3',
+      'os': 'Ubuntu-14.04',
+      'pool': 'chrome.tests.perf',
+    },
+  },
+  'mac-10_13_laptop_high_end-perf': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'extra_args': [
+          '--run-ref-build',
+          '--test-shard-map-filename=mac-10_13_laptop_high_end-perf_map.json',
+            '--assert-gpu-compositing',
+        ],
+        'num_shards': 26
+      },
+      {
+        'isolate': 'performance_browser_tests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'net_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'views_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'media_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      },
+      {
+        'isolate': 'base_perftests',
+        'num_shards': 1,
+        'telemetry': False,
+      }
+    ],
+    'platform': 'mac',
+    'dimension': {
+      'pool': 'chrome.tests.perf',
+      'os': 'Mac-10.13',
+      'gpu': '1002:6821'
+    },
+  },
 }
 
 
-# To add a new isolate, add an entry to the 'tests' section.  Supported
-# values in this json are:
-# isolate: the name of the isolate you are trigger
-# test_suite: name of the test suite if different than the isolate
-#     that you want to show up as the test name
-# extra_args: args that need to be passed to the script target
-#     of the isolate you are running.
-# shards: shard indices that you want the isolate to run on.  If omitted
-#     will run on all shards.
-# telemetry: boolean indicating if this is a telemetry test.  If omitted
-#     assumed to be true.
-
-# TODO(crbug.com/902089): automatically generate --test-shard-map-filename
-# arguments once we track all the perf FYI builders to core/bot_platforms.py
-NEW_PERF_RECIPE_FYI_TESTERS = {
-  'testers' : {
-    'android-pixel2_webview-perf': {
-      'tests': [
-        {
-          'isolate': 'performance_webview_test_suite',
-          'extra_args': [
-            '--test-shard-map-filename=android-pixel2_webview-perf_map.json',
-          ],
-          'num_shards': 7
-        }
-      ],
-      'platform': 'android-webview-google',
-      'dimension': {
-        'pool': 'chrome.tests.perf-webview-fyi',
-        'os': 'Android',
-        'device_type': 'walleye',
-        'device_os': 'O',
-        'device_os_flavor': 'google',
-      },
-    },
-    'android-pixel2-perf': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'extra_args': [
-            '--run-ref-build',
-            '--test-shard-map-filename=android-pixel2-perf_map.json',
-          ],
-          'num_shards': 7
-        }
-      ],
-      'platform': 'android-chrome',
-      'dimension': {
-        'pool': 'chrome.tests.perf-fyi',
-        'os': 'Android',
-        'device_type': 'walleye',
-        'device_os': 'O',
-        'device_os_flavor': 'google',
-      },
-    },
-  }
-}
-
-# These configurations are taken from chromium_perf.py in
-# build/scripts/slave/recipe_modules/chromium_tests and must be kept in sync
-# to generate the correct json for each tester
-NEW_PERF_RECIPE_MIGRATED_TESTERS = {
-  'testers' : {
-    'android-go-perf': {
-      'tests': [
-        {
-          'name': 'performance_test_suite',
-          'isolate': 'performance_test_suite',
-          'extra_args': [
-            '--run-ref-build',
-            '--test-shard-map-filename=android-go-perf_map.json',
-          ],
-          'num_shards': 19
-        }
-      ],
-      'platform': 'android',
-      'dimension': {
-        'device_os': 'O',
-        'device_type': 'gobo',
-        'device_os_flavor': 'google',
-        'pool': 'chrome.tests.perf',
-        'os': 'Android',
-      },
-    },
-    'android-go_webview-perf': {
-      'tests': [
-        {
-          'isolate': 'performance_webview_test_suite',
-          'extra_args': [
-              '--test-shard-map-filename=android-go_webview-perf_map.json',
-          ],
-          'num_shards': 25
-        }
-      ],
-      'platform': 'android-webview-google',
-      'dimension': {
-        'pool': 'chrome.tests.perf-webview',
-        'os': 'Android',
-        'device_type': 'gobo',
-        'device_os': 'O',
-        'device_os_flavor': 'google',
-      },
-    },
-    'android-nexus5x-perf': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'num_shards': 16,
-          'extra_args': [
-              '--run-ref-build',
-              '--test-shard-map-filename=android-nexus5x-perf_map.json',
-              '--assert-gpu-compositing',
-          ],
-        },
-        {
-          'isolate': 'media_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'components_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'tracing_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'gpu_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'angle_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-          'extra_args': [
-              '--shard-timeout=300'
-          ],
-        },
-        {
-          'isolate': 'base_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        }
-      ],
-      'platform': 'android',
-      'dimension': {
-        'pool': 'chrome.tests.perf',
-        'os': 'Android',
-        'device_type': 'bullhead',
-        'device_os': 'MMB29Q',
-        'device_os_flavor': 'google',
-      },
-    },
-    'Android Nexus5 Perf': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'num_shards': 16,
-          'extra_args': [
-              '--run-ref-build',
-              '--test-shard-map-filename=android_nexus5_perf_map.json',
-              '--assert-gpu-compositing',
-          ],
-        },
-        {
-          'isolate': 'tracing_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'components_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'gpu_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-      ],
-      'platform': 'android',
-      'dimension': {
-        'pool': 'chrome.tests.perf',
-        'os': 'Android',
-        'device_type': 'hammerhead',
-        'device_os': 'KOT49H',
-        'device_os_flavor': 'google',
-      },
-    },
-    'Android Nexus5X WebView Perf': {
-      'tests': [
-        {
-          'isolate': 'performance_webview_test_suite',
-          'num_shards': 16,
-          'extra_args': [
-              '--test-shard-map-filename=android_nexus5x_webview_perf_map.json',
-              '--assert-gpu-compositing',
-          ],
-        }
-      ],
-      'platform': 'android-webview',
-      'dimension': {
-        'pool': 'chrome.tests.perf-webview',
-        'os': 'Android',
-        'device_type': 'bullhead',
-        'device_os': 'MOB30K',
-        'device_os_flavor': 'aosp',
-      },
-    },
-    'Android Nexus6 WebView Perf': {
-      'tests': [
-        {
-          'isolate': 'performance_webview_test_suite',
-          'num_shards': 8,
-          'extra_args': [
-              '--test-shard-map-filename=android_nexus6_webview_perf_map.json',
-              '--assert-gpu-compositing',
-          ],
-        }
-      ],
-      'platform': 'android-webview',
-      'dimension': {
-        'pool': 'chrome.tests.perf-webview',
-        'os': 'Android',
-        'device_type': 'shamu',
-        'device_os': 'MOB30K',
-        'device_os_flavor': 'aosp',
-      },
-    },
-    'win-10-perf': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'num_shards': 26,
-          'extra_args': [
-              '--run-ref-build',
-              '--test-shard-map-filename=win-10-perf_map.json',
-              '--assert-gpu-compositing',
-          ],
-        },
-        {
-          'isolate': 'angle_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-          'extra_args': [
-              '--shard-timeout=300'
-          ],
-        },
-        {
-          'isolate': 'media_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'components_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'views_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'base_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        }
-      ],
-      'platform': 'win',
-      'target_bits': 64,
-      'dimension': {
-        'pool': 'chrome.tests.perf',
-        'os': 'Windows-10',
-        'gpu': '8086:5912'
-      },
-    },
-    'Win 7 Perf': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'num_shards': 5,
-          'extra_args': [
-              '--run-ref-build',
-              '--test-shard-map-filename=win_7_perf_map.json',
-          ],
-        },
-        {
-          'isolate': 'load_library_perf_tests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'components_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'media_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        }
-      ],
-      'platform': 'win',
-      'target_bits': 32,
-      'dimension': {
-        'pool': 'chrome.tests.perf',
-        'os': 'Windows-2008ServerR2-SP1',
-        'gpu': '102b:0532'
-      },
-    },
-    'Win 7 Nvidia GPU Perf': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'num_shards': 5,
-          'extra_args': [
-              '--run-ref-build',
-              '--test-shard-map-filename=win_7_nvidia_gpu_perf_map.json',
-              '--assert-gpu-compositing',
-          ],
-        },
-        {
-          'isolate': 'load_library_perf_tests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'angle_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'media_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'test_suite': 'passthrough_command_buffer_perftests',
-          'isolate': 'command_buffer_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-          'extra_args': [
-              '--use-cmd-decoder=passthrough',
-              '--use-angle=gl-null',
-          ],
-        },
-        {
-          'test_suite': 'validating_command_buffer_perftests',
-          'isolate': 'command_buffer_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-          'extra_args': [
-              '--use-cmd-decoder=validating',
-              '--use-stub',
-          ],
-        },
-      ],
-      'platform': 'win',
-      'target_bits': 64,
-      'dimension': {
-        'pool': 'chrome.tests.perf',
-        'os': 'Windows-2008ServerR2-SP1',
-        'gpu': '10de:1cb3'
-      },
-    },
-    'mac-10_12_laptop_low_end-perf': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'num_shards': 26,
-          'extra_args': [
-              '--run-ref-build',
-              ('--test-shard-map-filename='
-               'mac-10_12_laptop_low_end-perf_map.json'),
-              '--assert-gpu-compositing',
-          ],
-        },
-        {
-          'isolate': 'performance_browser_tests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'load_library_perf_tests',
-          'num_shards': 1,
-          'telemetry': False,
-        }
-      ],
-      'platform': 'mac',
-      'dimension': {
-        'pool': 'chrome.tests.perf',
-        'os': 'Mac-10.12',
-        'gpu': '8086:1626'
-      },
-    },
-    'linux-perf': {
-      'tests': [
-        # Add views_perftests, crbug.com/811766
-        {
-          'isolate': 'performance_test_suite',
-          'num_shards': 26,
-          'extra_args': [
-              '--run-ref-build',
-              '--test-shard-map-filename=linux-perf_map.json',
-              '--assert-gpu-compositing',
-          ],
-        },
-        {
-          'isolate': 'performance_browser_tests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'load_library_perf_tests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'net_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'tracing_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'media_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'base_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        }
-      ],
-      'platform': 'linux',
-      'dimension': {
-        'gpu': '10de:1cb3',
-        'os': 'Ubuntu-14.04',
-        'pool': 'chrome.tests.perf',
-      },
-    },
-    'mac-10_13_laptop_high_end-perf': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'extra_args': [
-            '--run-ref-build',
-            '--test-shard-map-filename=mac-10_13_laptop_high_end-perf_map.json',
-              '--assert-gpu-compositing',
-          ],
-          'num_shards': 26
-        },
-        {
-          'isolate': 'performance_browser_tests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'net_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'views_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'media_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'base_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        }
-      ],
-      'platform': 'mac',
-      'dimension': {
-        'pool': 'chrome.tests.perf',
-        'os': 'Mac-10.13',
-        'gpu': '1002:6821'
-      },
-    },
-  }
-}
-
-
-def add_builder(waterfall, name, additional_compile_targets=None):
-  waterfall['builders'][name] = added = {}
-  if additional_compile_targets:
-    added['additional_compile_targets'] = additional_compile_targets
-
-  return waterfall
-
-def get_waterfall_builder_config():
-  builders = {'builders':{}}
-
-  for builder, targets in BUILDER_ADDITIONAL_COMPILE_TARGETS.items():
-    builders = add_builder(
-        builders, builder, additional_compile_targets=targets)
-
-  return builders
-
-
-def update_all_tests(waterfall, file_path):
+def update_all_tests(builders_dict, file_path):
   tests = {}
   tests['AAAAA1 AUTOGENERATED FILE DO NOT EDIT'] = {}
   tests['AAAAA2 See //tools/perf/generate_perf_data to make changes'] = {}
 
-  # Add in builders
-  for name, config in waterfall['builders'].iteritems():
-    tests[name] = config
+  for name, config in builders_dict.iteritems():
+    tests[name] = generate_builder_config(config)
 
-  # Add in tests
-  generate_telemetry_tests(NEW_PERF_RECIPE_MIGRATED_TESTERS, tests)
   with open(file_path, 'w') as fp:
     json.dump(tests, fp, indent=2, separators=(',', ': '), sort_keys=True)
     fp.write('\n')
+
 
 def merge_dicts(*dict_args):
     result = {}
@@ -611,10 +671,11 @@ NON_TELEMETRY_BENCHMARKS = {
         'piman@chromium.org, chrome-gpu-perf-owners@chromium.org',
         'Internals>GPU'),
     'passthrough_command_buffer_perftests': BenchmarkMetadata(
-        'piman@chromium.org, chrome-gpu-perf-owners@chromium.org',
-        'Internals>GPU>ANGLE'),
+        'net-dev@chromium.org',
+        'Internals>Network'),
     'net_perftests': BenchmarkMetadata(
-        'xunjieli@chromium.org'),
+        'net-dev@chromium.org',
+        'Internals>Network'),
     'gpu_perftests': BenchmarkMetadata(
         'reveman@chromium.org, chrome-gpu-perf-owners@chromium.org',
         'Internals>GPU'),
@@ -860,35 +921,32 @@ def update_labs_docs_md(filepath):
       f.write('\n')
 
 
-def validate_tests(waterfall, waterfall_file, fyi_waterfall_file,
-                   benchmark_file, labs_docs_file):
-  up_to_date = True
-
+def validate_waterfall(builders_dict, waterfall_file):
   waterfall_tempfile = tempfile.NamedTemporaryFile(delete=False).name
-  fyi_waterfall_tempfile = tempfile.NamedTemporaryFile(delete=False).name
-  benchmark_tempfile = tempfile.NamedTemporaryFile(delete=False).name
-  labs_docs_tempfile = tempfile.NamedTemporaryFile(delete=False).name
-
   try:
-    update_all_tests(waterfall, waterfall_tempfile)
-    up_to_date &= filecmp.cmp(waterfall_file, waterfall_tempfile)
-
-    shutil.copy(fyi_waterfall_file, fyi_waterfall_tempfile)
-    load_and_update_fyi_json(fyi_waterfall_file)
-    up_to_date &= filecmp.cmp(fyi_waterfall_tempfile, fyi_waterfall_file)
-
-    update_benchmark_csv(benchmark_tempfile)
-    up_to_date &= filecmp.cmp(benchmark_file, benchmark_tempfile)
-
-    update_labs_docs_md(labs_docs_tempfile)
-    up_to_date &= filecmp.cmp(labs_docs_file, labs_docs_tempfile)
+    update_all_tests(builders_dict, waterfall_tempfile)
+    return filecmp.cmp(waterfall_file, waterfall_tempfile)
   finally:
     os.remove(waterfall_tempfile)
-    os.remove(fyi_waterfall_tempfile)
+
+
+def validate_benchmark_csv(benchmark_file):
+  benchmark_tempfile = tempfile.NamedTemporaryFile(delete=False).name
+  try:
+    update_benchmark_csv(benchmark_tempfile)
+    return filecmp.cmp(benchmark_file, benchmark_tempfile)
+  finally:
     os.remove(benchmark_tempfile)
+
+
+def validate_docs(labs_docs_file):
+  labs_docs_tempfile = tempfile.NamedTemporaryFile(delete=False).name
+  try:
+    update_labs_docs_md(labs_docs_tempfile)
+    return filecmp.cmp(labs_docs_file, labs_docs_tempfile)
+  finally:
     os.remove(labs_docs_tempfile)
 
-  return up_to_date
 
 def add_common_test_properties(test_entry):
   test_entry['trigger_script'] = {
@@ -945,19 +1003,19 @@ def generate_non_telemetry_args(test_name):
 def generate_performance_test(tester_config, test):
   isolate_name = test['isolate']
 
-  test_suite = test.get('test_suite', isolate_name)
+  test_name = test.get('name', isolate_name)
 
   if test.get('telemetry', True):
     test_args = generate_telemetry_args(tester_config)
   else:
-    test_args = generate_non_telemetry_args(test_name=test_suite)
+    test_args = generate_non_telemetry_args(test_name=test_name)
   # Append any additional args specific to an isolate
   test_args += test.get('extra_args', [])
 
   result = {
     'args': test_args,
     'isolate_name': isolate_name,
-    'name': test_suite,
+    'name': test_name,
     'override_compile_targets': [
       isolate_name
     ]
@@ -981,44 +1039,37 @@ def generate_performance_test(tester_config, test):
     'dimension_sets': [
       tester_config['dimension']
     ],
-    'shards': shards,
   }
+  if shards:
+    result['swarming']['shards'] = shards
   return result
 
 
-def load_and_update_fyi_json(fyi_waterfall_file):
-  tests = {}
+def generate_builder_config(condensed_config):
+  config = {}
 
-  with open(fyi_waterfall_file) as fp_r:
-    tests = json.load(fp_r)
-    tests['AAAAA1 SEMI-AUTOGENERATED FILE. EDIT CAREFULLY'] = {}
-    tests['AAAAA2 Run ./tools/perf/generate_perf_data --validate to see '] = {}
-    tests['AAAAA3 if your changes will stick. '] = {}
-  with open(fyi_waterfall_file, 'w') as fp:
-    # We have loaded what is there, we want to update or add
-    # what we have listed here
-    generate_telemetry_tests(NEW_PERF_RECIPE_FYI_TESTERS, tests)
-    json.dump(tests, fp, indent=2, separators=(',', ': '), sort_keys=True)
-    fp.write('\n')
+  if 'additional_compile_targets' in condensed_config:
+    config['additional_compile_targets'] = (
+        condensed_config['additional_compile_targets'])
 
-
-def generate_telemetry_tests(testers, tests):
-  for tester, tester_config in testers['testers'].iteritems():
+  condensed_tests = condensed_config.get('tests')
+  if condensed_tests:
     telemetry_tests = []
     gtest_tests = []
-    for test in tester_config['tests']:
-      generated_script = generate_performance_test(tester_config, test)
+    for test in condensed_tests:
+      generated_script = generate_performance_test(condensed_config, test)
       if test.get('telemetry', True):
         telemetry_tests.append(generated_script)
       else:
         gtest_tests.append(generated_script)
     telemetry_tests.sort(key=lambda x: x['name'])
     gtest_tests.sort(key=lambda x: x['name'])
-    tests[tester] = {
-      # Put Telemetry tests as the end since they tend to run longer to avoid
-      # starving gtests (see crbug.com/873389).
-      'isolated_scripts': gtest_tests + telemetry_tests
-    }
+
+    # Put Telemetry tests as the end since they tend to run longer to avoid
+    # starving gtests (see crbug.com/873389).
+    config['isolated_scripts'] = gtest_tests + telemetry_tests
+
+  return config
 
 
 def main(args):
@@ -1049,9 +1100,10 @@ def main(args):
   return_code = 0
 
   if options.validate_only:
-    if validate_tests(get_waterfall_builder_config(),
-                      perf_waterfall_file, fyi_waterfall_file, benchmark_file,
-                      labs_docs_file):
+    if (validate_waterfall(BUILDERS, perf_waterfall_file)
+        and validate_waterfall(FYI_BUILDERS, fyi_waterfall_file)
+        and validate_benchmark_csv(benchmark_file)
+        and validate_docs(labs_docs_file)):
       print 'All the perf config files are up-to-date. \\o/'
       return 0
     else:
@@ -1059,8 +1111,8 @@ def main(args):
              'to update them.') % sys.argv[0]
       return 1
   else:
-    load_and_update_fyi_json(fyi_waterfall_file)
-    update_all_tests(get_waterfall_builder_config(), perf_waterfall_file)
+    update_all_tests(FYI_BUILDERS, fyi_waterfall_file)
+    update_all_tests(BUILDERS, perf_waterfall_file)
     update_benchmark_csv(benchmark_file)
     update_labs_docs_md(labs_docs_file)
     if not is_perf_benchmarks_scheduling_valid(

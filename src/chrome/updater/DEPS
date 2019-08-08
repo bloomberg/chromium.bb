@@ -1,7 +1,11 @@
 include_rules = [
+  "+components/crash/core/common",
+  "+components/prefs",
   "+components/services/patch",
   "+components/services/unzip",
   "+components/update_client",
   "+components/version_info",
-  "+mojo",
+  "+courgette",
+  "+third_party/zlib/google",
+  "+third_party/crashpad",
 ]

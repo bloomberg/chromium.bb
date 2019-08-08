@@ -7,7 +7,7 @@
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "jni/PostTask_jni.h"
 #include "jni/Runnable_jni.h"
 
@@ -15,14 +15,12 @@ namespace base {
 
 // static
 void PostTaskAndroid::SignalNativeSchedulerReady() {
-  Java_PostTask_onNativeTaskSchedulerReady(
-      base::android::AttachCurrentThread());
+  Java_PostTask_onNativeSchedulerReady(base::android::AttachCurrentThread());
 }
 
 // static
 void PostTaskAndroid::SignalNativeSchedulerShutdown() {
-  Java_PostTask_onNativeTaskSchedulerShutdown(
-      base::android::AttachCurrentThread());
+  Java_PostTask_onNativeSchedulerShutdown(base::android::AttachCurrentThread());
 }
 
 namespace {

@@ -65,6 +65,23 @@ class PaygenPayloadLibTest(cros_test_lib.MockTempDirTestCase):
         uri=('gs://chromeos-releases/dev-channel/x86-alex/4171.0.0/'
              'chromeos_4171.0.0_x86-alex_recovery_dev-channel_mp-v3.bin'))
 
+    self.new_dlc_image = gspaths.DLCImage(
+        build=self.new_build,
+        key='dlc',
+        dlc_id='dummy-dlc',
+        dlc_package='dlc-package',
+        uri=('gs://chromeos-releases/dev-channel/x86-alex/4171.0.0/dlc/'
+             'dummy-dlc/dummy-package/dlc.img'))
+
+    self.old_dlc_image = gspaths.DLCImage(
+        build=self.old_build,
+        key='dlc',
+        dlc_id='dummy-dlc',
+        dlc_package='dummy-package',
+        uri=('gs://chromeos-releases/dev-channel/x86-alex/1620.0.0/dlc/'
+             'dummy-dlc/dummy-package/dlc.img'))
+
+
     self.old_test_image = gspaths.UnsignedImageArchive(
         build=self.old_build,
         uri=('gs://chromeos-releases/dev-channel/x86-alex/1620.0.0/'
@@ -79,9 +96,17 @@ class PaygenPayloadLibTest(cros_test_lib.MockTempDirTestCase):
                                         src_image=None,
                                         uri='gs://full_old_foo/boo')
 
+    self.full_dlc_payload = gspaths.Payload(tgt_image=self.new_dlc_image,
+                                            src_image=None,
+                                            uri='gs://full_old_foo/boo')
+
     self.delta_payload = gspaths.Payload(tgt_image=self.new_image,
                                          src_image=self.old_image,
                                          uri='gs://delta_new_old/boo')
+
+    self.delta_dlc_payload = gspaths.Payload(tgt_image=self.new_dlc_image,
+                                             src_image=self.old_dlc_image,
+                                             uri='gs://full_old_foo/boo')
 
     self.full_test_payload = gspaths.Payload(tgt_image=self.old_test_image,
                                              src_image=None,
@@ -303,6 +328,71 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--new_key=mp-v3']
     extract_mock.assert_called_once_with()
     postinst_config_mock.assert_called_once_with(True)
+    run_mock.assert_called_once_with(cmd)
+
+  def testGenerateUnsignedDLCPayloadFull(self):
+    """Test _GenerateUnsignedPayload with full DLC payload."""
+    gen = self._GetStdGenerator(payload=self.full_dlc_payload,
+                                work_dir='/work')
+
+    # Stub out the required functions.
+    extract_mock = self.PatchObject(gen, '_ExtractPartitions')
+    postinst_config_mock = self.PatchObject(gen, '_GeneratePostinstConfig')
+    run_mock = self.PatchObject(gen, '_RunGeneratorCmd')
+
+    # Run the test.
+    gen._GenerateUnsignedPayload()
+
+    # Check the expected function calls.
+    cmd = ['delta_generator',
+           '--major_version=2',
+           '--out_file=' + gen.payload_file,
+           '--partition_names=' + ':'.join(gen.partition_names),
+           '--new_partitions=' + ':'.join(gen.tgt_partitions),
+           '--new_channel=dev-channel',
+           '--new_board=x86-alex',
+           '--new_version=4171.0.0',
+           '--new_build_channel=dev-channel',
+           '--new_build_version=4171.0.0',
+           '--new_key=dlc']
+    extract_mock.assert_not_called()
+    postinst_config_mock.assert_called_once_with(False)
+    run_mock.assert_called_once_with(cmd)
+
+  def testGenerateUnsignedDLCPayloadDelta(self):
+    """Test _GenerateUnsignedPayload with delta DLC payload."""
+    gen = self._GetStdGenerator(payload=self.delta_dlc_payload,
+                                work_dir='/work')
+
+    # Stub out the required functions.
+    extract_mock = self.PatchObject(gen, '_ExtractPartitions')
+    postinst_config_mock = self.PatchObject(gen, '_GeneratePostinstConfig')
+    run_mock = self.PatchObject(gen, '_RunGeneratorCmd')
+
+    # Run the test.
+    gen._GenerateUnsignedPayload()
+
+    # Check the expected function calls.
+    cmd = ['delta_generator',
+           '--major_version=2',
+           '--out_file=' + gen.payload_file,
+           '--partition_names=' + ':'.join(gen.partition_names),
+           '--new_partitions=' + ':'.join(gen.tgt_partitions),
+           '--new_channel=dev-channel',
+           '--new_board=x86-alex',
+           '--new_version=4171.0.0',
+           '--new_build_channel=dev-channel',
+           '--new_build_version=4171.0.0',
+           '--new_key=dlc',
+           '--old_partitions=/work/src_image.bin',
+           '--old_channel=dev-channel',
+           '--old_board=x86-alex',
+           '--old_version=1620.0.0',
+           '--old_build_channel=dev-channel',
+           '--old_build_version=1620.0.0',
+           '--old_key=dlc']
+    extract_mock.assert_not_called()
+    postinst_config_mock.assert_called_once_with(False)
     run_mock.assert_called_once_with(cmd)
 
   def testGenerateUnsignedPayloadDelta(self):

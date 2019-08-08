@@ -14,10 +14,48 @@
 #include "chromeos/services/assistant/public/features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/consent_auditor/consent_auditor.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+
+namespace {
+
+bool IsPreferenceDefaultEnabled(const PrefService* prefs,
+                                const std::string& path) {
+  const PrefService::Preference* pref = prefs->FindPreference(path);
+
+  if (pref->IsManaged())
+    return pref->GetValue()->GetBool();
+
+  if (pref->GetRecommendedValue())
+    return pref->GetRecommendedValue()->GetBool();
+
+  return true;
+}
+
+bool IsScreenContextDefaultEnabled(PrefService* prefs) {
+  return IsPreferenceDefaultEnabled(
+      prefs, arc::prefs::kVoiceInteractionContextEnabled);
+}
+
+bool IsScreenContextToggleDisabled(PrefService* prefs) {
+  return prefs->IsManagedPreference(
+      arc::prefs::kVoiceInteractionContextEnabled);
+}
+
+bool IsHotwordDefaultEnabled(PrefService* prefs) {
+  return IsPreferenceDefaultEnabled(
+      prefs, arc::prefs::kVoiceInteractionHotwordEnabled);
+}
+
+bool IsHotwordToggleDisabled(PrefService* prefs) {
+  return prefs->IsManagedPreference(
+      arc::prefs::kVoiceInteractionHotwordEnabled);
+}
+
+}  // namespace
 
 namespace chromeos {
 
@@ -106,11 +144,11 @@ base::Value CreateDisclosureData(const SettingZippyList& disclosure_list) {
 
 // Helper method to create get more screen data.
 base::Value CreateGetMoreData(bool email_optin_needed,
-                              const assistant::EmailOptInUi& email_optin_ui) {
+                              const assistant::EmailOptInUi& email_optin_ui,
+                              PrefService* prefs) {
   base::Value get_more_data(base::Value::Type::LIST);
 
-  if (!base::FeatureList::IsEnabled(
-          assistant::features::kAssistantVoiceMatch)) {
+  if (!IsVoiceMatchEnabled(prefs)) {
     // Process hotword data.
     base::Value hotword_data(base::Value::Type::DICTIONARY);
     hotword_data.SetKey("id", base::Value("hotword"));
@@ -120,7 +158,10 @@ base::Value CreateGetMoreData(bool email_optin_needed,
     hotword_data.SetKey(
         "description",
         base::Value(l10n_util::GetStringUTF16(IDS_ASSISTANT_HOTWORD_DESC)));
-    hotword_data.SetKey("defaultEnabled", base::Value(true));
+    hotword_data.SetKey("defaultEnabled",
+                        base::Value(IsHotwordDefaultEnabled(prefs)));
+    hotword_data.SetKey("toggleDisabled",
+                        base::Value(IsHotwordToggleDisabled(prefs)));
     hotword_data.SetKey(
         "iconUri",
         base::Value("https://www.gstatic.com/images/icons/material/system/"
@@ -135,7 +176,10 @@ base::Value CreateGetMoreData(bool email_optin_needed,
                                    IDS_ASSISTANT_SCREEN_CONTEXT_TITLE)));
   context_data.SetKey("description", base::Value(l10n_util::GetStringUTF16(
                                          IDS_ASSISTANT_SCREEN_CONTEXT_DESC)));
-  context_data.SetKey("defaultEnabled", base::Value(true));
+  context_data.SetKey("defaultEnabled",
+                      base::Value(IsScreenContextDefaultEnabled(prefs)));
+  context_data.SetKey("toggleDisabled",
+                      base::Value(IsScreenContextToggleDisabled(prefs)));
   context_data.SetKey(
       "iconUri",
       base::Value("https://www.gstatic.com/images/icons/material/system/"
@@ -229,6 +273,18 @@ bool IsHotwordDspAvailable() {
     }
   }
   return false;
+}
+
+bool IsVoiceMatchEnabled(const PrefService* prefs) {
+  if (!base::FeatureList::IsEnabled(assistant::features::kAssistantVoiceMatch))
+    return false;
+
+  // If the hotword preference is managed, then we should not do Voice Match
+  // if the administrator has disabled the hotword.
+  if (prefs->IsManagedPreference(arc::prefs::kVoiceInteractionHotwordEnabled))
+    return prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled);
+
+  return true;
 }
 
 }  // namespace chromeos

@@ -48,6 +48,7 @@ class MEDIA_MOJO_EXPORT MojoVideoDecoderService final
       mojom::VideoFrameHandleReleaserRequest video_frame_handle_releaser,
       mojo::ScopedDataPipeConsumerHandle decoder_buffer_pipe,
       mojom::CommandBufferIdPtr command_buffer_id,
+      VideoDecoderImplementation implementation,
       const gfx::ColorSpace& target_color_space) final;
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,

@@ -33,7 +33,7 @@ void TestDispatcherHostDelegate::RequestBeginning(
     std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles) {
   // This checks the same condition as the one for PNaCl in
   // AppendComponentUpdaterThrottles.
-  if (resource_type == content::RESOURCE_TYPE_OBJECT) {
+  if (resource_type == content::ResourceType::kObject) {
     const net::HttpRequestHeaders& headers = request->extra_request_headers();
     std::string accept_headers;
     if (headers.GetHeader("Accept", &accept_headers)) {

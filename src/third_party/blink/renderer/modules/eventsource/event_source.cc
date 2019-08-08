@@ -124,9 +124,9 @@ void EventSource::Connect() {
 
   ExecutionContext& execution_context = *this->GetExecutionContext();
   ResourceRequest request(current_url_);
-  request.SetHTTPMethod(http_names::kGET);
-  request.SetHTTPHeaderField(http_names::kAccept, "text/event-stream");
-  request.SetHTTPHeaderField(http_names::kCacheControl, "no-cache");
+  request.SetHttpMethod(http_names::kGET);
+  request.SetHttpHeaderField(http_names::kAccept, "text/event-stream");
+  request.SetHttpHeaderField(http_names::kCacheControl, "no-cache");
   request.SetRequestContext(mojom::RequestContextType::EVENT_SOURCE);
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCors);
   request.SetFetchCredentialsMode(
@@ -143,7 +143,7 @@ void EventSource::Connect() {
     // TODO(davidben): This should be captured in the type of
     // setHTTPHeaderField's arguments.
     CString last_event_id_utf8 = parser_->LastEventId().Utf8();
-    request.SetHTTPHeaderField(
+    request.SetHttpHeaderField(
         http_names::kLastEventID,
         AtomicString(reinterpret_cast<const LChar*>(last_event_id_utf8.data()),
                      last_event_id_utf8.length()));
@@ -219,7 +219,7 @@ ExecutionContext* EventSource::GetExecutionContext() const {
   return ContextLifecycleObserver::GetExecutionContext();
 }
 
-void EventSource::DidReceiveResponse(unsigned long identifier,
+void EventSource::DidReceiveResponse(uint64_t identifier,
                                      const ResourceResponse& response) {
   DCHECK_EQ(kConnecting, state_);
   DCHECK(loader_);
@@ -243,8 +243,8 @@ void EventSource::DidReceiveResponse(unsigned long identifier,
       message.Append("\") that is not UTF-8. Aborting the connection.");
       // FIXME: We are missing the source line.
       GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-          kJSMessageSource, mojom::ConsoleMessageLevel::kError,
-          message.ToString()));
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kError, message.ToString()));
     }
   } else {
     // To keep the signal-to-noise ratio low, we only log 200-response with an
@@ -257,8 +257,8 @@ void EventSource::DidReceiveResponse(unsigned long identifier,
           "\") that is not \"text/event-stream\". Aborting the connection.");
       // FIXME: We are missing the source line.
       GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-          kJSMessageSource, mojom::ConsoleMessageLevel::kError,
-          message.ToString()));
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kError, message.ToString()));
     }
   }
 
@@ -284,7 +284,7 @@ void EventSource::DidReceiveData(const char* data, unsigned length) {
   parser_->AddBytes(data, length);
 }
 
-void EventSource::DidFinishLoading(unsigned long) {
+void EventSource::DidFinishLoading(uint64_t) {
   DCHECK_EQ(kOpen, state_);
   DCHECK(loader_);
 

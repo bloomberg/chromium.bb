@@ -15,7 +15,7 @@ import "extension_install.proto";
 
 // Stores information about the user's brower and system configuration.
 // The system configuration fields are recorded once per client session.
-// Next tag: 29
+// Next tag: 30
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -80,7 +80,7 @@ message SystemProfileProto {
   optional string application_locale = 4;
 
   // Information on the user's operating system.
-  // Next tag: 7
+  // Next tag: 8
   message OS {
     // The user's operating system. This should be one of:
     // - Android
@@ -111,6 +111,21 @@ message SystemProfileProto {
     // ChromeOS and Android, have a kernel version that the OS release version
     // was built with that differs from the version field above.
     optional string kernel_version = 6;
+
+    // Information on ChromeOS ARC runtime. This is collected to ease analysis
+    // on ARC-specific metrics, since this info varies by different boards /
+    // build configs / releases.
+    // Next tag: 2
+    message Arc {
+      // Android release number from build.prop "ro.build.version.release", e.g.
+      // "7.1.1" for N and "9" for P.
+      optional string release = 1;
+    }
+    // Available since M76. This field is reported if current build supports
+    // ARC, regardless of whether ARC is enabled or not. Check "Arc.State"
+    // histogram to determine if ARC is enabled for current report.
+    // Logged on ChromeOS only.
+    optional Arc arc = 7;
   }
   optional OS os = 5;
 
@@ -1013,4 +1028,24 @@ message SystemProfileProto {
   // The Chrome package name on Android, if it's different from
   // "com.android.chrome".
   optional string app_package_name = 26;
+
+  // Data related to the "Better Together" multi-device features. This is only
+  // uploaded on Chrome OS.
+  // Next Tag: 5
+  message LinkedAndroidPhoneData {
+    // The pii-free model name of the phone used for Better Together with this
+    // device. Will not be set if Better Together is not set up. Hashed using
+    // variations::HashName() to produce a 32-bit SHA1 hash.
+    optional fixed32 phone_model_name_hash = 1;
+
+    // True if SmartLock is enabled on this Chromebook.
+    optional bool is_smartlock_enabled = 2;
+
+    // True if Instant Tethering is enabled on this Chromebook.
+    optional bool is_instant_tethering_enabled = 3;
+
+    // True if Messages integration is enabled on this Chromebook.
+    optional bool is_messages_enabled = 4;
+  }
+  optional LinkedAndroidPhoneData linked_android_phone_data = 29;
 }

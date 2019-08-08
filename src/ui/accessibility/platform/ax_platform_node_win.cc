@@ -20,9 +20,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/enum_variant.h"
+#include "base/win/scoped_bstr.h"
+#include "base/win/scoped_safearray.h"
 #include "base/win/scoped_variant.h"
+#include "skia/ext/skia_utils_win.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_mode_observer.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -32,6 +36,8 @@
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
+#include "ui/accessibility/platform/ax_platform_node_delegate_utils_win.h"
+#include "ui/accessibility/platform/ax_platform_node_textchildprovider_win.h"
 #include "ui/accessibility/platform/ax_platform_node_textprovider_win.h"
 #include "ui/accessibility/platform/ax_platform_relation_win.h"
 #include "ui/base/win/atl_module.h"
@@ -199,6 +205,15 @@ void AppendTextToString(base::string16 extra_text, base::string16* string) {
   *string += base::string16(L". ") + extra_text;
 }
 
+// Helper function to GetPatternProviderFactoryMethod that, given a node,
+// will return a pattern interface through result based on the provided type T.
+template <typename T>
+HRESULT PatternProvider(AXPlatformNodeWin* node, IUnknown** result) {
+  node->AddRef();
+  *result = static_cast<T*>(node);
+  return S_OK;
+}
+
 }  // namespace
 
 void AXPlatformNodeWin::AddAttributeToList(const char* name,
@@ -319,7 +334,7 @@ void AXPlatformNodeWin::IntAttributeToUIAAriaProperty(
   int value;
   if (GetIntAttribute(attribute, &value)) {
     properties.push_back(base::ASCIIToUTF16(uia_aria_property) + L"=" +
-                         base::IntToString16(value));
+                         base::NumberToString16(value));
   }
 }
 
@@ -402,8 +417,10 @@ SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayFromIdVector(
 
 SAFEARRAY* AXPlatformNodeWin::CreateClickablePointArray() {
   SAFEARRAY* clickable_point_array = SafeArrayCreateVector(VT_R8, 0, 2);
-  gfx::Point center =
-      GetDelegate()->GetUnclippedScreenBoundsRect().CenterPoint();
+  gfx::Point center = GetDelegate()
+                          ->GetBoundsRect(AXCoordinateSystem::kScreen,
+                                          AXClippingBehavior::kUnclipped)
+                          .CenterPoint();
 
   double* double_array;
   SafeArrayAccessData(clickable_point_array,
@@ -421,7 +438,8 @@ gfx::Vector2d AXPlatformNodeWin::CalculateUIAScrollPoint(
   if (!GetDelegate() || !IsScrollable())
     return {};
 
-  const gfx::Rect bounds = GetDelegate()->GetClippedScreenBoundsRect();
+  const gfx::Rect bounds = GetDelegate()->GetBoundsRect(
+      AXCoordinateSystem::kScreen, AXClippingBehavior::kClipped);
   const int large_horizontal_change = bounds.width();
   const int large_vertical_change = bounds.height();
 
@@ -506,10 +524,6 @@ gfx::NativeViewAccessible AXPlatformNodeWin::GetNativeViewAccessible() {
 }
 
 void AXPlatformNodeWin::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
-  HWND hwnd = GetDelegate()->GetTargetForNativeAccessibilityEvent();
-  if (!hwnd)
-    return;
-
   // Menu items fire selection events but Windows screen readers work reliably
   // with focus events. Remap here.
   if (event_type == ax::mojom::Event::kSelection) {
@@ -524,11 +538,16 @@ void AXPlatformNodeWin::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
     }
   }
 
-  int native_event = MSAAEvent(event_type);
-  if (native_event < EVENT_MIN)
-    return;
+  if (base::Optional<DWORD> native_event = MSAAEvent(event_type)) {
+    HWND hwnd = GetDelegate()->GetTargetForNativeAccessibilityEvent();
+    if (!hwnd)
+      return;
 
-  ::NotifyWinEvent(native_event, hwnd, OBJID_CLIENT, -GetUniqueId());
+    ::NotifyWinEvent((*native_event), hwnd, OBJID_CLIENT, -GetUniqueId());
+  }
+
+  if (base::Optional<EVENTID> uia_event = UIAEvent(event_type))
+    ::UiaRaiseAutomationEvent(this, (*uia_event));
 
   // Keep track of objects that are a target of an alert event.
   if (event_type == ax::mojom::Event::kAlert)
@@ -567,6 +586,72 @@ base::string16 AXPlatformNodeWin::GetText() const {
   return hypertext_.hypertext;
 }
 
+bool AXPlatformNodeWin::HasActiveComposition() const {
+  return active_composition_range_.end() > active_composition_range_.start();
+}
+
+gfx::Range AXPlatformNodeWin::GetActiveCompositionOffsets() const {
+  return active_composition_range_;
+}
+
+void AXPlatformNodeWin::OnActiveComposition(
+    const gfx::Range& range,
+    const base::string16& active_composition_text,
+    bool is_composition_committed) {
+  // Cache the composition range that will be used when
+  // GetActiveComposition and GetConversionTarget is called in
+  // AXPlatformNodeTextProviderWin
+  active_composition_range_ = range;
+  // Fire the UiaTextEditTextChangedEvent
+  FireUiaTextEditTextChangedEvent(range, active_composition_text,
+                                  is_composition_committed);
+}
+
+void AXPlatformNodeWin::FireUiaTextEditTextChangedEvent(
+    const gfx::Range& range,
+    const base::string16& active_composition_text,
+    bool is_composition_committed) {
+  if (!::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
+    return;
+  }
+
+  // This API is only supported from Win8.1 onwards
+  // Check if the function pointer is valid or not
+  using UiaRaiseTextEditTextChangedEventFunction = HRESULT(WINAPI*)(
+      IRawElementProviderSimple*, TextEditChangeType, SAFEARRAY*);
+  UiaRaiseTextEditTextChangedEventFunction text_edit_text_changed_func =
+      reinterpret_cast<UiaRaiseTextEditTextChangedEventFunction>(
+          ::GetProcAddress(GetModuleHandle(L"uiautomationcore.dll"),
+                           "UiaRaiseTextEditTextChangedEvent"));
+  if (!text_edit_text_changed_func) {
+    return;
+  }
+
+  TextEditChangeType text_edit_change_type =
+      is_composition_committed ? TextEditChangeType_CompositionFinalized
+                               : TextEditChangeType_Composition;
+  // Composition has been finalized by TSF
+  base::win::ScopedBstr composition_text(active_composition_text.c_str());
+  base::win::ScopedSafearray changed_data(
+      SafeArrayCreateVector(VT_BSTR /* element type */, 0 /* lower bound */,
+                            1 /* number of elements */));
+  if (!changed_data.Get()) {
+    return;
+  }
+
+  long index = 0;
+  HRESULT hr =
+      SafeArrayPutElement(changed_data.Get(), &index, composition_text);
+
+  if (FAILED(hr)) {
+    return;
+  } else {
+    // Fire the UiaRaiseTextEditTextChangedEvent
+    text_edit_text_changed_func(this, text_edit_change_type,
+                                changed_data.Release());
+  }
+}
+
 //
 // IAccessible implementation.
 //
@@ -578,7 +663,10 @@ IFACEMETHODIMP AXPlatformNodeWin::accHitTest(LONG x_left,
   COM_OBJECT_VALIDATE_1_ARG(child);
 
   gfx::Point point(x_left, y_top);
-  if (!GetDelegate()->GetClippedScreenBoundsRect().Contains(point)) {
+  if (!GetDelegate()
+           ->GetBoundsRect(AXCoordinateSystem::kScreen,
+                           AXClippingBehavior::kClipped)
+           .Contains(point)) {
     // Return S_FALSE and VT_EMPTY when outside the object's boundaries.
     child->vt = VT_EMPTY;
     return S_FALSE;
@@ -639,7 +727,8 @@ IFACEMETHODIMP AXPlatformNodeWin::accLocation(LONG* x_left,
   COM_OBJECT_VALIDATE_VAR_ID_4_ARGS_AND_GET_TARGET(var_id, x_left, y_top, width,
                                                    height, target);
 
-  gfx::Rect bounds = target->GetDelegate()->GetUnclippedScreenBoundsRect();
+  gfx::Rect bounds = target->GetDelegate()->GetBoundsRect(
+      AXCoordinateSystem::kScreen, AXClippingBehavior::kUnclipped);
   *x_left = bounds.x();
   *y_top = bounds.y();
   *width = bounds.width();
@@ -941,79 +1030,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accValue(VARIANT var_id, BSTR* value) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_VALUE);
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(var_id, value, target);
-
-  // get_accValue() has two sets of special cases depending on the node's role.
-  // The first set apply without regard for the nodes |value| attribute. That is
-  // the nodes value attribute isn't consider for the first set of special
-  // cases. For example, if the node role is ax::mojom::Role::kColorWell, we do
-  // not care at all about the node's ax::mojom::StringAttribute::kValue
-  // attribute. The second set of special cases only apply if the value
-  // attribute for the node is empty.  That is, if
-  // ax::mojom::StringAttribute::kValue is empty, we do something special.
-
-  base::string16 result;
-
-  //
-  // Color Well special case (Use ax::mojom::IntAttribute::kColorValue)
-  //
-  if (target->GetData().role == ax::mojom::Role::kColorWell) {
-    unsigned int color = static_cast<unsigned int>(target->GetIntAttribute(
-        ax::mojom::IntAttribute::kColorValue));  // todo, why the static cast?
-
-    unsigned int red = SkColorGetR(color);
-    unsigned int green = SkColorGetG(color);
-    unsigned int blue = SkColorGetB(color);
-    base::string16 value_text;
-    value_text = base::UintToString16(red * 100 / 255) + L"% red " +
-                 base::UintToString16(green * 100 / 255) + L"% green " +
-                 base::UintToString16(blue * 100 / 255) + L"% blue";
-    *value = SysAllocString(value_text.c_str());
-    DCHECK(*value);
-    return S_OK;
-  }
-
-  //
-  // Document special case (Use the document's URL)
-  //
-  if (target->GetData().role == ax::mojom::Role::kRootWebArea ||
-      target->GetData().role == ax::mojom::Role::kWebArea) {
-    result = base::UTF8ToUTF16(target->GetDelegate()->GetTreeData().url);
-    *value = SysAllocString(result.c_str());
-    DCHECK(*value);
-    return S_OK;
-  }
-
-  //
-  // Links (Use ax::mojom::StringAttribute::kUrl)
-  //
-  if (target->GetData().role == ax::mojom::Role::kLink) {
-    result = target->GetString16Attribute(ax::mojom::StringAttribute::kUrl);
-    *value = SysAllocString(result.c_str());
-    DCHECK(*value);
-    return S_OK;
-  }
-
-  // For range controls, e.g. sliders and spin buttons, |ax_attr_value| holds
-  // the aria-valuetext if present but not the inner text. The actual value,
-  // provided either via aria-valuenow or the actual control's value is held in
-  // |ax::mojom::FloatAttribute::kValueForRange|.
-  result = target->GetString16Attribute(ax::mojom::StringAttribute::kValue);
-  if (result.empty() && target->IsRangeValueSupported()) {
-    float fval;
-    if (target->GetFloatAttribute(ax::mojom::FloatAttribute::kValueForRange,
-                                  &fval)) {
-      result = base::NumberToString16(fval);
-      *value = SysAllocString(result.c_str());
-      DCHECK(*value);
-      return S_OK;
-    }
-  }
-
-  if (result.empty() && target->IsRichTextField())
-    result = target->GetInnerText();
-
-  *value = SysAllocString(result.c_str());
-  DCHECK(*value);
+  *value = GetValueAttributeAsBstr(target);
   return S_OK;
 }
 
@@ -1336,17 +1353,45 @@ IFACEMETHODIMP AXPlatformNodeWin::get_localizedExtendedRole(
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
   base::string16 role_description = GetRoleDescription();
+  if (base::ContainsOnlyChars(role_description, base::kWhitespaceUTF16))
+    return S_FALSE;
+
   *localized_extended_role = SysAllocString(role_description.c_str());
   return S_OK;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::get_attribute(BSTR name, VARIANT* attribute) {
+  COM_OBJECT_VALIDATE_1_ARG(attribute);
+  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
+
+  base::string16 desired_attribute(name);
+
+  // Each computed attribute from ComputeIA2Attributes is a string of
+  // the form "key:value". Search for strings that start with the
+  // attribute name plus a colon.
+  base::string16 prefix = desired_attribute + L":";
+
+  // Let's accept any case.
+  const auto compare_case = base::CompareCase::INSENSITIVE_ASCII;
+
+  const std::vector<base::string16> computed_attributes =
+      ComputeIA2Attributes();
+  for (const base::string16& computed_attribute : computed_attributes) {
+    if (base::StartsWith(computed_attribute, prefix, compare_case)) {
+      base::string16 value = computed_attribute.substr(prefix.size());
+      attribute->vt = VT_BSTR;
+      attribute->bstrVal = SysAllocString(value.c_str());
+      return S_OK;
+    }
+  }
+
+  return S_FALSE;
 }
 
 //
 // IAccessible2 methods not implemented.
 //
 
-IFACEMETHODIMP AXPlatformNodeWin::get_attribute(BSTR name, VARIANT* attribute) {
-  return E_NOTIMPL;
-}
 IFACEMETHODIMP AXPlatformNodeWin::get_extendedRole(BSTR* extended_role) {
   return E_NOTIMPL;
 }
@@ -1403,7 +1448,8 @@ IFACEMETHODIMP AXPlatformNodeWin::scrollToPoint(
     if (GetParent()) {
       AXPlatformNodeBase* base = FromNativeViewAccessible(GetParent());
       scroll_to += base->GetDelegate()
-                       ->GetUnclippedScreenBoundsRect()
+                       ->GetBoundsRect(AXCoordinateSystem::kScreen,
+                                       AXClippingBehavior::kUnclipped)
                        .OffsetFromOrigin();
     }
   } else if (coordinate_type != IA2_COORDTYPE_SCREEN_RELATIVE) {
@@ -1578,20 +1624,32 @@ IFACEMETHODIMP AXPlatformNodeWin::GetIAccessiblePair(IAccessible** accessible,
 //
 
 IFACEMETHODIMP AXPlatformNodeWin::Collapse() {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_EXPANDCOLLAPSE_COLLAPSE);
   UIA_VALIDATE_CALL();
+  if (GetData().GetRestriction() == ax::mojom::Restriction::kDisabled)
+    return UIA_E_ELEMENTNOTAVAILABLE;
+
+  if (GetData().HasState(ax::mojom::State::kCollapsed))
+    return UIA_E_INVALIDOPERATION;
+
   AXActionData action_data;
   action_data.action = ax::mojom::Action::kDoDefault;
-
   if (GetDelegate()->AccessibilityPerformAction(action_data))
     return S_OK;
   return E_FAIL;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::Expand() {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_EXPANDCOLLAPSE_EXPAND);
   UIA_VALIDATE_CALL();
+  if (GetData().GetRestriction() == ax::mojom::Restriction::kDisabled)
+    return UIA_E_ELEMENTNOTAVAILABLE;
+
+  if (GetData().HasState(ax::mojom::State::kExpanded))
+    return UIA_E_INVALIDOPERATION;
+
   AXActionData action_data;
   action_data.action = ax::mojom::Action::kDoDefault;
-
   if (GetDelegate()->AccessibilityPerformAction(action_data))
     return S_OK;
   return E_FAIL;
@@ -1599,6 +1657,8 @@ IFACEMETHODIMP AXPlatformNodeWin::Expand() {
 
 IFACEMETHODIMP AXPlatformNodeWin::get_ExpandCollapseState(
     ExpandCollapseState* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(
+      UMA_API_EXPANDCOLLAPSE_GET_EXPANDCOLLAPSESTATE);
   UIA_VALIDATE_CALL_1_ARG(result);
   const AXNodeData& data = GetData();
   if (data.HasState(ax::mojom::State::kExpanded)) {
@@ -1606,8 +1666,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_ExpandCollapseState(
   } else if (data.HasState(ax::mojom::State::kCollapsed)) {
     *result = ExpandCollapseState_Collapsed;
   } else {
-    NOTREACHED();
-    return E_FAIL;
+    *result = ExpandCollapseState_LeafNode;
   }
   return S_OK;
 }
@@ -1617,12 +1676,14 @@ IFACEMETHODIMP AXPlatformNodeWin::get_ExpandCollapseState(
 //
 
 IFACEMETHODIMP AXPlatformNodeWin::get_Column(int* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GRIDITEM_GET_COLUMN);
   UIA_VALIDATE_CALL_1_ARG(result);
   *result = GetTableColumn();
   return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_ColumnSpan(int* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GRIDITEM_GET_COLUMNSPAN);
   UIA_VALIDATE_CALL_1_ARG(result);
   *result = GetTableColumnSpan();
   return S_OK;
@@ -1630,6 +1691,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_ColumnSpan(int* result) {
 
 IFACEMETHODIMP AXPlatformNodeWin::get_ContainingGrid(
     IRawElementProviderSimple** result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GRIDITEM_GET_CONTAININGGRID);
   UIA_VALIDATE_CALL_1_ARG(result);
 
   AXPlatformNodeBase* table = GetTable();
@@ -1643,12 +1705,14 @@ IFACEMETHODIMP AXPlatformNodeWin::get_ContainingGrid(
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_Row(int* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GRIDITEM_GET_ROW);
   UIA_VALIDATE_CALL_1_ARG(result);
   *result = GetTableRow();
   return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_RowSpan(int* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GRIDITEM_GET_ROWSPAN);
   UIA_VALIDATE_CALL_1_ARG(result);
   *result = GetTableRowSpan();
   return S_OK;
@@ -1661,6 +1725,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_RowSpan(int* result) {
 IFACEMETHODIMP AXPlatformNodeWin::GetItem(int row,
                                           int column,
                                           IRawElementProviderSimple** result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GRID_GETITEM);
   UIA_VALIDATE_CALL_1_ARG(result);
 
   AXPlatformNodeBase* cell = GetTableCell(row, column);
@@ -1674,6 +1739,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetItem(int row,
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_RowCount(int* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GRID_GET_ROWCOUNT);
   UIA_VALIDATE_CALL_1_ARG(result);
 
   base::Optional<int32_t> row_count = GetTableAriaRowCount();
@@ -1685,6 +1751,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_RowCount(int* result) {
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_ColumnCount(int* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GRID_GET_COLUMNCOUNT);
   UIA_VALIDATE_CALL_1_ARG(result);
 
   base::Optional<int32_t> column_count = GetTableAriaColumnCount();
@@ -1696,10 +1763,29 @@ IFACEMETHODIMP AXPlatformNodeWin::get_ColumnCount(int* result) {
 }
 
 //
+// IInvokeProvider implementation.
+//
+
+IFACEMETHODIMP AXPlatformNodeWin::Invoke() {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_INVOKE_INVOKE);
+  UIA_VALIDATE_CALL();
+
+  if (GetData().GetRestriction() == ax::mojom::Restriction::kDisabled)
+    return UIA_E_ELEMENTNOTENABLED;
+
+  AXActionData action_data;
+  action_data.action = ax::mojom::Action::kDoDefault;
+  GetDelegate()->AccessibilityPerformAction(action_data);
+
+  return S_OK;
+}
+
+//
 // IScrollItemProvider implementation.
 //
 
 IFACEMETHODIMP AXPlatformNodeWin::ScrollIntoView() {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLLITEM_SCROLLINTOVIEW);
   UIA_VALIDATE_CALL();
   gfx::Rect r = gfx::ToEnclosingRect(GetData().relative_bounds.bounds);
   r -= r.OffsetFromOrigin();
@@ -1719,6 +1805,7 @@ IFACEMETHODIMP AXPlatformNodeWin::ScrollIntoView() {
 
 IFACEMETHODIMP AXPlatformNodeWin::Scroll(ScrollAmount horizontal_amount,
                                          ScrollAmount vertical_amount) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_SCROLL);
   UIA_VALIDATE_CALL();
   if (!IsScrollable())
     return E_FAIL;
@@ -1735,6 +1822,7 @@ IFACEMETHODIMP AXPlatformNodeWin::Scroll(ScrollAmount horizontal_amount,
 
 IFACEMETHODIMP AXPlatformNodeWin::SetScrollPercent(double horizontal_percent,
                                                    double vertical_percent) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_SETSCROLLPERCENT);
   UIA_VALIDATE_CALL();
   if (!IsScrollable())
     return E_FAIL;
@@ -1757,35 +1845,31 @@ IFACEMETHODIMP AXPlatformNodeWin::SetScrollPercent(double horizontal_percent,
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_HorizontallyScrollable(BOOL* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_GET_HORIZONTALLYSCROLLABLE);
   UIA_VALIDATE_CALL_1_ARG(result);
   *result = IsHorizontallyScrollable();
   return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_HorizontalScrollPercent(double* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_GET_HORIZONTALSCROLLPERCENT);
   UIA_VALIDATE_CALL_1_ARG(result);
-  if (!IsHorizontallyScrollable()) {
-    *result = UIA_ScrollPatternNoScroll;
-    return S_OK;
-  }
-
-  float x_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMin);
-  float x_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMax);
-  float x = GetIntAttribute(ax::mojom::IntAttribute::kScrollX);
-  *result = 100.0 * (x - x_min) / (x_max - x_min);
+  *result = GetHorizontalScrollPercent();
   return S_OK;
 }
 
 // Horizontal size of the viewable region as a percentage of the total content
 // area.
 IFACEMETHODIMP AXPlatformNodeWin::get_HorizontalViewSize(double* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_GET_HORIZONTALVIEWSIZE);
   UIA_VALIDATE_CALL_1_ARG(result);
   if (!IsHorizontallyScrollable()) {
     *result = 100.;
     return S_OK;
   }
 
-  gfx::RectF clipped_bounds(GetDelegate()->GetClippedScreenBoundsRect());
+  gfx::RectF clipped_bounds(GetDelegate()->GetBoundsRect(
+      AXCoordinateSystem::kScreen, AXClippingBehavior::kClipped));
   float x_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMin);
   float x_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMax);
   float total_width = clipped_bounds.width() + x_max - x_min;
@@ -1795,35 +1879,31 @@ IFACEMETHODIMP AXPlatformNodeWin::get_HorizontalViewSize(double* result) {
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_VerticallyScrollable(BOOL* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_GET_VERTICALLYSCROLLABLE);
   UIA_VALIDATE_CALL_1_ARG(result);
   *result = IsVerticallyScrollable();
   return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_VerticalScrollPercent(double* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_GET_VERTICALSCROLLPERCENT);
   UIA_VALIDATE_CALL_1_ARG(result);
-  if (!IsVerticallyScrollable()) {
-    *result = UIA_ScrollPatternNoScroll;
-    return S_OK;
-  }
-
-  float y_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMin);
-  float y_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
-  float y = GetIntAttribute(ax::mojom::IntAttribute::kScrollY);
-  *result = 100.0 * (y - y_min) / (y_max - y_min);
+  *result = GetVerticalScrollPercent();
   return S_OK;
 }
 
 // Vertical size of the viewable region as a percentage of the total content
 // area.
 IFACEMETHODIMP AXPlatformNodeWin::get_VerticalViewSize(double* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_GET_VERTICALVIEWSIZE);
   UIA_VALIDATE_CALL_1_ARG(result);
   if (!IsVerticallyScrollable()) {
     *result = 100.0;
     return S_OK;
   }
 
-  gfx::RectF clipped_bounds(GetDelegate()->GetClippedScreenBoundsRect());
+  gfx::RectF clipped_bounds(GetDelegate()->GetBoundsRect(
+      AXCoordinateSystem::kScreen, AXClippingBehavior::kClipped));
   float y_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMin);
   float y_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
   float total_height = clipped_bounds.height() + y_max - y_min;
@@ -1836,63 +1916,86 @@ IFACEMETHODIMP AXPlatformNodeWin::get_VerticalViewSize(double* result) {
 // ISelectionItemProvider implementation.
 //
 
-IFACEMETHODIMP AXPlatformNodeWin::AddToSelection() {
+HRESULT AXPlatformNodeWin::ISelectionItemProviderSetSelected(bool selected) {
   UIA_VALIDATE_CALL();
-  if (!IsUIASelectable(GetData().role))
-    return E_FAIL;
 
-  bool selected;
-  if (!GetBoolAttribute(ax::mojom::BoolAttribute::kSelected, &selected))
-    return E_FAIL;
-  if (selected)
+  if (!IsSelectionItemSupported())
+    return UIA_E_INVALIDOPERATION;
+
+  int restriction;
+  if (GetIntAttribute(ax::mojom::IntAttribute::kRestriction, &restriction)) {
+    if (restriction == static_cast<int>(ax::mojom::Restriction::kDisabled))
+      return UIA_E_ELEMENTNOTENABLED;
+  }
+
+  bool is_selected;
+  if (!GetBoolAttribute(ax::mojom::BoolAttribute::kSelected, &is_selected))
+    return UIA_E_INVALIDOPERATION;
+  if (is_selected == selected)
     return S_OK;
 
   AXActionData data;
   data.action = ax::mojom::Action::kDoDefault;
   if (GetDelegate()->AccessibilityPerformAction(data))
     return S_OK;
-  return E_FAIL;
+  return UIA_E_INVALIDOPERATION;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::AddToSelection() {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SELECTIONITEM_ADDTOSELECTION);
+  return ISelectionItemProviderSetSelected(true);
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::RemoveFromSelection() {
-  UIA_VALIDATE_CALL();
-  return E_NOTIMPL;
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SELECTIONITEM_REMOVEFROMSELECTION);
+  return ISelectionItemProviderSetSelected(false);
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::Select() {
-  UIA_VALIDATE_CALL();
-  if (!IsUIASelectable(GetData().role))
-    return E_FAIL;
-
-  bool selected;
-  if (!GetBoolAttribute(ax::mojom::BoolAttribute::kSelected, &selected))
-    return E_FAIL;
-  if (selected)
-    return S_OK;
-
-  AXActionData data;
-  data.action = ax::mojom::Action::kDoDefault;
-  if (GetDelegate()->AccessibilityPerformAction(data))
-    return S_OK;
-  return E_FAIL;
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SELECTIONITEM_SELECT);
+  return ISelectionItemProviderSetSelected(true);
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_IsSelected(BOOL* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SELECTIONITEM_GET_ISSELECTED);
   UIA_VALIDATE_CALL_1_ARG(result);
 
-  if (!IsUIASelectable(GetData().role))
-    return E_FAIL;
+  if (!IsSelectionItemSupported())
+    return UIA_E_INVALIDOPERATION;
 
-  bool selected;
-  if (GetBoolAttribute(ax::mojom::BoolAttribute::kSelected, &selected)) {
-    *result = selected;
+  // https://www.w3.org/TR/core-aam-1.1/#mapping_state-property_table
+  // SelectionItem.IsSelected is exposed when aria-checked is True or False,
+  // for 'radio' and 'menuitemradio' roles
+  if (GetData().role == ax::mojom::Role::kRadioButton ||
+      GetData().role == ax::mojom::Role::kMenuItemRadio) {
+    const auto checked_state = GetData().GetCheckedState();
+    switch (checked_state) {
+      case ax::mojom::CheckedState::kTrue:
+      case ax::mojom::CheckedState::kFalse: {
+        *result = (checked_state == ax::mojom::CheckedState::kTrue);
+        return S_OK;
+      }
+      case ax::mojom::CheckedState::kMixed:
+      case ax::mojom::CheckedState::kNone: {
+        return UIA_E_INVALIDOPERATION;
+      }
+    }
+  }
+
+  // https://www.w3.org/TR/wai-aria-1.1/#aria-selected
+  // Elements are not selectable when aria-selected is undefined
+  bool is_selected;
+  if (GetBoolAttribute(ax::mojom::BoolAttribute::kSelected, &is_selected)) {
+    *result = is_selected;
     return S_OK;
   }
-  return E_FAIL;
+
+  return UIA_E_INVALIDOPERATION;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_SelectionContainer(
     IRawElementProviderSimple** result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SELECTIONITEM_GET_SELECTIONCONTAINER);
   UIA_VALIDATE_CALL_1_ARG(result);
 
   auto* node_win = static_cast<AXPlatformNodeWin*>(GetSelectionContainer());
@@ -1909,6 +2012,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_SelectionContainer(
 //
 
 IFACEMETHODIMP AXPlatformNodeWin::GetSelection(SAFEARRAY** result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SELECTION_GETSELECTION);
   UIA_VALIDATE_CALL_1_ARG(result);
 
   std::vector<AXPlatformNodeWin*> selected_children;
@@ -1940,12 +2044,14 @@ IFACEMETHODIMP AXPlatformNodeWin::GetSelection(SAFEARRAY** result) {
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_CanSelectMultiple(BOOL* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SELECTION_GET_CANSELECTMULTIPLE);
   UIA_VALIDATE_CALL_1_ARG(result);
   *result = GetData().HasState(ax::mojom::State::kMultiselectable);
   return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_IsSelectionRequired(BOOL* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SELECTION_GET_ISSELECTIONREQUIRED);
   UIA_VALIDATE_CALL_1_ARG(result);
   *result = GetData().HasState(ax::mojom::State::kRequired);
   return S_OK;
@@ -1956,6 +2062,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_IsSelectionRequired(BOOL* result) {
 //
 
 IFACEMETHODIMP AXPlatformNodeWin::GetColumnHeaderItems(SAFEARRAY** result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TABLEITEM_GETCOLUMNHEADERITEMS);
   UIA_VALIDATE_CALL_1_ARG(result);
 
   if (!IsCellOrTableHeader(GetData().role) || !GetTable())
@@ -1970,6 +2077,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetColumnHeaderItems(SAFEARRAY** result) {
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::GetRowHeaderItems(SAFEARRAY** result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TABLEITEM_GETROWHEADERITEMS);
   UIA_VALIDATE_CALL_1_ARG(result);
 
   if (!IsCellOrTableHeader(GetData().role) || !GetTable())
@@ -1988,6 +2096,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetRowHeaderItems(SAFEARRAY** result) {
 //
 
 IFACEMETHODIMP AXPlatformNodeWin::GetColumnHeaders(SAFEARRAY** result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TABLE_GETCOLUMNHEADERS);
   UIA_VALIDATE_CALL_1_ARG(result);
 
   if (!GetTable())
@@ -1999,6 +2108,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetColumnHeaders(SAFEARRAY** result) {
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::GetRowHeaders(SAFEARRAY** result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TABLE_GETROWHEADERS);
   UIA_VALIDATE_CALL_1_ARG(result);
 
   if (!GetTable())
@@ -2011,6 +2121,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetRowHeaders(SAFEARRAY** result) {
 
 IFACEMETHODIMP AXPlatformNodeWin::get_RowOrColumnMajor(
     RowOrColumnMajor* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TABLE_GET_ROWORCOLUMNMAJOR);
   UIA_VALIDATE_CALL_1_ARG(result);
 
   // Tables and ARIA grids are always in row major order
@@ -2024,6 +2135,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_RowOrColumnMajor(
 //
 
 IFACEMETHODIMP AXPlatformNodeWin::Toggle() {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TOGGLE_TOGGLE);
   UIA_VALIDATE_CALL();
   AXActionData action_data;
   action_data.action = ax::mojom::Action::kDoDefault;
@@ -2034,6 +2146,7 @@ IFACEMETHODIMP AXPlatformNodeWin::Toggle() {
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_ToggleState(ToggleState* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TOGGLE_GET_TOGGLESTATE);
   UIA_VALIDATE_CALL_1_ARG(result);
   const auto checked_state = GetData().GetCheckedState();
   if (checked_state == ax::mojom::CheckedState::kTrue) {
@@ -2051,9 +2164,13 @@ IFACEMETHODIMP AXPlatformNodeWin::get_ToggleState(ToggleState* result) {
 //
 
 IFACEMETHODIMP AXPlatformNodeWin::SetValue(LPCWSTR value) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_VALUE_SETVALUE);
   UIA_VALIDATE_CALL();
   if (!value)
     return E_INVALIDARG;
+
+  if (GetData().IsReadOnlyOrDisabled())
+    return UIA_E_ELEMENTNOTENABLED;
 
   AXActionData data;
   data.action = ax::mojom::Action::kSetValue;
@@ -2064,21 +2181,17 @@ IFACEMETHODIMP AXPlatformNodeWin::SetValue(LPCWSTR value) {
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_IsReadOnly(BOOL* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_VALUE_GET_ISREADONLY);
   UIA_VALIDATE_CALL_1_ARG(result);
-  int restriction;
-  if (GetIntAttribute(ax::mojom::IntAttribute::kRestriction, &restriction)) {
-    *result = static_cast<ax::mojom::Restriction>(restriction) ==
-              ax::mojom::Restriction::kReadOnly;
-    return S_OK;
-  }
-  return E_FAIL;
+  *result = GetData().IsReadOnlyOrDisabled();
+  return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_Value(BSTR* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_VALUE_GET_VALUE);
   UIA_VALIDATE_CALL_1_ARG(result);
-  if (GetStringAttributeAsBstr(ax::mojom::StringAttribute::kValue, result))
-    return S_OK;
-  return E_FAIL;
+  *result = GetValueAttributeAsBstr(this);
+  return S_OK;
 }
 
 //
@@ -2087,38 +2200,38 @@ IFACEMETHODIMP AXPlatformNodeWin::get_Value(BSTR* result) {
 
 IFACEMETHODIMP AXPlatformNodeWin::SetVisualState(
     WindowVisualState window_visual_state) {
-  DVLOG(1) << __func__;
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_WINDOW_SETVISUALSTATE);
   UIA_VALIDATE_CALL();
   return UIA_E_NOTSUPPORTED;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::Close() {
-  DVLOG(1) << __func__;
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_WINDOW_CLOSE);
   UIA_VALIDATE_CALL();
   return UIA_E_NOTSUPPORTED;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::WaitForInputIdle(int milliseconds,
                                                    BOOL* result) {
-  DVLOG(1) << __func__;
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_WINDOW_WAITFORINPUTIDLE);
   UIA_VALIDATE_CALL_1_ARG(result);
   return UIA_E_NOTSUPPORTED;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_CanMaximize(BOOL* result) {
-  DVLOG(1) << __func__;
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_WINDOW_GET_CANMAXIMIZE);
   UIA_VALIDATE_CALL_1_ARG(result);
   return UIA_E_NOTSUPPORTED;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_CanMinimize(BOOL* result) {
-  DVLOG(1) << __func__;
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_WINDOW_GET_CANMINIMIZE);
   UIA_VALIDATE_CALL_1_ARG(result);
   return UIA_E_NOTSUPPORTED;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_IsModal(BOOL* result) {
-  DVLOG(1) << __func__;
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_WINDOW_GET_ISMODAL);
   UIA_VALIDATE_CALL_1_ARG(result);
 
   *result = GetBoolAttribute(ax::mojom::BoolAttribute::kModal);
@@ -2128,20 +2241,20 @@ IFACEMETHODIMP AXPlatformNodeWin::get_IsModal(BOOL* result) {
 
 IFACEMETHODIMP AXPlatformNodeWin::get_WindowVisualState(
     WindowVisualState* result) {
-  DVLOG(1) << __func__;
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_WINDOW_GET_WINDOWVISUALSTATE);
   UIA_VALIDATE_CALL_1_ARG(result);
   return UIA_E_NOTSUPPORTED;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_WindowInteractionState(
     WindowInteractionState* result) {
-  DVLOG(1) << __func__;
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_WINDOW_GET_WINDOWINTERACTIONSTATE);
   UIA_VALIDATE_CALL_1_ARG(result);
   return UIA_E_NOTSUPPORTED;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_IsTopmost(BOOL* result) {
-  DVLOG(1) << __func__;
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_WINDOW_GET_ISTOPMOST);
   UIA_VALIDATE_CALL_1_ARG(result);
   return UIA_E_NOTSUPPORTED;
 }
@@ -2151,6 +2264,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_IsTopmost(BOOL* result) {
 //
 
 IFACEMETHODIMP AXPlatformNodeWin::SetValue(double value) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_RANGEVALUE_SETVALUE);
   UIA_VALIDATE_CALL();
   AXActionData data;
   data.action = ax::mojom::Action::kSetValue;
@@ -2161,6 +2275,7 @@ IFACEMETHODIMP AXPlatformNodeWin::SetValue(double value) {
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_LargeChange(double* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_RANGEVALUE_GET_LARGECHANGE);
   UIA_VALIDATE_CALL_1_ARG(result);
   float attribute;
   if (GetFloatAttribute(ax::mojom::FloatAttribute::kStepValueForRange,
@@ -2172,6 +2287,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_LargeChange(double* result) {
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_Maximum(double* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_RANGEVALUE_GET_MAXIMUM);
   UIA_VALIDATE_CALL_1_ARG(result);
   float attribute;
   if (GetFloatAttribute(ax::mojom::FloatAttribute::kMaxValueForRange,
@@ -2183,6 +2299,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_Maximum(double* result) {
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_Minimum(double* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_RANGEVALUE_GET_MINIMUM);
   UIA_VALIDATE_CALL_1_ARG(result);
   float attribute;
   if (GetFloatAttribute(ax::mojom::FloatAttribute::kMinValueForRange,
@@ -2194,6 +2311,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_Minimum(double* result) {
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_SmallChange(double* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_RANGEVALUE_GET_SMALLCHANGE);
   UIA_VALIDATE_CALL_1_ARG(result);
   float attribute;
   if (GetFloatAttribute(ax::mojom::FloatAttribute::kStepValueForRange,
@@ -2205,6 +2323,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_SmallChange(double* result) {
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_Value(double* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_RANGEVALUE_GET_VALUE);
   UIA_VALIDATE_CALL_1_ARG(result);
   float attribute;
   if (GetFloatAttribute(ax::mojom::FloatAttribute::kValueForRange,
@@ -3409,19 +3528,26 @@ IFACEMETHODIMP AXPlatformNodeWin::Navigate(
   return S_OK;
 }
 
+void AXPlatformNodeWin::GetRuntimeIdArray(
+    AXPlatformNodeWin::RuntimeIdArray& runtime_id) {
+  runtime_id[0] = UiaAppendRuntimeId;
+  runtime_id[1] = GetUniqueId();
+}
+
 IFACEMETHODIMP AXPlatformNodeWin::GetRuntimeId(SAFEARRAY** runtime_id) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_RUNTIME_ID);
   UIA_VALIDATE_CALL_1_ARG(runtime_id);
 
-  int id_array[] = {UiaAppendRuntimeId, GetUniqueId()};
-  int id_array_size = 2;
-
-  *runtime_id = ::SafeArrayCreateVector(VT_I4, 0, id_array_size);
+  RuntimeIdArray id_array;
+  GetRuntimeIdArray(id_array);
+  *runtime_id = ::SafeArrayCreateVector(VT_I4, 0, id_array.size());
 
   int* array_data = nullptr;
   ::SafeArrayAccessData(*runtime_id, reinterpret_cast<void**>(&array_data));
 
-  size_t runtime_id_byte_count = id_array_size * sizeof(int);
-  memcpy_s(array_data, runtime_id_byte_count, id_array, runtime_id_byte_count);
+  size_t runtime_id_byte_count = id_array.size() * sizeof(int);
+  memcpy_s(array_data, runtime_id_byte_count, id_array.data(),
+           runtime_id_byte_count);
 
   ::SafeArrayUnaccessData(*runtime_id);
 
@@ -3430,9 +3556,11 @@ IFACEMETHODIMP AXPlatformNodeWin::GetRuntimeId(SAFEARRAY** runtime_id) {
 
 IFACEMETHODIMP AXPlatformNodeWin::get_BoundingRectangle(
     UiaRect* bounding_rectangle) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_BOUNDINGRECTANGLE);
   UIA_VALIDATE_CALL_1_ARG(bounding_rectangle);
 
-  gfx::Rect bounds = delegate_->GetUnclippedScreenBoundsRect();
+  gfx::Rect bounds = delegate_->GetBoundsRect(AXCoordinateSystem::kScreen,
+                                              AXClippingBehavior::kUnclipped);
   bounding_rectangle->left = bounds.x();
   bounding_rectangle->top = bounds.y();
   bounding_rectangle->width = bounds.width();
@@ -3442,6 +3570,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_BoundingRectangle(
 
 IFACEMETHODIMP AXPlatformNodeWin::GetEmbeddedFragmentRoots(
     SAFEARRAY** embedded_fragment_roots) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GETEMBEDDEDFRAGMENTROOTS);
   UIA_VALIDATE_CALL_1_ARG(embedded_fragment_roots);
 
   *embedded_fragment_roots = nullptr;
@@ -3449,6 +3578,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetEmbeddedFragmentRoots(
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::SetFocus() {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SETFOCUS);
   UIA_VALIDATE_CALL();
 
   AXActionData action_data;
@@ -3459,6 +3589,7 @@ IFACEMETHODIMP AXPlatformNodeWin::SetFocus() {
 
 IFACEMETHODIMP AXPlatformNodeWin::get_FragmentRoot(
     IRawElementProviderFragmentRoot** fragment_root) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_FRAGMENTROOT);
   UIA_VALIDATE_CALL_1_ARG(fragment_root);
 
   gfx::AcceleratedWidget widget =
@@ -3487,139 +3618,13 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PATTERN_PROVIDER);
   UIA_VALIDATE_CALL_1_ARG(result);
 
-  const AXNodeData& data = GetData();
+  *result = nullptr;
 
-  switch (pattern_id) {
-    // Supported by IAccessibleEx.
-    // TODO(suproteem): Implementations where applicable.
-    case UIA_DockPatternId:
-      break;
+  PatternProviderFactoryMethod factory_method =
+      GetPatternProviderFactoryMethod(pattern_id);
+  if (factory_method)
+    (*factory_method)(this, result);
 
-    case UIA_ExpandCollapsePatternId:
-      if (SupportsExpandCollapse(data.role)) {
-        AddRef();
-        *result = static_cast<IExpandCollapseProvider*>(this);
-      }
-      break;
-
-    case UIA_GridPatternId:
-      if (IsTableLike(data.role)) {
-        AddRef();
-        *result = static_cast<IGridProvider*>(this);
-      }
-      break;
-
-    case UIA_GridItemPatternId:
-      if (IsCellOrTableHeader(data.role)) {
-        AddRef();
-        *result = static_cast<IGridItemProvider*>(this);
-      }
-      break;
-
-    case UIA_MultipleViewPatternId:
-      break;
-
-    case UIA_RangeValuePatternId:
-      if (IsRangeValueSupported()) {
-        AddRef();
-        *result = static_cast<IRangeValueProvider*>(this);
-      }
-      break;
-
-    case UIA_ScrollPatternId:
-      if (IsScrollable()) {
-        AddRef();
-        *result = static_cast<IScrollProvider*>(this);
-      }
-      break;
-
-    case UIA_ScrollItemPatternId:
-      AddRef();
-      *result = static_cast<IScrollItemProvider*>(this);
-      break;
-
-    case UIA_SynchronizedInputPatternId:
-      break;
-
-    case UIA_TablePatternId:
-      if (IsTableLike(data.role)) {
-        AddRef();
-        *result = static_cast<ITableProvider*>(this);
-      }
-      break;
-
-    case UIA_TableItemPatternId:
-      if (IsCellOrTableHeader(data.role)) {
-        AddRef();
-        *result = static_cast<ITableItemProvider*>(this);
-      }
-      break;
-
-    case UIA_TransformPatternId:
-      break;
-
-    // TODO(suproteem): Add checks for control role.
-    case UIA_InvokePatternId:
-      break;
-
-    case UIA_SelectionItemPatternId:
-      if (IsUIASelectable(data.role)) {
-        AddRef();
-        *result = static_cast<ISelectionItemProvider*>(this);
-      }
-      break;
-
-    case UIA_SelectionPatternId:
-      if (IsContainerWithSelectableChildren(data.role)) {
-        AddRef();
-        *result = static_cast<ISelectionProvider*>(this);
-      }
-      break;
-
-    case UIA_TextEditPatternId:
-    case UIA_TextPatternId:
-      if (IsTextOnlyObject() || IsDocument() ||
-          HasBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot)) {
-        return AXPlatformNodeTextProviderWin::Create(this, result);
-      }
-      break;
-
-    case UIA_TogglePatternId:
-      if (SupportsToggle(data.role)) {
-        AddRef();
-        *result = static_cast<IToggleProvider*>(this);
-      }
-      break;
-
-    case UIA_ValuePatternId:
-      AddRef();
-      *result = static_cast<IValueProvider*>(this);
-      break;
-
-    case UIA_WindowPatternId:
-      if (HasBoolAttribute(ax::mojom::BoolAttribute::kModal)) {
-        AddRef();
-        *result = static_cast<IWindowProvider*>(this);
-      }
-      break;
-
-    // Overlap with MSAA, not supported.
-    case UIA_AnnotationPatternId:
-    case UIA_CustomNavigationPatternId:
-    case UIA_DragPatternId:
-    case UIA_DropTargetPatternId:
-    case UIA_ItemContainerPatternId:
-    case UIA_LegacyIAccessiblePatternId:
-    case UIA_ObjectModelPatternId:
-    case UIA_SpreadsheetPatternId:
-    case UIA_SpreadsheetItemPatternId:
-    case UIA_StylesPatternId:
-    case UIA_TextChildPatternId:
-    case UIA_TextPattern2Id:
-    case UIA_TransformPattern2Id:
-    case UIA_VirtualizedItemPatternId:
-      break;
-  }
   return S_OK;
 }
 
@@ -3627,8 +3632,8 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
                                                    VARIANT* result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PROPERTY_VALUE);
 
-  constexpr long kFirstKnownUiaPropertyId = UIA_RuntimeIdPropertyId;
-  constexpr long kLastKnownUiaPropertyId = UIA_HeadingLevelPropertyId;
+  constexpr LONG kFirstKnownUiaPropertyId = UIA_RuntimeIdPropertyId;
+  constexpr LONG kLastKnownUiaPropertyId = UIA_HeadingLevelPropertyId;
   if (property_id >= kFirstKnownUiaPropertyId &&
       property_id <= kLastKnownUiaPropertyId) {
     base::UmaHistogramSparse("Accessibility.WinAPIs.GetPropertyValue",
@@ -3640,14 +3645,12 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
 
   UIA_VALIDATE_CALL_1_ARG(result);
 
-  const AXNodeData& data = GetData();
-  int int_attribute;
-  ax::mojom::IntListAttribute relation_attribute;
   result->vt = VT_EMPTY;
 
+  int int_attribute;
+  const AXNodeData& data = GetData();
+
   switch (property_id) {
-    // Supported by IAccessibleEx.
-    // TODO(suproteem): Implementations where applicable.
     case UIA_AriaPropertiesPropertyId:
       result->vt = VT_BSTR;
       result->bstrVal = SysAllocString(ComputeUIAProperties().c_str());
@@ -3666,7 +3669,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
 
     case UIA_ClassNamePropertyId:
       result->vt = VT_BSTR;
-      GetStringAttributeAsBstr(ax::mojom::StringAttribute::kName,
+      GetStringAttributeAsBstr(ax::mojom::StringAttribute::kClassName,
                                &result->bstrVal);
       break;
 
@@ -3676,9 +3679,9 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_ControllerForPropertyId:
-      result->vt = VT_ARRAY;
-      relation_attribute = ax::mojom::IntListAttribute::kControlsIds;
-      result->parray = CreateUIAElementsArrayForRelation(relation_attribute);
+      result->vt = VT_ARRAY | VT_UNKNOWN;
+      result->parray = CreateUIAElementsArrayForRelation(
+          ax::mojom::IntListAttribute::kControlsIds);
       break;
 
     case UIA_ControlTypePropertyId:
@@ -3694,8 +3697,8 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
 
     case UIA_DescribedByPropertyId:
       result->vt = VT_ARRAY | VT_UNKNOWN;
-      relation_attribute = ax::mojom::IntListAttribute::kDescribedbyIds;
-      result->parray = CreateUIAElementsArrayForRelation(relation_attribute);
+      result->parray = CreateUIAElementsArrayForRelation(
+          ax::mojom::IntListAttribute::kDescribedbyIds);
       break;
 
     case UIA_FlowsFromPropertyId:
@@ -3706,8 +3709,8 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
 
     case UIA_FlowsToPropertyId:
       result->vt = VT_ARRAY | VT_UNKNOWN;
-      relation_attribute = ax::mojom::IntListAttribute::kFlowtoIds;
-      result->parray = CreateUIAElementsArrayForRelation(relation_attribute);
+      result->parray = CreateUIAElementsArrayForRelation(
+          ax::mojom::IntListAttribute::kFlowtoIds);
       break;
 
     case UIA_FrameworkIdPropertyId:
@@ -3728,6 +3731,23 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
                                &result->bstrVal);
       break;
 
+    case UIA_HelpTextPropertyId:
+      if (HasStringAttribute(ax::mojom::StringAttribute::kPlaceholder)) {
+        V_VT(result) = VT_BSTR;
+        GetStringAttributeAsBstr(ax::mojom::StringAttribute::kPlaceholder,
+                                 &V_BSTR(result));
+      } else if (data.GetNameFrom() == ax::mojom::NameFrom::kPlaceholder ||
+                 data.GetNameFrom() == ax::mojom::NameFrom::kTitle) {
+        V_VT(result) = VT_BSTR;
+        GetStringAttributeAsBstr(ax::mojom::StringAttribute::kName,
+                                 &V_BSTR(result));
+      } else if (HasStringAttribute(ax::mojom::StringAttribute::kTooltip)) {
+        V_VT(result) = VT_BSTR;
+        GetStringAttributeAsBstr(ax::mojom::StringAttribute::kTooltip,
+                                 &V_BSTR(result));
+      }
+      break;
+
     case UIA_IsContentElementPropertyId:
     case UIA_IsControlElementPropertyId:
       result->vt = VT_BOOL;
@@ -3735,23 +3755,20 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_IsDataValidForFormPropertyId:
-      if (GetIntAttribute(ax::mojom::IntAttribute::kInvalidState,
-                          &int_attribute)) {
+      if (data.GetIntAttribute(ax::mojom::IntAttribute::kInvalidState,
+                               &int_attribute)) {
         result->vt = VT_BOOL;
-        if (int_attribute ==
-            static_cast<int32_t>(ax::mojom::InvalidState::kFalse)) {
-          result->boolVal = VARIANT_TRUE;
-        } else {
-          result->boolVal = VARIANT_FALSE;
-        }
+        result->boolVal =
+            (static_cast<int>(ax::mojom::InvalidState::kFalse) == int_attribute)
+                ? VARIANT_TRUE
+                : VARIANT_FALSE;
       }
       break;
 
     case UIA_IsKeyboardFocusablePropertyId:
       result->vt = VT_BOOL;
-      result->boolVal = (ShouldNodeHaveFocusableState(delegate_->GetData()))
-                            ? VARIANT_TRUE
-                            : VARIANT_FALSE;
+      result->boolVal =
+          ShouldNodeHaveFocusableState(data) ? VARIANT_TRUE : VARIANT_FALSE;
       break;
 
     case UIA_IsOffscreenPropertyId:
@@ -3769,14 +3786,38 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       }
       break;
 
-    case UIA_ItemStatusPropertyId:
-    case UIA_ItemTypePropertyId:
-      // TODO(suproteem)
+    case UIA_ItemStatusPropertyId: {
+      // https://www.w3.org/TR/core-aam-1.1/#mapping_state-property_table
+      // aria-sort='ascending|descending|other' is mapped for the
+      // HeaderItem Control Type.
+      int32_t sort_direction;
+      if (IsTableHeader(data.role) &&
+          GetIntAttribute(ax::mojom::IntAttribute::kSortDirection,
+                          &sort_direction)) {
+        switch (static_cast<ax::mojom::SortDirection>(sort_direction)) {
+          case ax::mojom::SortDirection::kNone:
+          case ax::mojom::SortDirection::kUnsorted:
+            break;
+          case ax::mojom::SortDirection::kAscending:
+            V_VT(result) = VT_BSTR;
+            V_BSTR(result) = SysAllocString(L"ascending");
+            break;
+          case ax::mojom::SortDirection::kDescending:
+            V_VT(result) = VT_BSTR;
+            V_BSTR(result) = SysAllocString(L"descending");
+            break;
+          case ax::mojom::SortDirection::kOther:
+            V_VT(result) = VT_BSTR;
+            V_BSTR(result) = SysAllocString(L"other");
+            break;
+        }
+      }
       break;
+    }
 
     case UIA_LabeledByPropertyId:
-      relation_attribute = ax::mojom::IntListAttribute::kLabelledbyIds;
-      for (int32_t id : GetIntListAttribute(relation_attribute)) {
+      for (int32_t id : data.GetIntListAttribute(
+               ax::mojom::IntListAttribute::kLabelledbyIds)) {
         auto* node_win = GetDelegate()->GetFromNodeID(id);
         if (node_win) {
           DCHECK(node_win);
@@ -3789,7 +3830,8 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_LocalizedControlTypePropertyId:
-      if (HasStringAttribute(ax::mojom::StringAttribute::kRoleDescription)) {
+      if (data.HasStringAttribute(
+              ax::mojom::StringAttribute::kRoleDescription)) {
         V_VT(result) = VT_BSTR;
         GetStringAttributeAsBstr(ax::mojom::StringAttribute::kRoleDescription,
                                  &V_BSTR(result));
@@ -3828,15 +3870,15 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_IsEnabledPropertyId:
-      result->vt = VT_BOOL;
+      V_VT(result) = VT_BOOL;
       switch (data.GetRestriction()) {
-        case ax::mojom::Restriction::kReadOnly:
         case ax::mojom::Restriction::kDisabled:
-          result->boolVal = VARIANT_FALSE;
+          V_BOOL(result) = VARIANT_FALSE;
           break;
 
         case ax::mojom::Restriction::kNone:
-          result->boolVal = VARIANT_TRUE;
+        case ax::mojom::Restriction::kReadOnly:
+          V_BOOL(result) = VARIANT_TRUE;
           break;
       }
       break;
@@ -3849,7 +3891,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_AcceleratorKeyPropertyId:
-      if (HasStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts)) {
+      if (data.HasStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts)) {
         result->vt = VT_BSTR;
         GetStringAttributeAsBstr(ax::mojom::StringAttribute::kKeyShortcuts,
                                  &result->bstrVal);
@@ -3857,7 +3899,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_AccessKeyPropertyId:
-      if (HasStringAttribute(ax::mojom::StringAttribute::kAccessKey)) {
+      if (data.HasStringAttribute(ax::mojom::StringAttribute::kAccessKey)) {
         result->vt = VT_BSTR;
         GetStringAttributeAsBstr(ax::mojom::StringAttribute::kAccessKey,
                                  &result->bstrVal);
@@ -3870,25 +3912,27 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_LevelPropertyId:
-      if (HasIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel)) {
+      if (data.GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel,
+                               &int_attribute)) {
         result->vt = VT_I4;
-        result->intVal =
-            GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
+        result->intVal = int_attribute;
       }
       break;
 
-    case UIA_LiveSettingPropertyId:
+    case UIA_LiveSettingPropertyId: {
       result->vt = VT_I4;
       result->intVal = LiveSetting::Off;
-      if (HasStringAttribute(ax::mojom::StringAttribute::kLiveStatus)) {
-        std::string live =
-            GetStringAttribute(ax::mojom::StringAttribute::kLiveStatus);
-        if (live == "polite")
+
+      std::string string_attribute;
+      if (data.GetStringAttribute(ax::mojom::StringAttribute::kLiveStatus,
+                                  &string_attribute)) {
+        if (string_attribute == "polite")
           result->intVal = LiveSetting::Polite;
-        else if (live == "assertive")
+        else if (string_attribute == "assertive")
           result->intVal = LiveSetting::Assertive;
       }
       break;
+    }
 
     case UIA_OptimizeForVisualContentPropertyId:
       result->vt = VT_BOOL;
@@ -3902,44 +3946,66 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       }
       break;
 
+    case UIA_ScrollHorizontalScrollPercentPropertyId: {
+      V_VT(result) = VT_R8;
+      V_R8(result) = GetHorizontalScrollPercent();
+      break;
+    }
+
+    case UIA_ScrollVerticalScrollPercentPropertyId: {
+      V_VT(result) = VT_R8;
+      V_R8(result) = GetVerticalScrollPercent();
+      break;
+    }
+
     case UIA_SizeOfSetPropertyId:
-      if (HasIntAttribute(ax::mojom::IntAttribute::kSetSize)) {
+      if (data.GetIntAttribute(ax::mojom::IntAttribute::kSetSize,
+                               &int_attribute)) {
         result->vt = VT_I4;
-        result->intVal = GetIntAttribute(ax::mojom::IntAttribute::kSetSize);
+        result->intVal = int_attribute;
       }
       break;
 
-    // Covered by MSAA.
-    case UIA_BoundingRectanglePropertyId:
-    case UIA_HelpTextPropertyId:
-    case UIA_NativeWindowHandlePropertyId:
-    case UIA_ProcessIdPropertyId:
+    case UIA_LandmarkTypePropertyId: {
+      base::Optional<LONG> landmark_type = ComputeUIALandmarkType();
+      if (landmark_type) {
+        result->vt = VT_I4;
+        result->intVal = landmark_type.value();
+      }
       break;
+    }
 
-    // Overlap with MSAA, not supported.
+    case UIA_LocalizedLandmarkTypePropertyId: {
+      base::string16 localized_landmark_type =
+          GetDelegate()->GetLocalizedStringForLandmarkType();
+      if (!localized_landmark_type.empty()) {
+        result->vt = VT_BSTR;
+        result->bstrVal = SysAllocString(localized_landmark_type.c_str());
+      }
+      break;
+    }
+
+    // Not currently implemented.
     case UIA_AnnotationObjectsPropertyId:
     case UIA_AnnotationTypesPropertyId:
     case UIA_CenterPointPropertyId:
-    case UIA_CustomControlTypeId:
     case UIA_FillColorPropertyId:
     case UIA_FillTypePropertyId:
-    case UIA_GroupControlTypeId:
     case UIA_HeadingLevelPropertyId:
-    case UIA_LandmarkTypePropertyId:
-    case UIA_LocalizedLandmarkTypePropertyId:
-    case UIA_MenuControlTypeId:
+    case UIA_ItemTypePropertyId:
     case UIA_OutlineColorPropertyId:
     case UIA_OutlineThicknessPropertyId:
-    case UIA_PaneControlTypeId:
-    case UIA_ProviderDescriptionPropertyId:
     case UIA_RotationPropertyId:
-    case UIA_RuntimeIdPropertyId:
     case UIA_SizePropertyId:
-    case UIA_ToolBarControlTypeId:
-    case UIA_ToolTipControlTypeId:
     case UIA_VisualEffectsPropertyId:
-    case UIA_WindowControlTypeId:
-      // MSAA-to-UIA Proxy.
+      break;
+
+    // Provided by UIA Core; we should not implement.
+    case UIA_BoundingRectanglePropertyId:
+    case UIA_NativeWindowHandlePropertyId:
+    case UIA_ProcessIdPropertyId:
+    case UIA_ProviderDescriptionPropertyId:
+    case UIA_RuntimeIdPropertyId:
       break;
   }
 
@@ -3968,6 +4034,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_HostRawElementProvider(
 //
 
 IFACEMETHODIMP AXPlatformNodeWin::ShowContextMenu() {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SHOWCONTEXTMENU);
   UIA_VALIDATE_CALL();
 
   ui::AXActionData action_data;
@@ -4008,6 +4075,221 @@ IFACEMETHODIMP AXPlatformNodeWin::QueryService(REFGUID guidService,
   return E_FAIL;
 }
 
+HRESULT AXPlatformNodeWin::GetTextAttributeValue(TEXTATTRIBUTEID attribute_id,
+                                                 VARIANT* result) {
+  // Text attributes of kInlineTextBox nodes are stored on the parent node
+  // (which is typically a kStaticText or kLineBreak node).
+  if (GetData().role == ax::mojom::Role::kInlineTextBox) {
+    AXPlatformNodeWin* parent_platform_node =
+        static_cast<AXPlatformNodeWin*>(FromNativeViewAccessible(GetParent()));
+    if (!parent_platform_node)
+      return UIA_E_ELEMENTNOTAVAILABLE;
+
+    return parent_platform_node->GetTextAttributeValue(attribute_id, result);
+  }
+
+  switch (attribute_id) {
+    case UIA_BackgroundColorAttributeId:
+      V_VT(result) = VT_I4;
+      V_I4(result) =
+          GetIntAttributeAsCOLORREF(ax::mojom::IntAttribute::kBackgroundColor);
+      break;
+    case UIA_BulletStyleAttributeId:
+      V_VT(result) = VT_I4;
+      V_I4(result) = ComputeUIABulletStyle();
+      break;
+    case UIA_CultureAttributeId:
+      return GetCultureAttributeAsVariant(result);
+    case UIA_FontNameAttributeId:
+      V_VT(result) = VT_BSTR;
+      V_BSTR(result) = GetFontNameAttributeAsBSTR();
+      break;
+    case UIA_ForegroundColorAttributeId:
+      V_VT(result) = VT_I4;
+      V_I4(result) = GetIntAttributeAsCOLORREF(ax::mojom::IntAttribute::kColor);
+      break;
+    case UIA_IsHiddenAttributeId:
+      V_VT(result) = VT_BOOL;
+      V_BOOL(result) = IsInvisibleOrIgnored() ? VARIANT_TRUE : VARIANT_FALSE;
+      break;
+    case UIA_OverlineStyleAttributeId:
+      V_VT(result) = VT_I4;
+      V_I4(result) = GetUIATextDecorationStyle(
+          ax::mojom::IntAttribute::kTextOverlineStyle);
+      break;
+    case UIA_StrikethroughStyleAttributeId:
+      V_VT(result) = VT_I4;
+      V_I4(result) = GetUIATextDecorationStyle(
+          ax::mojom::IntAttribute::kTextStrikethroughStyle);
+      break;
+    case UIA_StyleNameAttributeId:
+      V_VT(result) = VT_BSTR;
+      V_BSTR(result) = GetStyleNameAttributeAsBSTR();
+      break;
+    case UIA_StyleIdAttributeId:
+      V_VT(result) = VT_I4;
+      V_I4(result) = ComputeUIAStyleId();
+      break;
+    case UIA_UnderlineStyleAttributeId:
+      V_VT(result) = VT_I4;
+      V_I4(result) = GetUIATextDecorationStyle(
+          ax::mojom::IntAttribute::kTextUnderlineStyle);
+      break;
+    case UIA_TextFlowDirectionsAttributeId:
+      V_VT(result) = VT_I4;
+      V_I4(result) =
+          TextDirectionToFlowDirections(GetData().GetTextDirection());
+      break;
+    default:
+      V_VT(result) = VT_UNKNOWN;
+      return ::UiaGetReservedNotSupportedValue(&V_UNKNOWN(result));
+  }
+
+  return S_OK;
+}
+
+HRESULT AXPlatformNodeWin::GetCultureAttributeAsVariant(VARIANT* result) const {
+  const base::string16 language =
+      GetInheritedString16Attribute(ax::mojom::StringAttribute::kLanguage);
+  const LCID lcid =
+      LocaleNameToLCID(language.c_str(), LOCALE_ALLOW_NEUTRAL_NAMES);
+  if (!lcid)
+    return E_FAIL;
+
+  V_VT(result) = VT_I4;
+  V_I4(result) = lcid;
+  return S_OK;
+}
+
+COLORREF AXPlatformNodeWin::GetIntAttributeAsCOLORREF(
+    ax::mojom::IntAttribute attribute) const {
+  const SkColor color = GetIntAttribute(attribute);
+  return skia::SkColorToCOLORREF(color);
+}
+
+BulletStyle AXPlatformNodeWin::ComputeUIABulletStyle() const {
+  // UIA expects the list style of a non-list-item to be none however the
+  // default list style cascaded is disc not none. Therefore we must ensure that
+  // this node is contained within a list-item to distinguish non-list-items and
+  // disc styled list items.
+  const AXPlatformNodeBase* current_node = this;
+  while (current_node &&
+         current_node->GetData().role != ax::mojom::Role::kListItem) {
+    current_node = FromNativeViewAccessible(current_node->GetParent());
+  }
+
+  const ax::mojom::ListStyle list_style =
+      current_node ? current_node->GetData().GetListStyle()
+                   : ax::mojom::ListStyle::kNone;
+
+  switch (list_style) {
+    case ax::mojom::ListStyle::kNone:
+      return BulletStyle::BulletStyle_None;
+    case ax::mojom::ListStyle::kCircle:
+      return BulletStyle::BulletStyle_HollowRoundBullet;
+    case ax::mojom::ListStyle::kDisc:
+      return BulletStyle::BulletStyle_FilledRoundBullet;
+    case ax::mojom::ListStyle::kImage:
+      return BulletStyle::BulletStyle_Other;
+    case ax::mojom::ListStyle::kNumeric:
+    case ax::mojom::ListStyle::kOther:
+      return BulletStyle::BulletStyle_None;
+    case ax::mojom::ListStyle::kSquare:
+      return BulletStyle::BulletStyle_FilledSquareBullet;
+  }
+}
+
+LONG AXPlatformNodeWin::ComputeUIAStyleId() const {
+  const AXPlatformNodeBase* current_node = this;
+  do {
+    switch (current_node->GetData().role) {
+      case ax::mojom::Role::kHeading:
+        return AXHierarchicalLevelToUIAStyleId(current_node->GetIntAttribute(
+            ax::mojom::IntAttribute::kHierarchicalLevel));
+      case ax::mojom::Role::kListItem:
+        return AXListStyleToUIAStyleId(current_node->GetData().GetListStyle());
+      case ax::mojom::Role::kMark:
+        return StyleId_Custom;
+      case ax::mojom::Role::kBlockquote:
+        return StyleId_Quote;
+      default:
+        break;
+    }
+    current_node = FromNativeViewAccessible(current_node->GetParent());
+  } while (current_node);
+
+  return StyleId_Normal;
+}
+
+// static
+LONG AXPlatformNodeWin::AXHierarchicalLevelToUIAStyleId(
+    int32_t hierarchical_level) {
+  switch (hierarchical_level) {
+    case 0:
+      return StyleId_Normal;
+    case 1:
+      return StyleId_Heading1;
+    case 2:
+      return StyleId_Heading2;
+    case 3:
+      return StyleId_Heading3;
+    case 4:
+      return StyleId_Heading4;
+    case 5:
+      return StyleId_Heading5;
+    case 6:
+      return StyleId_Heading6;
+    case 7:
+      return StyleId_Heading7;
+    case 8:
+      return StyleId_Heading8;
+    case 9:
+      return StyleId_Heading9;
+    default:
+      return StyleId_Custom;
+  }
+}
+
+// static
+LONG AXPlatformNodeWin::AXListStyleToUIAStyleId(
+    ax::mojom::ListStyle list_style) {
+  switch (list_style) {
+    case ax::mojom::ListStyle::kNone:
+      return StyleId_Normal;
+    case ax::mojom::ListStyle::kCircle:
+    case ax::mojom::ListStyle::kDisc:
+    case ax::mojom::ListStyle::kImage:
+    case ax::mojom::ListStyle::kSquare:
+      return StyleId_BulletedList;
+    case ax::mojom::ListStyle::kNumeric:
+    case ax::mojom::ListStyle::kOther:
+      return StyleId_NumberedList;
+  }
+}
+
+// static
+FlowDirections AXPlatformNodeWin::TextDirectionToFlowDirections(
+    ax::mojom::TextDirection text_direction) {
+  switch (text_direction) {
+    case ax::mojom::TextDirection::kNone:
+      return FlowDirections::FlowDirections_Default;
+    case ax::mojom::TextDirection::kLtr:
+      return FlowDirections::FlowDirections_Default;
+    case ax::mojom::TextDirection::kRtl:
+      return FlowDirections::FlowDirections_RightToLeft;
+    case ax::mojom::TextDirection::kTtb:
+      return FlowDirections::FlowDirections_Vertical;
+    case ax::mojom::TextDirection::kBtt:
+      return FlowDirections::FlowDirections_BottomToTop;
+  }
+}
+
+// IRawElementProviderSimple support methods.
+
+bool AXPlatformNodeWin::IsPatternProviderSupported(PATTERNID pattern_id) {
+  return GetPatternProviderFactoryMethod(pattern_id);
+}
+
 //
 // Private member functions.
 //
@@ -4020,12 +4302,7 @@ int AXPlatformNodeWin::MSAARole() {
 
   switch (GetData().role) {
     case ax::mojom::Role::kAlert:
-      return ROLE_SYSTEM_ALERT;
-
     case ax::mojom::Role::kAlertDialog:
-      // We temporarily use |ROLE_SYSTEM_ALERT| because some Windows screen
-      // readers are not compatible with |ax::mojom::Role::kAlertDialog| yet.
-      // TODO(aleventhal) modify this to return |ROLE_SYSTEM_DIALOG|.
       return ROLE_SYSTEM_ALERT;
 
     case ax::mojom::Role::kAnchor:
@@ -4088,6 +4365,7 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kContentInfo:
+    case ax::mojom::Role::kFooter:
       return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kDate:
@@ -4189,9 +4467,6 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kFeed:
-      return ROLE_SYSTEM_GROUPING;
-
-    case ax::mojom::Role::kFooter:
       return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kForm:
@@ -4618,8 +4893,8 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
 
   switch (GetData().role) {
     case ax::mojom::Role::kBanner:
-      // CORE-AAM recommends IA2_ROLE_LANDMARK.
-      ia2_role = IA2_ROLE_HEADER;
+      // CORE-AAM recommends LANDMARK instead of HEADER.
+      ia2_role = IA2_ROLE_LANDMARK;
       break;
     case ax::mojom::Role::kBlockquote:
       ia2_role = IA2_ROLE_SECTION;
@@ -4636,8 +4911,7 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       ia2_role = IA2_ROLE_COLOR_CHOOSER;
       break;
     case ax::mojom::Role::kComplementary:
-      // Note: IA2_ROLE_COMPLEMENTARY_CONTENT currently exists but CORE-AAM
-      // maps this to more general IA2_ROLE_LANDMARK.
+      // CORE-AAM recommends LANDMARK instead of COMPLEMENTARY_CONTENT.
       ia2_role = IA2_ROLE_LANDMARK;
       break;
     case ax::mojom::Role::kContentDeletion:
@@ -4647,6 +4921,8 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       ia2_role = IA2_ROLE_CONTENT_INSERTION;
       break;
     case ax::mojom::Role::kContentInfo:
+    case ax::mojom::Role::kFooter:
+      // CORE-AAM recommends LANDMARK instead of FOOTER.
       ia2_role = IA2_ROLE_LANDMARK;
       break;
     case ax::mojom::Role::kDate:
@@ -4710,9 +4986,6 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       break;
     case ax::mojom::Role::kForm:
       ia2_role = IA2_ROLE_FORM;
-      break;
-    case ax::mojom::Role::kFooter:
-      ia2_role = IA2_ROLE_FOOTER;
       break;
     case ax::mojom::Role::kGenericContainer:
       ia2_role = IA2_ROLE_SECTION;
@@ -4884,6 +5157,7 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
       return L"group";
 
     case ax::mojom::Role::kContentInfo:
+    case ax::mojom::Role::kFooter:
       return L"contentinfo";
 
     case ax::mojom::Role::kDate:
@@ -4985,9 +5259,6 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
       return L"group";
 
     case ax::mojom::Role::kFigure:
-      return L"group";
-
-    case ax::mojom::Role::kFooter:
       return L"group";
 
     case ax::mojom::Role::kForm:
@@ -5388,8 +5659,7 @@ base::string16 AXPlatformNodeWin::ComputeUIAProperties() {
   HtmlAttributeToUIAAriaProperty(properties, "aria-secret", "secret");
 
   int32_t sort_direction;
-  if ((data.role == ax::mojom::Role::kColumnHeader ||
-       data.role == ax::mojom::Role::kRowHeader) &&
+  if (IsTableHeader(data.role) &&
       GetIntAttribute(ax::mojom::IntAttribute::kSortDirection,
                       &sort_direction)) {
     switch (static_cast<ax::mojom::SortDirection>(sort_direction)) {
@@ -5412,7 +5682,7 @@ base::string16 AXPlatformNodeWin::ComputeUIAProperties() {
 
   HtmlAttributeToUIAAriaProperty(properties, "aria-tabindex", "tabindex");
 
-  if (IsRangeValueSupported()) {
+  if (IsRangeValueSupported(data)) {
     FloatAttributeToUIAAriaProperty(
         properties, ax::mojom::FloatAttribute::kMaxValueForRange, "valuemax");
     FloatAttributeToUIAAriaProperty(
@@ -5508,6 +5778,7 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       return UIA_GroupControlTypeId;
 
     case ax::mojom::Role::kContentInfo:
+    case ax::mojom::Role::kFooter:
       return UIA_GroupControlTypeId;
 
     case ax::mojom::Role::kDate:
@@ -5609,9 +5880,6 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       return UIA_GroupControlTypeId;
 
     case ax::mojom::Role::kFigure:
-      return UIA_GroupControlTypeId;
-
-    case ax::mojom::Role::kFooter:
       return UIA_GroupControlTypeId;
 
     case ax::mojom::Role::kForm:
@@ -5955,6 +6223,37 @@ bool AXPlatformNodeWin::IsUIAControl() const {
            data.role == ax::mojom::Role::kIgnored);
 }
 
+base::Optional<LONG> AXPlatformNodeWin::ComputeUIALandmarkType() const {
+  const AXNodeData& data = GetData();
+  switch (data.role) {
+    case ax::mojom::Role::kBanner:
+    case ax::mojom::Role::kComplementary:
+    case ax::mojom::Role::kContentInfo:
+    case ax::mojom::Role::kFooter:
+      return UIA_CustomLandmarkTypeId;
+
+    case ax::mojom::Role::kForm:
+      return UIA_FormLandmarkTypeId;
+
+    case ax::mojom::Role::kMain:
+      return UIA_MainLandmarkTypeId;
+
+    case ax::mojom::Role::kNavigation:
+      return UIA_NavigationLandmarkTypeId;
+
+    case ax::mojom::Role::kSearch:
+      return UIA_SearchLandmarkTypeId;
+
+    case ax::mojom::Role::kRegion:
+      if (data.HasStringAttribute(ax::mojom::StringAttribute::kName))
+        return UIA_CustomLandmarkTypeId;
+      FALLTHROUGH;
+
+    default:
+      return {};
+  }
+}
+
 base::string16 AXPlatformNodeWin::GetValue() const {
   base::string16 value = AXPlatformNodeBase::GetValue();
 
@@ -6162,7 +6461,10 @@ int AXPlatformNodeWin::MSAAState() const {
   return msaa_state;
 }
 
-int AXPlatformNodeWin::MSAAEvent(ax::mojom::Event event) {
+base::Optional<DWORD> AXPlatformNodeWin::MSAAEvent(ax::mojom::Event event) {
+  if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
+    return base::nullopt;
+
   switch (event) {
     case ax::mojom::Event::kAlert:
       return EVENT_SYSTEM_ALERT;
@@ -6195,8 +6497,107 @@ int AXPlatformNodeWin::MSAAEvent(ax::mojom::Event event) {
     case ax::mojom::Event::kValueChanged:
       return EVENT_OBJECT_VALUECHANGE;
     default:
-      return -1;
+      return base::nullopt;
   }
+}
+
+base::Optional<EVENTID> AXPlatformNodeWin::UIAEvent(ax::mojom::Event event) {
+  if (!::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
+    return base::nullopt;
+
+  switch (event) {
+    case ax::mojom::Event::kAlert:
+      return UIA_SystemAlertEventId;
+    case ax::mojom::Event::kFocus:
+    case ax::mojom::Event::kFocusContext:
+      return UIA_AutomationFocusChangedEventId;
+    case ax::mojom::Event::kSelection:
+      return UIA_SelectionItem_ElementSelectedEventId;
+    case ax::mojom::Event::kSelectionAdd:
+      return UIA_SelectionItem_ElementAddedToSelectionEventId;
+    case ax::mojom::Event::kSelectionRemove:
+      return UIA_SelectionItem_ElementRemovedFromSelectionEventId;
+    default:
+      return base::nullopt;
+  }
+}
+
+// static
+BSTR AXPlatformNodeWin::GetValueAttributeAsBstr(AXPlatformNodeWin* target) {
+  // GetValueAttributeAsBstr() has two sets of special cases depending on the
+  // node's role.
+  // The first set apply without regard for the nodes |value| attribute. That is
+  // the nodes value attribute isn't consider for the first set of special
+  // cases. For example, if the node role is ax::mojom::Role::kColorWell, we do
+  // not care at all about the node's ax::mojom::StringAttribute::kValue
+  // attribute. The second set of special cases only apply if the value
+  // attribute for the node is empty.  That is, if
+  // ax::mojom::StringAttribute::kValue is empty, we do something special.
+  base::string16 result;
+
+  //
+  // Color Well special case (Use ax::mojom::IntAttribute::kColorValue)
+  //
+  if (target->GetData().role == ax::mojom::Role::kColorWell) {
+    // static cast because SkColor is a 4-byte unsigned int
+    unsigned int color = static_cast<unsigned int>(
+        target->GetIntAttribute(ax::mojom::IntAttribute::kColorValue));
+
+    unsigned int red = SkColorGetR(color);
+    unsigned int green = SkColorGetG(color);
+    unsigned int blue = SkColorGetB(color);
+    base::string16 value_text;
+    value_text = base::NumberToString16(red * 100 / 255) + L"% red " +
+                 base::NumberToString16(green * 100 / 255) + L"% green " +
+                 base::NumberToString16(blue * 100 / 255) + L"% blue";
+    BSTR value = SysAllocString(value_text.c_str());
+    DCHECK(value);
+    return value;
+  }
+
+  //
+  // Document special case (Use the document's URL)
+  //
+  if (target->GetData().role == ax::mojom::Role::kRootWebArea ||
+      target->GetData().role == ax::mojom::Role::kWebArea) {
+    result = base::UTF8ToUTF16(target->GetDelegate()->GetTreeData().url);
+    BSTR value = SysAllocString(result.c_str());
+    DCHECK(value);
+    return value;
+  }
+
+  //
+  // Links (Use ax::mojom::StringAttribute::kUrl)
+  //
+  if (target->GetData().role == ax::mojom::Role::kLink) {
+    result = target->GetString16Attribute(ax::mojom::StringAttribute::kUrl);
+    BSTR value = SysAllocString(result.c_str());
+    DCHECK(value);
+    return value;
+  }
+
+  // For range controls, e.g. sliders and spin buttons, |ax_attr_value| holds
+  // the aria-valuetext if present but not the inner text. The actual value,
+  // provided either via aria-valuenow or the actual control's value is held in
+  // |ax::mojom::FloatAttribute::kValueForRange|.
+  result = target->GetString16Attribute(ax::mojom::StringAttribute::kValue);
+  if (result.empty() && IsRangeValueSupported(target->GetData())) {
+    float fval;
+    if (target->GetFloatAttribute(ax::mojom::FloatAttribute::kValueForRange,
+                                  &fval)) {
+      result = base::NumberToString16(fval);
+      BSTR value = SysAllocString(result.c_str());
+      DCHECK(value);
+      return value;
+    }
+  }
+
+  if (result.empty() && target->IsRichTextField())
+    result = target->GetInnerText();
+
+  BSTR value = SysAllocString(result.c_str());
+  DCHECK(value);
+  return value;
 }
 
 HRESULT AXPlatformNodeWin::GetStringAttributeAsBstr(
@@ -6367,358 +6768,196 @@ bool AXPlatformNodeWin::IsHyperlink() {
   return false;
 }
 
-AXPlatformNodeWin* AXPlatformNodeWin::GetHyperlinkFromHypertextOffset(
-    int offset) {
-  std::map<int32_t, int32_t>::iterator iterator =
-      hypertext_.hyperlink_offset_to_index.find(offset);
-  if (iterator == hypertext_.hyperlink_offset_to_index.end())
-    return nullptr;
-
-  int32_t index = iterator->second;
-  DCHECK_GE(index, 0);
-  DCHECK_LT(index, static_cast<int32_t>(hypertext_.hyperlinks.size()));
-  int32_t id = hypertext_.hyperlinks[index];
-  auto* hyperlink =
-      static_cast<AXPlatformNodeWin*>(AXPlatformNodeWin::GetFromUniqueId(id));
-  if (!hyperlink)
-    return nullptr;
-  return hyperlink;
-}
-
-int32_t AXPlatformNodeWin::GetHyperlinkIndexFromChild(
-    AXPlatformNodeWin* child) {
-  if (hypertext_.hyperlinks.empty())
-    return -1;
-
-  auto iterator = std::find(hypertext_.hyperlinks.begin(),
-                            hypertext_.hyperlinks.end(), child->GetUniqueId());
-  if (iterator == hypertext_.hyperlinks.end())
-    return -1;
-
-  return static_cast<int32_t>(iterator - hypertext_.hyperlinks.begin());
-}
-
-int32_t AXPlatformNodeWin::GetHypertextOffsetFromHyperlinkIndex(
-    int32_t hyperlink_index) {
-  for (auto& offset_index : hypertext_.hyperlink_offset_to_index) {
-    if (offset_index.second == hyperlink_index)
-      return offset_index.first;
-  }
-  return -1;
-}
-
-int32_t AXPlatformNodeWin::GetHypertextOffsetFromChild(
-    AXPlatformNodeWin* child) {
-  // TODO(dougt) DCHECK(child.owner()->PlatformGetParent() == owner());
-
-  // Handle the case when we are dealing with a text-only child.
-  // Note that this object might be a platform leaf, e.g. an ARIA searchbox.
-  // Also, text-only children should not be present at tree roots and so no
-  // cross-tree traversal is necessary.
-  if (child->IsTextOnlyObject()) {
-    int32_t hypertext_offset = 0;
-    int32_t index_in_parent = child->GetDelegate()->GetIndexInParent();
-    DCHECK_GE(index_in_parent, 0);
-    DCHECK_LT(index_in_parent,
-              static_cast<int32_t>(GetDelegate()->GetChildCount()));
-    for (uint32_t i = 0; i < static_cast<uint32_t>(index_in_parent); ++i) {
-      auto* sibling = static_cast<AXPlatformNodeWin*>(
-          FromNativeViewAccessible(GetDelegate()->ChildAtIndex(i)));
-      DCHECK(sibling);
-      if (sibling->IsTextOnlyObject()) {
-        hypertext_offset += (int32_t)sibling->GetText().size();
-      } else {
-        ++hypertext_offset;
-      }
-    }
-    return hypertext_offset;
-  }
-
-  int32_t hyperlink_index = GetHyperlinkIndexFromChild(child);
-  if (hyperlink_index < 0)
-    return -1;
-
-  return GetHypertextOffsetFromHyperlinkIndex(hyperlink_index);
-}
-
-int32_t AXPlatformNodeWin::GetHypertextOffsetFromDescendant(
-    AXPlatformNodeWin* descendant) {
-  auto* parent_object = static_cast<AXPlatformNodeWin*>(
-      FromNativeViewAccessible(descendant->GetDelegate()->GetParent()));
-  while (parent_object && parent_object != this) {
-    descendant = parent_object;
-    parent_object = static_cast<AXPlatformNodeWin*>(
-        FromNativeViewAccessible(descendant->GetParent()));
-  }
-  if (!parent_object)
-    return -1;
-
-  return parent_object->GetHypertextOffsetFromChild(descendant);
-}
-
-int AXPlatformNodeWin::GetHypertextOffsetFromEndpoint(
-    AXPlatformNodeWin* endpoint_object,
-    int endpoint_offset) {
-  // There are three cases:
-  // 1. Either the selection endpoint is inside this object or is an ancestor
-  // of of this object. endpoint_offset should be returned.
-  // 2. The selection endpoint is a pure descendant of this object. The offset
-  // of the character corresponding to the subtree in which the endpoint is
-  // located should be returned.
-  // 3. The selection endpoint is in a completely different part of the tree.
-  // Either 0 or text_length should be returned depending on the direction
-  // that one needs to travel to find the endpoint.
-
-  // Case 1.
-  //
-  // IsDescendantOf includes the case when endpoint_object == this.
-  if (IsDescendantOf(endpoint_object))
-    return endpoint_offset;
-
-  AXPlatformNodeWin* common_parent = this;
-  int32_t index_in_common_parent = GetDelegate()->GetIndexInParent();
-  while (common_parent && !endpoint_object->IsDescendantOf(common_parent)) {
-    index_in_common_parent = common_parent->GetDelegate()->GetIndexInParent();
-    common_parent = static_cast<AXPlatformNodeWin*>(
-        FromNativeViewAccessible(common_parent->GetParent()));
-  }
-  if (!common_parent)
-    return -1;
-
-  DCHECK_GE(index_in_common_parent, 0);
-  DCHECK(!(common_parent->IsTextOnlyObject()));
-
-  // Case 2.
-  //
-  // We already checked in case 1 if our endpoint is inside this object.
-  // We can safely assume that it is a descendant or in a completely different
-  // part of the tree.
-  if (common_parent == this) {
-    int32_t hypertext_offset =
-        GetHypertextOffsetFromDescendant(endpoint_object);
-    auto* parent = static_cast<AXPlatformNodeWin*>(
-        FromNativeViewAccessible(endpoint_object->GetParent()));
-    if (parent == this && endpoint_object->IsTextOnlyObject()) {
-      hypertext_offset += endpoint_offset;
-    }
-
-    return hypertext_offset;
-  }
-
-  // Case 3.
-  //
-  // We can safely assume that the endpoint is in another part of the tree or
-  // at common parent, and that this object is a descendant of common parent.
-  int32_t endpoint_index_in_common_parent = -1;
-  for (int i = 0; i < common_parent->GetDelegate()->GetChildCount(); ++i) {
-    auto* child = static_cast<AXPlatformNodeWin*>(
-        common_parent->GetDelegate()->ChildAtIndex(i));
-    DCHECK(child);
-    if (endpoint_object->IsDescendantOf(child)) {
-      endpoint_index_in_common_parent =
-          child->GetDelegate()->GetIndexInParent();
-      break;
-    }
-  }
-  DCHECK_GE(endpoint_index_in_common_parent, 0);
-
-  if (endpoint_index_in_common_parent < index_in_common_parent)
-    return 0;
-  if (endpoint_index_in_common_parent > index_in_common_parent)
-    return (int32_t)GetText().size();
-
-  NOTREACHED();
-  return -1;
-}
-
-bool AXPlatformNodeWin::IsSameHypertextCharacter(size_t old_char_index,
-                                                 size_t new_char_index) {
-  if (old_char_index >= old_hypertext_.hypertext.size() ||
-      new_char_index >= hypertext_.hypertext.size()) {
-    return false;
-  }
-
-  // For anything other than the "embedded character", we just compare the
-  // characters directly.
-  base::char16 old_ch = old_hypertext_.hypertext[old_char_index];
-  base::char16 new_ch = hypertext_.hypertext[new_char_index];
-  if (old_ch != new_ch)
-    return false;
-  if (new_ch != kEmbeddedCharacter)
-    return true;
-
-  // If it's an embedded character, they're only identical if the child id
-  // the hyperlink points to is the same.
-  std::map<int32_t, int32_t>& old_offset_to_index =
-      old_hypertext_.hyperlink_offset_to_index;
-  std::vector<int32_t>& old_hyperlinks = old_hypertext_.hyperlinks;
-  int32_t old_hyperlinkscount = static_cast<int32_t>(old_hyperlinks.size());
-  std::map<int32_t, int32_t>::iterator iter;
-  iter = old_offset_to_index.find((int32_t)old_char_index);
-  int old_index = (iter != old_offset_to_index.end()) ? iter->second : -1;
-  int old_child_id = (old_index >= 0 && old_index < old_hyperlinkscount)
-                         ? old_hyperlinks[old_index]
-                         : -1;
-
-  std::map<int32_t, int32_t>& new_offset_to_index =
-      hypertext_.hyperlink_offset_to_index;
-  std::vector<int32_t>& new_hyperlinks = hypertext_.hyperlinks;
-  int32_t new_hyperlinkscount = static_cast<int32_t>(new_hyperlinks.size());
-  iter = new_offset_to_index.find((int32_t)new_char_index);
-  int new_index = (iter != new_offset_to_index.end()) ? iter->second : -1;
-  int new_child_id = (new_index >= 0 && new_index < new_hyperlinkscount)
-                         ? new_hyperlinks[new_index]
-                         : -1;
-
-  return old_child_id == new_child_id;
-}
-
-// Return true if the index represents a text character.
-bool AXPlatformNodeWin::IsText(const base::string16& text,
-                               size_t index,
-                               bool is_indexed_from_end) {
-  size_t text_len = text.size();
-  if (index == text_len)
-    return false;
-  auto ch = text[is_indexed_from_end ? text_len - index - 1 : index];
-  return ch != kEmbeddedCharacter;
-}
-
 void AXPlatformNodeWin::ComputeHypertextRemovedAndInserted(size_t* start,
                                                            size_t* old_len,
                                                            size_t* new_len) {
-  *start = 0;
-  *old_len = 0;
-  *new_len = 0;
-
-  // Do not compute for static text objects, otherwise redundant text change
-  // announcements will occur in live regions, as the parent hypertext also
-  // changes.
-  if (GetData().role == ax::mojom::Role::kStaticText)
-    return;
-
-  const base::string16& old_text = old_hypertext_.hypertext;
-  const base::string16& new_text = hypertext_.hypertext;
-
-  // TODO(accessibility) Plumb through which part of text changed so we don't
-  // have to guess what changed based on character differences. This can be
-  // wrong in some cases as follows:
-  // -- EDITABLE --
-  // If editable: when part of the text node changes, assume only that part
-  // changed, and not the entire thing. For example, if "car" changes to
-  // "cat", assume only 1 letter changed. This code compares common characters
-  // to guess what has changed.
-  // -- NOT EDITABLE --
-  // When part of the text changes, assume the entire node's text changed. For
-  // example, if "car" changes to "cat" then assume all 3 letters changed.
-  // Note, it is possible (though rare) that CharacterData methods are used to
-  // remove, insert, replace or append a substring.
-  bool allow_partial_text_node_changes =
-      GetData().HasState(ax::mojom::State::kEditable);
-  size_t prefix_index = 0;
-  size_t common_prefix = 0;
-  while (prefix_index < old_text.size() && prefix_index < new_text.size() &&
-         IsSameHypertextCharacter(prefix_index, prefix_index)) {
-    ++prefix_index;
-    if (allow_partial_text_node_changes ||
-        (!IsText(old_text, prefix_index) && !IsText(new_text, prefix_index))) {
-      common_prefix = prefix_index;
-    }
-  }
-
-  size_t suffix_index = 0;
-  size_t common_suffix = 0;
-  while (common_prefix + suffix_index < old_text.size() &&
-         common_prefix + suffix_index < new_text.size() &&
-         IsSameHypertextCharacter(old_text.size() - suffix_index - 1,
-                                  new_text.size() - suffix_index - 1)) {
-    ++suffix_index;
-    if (allow_partial_text_node_changes ||
-        (!IsText(old_text, suffix_index, true) &&
-         !IsText(new_text, suffix_index, true))) {
-      common_suffix = suffix_index;
-    }
-  }
-
-  *start = common_prefix;
-  *old_len = old_text.size() - common_prefix - common_suffix;
-  *new_len = new_text.size() - common_prefix - common_suffix;
+  AXPlatformNodeBase::ComputeHypertextRemovedAndInserted(old_hypertext_, start,
+                                                         old_len, new_len);
 }
 
-int AXPlatformNodeWin::GetSelectionAnchor() {
-  int32_t anchor_id = GetDelegate()->GetTreeData().sel_anchor_object_id;
-  AXPlatformNodeWin* anchor_object =
-      static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(anchor_id));
-  if (!anchor_object)
-    return -1;
+double AXPlatformNodeWin::GetHorizontalScrollPercent() {
+  if (!IsHorizontallyScrollable())
+    return UIA_ScrollPatternNoScroll;
 
-  int anchor_offset = int{GetDelegate()->GetTreeData().sel_anchor_offset};
-  return GetHypertextOffsetFromEndpoint(anchor_object, anchor_offset);
+  float x_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMin);
+  float x_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMax);
+  float x = GetIntAttribute(ax::mojom::IntAttribute::kScrollX);
+  return 100.0 * (x - x_min) / (x_max - x_min);
 }
 
-int AXPlatformNodeWin::GetSelectionFocus() {
-  int32_t focus_id = GetDelegate()->GetTreeData().sel_focus_object_id;
-  AXPlatformNodeWin* focus_object =
-      static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(focus_id));
-  if (!focus_object)
-    return -1;
+double AXPlatformNodeWin::GetVerticalScrollPercent() {
+  if (!IsVerticallyScrollable())
+    return UIA_ScrollPatternNoScroll;
 
-  int focus_offset = int{GetDelegate()->GetTreeData().sel_focus_offset};
-  return GetHypertextOffsetFromEndpoint(focus_object, focus_offset);
+  float y_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMin);
+  float y_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
+  float y = GetIntAttribute(ax::mojom::IntAttribute::kScrollY);
+  return 100.0 * (y - y_min) / (y_max - y_min);
 }
 
-void AXPlatformNodeWin::GetSelectionOffsets(int* selection_start,
-                                            int* selection_end) {
-  DCHECK(selection_start && selection_end);
+BSTR AXPlatformNodeWin::GetFontNameAttributeAsBSTR() const {
+  const base::string16 string =
+      GetInheritedString16Attribute(ax::mojom::StringAttribute::kFontFamily);
 
-  if (IsPlainTextField() &&
-      GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart,
-                      selection_start) &&
-      GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, selection_end)) {
-    return;
+  return SysAllocString(string.c_str());
+}
+
+BSTR AXPlatformNodeWin::GetStyleNameAttributeAsBSTR() const {
+  base::string16 style_name =
+      GetDelegate()->GetStyleNameAttributeAsLocalizedString();
+
+  return SysAllocString(style_name.c_str());
+}
+
+TextDecorationLineStyle AXPlatformNodeWin::GetUIATextDecorationStyle(
+    const ax::mojom::IntAttribute int_attribute) const {
+  const ax::mojom::TextDecorationStyle text_decoration_style =
+      static_cast<ax::mojom::TextDecorationStyle>(
+          GetIntAttribute(int_attribute));
+
+  switch (text_decoration_style) {
+    case ax::mojom::TextDecorationStyle::kNone:
+      return TextDecorationLineStyle::TextDecorationLineStyle_None;
+    case ax::mojom::TextDecorationStyle::kDotted:
+      return TextDecorationLineStyle::TextDecorationLineStyle_Dot;
+    case ax::mojom::TextDecorationStyle::kDashed:
+      return TextDecorationLineStyle::TextDecorationLineStyle_Dash;
+    case ax::mojom::TextDecorationStyle::kSolid:
+      return TextDecorationLineStyle::TextDecorationLineStyle_Single;
+    case ax::mojom::TextDecorationStyle::kDouble:
+      return TextDecorationLineStyle::TextDecorationLineStyle_Double;
+    case ax::mojom::TextDecorationStyle::kWavy:
+      return TextDecorationLineStyle::TextDecorationLineStyle_Wavy;
   }
+}
 
-  *selection_start = GetSelectionAnchor();
-  *selection_end = GetSelectionFocus();
-  if (*selection_start < 0 || *selection_end < 0)
-    return;
+// IRawElementProviderSimple support methods.
 
-  // There are three cases when a selection would start and end on the same
-  // character:
-  // 1. Anchor and focus are both in a subtree that is to the right of this
-  // object.
-  // 2. Anchor and focus are both in a subtree that is to the left of this
-  // object.
-  // 3. Anchor and focus are in a subtree represented by a single embedded
-  // object character.
-  // Only case 3 refers to a valid selection because cases 1 and 2 fall
-  // outside this object in their entirety.
-  // Selections that span more than one character are by definition inside
-  // this object, so checking them is not necessary.
-  if (*selection_start == *selection_end && !HasCaret()) {
-    *selection_start = -1;
-    *selection_end = -1;
-    return;
+AXPlatformNodeWin::PatternProviderFactoryMethod
+AXPlatformNodeWin::GetPatternProviderFactoryMethod(PATTERNID pattern_id) {
+  const AXNodeData& data = GetData();
+
+  switch (pattern_id) {
+    case UIA_ExpandCollapsePatternId:
+      if (SupportsExpandCollapse(data)) {
+        return &PatternProvider<IExpandCollapseProvider>;
+      }
+      break;
+
+    case UIA_GridPatternId:
+      if (IsTableLike(data.role)) {
+        return &PatternProvider<IGridProvider>;
+      }
+      break;
+
+    case UIA_GridItemPatternId:
+      if (IsCellOrTableHeader(data.role)) {
+        return &PatternProvider<IGridItemProvider>;
+      }
+      break;
+
+    case UIA_InvokePatternId:
+      if (IsInvokable(data)) {
+        return &PatternProvider<IInvokeProvider>;
+      }
+      break;
+
+    case UIA_RangeValuePatternId:
+      if (IsRangeValueSupported(data)) {
+        return &PatternProvider<IRangeValueProvider>;
+      }
+      break;
+
+    case UIA_ScrollPatternId:
+      if (IsScrollable()) {
+        return &PatternProvider<IScrollProvider>;
+      }
+      break;
+
+    case UIA_ScrollItemPatternId:
+      return &PatternProvider<IScrollItemProvider>;
+      break;
+
+    case UIA_SelectionItemPatternId:
+      if (IsSelectionItemSupported()) {
+        return &PatternProvider<ISelectionItemProvider>;
+      }
+      break;
+
+    case UIA_SelectionPatternId:
+      if (IsContainerWithSelectableChildren(data.role)) {
+        return &PatternProvider<ISelectionProvider>;
+      }
+      break;
+
+    case UIA_TablePatternId:
+      if (IsTableLike(data.role)) {
+        return &PatternProvider<ITableProvider>;
+      }
+      break;
+
+    case UIA_TableItemPatternId:
+      if (IsCellOrTableHeader(data.role)) {
+        return &PatternProvider<ITableItemProvider>;
+      }
+      break;
+
+    case UIA_TextChildPatternId:
+      if (AXPlatformNodeTextChildProviderWin::GetTextContainer(this)) {
+        return &AXPlatformNodeTextChildProviderWin::CreateTextChildProvider;
+      }
+      break;
+
+    case UIA_TextEditPatternId:
+    case UIA_TextPatternId:
+      if (IsTextOnlyObject() || IsDocument() ||
+          HasBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot)) {
+        return &AXPlatformNodeTextProviderWin::Create;
+      }
+      break;
+
+    case UIA_TogglePatternId:
+      if (SupportsToggle(data.role)) {
+        return &PatternProvider<IToggleProvider>;
+      }
+      break;
+
+    case UIA_ValuePatternId:
+      if (IsValuePatternSupported(GetDelegate())) {
+        return &PatternProvider<IValueProvider>;
+      }
+      break;
+
+    case UIA_WindowPatternId:
+      if (HasBoolAttribute(ax::mojom::BoolAttribute::kModal)) {
+        return &PatternProvider<IWindowProvider>;
+      }
+      break;
+
+    // Not currently implemented.
+    case UIA_AnnotationPatternId:
+    case UIA_CustomNavigationPatternId:
+    case UIA_DockPatternId:
+    case UIA_DragPatternId:
+    case UIA_DropTargetPatternId:
+    case UIA_ItemContainerPatternId:
+    case UIA_MultipleViewPatternId:
+    case UIA_ObjectModelPatternId:
+    case UIA_SpreadsheetPatternId:
+    case UIA_SpreadsheetItemPatternId:
+    case UIA_StylesPatternId:
+    case UIA_SynchronizedInputPatternId:
+    case UIA_TextPattern2Id:
+    case UIA_TransformPatternId:
+    case UIA_TransformPattern2Id:
+    case UIA_VirtualizedItemPatternId:
+      break;
+
+    // Provided by UIA Core; we should not implement.
+    case UIA_LegacyIAccessiblePatternId:
+      break;
   }
-
-  // The IA2 Spec says that if the largest of the two offsets falls on an
-  // embedded object character and if there is a selection in that embedded
-  // object, it should be incremented by one so that it points after the
-  // embedded object character.
-  // This is a signal to AT software that the embedded object is also part of
-  // the selection.
-  int* largest_offset =
-      (*selection_start <= *selection_end) ? selection_end : selection_start;
-  AXPlatformNodeWin* hyperlink =
-      GetHyperlinkFromHypertextOffset(*largest_offset);
-  if (!hyperlink)
-    return;
-
-  LONG n_selections = 0;
-  HRESULT hr = hyperlink->get_nSelections(&n_selections);
-  DCHECK(SUCCEEDED(hr));
-  if (n_selections > 0)
-    ++(*largest_offset);
+  return nullptr;
 }
 
 }  // namespace ui

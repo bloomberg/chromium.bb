@@ -9,7 +9,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/child_accounts/event_based_status_reporting_service_factory.h"
 #include "chrome/browser/chromeos/child_accounts/usage_time_limit_processor.h"
-#include "chrome/browser/chromeos/policy/device_status_collector.h"
+#include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
@@ -51,6 +51,8 @@ ConsumerStatusReportingService::ConsumerStatusReportingService(
   DCHECK(pref_service->GetInitializationStatus() !=
          PrefService::INITIALIZATION_STATUS_WAITING);
 
+  // We immediately upload a status report after Time Limits policy changes.
+  // Make sure we listen for those events.
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(pref_service);
   pref_change_registrar_->Add(
@@ -83,6 +85,7 @@ void ConsumerStatusReportingService::CreateStatusUploaderIfNeeded(
 
   VLOG(1) << "Creating status uploader for consumer status reporting.";
   day_reset_time_ = new_day_reset_time;
+
   status_uploader_ = std::make_unique<policy::StatusUploader>(
       client,
       std::make_unique<policy::DeviceStatusCollector>(
@@ -92,7 +95,8 @@ void ConsumerStatusReportingService::CreateStatusUploaderIfNeeded(
           policy::DeviceStatusCollector::CPUStatisticsFetcher(),
           policy::DeviceStatusCollector::CPUTempFetcher(),
           policy::DeviceStatusCollector::AndroidStatusFetcher(),
-          policy::DeviceStatusCollector::TpmStatusFetcher(), day_reset_time_,
+          policy::DeviceStatusCollector::TpmStatusFetcher(),
+          policy::DeviceStatusCollector::EMMCLifetimeFetcher(), day_reset_time_,
           false /* is_enterprise_reporting */),
       base::ThreadTaskRunnerHandle::Get(), kStatusUploadFrequency);
 }
@@ -102,8 +106,10 @@ bool ConsumerStatusReportingService::RequestImmediateStatusReport() {
 }
 
 base::TimeDelta ConsumerStatusReportingService::GetChildScreenTime() const {
-  return const_cast<policy::DeviceStatusCollector*>(
-             status_uploader_->device_status_collector())
+  // Notice that this cast works because we know that |status_uploader_| has a
+  // DeviceStatusCollector (see above).
+  return static_cast<policy::DeviceStatusCollector*>(
+             status_uploader_->status_collector())
       ->GetActiveChildScreenTime();
 }
 

@@ -28,7 +28,6 @@
 #include "base/compiler_specific.h"
 #include "base/template_util.h"
 #include "build/build_config.h"
-#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace WTF {
 

@@ -33,8 +33,19 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
+
+namespace {
+
+inline void ClearNeedsLayoutIfNeeded(LayoutObject* layout_object) {
+  DCHECK(layout_object);
+  if (layout_object->NeedsLayout())
+    layout_object->ClearNeedsLayout();
+}
+
+}  // namespace
 
 NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
     NGInlineNode inline_node,
@@ -85,6 +96,8 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::HandleCloseTag(
     box->EnsureTextMetrics(*item.Style(), baseline_type_);
   box = box_states_->OnCloseTag(&line_box_, box, baseline_type_,
                                 item.HasEndEdge());
+  item.GetLayoutObject()->SetShouldDoFullPaintInvalidation();
+  ClearNeedsLayoutIfNeeded(item.GetLayoutObject());
   return box;
 }
 
@@ -226,6 +239,7 @@ void NGInlineLayoutAlgorithm::CreateLine(
       }
       line_box_.AddChild(text_builder.ToTextFragment(), box->text_top,
                          item_result.inline_size, item.BidiLevel());
+      ClearNeedsLayoutIfNeeded(item.GetLayoutObject());
     } else if (item.Type() == NGInlineItem::kControl) {
       PlaceControlItem(item, *line_info, &item_result, box);
     } else if (item.Type() == NGInlineItem::kOpenTag) {
@@ -383,6 +397,7 @@ void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
   }
   DCHECK(item.GetLayoutObject());
   DCHECK(item.GetLayoutObject()->IsText());
+  ClearNeedsLayoutIfNeeded(item.GetLayoutObject());
 
   if (UNLIKELY(quirks_mode_ && !box->HasMetrics()))
     box->EnsureTextMetrics(*item.Style(), baseline_type_);
@@ -445,13 +460,13 @@ void NGInlineLayoutAlgorithm::PlaceLayoutResult(NGInlineItemResult* item_result,
                                                 NGInlineBoxState* box,
                                                 LayoutUnit inline_offset) {
   DCHECK(item_result->layout_result);
-  DCHECK(item_result->layout_result->PhysicalFragment());
   DCHECK(item_result->item);
   const NGInlineItem& item = *item_result->item;
   DCHECK(item.Style());
-  NGBoxFragment fragment(
-      ConstraintSpace().GetWritingMode(), ConstraintSpace().Direction(),
-      ToNGPhysicalBoxFragment(*item_result->layout_result->PhysicalFragment()));
+  NGBoxFragment fragment(ConstraintSpace().GetWritingMode(),
+                         ConstraintSpace().Direction(),
+                         To<NGPhysicalBoxFragment>(
+                             *item_result->layout_result->PhysicalFragment()));
   NGLineHeightMetrics metrics = fragment.BaselineMetrics(
       {NGBaselineAlgorithmType::kAtomicInline, baseline_type_},
       ConstraintSpace());
@@ -582,7 +597,7 @@ void NGInlineLayoutAlgorithm::PlaceFloatingObjects(
     if (IsFlippedLinesWritingMode(ConstraintSpace().GetWritingMode())) {
       NGFragment fragment(
           ConstraintSpace().GetWritingMode(),
-          ToNGPhysicalBoxFragment(*child.layout_result->PhysicalFragment()));
+          To<NGPhysicalBoxFragment>(*child.layout_result->PhysicalFragment()));
 
       block_offset = -fragment.BlockSize() - block_offset;
     }
@@ -624,10 +639,10 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(LayoutUnit space,
     return false;
 
   // Construct the line text to compute spacing for.
-  String line_text =
-      StringView(line_info->ItemsData().text_content, line_info->StartOffset(),
-                 end_offset - line_info->StartOffset())
-          .ToString();
+  StringBuilder line_text_builder;
+  line_text_builder.Append(StringView(line_info->ItemsData().text_content,
+                                      line_info->StartOffset(),
+                                      end_offset - line_info->StartOffset()));
 
   // Append a hyphen if the last word is hyphenated. The hyphen is in
   // |ShapeResult|, but not in text. |ShapeResultSpacing| needs the text that
@@ -635,9 +650,10 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(LayoutUnit space,
   DCHECK(!line_info->Results().IsEmpty());
   const NGInlineItemResult& last_item_result = line_info->Results().back();
   if (last_item_result.text_end_effect == NGTextEndEffect::kHyphen)
-    line_text.append(last_item_result.item->Style()->HyphenString());
+    line_text_builder.Append(last_item_result.item->Style()->HyphenString());
 
   // Compute the spacing to justify.
+  String line_text = line_text_builder.ToString();
   ShapeResultSpacing<String> spacing(line_text);
   spacing.SetExpansion(space, line_info->BaseDirection(),
                        line_info->LineStyle().GetTextJustify());

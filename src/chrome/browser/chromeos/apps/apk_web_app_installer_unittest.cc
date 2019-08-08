@@ -11,6 +11,8 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/apps/apk_web_app_installer.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/test/fake_app_instance.h"
@@ -49,17 +51,19 @@ class FakeApkWebAppInstaller : public ApkWebAppInstaller {
 
   ~FakeApkWebAppInstaller() override = default;
 
+  using ApkWebAppInstaller::has_web_app_info;
   using ApkWebAppInstaller::Start;
   using ApkWebAppInstaller::web_app_info;
 
-  const extensions::ExtensionId& id() const { return id_; }
+  const web_app::AppId& id() const { return id_; }
   bool complete_installation_called() const {
     return complete_installation_called_;
   }
   bool do_install_called() const { return do_install_called_; }
 
  private:
-  void CompleteInstallation(const extensions::ExtensionId& id) override {
+  void CompleteInstallation(const web_app::AppId& id,
+                            web_app::InstallResultCode code) override {
     id_ = id;
     complete_installation_called_ = true;
     std::move(quit_closure_).Run();
@@ -70,7 +74,7 @@ class FakeApkWebAppInstaller : public ApkWebAppInstaller {
     std::move(quit_closure_).Run();
   }
 
-  extensions::ExtensionId id_;
+  web_app::AppId id_;
   bool complete_installation_called_ = false;
   bool do_install_called_ = false;
   base::OnceClosure quit_closure_;
@@ -86,15 +90,6 @@ class ApkWebAppInstallerTest : public ChromeRenderViewHostTestHarness,
   ~ApkWebAppInstallerTest() override = default;
 
  protected:
-  void AssertEmptyWebAppInfo(const FakeApkWebAppInstaller& installer) const {
-    EXPECT_EQ(base::ASCIIToUTF16(""), installer.web_app_info().title);
-    EXPECT_EQ(GURL(), installer.web_app_info().app_url);
-    EXPECT_EQ(GURL(), installer.web_app_info().scope);
-    EXPECT_FALSE(installer.web_app_info().theme_color.has_value());
-
-    EXPECT_EQ(0u, installer.web_app_info().icons.size());
-  }
-
   service_manager::Connector* connector() const {
     return test_data_decoder_service_.connector();
   }
@@ -145,7 +140,7 @@ TEST_F(ApkWebAppInstallerTest,
   EXPECT_TRUE(apk_web_app_installer.complete_installation_called());
   EXPECT_FALSE(apk_web_app_installer.do_install_called());
 
-  AssertEmptyWebAppInfo(apk_web_app_installer);
+  EXPECT_FALSE(apk_web_app_installer.has_web_app_info());
 }
 
 TEST_F(ApkWebAppInstallerTest,
@@ -176,7 +171,7 @@ TEST_F(ApkWebAppInstallerTest, NullWebAppInfoCallsCompleteInstallation) {
   EXPECT_TRUE(apk_web_app_installer.complete_installation_called());
   EXPECT_FALSE(apk_web_app_installer.do_install_called());
 
-  AssertEmptyWebAppInfo(apk_web_app_installer);
+  EXPECT_FALSE(apk_web_app_installer.has_web_app_info());
 }
 
 TEST_F(ApkWebAppInstallerTest, NullIconCallsCompleteInstallation) {
@@ -191,7 +186,7 @@ TEST_F(ApkWebAppInstallerTest, NullIconCallsCompleteInstallation) {
   EXPECT_TRUE(apk_web_app_installer.complete_installation_called());
   EXPECT_FALSE(apk_web_app_installer.do_install_called());
 
-  AssertEmptyWebAppInfo(apk_web_app_installer);
+  EXPECT_FALSE(apk_web_app_installer.has_web_app_info());
 }
 
 }  // namespace chromeos

@@ -24,7 +24,7 @@
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/attestation/attestation.pb.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -38,7 +38,7 @@
 #include "content/public/common/url_constants.h"
 #include "net/cert/pem_tokenizer.h"
 #include "net/cert/x509_certificate.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 
 namespace {
 
@@ -155,7 +155,7 @@ PlatformVerificationFlow::ChallengeContext::~ChallengeContext() {}
 PlatformVerificationFlow::PlatformVerificationFlow()
     : attestation_flow_(NULL),
       async_caller_(cryptohome::AsyncMethodCaller::GetInstance()),
-      cryptohome_client_(DBusThreadManager::Get()->GetCryptohomeClient()),
+      cryptohome_client_(CryptohomeClient::Get()),
       delegate_(NULL),
       timeout_delay_(base::TimeDelta::FromSeconds(kTimeoutInSeconds)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -44,6 +45,7 @@
 #include "components/ukm/ukm_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
+#include "google_apis/google_api_keys.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
@@ -51,12 +53,12 @@
 #include "ios/chrome/browser/google/google_brand.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/metrics/ios_chrome_stability_metrics_provider.h"
+#include "ios/chrome/browser/metrics/ios_user_type_metrics_provider.h"
 #include "ios/chrome/browser/metrics/mobile_session_shutdown_metrics_provider.h"
 #include "ios/chrome/browser/signin/ios_chrome_signin_status_metrics_provider_delegate.h"
 #include "ios/chrome/browser/sync/device_info_sync_service_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/tab_parenting_global_observer.h"
-#import "ios/chrome/browser/tabs/tab_model_list.h"
 #include "ios/chrome/browser/translate/translate_ranker_metrics_provider.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_thread.h"
@@ -202,12 +204,8 @@ void IOSChromeMetricsServiceClient::Initialize() {
       std::make_unique<metrics::NetworkMetricsProvider>(
           base::BindRepeating(&GetNetworkConnectionTrackerAsync)));
 
-  // Currently, we configure OmniboxMetricsProvider to not log events to UMA
-  // if there is a single incognito session visible. In the future, it may
-  // be worth revisiting this to still log events from non-incognito sessions.
   metrics_service_->RegisterMetricsProvider(
-      std::make_unique<OmniboxMetricsProvider>(
-          base::Bind(&TabModelList::IsOffTheRecordSessionActive)));
+      std::make_unique<OmniboxMetricsProvider>());
 
   {
     auto stability_metrics_provider =
@@ -241,6 +239,9 @@ void IOSChromeMetricsServiceClient::Initialize() {
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<translate::TranslateRankerMetricsProvider>());
+
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<IOSUserTypeMetricsProvider>());
 }
 
 void IOSChromeMetricsServiceClient::CollectFinalHistograms() {
@@ -347,4 +348,10 @@ bool IOSChromeMetricsServiceClient::SyncStateAllowsUkm() {
 bool IOSChromeMetricsServiceClient::
     AreNotificationListenersEnabledOnAllProfiles() {
   return notification_listeners_active_;
+}
+
+std::string IOSChromeMetricsServiceClient::GetUploadSigningKey() {
+  std::string decoded_key;
+  base::Base64Decode(google_apis::GetMetricsKey(), &decoded_key);
+  return decoded_key;
 }

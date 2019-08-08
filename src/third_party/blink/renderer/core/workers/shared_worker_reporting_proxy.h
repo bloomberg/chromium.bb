@@ -31,7 +31,7 @@ class SharedWorkerReportingProxy final
   void ReportException(const WTF::String&,
                        std::unique_ptr<SourceLocation>,
                        int exception_id) override;
-  void ReportConsoleMessage(MessageSource,
+  void ReportConsoleMessage(mojom::ConsoleMessageSource,
                             mojom::ConsoleMessageLevel,
                             const String& message,
                             SourceLocation*) override;

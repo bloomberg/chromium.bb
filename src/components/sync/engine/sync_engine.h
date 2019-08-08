@@ -33,6 +33,7 @@ namespace syncer {
 
 class CancelationSignal;
 class HttpPostProviderFactory;
+class ModelTypeControllerDelegate;
 class SyncEngineHost;
 class SyncManagerFactory;
 class UnrecoverableErrorHandler;
@@ -43,7 +44,6 @@ class UnrecoverableErrorHandler;
 // interface will handle crossing threads if necessary.
 class SyncEngine : public ModelTypeConfigurer {
  public:
-  using Status = SyncStatus;
   using HttpPostProviderFactoryGetter =
       base::OnceCallback<std::unique_ptr<HttpPostProviderFactory>(
           CancelationSignal*)>;
@@ -63,7 +63,7 @@ class SyncEngine : public ModelTypeConfigurer {
     GURL service_url;
     std::string sync_user_agent;
     SyncEngine::HttpPostProviderFactoryGetter http_factory_getter;
-    SyncCredentials credentials;
+    std::string authenticated_account_id;
     std::string invalidator_client_id;
     std::unique_ptr<SyncManagerFactory> sync_manager_factory;
     bool delete_sync_data_folder = false;
@@ -84,9 +84,8 @@ class SyncEngine : public ModelTypeConfigurer {
     std::string birthday;
     std::string bag_of_chips;
 
-    // Define the polling intervals. Must not be zero.
-    base::TimeDelta short_poll_interval;
-    base::TimeDelta long_poll_interval;
+    // Define the polling interval. Must not be zero.
+    base::TimeDelta poll_interval;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(InitParams);
@@ -101,6 +100,9 @@ class SyncEngine : public ModelTypeConfigurer {
   // |saved_nigori_state| is optional nigori state to restore from a previous
   // engine instance. May be null.
   virtual void Initialize(InitParams params) = 0;
+
+  // Returns whether the asynchronous initialization process has finished.
+  virtual bool IsInitialized() const = 0;
 
   // Inform the engine to trigger a sync cycle for |types|.
   virtual void TriggerRefresh(const ModelTypeSet& types) = 0;
@@ -153,7 +155,7 @@ class SyncEngine : public ModelTypeConfigurer {
   virtual UserShare* GetUserShare() const = 0;
 
   // Called from any thread to obtain current detailed status information.
-  virtual Status GetDetailedStatus() = 0;
+  virtual SyncStatus GetDetailedStatus() = 0;
 
   // Determines if the underlying sync engine has made any local changes to
   // items that have not yet been synced with the server.
@@ -192,6 +194,10 @@ class SyncEngine : public ModelTypeConfigurer {
 
   // Enables/Disables invalidations for session sync related datatypes.
   virtual void SetInvalidationsForSessionsEnabled(bool enabled) = 0;
+
+  // Returns ModelTypeControllerDelegate for Nigori.
+  virtual std::unique_ptr<ModelTypeControllerDelegate>
+  GetNigoriControllerDelegate() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncEngine);

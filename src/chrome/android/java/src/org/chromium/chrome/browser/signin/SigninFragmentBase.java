@@ -34,6 +34,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.consent_auditor.ConsentAuditorFeature;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.sync.SyncUserDataWiper;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -436,9 +437,6 @@ public abstract class SigninFragmentBase
                         if (mDestroyed) return;
                         runStateMachineAndSignin(settingsClicked);
                     }
-
-                    @Override
-                    public void onSystemAccountsChanged() {}
                 };
         accountTrackerService.addSystemAccountsSeededListener(listener);
     }
@@ -455,7 +453,7 @@ public abstract class SigninFragmentBase
 
                         // Don't start sign-in if this fragment has been destroyed.
                         if (mDestroyed) return;
-                        SigninManager.wipeSyncUserDataIfRequired(wipeData).then((Void v) -> {
+                        SyncUserDataWiper.wipeSyncUserDataIfRequired(wipeData).then((Void v) -> {
                             onSigninAccepted(mSelectedAccountName, mIsDefaultAccountSelected,
                                     settingsClicked, () -> mIsSigninInProgress = false);
                         });

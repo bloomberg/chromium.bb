@@ -222,6 +222,10 @@ static_library("protobuf_full") {
     # The SQLite fuzzer's corpus generator needs protobuf_full and is not
     # included in Chrome.
     "//third_party/sqlite:sqlite3_lpm_corpus_gen",
+
+    # Some tests inside ChromeOS need reflection to parse golden files.
+    # Not included in production code.
+    "//chrome/test:usage_time_limit_unittests",
   ]
 
   sources = protobuf_lite_sources + [
@@ -683,12 +687,20 @@ copy("copy_google_protobuf_internal") {
   ]
 }
 
+# Build time dependency for action rules.
 group("py_proto") {
   public_deps = [
     ":copy_google",
     ":copy_google_protobuf",
     ":copy_google_protobuf_internal",
     ":copy_six",
+  ]
+}
+
+# Runtime dependency if the target needs the python scripts.
+group("py_proto_runtime") {
+  deps = [
+    ":py_proto",
   ]
 
   # Targets that depend on this should depend on the copied data files.

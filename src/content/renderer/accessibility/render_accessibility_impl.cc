@@ -12,10 +12,12 @@
 
 #include "base/bind.h"
 #include "base/containers/queue.h"
+#include "base/debug/crash_logging.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -33,6 +35,7 @@
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_node.h"
@@ -54,6 +57,29 @@ namespace {
 // The next token to use to distinguish between ack events sent to this
 // RenderAccessibilityImpl and a previous instance.
 static int g_next_ack_token = 1;
+
+void SetAccessibilityCrashKey(ui::AXMode mode) {
+  // Add a crash key with the ax_mode, to enable searching for top crashes that
+  // occur when accessibility is turned on. This adds it for each renderer,
+  // process, and elsewhere the same key is added for the browser process.
+  // Note: in theory multiple renderers in the same process might not have the
+  // same mode. As an example, kLabelImages could be enabled for just one
+  // renderer. The presence if a mode flag means in a crash report means at
+  // least one renderer in the same process had that flag.
+  // Examples of when multiple renderers could share the same process:
+  // 1) Android, 2) When many tabs are open.
+  static auto* ax_mode_crash_key = base::debug::AllocateCrashKeyString(
+      "ax_mode", base::debug::CrashKeySize::Size64);
+  if (ax_mode_crash_key)
+    base::debug::SetCrashKeyString(ax_mode_crash_key, mode.ToString());
+}
+
+// Returns the first language in the accept languages list.
+std::string GetPreferredLanguage(const std::string& accept_languages) {
+  const std::vector<std::string> tokens = base::SplitString(
+      accept_languages, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  return tokens.empty() ? "" : tokens[0];
+}
 }
 
 namespace content {
@@ -106,6 +132,7 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
                                                  ui::AXMode mode)
     : RenderFrameObserver(render_frame),
       render_frame_(render_frame),
+      pref_watcher_binding_(this),
       tree_source_(render_frame, mode),
       serializer_(&tree_source_),
       plugin_tree_source_(nullptr),
@@ -118,6 +145,7 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
   WebView* web_view = render_frame_->GetRenderView()->GetWebView();
   WebSettings* settings = web_view->GetSettings();
 
+  SetAccessibilityCrashKey(mode);
 #if defined(OS_ANDROID)
   // Password values are only passed through on Android.
   settings->SetAccessibilityPasswordValuesEnabled(true);
@@ -141,6 +169,17 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
     HandleAXEvent(WebAXObject::FromWebDocument(document),
                   ax::mojom::Event::kLayoutComplete);
   }
+
+  image_annotation_debugging_ =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kEnableExperimentalAccessibilityLabelsDebugging);
+
+  blink::mojom::RendererPreferenceWatcherPtr pref_watcher_ptr;
+  pref_watcher_binding_.Bind(mojo::MakeRequest(&pref_watcher_ptr));
+
+  if (render_frame->render_view())
+    render_frame_->render_view()->RegisterRendererPreferenceWatcher(
+        std::move(pref_watcher_ptr));
 }
 
 RenderAccessibilityImpl::~RenderAccessibilityImpl() = default;
@@ -154,6 +193,7 @@ void RenderAccessibilityImpl::DidCreateNewDocument() {
 void RenderAccessibilityImpl::DidCommitProvisionalLoad(
     bool is_same_document_navigation,
     ui::PageTransition transition) {
+  has_injected_stylesheet_ = false;
   // Remove the image annotator if the page is loading and it was added for
   // the one-shot image annotation (i.e. AXMode for image annotation is not
   // set).
@@ -172,6 +212,8 @@ void RenderAccessibilityImpl::AccessibilityModeChanged() {
   if (old_mode == new_mode)
     return;
   tree_source_.SetAccessibilityMode(new_mode);
+
+  SetAccessibilityCrashKey(new_mode);
 
 #if !defined(OS_ANDROID)
   // Inline text boxes can be enabled globally on all except Android.
@@ -223,6 +265,13 @@ bool RenderAccessibilityImpl::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
   during_action_ = false;
   return handled;
+}
+
+void RenderAccessibilityImpl::NotifyUpdate(
+    blink::mojom::RendererPreferencesPtr new_prefs) {
+  if (ax_image_annotator_)
+    ax_image_annotator_->set_preferred_language(
+        GetPreferredLanguage(new_prefs->accept_languages));
 }
 
 void RenderAccessibilityImpl::HandleWebAccessibilityEvent(
@@ -435,7 +484,7 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   TRACE_EVENT0("accessibility",
                "RenderAccessibilityImpl::SendPendingAccessibilityEvents");
 
-  const WebDocument& document = GetMainDocument();
+  WebDocument document = GetMainDocument();
   if (document.IsNull())
     return;
 
@@ -525,6 +574,8 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   std::set<int32_t> already_serialized_ids;
   for (size_t i = 0; i < dirty_objects.size(); i++) {
     auto obj = dirty_objects[i].obj;
+    if (obj.IsDetached())
+      continue;
     if (already_serialized_ids.find(obj.AxID()) != already_serialized_ids.end())
       continue;
 
@@ -571,6 +622,12 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
 
   if (had_layout_complete_messages)
     SendLocationChanges();
+
+  if (had_load_complete_messages)
+    has_injected_stylesheet_ = false;
+
+  if (image_annotation_debugging_)
+    AddImageAnnotationDebuggingAttributes(bundle.updates);
 }
 
 void RenderAccessibilityImpl::SendLocationChanges() {
@@ -692,7 +749,13 @@ void RenderAccessibilityImpl::OnPerformAction(
           WebPoint(data.target_point.x(), data.target_point.y()));
       break;
     case ax::mojom::Action::kSetSelection:
-      anchor.SetSelection(anchor, data.anchor_offset, focus, data.focus_offset);
+      if (base::FeatureList::IsEnabled(features::kNewAccessibilitySelection)) {
+        anchor.SetSelection(anchor, data.anchor_offset, focus,
+                            data.focus_offset);
+      } else {
+        anchor.SetSelectionDeprecated(anchor, data.anchor_offset, focus,
+                                      data.focus_offset);
+      }
       HandleAXEvent(root, ax::mojom::Event::kLayoutComplete);
       break;
     case ax::mojom::Action::kSetSequentialFocusNavigationStartingPoint:
@@ -700,7 +763,6 @@ void RenderAccessibilityImpl::OnPerformAction(
       break;
     case ax::mojom::Action::kSetValue:
       target.SetValue(blink::WebString::FromUTF8(data.value));
-      HandleAXEvent(target, ax::mojom::Event::kValueChanged);
       break;
     case ax::mojom::Action::kShowContextMenu:
       target.ShowContextMenu();
@@ -729,6 +791,16 @@ void RenderAccessibilityImpl::OnPerformAction(
         // they get added to the annotator.
         MarkAllAXObjectsDirty(ax::mojom::Role::kImage);
       }
+      break;
+    case ax::mojom::Action::kSignalEndOfTest:
+      // Wait for 100ms to allow pending events to come in
+      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+
+      HandleAXEvent(root, ax::mojom::Event::kEndOfTest);
+      break;
+    case ax::mojom::Action::kShowTooltip:
+    case ax::mojom::Action::kHideTooltip:
+    case ax::mojom::Action::kInternalInvalidateTree:
       break;
   }
 }
@@ -882,8 +954,14 @@ void RenderAccessibilityImpl::CreateAXImageAnnotator() {
   image_annotation::mojom::AnnotatorPtr annotator_ptr;
   render_frame()->GetRemoteInterfaces()->GetInterface(
       mojo::MakeRequest(&annotator_ptr));
-  ax_image_annotator_ =
-      std::make_unique<AXImageAnnotator>(this, std::move(annotator_ptr));
+
+  const std::string preferred_language =
+      render_frame()->render_view()
+          ? GetPreferredLanguage(
+                render_frame()->render_view()->GetAcceptLanguages())
+          : std::string();
+  ax_image_annotator_ = std::make_unique<AXImageAnnotator>(
+      this, preferred_language, std::move(annotator_ptr));
   tree_source_.AddImageAnnotator(ax_image_annotator_.get());
 }
 
@@ -1049,6 +1127,76 @@ void RenderAccessibilityImpl::RecordImageMetrics(AXContentTreeUpdate* update) {
           "Accessibility.ScreenReader.Image.SizeRatio.Unlabeled", ratio);
       UMA_HISTOGRAM_COUNTS_10000(
           "Accessibility.ScreenReader.Image.MinSize.Unlabeled", min_size);
+    }
+  }
+}
+
+void RenderAccessibilityImpl::AddImageAnnotationDebuggingAttributes(
+    const std::vector<AXContentTreeUpdate>& updates) {
+  DCHECK(image_annotation_debugging_);
+
+  for (auto& update : updates) {
+    for (auto& node : update.nodes) {
+      if (!node.HasIntAttribute(
+              ax::mojom::IntAttribute::kImageAnnotationStatus))
+        continue;
+
+      ax::mojom::ImageAnnotationStatus status = node.GetImageAnnotationStatus();
+      bool should_set_attributes = false;
+      switch (status) {
+        case ax::mojom::ImageAnnotationStatus::kNone:
+        case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
+        case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
+          break;
+        case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
+        case ax::mojom::ImageAnnotationStatus::kAnnotationAdult:
+        case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
+        case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed:
+        case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:
+          should_set_attributes = true;
+          break;
+      }
+
+      if (!should_set_attributes)
+        continue;
+
+      WebDocument document = GetMainDocument();
+      if (document.IsNull())
+        continue;
+      WebAXObject obj = WebAXObject::FromWebDocumentByID(document, node.id);
+      if (obj.IsDetached())
+        continue;
+
+      if (!has_injected_stylesheet_) {
+        document.InsertStyleSheet(
+            "[imageannotation=annotationPending] { outline: 3px solid #9ff; } "
+            "[imageannotation=annotationSucceeded] { outline: 3px solid #3c3; "
+            "} "
+            "[imageannotation=annotationEmpty] { outline: 3px solid #ee6; } "
+            "[imageannotation=annotationAdult] { outline: 3px solid #f90; } "
+            "[imageannotation=annotationProcessFailed] { outline: 3px solid "
+            "#c00; } ");
+        has_injected_stylesheet_ = true;
+      }
+
+      WebNode web_node = obj.GetNode();
+      if (web_node.IsNull() || !web_node.IsElementNode())
+        continue;
+
+      WebElement element = web_node.To<WebElement>();
+      std::string status_str = ui::ToString(status);
+      if (element.GetAttribute("imageannotation").Utf8() != status_str)
+        element.SetAttribute("imageannotation",
+                             blink::WebString::FromUTF8(status_str));
+
+      std::string title = "%" + status_str;
+      std::string annotation =
+          node.GetStringAttribute(ax::mojom::StringAttribute::kImageAnnotation);
+      if (!annotation.empty())
+        title = title + ": " + annotation;
+      if (element.GetAttribute("title").Utf8() != title) {
+        element.SetAttribute("title", blink::WebString::FromUTF8(title));
+      }
     }
   }
 }

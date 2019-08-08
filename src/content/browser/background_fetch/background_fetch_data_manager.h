@@ -32,7 +32,7 @@
 namespace storage {
 class BlobDataHandle;
 class QuotaManagerProxy;
-}
+}  // namespace storage
 
 namespace content {
 
@@ -64,9 +64,13 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   using SettledFetchesCallback = base::OnceCallback<void(
       blink::mojom::BackgroundFetchError,
       std::vector<blink::mojom::BackgroundFetchSettledFetchPtr>)>;
-  using GetRegistrationCallback =
-      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
-                              blink::mojom::BackgroundFetchRegistrationPtr)>;
+  using CreateRegistrationCallback = base::OnceCallback<void(
+      blink::mojom::BackgroundFetchError,
+      blink::mojom::BackgroundFetchRegistrationDataPtr)>;
+  using GetRegistrationCallback = base::OnceCallback<void(
+      blink::mojom::BackgroundFetchError,
+      BackgroundFetchRegistrationId,
+      blink::mojom::BackgroundFetchRegistrationDataPtr)>;
   using MarkRegistrationForDeletionCallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError,
                               blink::mojom::BackgroundFetchFailureReason)>;
@@ -108,7 +112,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
       blink::mojom::BackgroundFetchOptionsPtr options,
       const SkBitmap& icon,
       bool start_paused,
-      GetRegistrationCallback callback);
+      CreateRegistrationCallback callback);
 
   // Get the BackgroundFetchRegistration.
   void GetRegistration(int64_t service_worker_registration_id,

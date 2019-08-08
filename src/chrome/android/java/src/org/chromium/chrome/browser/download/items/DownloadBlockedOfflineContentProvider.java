@@ -85,6 +85,12 @@ class DownloadBlockedOfflineContentProvider
     }
 
     @Override
+    public void renameItem(ContentId id, String name, Callback<Integer> callback) {
+        assert !LegacyHelpers.isLegacyDownload(id);
+        mProvider.renameItem(id, name, callback);
+    }
+
+    @Override
     public void addObserver(Observer observer) {
         mObservers.addObserver(observer);
     }

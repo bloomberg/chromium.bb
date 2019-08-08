@@ -91,6 +91,7 @@ class PRINTING_EXPORT CupsPrinter : public CupsOptionProvider {
   // Usage on an unavailable printer is undefined.
   ipp_status_t CreateJob(int* job_id,
                          const std::string& title,
+                         const base::Optional<std::string>& username,
                          const std::vector<cups_option_t>& options);
 
   // Add a document to a print job.  |job_id| must be non-zero and refer to a

@@ -46,8 +46,8 @@ cr.define('model_settings_policy_test', function() {
       [{
         // Policy has no effect, setting unavailable
         colorCap: {option: [{type: 'STANDARD_COLOR', is_default: true}]},
-        colorPolicy: print_preview.ColorMode.COLOR,
-        colorDefault: print_preview.ColorMode.COLOR,
+        colorPolicy: print_preview.ColorModeRestriction.COLOR,
+        colorDefault: print_preview.ColorModeRestriction.COLOR,
         expectedValue: true,
         expectedAvailable: false,
         expectedManaged: false,
@@ -56,8 +56,8 @@ cr.define('model_settings_policy_test', function() {
        {
          // Policy contradicts actual capabilities, setting unavailable.
          colorCap: {option: [{type: 'STANDARD_COLOR', is_default: true}]},
-         colorPolicy: print_preview.ColorMode.GRAY,
-         colorDefault: print_preview.ColorMode.GRAY,
+         colorPolicy: print_preview.ColorModeRestriction.MONOCHROME,
+         colorDefault: print_preview.ColorModeRestriction.MONOCHROME,
          expectedValue: true,
          expectedAvailable: false,
          expectedManaged: false,
@@ -71,9 +71,9 @@ cr.define('model_settings_policy_test', function() {
              {type: 'STANDARD_COLOR'}
            ]
          },
-         colorPolicy: print_preview.ColorMode.COLOR,
+         colorPolicy: print_preview.ColorModeRestriction.COLOR,
          // Default mismatches restriction and is ignored.
-         colorDefault: print_preview.ColorMode.GRAY,
+         colorDefault: print_preview.ColorModeRestriction.MONOCHROME,
          expectedValue: true,
          expectedAvailable: true,
          expectedManaged: true,
@@ -87,7 +87,7 @@ cr.define('model_settings_policy_test', function() {
              {type: 'STANDARD_COLOR'}
            ]
          },
-         colorDefault: print_preview.ColorMode.COLOR,
+         colorDefault: print_preview.ColorModeRestriction.COLOR,
          expectedValue: true,
          expectedAvailable: true,
          expectedManaged: false,
@@ -132,6 +132,9 @@ cr.define('model_settings_policy_test', function() {
         expectedAvailable: false,
         expectedManaged: false,
         expectedEnforced: true,
+        expectedShortEdge: false,
+        expectedShortEdgeAvailable: false,
+        expectedShortEdgeEnforced: false,
       },
        {
          // Policy contradicts actual capabilities and is ignored.
@@ -142,6 +145,9 @@ cr.define('model_settings_policy_test', function() {
          expectedAvailable: false,
          expectedManaged: false,
          expectedEnforced: true,
+         expectedShortEdge: false,
+         expectedShortEdgeAvailable: false,
+         expectedShortEdgeEnforced: false,
        },
        {
          // Policy overrides default.
@@ -158,6 +164,28 @@ cr.define('model_settings_policy_test', function() {
          expectedAvailable: true,
          expectedManaged: true,
          expectedEnforced: true,
+         expectedShortEdge: false,
+         expectedShortEdgeAvailable: true,
+         expectedShortEdgeEnforced: false,
+       },
+       {
+         // Policy sets duplex type, overriding default.
+         duplexCap: {
+           option: [
+             {type: 'NO_DUPLEX'}, {type: 'LONG_EDGE', is_default: true},
+             {type: 'SHORT_EDGE'}
+           ]
+         },
+         duplexPolicy: print_preview.DuplexModeRestriction.SHORT_EDGE,
+         // Default mismatches restriction and is ignored.
+         duplexDefault: print_preview.DuplexModeRestriction.LONG_EDGE,
+         expectedValue: true,
+         expectedAvailable: true,
+         expectedManaged: true,
+         expectedEnforced: true,
+         expectedShortEdge: true,
+         expectedShortEdgeAvailable: true,
+         expectedShortEdgeEnforced: true,
        },
        {
          // Default defined by policy but setting is modifiable.
@@ -172,6 +200,9 @@ cr.define('model_settings_policy_test', function() {
          expectedAvailable: true,
          expectedManaged: false,
          expectedEnforced: false,
+         expectedShortEdge: false,
+         expectedShortEdgeAvailable: true,
+         expectedShortEdgeEnforced: false,
        }].forEach(subtestParams => {
         capabilities =
             print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
@@ -192,6 +223,115 @@ cr.define('model_settings_policy_test', function() {
         assertEquals(subtestParams.expectedManaged, model.controlsManaged);
         assertEquals(
             subtestParams.expectedEnforced, model.settings.duplex.setByPolicy);
+        assertEquals(
+            subtestParams.expectedShortEdge,
+            model.getSettingValue('duplexShortEdge'));
+        assertEquals(
+            subtestParams.expectedShortEdgeAvailable,
+            model.settings.duplexShortEdge.available);
+        assertEquals(
+            subtestParams.expectedShortEdgeEnforced,
+            model.settings.duplexShortEdge.setByPolicy);
+      });
+    });
+
+    test('pin managed', function() {
+      // Remove pin capability.
+      let capabilities =
+          print_preview_test_utils.getCddTemplate(model.destination.id)
+              .capabilities;
+      delete capabilities.printer.pin;
+
+      // Make device enterprise managed since pin setting is available only on
+      // managed devices.
+      loadTimeData.overrideValues({isEnterpriseManaged: true});
+
+      [{
+        // No policies, settings is modifiable.
+        pinCap: {supported: true},
+        expectedValue: false,
+        expectedAvailable: true,
+        expectedManaged: false,
+        expectedEnforced: false,
+      },
+       {
+         // Policy has no effect, setting unavailable.
+         pinCap: {},
+         pinPolicy: print_preview.PinModeRestriction.PIN,
+         pinDefault: print_preview.PinModeRestriction.PIN,
+         expectedValue: false,
+         expectedAvailable: false,
+         expectedManaged: false,
+         expectedEnforced: true,
+       },
+       {
+         // Policy has no effect, setting is not supported.
+         pinCap: {supported: false},
+         pinPolicy: print_preview.PinModeRestriction.UNSET,
+         pinDefault: print_preview.PinModeRestriction.PIN,
+         expectedValue: false,
+         expectedAvailable: false,
+         expectedManaged: false,
+         expectedEnforced: false,
+       },
+       {
+         // Policy is UNSECURE, setting is not available.
+         pinCap: {supported: true},
+         pinPolicy: print_preview.PinModeRestriction.NO_PIN,
+         expectedValue: false,
+         expectedAvailable: false,
+         expectedManaged: false,
+         expectedEnforced: true,
+       },
+       {
+         // No restriction policy, setting is modifiable.
+         pinCap: {supported: true},
+         pinPolicy: print_preview.PinModeRestriction.UNSET,
+         pinDefault: print_preview.PinModeRestriction.NO_PIN,
+         expectedValue: false,
+         expectedAvailable: true,
+         expectedManaged: false,
+         expectedEnforced: false,
+       },
+       {
+         // Policy overrides default.
+         pinCap: {supported: true},
+         pinPolicy: print_preview.PinModeRestriction.PIN,
+         // Default mismatches restriction and is ignored.
+         pinDefault: print_preview.PinModeRestriction.NO_PIN,
+         expectedValue: true,
+         expectedAvailable: true,
+         expectedManaged: true,
+         expectedEnforced: true,
+       },
+       {
+         // Default defined by policy but setting is modifiable.
+         pinCap: {supported: true},
+         pinDefault: print_preview.PinModeRestriction.PIN,
+         expectedValue: true,
+         expectedAvailable: true,
+         expectedManaged: false,
+         expectedEnforced: false,
+       }].forEach(subtestParams => {
+        capabilities =
+            print_preview_test_utils.getCddTemplate(model.destination.id)
+                .capabilities;
+        capabilities.printer.pin = subtestParams.pinCap;
+        const policies = {
+          allowedPinModes: subtestParams.pinPolicy,
+          defaultPinMode: subtestParams.pinDefault,
+        };
+        // In practice |capabilities| are always set after |policies| and
+        // observers only check for |capabilities|, so the order is important.
+        model.set('destination.policies', policies);
+        model.set('destination.capabilities', capabilities);
+        model.applyDestinationSpecificPolicies();
+        assertEquals(subtestParams.expectedValue, model.getSettingValue('pin'));
+        assertEquals(
+            subtestParams.expectedAvailable, model.settings.pin.available);
+        assertEquals(subtestParams.expectedManaged, model.controlsManaged);
+        assertEquals(
+            subtestParams.expectedEnforced, model.settings.pin.setByPolicy);
       });
     });
   });

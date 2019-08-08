@@ -10,8 +10,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/views/touch_selection_menu_runner_chromeos.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/base/ui_base_features.h"
@@ -50,8 +50,7 @@ void TouchSelectionMenuChromeOS::SetActionsForTesting(
   // default action buttons are already added, we should remove the existent
   // buttons if any, and then call CreateButtons, this will call the parent
   // method too.
-  if (has_children())
-    RemoveAllChildViews(/*delete_children=*/true);
+  RemoveAllChildViews(/*delete_children=*/true);
 
   CreateButtons();
 }

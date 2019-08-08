@@ -697,9 +697,13 @@ void RecordAccountsPerProfile(int total_number_accounts) {
 void LogSigninAccountReconciliationDuration(base::TimeDelta duration,
                                             bool successful) {
   if (successful) {
-    UMA_HISTOGRAM_TIMES("Signin.Reconciler.Duration.Success", duration);
+    UMA_HISTOGRAM_CUSTOM_TIMES("Signin.Reconciler.Duration.UpTo3mins.Success",
+                               duration, base::TimeDelta::FromMilliseconds(1),
+                               base::TimeDelta::FromMinutes(3), 100);
   } else {
-    UMA_HISTOGRAM_TIMES("Signin.Reconciler.Duration.Failure", duration);
+    UMA_HISTOGRAM_CUSTOM_TIMES("Signin.Reconciler.Duration.UpTo3mins.Failure",
+                               duration, base::TimeDelta::FromMilliseconds(1),
+                               base::TimeDelta::FromMinutes(3), 100);
   }
 }
 

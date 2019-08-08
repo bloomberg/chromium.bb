@@ -95,6 +95,27 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) MdnsResponderManager {
     virtual std::string CreateName() = 0;
   };
 
+  // Used in histograms to measure the service health.
+  enum class ServiceError {
+    // Fail to start the MdnsResponderManager after all socket handlers fail to
+    // start on each interface.
+    kFailToStartManager = 0,
+    // Fail to create a MdnsResponder after all socket handlers fail to start on
+    // each interface.
+    kFailToCreateResponder = 1,
+    // All socket handlers have encountered read errors and failed. Imminent to
+    // restart the MdnsResponderManager.
+    kFatalSocketHandlerError = 2,
+    // An invalid IP address is given to register an mDNS name for.
+    kInvalidIpToRegisterName = 3,
+    // A record is received from the network such that it resolves a name
+    // created
+    // by the service to a different address.
+    kConflictingNameResolution = 4,
+
+    kMaxValue = kConflictingNameResolution,
+  };
+
   MdnsResponderManager();
   explicit MdnsResponderManager(net::MDnsSocketFactory* socket_factory);
   ~MdnsResponderManager();
@@ -177,6 +198,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) MdnsResponderManager {
   void OnMdnsQueryReceived(const net::DnsQuery& query,
                            uint16_t recv_socket_handler_id);
   void OnSocketHandlerReadError(uint16_t socket_handler_id, int result);
+  bool IsNonFatalError(int result);
 
   std::unique_ptr<net::MDnsSocketFactory> owned_socket_factory_;
   net::MDnsSocketFactory* socket_factory_;

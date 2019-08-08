@@ -45,6 +45,8 @@ class WebViewSyncClient : public browser_sync::BrowserSyncClient {
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   favicon::FaviconService* GetFaviconService() override;
   history::HistoryService* GetHistoryService() override;
+  send_tab_to_self::SendTabToSelfSyncService* GetSendTabToSelfSyncService()
+      override;
   sync_sessions::SessionSyncService* GetSessionSyncService() override;
   base::RepeatingClosure GetPasswordStateChangedCallback() override;
   syncer::DataTypeController::TypeVector CreateDataTypeControllers(
@@ -60,6 +62,7 @@ class WebViewSyncClient : public browser_sync::BrowserSyncClient {
   scoped_refptr<syncer::ModelSafeWorker> CreateModelWorkerForGroup(
       syncer::ModelSafeGroup group) override;
   syncer::SyncApiComponentFactory* GetSyncApiComponentFactory() override;
+  syncer::SyncTypePreferenceProvider* GetPreferenceProvider() override;
 
  private:
   WebViewBrowserState* browser_state_ = nullptr;

@@ -29,10 +29,10 @@ crostiniTasks.testShareBeforeOpeningDownloadsWithCrostiniApp = (done) => {
   let sharePathsCalled = false;
   let sharePathsPersist;
   chrome.fileManagerPrivate.sharePathsWithCrostini =
-      (entry, persist, callback) => {
+      (vmName, entry, persist, callback) => {
         sharePathsCalled = true;
         sharePathsPersist = persist;
-        oldSharePaths(entry, persist, callback);
+        oldSharePaths(vmName, entry, persist, callback);
       };
 
   // Save old fmp.executeTask.

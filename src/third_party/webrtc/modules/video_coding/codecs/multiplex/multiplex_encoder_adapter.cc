@@ -138,17 +138,16 @@ int MultiplexEncoderAdapter::InitEncode(const VideoCodec* inst,
 
 int MultiplexEncoderAdapter::Encode(
     const VideoFrame& input_image,
-    const CodecSpecificInfo* codec_specific_info,
-    const std::vector<FrameType>* frame_types) {
+    const std::vector<VideoFrameType>* frame_types) {
   if (!encoded_complete_callback_) {
     return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   }
 
-  std::vector<FrameType> adjusted_frame_types;
+  std::vector<VideoFrameType> adjusted_frame_types;
   if (key_frame_interval_ > 0 && picture_index_ % key_frame_interval_ == 0) {
-    adjusted_frame_types.push_back(kVideoFrameKey);
+    adjusted_frame_types.push_back(VideoFrameType::kVideoFrameKey);
   } else {
-    adjusted_frame_types.push_back(kVideoFrameDelta);
+    adjusted_frame_types.push_back(VideoFrameType::kVideoFrameDelta);
   }
   const bool has_alpha = input_image.video_frame_buffer()->type() ==
                          VideoFrameBuffer::Type::kI420A;
@@ -181,8 +180,7 @@ int MultiplexEncoderAdapter::Encode(
   ++picture_index_;
 
   // Encode YUV
-  int rv = encoders_[kYUVStream]->Encode(input_image, codec_specific_info,
-                                         &adjusted_frame_types);
+  int rv = encoders_[kYUVStream]->Encode(input_image, &adjusted_frame_types);
 
   // If we do not receive an alpha frame, we send a single frame for this
   // |picture_index_|. The receiver will receive |frame_count| as 1 which
@@ -208,8 +206,7 @@ int MultiplexEncoderAdapter::Encode(
                                .set_rotation(input_image.rotation())
                                .set_id(input_image.id())
                                .build();
-  rv = encoders_[kAXXStream]->Encode(alpha_image, codec_specific_info,
-                                     &adjusted_frame_types);
+  rv = encoders_[kAXXStream]->Encode(alpha_image, &adjusted_frame_types);
   return rv;
 }
 
@@ -219,23 +216,21 @@ int MultiplexEncoderAdapter::RegisterEncodeCompleteCallback(
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
-int MultiplexEncoderAdapter::SetRateAllocation(
-    const VideoBitrateAllocation& bitrate,
-    uint32_t framerate) {
-  VideoBitrateAllocation bitrate_allocation(bitrate);
+void MultiplexEncoderAdapter::SetRates(
+    const RateControlParameters& parameters) {
+  VideoBitrateAllocation bitrate_allocation(parameters.bitrate);
   bitrate_allocation.SetBitrate(
-      0, 0, bitrate.GetBitrate(0, 0) - augmenting_data_size_);
+      0, 0, parameters.bitrate.GetBitrate(0, 0) - augmenting_data_size_);
   for (auto& encoder : encoders_) {
     // TODO(emircan): |framerate| is used to calculate duration in encoder
     // instances. We report the total frame rate to keep real time for now.
     // Remove this after refactoring duration logic.
-    const int rv = encoder->SetRateAllocation(
+    encoder->SetRates(RateControlParameters(
         bitrate_allocation,
-        static_cast<uint32_t>(encoders_.size()) * framerate);
-    if (rv)
-      return rv;
+        static_cast<uint32_t>(encoders_.size() * parameters.framerate_fps),
+        parameters.bandwidth_allocation -
+            DataRate::bps(augmenting_data_size_)));
   }
-  return WEBRTC_VIDEO_CODEC_OK;
 }
 
 int MultiplexEncoderAdapter::Release() {

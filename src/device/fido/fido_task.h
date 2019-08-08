@@ -27,11 +27,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoTask {
   explicit FidoTask(FidoDevice* device);
   virtual ~FidoTask();
 
-  // Invokes the AuthenticatorCancel method on |device_| if it supports the
-  // CTAP protocol. Upon receiving AuthenticatorCancel request, authenticators
-  // cancel ongoing requests (if any) immediately. Calling this method itself
-  // neither destructs |this| instance nor destroys |device_|.
-  void CancelTask();
+  // Cancel attempts to cancel the operation. This may safely be called at any
+  // point but may not be effective because the task may have already completed
+  // or the device may not support cancelation. Even if canceled, the callback
+  // will still be invoked, albeit perhaps with a status of
+  // |kCtap2ErrKeepAliveCancel|.
+  virtual void Cancel() = 0;
 
  protected:
   // Asynchronously initiates CTAP request operation for a single device.

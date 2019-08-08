@@ -28,6 +28,7 @@ namespace credential_provider {
 
 constexpr wchar_t kRegMdmUrl[] = L"mdm";
 constexpr wchar_t kRegMdmSupportsMultiUser[] = L"mdm_mu";
+constexpr wchar_t kRegMdmAllowConsumerAccounts[] = L"mdm_aca";
 
 // Overridden in tests to force the MDM enrollment to either succeed or fail.
 enum class EnrollmentStatus {
@@ -64,8 +65,10 @@ base::string16 GetMdmUrl() {
   wchar_t mdm_url[256];
   ULONG length = base::size(mdm_url);
   HRESULT hr = GetGlobalFlag(kRegMdmUrl, mdm_url, &length);
+  if (FAILED(hr))
+    return L"https://deviceenrollmentforwindows.googleapis.com/v1/discovery";
 
-  return hr == S_OK ? mdm_url : base::string16();
+  return mdm_url;
 }
 
 bool IsEnrolledWithGoogleMdm(const base::string16& mdm_url) {
@@ -83,8 +86,23 @@ bool IsEnrolledWithGoogleMdm(const base::string16& mdm_url) {
   auto get_device_registration_info_function =
       GET_MDM_FUNCTION_POINTER(library, GetDeviceRegistrationInfo);
   if (!get_device_registration_info_function) {
+    // On Windows < 1803 the function GetDeviceRegistrationInfo does not exist
+    // in MDMRegistration.dll so we have to fallback to the less accurate
+    // IsDeviceRegisteredWithManagement. This can return false positives if the
+    // machine is registered to MDM but to a different server.
     LOGFN(ERROR) << "GET_MDM_FUNCTION_POINTER(GetDeviceRegistrationInfo)";
-    return false;
+    auto is_device_registered_with_management_function =
+        GET_MDM_FUNCTION_POINTER(library, IsDeviceRegisteredWithManagement);
+    if (!is_device_registered_with_management_function) {
+      LOGFN(ERROR)
+          << "GET_MDM_FUNCTION_POINTER(IsDeviceRegisteredWithManagement)";
+      return false;
+    } else {
+      BOOL is_managed = FALSE;
+      HRESULT hr = is_device_registered_with_management_function(&is_managed, 0,
+                                                                 nullptr);
+      return SUCCEEDED(hr) && is_managed;
+    }
   }
 
   MANAGEMENT_REGISTRATION_INFO* info;
@@ -148,12 +166,12 @@ bool MdmEnrollmentEnabled() {
   return !mdm_url.empty();
 }
 
-HRESULT EnrollToGoogleMdmIfNeeded(const base::DictionaryValue& properties) {
+HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties) {
   USES_CONVERSION;
   LOGFN(INFO);
 
-  base::string16 email = GetDictString(&properties, kKeyEmail);
-  base::string16 token = GetDictString(&properties, kKeyMdmIdToken);
+  base::string16 email = GetDictString(properties, kKeyEmail);
+  base::string16 token = GetDictString(properties, kKeyMdmIdToken);
 
   if (email.empty()) {
     LOGFN(ERROR) << "Email is empty";
@@ -174,12 +192,17 @@ HRESULT EnrollToGoogleMdmIfNeeded(const base::DictionaryValue& properties) {
               << " token=" << base::string16(token.c_str(), 10);
 
   // Build the json data needed by the server.
-
   base::string16 serial_number =
       base::win::WmiComputerSystemInfo::Get().serial_number();
-  base::DictionaryValue registration_data;
-  registration_data.SetString("serial_number", serial_number);
-  registration_data.SetString("id_token", token);
+
+  if (serial_number.empty()) {
+    LOGFN(ERROR) << "Failed to get serial number.";
+    return -1;
+  }
+
+  base::Value registration_data(base::Value::Type::DICTIONARY);
+  registration_data.SetStringKey("serial_number", serial_number);
+  registration_data.SetStringKey("id_token", token);
   std::string registration_data_str;
   if (!base::JSONWriter::Write(registration_data, &registration_data_str)) {
     LOGFN(ERROR) << "JSONWriter::Write(registration_data)";

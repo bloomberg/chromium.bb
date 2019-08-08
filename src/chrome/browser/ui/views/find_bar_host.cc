@@ -359,7 +359,7 @@ void FindBarHost::OnVisibilityChanged() {
   find_bar_controller_->FindBarVisibilityChanged();
 }
 
-ax::mojom::Role FindBarHost::GetAccessibleWindowRole() const {
+ax::mojom::Role FindBarHost::GetAccessibleWindowRole() {
   return ax::mojom::Role::kDialog;
 }
 

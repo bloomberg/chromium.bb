@@ -13,7 +13,7 @@ class CSSScaleInterpolationType : public CSSInterpolationType {
  public:
   CSSScaleInterpolationType(PropertyHandle property)
       : CSSInterpolationType(property) {
-    DCHECK_EQ(CssProperty().PropertyID(), CSSPropertyScale);
+    DCHECK_EQ(CssProperty().PropertyID(), CSSPropertyID::kScale);
   }
 
   InterpolationValue MaybeConvertStandardPropertyUnderlyingValue(

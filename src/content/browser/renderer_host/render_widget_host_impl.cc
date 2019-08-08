@@ -16,7 +16,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -284,6 +284,9 @@ class UnboundWidgetInputHandler : public mojom::WidgetInputHandler {
   void CursorVisibilityChanged(bool visible) override {
     DLOG(WARNING) << "Input request on unbound interface";
   }
+  void FallbackCursorModeToggled(bool is_on) override {
+    DLOG(WARNING) << "Input request on unbound interface";
+  }
   void ImeSetComposition(const base::string16& text,
                          const std::vector<ui::ImeTextSpan>& ime_text_spans,
                          const gfx::Range& range,
@@ -357,8 +360,6 @@ class RenderWidgetHostImpl::KeyEventResultTracker {
     return weak_factory_.GetWeakPtr();
   }
 
-  bool is_async() const { return is_async_; }
-
   // Called if the event is being sent to the renderer.
   void PrepareForAsync() {
     DCHECK(!is_async_);
@@ -407,40 +408,15 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                                            int32_t routing_id,
                                            mojom::WidgetPtr widget,
                                            bool hidden)
-    : renderer_initialized_(false),
-      destroyed_(false),
-      delegate_(delegate),
-      owner_delegate_(nullptr),
+    : delegate_(delegate),
       process_(process),
       routing_id_(routing_id),
       clock_(base::DefaultTickClock::GetInstance()),
-      is_loading_(false),
       is_hidden_(hidden),
-      visual_properties_ack_pending_(false),
-      auto_resize_enabled_(false),
-      page_scale_factor_(1.f),
-      waiting_for_screen_rects_ack_(false),
-      is_unresponsive_(false),
-      in_flight_event_count_(0),
-      in_get_backing_store_(false),
-      text_direction_updated_(false),
-      text_direction_(blink::kWebTextDirectionLeftToRight),
-      text_direction_canceled_(false),
-      suppress_events_until_keydown_(false),
-      pending_mouse_lock_request_(false),
-      allow_privileged_mouse_lock_(false),
-      is_last_unlocked_by_target_(false),
-      has_touch_handler_(false),
-      is_in_touchpad_gesture_fling_(false),
       latency_tracker_(delegate_),
-      next_browser_snapshot_id_(1),
-      owned_by_render_frame_host_(false),
-      is_focused_(false),
       hung_renderer_delay_(TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
       new_content_rendering_delay_(
           TimeDelta::FromMilliseconds(kNewContentRenderingDelayMs)),
-      current_content_source_id_(0),
-      monitoring_composition_info_(false),
       compositor_frame_sink_binding_(this),
       frame_token_message_queue_(
           std::make_unique<FrameTokenMessageQueue>(this)),
@@ -463,7 +439,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
 #endif
   CHECK(delegate_);
   CHECK_NE(MSG_ROUTING_NONE, routing_id_);
-  DCHECK(base::TaskScheduler::GetInstance())
+  DCHECK(base::ThreadPool::GetInstance())
       << "Ref. Prerequisite section of post_task.h";
 
   std::pair<RoutingIDWidgetMap::iterator, bool> result =
@@ -593,15 +569,15 @@ void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {
   synthetic_gesture_controller_.reset();
 }
 
-RenderProcessHost* RenderWidgetHostImpl::GetProcess() const {
+RenderProcessHost* RenderWidgetHostImpl::GetProcess() {
   return process_;
 }
 
-int RenderWidgetHostImpl::GetRoutingID() const {
+int RenderWidgetHostImpl::GetRoutingID() {
   return routing_id_;
 }
 
-RenderWidgetHostViewBase* RenderWidgetHostImpl::GetView() const {
+RenderWidgetHostViewBase* RenderWidgetHostImpl::GetView() {
   return view_.get();
 }
 
@@ -696,10 +672,6 @@ void RenderWidgetHostImpl::ShutdownAndDestroyWidget(bool also_delete) {
   Destroy(also_delete);
 }
 
-bool RenderWidgetHostImpl::IsLoading() const {
-  return is_loading_;
-}
-
 bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
   // Only process most messages if the RenderWidget is alive.
   if (!renderer_initialized())
@@ -710,7 +682,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_RenderProcessGone, OnRenderProcessGone)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HittestData, OnHittestData)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_Close, OnClose)
-    IPC_MESSAGE_HANDLER(WidgetHostMsg_RouteCloseEvent, OnRouteCloseEvent)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_UpdateScreenRects_ACK,
                         OnUpdateScreenRectsAck)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_RequestSetBounds, OnRequestSetBounds)
@@ -793,7 +764,8 @@ void RenderWidgetHostImpl::WasHidden() {
     observer.RenderWidgetHostVisibilityChanged(this, false);
 }
 
-void RenderWidgetHostImpl::WasShown(bool record_presentation_time) {
+void RenderWidgetHostImpl::WasShown(bool record_presentation_time,
+                                    base::TimeTicks tab_switch_start_time) {
   if (!is_hidden_)
     return;
 
@@ -811,7 +783,7 @@ void RenderWidgetHostImpl::WasShown(bool record_presentation_time) {
   Send(new WidgetMsg_WasShown(
       routing_id_,
       record_presentation_time ? base::TimeTicks::Now() : base::TimeTicks(),
-      view_->is_evicted()));
+      view_->is_evicted(), tab_switch_start_time));
   view_->reset_is_evicted();
 
   process_->UpdateClientPriority(this);
@@ -842,6 +814,10 @@ void RenderWidgetHostImpl::WasShown(bool record_presentation_time) {
   // SynchronizeVisualProperties is usually processed before the renderer is
   // painted.
   SynchronizeVisualProperties();
+}
+
+void RenderWidgetHostImpl::SetHiddenOnCommit() {
+  Send(new WidgetMsg_WasHidden(routing_id_));
 }
 
 #if defined(OS_ANDROID)
@@ -895,6 +871,7 @@ bool RenderWidgetHostImpl::GetVisualProperties(
   visual_properties->max_size_for_auto_resize = max_size_for_auto_resize_;
 
   visual_properties->page_scale_factor = page_scale_factor_;
+  visual_properties->is_pinch_gesture_active = is_pinch_gesture_active_;
 
   if (view_) {
     visual_properties->new_size = view_->GetRequestedRendererSize();
@@ -981,7 +958,9 @@ bool RenderWidgetHostImpl::GetVisualProperties(
       old_visual_properties_->capture_sequence_number !=
           visual_properties->capture_sequence_number ||
       old_visual_properties_->page_scale_factor !=
-          visual_properties->page_scale_factor;
+          visual_properties->page_scale_factor ||
+      old_visual_properties_->is_pinch_gesture_active !=
+          visual_properties->is_pinch_gesture_active;
 
   // We should throttle sending updated VisualProperties to the renderer to
   // the rate of commit. This ensures we don't overwhelm the renderer with
@@ -1021,7 +1000,8 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
   // request, before subsequently merging ids to send.
   if (visual_properties_ack_pending_ || !process_->IsInitializedAndNotDead() ||
       !view_ || !view_->HasSize() || !renderer_initialized_ || !delegate_ ||
-      surface_id_allocation_suppressed_) {
+      surface_id_allocation_suppressed_ ||
+      !view_->CanSynchronizeVisualProperties()) {
     return false;
   }
 
@@ -1213,7 +1193,7 @@ void RenderWidgetHostImpl::RestartInputEventAckTimeoutIfNecessary() {
     input_event_ack_timeout_->Restart(hung_renderer_delay_);
 }
 
-bool RenderWidgetHostImpl::IsCurrentlyUnresponsive() const {
+bool RenderWidgetHostImpl::IsCurrentlyUnresponsive() {
   return is_unresponsive_;
 }
 
@@ -1263,9 +1243,9 @@ void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
   // VrController moves the pointer during the scrolling and fling. To ensure
   // that scroll performance is not affected we drop mouse events during
   // scroll/fling.
-  if (GetView()->IsInVR() &&
-      (is_in_gesture_scroll_[blink::kWebGestureDeviceTouchpad] ||
-       is_in_touchpad_gesture_fling_)) {
+  if (GetView()->IsInVR() && (is_in_gesture_scroll_[static_cast<int>(
+                                  blink::WebGestureDevice::kTouchpad)] ||
+                              is_in_touchpad_gesture_fling_)) {
     return;
   }
 
@@ -1378,7 +1358,7 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
 
   // The gesture events must have a known source.
   DCHECK_NE(gesture_event.SourceDevice(),
-            blink::WebGestureDevice::kWebGestureDeviceUninitialized);
+            blink::WebGestureDevice::kUninitialized);
 
   bool scroll_update_needs_wrapping = false;
   if (gesture_event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
@@ -1391,20 +1371,23 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
     // GSB and GSU events instead of sending them to the renderer and continues
     // to progress the fling. So, the renderer doesn't receive two GSB events
     // without any GSE in between.
-    DCHECK(!is_in_gesture_scroll_[gesture_event.SourceDevice()] ||
+    DCHECK(!is_in_gesture_scroll_[static_cast<int>(
+               gesture_event.SourceDevice())] ||
            FlingCancellationIsDeferred());
-    is_in_gesture_scroll_[gesture_event.SourceDevice()] = true;
+    is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())] =
+        true;
   } else if (gesture_event.GetType() ==
              blink::WebInputEvent::kGestureScrollEnd) {
-    DCHECK(is_in_gesture_scroll_[gesture_event.SourceDevice()]);
-    is_in_gesture_scroll_[gesture_event.SourceDevice()] = false;
+    DCHECK(
+        is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())]);
+    is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())] =
+        false;
     is_in_touchpad_gesture_fling_ = false;
     if (view_)
       view_->set_is_currently_scrolling_viewport(false);
   } else if (gesture_event.GetType() ==
              blink::WebInputEvent::kGestureFlingStart) {
-    if (gesture_event.SourceDevice() ==
-        blink::WebGestureDevice::kWebGestureDeviceTouchpad) {
+    if (gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchpad) {
       // TODO(sahel): Remove the VR specific case when motion events are used
       // for Android VR event processing and VR touchpad scrolling is handled by
       // sending wheel events rather than directly injecting Gesture Scroll
@@ -1412,14 +1395,16 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
       if (GetView()->IsInVR()) {
         // Regardless of the state of the wheel scroll latching
         // WebContentsEventForwarder doesn't inject any GSE events before GFS.
-        DCHECK(is_in_gesture_scroll_[gesture_event.SourceDevice()]);
+        DCHECK(is_in_gesture_scroll_[static_cast<int>(
+            gesture_event.SourceDevice())]);
 
         // Reset the is_in_gesture_scroll since while scrolling in Android VR
         // the first wheel event sent by the FlingController will cause a GSB
         // generation in MouseWheelEventQueue. This is because GSU events before
         // the GFS are directly injected to RWHI rather than being generated
         // from wheel events in MouseWheelEventQueue.
-        is_in_gesture_scroll_[gesture_event.SourceDevice()] = false;
+        is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())] =
+            false;
       }
       // a GSB event is generated from the first wheel event in a sequence after
       // the event is acked as not consumed by the renderer. Sometimes when the
@@ -1432,7 +1417,8 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
 
       is_in_touchpad_gesture_fling_ = true;
     } else {
-      DCHECK(is_in_gesture_scroll_[gesture_event.SourceDevice()]);
+      DCHECK(is_in_gesture_scroll_[static_cast<int>(
+          gesture_event.SourceDevice())]);
 
       // The FlingController handles GFS with touchscreen source and sends GSU
       // events with inertial state to the renderer to progress the fling.
@@ -1448,7 +1434,7 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
   scroll_update_needs_wrapping =
       gesture_event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
       gesture_event.resending_plugin_id != -1 &&
-      !is_in_gesture_scroll_[gesture_event.SourceDevice()];
+      !is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())];
 
   // TODO(crbug.com/544782): Fix WebViewGuestScrollTest.TestGuestWheelScrolls-
   // Bubble to test the resending logic of gesture events.
@@ -1669,8 +1655,12 @@ void RenderWidgetHostImpl::ShowContextMenuAtPoint(
   Send(new WidgetMsg_ShowContextMenu(GetRoutingID(), source_type, point));
 }
 
-void RenderWidgetHostImpl::SendCursorVisibilityState(bool is_visible) {
+void RenderWidgetHostImpl::OnCursorVisibilityStateChanged(bool is_visible) {
   GetWidgetInputHandler()->CursorVisibilityChanged(is_visible);
+}
+
+void RenderWidgetHostImpl::OnFallbackCursorModeToggled(bool is_on) {
+  GetWidgetInputHandler()->FallbackCursorModeToggled(is_on);
 }
 
 // static
@@ -1816,9 +1806,7 @@ void RenderWidgetHostImpl::FilterDropData(DropData* drop_data) {
 }
 
 void RenderWidgetHostImpl::SetCursor(const CursorInfo& cursor_info) {
-  WebCursor cursor;
-  cursor.InitFromCursorInfo(cursor_info);
-  SetCursor(cursor);
+  SetCursor(WebCursor(cursor_info));
 }
 
 RenderProcessHost::Priority RenderWidgetHostImpl::GetPriority() {
@@ -2067,18 +2055,11 @@ void RenderWidgetHostImpl::UpdateTextDirection(WebTextDirection direction) {
   text_direction_ = direction;
 }
 
-void RenderWidgetHostImpl::CancelUpdateTextDirection() {
-  if (text_direction_updated_)
-    text_direction_canceled_ = true;
-}
-
 void RenderWidgetHostImpl::NotifyTextDirection() {
-  if (text_direction_updated_) {
-    if (!text_direction_canceled_)
-      Send(new WidgetMsg_SetTextDirection(GetRoutingID(), text_direction_));
-    text_direction_updated_ = false;
-    text_direction_canceled_ = false;
-  }
+  if (!text_direction_updated_)
+    return;
+  Send(new WidgetMsg_SetTextDirection(GetRoutingID(), text_direction_));
+  text_direction_updated_ = false;
 }
 
 void RenderWidgetHostImpl::ImeSetComposition(
@@ -2157,8 +2138,10 @@ void RenderWidgetHostImpl::SetAutoResize(bool enable,
   max_size_for_auto_resize_ = max_size;
 }
 
-void RenderWidgetHostImpl::SetPageScaleFactor(float page_scale_factor) {
+void RenderWidgetHostImpl::SetPageScaleState(float page_scale_factor,
+                                             bool is_pinch_gesture_active) {
   page_scale_factor_ = page_scale_factor;
+  is_pinch_gesture_active_ = is_pinch_gesture_active;
 }
 
 void RenderWidgetHostImpl::Destroy(bool also_delete) {
@@ -2211,19 +2194,17 @@ void RenderWidgetHostImpl::Destroy(bool also_delete) {
 }
 
 void RenderWidgetHostImpl::OnInputEventAckTimeout() {
-  RendererIsUnresponsive(
-      base::BindRepeating(
-          &RenderWidgetHostImpl::RestartInputEventAckTimeoutIfNecessary,
-          weak_factory_.GetWeakPtr()),
-      metrics::RendererHangCause::kInputAckTimeout);
+  RendererIsUnresponsive(base::BindRepeating(
+      &RenderWidgetHostImpl::RestartInputEventAckTimeoutIfNecessary,
+      weak_factory_.GetWeakPtr()));
 }
 
 void RenderWidgetHostImpl::RendererIsUnresponsive(
-    base::RepeatingClosure restart_hang_monitor_timeout,
-    metrics::RendererHangCause hang_cause) {
+    base::RepeatingClosure restart_hang_monitor_timeout) {
   NotificationService::current()->Notify(
-      NOTIFICATION_RENDER_WIDGET_HOST_HANG, Source<RenderWidgetHost>(this),
-      Details<metrics::RendererHangCause>(&hang_cause));
+      NOTIFICATION_RENDER_WIDGET_HOST_HANG,
+      Source<RenderWidgetHost>(this),
+      NotificationService::NoDetails());
   is_unresponsive_ = true;
 
   if (delegate_) {
@@ -2264,6 +2245,9 @@ void RenderWidgetHostImpl::OnKeyboardEventAck(
 
   bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
 
+  if (!processed)
+    processed = GetView()->OnUnconsumedKeyboardEventAck(event);
+
   // We only send unprocessed key event upwards if we are not hidden,
   // because the user has moved away from us and no longer expect any effect
   // of this key event.
@@ -2303,17 +2287,6 @@ void RenderWidgetHostImpl::OnClose() {
   } else {
     ShutdownAndDestroyWidget(true);
   }
-}
-
-void RenderWidgetHostImpl::OnRouteCloseEvent() {
-  // This is only used by swapped out RenderWidgets to signal to the active
-  // RenderWidget that JS has requested a page to close. It is only triggered
-  // by blink::WebPagePopupImpl and blink::Page (through ChromeCilent). This
-  // message should be on RenderFrameHost or RenderFrameProxyHost.
-  //
-  // TODO(https://crbug.com/419087): Move to RenderFrameHost or
-  // RenderFrameProxyHost.
-  owner_delegate_->RenderWidgetNeedsToRouteCloseEvent();
 }
 
 void RenderWidgetHostImpl::OnSetTooltipText(
@@ -2457,7 +2430,7 @@ void RenderWidgetHostImpl::OnAutoscrollFling(const gfx::Vector2dF& velocity) {
     // Send a GSB event with valid delta hints.
     WebGestureEvent scroll_begin = SyntheticWebGestureEventBuilder::Build(
         WebInputEvent::kGestureScrollBegin,
-        blink::kWebGestureDeviceSyntheticAutoscroll);
+        blink::WebGestureDevice::kSyntheticAutoscroll);
     scroll_begin.SetPositionInWidget(autoscroll_start_position_);
     scroll_begin.data.scroll_begin.delta_x_hint = velocity.x();
     scroll_begin.data.scroll_begin.delta_y_hint = velocity.y();
@@ -2469,7 +2442,7 @@ void RenderWidgetHostImpl::OnAutoscrollFling(const gfx::Vector2dF& velocity) {
 
   WebGestureEvent event = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::kGestureFlingStart,
-      blink::kWebGestureDeviceSyntheticAutoscroll);
+      blink::WebGestureDevice::kSyntheticAutoscroll);
   event.SetPositionInWidget(autoscroll_start_position_);
   event.data.fling_start.velocity_x = velocity.x();
   event.data.fling_start.velocity_y = velocity.y();
@@ -2487,7 +2460,7 @@ void RenderWidgetHostImpl::OnAutoscrollEnd() {
   sent_autoscroll_scroll_begin_ = false;
   WebGestureEvent cancel_event = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::kGestureFlingCancel,
-      blink::kWebGestureDeviceSyntheticAutoscroll);
+      blink::WebGestureDevice::kSyntheticAutoscroll);
   cancel_event.data.fling_cancel.prevent_boosting = true;
   cancel_event.SetPositionInWidget(autoscroll_start_position_);
 
@@ -2539,7 +2512,8 @@ void RenderWidgetHostImpl::OnImeCancelComposition() {
 }
 
 bool RenderWidgetHostImpl::IsWheelScrollInProgress() {
-  return is_in_gesture_scroll_[blink::kWebGestureDeviceTouchpad];
+  return is_in_gesture_scroll_[static_cast<int>(
+      blink::WebGestureDevice::kTouchpad)];
 }
 
 void RenderWidgetHostImpl::SetMouseCapture(bool capture) {
@@ -2547,6 +2521,17 @@ void RenderWidgetHostImpl::SetMouseCapture(bool capture) {
     return;
 
   delegate_->GetInputEventRouter()->SetMouseCaptureTarget(GetView(), capture);
+}
+
+void RenderWidgetHostImpl::FallbackCursorModeLockCursor(bool left,
+                                                        bool right,
+                                                        bool up,
+                                                        bool down) {
+  GetView()->FallbackCursorModeLockCursor(left, right, up, down);
+}
+
+void RenderWidgetHostImpl::FallbackCursorModeSetCursorVisibility(bool visible) {
+  GetView()->FallbackCursorModeSetCursorVisibility(visible);
 }
 
 void RenderWidgetHostImpl::OnInvalidFrameToken(uint32_t frame_token) {
@@ -2819,14 +2804,6 @@ void RenderWidgetHostImpl::OnTouchEventAck(
     view_->ProcessAckedTouchEvent(event, ack_result);
 }
 
-void RenderWidgetHostImpl::OnUnexpectedEventAck(UnexpectedEventAckType type) {
-  if (type == BAD_ACK_MESSAGE) {
-    bad_message::ReceivedBadMessage(process_, bad_message::RWH_BAD_ACK_MESSAGE);
-  } else if (type == UNEXPECTED_EVENT_TYPE) {
-    suppress_events_until_keydown_ = false;
-  }
-}
-
 bool RenderWidgetHostImpl::IsIgnoringInputEvents() const {
   return process_->IsBlocked() || !delegate_ ||
          delegate_->ShouldIgnoreInputEvents();
@@ -2867,10 +2844,6 @@ void RenderWidgetHostImpl::GotResponseToKeyboardLockRequest(bool allowed) {
 void RenderWidgetHostImpl::DetachDelegate() {
   delegate_ = nullptr;
   latency_tracker_.reset_delegate();
-}
-
-void RenderWidgetHostImpl::DidReceiveRendererFrame() {
-  view_->DidReceiveRendererFrame();
 }
 
 void RenderWidgetHostImpl::WindowSnapshotReachedScreen(int snapshot_id) {

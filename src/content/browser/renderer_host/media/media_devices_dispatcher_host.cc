@@ -102,10 +102,13 @@ void MediaDevicesDispatcherHost::EnumerateDevices(
     bool request_video_input,
     bool request_audio_output,
     bool request_video_input_capabilities,
+    bool request_audio_input_capabilities,
     EnumerateDevicesCallback client_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!request_audio_input && !request_video_input && !request_audio_output) {
+  if ((!request_audio_input && !request_video_input && !request_audio_output) ||
+      (request_video_input_capabilities && !request_video_input) ||
+      (request_audio_input_capabilities && !request_audio_input)) {
     bad_message::ReceivedBadMessage(
         render_process_id_, bad_message::MDDH_INVALID_DEVICE_TYPE_REQUEST);
     return;
@@ -121,7 +124,8 @@ void MediaDevicesDispatcherHost::EnumerateDevices(
 
   media_stream_manager_->media_devices_manager()->EnumerateDevices(
       render_process_id_, render_frame_id_, devices_to_enumerate,
-      request_video_input_capabilities, std::move(client_callback));
+      request_video_input_capabilities, request_audio_input_capabilities,
+      std::move(client_callback));
 }
 
 void MediaDevicesDispatcherHost::GetVideoInputCapabilities(
@@ -355,9 +359,11 @@ void MediaDevicesDispatcherHost::GotAudioInputEnumeration(
   DCHECK_EQ(num_pending_audio_input_parameters_, 0U);
   for (const auto& device_info :
        enumeration[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT]) {
+    auto parameters = media::AudioParameters::UnavailableDeviceParams();
     blink::mojom::AudioInputDeviceCapabilities capabilities(
-        device_info.device_id, device_info.group_id,
-        media::AudioParameters::UnavailableDeviceParams());
+        device_info.device_id, device_info.group_id, parameters,
+        parameters.IsValid(), parameters.channels(), parameters.sample_rate(),
+        parameters.GetBufferDuration());
     if (device_info.device_id == default_device_id)
       current_audio_input_capabilities_.insert(
           current_audio_input_capabilities_.begin(), std::move(capabilities));

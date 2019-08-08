@@ -4,13 +4,13 @@
 <translation id="1018939186200882850">मेनू आयटम</translation>
 <translation id="10623998915015855">टॉगल बटण</translation>
 <translation id="1088086359088493902">सेकंद</translation>
-<translation id="1171774979989969504">कृपया एक ईमेल अॅड्रेस एंटर करा.</translation>
+<translation id="1171774979989969504">कृपया एक ईमेल ॲड्रेस एंटर करा.</translation>
 <translation id="1178581264944972037">विराम द्या</translation>
 <translation id="1188858454923323853">पूरक</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">स्लायडर</translation>
 <translation id="1211441953136645838">तळटीप</translation>
-<translation id="1281252709823657822">संवाद</translation>
+<translation id="1281252709823657822">डायलॉग</translation>
 <translation id="1289247557029249093">चित्रात-चित्र मोडमधून बाहेर पडा</translation>
 <translation id="1335095011850992622">श्रेय</translation>
 <translation id="1342835525016946179">लेख</translation>
@@ -20,7 +20,7 @@
 <translation id="1637811476055996098">फायली निवडा</translation>
 <translation id="1650423536718072820">पुलकोट</translation>
 <translation id="1727886345390570319">सबटायटल मेनू लपवा</translation>
-<translation id="1729654308190250600">कृपया एक रिक्त नसलेला ईमेल अॅड्रेस एंटर करा.</translation>
+<translation id="1729654308190250600">कृपया एक रिक्त नसलेला ईमेल ॲड्रेस एंटर करा.</translation>
 <translation id="1758486001363313524">अन्य...</translation>
 <translation id="1806710327868736751">सूचना_संवाद</translation>
 <translation id="1821985195704844674">ट्री ग्रीड</translation>
@@ -60,10 +60,10 @@
 <translation id="2896972712917208084">रेडिओ गट</translation>
 <translation id="2908441821576996758">कृपया ईमेल पत्त्यांची स्वल्पविरामाद्वारे विभक्त सूची एंटर करा.</translation>
 <translation id="2940813599313844715">ऑब्जेक्ट</translation>
-<translation id="2942448076852699108">हायलाइट केलेली सामग्री</translation>
-<translation id="3040011195152428237">दुवा</translation>
+<translation id="2942448076852699108">हायलाइट केलेला आशय</translation>
+<translation id="3040011195152428237">लिंक</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
-<translation id="3075154866155599887">कृपया एक वैध मूल्य एंटर करा. भाग अपूर्ण आहे किंवा चुकीची तारीख आहे.</translation>
+<translation id="3075154866155599887">कृपया एक वैध मूल्य एंटर करा. फील्ड अपूर्ण आहे किंवा चुकीची तारीख आहे.</translation>
 <translation id="3078740164268491126">सारणी</translation>
 <translation id="3086746722712840547">टीप</translation>
 <translation id="310520048233152454">कृपया एखादी URL एंटर करा.</translation>
@@ -81,7 +81,7 @@
 <translation id="383465348367842624">'<ph name="ATSIGN" />' मागुन येणार्‍या भागामध्ये '<ph name="INVALIDCHARACTER" />' चिन्ह नसावे.</translation>
 <translation id="3846214748874656680">क्षेत्रेमधून बाहेर पडा</translation>
 <translation id="3920932319529768807">निष्कर्ष</translation>
-<translation id="3924558731517983934">अॅप्लिकेशन</translation>
+<translation id="3924558731517983934">ॲप्लिकेशन</translation>
 <translation id="3944740393230681990">उपोद्घात</translation>
 <translation id="3960700977367013758">स्क्रोल बार</translation>
 <translation id="4103419683916926126">मिलिसेकंद</translation>
@@ -90,7 +90,7 @@
 <translation id="4201051445878709314">मागील महिना दर्शवा</translation>
 <translation id="421884353938374759">रंग निवडक</translation>
 <translation id="4248100235867064564">मेनू बार</translation>
-<translation id="4254339807215791271">सामग्री माहिती</translation>
+<translation id="4254339807215791271">आशय माहिती</translation>
 <translation id="4360991593054037559">कृपया एक वैध मूल्य एंटर करा. दोन जवळील वैध मूल्ये <ph name="VALID_VALUE_LOW" /> आणि <ph name="VALID_VALUE_HIGHER" /> आहेत.</translation>
 <translation id="4384583879834880242">प्रश्नोत्तरे</translation>
 <translation id="4413860115965805769">मेनू बटण</translation>
@@ -135,7 +135,7 @@
 <translation id="5643186887447432888">बटण</translation>
 <translation id="5677946354068040947">अधिक पर्याय</translation>
 <translation id="576709008726043716">परिचय</translation>
-<translation id="57838592816432529">निःशब्द करा</translation>
+<translation id="57838592816432529">म्यूट करा</translation>
 <translation id="5860033963881614850">बंद</translation>
 <translation id="588258955323874662">क्षेत्रे</translation>
 <translation id="5888666972993069672">आता <ph name="DEVICE_FRIENDLY_NAME" /> वर कास्ट करत आहे</translation>
@@ -167,16 +167,18 @@
 <translation id="6709570249143506788">खराब प्लेबॅक गुणवत्ता</translation>
 <translation id="6755330956360078551">टूलटिप</translation>
 <translation id="6790428901817661496">प्ले करा</translation>
-<translation id="6820355525329141109">प्लगिन लोड करणे शक्य झाले नाही.</translation>
+<translation id="6820355525329141109">प्लग-इन लोड करणे शक्य झाले नाही.</translation>
 <translation id="6820615603175220800">ग्रंथसूची संदर्भ</translation>
-<translation id="6843725295806269523">नि:शब्द करा</translation>
-<translation id="6885760532393684712">निर्देशिका</translation>
+<translation id="6843725295806269523">म्यूट करा</translation>
+<translation id="6885760532393684712">डिरेक्टरी</translation>
 <translation id="689129560213475294">बोधचिन्ह</translation>
 <translation id="6934078000481955284">ब्लॉककोट</translation>
 <translation id="6941933287844615239">मीडिया डाउनलोड करा</translation>
 <translation id="6981594929165378967">घालणे</translation>
 <translation id="6989848892321993519">कृपया हा मजकूर <ph name="MIN_CHARACTERS" /> वर्ण किंवा त्यापेक्षा अधिक मोठा करा (तुम्ही सध्‍या 1 वर्ण वापरत आहात).</translation>
+<translation id="7033340931668032222">व्हॉल्यूम बदलण्यासाठी अप आणि डाउन बटण</translation>
 <translation id="709897737746224366">कृपया विनंती केलेले स्वरूपन जुळवा.</translation>
+<translation id="7118469954320184356">कोणतेही वर्णन उपलब्ध नाही.</translation>
 <translation id="7139483182332611405">प्रस्तावना</translation>
 <translation id="7263440858009898357">कृपया सूचीमधील आयटम निवडा.</translation>
 <translation id="727747134524199931">स्तंभ शीर्षलेख</translation>
@@ -226,6 +228,7 @@
 <translation id="8550857728288566671">ग्राफिक्स चिन्ह</translation>
 <translation id="8583702881314752957">परिभाषा सूची</translation>
 <translation id="8597182159515967513">शीर्षलेख</translation>
+<translation id="8603553056539299761">मिळवण्यासाठी डावे आणि उजवे बटण</translation>
 <translation id="860475260694818407">अनुक्रमणिका</translation>
 <translation id="8613126697340063924">दूरस्थ प्लेबॅक नियंत्रित करा</translation>
 <translation id="862370744433916922">उपशीर्षक</translation>

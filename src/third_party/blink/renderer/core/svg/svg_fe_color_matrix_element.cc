@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
 #include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -41,9 +42,11 @@ const SVGEnumerationMap& GetEnumerationMap<ColorMatrixType>() {
 inline SVGFEColorMatrixElement::SVGFEColorMatrixElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEColorMatrixTag,
                                            document),
-      values_(SVGAnimatedNumberList::Create(this, svg_names::kValuesAttr)),
-      in1_(SVGAnimatedString::Create(this, svg_names::kInAttr)),
-      type_(SVGAnimatedEnumeration<ColorMatrixType>::Create(
+      values_(
+          MakeGarbageCollected<SVGAnimatedNumberList>(this,
+                                                      svg_names::kValuesAttr)),
+      in1_(MakeGarbageCollected<SVGAnimatedString>(this, svg_names::kInAttr)),
+      type_(MakeGarbageCollected<SVGAnimatedEnumeration<ColorMatrixType>>(
           this,
           svg_names::kTypeAttr,
           FECOLORMATRIX_TYPE_MATRIX)) {
@@ -100,8 +103,8 @@ FilterEffect* SVGFEColorMatrixElement::Build(SVGFilterBuilder* filter_builder,
 
   ColorMatrixType filter_type = type_->CurrentValue()->EnumValue();
   Vector<float> filter_values = values_->CurrentValue()->ToFloatVector();
-  FilterEffect* effect =
-      FEColorMatrix::Create(filter, filter_type, filter_values);
+  auto* effect =
+      MakeGarbageCollected<FEColorMatrix>(filter, filter_type, filter_values);
   effect->InputEffects().push_back(input1);
   return effect;
 }

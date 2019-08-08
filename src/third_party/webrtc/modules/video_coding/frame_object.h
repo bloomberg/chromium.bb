@@ -13,7 +13,6 @@
 
 #include "absl/types/optional.h"
 #include "api/video/encoded_frame.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "modules/include/module_common_types.h"
 #include "modules/rtp_rtcp/source/rtp_generic_frame_descriptor.h"
 
@@ -36,7 +35,7 @@ class RtpFrameObject : public EncodedFrame {
   uint16_t first_seq_num() const;
   uint16_t last_seq_num() const;
   int times_nacked() const;
-  enum FrameType frame_type() const;
+  VideoFrameType frame_type() const;
   VideoCodecType codec_type() const;
   int64_t ReceivedTime() const override;
   int64_t RenderTime() const override;
@@ -49,7 +48,7 @@ class RtpFrameObject : public EncodedFrame {
   void AllocateBitstreamBuffer(size_t frame_size);
 
   rtc::scoped_refptr<PacketBuffer> packet_buffer_;
-  enum FrameType frame_type_;
+  VideoFrameType frame_type_;
   VideoCodecType codec_type_;
   uint16_t first_seq_num_;
   uint16_t last_seq_num_;

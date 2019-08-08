@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/policy/core/common/policy_merger.h"
 #include "components/strings/grit/components_strings.h"
 
 namespace policy {
@@ -98,6 +99,12 @@ void PolicyMap::Entry::AddConflictingPolicy(const Entry& conflict) {
   conflicted_policy_copy.error_message_ids_.clear();
   conflicted_policy_copy.error_strings_.clear();
   conflicts.push_back(std::move(conflicted_policy_copy));
+}
+
+void PolicyMap::Entry::ClearConflicts() {
+  conflicts.clear();
+  error_message_ids_.erase(IDS_POLICY_CONFLICT_SAME_VALUE);
+  error_message_ids_.erase(IDS_POLICY_CONFLICT_DIFF_VALUE);
 }
 
 base::string16 PolicyMap::Entry::GetLocalizedErrors(
@@ -228,27 +235,39 @@ std::unique_ptr<PolicyMap> PolicyMap::DeepCopy() const {
 
 void PolicyMap::MergeFrom(const PolicyMap& other) {
   for (const auto& it : other) {
-    const Entry* entry = GetUntrusted(it.first);
-    bool same_value = false;
-    if (!entry) {
-      Set(it.first, it.second.DeepCopy());
-    } else {
-      same_value = entry->value && it.second.value->Equals(entry->value.get());
-      if (it.second.has_higher_priority_than(*entry)) {
-        auto new_policy = it.second.DeepCopy();
-        new_policy.AddConflictingPolicy(*entry);
-        Set(it.first, std::move(new_policy));
-      } else {
-        GetMutableUntrusted(it.first)->AddConflictingPolicy(it.second);
-      }
+    Entry* current_policy = GetMutableUntrusted(it.first);
+    auto other_policy = it.second.DeepCopy();
+
+    if (!current_policy) {
+      Set(it.first, std::move(other_policy));
+      continue;
     }
 
-    if (entry) {
-      GetMutableUntrusted(it.first)->AddError(
-          same_value ? IDS_POLICY_CONFLICT_SAME_VALUE
-                     : IDS_POLICY_CONFLICT_DIFF_VALUE);
+    auto& new_policy = other_policy.has_higher_priority_than(*current_policy)
+                           ? other_policy
+                           : *current_policy;
+    auto& conflict =
+        current_policy == &new_policy ? other_policy : *current_policy;
+
+    bool overwriting_default_policy =
+        new_policy.source != conflict.source &&
+        conflict.source == POLICY_SOURCE_ENTERPRISE_DEFAULT;
+    if (!overwriting_default_policy) {
+      new_policy.AddConflictingPolicy(conflict);
+      new_policy.AddError((current_policy->value &&
+                           it.second.value->Equals(current_policy->value.get()))
+                              ? IDS_POLICY_CONFLICT_SAME_VALUE
+                              : IDS_POLICY_CONFLICT_DIFF_VALUE);
     }
+
+    if (current_policy != &new_policy)
+      Set(it.first, std::move(new_policy));
   }
+}
+
+void PolicyMap::MergeValues(const std::vector<PolicyMerger*>& mergers) {
+  for (const auto* it : mergers)
+    it->Merge(&map_);
 }
 
 void PolicyMap::LoadFrom(const base::DictionaryValue* policies,
@@ -317,7 +336,8 @@ void PolicyMap::Clear() {
 // static
 bool PolicyMap::MapEntryEquals(const PolicyMap::PolicyMapType::value_type& a,
                                const PolicyMap::PolicyMapType::value_type& b) {
-  return a.first == b.first && a.second.Equals(b.second);
+  bool equals = a.first == b.first && a.second.Equals(b.second);
+  return equals;
 }
 
 void PolicyMap::FilterErase(

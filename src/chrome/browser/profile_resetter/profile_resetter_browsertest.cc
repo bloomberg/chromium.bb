@@ -37,8 +37,10 @@ class RemoveCookieTester {
                  const std::string& value);
 
  private:
-  void GetCookieListCallback(const std::vector<net::CanonicalCookie>& cookies);
-  void SetCanonicalCookieCallback(bool result);
+  void GetCookieListCallback(const std::vector<net::CanonicalCookie>& cookies,
+                             const net::CookieStatusList& excluded_cookies);
+  void SetCanonicalCookieCallback(
+      net::CanonicalCookie::CookieInclusionStatus result);
 
   void BlockUntilNotified();
   void Notify();
@@ -88,25 +90,29 @@ void RemoveCookieTester::AddCookie(const std::string& host,
                                    const std::string& value) {
   DCHECK(!waiting_callback_);
   waiting_callback_ = true;
+  net::CookieOptions options;
+  options.set_include_httponly();
   cookie_manager_->SetCanonicalCookie(
       net::CanonicalCookie(name, value, host, "/", base::Time(), base::Time(),
                            base::Time(), false, false,
                            net::CookieSameSite::NO_RESTRICTION,
                            net::COOKIE_PRIORITY_MEDIUM),
-      "http", true /* modify_http_only */,
+      "http", options,
       base::BindOnce(&RemoveCookieTester::SetCanonicalCookieCallback,
                      base::Unretained(this)));
   BlockUntilNotified();
 }
 
 void RemoveCookieTester::GetCookieListCallback(
-    const std::vector<net::CanonicalCookie>& cookies) {
+    const std::vector<net::CanonicalCookie>& cookies,
+    const net::CookieStatusList& excluded_cookies) {
   last_cookies_ = cookies;
   Notify();
 }
 
-void RemoveCookieTester::SetCanonicalCookieCallback(bool result) {
-  ASSERT_TRUE(result);
+void RemoveCookieTester::SetCanonicalCookieCallback(
+    net::CanonicalCookie::CookieInclusionStatus result) {
+  ASSERT_TRUE(result == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
   Notify();
 }
 

@@ -76,19 +76,23 @@ void UIElement::RemoveChild(UIElement* child, bool notify_delegate) {
   children_.erase(iter);
 }
 
-void UIElement::ReorderChild(UIElement* child, int new_index) {
-  auto iter = std::find(children_.begin(), children_.end(), child);
-  DCHECK(iter != children_.end());
+void UIElement::ReorderChild(UIElement* child, int index) {
+  auto i = std::find(children_.begin(), children_.end(), child);
+  DCHECK(i != children_.end());
+  DCHECK_GE(index, 0);
+  DCHECK_LT(static_cast<size_t>(index), children_.size());
 
-  // Don't re-order if the new position is the same as the old position.
-  if (std::distance(children_.begin(), iter) == new_index)
+  // If |child| is already at the desired position, there's nothing to do.
+  const auto pos = std::next(children_.begin(), index);
+  if (i == pos)
     return;
-  children_.erase(iter);
 
-  // Move child to new position |new_index| in vector |children_|.
-  new_index = std::min(static_cast<int>(children_.size()) - 1, new_index);
-  iter = children_.begin() + new_index;
-  children_.insert(iter, child);
+  // Rotate |child| to be at the desired position.
+  if (pos < i)
+    std::rotate(pos, i, std::next(i));
+  else
+    std::rotate(i, std::next(i), std::next(pos));
+
   delegate()->OnUIElementReordered(child->parent(), child);
 }
 

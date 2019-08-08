@@ -9,10 +9,10 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_adopted_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_attribute_changed_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_constructor.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_disabled_state_changed_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_form_associated_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_form_disabled_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_form_state_restore_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_registry.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_restore_value_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
@@ -112,8 +112,8 @@ ScriptCustomElementDefinition::ScriptCustomElementDefinition(
       attribute_changed_callback_(data.attribute_changed_callback_),
       form_associated_callback_(data.form_associated_callback_),
       form_reset_callback_(data.form_reset_callback_),
-      disabled_state_changed_callback_(data.disabled_state_changed_callback_),
-      restore_value_callback_(data.restore_value_callback_) {}
+      form_disabled_callback_(data.form_disabled_callback_),
+      form_state_restore_callback_(data.form_state_restore_callback_) {}
 
 void ScriptCustomElementDefinition::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);
@@ -124,8 +124,8 @@ void ScriptCustomElementDefinition::Trace(Visitor* visitor) {
   visitor->Trace(attribute_changed_callback_);
   visitor->Trace(form_associated_callback_);
   visitor->Trace(form_reset_callback_);
-  visitor->Trace(disabled_state_changed_callback_);
-  visitor->Trace(restore_value_callback_);
+  visitor->Trace(form_disabled_callback_);
+  visitor->Trace(form_state_restore_callback_);
   CustomElementDefinition::Trace(visitor);
 }
 
@@ -274,12 +274,12 @@ bool ScriptCustomElementDefinition::HasFormResetCallback() const {
   return form_reset_callback_;
 }
 
-bool ScriptCustomElementDefinition::HasDisabledStateChangedCallback() const {
-  return disabled_state_changed_callback_;
+bool ScriptCustomElementDefinition::HasFormDisabledCallback() const {
+  return form_disabled_callback_;
 }
 
-bool ScriptCustomElementDefinition::HasRestoreValueCallback() const {
-  return restore_value_callback_;
+bool ScriptCustomElementDefinition::HasFormStateRestoreCallback() const {
+  return form_state_restore_callback_;
 }
 
 void ScriptCustomElementDefinition::RunConnectedCallback(Element& element) {
@@ -331,22 +331,20 @@ void ScriptCustomElementDefinition::RunFormResetCallback(Element& element) {
   form_reset_callback_->InvokeAndReportException(&element);
 }
 
-void ScriptCustomElementDefinition::RunDisabledStateChangedCallback(
-    Element& element,
-    bool is_disabled) {
-  if (!disabled_state_changed_callback_)
+void ScriptCustomElementDefinition::RunFormDisabledCallback(Element& element,
+                                                            bool is_disabled) {
+  if (!form_disabled_callback_)
     return;
-  disabled_state_changed_callback_->InvokeAndReportException(&element,
-                                                             is_disabled);
+  form_disabled_callback_->InvokeAndReportException(&element, is_disabled);
 }
 
-void ScriptCustomElementDefinition::RunRestoreValueCallback(
+void ScriptCustomElementDefinition::RunFormStateRestoreCallback(
     Element& element,
-    const FileOrUSVString& value,
+    const FileOrUSVStringOrFormData& value,
     const String& mode) {
-  if (!restore_value_callback_)
+  if (!form_state_restore_callback_)
     return;
-  restore_value_callback_->InvokeAndReportException(&element, value, mode);
+  form_state_restore_callback_->InvokeAndReportException(&element, value, mode);
 }
 
 }  // namespace blink

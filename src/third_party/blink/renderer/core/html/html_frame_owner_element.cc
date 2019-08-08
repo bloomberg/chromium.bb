@@ -25,7 +25,9 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -75,6 +77,47 @@ bool DoesParentAllowLazyLoadingChildren(Document& document) {
   return containing_frame_owner->ShouldLazyLoadChildren();
 }
 
+bool IsFrameLazyLoadable(Document& document,
+                         const KURL& url,
+                         bool is_load_attr_lazy,
+                         bool should_lazy_load_children) {
+  if (!RuntimeEnabledFeatures::LazyFrameLoadingEnabled() &&
+      !RuntimeEnabledFeatures::LazyFrameVisibleLoadTimeMetricsEnabled()) {
+    return false;
+  }
+
+  // Only http:// or https:// URLs are eligible for lazy loading, excluding
+  // URLs like invalid or empty URLs, "about:blank", local file URLs, etc.
+  // that it doesn't make sense to lazily load.
+  if (!url.ProtocolIsInHTTPFamily())
+    return false;
+
+  if (is_load_attr_lazy)
+    return true;
+
+  if (!should_lazy_load_children ||
+      // Disallow lazy loading by default if javascript in the embedding
+      // document would be able to access the contents of the frame, since in
+      // those cases deferring the frame could break the page. Note that this
+      // check does not take any possible redirects of |url| into account.
+      document.GetSecurityOrigin()->CanAccess(
+          SecurityOrigin::Create(url).get())) {
+    return false;
+  }
+
+  // If lazy loading is restricted to only Data Saver users, then avoid
+  // lazy loading unless Data Saver is enabled, taking the Data Saver
+  // holdback into consideration.
+  if (RuntimeEnabledFeatures::RestrictLazyFrameLoadingToDataSaverEnabled() &&
+      ((document.GetSettings() &&
+        document.GetSettings()->GetDataSaverHoldbackWebApi()) ||
+       !GetNetworkStateNotifier().SaveDataEnabled())) {
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 SubframeLoadingDisabler::SubtreeRootSet&
@@ -103,7 +146,6 @@ HTMLFrameOwnerElement::HTMLFrameOwnerElement(const QualifiedName& tag_name,
     : HTMLElement(tag_name, document),
       content_frame_(nullptr),
       embedded_content_view_(nullptr),
-      sandbox_flags_(kSandboxNone),
       should_lazy_load_children_(DoesParentAllowLazyLoadingChildren(document)) {
 }
 
@@ -203,17 +245,17 @@ DOMWindow* HTMLFrameOwnerElement::contentWindow() const {
   return content_frame_ ? content_frame_->DomWindow() : nullptr;
 }
 
-void HTMLFrameOwnerElement::SetSandboxFlags(SandboxFlags flags) {
-  sandbox_flags_ = flags;
+void HTMLFrameOwnerElement::SetSandboxFlags(WebSandboxFlags flags) {
+  frame_policy_.sandbox_flags = flags;
   // Recalculate the container policy in case the allow-same-origin flag has
   // changed.
-  container_policy_ = ConstructContainerPolicy(nullptr);
+  frame_policy_.container_policy = ConstructContainerPolicy(nullptr);
 
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet.
   if (ContentFrame()) {
-    GetDocument().GetFrame()->Client()->DidChangeFramePolicy(
-        ContentFrame(), sandbox_flags_, container_policy_);
+    GetDocument().GetFrame()->Client()->DidChangeFramePolicy(ContentFrame(),
+                                                             frame_policy_);
   }
 }
 
@@ -230,12 +272,12 @@ void HTMLFrameOwnerElement::DisposePluginSoon(WebPluginContainerImpl* plugin) {
 }
 
 void HTMLFrameOwnerElement::UpdateContainerPolicy(Vector<String>* messages) {
-  container_policy_ = ConstructContainerPolicy(messages);
+  frame_policy_.container_policy = ConstructContainerPolicy(messages);
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet.
   if (ContentFrame()) {
-    GetDocument().GetFrame()->Client()->DidChangeFramePolicy(
-        ContentFrame(), sandbox_flags_, container_policy_);
+    GetDocument().GetFrame()->Client()->DidChangeFramePolicy(ContentFrame(),
+                                                             frame_policy_);
   }
 }
 
@@ -264,10 +306,6 @@ void HTMLFrameOwnerElement::DispatchLoad() {
     lazy_load_frame_observer_->RecordMetricsOnLoadFinished();
 
   DispatchScopedEvent(*Event::Create(event_type_names::kLoad));
-}
-
-const ParsedFeaturePolicy& HTMLFrameOwnerElement::ContainerPolicy() const {
-  return container_policy_;
 }
 
 Document* HTMLFrameOwnerElement::getSVGDocument(
@@ -348,14 +386,14 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
     const KURL& url,
     const AtomicString& frame_name,
     bool replace_current_item) {
-  // Update the |should_lazy_load_children_| value according to the "lazyload"
+  // Update the |should_lazy_load_children_| value according to the "loading"
   // attribute immediately, so that it still gets respected even if the "src"
-  // attribute gets parsed in ParseAttribute() before the "lazyload" attribute
+  // attribute gets parsed in ParseAttribute() before the "loading" attribute
   // does. Note that when the *feature policy* for "lazyload" is disabled, the
-  // attribute value "off" for "lazyload" is ignored (i.e., interpreted as
+  // attribute value loading="eager" is ignored (i.e., interpreted as
   // "auto" instead).
   if (should_lazy_load_children_ &&
-      EqualIgnoringASCIICase(FastGetAttribute(html_names::kLoadAttr),
+      EqualIgnoringASCIICase(FastGetAttribute(html_names::kLoadingAttr),
                              "eager") &&
       !GetDocument().IsLazyLoadPolicyEnforced()) {
     should_lazy_load_children_ = false;
@@ -366,13 +404,12 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   KURL url_to_request = url.IsNull() ? BlankURL() : url;
   if (ContentFrame()) {
     // TODO(sclittle): Support lazily loading frame navigations.
+    FrameLoadRequest request(&GetDocument(), ResourceRequest(url_to_request));
+    request.SetClientRedirectReason(ClientNavigationReason::kFrameNavigation);
     WebFrameLoadType frame_load_type = WebFrameLoadType::kStandard;
     if (replace_current_item)
       frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
-
-    ContentFrame()->ScheduleNavigation(GetDocument(), url_to_request,
-                                       frame_load_type,
-                                       UserGestureStatus::kNone);
+    ContentFrame()->Navigate(request, frame_load_type);
     return true;
   }
 
@@ -408,29 +445,16 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   if (IsPlugin())
     request.SetSkipServiceWorker(true);
 
-  if ((RuntimeEnabledFeatures::LazyFrameLoadingEnabled() ||
-       RuntimeEnabledFeatures::LazyFrameVisibleLoadTimeMetricsEnabled()) &&
-      !lazy_load_frame_observer_ &&
-      // Only http:// or https:// URLs are eligible for lazy loading, excluding
-      // URLs like invalid or empty URLs, "about:blank", local file URLs, etc.
-      // that it doesn't make sense to lazily load.
-      url.ProtocolIsInHTTPFamily() &&
-      (EqualIgnoringASCIICase(FastGetAttribute(html_names::kLoadAttr),
-                              "lazy") ||
-       (should_lazy_load_children_ &&
-        // Disallow lazy loading by default if javascript in the embedding
-        // document would be able to access the contents of the frame, since in
-        // those cases deferring the frame could break the page. Note that this
-        // check does not take any possible redirects of |url| into account.
-        !GetDocument().GetSecurityOrigin()->CanAccess(
-            SecurityOrigin::Create(url).get()))) &&
-      // If lazy loading is restricted to only Data Saver users, then avoid
-      // lazy loading unless Data Saver is enabled, taking the Data Saver
-      // holdback into consideration.
-      (!RuntimeEnabledFeatures::RestrictLazyFrameLoadingToDataSaverEnabled() ||
-       (!(GetDocument().GetSettings() &&
-          GetDocument().GetSettings()->GetDataSaverHoldbackWebApi()) &&
-        GetNetworkStateNotifier().SaveDataEnabled()))) {
+  // When the feature policy "loading-frame-default-eager" is disabled in
+  // the document, loading attribute value "auto" (or unset/invalid values) will
+  // also be interpreted as "lazy".
+  const auto& loading_attr = FastGetAttribute(html_names::kLoadingAttr);
+  bool loading_lazy_set = EqualIgnoringASCIICase(loading_attr, "lazy") ||
+                          (IsLoadingFrameDefaultEagerEnforced() &&
+                           !EqualIgnoringASCIICase(loading_attr, "eager"));
+  if (!lazy_load_frame_observer_ &&
+      IsFrameLazyLoadable(GetDocument(), url, loading_lazy_set,
+                          should_lazy_load_children_)) {
     // By default, avoid deferring subresources inside a lazily loaded frame.
     // This will make it possible for subresources in hidden frames to load that
     // will never be visible, as well as make it so that deferred frames that
@@ -453,8 +477,14 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
     }
   }
 
+  ContentSecurityPolicyDisposition content_security_policy_disposition =
+      ContentSecurityPolicy::ShouldBypassMainWorld(&GetDocument())
+          ? kDoNotCheckContentSecurityPolicy
+          : kCheckContentSecurityPolicy;
   child_frame->Loader().StartNavigation(
-      FrameLoadRequest(&GetDocument(), request), child_load_type);
+      FrameLoadRequest(&GetDocument(), request, AtomicString(),
+                       content_security_policy_disposition),
+      child_load_type);
 
   return true;
 }
@@ -471,9 +501,9 @@ bool HTMLFrameOwnerElement::ShouldLazyLoadChildren() const {
 
 void HTMLFrameOwnerElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == html_names::kLoadAttr) {
+  if (params.name == html_names::kLoadingAttr) {
     // Note that when the *feature policy* for "lazyload" is disabled, the
-    // attribute value "off" for "lazyload" is ignored (i.e., interpreted as
+    // attribute value loading="eager" is ignored (i.e., interpreted as
     // "auto" instead).
     if (EqualIgnoringASCIICase(params.new_value, "eager") &&
         !GetDocument().IsLazyLoadPolicyEnforced()) {
@@ -494,6 +524,12 @@ void HTMLFrameOwnerElement::Trace(Visitor* visitor) {
   visitor->Trace(lazy_load_frame_observer_);
   HTMLElement::Trace(visitor);
   FrameOwner::Trace(visitor);
+}
+
+bool HTMLFrameOwnerElement::IsLoadingFrameDefaultEagerEnforced() const {
+  return RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
+         !GetDocument().IsFeatureEnabled(
+             mojom::FeaturePolicyFeature::kLoadingFrameDefaultEager);
 }
 
 }  // namespace blink

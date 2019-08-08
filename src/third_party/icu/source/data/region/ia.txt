@@ -150,7 +150,7 @@ ia{
         ME{"Montenegro"}
         MG{"Madagascar"}
         MH{"Insulas Marshall"}
-        MK{"Macedonia (ARYM)"}
+        MK{"Macedonia"}
         ML{"Mali"}
         MN{"Mongolia"}
         MP{"Insulas Marianna del Nord"}
@@ -242,6 +242,7 @@ ia{
     }
     Countries%variant{
         CZ{"Republica Chec"}
+        MK{"Macedonia (ARYM)"}
     }
-    Version{"2.1.44.15"}
+    Version{"2.1.48.36"}
 }

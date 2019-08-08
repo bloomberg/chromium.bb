@@ -120,7 +120,7 @@ AudioReceiveStream::AudioReceiveStream(
   RTC_DCHECK(audio_state_);
   RTC_DCHECK(channel_receive_);
 
-  module_process_thread_checker_.DetachFromThread();
+  module_process_thread_checker_.Detach();
 
   if (!config.media_transport) {
     RTC_DCHECK(receiver_controller);
@@ -147,7 +147,7 @@ AudioReceiveStream::~AudioReceiveStream() {
 
 void AudioReceiveStream::Reconfigure(
     const webrtc::AudioReceiveStream::Config& config) {
-  RTC_DCHECK(worker_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(worker_thread_checker_.IsCurrent());
   ConfigureStream(this, config, false);
 }
 
@@ -190,6 +190,8 @@ webrtc::AudioReceiveStream::Stats AudioReceiveStream::GetStats() const {
   stats.packets_lost = call_stats.cumulativeLost;
   stats.fraction_lost = Q8ToFloat(call_stats.fractionLost);
   stats.capture_start_ntp_time_ms = call_stats.capture_start_ntp_time_ms_;
+  stats.last_packet_received_timestamp_ms =
+      call_stats.last_packet_received_timestamp_ms;
   stats.codec_name = receive_codec->second.name;
   stats.codec_payload_type = receive_codec->first;
   stats.ext_seqnum = call_stats.extendedMax;
@@ -313,19 +315,19 @@ void AudioReceiveStream::SignalNetworkState(NetworkState state) {
   RTC_DCHECK_RUN_ON(&worker_thread_checker_);
 }
 
-bool AudioReceiveStream::DeliverRtcp(const uint8_t* packet, size_t length) {
+void AudioReceiveStream::DeliverRtcp(const uint8_t* packet, size_t length) {
   // TODO(solenberg): Tests call this function on a network thread, libjingle
   // calls on the worker thread. We should move towards always using a network
   // thread. Then this check can be enabled.
-  // RTC_DCHECK(!thread_checker_.CalledOnValidThread());
-  return channel_receive_->ReceivedRTCPPacket(packet, length);
+  // RTC_DCHECK(!thread_checker_.IsCurrent());
+  channel_receive_->ReceivedRTCPPacket(packet, length);
 }
 
 void AudioReceiveStream::OnRtpPacket(const RtpPacketReceived& packet) {
   // TODO(solenberg): Tests call this function on a network thread, libjingle
   // calls on the worker thread. We should move towards always using a network
   // thread. Then this check can be enabled.
-  // RTC_DCHECK(!thread_checker_.CalledOnValidThread());
+  // RTC_DCHECK(!thread_checker_.IsCurrent());
   channel_receive_->OnRtpPacket(packet);
 }
 

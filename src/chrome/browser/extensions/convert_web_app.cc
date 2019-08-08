@@ -36,6 +36,7 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/image_util.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/file_handler_info.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_utils.h"
@@ -49,6 +50,45 @@ namespace keys = manifest_keys;
 namespace {
 const char kIconsDirName[] = "icons";
 const char kScopeUrlHandlerId[] = "scope";
+
+std::unique_ptr<base::DictionaryValue> CreateFileHandlersForBookmarkApp(
+    blink::Manifest::FileHandler file_handler) {
+  base::Value file_handlers(base::Value::Type::DICTIONARY);
+
+  for (const auto& handler : file_handler) {
+    base::Value file_handler(base::Value::Type::DICTIONARY);
+    file_handler.SetKey(keys::kFileHandlerIncludeDirectories,
+                        base::Value(false));
+    file_handler.SetKey(keys::kFileHandlerVerb,
+                        base::Value(extensions::file_handler_verbs::kOpenWith));
+
+    base::Value mime_types(base::Value::Type::LIST);
+    base::Value file_extensions(base::Value::Type::LIST);
+
+    for (const auto& acceptsUTF16 : handler.accept) {
+      std::string acceptsUTF8 = base::UTF16ToUTF8(acceptsUTF16);
+      if (acceptsUTF8.size() == 0)
+        continue;
+
+      if (acceptsUTF8[0] == '.') {
+        file_extensions.GetList().push_back(base::Value(acceptsUTF8.substr(1)));
+      } else {
+        mime_types.GetList().push_back(base::Value(acceptsUTF8));
+      }
+    }
+
+    file_handler.SetKey(keys::kFileHandlerTypes, std::move(mime_types));
+    file_handler.SetKey(keys::kFileHandlerExtensions,
+                        std::move(file_extensions));
+
+    file_handlers.SetKey(base::UTF16ToUTF8(handler.name),
+                         std::move(file_handler));
+  }
+
+  return base::DictionaryValue::From(
+      base::Value::ToUniquePtrValue(std::move(file_handlers)));
+}
+
 }  // namespace
 
 std::unique_ptr<base::DictionaryValue> CreateURLHandlersForBookmarkApp(
@@ -160,6 +200,11 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
   if (!web_app.scope.is_empty()) {
     root->SetDictionary(keys::kUrlHandlers, CreateURLHandlersForBookmarkApp(
                                                 web_app.scope, web_app.title));
+  }
+
+  if (web_app.file_handler) {
+    root->SetDictionary(keys::kFileHandlers, CreateFileHandlersForBookmarkApp(
+                                                 web_app.file_handler.value()));
   }
 
   // Add the icons and linked icon information.

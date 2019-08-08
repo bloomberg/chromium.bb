@@ -88,7 +88,6 @@ class FakeAppInstance : public mojom::AppInstance {
   // mojom::AppInstance overrides:
   void InitDeprecated(mojom::AppHostPtr host_ptr) override;
   void Init(mojom::AppHostPtr host_ptr, InitCallback callback) override;
-  void RefreshAppList() override;
   void LaunchAppDeprecated(const std::string& package_name,
                            const std::string& activity,
                            const base::Optional<gfx::Rect>& dimension) override;
@@ -135,6 +134,9 @@ class FakeAppInstance : public mojom::AppInstance {
   void SetNotificationsEnabled(const std::string& package_name,
                                bool enabled) override;
   void InstallPackage(mojom::ArcPackageInfoPtr arcPackageInfo) override;
+
+  void GetAndroidId(GetAndroidIdCallback callback) override;
+
   void GetRecentAndSuggestedAppsFromPlayStore(
       const std::string& query,
       int32_t max_results,
@@ -199,13 +201,13 @@ class FakeAppInstance : public mojom::AppInstance {
                             bool app_icon,
                             std::string* png_data_as_string);
 
-  int refresh_app_list_count() const { return refresh_app_list_count_; }
-
   int start_pai_request_count() const { return start_pai_request_count_; }
 
   int start_fast_app_reinstall_request_count() const {
     return start_fast_app_reinstall_request_count_;
   }
+
+  void set_android_id(int64_t android_id) { android_id_ = android_id; }
 
   void set_icon_response_type(IconResponseType icon_response_type) {
     icon_response_type_ = icon_response_type;
@@ -247,8 +249,6 @@ class FakeAppInstance : public mojom::AppInstance {
   using TaskIdToInfo = std::map<int32_t, std::unique_ptr<Request>>;
   // Mojo endpoints.
   mojom::AppHost* app_host_;
-  // Number of RefreshAppList calls.
-  int refresh_app_list_count_ = 0;
   // Number of requests to start PAI flows.
   int start_pai_request_count_ = 0;
   // Response for PAI flow state;
@@ -259,6 +259,8 @@ class FakeAppInstance : public mojom::AppInstance {
   int launch_app_shortcut_item_count_ = 0;
   // Keeps info about the number of times we got a request for app reinstalls.
   int get_app_reinstall_callback_count_ = 0;
+  // AndroidId to return.
+  int64_t android_id_ = 0;
 
   // Vector to send as app reinstall candidates.
   std::vector<arc::mojom::AppReinstallCandidatePtr> app_reinstall_candidates_;

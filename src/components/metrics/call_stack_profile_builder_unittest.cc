@@ -16,8 +16,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
 
-using Frame = base::StackSamplingProfiler::Frame;
-
 namespace metrics {
 
 namespace {
@@ -37,6 +35,7 @@ class TestModule : public base::ModuleCache::Module {
   std::string GetId() const override { return id_; }
   base::FilePath GetDebugBasename() const override { return debug_basename_; }
   size_t GetSize() const override { return 0; }
+  bool IsNative() const override { return true; }
 
  private:
   uintptr_t base_address_;
@@ -107,18 +106,18 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
 
   const uintptr_t module_base_address1 = 0x1000;
   TestModule module1(module_base_address1, "1", module_path);
-  Frame frame1 = {module_base_address1 + 0x10, &module1};
+  base::Frame frame1 = {module_base_address1 + 0x10, &module1};
 
   const uintptr_t module_base_address2 = 0x1100;
   TestModule module2(module_base_address2, "2", module_path);
-  Frame frame2 = {module_base_address2 + 0x10, &module2};
+  base::Frame frame2 = {module_base_address2 + 0x10, &module2};
 
   const uintptr_t module_base_address3 = 0x1010;
   TestModule module3(module_base_address3, "3", module_path);
-  Frame frame3 = {module_base_address3 + 0x10, &module3};
+  base::Frame frame3 = {module_base_address3 + 0x10, &module3};
 
-  std::vector<Frame> frames1 = {frame1, frame2};
-  std::vector<Frame> frames2 = {frame3};
+  std::vector<base::Frame> frames1 = {frame1, frame2};
+  std::vector<base::Frame> frames2 = {frame3};
 
   profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames1);
@@ -180,12 +179,12 @@ TEST(CallStackProfileBuilderTest, StacksDeduped) {
       std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
 
   TestModule module1;
-  Frame frame1 = {0x10, &module1};
+  base::Frame frame1 = {0x10, &module1};
 
   TestModule module2;
-  Frame frame2 = {0x20, &module2};
+  base::Frame frame2 = {0x20, &module2};
 
-  std::vector<Frame> frames = {frame1, frame2};
+  std::vector<base::Frame> frames = {frame1, frame2};
 
   // Two stacks are completed with the same frames therefore they are deduped
   // to one.
@@ -218,13 +217,13 @@ TEST(CallStackProfileBuilderTest, StacksNotDeduped) {
       std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
 
   TestModule module1;
-  Frame frame1 = {0x10, &module1};
+  base::Frame frame1 = {0x10, &module1};
 
   TestModule module2;
-  Frame frame2 = {0x20, &module2};
+  base::Frame frame2 = {0x20, &module2};
 
-  std::vector<Frame> frames1 = {frame1};
-  std::vector<Frame> frames2 = {frame2};
+  std::vector<base::Frame> frames1 = {frame1};
+  std::vector<base::Frame> frames2 = {frame2};
 
   // Two stacks are completed with the different frames therefore not deduped.
   profile_builder->RecordMetadata();
@@ -256,7 +255,7 @@ TEST(CallStackProfileBuilderTest, Modules) {
       std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
 
   // A frame with no module.
-  Frame frame1 = {0x1010, nullptr};
+  base::Frame frame1 = {0x1010, nullptr};
 
   const uintptr_t module_base_address2 = 0x1100;
 #if defined(OS_WIN)
@@ -267,9 +266,9 @@ TEST(CallStackProfileBuilderTest, Modules) {
   base::FilePath module_path("/some/path/to/chrome");
 #endif
   TestModule module2(module_base_address2, "2", module_path);
-  Frame frame2 = {module_base_address2 + 0x10, &module2};
+  base::Frame frame2 = {module_base_address2 + 0x10, &module2};
 
-  std::vector<Frame> frames = {frame1, frame2};
+  std::vector<base::Frame> frames = {frame1, frame2};
 
   profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames);
@@ -316,10 +315,10 @@ TEST(CallStackProfileBuilderTest, DedupModules) {
 #endif
 
   TestModule module(module_base_address, "1", module_path);
-  Frame frame1 = {module_base_address + 0x10, &module};
-  Frame frame2 = {module_base_address + 0x20, &module};
+  base::Frame frame1 = {module_base_address + 0x10, &module};
+  base::Frame frame2 = {module_base_address + 0x20, &module};
 
-  std::vector<Frame> frames = {frame1, frame2};
+  std::vector<base::Frame> frames = {frame1, frame2};
 
   profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames);
@@ -368,7 +367,7 @@ TEST(CallStackProfileBuilderTest, WorkIds) {
       kProfileParams, &work_id_recorder);
 
   TestModule module;
-  Frame frame = {0x10, &module};
+  base::Frame frame = {0x10, &module};
 
   // Id 0 means the message loop hasn't been started yet, so the sample should
   // not have continued_work set.
@@ -406,24 +405,22 @@ TEST(CallStackProfileBuilderTest, WorkIds) {
 }
 
 TEST(CallStackProfileBuilderTest, MetadataRecorder) {
-  class TestMetadataRecorder : public MetadataRecorder {
-   public:
-    std::pair<uint64_t, int64_t> GetHashAndValue() const override {
-      return std::make_pair(0x5A105E8B9D40E132ull, current_value);
-    }
-    int64_t current_value;
-  };
-
-  TestMetadataRecorder metadata_recorder;
+  MetadataRecorder metadata_recorder;
   auto profile_builder = std::make_unique<TestingCallStackProfileBuilder>(
       kProfileParams, nullptr, &metadata_recorder);
 
   TestModule module;
-  Frame frame = {0x10, &module};
+  base::Frame frame = {0x10, &module};
 
-  metadata_recorder.current_value = 5;
+  metadata_recorder.Set(100, 10);
+  metadata_recorder.Set(200, 20);
+  metadata_recorder.Set(300, 30);
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted({frame});
-  metadata_recorder.current_value = 8;
+  metadata_recorder.Remove(300);
+  metadata_recorder.Set(200, 21);
+  metadata_recorder.Set(400, 40);
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted({frame});
 
   profile_builder->OnProfileCompleted(base::TimeDelta::FromMilliseconds(500),
@@ -434,17 +431,29 @@ TEST(CallStackProfileBuilderTest, MetadataRecorder) {
   ASSERT_TRUE(proto.has_call_stack_profile());
   const CallStackProfile& profile = proto.call_stack_profile();
 
+  ASSERT_EQ(4, profile.metadata_name_hash_size());
+  EXPECT_EQ(100u, profile.metadata_name_hash(0));
+  EXPECT_EQ(200u, profile.metadata_name_hash(1));
+  EXPECT_EQ(300u, profile.metadata_name_hash(2));
+  EXPECT_EQ(400u, profile.metadata_name_hash(3));
+
   ASSERT_EQ(2, profile.stack_sample_size());
-  EXPECT_EQ(1, profile.stack_sample(0).metadata_size());
-  EXPECT_EQ(1, profile.stack_sample(1).metadata_size());
 
-  ASSERT_EQ(1, profile.metadata_name_hash_size());
-  EXPECT_EQ(0x5A105E8B9D40E132ull, profile.metadata_name_hash(0));
-
+  ASSERT_EQ(3, profile.stack_sample(0).metadata_size());
   EXPECT_EQ(0, profile.stack_sample(0).metadata(0).name_hash_index());
-  EXPECT_EQ(5, profile.stack_sample(0).metadata(0).value());
+  EXPECT_EQ(10, profile.stack_sample(0).metadata(0).value());
+  EXPECT_EQ(1, profile.stack_sample(0).metadata(1).name_hash_index());
+  EXPECT_EQ(20, profile.stack_sample(0).metadata(1).value());
+  EXPECT_EQ(2, profile.stack_sample(0).metadata(2).name_hash_index());
+  EXPECT_EQ(30, profile.stack_sample(0).metadata(2).value());
+
+  ASSERT_EQ(3, profile.stack_sample(1).metadata_size());
   EXPECT_EQ(0, profile.stack_sample(1).metadata(0).name_hash_index());
-  EXPECT_EQ(8, profile.stack_sample(1).metadata(0).value());
+  EXPECT_EQ(10, profile.stack_sample(1).metadata(0).value());
+  EXPECT_EQ(1, profile.stack_sample(1).metadata(1).name_hash_index());
+  EXPECT_EQ(21, profile.stack_sample(1).metadata(1).value());
+  EXPECT_EQ(3, profile.stack_sample(1).metadata(2).name_hash_index());
+  EXPECT_EQ(40, profile.stack_sample(1).metadata(2).value());
 }
 
 }  // namespace metrics

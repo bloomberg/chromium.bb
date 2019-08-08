@@ -150,7 +150,7 @@ class TokenPreloadScanner::StartTagScanner {
         referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
         integrity_attr_set_(false),
         integrity_features_(features),
-        lazyload_attr_set_to_off_(false),
+        loading_attr_value_(LoadingAttrValue::kAuto),
         width_attr_small_absolute_(false),
         height_attr_small_absolute_(false),
         inline_style_dimensions_small_(false),
@@ -193,8 +193,7 @@ class TokenPreloadScanner::StartTagScanner {
 
   void PostProcessAfterAttributes() {
     if (Match(tag_impl_, kImgTag) ||
-        (link_is_preload_ && as_attribute_value_ == "image" &&
-         RuntimeEnabledFeatures::PreloadImageSrcSetEnabled()))
+        (link_is_preload_ && as_attribute_value_ == "image"))
       SetUrlFromImageAttributes();
   }
 
@@ -289,12 +288,13 @@ class TokenPreloadScanner::StartTagScanner {
     request->SetCharset(Charset());
     request->SetDefer(defer_);
 
-    // If the 'lazyload' feature policy is enforced, the attribute value "off"
-    // for the 'lazyload' attribute is considered as 'auto'.
-    if ((lazyload_attr_set_to_off_ &&
-         !document_parameters.lazyload_policy_enforced) ||
-        (width_attr_small_absolute_ && height_attr_small_absolute_) ||
-        inline_style_dimensions_small_) {
+    // If the 'lazyload' feature policy is enforced, the attribute value
+    // loading='lazy' is considered as 'auto'.
+    if (loading_attr_value_ != LoadingAttrValue::kLazy &&
+        ((loading_attr_value_ == LoadingAttrValue::kEager &&
+          !document_parameters.lazyload_policy_enforced) ||
+         (width_attr_small_absolute_ && height_attr_small_absolute_) ||
+         inline_style_dimensions_small_)) {
       request->SetIsLazyloadImageDisabled(true);
     }
 
@@ -310,6 +310,8 @@ class TokenPreloadScanner::StartTagScanner {
   }
 
  private:
+  enum class LoadingAttrValue { kAuto, kLazy, kEager };
+
   template <typename NameType>
   void ProcessScriptAttribute(const NameType& attribute_name,
                               const String& attribute_value) {
@@ -366,10 +368,15 @@ class TokenPreloadScanner::StartTagScanner {
                Match(attribute_name, kImportanceAttr) &&
                priority_hints_origin_trial_enabled_) {
       SetImportance(attribute_value);
-    } else if (!lazyload_attr_set_to_off_ && Match(attribute_name, kLoadAttr) &&
-               RuntimeEnabledFeatures::LazyImageLoadingEnabled() &&
-               EqualIgnoringASCIICase(attribute_value, "eager")) {
-      lazyload_attr_set_to_off_ = true;
+    } else if (loading_attr_value_ == LoadingAttrValue::kAuto &&
+               Match(attribute_name, kLoadingAttr) &&
+               RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
+      loading_attr_value_ =
+          EqualIgnoringASCIICase(attribute_value, "eager")
+              ? LoadingAttrValue::kEager
+              : EqualIgnoringASCIICase(attribute_value, "lazy")
+                    ? LoadingAttrValue::kLazy
+                    : LoadingAttrValue::kAuto;
     } else if (!width_attr_small_absolute_ &&
                Match(attribute_name, kWidthAttr) &&
                RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
@@ -691,7 +698,7 @@ class TokenPreloadScanner::StartTagScanner {
   bool integrity_attr_set_;
   IntegrityMetadataSet integrity_metadata_;
   SubresourceIntegrity::IntegrityFeatures integrity_features_;
-  bool lazyload_attr_set_to_off_;
+  LoadingAttrValue loading_attr_value_;
   bool width_attr_small_absolute_;
   bool height_attr_small_absolute_;
   bool inline_style_dimensions_small_;
@@ -712,7 +719,8 @@ TokenPreloadScanner::TokenPreloadScanner(
       in_script_(false),
       template_count_(0),
       document_parameters_(std::move(document_parameters)),
-      media_values_(MediaValuesCached::Create(media_values_cached_data)),
+      media_values_(
+          MakeGarbageCollected<MediaValuesCached>(media_values_cached_data)),
       scanner_type_(scanner_type),
       priority_hints_origin_trial_enabled_(priority_hints_origin_trial_enabled),
       did_rewind_(false) {
@@ -968,7 +976,7 @@ HTMLPreloadScanner::HTMLPreloadScanner(
                media_values_cached_data,
                scanner_type,
                options.priority_hints_origin_trial_enabled),
-      tokenizer_(HTMLTokenizer::Create(options)) {}
+      tokenizer_(std::make_unique<HTMLTokenizer>(options)) {}
 
 HTMLPreloadScanner::~HTMLPreloadScanner() = default;
 

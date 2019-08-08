@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.omaha.inline;
 
 import android.app.Activity;
 import android.content.IntentSender.SendIntentException;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
@@ -59,7 +57,53 @@ public class PlayInlineUpdateController
         int ERROR_INTERNAL_ERROR = 8;
         int ERROR_UNTRACKED = 9;
 
-        int COUNT = 10;
+        int NUM_ENTRIES = 10;
+    }
+
+    /**
+     * Converts Play's {@link UpdateAvailability} enum to a stable monotomically incrementing Chrome
+     * enum. This is used for metric stability.
+     * Treat this as append only as it is used by UMA as the InlineUpdateAvailability enum.
+     */
+    @IntDef({UpdateAvailabilityMetric.UNTRACKED, UpdateAvailabilityMetric.UNKNOWN,
+            UpdateAvailabilityMetric.UPDATE_NOT_AVAILABLE,
+            UpdateAvailabilityMetric.UPDATE_AVAILABLE,
+            UpdateAvailabilityMetric.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface UpdateAvailabilityMetric {
+        int UNTRACKED = 0;
+        int UNKNOWN = 1;
+        int UPDATE_NOT_AVAILABLE = 2;
+        int UPDATE_AVAILABLE = 3;
+        int DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS = 4;
+
+        int NUM_ENTRIES = 5;
+    }
+
+    /**
+     * Converts Play's {@link InstallStatus} enum to a stable monotomically incrementing Chrome
+     * enum. This is used for metric stability.
+     * Treat this as append only as it is used by UMA as the InlineUpdateAvailability enum.
+     */
+    @IntDef({InstallStatusMetric.UNTRACKED, InstallStatusMetric.UNKNOWN,
+            InstallStatusMetric.REQUIRES_UI_INTENT, InstallStatusMetric.PENDING,
+            InstallStatusMetric.DOWNLOADING, InstallStatusMetric.DOWNLOADED,
+            InstallStatusMetric.INSTALLING, InstallStatusMetric.INSTALLED,
+            InstallStatusMetric.FAILED, InstallStatusMetric.CANCELED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface InstallStatusMetric {
+        int UNTRACKED = 0;
+        int UNKNOWN = 1;
+        int REQUIRES_UI_INTENT = 2;
+        int PENDING = 3;
+        int DOWNLOADING = 4;
+        int DOWNLOADED = 5;
+        int INSTALLING = 6;
+        int INSTALLED = 7;
+        int FAILED = 8;
+        int CANCELED = 9;
+
+        int NUM_ENTRIES = 10;
     }
 
     /**
@@ -75,14 +119,12 @@ public class PlayInlineUpdateController
         int COMPLETE_FAILED = 2;
         int QUERY_FAILED = 3;
 
-        int COUNT = 4;
+        int NUM_ENTRIES = 4;
     }
 
     private static final String TAG = "PlayInline";
     private static final int RESULT_IN_APP_UPDATE_FAILED = 1;
     private static final int REQUEST_CODE = 8123;
-
-    private final Handler mHandler = new Handler(Looper.getMainLooper());
 
     private final Runnable mCallback;
     private final AppUpdateManager mAppUpdateManager;
@@ -165,7 +207,7 @@ public class PlayInlineUpdateController
             RecordHistogram.recordEnumeratedHistogram("GoogleUpdate.Inline.StateChange.Error."
                             + installStatusToEnumSuffix(state.installStatus()),
                     installErrorCodeToMetrics(state.installErrorCode()),
-                    InstallErrorCodeMetrics.COUNT);
+                    InstallErrorCodeMetrics.NUM_ENTRIES);
         }
 
         mInstallStatus = state.installStatus();
@@ -181,6 +223,7 @@ public class PlayInlineUpdateController
                     Log.i(TAG,
                             "pullCurrentState(" + mUpdateAvailability + ", " + mInstallStatus
                                     + ") success.");
+                    recordOnAppUpdateInfo(info);
                     pushStatus();
                 })
                 .addOnFailureListener(exception -> {
@@ -288,8 +331,59 @@ public class PlayInlineUpdateController
         }
     }
 
+    private static @UpdateAvailabilityMetric int updateAvailabilityToMetrics(
+            @UpdateAvailability int updateAvailability) {
+        switch (updateAvailability) {
+            case UpdateAvailability.UNKNOWN:
+                return UpdateAvailabilityMetric.UNKNOWN;
+            case UpdateAvailability.UPDATE_NOT_AVAILABLE:
+                return UpdateAvailabilityMetric.UPDATE_NOT_AVAILABLE;
+            case UpdateAvailability.UPDATE_AVAILABLE:
+                return UpdateAvailabilityMetric.UPDATE_AVAILABLE;
+            case UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS:
+                return UpdateAvailabilityMetric.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS;
+            default:
+                return UpdateAvailabilityMetric.UNTRACKED;
+        }
+    }
+
+    private static @InstallStatusMetric int installStatusToMetrics(
+            @InstallStatus int installStatus) {
+        switch (installStatus) {
+            case InstallStatus.UNKNOWN:
+                return InstallStatusMetric.UNKNOWN;
+            case InstallStatus.REQUIRES_UI_INTENT:
+                return InstallStatusMetric.REQUIRES_UI_INTENT;
+            case InstallStatus.PENDING:
+                return InstallStatusMetric.PENDING;
+            case InstallStatus.DOWNLOADING:
+                return InstallStatusMetric.DOWNLOADING;
+            case InstallStatus.DOWNLOADED:
+                return InstallStatusMetric.DOWNLOADED;
+            case InstallStatus.INSTALLING:
+                return InstallStatusMetric.INSTALLING;
+            case InstallStatus.INSTALLED:
+                return InstallStatusMetric.INSTALLED;
+            case InstallStatus.FAILED:
+                return InstallStatusMetric.FAILED;
+            case InstallStatus.CANCELED:
+                return InstallStatusMetric.CANCELED;
+            default:
+                return InstallStatusMetric.UNTRACKED;
+        }
+    }
+
+    private static void recordOnAppUpdateInfo(AppUpdateInfo info) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "GoogleUpdate.Inline.AppUpdateInfo.UpdateAvailability",
+                updateAvailabilityToMetrics(info.updateAvailability()),
+                UpdateAvailabilityMetric.NUM_ENTRIES);
+        RecordHistogram.recordEnumeratedHistogram("GoogleUpdate.Inline.AppUpdateInfo.InstallStatus",
+                installStatusToMetrics(info.installStatus()), InstallStatusMetric.NUM_ENTRIES);
+    }
+
     private static void recordCallFailure(@CallFailure int failure) {
         RecordHistogram.recordEnumeratedHistogram(
-                "GoogleUpdate.Inline.CallFailure", failure, CallFailure.COUNT);
+                "GoogleUpdate.Inline.CallFailure", failure, CallFailure.NUM_ENTRIES);
     }
 }

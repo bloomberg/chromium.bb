@@ -9,6 +9,7 @@
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/model/search/search_result.h"
+#include "ash/public/cpp/app_menu_constants.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
@@ -67,6 +68,33 @@ constexpr char kAppListZeroStateSearchResultUserActionHistogram[] =
 constexpr char kAppListZeroStateSearchResultRemovalHistogram[] =
     "Apps.ZeroStateSearchResutRemovalDecision";
 
+// The UMA histogram that logs the length of the query when user abandons
+// results of a queried search or recommendations of zero state(zero length
+// query) in launcher UI.
+constexpr char kSearchAbandonQueryLengthHistogram[] =
+    "Apps.AppListSearchAbandonQueryLength";
+
+// The base UMA histogram that logs app launches within the AppList and shelf.
+constexpr char kAppListAppLaunched[] = "Apps.AppListAppLaunchedV2";
+
+// The UMA histograms that log app launches within the AppList and shelf. The
+// app launches are divided by histogram for each of the the different AppList
+// states.
+constexpr char kAppListAppLaunchedClosed[] = "Apps.AppListAppLaunchedV2.Closed";
+constexpr char kAppListAppLaunchedPeeking[] =
+    "Apps.AppListAppLaunchedV2.Peeking";
+constexpr char kAppListAppLaunchedHalf[] = "Apps.AppListAppLaunchedV2.Half";
+constexpr char kAppListAppLaunchedFullscreenAllApps[] =
+    "Apps.AppListAppLaunchedV2.FullscreenAllApps";
+constexpr char kAppListAppLaunchedFullscreenSearch[] =
+    "Apps.AppListAppLaunchedV2.FullscreenSearch";
+constexpr char kAppListAppLaunchedHomecherClosed[] =
+    "Apps.AppListAppLaunchedV2.HomecherClosed";
+constexpr char kAppListAppLaunchedHomecherAllApps[] =
+    "Apps.AppListAppLaunchedV2.HomecherAllApps";
+constexpr char kAppListAppLaunchedHomecherSearch[] =
+    "Apps.AppListAppLaunchedV2.HomecherSearch";
+
 // The different sources from which a search result is displayed. These values
 // are written to logs.  New enum values can be added, but existing enums must
 // never be renumbered or deleted and reused.
@@ -111,11 +139,11 @@ APP_LIST_EXPORT void RecordSearchResultOpenSource(
     return;
 
   ApplistSearchResultOpenedSource source;
-  AppListViewState state = model->state_fullscreen();
+  ash::mojom::AppListViewState state = model->state_fullscreen();
   if (search_model->tablet_mode()) {
     source = ApplistSearchResultOpenedSource::kFullscreenTablet;
   } else {
-    source = state == AppListViewState::HALF
+    source = state == ash::mojom::AppListViewState::kHalf
                  ? ApplistSearchResultOpenedSource::kHalfClamshell
                  : ApplistSearchResultOpenedSource::kFullscreenClamshell;
   }
@@ -147,6 +175,12 @@ void RecordSearchLaunchIndexAndQueryLength(
   }
 }
 
+void RecordSearchAbandonWithQueryLengthHistogram(int query_length) {
+  UMA_HISTOGRAM_EXACT_LINEAR(kSearchAbandonQueryLengthHistogram,
+                             std::min(query_length, kMaxLoggedQueryLength),
+                             kMaxLoggedQueryLength);
+}
+
 void RecordZeroStateSearchResultUserActionHistogram(
     ZeroStateSearchResultUserActionType action) {
   UMA_HISTOGRAM_ENUMERATION(kAppListZeroStateSearchResultUserActionHistogram,
@@ -157,6 +191,115 @@ void RecordZeroStateSearchResultRemovalHistogram(
     ZeroStateSearchResutRemovalConfirmation removal_decision) {
   UMA_HISTOGRAM_ENUMERATION(kAppListZeroStateSearchResultRemovalHistogram,
                             removal_decision);
+}
+
+void RecordAppListAppLaunched(ash::mojom::AppListLaunchedFrom launched_from,
+                              ash::mojom::AppListViewState app_list_state,
+                              bool is_tablet_mode,
+                              bool home_launcher_shown) {
+  UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunched, launched_from);
+  switch (app_list_state) {
+    case ash::mojom::AppListViewState::kClosed:
+      UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedClosed, launched_from);
+      break;
+    case ash::mojom::AppListViewState::kPeeking:
+      UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedPeeking, launched_from);
+      break;
+    case ash::mojom::AppListViewState::kHalf:
+      UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedHalf, launched_from);
+      break;
+    case ash::mojom::AppListViewState::kFullscreenAllApps:
+      if (is_tablet_mode) {
+        if (home_launcher_shown) {
+          UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedHomecherAllApps,
+                                    launched_from);
+        } else {
+          UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedHomecherClosed,
+                                    launched_from);
+        }
+      } else {
+        UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedFullscreenAllApps,
+                                  launched_from);
+      }
+      break;
+    case ash::mojom::AppListViewState::kFullscreenSearch:
+      if (is_tablet_mode) {
+        if (home_launcher_shown) {
+          UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedHomecherSearch,
+                                    launched_from);
+        } else {
+          // (http://crbug.com/947729) Search box still expanded when opening
+          // launcher in tablet mode
+          UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedHomecherClosed,
+                                    launched_from);
+        }
+      } else {
+        UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedFullscreenSearch,
+                                  launched_from);
+      }
+      break;
+  }
+}
+
+bool IsCommandIdAnAppLaunch(int command_id_number) {
+  ash::CommandId command_id = static_cast<ash::CommandId>(command_id_number);
+
+  // Consider all platform app menu options as launches.
+  if (command_id >= ash::CommandId::USE_LAUNCH_TYPE_COMMAND_END &&
+      command_id < ash::CommandId::LAUNCH_APP_SHORTCUT_FIRST) {
+    return true;
+  }
+
+  // Consider all arc app shortcut options as launches.
+  if (command_id >= ash::CommandId::LAUNCH_APP_SHORTCUT_FIRST &&
+      command_id < ash::CommandId::LAUNCH_APP_SHORTCUT_LAST) {
+    return true;
+  }
+
+  switch (command_id) {
+    // Used by LauncherContextMenu (shelf).
+    case ash::CommandId::MENU_OPEN_NEW:
+    case ash::CommandId::MENU_NEW_WINDOW:
+    case ash::CommandId::MENU_NEW_INCOGNITO_WINDOW:
+    // Used by AppContextMenu.
+    case ash::CommandId::LAUNCH_NEW:
+    case ash::CommandId::SHOW_APP_INFO:
+    case ash::CommandId::OPTIONS:
+    case ash::CommandId::APP_CONTEXT_MENU_NEW_WINDOW:
+    case ash::CommandId::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW:
+    // Used by both AppContextMenu and LauncherContextMenu for app shortcuts.
+    case ash::CommandId::LAUNCH_APP_SHORTCUT_FIRST:
+    case ash::CommandId::LAUNCH_APP_SHORTCUT_LAST:
+      return true;
+
+    // Used by LauncherContextMenu (shelf).
+    case ash::CommandId::MENU_CLOSE:
+    case ash::CommandId::MENU_PIN:
+    case ash::CommandId::LAUNCH_TYPE_PINNED_TAB:
+    case ash::CommandId::LAUNCH_TYPE_REGULAR_TAB:
+    case ash::CommandId::LAUNCH_TYPE_FULLSCREEN:
+    case ash::CommandId::LAUNCH_TYPE_WINDOW:
+    // Used by AppMenuModelAdapter
+    case ash::CommandId::NOTIFICATION_CONTAINER:
+    // Used by CrostiniShelfContextMenu.
+    case ash::CommandId::CROSTINI_USE_LOW_DENSITY:
+    case ash::CommandId::CROSTINI_USE_HIGH_DENSITY:
+    // Used by AppContextMenu.
+    case ash::CommandId::TOGGLE_PIN:
+    case ash::CommandId::UNINSTALL:
+    case ash::CommandId::REMOVE_FROM_FOLDER:
+    case ash::CommandId::INSTALL:
+    case ash::CommandId::USE_LAUNCH_TYPE_PINNED:
+    case ash::CommandId::USE_LAUNCH_TYPE_REGULAR:
+    case ash::CommandId::USE_LAUNCH_TYPE_FULLSCREEN:
+    case ash::CommandId::USE_LAUNCH_TYPE_WINDOW:
+    case ash::CommandId::USE_LAUNCH_TYPE_COMMAND_END:
+    case ash::CommandId::STOP_APP:
+    case ash::CommandId::COMMAND_ID_COUNT:
+      return false;
+  }
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace app_list

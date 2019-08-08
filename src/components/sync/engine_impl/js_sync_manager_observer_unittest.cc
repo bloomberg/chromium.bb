@@ -61,14 +61,14 @@ TEST_F(JsSyncManagerObserverTest, OnInitializationComplete) {
 }
 
 TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
-  SyncCycleSnapshot snapshot(
-      ModelNeutralState(), ProgressMarkerMap(), false, 5, 2, 7, false, 0,
-      base::Time::Now(), base::Time::Now(),
-      std::vector<int>(MODEL_TYPE_COUNT, 0),
-      std::vector<int>(MODEL_TYPE_COUNT, 0), sync_pb::SyncEnums::UNKNOWN_ORIGIN,
-      /*short_poll_interval=*/base::TimeDelta::FromMinutes(30),
-      /*long_poll_interval=*/base::TimeDelta::FromMinutes(180),
-      /*has_remaining_local_changes=*/false);
+  SyncCycleSnapshot snapshot(ModelNeutralState(), ProgressMarkerMap(), false, 5,
+                             2, 7, false, 0, base::Time::Now(),
+                             base::Time::Now(),
+                             std::vector<int>(ModelType::NUM_ENTRIES, 0),
+                             std::vector<int>(ModelType::NUM_ENTRIES, 0),
+                             sync_pb::SyncEnums::UNKNOWN_ORIGIN,
+                             /*poll_interval=*/base::TimeDelta::FromMinutes(30),
+                             /*has_remaining_local_changes=*/false);
   base::DictionaryValue expected_details;
   expected_details.Set("snapshot", snapshot.ToValue());
 
@@ -82,7 +82,7 @@ TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
 
 TEST_F(JsSyncManagerObserverTest, OnActionableError) {
   SyncProtocolError sync_error;
-  sync_error.action = CLEAR_USER_DATA_AND_RESYNC;
+  sync_error.action = RESET_LOCAL_SYNC_DATA;
   sync_error.error_type = TRANSIENT_ERROR;
   base::DictionaryValue expected_details;
   expected_details.Set("syncError", sync_error.ToValue());

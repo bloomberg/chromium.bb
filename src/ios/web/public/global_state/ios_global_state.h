@@ -5,7 +5,7 @@
 #ifndef IOS_WEB_PUBLIC_GLOBAL_STATE_IOS_GLOBAL_STATE_H_
 #define IOS_WEB_PUBLIC_GLOBAL_STATE_IOS_GLOBAL_STATE_H_
 
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 
 namespace base {
 class MessageLoop;
@@ -54,11 +54,11 @@ void CreateNetworkChangeNotifier();
 // It is safe to call this method multiple time.
 void DestroyNetworkChangeNotifier();
 
-// Starts a global base::TaskScheduler. This method must be called to start
+// Starts a global base::ThreadPool. This method must be called to start
 // the Task Scheduler that is created in |Create|. If |init_params| is null,
 // default InitParams will be used. It is safe to call this method more than
-// once, the task scheduler will only be started once.
-void StartTaskScheduler(base::TaskScheduler::InitParams* init_params);
+// once, the thread pool will only be started once.
+void StartThreadPool(base::ThreadPool::InitParams* init_params);
 
 // Destroys the AtExitManager if one was created in |Create|. It is safe to call
 // this method even if |install_at_exit_manager| was false in the CreateParams

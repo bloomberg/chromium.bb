@@ -673,39 +673,99 @@ TEST_F(WindowStateTest, CanConsumeSystemKeys) {
   EXPECT_TRUE(window_state->CanConsumeSystemKeys());
 }
 
-TEST_F(WindowStateTest, RestoreStateAfterDismissingPip) {
+TEST_F(WindowStateTest,
+       RestoreStateAfterEnteringPipViaOcculusionAndDismissingPip) {
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   window->Show();
   EXPECT_TRUE(window->layer()->visible());
 
-  // Ensure a maximized window gets maximized again after it enters PIP, gets
-  // minimized, and unminimized.
+  // Ensure a maximized window gets maximized again after it enters PIP via
+  // occlusion, gets minimized, and unminimized.
   window_state->Maximize();
-  ASSERT_TRUE(window_state->IsMaximized());
+  EXPECT_TRUE(window_state->IsMaximized());
 
   const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
   window_state->OnWMEvent(&enter_pip);
   EXPECT_TRUE(window_state->IsPip());
 
   window_state->Minimize();
-  ASSERT_TRUE(window_state->IsMinimized());
+  EXPECT_TRUE(window_state->IsMinimized());
 
   window_state->Unminimize();
-  ASSERT_TRUE(window_state->IsMaximized());
+  EXPECT_TRUE(window_state->IsMaximized());
 
-  // Ensure a freeform window gets freeform again after it enters PIP, gets
-  // minimized, and unminimized.
+  // Ensure a freeform window gets freeform again after it enters PIP via
+  // occulusion, gets minimized, and unminimized.
   ::wm::SetWindowState(window.get(), ui::SHOW_STATE_NORMAL);
 
   window_state->OnWMEvent(&enter_pip);
   EXPECT_TRUE(window_state->IsPip());
 
   window_state->Minimize();
-  ASSERT_TRUE(window_state->IsMinimized());
+  EXPECT_TRUE(window_state->IsMinimized());
 
   window_state->Unminimize();
-  ASSERT_TRUE(window_state->GetStateType() == mojom::WindowStateType::NORMAL);
+  EXPECT_TRUE(window_state->GetStateType() == mojom::WindowStateType::NORMAL);
+}
+
+TEST_F(WindowStateTest, RestoreStateAfterEnterPipViaMinimizeAndDismissingPip) {
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  window->Show();
+  EXPECT_TRUE(window->layer()->visible());
+
+  // Ensure a maximized window gets maximized again after it enters PIP via
+  // minimize, gets minimized, and unminimized.
+  window_state->Maximize();
+  EXPECT_TRUE(window_state->IsMaximized());
+
+  window_state->Minimize();
+  EXPECT_TRUE(window_state->IsMinimized());
+
+  const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
+  window_state->OnWMEvent(&enter_pip);
+  EXPECT_TRUE(window_state->IsPip());
+
+  window_state->Minimize();
+  EXPECT_TRUE(window_state->IsMinimized());
+
+  window_state->Unminimize();
+  EXPECT_TRUE(window_state->IsMaximized());
+
+  // Ensure a freeform window gets freeform again after it enters PIP via
+  // minimize, gets minimized, and unminimized.
+  ::wm::SetWindowState(window.get(), ui::SHOW_STATE_NORMAL);
+
+  window_state->Minimize();
+  EXPECT_TRUE(window_state->IsMinimized());
+
+  window_state->OnWMEvent(&enter_pip);
+  EXPECT_TRUE(window_state->IsPip());
+
+  window_state->Minimize();
+  EXPECT_TRUE(window_state->IsMinimized());
+
+  window_state->Unminimize();
+  EXPECT_TRUE(window_state->GetStateType() == mojom::WindowStateType::NORMAL);
+}
+
+TEST_F(WindowStateTest, SetBoundsUpdatesSizeOfPipRestoreBounds) {
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  window->Show();
+  window->SetBounds(gfx::Rect(0, 0, 50, 50));
+
+  const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
+  window_state->OnWMEvent(&enter_pip);
+
+  EXPECT_TRUE(window_state->IsPip());
+  EXPECT_TRUE(window_state->HasRestoreBounds());
+  EXPECT_EQ(gfx::Rect(8, 8, 50, 50), window_state->GetRestoreBoundsInScreen());
+  window_state->window()->SetBounds(gfx::Rect(100, 100, 100, 100));
+  // SetBounds only updates the size of the restore bounds.
+  EXPECT_EQ(gfx::Rect(8, 8, 100, 100),
+            window_state->GetRestoreBoundsInScreen());
 }
 
 // TODO(skuhne): Add more unit test to verify the correctness for the restore

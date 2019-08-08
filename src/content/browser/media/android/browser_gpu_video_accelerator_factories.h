@@ -25,9 +25,11 @@ class BrowserGpuVideoAcceleratorFactories
   base::UnguessableToken GetChannelToken() override;
   int32_t GetCommandBufferRouteId() override;
   bool IsDecoderConfigSupported(
+      media::VideoDecoderImplementation implementation,
       const media::VideoDecoderConfig& config) override;
   std::unique_ptr<media::VideoDecoder> CreateVideoDecoder(
       media::MediaLog* media_log,
+      media::VideoDecoderImplementation implementation,
       const media::RequestOverlayInfoCB& request_overlay_info_cb) override;
   std::unique_ptr<media::VideoDecodeAccelerator> CreateVideoDecodeAccelerator()
       override;

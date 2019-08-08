@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import difflib
 import hashlib
 import itertools
@@ -78,10 +80,10 @@ def CallAndRecordIfStale(
     return
 
   if PRINT_EXPLANATIONS:
-    print '=' * 80
-    print 'Target is stale: %s' % record_path
-    print changes.DescribeDifference()
-    print '=' * 80
+    print('=' * 80)
+    print('Target is stale: %s' % record_path)
+    print(changes.DescribeDifference())
+    print('=' * 80)
 
   args = (changes,) if pass_changes else ()
   function(*args)

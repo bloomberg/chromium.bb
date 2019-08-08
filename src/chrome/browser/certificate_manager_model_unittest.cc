@@ -259,12 +259,11 @@ class FakeExtensionCertificateProvider : public chromeos::CertificateProvider {
         extensions_hang_(extensions_hang) {}
 
   void GetCertificates(
-      const base::RepeatingCallback<void(net::ClientCertIdentityList)>&
-          callback) override {
+      base::OnceCallback<void(net::ClientCertIdentityList)> callback) override {
     if (*extensions_hang_)
       return;
 
-    callback.Run(FakeClientCertIdentityListFromCertificateList(
+    std::move(callback).Run(FakeClientCertIdentityListFromCertificateList(
         *extension_client_certificates_));
   }
 

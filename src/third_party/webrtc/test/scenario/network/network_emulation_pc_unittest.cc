@@ -26,8 +26,6 @@
 #include "p2p/client/basic_port_allocator.h"
 #include "pc/peer_connection_wrapper.h"
 #include "pc/test/mock_peer_connection_observers.h"
-#include "rtc_base/async_invoker.h"
-#include "rtc_base/fake_network.h"
 #include "rtc_base/gunit.h"
 #include "test/gmock.h"
 #include "test/gtest.h"
@@ -102,52 +100,45 @@ TEST(NetworkEmulationManagerPCTest, Run) {
   signaling_thread->Start();
 
   // Setup emulated network
-  NetworkEmulationManager network_manager;
+  NetworkEmulationManagerImpl emulation;
 
-  EmulatedNetworkNode* alice_node = network_manager.CreateEmulatedNode(
+  EmulatedNetworkNode* alice_node = emulation.CreateEmulatedNode(
       absl::make_unique<SimulatedNetwork>(BuiltInNetworkBehaviorConfig()));
-  EmulatedNetworkNode* bob_node = network_manager.CreateEmulatedNode(
+  EmulatedNetworkNode* bob_node = emulation.CreateEmulatedNode(
       absl::make_unique<SimulatedNetwork>(BuiltInNetworkBehaviorConfig()));
-  EndpointNode* alice_endpoint =
-      network_manager.CreateEndpoint(EndpointConfig());
-  EndpointNode* bob_endpoint = network_manager.CreateEndpoint(EndpointConfig());
-  network_manager.CreateRoute(alice_endpoint, {alice_node}, bob_endpoint);
-  network_manager.CreateRoute(bob_endpoint, {bob_node}, alice_endpoint);
+  EmulatedEndpoint* alice_endpoint =
+      emulation.CreateEndpoint(EmulatedEndpointConfig());
+  EmulatedEndpoint* bob_endpoint =
+      emulation.CreateEndpoint(EmulatedEndpointConfig());
+  emulation.CreateRoute(alice_endpoint, {alice_node}, bob_endpoint);
+  emulation.CreateRoute(bob_endpoint, {bob_node}, alice_endpoint);
 
-  rtc::Thread* alice_network_thread =
-      network_manager.CreateNetworkThread({alice_endpoint});
-  rtc::Thread* bob_network_thread =
-      network_manager.CreateNetworkThread({bob_endpoint});
+  EmulatedNetworkManagerInterface* alice_network =
+      emulation.CreateEmulatedNetworkManagerInterface({alice_endpoint});
+  EmulatedNetworkManagerInterface* bob_network =
+      emulation.CreateEmulatedNetworkManagerInterface({bob_endpoint});
 
   // Setup peer connections.
   rtc::scoped_refptr<PeerConnectionFactoryInterface> alice_pcf;
   rtc::scoped_refptr<PeerConnectionInterface> alice_pc;
   std::unique_ptr<MockPeerConnectionObserver> alice_observer =
       absl::make_unique<MockPeerConnectionObserver>();
-  std::unique_ptr<rtc::FakeNetworkManager> alice_network_manager =
-      absl::make_unique<rtc::FakeNetworkManager>();
-  alice_network_manager->AddInterface(
-      rtc::SocketAddress(alice_endpoint->GetPeerLocalAddress(), 0));
 
   rtc::scoped_refptr<PeerConnectionFactoryInterface> bob_pcf;
   rtc::scoped_refptr<PeerConnectionInterface> bob_pc;
   std::unique_ptr<MockPeerConnectionObserver> bob_observer =
       absl::make_unique<MockPeerConnectionObserver>();
-  std::unique_ptr<rtc::FakeNetworkManager> bob_network_manager =
-      absl::make_unique<rtc::FakeNetworkManager>();
-  bob_network_manager->AddInterface(
-      rtc::SocketAddress(bob_endpoint->GetPeerLocalAddress(), 0));
 
   signaling_thread->Invoke<void>(RTC_FROM_HERE, [&]() {
     alice_pcf = CreatePeerConnectionFactory(signaling_thread.get(),
-                                            alice_network_thread);
+                                            alice_network->network_thread());
     alice_pc = CreatePeerConnection(alice_pcf, alice_observer.get(),
-                                    alice_network_manager.get());
+                                    alice_network->network_manager());
 
-    bob_pcf =
-        CreatePeerConnectionFactory(signaling_thread.get(), bob_network_thread);
+    bob_pcf = CreatePeerConnectionFactory(signaling_thread.get(),
+                                          bob_network->network_thread());
     bob_pc = CreatePeerConnection(bob_pcf, bob_observer.get(),
-                                  bob_network_manager.get());
+                                  bob_network->network_manager());
   });
 
   std::unique_ptr<PeerConnectionWrapper> alice =

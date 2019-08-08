@@ -64,38 +64,41 @@ AppInfoHeaderPanel::~AppInfoHeaderPanel() {
 }
 
 void AppInfoHeaderPanel::CreateControls() {
-  app_icon_view_ = new views::ImageView();
-  app_icon_view_->SetImageSize(gfx::Size(kAppIconSize, kAppIconSize));
-  AddChildView(app_icon_view_);
+  auto app_icon_view = std::make_unique<views::ImageView>();
+  app_icon_view->SetImageSize(gfx::Size(kAppIconSize, kAppIconSize));
+  app_icon_view_ = AddChildView(std::move(app_icon_view));
 
   app_icon_ = extensions::ChromeAppIconService::Get(profile_)->CreateIcon(
       this, app_->id(), extension_misc::EXTENSION_ICON_LARGE);
 
   // Create a vertical container to store the app's name and link.
-  views::View* vertical_info_container = new views::View();
+  auto vertical_info_container = std::make_unique<views::View>();
   auto vertical_container_layout =
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
   vertical_container_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   vertical_info_container->SetLayoutManager(
       std::move(vertical_container_layout));
-  AddChildView(vertical_info_container);
+  auto* vertical_info_container_ptr =
+      AddChildView(std::move(vertical_info_container));
 
-  views::Label* app_name_label = new views::Label(
+  auto app_name_label = std::make_unique<views::Label>(
       base::UTF8ToUTF16(app_->name()), views::style::CONTEXT_DIALOG_TITLE);
   app_name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  vertical_info_container->AddChildView(app_name_label);
+  auto* app_name_label_ptr =
+      vertical_info_container_ptr->AddChildView(std::move(app_name_label));
 
   if (CanShowAppInWebStore()) {
-    view_in_store_link_ = new views::Link(
+    auto view_in_store_link = std::make_unique<views::Link>(
         l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_WEB_STORE_LINK));
-    view_in_store_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    view_in_store_link_->set_listener(this);
-    vertical_info_container->AddChildView(view_in_store_link_);
+    view_in_store_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    view_in_store_link->set_listener(this);
+    view_in_store_link_ = vertical_info_container_ptr->AddChildView(
+        std::move(view_in_store_link));
   } else {
     // If there's no link, allow the app's name to take up multiple lines.
     // TODO(sashab): Limit the number of lines to 2.
-    app_name_label->SetMultiLine(true);
+    app_name_label_ptr->SetMultiLine(true);
   }
 }
 

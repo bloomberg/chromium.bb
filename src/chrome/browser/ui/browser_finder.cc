@@ -28,15 +28,14 @@ using content::WebContents;
 
 namespace {
 
-
 // Type used to indicate to match anything.
-const int kMatchAny                     = 0;
+const int kMatchAny = 0;
 
 // See BrowserMatches for details.
-const int kMatchOriginalProfile         = 1 << 0;
+const int kMatchOriginalProfile = 1 << 0;
 const int kMatchCanSupportWindowFeature = 1 << 1;
-const int kMatchTabbed                  = 1 << 2;
-const int kMatchDisplayId               = 1 << 3;
+const int kMatchTabbed = 1 << 2;
+const int kMatchDisplayId = 1 << 3;
 
 // Returns true if the specified |browser| matches the specified arguments.
 // |match_types| is a bitmask dictating what parameters to match:
@@ -173,10 +172,8 @@ Browser* FindTabbedBrowser(Profile* profile,
                                         display_id);
 }
 
-Browser* FindAnyBrowser(Profile* profile,
-                        bool match_original_profiles) {
-  return FindBrowserWithTabbedOrAnyType(profile,
-                                        false,
+Browser* FindAnyBrowser(Profile* profile, bool match_original_profiles) {
+  return FindBrowserWithTabbedOrAnyType(profile, false,
                                         match_original_profiles);
 }
 

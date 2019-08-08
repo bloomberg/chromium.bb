@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_toggle_closed_captions_button_element.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_text_track_manager.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
@@ -89,15 +90,19 @@ void MediaControlTextTrackListElement::DefaultEventHandler(Event& event) {
     if (!target || !target->IsElementNode())
       return;
 
-    GetMediaControls().DisableShowingTextTracks();
+    GetMediaControls().GetTextTrackManager().DisableShowingTextTracks();
     int track_index =
         ToElement(target)->GetIntegralAttribute(TrackIndexAttrName());
     if (track_index != kTrackIndexOffValue) {
       DCHECK_GE(track_index, 0);
-      GetMediaControls().ShowTextTrackAtIndex(track_index);
+      GetMediaControls().GetTextTrackManager().ShowTextTrackAtIndex(
+          track_index);
       MediaElement().DisableAutomaticTextTrackSelection();
     }
 
+    // Close the text track list,
+    // since we don't support selecting multiple tracks
+    SetIsWanted(false);
     event.SetDefaultHandled();
   }
   MediaControlPopupMenuElement::DefaultEventHandler(event);
@@ -145,7 +150,8 @@ Element* MediaControlTextTrackListElement::CreateTextTrackListItem(
 
   // Set track label into an aria-hidden span so that aria will not repeat the
   // contents twice.
-  String track_label = GetMediaControls().GetTextTrackLabel(track);
+  String track_label =
+      GetMediaControls().GetTextTrackManager().GetTextTrackLabel(track);
   HTMLSpanElement* track_label_span = HTMLSpanElement::Create(GetDocument());
   track_label_span->setInnerText(track_label, ASSERT_NO_EXCEPTION);
   track_label_span->setAttribute(html_names::kAriaHiddenAttr, "true");

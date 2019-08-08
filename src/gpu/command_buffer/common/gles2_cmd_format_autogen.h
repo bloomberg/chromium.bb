@@ -14280,48 +14280,6 @@ static_assert(offsetof(LoseContextCHROMIUM, current) == 4,
 static_assert(offsetof(LoseContextCHROMIUM, other) == 8,
               "offset of LoseContextCHROMIUM other should be 8");
 
-struct InsertFenceSyncCHROMIUM {
-  typedef InsertFenceSyncCHROMIUM ValueType;
-  static const CommandId kCmdId = kInsertFenceSyncCHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
-
-  static uint32_t ComputeSize() {
-    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() { header.SetCmd<ValueType>(); }
-
-  void Init(GLuint64 _release_count) {
-    SetHeader();
-    GLES2Util::MapUint64ToTwoUint32(static_cast<uint64_t>(_release_count),
-                                    &release_count_0, &release_count_1);
-  }
-
-  void* Set(void* cmd, GLuint64 _release_count) {
-    static_cast<ValueType*>(cmd)->Init(_release_count);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  GLuint64 release_count() const volatile {
-    return static_cast<GLuint64>(
-        GLES2Util::MapTwoUint32ToUint64(release_count_0, release_count_1));
-  }
-
-  gpu::CommandHeader header;
-  uint32_t release_count_0;
-  uint32_t release_count_1;
-};
-
-static_assert(sizeof(InsertFenceSyncCHROMIUM) == 12,
-              "size of InsertFenceSyncCHROMIUM should be 12");
-static_assert(offsetof(InsertFenceSyncCHROMIUM, header) == 0,
-              "offset of InsertFenceSyncCHROMIUM header should be 0");
-static_assert(offsetof(InsertFenceSyncCHROMIUM, release_count_0) == 4,
-              "offset of InsertFenceSyncCHROMIUM release_count_0 should be 4");
-static_assert(offsetof(InsertFenceSyncCHROMIUM, release_count_1) == 8,
-              "offset of InsertFenceSyncCHROMIUM release_count_1 should be 8");
-
 struct UnpremultiplyAndDitherCopyCHROMIUM {
   typedef UnpremultiplyAndDitherCopyCHROMIUM ValueType;
   static const CommandId kCmdId = kUnpremultiplyAndDitherCopyCHROMIUM;
@@ -17395,9 +17353,9 @@ static_assert(
     offsetof(SetReadbackBufferShadowAllocationINTERNAL, size) == 16,
     "offset of SetReadbackBufferShadowAllocationINTERNAL size should be 16");
 
-struct FramebufferTextureMultiviewLayeredANGLE {
-  typedef FramebufferTextureMultiviewLayeredANGLE ValueType;
-  static const CommandId kCmdId = kFramebufferTextureMultiviewLayeredANGLE;
+struct FramebufferTextureMultiviewOVR {
+  typedef FramebufferTextureMultiviewOVR ValueType;
+  static const CommandId kCmdId = kFramebufferTextureMultiviewOVR;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
@@ -17443,30 +17401,24 @@ struct FramebufferTextureMultiviewLayeredANGLE {
   int32_t numViews;
 };
 
-static_assert(sizeof(FramebufferTextureMultiviewLayeredANGLE) == 28,
-              "size of FramebufferTextureMultiviewLayeredANGLE should be 28");
+static_assert(sizeof(FramebufferTextureMultiviewOVR) == 28,
+              "size of FramebufferTextureMultiviewOVR should be 28");
+static_assert(offsetof(FramebufferTextureMultiviewOVR, header) == 0,
+              "offset of FramebufferTextureMultiviewOVR header should be 0");
+static_assert(offsetof(FramebufferTextureMultiviewOVR, target) == 4,
+              "offset of FramebufferTextureMultiviewOVR target should be 4");
 static_assert(
-    offsetof(FramebufferTextureMultiviewLayeredANGLE, header) == 0,
-    "offset of FramebufferTextureMultiviewLayeredANGLE header should be 0");
+    offsetof(FramebufferTextureMultiviewOVR, attachment) == 8,
+    "offset of FramebufferTextureMultiviewOVR attachment should be 8");
+static_assert(offsetof(FramebufferTextureMultiviewOVR, texture) == 12,
+              "offset of FramebufferTextureMultiviewOVR texture should be 12");
+static_assert(offsetof(FramebufferTextureMultiviewOVR, level) == 16,
+              "offset of FramebufferTextureMultiviewOVR level should be 16");
 static_assert(
-    offsetof(FramebufferTextureMultiviewLayeredANGLE, target) == 4,
-    "offset of FramebufferTextureMultiviewLayeredANGLE target should be 4");
-static_assert(
-    offsetof(FramebufferTextureMultiviewLayeredANGLE, attachment) == 8,
-    "offset of FramebufferTextureMultiviewLayeredANGLE attachment should be 8");
-static_assert(
-    offsetof(FramebufferTextureMultiviewLayeredANGLE, texture) == 12,
-    "offset of FramebufferTextureMultiviewLayeredANGLE texture should be 12");
-static_assert(
-    offsetof(FramebufferTextureMultiviewLayeredANGLE, level) == 16,
-    "offset of FramebufferTextureMultiviewLayeredANGLE level should be 16");
-static_assert(offsetof(FramebufferTextureMultiviewLayeredANGLE,
-                       baseViewIndex) == 20,
-              "offset of FramebufferTextureMultiviewLayeredANGLE baseViewIndex "
-              "should be 20");
-static_assert(
-    offsetof(FramebufferTextureMultiviewLayeredANGLE, numViews) == 24,
-    "offset of FramebufferTextureMultiviewLayeredANGLE numViews should be 24");
+    offsetof(FramebufferTextureMultiviewOVR, baseViewIndex) == 20,
+    "offset of FramebufferTextureMultiviewOVR baseViewIndex should be 20");
+static_assert(offsetof(FramebufferTextureMultiviewOVR, numViews) == 24,
+              "offset of FramebufferTextureMultiviewOVR numViews should be 24");
 
 struct MaxShaderCompilerThreadsKHR {
   typedef MaxShaderCompilerThreadsKHR ValueType;
@@ -17518,7 +17470,7 @@ struct CreateAndTexStorage2DSharedImageINTERNALImmediate {
 
   void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
 
-  void Init(GLuint _texture, const GLbyte* _mailbox, GLenum _internalformat) {
+  void Init(GLuint _texture, GLenum _internalformat, const GLbyte* _mailbox) {
     SetHeader();
     texture = _texture;
     internalformat = _internalformat;
@@ -17527,9 +17479,9 @@ struct CreateAndTexStorage2DSharedImageINTERNALImmediate {
 
   void* Set(void* cmd,
             GLuint _texture,
-            const GLbyte* _mailbox,
-            GLenum _internalformat) {
-    static_cast<ValueType*>(cmd)->Init(_texture, _mailbox, _internalformat);
+            GLenum _internalformat,
+            const GLbyte* _mailbox) {
+    static_cast<ValueType*>(cmd)->Init(_texture, _internalformat, _mailbox);
     const uint32_t size = ComputeSize();
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }

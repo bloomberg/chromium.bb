@@ -60,25 +60,32 @@ class PeopleHandler : public SettingsPageUIHandler,
   explicit PeopleHandler(Profile* profile);
   ~PeopleHandler() override;
 
+ protected:
   // Terminates the sync setup flow.
   void CloseSyncSetup();
 
- protected:
   bool is_configuring_sync() const { return configuring_sync_; }
 
  private:
   friend class PeopleHandlerTest;
+  friend class PeopleHandlerTest_UnifiedConsentDisabled;
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
+                           DisplayConfigureWithEngineDisabledAndCancel);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest_UnifiedConsentDisabled,
                            DisplayConfigureWithEngineDisabledAndCancel);
   FRIEND_TEST_ALL_PREFIXES(
       PeopleHandlerTest,
       DisplayConfigureWithEngineDisabledAndCancelAfterSigninSuccess);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest_UnifiedConsentDisabled,
                            DisplayConfigureWithEngineDisabledAndSigninFailed);
   FRIEND_TEST_ALL_PREFIXES(
       PeopleHandlerTest,
       DisplayConfigureWithEngineDisabledAndSyncStartupCompleted);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, HandleSetupUIWhenSyncDisabled);
+  FRIEND_TEST_ALL_PREFIXES(
+      PeopleHandlerTest_UnifiedConsentDisabled,
+      DisplayConfigureWithEngineDisabledAndSyncStartupCompleted);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest_UnifiedConsentDisabled,
+                           HandleSetupUIWhenSyncDisabled);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
                            ShowSetupCustomPassphraseRequired);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSetupEncryptAll);
@@ -89,9 +96,11 @@ class PeopleHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSetupSyncEverything);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
                            ShowSetupSyncForAllTypesIndividually);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSigninOnAuthError);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest_UnifiedConsentDisabled,
+                           ShowSigninOnAuthError);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSyncSetup);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSyncSetupWhenNotSignedIn);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest_UnifiedConsentDisabled,
+                           DontShowSyncSetupWhenNotSignedIn);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestSyncEverything);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestSyncAllManually);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestPassphraseStillRequired);
@@ -109,9 +118,15 @@ class PeopleHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
                            AcquireSyncBlockerWhenLoadingSyncSettingsSubpage);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, RestartSyncAfterDashboardClear);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest_UnifiedConsentDisabled,
+                           RestartSyncAfterDashboardClear);
   FRIEND_TEST_ALL_PREFIXES(
       PeopleHandlerTest,
       RestartSyncAfterDashboardClearWithStandaloneTransport);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
+                           DashboardClearWhileSettingsOpen_ConfirmSoon);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
+                           DashboardClearWhileSettingsOpen_ConfirmLater);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerDiceUnifiedConsentTest,
                            StoredAccountsList);
 
@@ -145,7 +160,7 @@ class PeopleHandler : public SettingsPageUIHandler,
 
   // Returns a newly created dictionary with a number of properties that
   // correspond to the status of sync.
-  std::unique_ptr<base::DictionaryValue> GetSyncStatusDictionary();
+  std::unique_ptr<base::DictionaryValue> GetSyncStatusDictionary() const;
 
   // Helper routine that gets the SyncService associated with the parent
   // profile.

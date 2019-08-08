@@ -19,6 +19,7 @@ if (is_android) {
 
 declare_args() {
   cast_test_extra_flags = ""
+  vendor_cast_media_gtest_excludes = []
 }
 
 # Depends on all non-test targets that should be built by the Chromecast
@@ -94,15 +95,22 @@ cast_test_group("cast_tests") {
   }
 
   if (is_linux || is_fuchsia) {
-    tests += [
-      "//chromecast/media/cma/backend:cast_audio_backend_unittests",
-      "//chromecast/media/cma/backend:cast_av_sync_backend_unittests",
-    ]
+    tests += [ "//chromecast/media/cma/backend:cast_audio_backend_unittests" ]
   }
 
   if (is_android && is_cast_using_cma_backend) {
     tests += [ "//chromecast/media/cma/backend/android:cast_android_cma_backend_unittests" ]
   }
+
+  cast_media_unittests_filter = {
+    test_name = "cast_media_unittests"
+
+    gtest_excludes = vendor_cast_media_gtest_excludes
+
+    # --test-launcher-jobs=1 => so internal code can bind to port
+    args = [ "--test-launcher-jobs=1" ]
+  }
+  filters += [ cast_media_unittests_filter ]
 
   if (!is_android) {
     tests += [
@@ -115,18 +123,6 @@ cast_test_group("cast_tests") {
     if (!is_fuchsia) {
       tests += [ "//jingle:jingle_unittests" ]
     }
-
-    cast_media_unittests_filter = {
-      test_name = "cast_media_unittests"
-
-      # TODO(almasrymina) : Track this test as a separate bug
-      #   (internal : b/115400220)
-      gtest_excludes = [ "AudioVideoPipelineDeviceTest.Mp4Playback" ]
-
-      # --test-launcher-jobs=1 => so internal code can bind to port
-      args = [ "--test-launcher-jobs=1" ]
-    }
-    filters += [ cast_media_unittests_filter ]
 
     cast_shell_browsertests_filter = {
       test_name = "cast_shell_browsertests"
@@ -219,7 +215,7 @@ cast_test_group("cast_tests") {
           "ProcessUtilTest.*",
           "StackContainer.BufferAlignment",
           "SystemMetrics2Test.GetSystemMemoryInfo",
-          "OneTraitsExecutionModePair/TaskSchedulerImplTest.PostTasksViaTaskRunner/*",
+          "OneTraitsExecutionModePair/ThreadPoolImplTest.PostTasksViaTaskRunner/*",
           "TaskSchedulerWorkerTest.WorkerDetaches",
         ]
       }
@@ -232,6 +228,19 @@ cast_test_group("cast_tests") {
     }
   }
   filters += [ base_unittests_filter ]
+
+  cast_avsettings_unittests_filter = {
+    test_name = "cast_avsettings_unittests"
+    gtest_excludes = []
+    if (is_android_things) {
+      # Disable tests to enable presubmit. Re-enable for b/120669054.
+      gtest_excludes += [
+        "JniVolumeControllerTest.SetMutedNotifiesAllVolumeObservers",
+        "JniVolumeControllerTest.SetVolumeNotifiesVolumeObserver",
+      ]
+    }
+  }
+  filters += [ cast_avsettings_unittests_filter ]
 
   cc_unittests_filter = {
     test_name = "cc_unittests"
@@ -260,8 +269,10 @@ cast_test_group("cast_tests") {
     # (b/36984215).
     gtest_excludes = [ "*.IsSupportedVideoConfig_VP9TransferFunctions" ]
     if (is_android_things) {
-      gtest_excludes +=
-          [ "FontUniqueNameLookupTest.TestMatchPostScriptNameTtc" ]
+      gtest_excludes += [
+        "FontUniqueNameLookupTest.TestMatchPostScriptNameTtc",
+        "SiteInstanceTest.HasWrongProcessForURL",
+      ]
     }
     if (target_os == "linux" && !is_cast_desktop_build) {
       # DesktopCaptureDeviceTest.*: No capture device on Eureka
@@ -368,6 +379,16 @@ cast_test_group("cast_tests") {
     }
   }
   filters += [ net_unittests_filter ]
+
+  cast_receiver_unittests_filter = {
+    test_name = "cast_receiver_unittests"
+    gtest_excludes = []
+    if (is_android_things) {
+      # Disable tests to enable presubmit. Re-enable for b/120669054.
+      gtest_excludes += [ "ApplicationManagerImplTest.SwapBackgroundApp_StereoVirtualDevice_BitstreamNotSupported" ]
+    }
+  }
+  filters += [ cast_receiver_unittests_filter ]
 }
 
 # Creates the build and run lists for all test targets.
@@ -568,9 +589,9 @@ foreach(locale, cast_locales) {
 
 # A meta-target which repacks resources by locale.
 group("chromecast_locales_pak") {
-  deps = []
+  data_deps = []
   foreach(locale, cast_locales) {
-    deps += [ ":_cast_repack_${locale}" ]
+    data_deps += [ ":_cast_repack_${locale}" ]
   }
 }
 
@@ -658,5 +679,6 @@ if (is_android) {
     loadable_modules = [ "$root_out_dir/libcrashpad_handler.so" ]
 
     command_line_flags_file = "castshell-command-line"
+    enable_multidex = true
   }
 }

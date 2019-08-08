@@ -111,7 +111,7 @@ std::string GenerateEventLogName(const base::FilePath& out_dir,
                                  const std::string& prefix,
                                  const std::string& now,
                                  int id) {
-  return out_dir.value() + "/" + prefix + now + "." + base::IntToString(id);
+  return out_dir.value() + "/" + prefix + now + "." + base::NumberToString(id);
 }
 // Name event logs in a way that is compatible with existing toolchain.
 std::string GenerateEventLogName(GesturePropertyProvider* provider,
@@ -119,7 +119,7 @@ std::string GenerateEventLogName(GesturePropertyProvider* provider,
                                  const std::string& prefix,
                                  const std::string& now,
                                  int id) {
-  return out_dir.value() + "/" + prefix + now + "." + base::IntToString(id) +
+  return out_dir.value() + "/" + prefix + now + "." + base::NumberToString(id) +
          "." + GetCanonicalDeviceName(provider->GetDeviceNameById(id));
 }
 

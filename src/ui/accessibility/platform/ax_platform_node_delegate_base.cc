@@ -51,12 +51,32 @@ gfx::NativeViewAccessible AXPlatformNodeDelegateBase::ChildAtIndex(int index) {
   return nullptr;
 }
 
-gfx::Rect AXPlatformNodeDelegateBase::GetClippedScreenBoundsRect() const {
+gfx::Rect AXPlatformNodeDelegateBase::GetBoundsRect(
+    const AXCoordinateSystem coordinate_system,
+    const AXClippingBehavior clipping_behavior,
+    AXOffscreenResult* offscreen_result) const {
   return gfx::Rect();
 }
 
-gfx::Rect AXPlatformNodeDelegateBase::GetUnclippedScreenBoundsRect() const {
+gfx::Rect AXPlatformNodeDelegateBase::GetRangeBoundsRect(
+    const int start_offset,
+    const int end_offset,
+    const AXCoordinateSystem coordinate_system,
+    const AXClippingBehavior clipping_behavior,
+    AXOffscreenResult* offscreen_result) const {
   return gfx::Rect();
+}
+
+gfx::Rect AXPlatformNodeDelegateBase::GetClippedScreenBoundsRect(
+    AXOffscreenResult* offscreen_result) const {
+  return GetBoundsRect(AXCoordinateSystem::kScreen,
+                       AXClippingBehavior::kClipped, offscreen_result);
+}
+
+gfx::Rect AXPlatformNodeDelegateBase::GetUnclippedScreenBoundsRect(
+    AXOffscreenResult* offscreen_result) const {
+  return GetBoundsRect(AXCoordinateSystem::kScreen,
+                       AXClippingBehavior::kUnclipped, offscreen_result);
 }
 
 gfx::NativeViewAccessible AXPlatformNodeDelegateBase::HitTestSync(int x,
@@ -191,6 +211,14 @@ int32_t AXPlatformNodeDelegateBase::CellIndexToId(int32_t cell_index) const {
   return -1;
 }
 
+bool AXPlatformNodeDelegateBase::IsCellOrHeaderOfARIATable() const {
+  return false;
+}
+
+bool AXPlatformNodeDelegateBase::IsCellOrHeaderOfARIAGrid() const {
+  return false;
+}
+
 bool AXPlatformNodeDelegateBase::AccessibilityPerformAction(
     const ui::AXActionData& data) {
   return false;
@@ -205,6 +233,16 @@ AXPlatformNodeDelegateBase::GetLocalizedStringForImageAnnotationStatus(
 base::string16
 AXPlatformNodeDelegateBase::GetLocalizedRoleDescriptionForUnlabeledImage()
     const {
+  return base::string16();
+}
+
+base::string16 AXPlatformNodeDelegateBase::GetLocalizedStringForLandmarkType()
+    const {
+  return base::string16();
+}
+
+base::string16
+AXPlatformNodeDelegateBase::GetStyleNameAttributeAsLocalizedString() const {
   return base::string16();
 }
 
@@ -268,12 +306,17 @@ const AXUniqueId& AXPlatformNodeDelegateBase::GetUniqueId() const {
   return *dummy_unique_id;
 }
 
-AXPlatformNodeDelegate::EnclosingBoundaryOffsets
-AXPlatformNodeDelegateBase::FindTextBoundariesAtOffset(
-    TextBoundaryType boundary_type,
+base::Optional<int> AXPlatformNodeDelegateBase::FindTextBoundary(
+    ui::TextBoundaryType boundary_type,
     int offset,
+    TextBoundaryDirection direction,
     ax::mojom::TextAffinity affinity) const {
   return base::nullopt;
+}
+
+const std::vector<gfx::NativeViewAccessible>
+AXPlatformNodeDelegateBase::GetDescendants() const {
+  return {};
 }
 
 bool AXPlatformNodeDelegateBase::IsOrderedSetItem() const {

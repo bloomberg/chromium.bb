@@ -100,9 +100,6 @@ class AutofillProfile : public AutofillDataModel {
   // themselves.
   int Compare(const AutofillProfile& profile) const;
 
-  // Same as operator==, but ignores differences in origin.
-  bool EqualsSansOrigin(const AutofillProfile& profile) const;
-
   // Same as operator==, but ignores differences in guid and cares about
   // differences in usage stats.
   bool EqualsForSyncPurposes(const AutofillProfile& profile) const;
@@ -148,9 +145,6 @@ class AutofillProfile : public AutofillDataModel {
   // |this| and |profile| are similar.
   bool SaveAdditionalInfo(const AutofillProfile& profile,
                           const std::string& app_locale);
-
-  // Returns |true| if |type| accepts multi-values.
-  static bool SupportsMultiValue(ServerFieldType type);
 
   // Creates a differentiating label for each of the |profiles|.
   // Labels consist of the minimal differentiating combination of:
@@ -208,9 +202,8 @@ class AutofillProfile : public AutofillDataModel {
   // Returns true if the current profile has greater frescocency than the
   // |other|. Frescocency is a combination of validation score and frecency to
   // determine the relevance of the profile. Frescocency is a total order: it
-  // puts all the valid profiles before the invalid ones, and uses frecency
-  // (another total order) in case of tie. Please see
-  // AutofillDataModel::HasGreaterFrecencyThan.
+  // puts all the valid profiles before the invalid ones in case of frecency
+  // tie. Please see AutofillDataModel::HasGreaterFrecencyThan.
   bool HasGreaterFrescocencyThan(const AutofillProfile* other,
                                  base::Time comparison_time,
                                  bool use_client_validation,

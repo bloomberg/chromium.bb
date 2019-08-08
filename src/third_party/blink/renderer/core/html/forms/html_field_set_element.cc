@@ -126,11 +126,12 @@ const AtomicString& HTMLFieldSetElement::FormControlType() const {
 }
 
 LayoutObject* HTMLFieldSetElement::CreateLayoutObject(
-    const ComputedStyle& style) {
-  return LayoutObjectFactory::CreateFieldset(*this, style);
+    const ComputedStyle& style,
+    LegacyLayout legacy) {
+  return LayoutObjectFactory::CreateFieldset(*this, style, legacy);
 }
 
-bool HTMLFieldSetElement::ShouldForceLegacyLayout() const {
+bool HTMLFieldSetElement::TypeShouldForceLegacyLayout() const {
   return !RuntimeEnabledFeatures::LayoutNGFieldsetEnabled();
 }
 

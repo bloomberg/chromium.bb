@@ -43,10 +43,6 @@ int GetSyncTransportOptInBitFieldForAccount(const PrefService* prefs,
 const char kAutofillAcceptSaveCreditCardPromptState[] =
     "autofill.accept_save_credit_card_prompt_state";
 
-// Integer that is set to the billing customer number fetched from priority
-// preference.
-const char kAutofillBillingCustomerNumber[] = "billing_customer_number";
-
 // Boolean that is true if Autofill is enabled and allowed to save credit card
 // data.
 const char kAutofillCreditCardEnabled[] = "autofill.credit_card_enabled";
@@ -133,9 +129,6 @@ const char kAutocompleteLastVersionRetentionPolicy[] =
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // Synced prefs. Used for cross-device choices, e.g., credit card Autofill.
-  registry->RegisterDoublePref(
-      prefs::kAutofillBillingCustomerNumber, 0.0,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterBooleanPref(
       prefs::kAutofillEnabledDeprecated, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);

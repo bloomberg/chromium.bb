@@ -6,78 +6,189 @@
  * @fileoverview Kiosk Next Home API implementation.
  */
 
+/**
+ * Gets the app type from the mojo representation of an app.
+ * @param {!chromeos.kioskNextHome.mojom.App} mojoApp
+ * @return {!kioskNextHome.AppType}
+ */
+function getAppType(mojoApp) {
+  switch (mojoApp.type) {
+    case apps.mojom.AppType.kArc:
+      return kioskNextHome.AppType.ARC;
+    case apps.mojom.AppType.kBuiltIn:
+    case apps.mojom.AppType.kExtension:
+    case apps.mojom.AppType.kWeb:
+      return kioskNextHome.AppType.CHROME;
+    default:
+      return kioskNextHome.AppType.UNKNOWN;
+  }
+}
+
+/**
+ * Gets the app readiness from the mojo representation of an app.
+ * @param {!chromeos.kioskNextHome.mojom.App} mojoApp
+ * @return {!kioskNextHome.AppReadiness}
+ */
+function getReadiness(mojoApp) {
+  switch (mojoApp.readiness) {
+    case apps.mojom.Readiness.kReady:
+      return kioskNextHome.AppReadiness.READY;
+    case apps.mojom.Readiness.kDisabledByPolicy:
+      return kioskNextHome.AppReadiness.DISABLED;
+    case apps.mojom.Readiness.kUninstalledByUser:
+      return kioskNextHome.AppReadiness.UNINSTALLED;
+    default:
+      return kioskNextHome.AppReadiness.UNKNOWN;
+  }
+}
+
+/**
+ * Builds an app from its mojo representation coming from the AppController.
+ * @param {!chromeos.kioskNextHome.mojom.App} mojoApp
+ * @return {!kioskNextHome.App} A bridge representation of an app.
+ */
+function buildApp(mojoApp) {
+  return {
+    appId: mojoApp.appId,
+    type: getAppType(mojoApp),
+    displayName: mojoApp.displayName,
+    packageName: mojoApp.androidPackageName,
+    readiness: getReadiness(mojoApp),
+    // We append the intended size of the icon in density-independent
+    // pixels, in this case 128x128 dips.
+    thumbnailImage: 'chrome://app-icon/' + mojoApp.appId + '/128',
+  };
+}
+
 /** @implements {kioskNextHome.Bridge} */
 class KioskNextHomeBridge {
   constructor() {
-    /** @type {!Array<!kioskNextHome.Listener>} */
-    this.listeners = [];
+    /** @private @const {!Array<!kioskNextHome.Listener>} */
+    this.listeners_ = [];
+    /** @private @const */
+    this.identityAccessorProxy_ = new identity.mojom.IdentityAccessorProxy();
+    /** @private @const */
+    this.appControllerProxy_ =
+        new chromeos.kioskNextHome.mojom.AppControllerProxy();
+    /** @private @const */
+    this.appControllerClientCallbackRouter_ =
+        new chromeos.kioskNextHome.mojom.AppControllerClientCallbackRouter();
 
-    chrome.arcAppsPrivate.onInstalled.addListener(installedApp => {
-      const app = {
-        appType: kioskNextHome.AppType.ARC,
-        appId: installedApp.packageName,
-        displayName: installedApp.packageName,
-        suspended: false,
-        thumbnailImage: '',
-      };
-      for (const listener of this.listeners) {
-        listener.onInstalledAppChanged(
-            app, kioskNextHome.AppEventType.INSTALLED);
+    const kioskNextHomeInterfaceBrokerProxy =
+        chromeos.kioskNextHome.mojom.KioskNextHomeInterfaceBroker.getProxy();
+    kioskNextHomeInterfaceBrokerProxy.getIdentityAccessor(
+        this.identityAccessorProxy_.$.createRequest());
+    kioskNextHomeInterfaceBrokerProxy.getAppController(
+        this.appControllerProxy_.$.createRequest());
+
+    // Attaching app listeners.
+    this.appControllerClientCallbackRouter_.onAppChanged.addListener(
+        mojoApp => {
+          const bridgeApp = buildApp(mojoApp);
+          for (const listener of this.listeners_) {
+            listener.onAppChanged(
+                /** @type{!kioskNextHome.App} */ (
+                    Object.assign({}, bridgeApp)));
+          }
+        });
+    this.appControllerProxy_.setClient(
+        this.appControllerClientCallbackRouter_.createProxy());
+
+    // Attaching network status listeners.
+    window.addEventListener(
+        'online',
+        () => this.notifyNetworkStateChange(kioskNextHome.NetworkState.ONLINE));
+    window.addEventListener(
+        'offline',
+        () =>
+            this.notifyNetworkStateChange(kioskNextHome.NetworkState.OFFLINE));
+  }
+
+  /** @override */
+  addListener(listener) {
+    this.listeners_.push(listener);
+  }
+
+  /** @override */
+  getAccountId() {
+    return this.identityAccessorProxy_.getPrimaryAccountWhenAvailable().then(
+        account => account.accountInfo.gaia);
+  }
+
+  /** @override */
+  getAccessToken(scopes) {
+    return this.identityAccessorProxy_.getPrimaryAccountWhenAvailable()
+        .then(account => {
+          return this.identityAccessorProxy_.getAccessToken(
+              account.accountInfo.accountId, {'scopes': scopes},
+              'kiosk_next_home');
+        })
+        .then(tokenInfo => {
+          if (tokenInfo.token) {
+            return tokenInfo.token;
+          }
+          throw 'Unable to get access token.';
+        });
+  }
+
+  /** @override */
+  getAndroidId() {
+    return this.appControllerProxy_.getArcAndroidId().then(response => {
+      if (response.success) {
+        return response.androidId;
+      }
+      throw 'Unable to get Android id.';
+    });
+  }
+
+  /** @override */
+  getApps() {
+    return this.appControllerProxy_.getApps().then(response => {
+      return response.apps.map(buildApp);
+    });
+  }
+
+  /** @override */
+  launchApp(appId) {
+    this.appControllerProxy_.launchApp(appId);
+  }
+
+  /** @override */
+  launchHomeUrl(suffix) {
+    return this.appControllerProxy_.launchHomeUrl(suffix).then(result => {
+      if (!result.launched) {
+        throw result.errorMessage;
       }
     });
   }
 
   /** @override */
-  addListener(listener) {
-    this.listeners.push(listener);
+  uninstallApp(appId) {
+    this.appControllerProxy_.uninstallApp(appId);
   }
 
   /** @override */
-  getAccessToken(scopes) {
-    return new Promise((resolve, reject) => {
-      chrome.identity.getAuthToken({'scopes': scopes}, token => {
-        if (token) {
-          resolve(token);
-        } else {
-          reject('Unable to get access token.');
-        }
-      });
-    });
+  getNetworkState() {
+    return navigator.onLine ? kioskNextHome.NetworkState.ONLINE :
+                              kioskNextHome.NetworkState.OFFLINE;
   }
 
-  /** @override */
-  getInstalledApps() {
-    return new Promise((resolve, reject) => {
-      chrome.arcAppsPrivate.getLaunchableApps(launchableApps => {
-        const installedApps = [];
-        for (const launchableApp of launchableApps) {
-          installedApps.push({
-            appType: kioskNextHome.AppType.ARC,
-            appId: launchableApp.packageName,
-            displayName: launchableApp.packageName,
-            suspended: false,
-            thumbnailImage: '',
-          });
-        }
-        resolve(installedApps);
-      });
-    });
-  }
-
-  /** @override */
-  launchContent(contentSource, contentId, opt_params) {
-    if (contentSource === kioskNextHome.ContentSource.ARC_INTENT) {
-      // TODO(brunoad): create and migrate to a more generic API.
-      chrome.arcAppsPrivate.launchApp(contentId);
+  /**
+   * Notifies listeners about changes in network connection state.
+   * @param {kioskNextHome.NetworkState} networkState Indicates current network
+   *     state.
+   */
+  notifyNetworkStateChange(networkState) {
+    for (const listener of this.listeners_) {
+      listener.onNetworkStateChanged(networkState);
     }
-    return Promise.resolve(true);
   }
 }
 
 /**
  * Provides bridge implementation.
  * @return {!kioskNextHome.Bridge} Bridge instance that can be used to interact
- *     with ChromeOS.
+ *     with Chrome OS.
  */
 kioskNextHome.getChromeOsBridge = function() {
   return new KioskNextHomeBridge();

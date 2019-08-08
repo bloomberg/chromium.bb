@@ -55,6 +55,7 @@ class PasswordReuseModalWarningDialog
   OnWarningDone done_callback_;
   ChromePasswordProtectionService* service_;
   const GURL url_;
+  ReusedPasswordType password_type_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordReuseModalWarningDialog);
 };

@@ -50,20 +50,6 @@ void RasterImplementationGLES::OrderingBarrierCHROMIUM() {
   gl_->OrderingBarrierCHROMIUM();
 }
 
-void RasterImplementationGLES::GenUnverifiedSyncTokenCHROMIUM(
-    GLbyte* sync_token) {
-  gl_->GenUnverifiedSyncTokenCHROMIUM(sync_token);
-}
-
-void RasterImplementationGLES::VerifySyncTokensCHROMIUM(GLbyte** sync_tokens,
-                                                        GLsizei count) {
-  gl_->VerifySyncTokensCHROMIUM(sync_tokens, count);
-}
-
-void RasterImplementationGLES::WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
-  gl_->WaitSyncTokenCHROMIUM(sync_token);
-}
-
 GLenum RasterImplementationGLES::GetError() {
   return gl_->GetError();
 }
@@ -153,12 +139,6 @@ void RasterImplementationGLES::EndRasterCHROMIUM() {
   NOTREACHED();
 }
 
-bool RasterImplementationGLES::CanDecodeWithHardwareAcceleration(
-    base::span<const uint8_t> encoded_data) {
-  NOTREACHED();
-  return false;
-}
-
 SyncToken RasterImplementationGLES::ScheduleImageDecode(
     base::span<const uint8_t> encoded_data,
     const gfx::Size& output_size,
@@ -203,6 +183,22 @@ void RasterImplementationGLES::TraceBeginCHROMIUM(const char* category_name,
 
 void RasterImplementationGLES::TraceEndCHROMIUM() {
   gl_->TraceEndCHROMIUM();
+}
+
+// InterfaceBase implementation.
+void RasterImplementationGLES::GenSyncTokenCHROMIUM(GLbyte* sync_token) {
+  gl_->GenSyncTokenCHROMIUM(sync_token);
+}
+void RasterImplementationGLES::GenUnverifiedSyncTokenCHROMIUM(
+    GLbyte* sync_token) {
+  gl_->GenUnverifiedSyncTokenCHROMIUM(sync_token);
+}
+void RasterImplementationGLES::VerifySyncTokensCHROMIUM(GLbyte** sync_tokens,
+                                                        GLsizei count) {
+  gl_->VerifySyncTokensCHROMIUM(sync_tokens, count);
+}
+void RasterImplementationGLES::WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
+  gl_->WaitSyncTokenCHROMIUM(sync_token);
 }
 
 }  // namespace raster

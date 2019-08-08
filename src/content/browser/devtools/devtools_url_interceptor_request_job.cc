@@ -53,7 +53,7 @@ class DevToolsURLInterceptorRequestJob::SubRequest
 
   // net::URLRequest::Delegate methods:
   void OnAuthRequired(net::URLRequest* request,
-                      net::AuthChallengeInfo* auth_info) override;
+                      const net::AuthChallengeInfo& auth_info) override;
   void OnCertificateRequested(
       net::URLRequest* request,
       net::SSLCertRequestInfo* cert_request_info) override;
@@ -188,7 +188,7 @@ void DevToolsURLInterceptorRequestJob::SubRequest::Cancel() {
 
 void DevToolsURLInterceptorRequestJob::SubRequest::OnAuthRequired(
     net::URLRequest* request,
-    net::AuthChallengeInfo* auth_info) {
+    const net::AuthChallengeInfo& auth_info) {
   devtools_interceptor_request_job_->OnSubRequestAuthRequired(auth_info);
 }
 
@@ -706,9 +706,10 @@ bool DevToolsURLInterceptorRequestJob::NeedsAuth() {
   return !!auth_info_;
 }
 
-void DevToolsURLInterceptorRequestJob::GetAuthChallengeInfo(
-    scoped_refptr<net::AuthChallengeInfo>* auth_info) {
-  *auth_info = auth_info_.get();
+std::unique_ptr<net::AuthChallengeInfo>
+DevToolsURLInterceptorRequestJob::GetAuthChallengeInfo() {
+  DCHECK(auth_info_);
+  return std::make_unique<net::AuthChallengeInfo>(*auth_info_);
 }
 
 void DevToolsURLInterceptorRequestJob::SetAuth(
@@ -723,8 +724,8 @@ void DevToolsURLInterceptorRequestJob::CancelAuth() {
 }
 
 void DevToolsURLInterceptorRequestJob::OnSubRequestAuthRequired(
-    net::AuthChallengeInfo* auth_info) {
-  auth_info_ = auth_info;
+    const net::AuthChallengeInfo& auth_info) {
+  auth_info_ = std::make_unique<net::AuthChallengeInfo>(auth_info);
 
   if (stage_to_intercept_ == InterceptionStage::DONT_INTERCEPT) {
     // This should trigger default auth behavior.
@@ -741,7 +742,8 @@ void DevToolsURLInterceptorRequestJob::OnSubRequestAuthRequired(
   waiting_for_user_response_ = WaitingForUserResponse::WAITING_FOR_AUTH_ACK;
 
   std::unique_ptr<InterceptedRequestInfo> request_info = BuildRequestInfo();
-  request_info->auth_challenge = auth_info;
+  request_info->auth_challenge =
+      std::make_unique<net::AuthChallengeInfo>(auth_info);
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                            base::BindOnce(callback_, std::move(request_info)));
 }
@@ -1043,9 +1045,9 @@ void DevToolsURLInterceptorRequestJob::ProcessInterceptionResponse(
         continue;
 
       auto* store = request_details_.url_request_context->cookie_store();
-      store->SetCanonicalCookieAsync(
-          std::move(cookie), request_details_.url.scheme(),
-          !options.exclude_httponly(), net::CookieStore::SetCookiesCallback());
+      store->SetCanonicalCookieAsync(std::move(cookie),
+                                     request_details_.url.scheme(), options,
+                                     net::CookieStore::SetCookiesCallback());
     }
 
     if (sub_request_) {

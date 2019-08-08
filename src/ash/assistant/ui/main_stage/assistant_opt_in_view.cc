@@ -181,6 +181,12 @@ void AssistantOptInView::UpdateLabel(mojom::ConsentStatus consent_status) {
       CreateStyleInfo(gfx::Font::Weight::BOLD));
 
   container_->SetAccessibleName(label_text);
+
+  // After updating the |label_| we need to ensure that it is remeasured and
+  // repainted to address a timing bug in which the AssistantOptInView was
+  // sometimes drawn in an invalid state (b/130758812).
+  container_->Layout();
+  container_->SchedulePaint();
 }
 
 }  // namespace ash

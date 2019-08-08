@@ -19,8 +19,8 @@ namespace {
 
 class TestFocusRules : public wm::BaseFocusRules {
  public:
-  TestFocusRules() {}
-  ~TestFocusRules() override {}
+  TestFocusRules() = default;
+  ~TestFocusRules() override = default;
 
   void set_can_activate(bool can_activate) { can_activate_ = can_activate; }
 

@@ -39,6 +39,8 @@ class CORE_EXPORT ScrollbarLayerDelegate : public cc::Scrollbar {
   int ThumbThickness() const override;
   int ThumbLength() const override;
   gfx::Rect TrackRect() const override;
+  gfx::Rect BackButtonRect() const override;
+  gfx::Rect ForwardButtonRect() const override;
   float ThumbOpacity() const override;
   bool NeedsPaintPart(cc::ScrollbarPart part) const override;
   bool HasTickmarks() const override;

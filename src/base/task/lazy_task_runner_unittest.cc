@@ -80,9 +80,9 @@ void ExpectSingleThreadEnvironment(SequenceCheckerImpl* sequence_checker,
 #endif
 }
 
-class TaskSchedulerLazyTaskRunnerEnvironmentTest : public testing::Test {
+class LazyTaskRunnerEnvironmentTest : public testing::Test {
  protected:
-  TaskSchedulerLazyTaskRunnerEnvironmentTest() = default;
+  LazyTaskRunnerEnvironmentTest() = default;
 
   void TestTaskRunnerEnvironment(scoped_refptr<SequencedTaskRunner> task_runner,
                                  bool expect_single_thread,
@@ -119,44 +119,38 @@ class TaskSchedulerLazyTaskRunnerEnvironmentTest : public testing::Test {
   test::ScopedTaskEnvironment scoped_task_environment_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TaskSchedulerLazyTaskRunnerEnvironmentTest);
+  DISALLOW_COPY_AND_ASSIGN(LazyTaskRunnerEnvironmentTest);
 };
 
 }  // namespace
 
-TEST_F(TaskSchedulerLazyTaskRunnerEnvironmentTest,
-       LazySequencedTaskRunnerUserVisible) {
+TEST_F(LazyTaskRunnerEnvironmentTest, LazySequencedTaskRunnerUserVisible) {
   TestTaskRunnerEnvironment(g_sequenced_task_runner_user_visible.Get(), false,
                             TaskPriority::USER_VISIBLE);
 }
 
-TEST_F(TaskSchedulerLazyTaskRunnerEnvironmentTest,
-       LazySequencedTaskRunnerUserBlocking) {
+TEST_F(LazyTaskRunnerEnvironmentTest, LazySequencedTaskRunnerUserBlocking) {
   TestTaskRunnerEnvironment(g_sequenced_task_runner_user_blocking.Get(), false,
                             TaskPriority::USER_BLOCKING);
 }
 
-TEST_F(TaskSchedulerLazyTaskRunnerEnvironmentTest,
-       LazySingleThreadTaskRunnerUserVisible) {
+TEST_F(LazyTaskRunnerEnvironmentTest, LazySingleThreadTaskRunnerUserVisible) {
   TestTaskRunnerEnvironment(g_single_thread_task_runner_user_visible.Get(),
                             true, TaskPriority::USER_VISIBLE);
 }
 
-TEST_F(TaskSchedulerLazyTaskRunnerEnvironmentTest,
-       LazySingleThreadTaskRunnerUserBlocking) {
+TEST_F(LazyTaskRunnerEnvironmentTest, LazySingleThreadTaskRunnerUserBlocking) {
   TestTaskRunnerEnvironment(g_single_thread_task_runner_user_blocking.Get(),
                             true, TaskPriority::USER_BLOCKING);
 }
 
 #if defined(OS_WIN)
-TEST_F(TaskSchedulerLazyTaskRunnerEnvironmentTest,
-       LazyCOMSTATaskRunnerUserVisible) {
+TEST_F(LazyTaskRunnerEnvironmentTest, LazyCOMSTATaskRunnerUserVisible) {
   TestTaskRunnerEnvironment(g_com_sta_task_runner_user_visible.Get(), true,
                             TaskPriority::USER_VISIBLE, true);
 }
 
-TEST_F(TaskSchedulerLazyTaskRunnerEnvironmentTest,
-       LazyCOMSTATaskRunnerUserBlocking) {
+TEST_F(LazyTaskRunnerEnvironmentTest, LazyCOMSTATaskRunnerUserBlocking) {
   TestTaskRunnerEnvironment(g_com_sta_task_runner_user_blocking.Get(), true,
                             TaskPriority::USER_BLOCKING, true);
 }
@@ -167,7 +161,7 @@ TEST(TaskSchdulerLazyTaskRunnerTest, LazySequencedTaskRunnerReset) {
     test::ScopedTaskEnvironment scoped_task_environment;
     // If the TaskRunner isn't released when the test::ScopedTaskEnvironment
     // goes out of scope, the second invocation of the line below will access a
-    // deleted TaskScheduler and crash.
+    // deleted ThreadPool and crash.
     g_sequenced_task_runner_user_visible.Get()->PostTask(FROM_HERE,
                                                          DoNothing());
   }
@@ -178,7 +172,7 @@ TEST(TaskSchdulerLazyTaskRunnerTest, LazySingleThreadTaskRunnerReset) {
     test::ScopedTaskEnvironment scoped_task_environment;
     // If the TaskRunner isn't released when the test::ScopedTaskEnvironment
     // goes out of scope, the second invocation of the line below will access a
-    // deleted TaskScheduler and crash.
+    // deleted ThreadPool and crash.
     g_single_thread_task_runner_user_visible.Get()->PostTask(FROM_HERE,
                                                              DoNothing());
   }
@@ -190,7 +184,7 @@ TEST(TaskSchdulerLazyTaskRunnerTest, LazyCOMSTATaskRunnerReset) {
     test::ScopedTaskEnvironment scoped_task_environment;
     // If the TaskRunner isn't released when the test::ScopedTaskEnvironment
     // goes out of scope, the second invocation of the line below will access a
-    // deleted TaskScheduler and crash.
+    // deleted ThreadPool and crash.
     g_com_sta_task_runner_user_visible.Get()->PostTask(FROM_HERE, DoNothing());
   }
 }

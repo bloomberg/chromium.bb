@@ -34,6 +34,8 @@ struct InitSessionParams {
   DeviceManager* device_manager;
 };
 
+bool GetW3CSetting(const base::DictionaryValue& params);
+
 bool MergeCapabilities(const base::DictionaryValue* always_match,
                        const base::DictionaryValue* first_match,
                        base::DictionaryValue* merged);

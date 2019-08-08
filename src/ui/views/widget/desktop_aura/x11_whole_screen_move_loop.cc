@@ -5,6 +5,8 @@
 #include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -54,7 +56,7 @@ X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(X11MoveLoopDelegate* delegate)
       canceled_(false),
       weak_factory_(this) {}
 
-X11WholeScreenMoveLoop::~X11WholeScreenMoveLoop() {}
+X11WholeScreenMoveLoop::~X11WholeScreenMoveLoop() = default;
 
 void X11WholeScreenMoveLoop::DispatchMouseMovement() {
   if (!last_motion_in_screen_)
@@ -153,7 +155,7 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
   if (!source->HasCapture()) {
     aura::client::CaptureClient* capture_client =
         aura::client::GetCaptureClient(source->GetRootWindow());
-    CHECK(capture_client->GetGlobalCaptureWindow() == NULL);
+    CHECK(capture_client->GetGlobalCaptureWindow() == nullptr);
     grabbed_pointer_ = GrabPointer(cursor);
     if (!grabbed_pointer_) {
       XDestroyWindow(gfx::GetXDisplay(), grab_input_window_);
@@ -234,7 +236,7 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
   grab_input_window_ = x11::None;
 
   in_move_loop_ = false;
-  quit_closure_.Run();
+  std::move(quit_closure_).Run();
 }
 
 bool X11WholeScreenMoveLoop::GrabPointer(gfx::NativeCursor cursor) {
@@ -271,8 +273,8 @@ void X11WholeScreenMoveLoop::CreateDragInputWindow(XDisplay* display) {
   uint32_t event_mask = ButtonPressMask | ButtonReleaseMask |
                         PointerMotionMask | KeyPressMask | KeyReleaseMask |
                         StructureNotifyMask;
-  grab_input_window_events_.reset(
-      new ui::XScopedEventSelector(grab_input_window_, event_mask));
+  grab_input_window_events_ = std::make_unique<ui::XScopedEventSelector>(
+      grab_input_window_, event_mask);
 
   XMapRaised(display, grab_input_window_);
 }

@@ -14,6 +14,7 @@
 #include "core/fpdfapi/parser/cpdf_name.h"
 #include "core/fpdfapi/parser/cpdf_number.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
+#include "core/fpdfapi/parser/cpdf_stream_acc.h"
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
 
 CPDF_FlateEncoder::CPDF_FlateEncoder(const CPDF_Stream* pStream,
@@ -21,7 +22,7 @@ CPDF_FlateEncoder::CPDF_FlateEncoder(const CPDF_Stream* pStream,
     : m_pAcc(pdfium::MakeRetain<CPDF_StreamAcc>(pStream)), m_dwSize(0) {
   m_pAcc->LoadAllDataRaw();
 
-  bool bHasFilter = pStream && pStream->HasFilter();
+  bool bHasFilter = pStream->HasFilter();
   if (bHasFilter && !bFlateEncode) {
     auto pDestAcc = pdfium::MakeRetain<CPDF_StreamAcc>(pStream);
     pDestAcc->LoadAllDataFiltered();

@@ -5,6 +5,8 @@
 #include <drm_fourcc.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"

@@ -17,7 +17,6 @@
 
 #include "gtest/gtest.h"
 #include "dawn/dawncpp.h"
-#include "dawn/dawncpp_traits.h"
 
 namespace dawn_native {
     class Instance;
@@ -34,20 +33,6 @@ class ValidationTest : public testing::Test {
         ~ValidationTest();
 
         void TearDown() override;
-
-        // Use these methods to add expectations on the validation of a builder. The expectations are
-        // checked on test teardown. Adding an expectation is done like the following:
-        //
-        //     dawn::Foo foo = AssertWillBe[Success|Error](device.CreateFooBuilder(), "my foo")
-        //         .SetBar(1)
-        //         .GetResult();
-        //
-        // The string argument is optional but will be printed when an expectations is missed, this
-        // will help debug tests where multiple expectations are added.
-        template<typename Builder>
-        Builder AssertWillBeSuccess(Builder builder, std::string debugName = "");
-        template<typename Builder>
-        Builder AssertWillBeError(Builder builder, std::string debugName = "");
 
         void StartExpectDeviceError();
         bool EndExpectDeviceError();
@@ -74,51 +59,10 @@ class ValidationTest : public testing::Test {
     private:
         std::unique_ptr<dawn_native::Instance> mInstance;
 
-        static void OnDeviceError(const char* message, dawnCallbackUserdata userdata);
+        static void OnDeviceError(const char* message, DawnCallbackUserdata userdata);
         std::string mDeviceErrorMessage;
         bool mExpectError = false;
         bool mError = false;
-
-        struct BuilderStatusExpectations {
-            bool expectSuccess;
-            std::string debugName;
-
-            bool gotStatus = false;
-            std::string statusMessage;
-            dawnBuilderErrorStatus status;
-        };
-        std::vector<BuilderStatusExpectations> mExpectations;
-
-        template<typename Builder>
-        Builder AddExpectation(Builder& builder, std::string debugName, bool expectSuccess);
-
-        static void OnBuilderErrorStatus(dawnBuilderErrorStatus status, const char* message, dawn::CallbackUserdata userdata1, dawn::CallbackUserdata userdata2);
 };
-
-// Template implementation details
-
-template<typename Builder>
-Builder ValidationTest::AssertWillBeSuccess(Builder builder, std::string debugName) {
-    return AddExpectation(builder, debugName, true);
-}
-
-template<typename Builder>
-Builder ValidationTest::AssertWillBeError(Builder builder, std::string debugName) {
-    return AddExpectation(builder, debugName, false);
-}
-
-template<typename Builder>
-Builder ValidationTest::AddExpectation(Builder& builder, std::string debugName, bool expectSuccess) {
-    uint64_t userdata1 = reinterpret_cast<uintptr_t>(this);
-    uint64_t userdata2 = mExpectations.size();
-    builder.SetErrorCallback(OnBuilderErrorStatus, userdata1, userdata2);
-
-    mExpectations.emplace_back();
-    auto& expectation = mExpectations.back();
-    expectation.expectSuccess = expectSuccess;
-    expectation.debugName = debugName;
-
-    return std::move(builder);
-}
 
 #endif // TESTS_UNITTESTS_VALIDATIONTEST_H_

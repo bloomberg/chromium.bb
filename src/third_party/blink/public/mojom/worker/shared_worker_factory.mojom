@@ -39,11 +39,9 @@ interface SharedWorkerFactory {
       RendererPreferenceWatcher& preference_watcher_request,
       WorkerContentSettingsProxy content_settings,
 
-      // S13nServiceWorker:
       // The info about the service worker host in the browser process that
       // provides support for this shared worker to be a service worker client.
-      // Null when S13nServiceWorker is disabled.
-      ServiceWorkerProviderInfoForWorker? service_worker_provider_info,
+      ServiceWorkerProviderInfoForWorker service_worker_provider_info,
 
       // NetworkService:
       // The ID of the AppCacheHost in the browser process that serves resources
@@ -51,13 +49,12 @@ interface SharedWorkerFactory {
       // is disabled or AppCache doesn't serve resources for this shared worker.
       int32 appcache_host_id,
 
-      // S13nServiceWorker (non-NetworkService):
+      // Non-NetworkService:
       // The URLLoaderFactory to use to request the shared worker's script
       // (just the main script resource; importScripts() should go through the
       // usual loader or the controller service worker if appropriate).
       //
-      // This is only non-null when S13nServiceWorker is enabled but
-      // NetworkService is disabled.
+      // This is only non-null when NetworkService is disabled.
       //
       // TODO(leonhsl): It doesn't really need to be associated. Make it
       // non-associated and update
@@ -80,9 +77,9 @@ interface SharedWorkerFactory {
 
       // NetworkService (PlzWorker):
       // Used for setting ServiceWorkerContainer#controller. This is null when
-      // NetworkService is disabled or there're no controller service worker.
+      // NetworkService is disabled or there is no controller service worker.
       //
-      // In S13nServiceWorker, the controller is sent via
+      // In non-NetworkService, the controller is sent via
       // ServiceWorkerContainer.SetController().
       ControllerServiceWorkerInfo? controller_info,
 

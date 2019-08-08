@@ -85,13 +85,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::ResourceRequest& request) {
     return request.headers;
   }
-  static const std::string& requested_with_header(
+  static const net::HttpRequestHeaders& cors_exempt_headers(
       const network::ResourceRequest& request) {
-    return request.requested_with_header;
-  }
-  static const std::string& client_data_header(
-      const network::ResourceRequest& request) {
-    return request.client_data_header;
+    return request.cors_exempt_headers;
   }
   static int32_t load_flags(const network::ResourceRequest& request) {
     return request.load_flags;
@@ -121,10 +117,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static network::mojom::CorsPreflightPolicy cors_preflight_policy(
       const network::ResourceRequest& request) {
     return request.cors_preflight_policy;
-  }
-  static int32_t service_worker_provider_id(
-      const network::ResourceRequest& request) {
-    return request.service_worker_provider_id;
   }
   static bool originated_from_service_worker(
       const network::ResourceRequest& request) {
@@ -223,6 +215,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static const base::Optional<base::UnguessableToken>& fetch_window_id(
       const network::ResourceRequest& request) {
     return request.fetch_window_id;
+  }
+  static const base::Optional<std::string>& devtools_request_id(
+      const network::ResourceRequest& request) {
+    return request.devtools_request_id;
   }
 
   static bool Read(network::mojom::URLRequestDataView data,

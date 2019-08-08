@@ -11,9 +11,12 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
+import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewStub;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -27,6 +30,10 @@ import org.chromium.chrome.browser.widget.TintedDrawable;
  * StatusView is a location bar's view displaying status (icons and/or text).
  */
 public class StatusView extends LinearLayout {
+    private @Nullable View mIncognitoBadge;
+    private int mIncognitoBadgeEndPaddingWithIcon;
+    private int mIncognitoBadgeEndPaddingWithoutIcon;
+
     private ImageView mIconView;
     private TextView mVerboseStatusTextView;
     private View mSeparatorView;
@@ -104,6 +111,7 @@ public class StatusView extends LinearLayout {
 
             mAnimatingStatusIconShow = true;
             mIconView.setVisibility(View.VISIBLE);
+            updateIncognitoBadgeEndPadding();
             mIconView.animate()
                     .alpha(1.0f)
                     .setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS)
@@ -126,6 +134,9 @@ public class StatusView extends LinearLayout {
                     .withEndAction(() -> {
                         mIconView.setVisibility(View.GONE);
                         mAnimatingStatusIconHide = false;
+                        // Update incognito badge padding after the animation to avoid a glitch on
+                        // focusing location bar.
+                        updateIncognitoBadgeEndPadding();
                     })
                     .start();
         }
@@ -263,6 +274,37 @@ public class StatusView extends LinearLayout {
      */
     void setVerboseStatusTextWidth(int width) {
         mVerboseStatusTextView.setMaxWidth(width);
+    }
+
+    /**
+     * @param incognitoBadgeVisible Whether or not the incognito badge is visible.
+     */
+    void setIncognitoBadgeVisibility(boolean incognitoBadgeVisible) {
+        // Initialize the incognito badge on the first time it becomes visible.
+        if (mIncognitoBadge == null && !incognitoBadgeVisible) return;
+        if (mIncognitoBadge == null) initializeIncognitoBadge();
+
+        mIncognitoBadge.setVisibility(incognitoBadgeVisible ? View.VISIBLE : View.GONE);
+    }
+
+    private void initializeIncognitoBadge() {
+        ViewStub viewStub = findViewById(R.id.location_bar_incognito_badge_stub);
+        mIncognitoBadge = viewStub.inflate();
+        mIncognitoBadgeEndPaddingWithIcon = getResources().getDimensionPixelSize(
+                R.dimen.location_bar_incognito_badge_end_padding_with_status_icon);
+        mIncognitoBadgeEndPaddingWithoutIcon = getResources().getDimensionPixelSize(
+                R.dimen.location_bar_incognito_badge_end_padding_without_status_icon);
+        updateIncognitoBadgeEndPadding();
+    }
+
+    private void updateIncognitoBadgeEndPadding() {
+        if (mIncognitoBadge == null) return;
+
+        ViewCompat.setPaddingRelative(mIncognitoBadge, ViewCompat.getPaddingStart(mIncognitoBadge),
+                mIncognitoBadge.getPaddingTop(),
+                mIconRes != 0 ? mIncognitoBadgeEndPaddingWithIcon
+                              : mIncognitoBadgeEndPaddingWithoutIcon,
+                mIncognitoBadge.getPaddingBottom());
     }
 
     // TODO(ender): The final last purpose of this method is to allow

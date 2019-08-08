@@ -38,9 +38,9 @@
 #include "rtc_base/logging.h"
 #include "rtc_base/time_utils.h"
 
-using testing::AtLeast;
-using testing::Invoke;
-using testing::Return;
+using ::testing::AtLeast;
+using ::testing::Invoke;
+using ::testing::Return;
 
 namespace webrtc {
 
@@ -496,7 +496,7 @@ class RTCStatsCollectorWrapper {
   rtc::scoped_refptr<RTCStatsCollector> stats_collector_;
 };
 
-class RTCStatsCollectorTest : public testing::Test {
+class RTCStatsCollectorTest : public ::testing::Test {
  public:
   RTCStatsCollectorTest()
       : pc_(new rtc::RefCountedObject<FakePeerConnectionForStats>()),
@@ -1625,6 +1625,8 @@ TEST_F(RTCStatsCollectorTest, CollectRTCInboundRTPStreamStats_Audio) {
   voice_media_info.receivers[0].codec_payload_type = 42;
   voice_media_info.receivers[0].jitter_ms = 4500;
   voice_media_info.receivers[0].fraction_lost = 5.5f;
+  voice_media_info.receivers[0].last_packet_received_timestamp_ms =
+      absl::nullopt;
 
   RtpCodecParameters codec_parameters;
   codec_parameters.payload_type = 42;
@@ -1656,8 +1658,21 @@ TEST_F(RTCStatsCollectorTest, CollectRTCInboundRTPStreamStats_Audio) {
   expected_audio.packets_received = 2;
   expected_audio.bytes_received = 3;
   expected_audio.packets_lost = -1;
+  // |expected_audio.last_packet_received_timestamp| should be undefined.
   expected_audio.jitter = 4.5;
   expected_audio.fraction_lost = 5.5;
+  ASSERT_TRUE(report->Get(expected_audio.id()));
+  EXPECT_EQ(
+      report->Get(expected_audio.id())->cast_to<RTCInboundRTPStreamStats>(),
+      expected_audio);
+
+  // Set previously undefined values and "GetStats" again.
+  voice_media_info.receivers[0].last_packet_received_timestamp_ms = 3000;
+  expected_audio.last_packet_received_timestamp = 3.0;
+  voice_media_channel->SetStats(voice_media_info);
+
+  report = stats_->GetFreshStatsReport();
+
   ASSERT_TRUE(report->Get(expected_audio.id()));
   EXPECT_EQ(
       report->Get(expected_audio.id())->cast_to<RTCInboundRTPStreamStats>(),
@@ -1684,6 +1699,9 @@ TEST_F(RTCStatsCollectorTest, CollectRTCInboundRTPStreamStats_Video) {
   video_media_info.receivers[0].nacks_sent = 7;
   video_media_info.receivers[0].frames_decoded = 8;
   video_media_info.receivers[0].qp_sum = absl::nullopt;
+  video_media_info.receivers[0].last_packet_received_timestamp_ms =
+      absl::nullopt;
+  video_media_info.receivers[0].content_type = VideoContentType::UNSPECIFIED;
 
   RtpCodecParameters codec_parameters;
   codec_parameters.payload_type = 42;
@@ -1718,6 +1736,8 @@ TEST_F(RTCStatsCollectorTest, CollectRTCInboundRTPStreamStats_Video) {
   expected_video.fraction_lost = 4.5;
   expected_video.frames_decoded = 8;
   // |expected_video.qp_sum| should be undefined.
+  // |expected_video.last_packet_received_timestamp| should be undefined.
+  // |expected_video.content_type| should be undefined.
 
   ASSERT_TRUE(report->Get(expected_video.id()));
   EXPECT_EQ(
@@ -1726,7 +1746,11 @@ TEST_F(RTCStatsCollectorTest, CollectRTCInboundRTPStreamStats_Video) {
 
   // Set previously undefined values and "GetStats" again.
   video_media_info.receivers[0].qp_sum = 9;
+  video_media_info.receivers[0].last_packet_received_timestamp_ms = 1000;
   expected_video.qp_sum = 9;
+  expected_video.last_packet_received_timestamp = 1.0;
+  video_media_info.receivers[0].content_type = VideoContentType::SCREENSHARE;
+  expected_video.content_type = "screenshare";
   video_media_channel->SetStats(video_media_info);
 
   report = stats_->GetFreshStatsReport();
@@ -1747,7 +1771,9 @@ TEST_F(RTCStatsCollectorTest, CollectRTCOutboundRTPStreamStats_Audio) {
   voice_media_info.senders[0].local_stats.push_back(cricket::SsrcSenderInfo());
   voice_media_info.senders[0].local_stats[0].ssrc = 1;
   voice_media_info.senders[0].packets_sent = 2;
+  voice_media_info.senders[0].retransmitted_packets_sent = 20;
   voice_media_info.senders[0].bytes_sent = 3;
+  voice_media_info.senders[0].retransmitted_bytes_sent = 30;
   voice_media_info.senders[0].codec_payload_type = 42;
 
   RtpCodecParameters codec_parameters;
@@ -1775,7 +1801,9 @@ TEST_F(RTCStatsCollectorTest, CollectRTCOutboundRTPStreamStats_Audio) {
   expected_audio.transport_id = "RTCTransport_TransportName_1";
   expected_audio.codec_id = "RTCCodec_AudioMid_Outbound_42";
   expected_audio.packets_sent = 2;
+  expected_audio.retransmitted_packets_sent = 20;
   expected_audio.bytes_sent = 3;
+  expected_audio.retransmitted_bytes_sent = 30;
 
   ASSERT_TRUE(report->Get(expected_audio.id()));
   EXPECT_EQ(
@@ -1801,10 +1829,14 @@ TEST_F(RTCStatsCollectorTest, CollectRTCOutboundRTPStreamStats_Video) {
   video_media_info.senders[0].plis_rcvd = 3;
   video_media_info.senders[0].nacks_rcvd = 4;
   video_media_info.senders[0].packets_sent = 5;
+  video_media_info.senders[0].retransmitted_packets_sent = 50;
   video_media_info.senders[0].bytes_sent = 6;
+  video_media_info.senders[0].retransmitted_bytes_sent = 60;
   video_media_info.senders[0].codec_payload_type = 42;
   video_media_info.senders[0].frames_encoded = 8;
+  video_media_info.senders[0].total_encode_time_ms = 9000;
   video_media_info.senders[0].qp_sum = absl::nullopt;
+  video_media_info.senders[0].content_type = VideoContentType::UNSPECIFIED;
 
   RtpCodecParameters codec_parameters;
   codec_parameters.payload_type = 42;
@@ -1839,8 +1871,12 @@ TEST_F(RTCStatsCollectorTest, CollectRTCOutboundRTPStreamStats_Video) {
   expected_video.pli_count = 3;
   expected_video.nack_count = 4;
   expected_video.packets_sent = 5;
+  expected_video.retransmitted_packets_sent = 50;
   expected_video.bytes_sent = 6;
+  expected_video.retransmitted_bytes_sent = 60;
   expected_video.frames_encoded = 8;
+  expected_video.total_encode_time = 9.0;
+  // |expected_video.content_type| should be undefined.
   // |expected_video.qp_sum| should be undefined.
   ASSERT_TRUE(report->Get(expected_video.id()));
 
@@ -1851,6 +1887,8 @@ TEST_F(RTCStatsCollectorTest, CollectRTCOutboundRTPStreamStats_Video) {
   // Set previously undefined values and "GetStats" again.
   video_media_info.senders[0].qp_sum = 9;
   expected_video.qp_sum = 9;
+  video_media_info.senders[0].content_type = VideoContentType::SCREENSHARE;
+  expected_video.content_type = "screenshare";
   video_media_channel->SetStats(video_media_info);
 
   report = stats_->GetFreshStatsReport();
@@ -2008,7 +2046,9 @@ TEST_F(RTCStatsCollectorTest, CollectNoStreamRTCOutboundRTPStreamStats_Audio) {
   voice_media_info.senders[0].local_stats.push_back(cricket::SsrcSenderInfo());
   voice_media_info.senders[0].local_stats[0].ssrc = 1;
   voice_media_info.senders[0].packets_sent = 2;
+  voice_media_info.senders[0].retransmitted_packets_sent = 20;
   voice_media_info.senders[0].bytes_sent = 3;
+  voice_media_info.senders[0].retransmitted_bytes_sent = 30;
   voice_media_info.senders[0].codec_payload_type = 42;
 
   RtpCodecParameters codec_parameters;
@@ -2037,7 +2077,9 @@ TEST_F(RTCStatsCollectorTest, CollectNoStreamRTCOutboundRTPStreamStats_Audio) {
   expected_audio.transport_id = "RTCTransport_TransportName_1";
   expected_audio.codec_id = "RTCCodec_AudioMid_Outbound_42";
   expected_audio.packets_sent = 2;
+  expected_audio.retransmitted_packets_sent = 20;
   expected_audio.bytes_sent = 3;
+  expected_audio.retransmitted_bytes_sent = 30;
 
   ASSERT_TRUE(report->Get(expected_audio.id()));
   EXPECT_EQ(

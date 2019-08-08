@@ -178,6 +178,14 @@ MusContextFactory::SharedMainThreadContextProvider() {
   return main_context_provider_;
 }
 
+scoped_refptr<viz::RasterContextProvider>
+MusContextFactory::SharedMainThreadRasterContextProvider() {
+  // Exo is currently the only client requesting this context provider.
+  // Exo does not request this context in MUS.
+  NOTREACHED();
+  return nullptr;
+}
+
 void MusContextFactory::RemoveCompositor(ui::Compositor* compositor) {
   // No per compositor state is kept so there is nothing to do here.
 }

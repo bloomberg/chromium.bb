@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view_controller.h"
 
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/UIView+SizeClassSupport.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_view_controller+subclassing.h"

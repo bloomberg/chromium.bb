@@ -55,10 +55,6 @@ constexpr int kMaximumMessagesPerTask = 200;
 constexpr base::TimeDelta kYieldThreshold =
     base::TimeDelta::FromMilliseconds(50);
 
-MessagePort* MessagePort::Create(ExecutionContext& execution_context) {
-  return MakeGarbageCollected<MessagePort>(execution_context);
-}
-
 MessagePort::MessagePort(ExecutionContext& execution_context)
     : ContextLifecycleObserver(&execution_context),
       task_runner_(execution_context.GetTaskRunner(TaskType::kPostedMessage)) {}
@@ -248,7 +244,7 @@ MessagePortArray* MessagePort::EntanglePorts(
   wtf_size_t count = SafeCast<wtf_size_t>(channels.size());
   MessagePortArray* port_array = MakeGarbageCollected<MessagePortArray>(count);
   for (wtf_size_t i = 0; i < count; ++i) {
-    MessagePort* port = MessagePort::Create(context);
+    auto* port = MakeGarbageCollected<MessagePort>(context);
     port->Entangle(std::move(channels[i]));
     (*port_array)[i] = port;
   }

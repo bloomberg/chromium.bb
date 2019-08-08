@@ -6,11 +6,11 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/jni_utils.h"
-#include "chrome/browser/cached_image_fetcher/cached_image_fetcher_service_factory.h"
+#include "chrome/browser/image_fetcher/image_fetcher_service_factory.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/image_fetcher/core/cache/image_cache.h"
-#include "components/image_fetcher/core/cached_image_fetcher_service.h"
+#include "components/image_fetcher/core/image_fetcher_service.h"
 #include "components/ntp_snippets/remote/remote_suggestions_fetcher_impl.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/prefetch/prefetch_prefs.h"
@@ -49,9 +49,8 @@ JNI_EXPORT void JNI_PrefetchTestBridge_InsertIntoCachedImageFetcher(
     const JavaParamRef<jbyteArray>& j_image_data) {
   Profile* profile = ProfileManager::GetLastUsedProfile();
   DCHECK(profile);
-  image_fetcher::CachedImageFetcherService* service =
-      image_fetcher::CachedImageFetcherServiceFactory::GetForKey(
-          profile->GetSimpleFactoryKey(), profile->GetPrefs());
+  image_fetcher::ImageFetcherService* service =
+      ImageFetcherServiceFactory::GetForKey(profile->GetProfileKey());
   DCHECK(service);
   scoped_refptr<image_fetcher::ImageCache> cache =
       service->ImageCacheForTesting();

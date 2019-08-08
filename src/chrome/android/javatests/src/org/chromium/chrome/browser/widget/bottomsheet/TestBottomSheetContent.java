@@ -11,10 +11,10 @@ import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.ContentPriority;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /** A simple sheet content to test with. This only displays two empty white views. */
 public class TestBottomSheetContent implements BottomSheetContent {
@@ -39,7 +39,7 @@ public class TestBottomSheetContent implements BottomSheetContent {
             Context context, @ContentPriority int priority, boolean hasCustomLifecycle) {
         mPriority = priority;
         mHasCustomLifecycle = hasCustomLifecycle;
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mToolbarView = new View(context);
             ViewGroup.LayoutParams params =
                     new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 100);
@@ -91,6 +91,11 @@ public class TestBottomSheetContent implements BottomSheetContent {
     @Override
     public boolean hasCustomLifecycle() {
         return mHasCustomLifecycle;
+    }
+
+    @Override
+    public boolean setContentSizeListener(@Nullable BottomSheet.ContentSizeListener listener) {
+        return false;
     }
 
     @Override

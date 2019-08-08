@@ -7,12 +7,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/browser/test_image_decoder.h"
-#include "components/signin/core/browser/test_signin_client.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/identity/identity_service.h"
 #include "services/identity/public/cpp/account_state.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
@@ -33,55 +27,10 @@ const char kTestAccessToken[] = "access_token";
 class IdentityAccessorImplTest : public testing::Test {
  public:
   IdentityAccessorImplTest()
-      : signin_client_(&pref_service_),
-        token_service_(&pref_service_),
-#if defined(OS_CHROMEOS)
-        signin_manager_(&signin_client_, &token_service_, &account_tracker_),
-#else
-        signin_manager_(&signin_client_,
-                        &token_service_,
-                        &account_tracker_,
-                        nullptr,
-                        signin::AccountConsistencyMethod::kDisabled),
-#endif
-        gaia_cookie_manager_service_(
-            &token_service_,
-            &signin_client_,
-            base::BindRepeating(
-                [](network::TestURLLoaderFactory* test_url_loader_factory)
-                    -> scoped_refptr<network::SharedURLLoaderFactory> {
-                  return test_url_loader_factory->GetSafeWeakWrapper();
-                },
-                signin_client_.test_url_loader_factory())),
-        identity_test_environment_(&pref_service_,
-                                   &account_tracker_,
-                                   &account_fetcher_,
-                                   &token_service_,
-                                   &signin_manager_,
-                                   &gaia_cookie_manager_service_,
-                                   signin_client_.test_url_loader_factory()),
+      : identity_test_environment_(),
         service_(
             identity_test_environment_.identity_manager(),
-            &account_tracker_,
-            test_connector_factory_.RegisterInstance(mojom::kServiceName)) {
-    AccountTrackerService::RegisterPrefs(pref_service_.registry());
-    AccountFetcherService::RegisterPrefs(pref_service_.registry());
-    ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
-    SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
-    SigninManagerBase::RegisterPrefs(pref_service_.registry());
-
-    account_tracker_.Initialize(&pref_service_, base::FilePath());
-    account_fetcher_.Initialize(&signin_client_, &token_service_,
-                                &account_tracker_,
-                                std::make_unique<TestImageDecoder>());
-    signin_manager_.Initialize(&pref_service_);
-  }
-
-  ~IdentityAccessorImplTest() override {
-    signin_manager_.Shutdown();
-    account_fetcher_.Shutdown();
-    account_tracker_.Shutdown();
-  }
+            test_connector_factory_.RegisterInstance(mojom::kServiceName)) {}
 
   void TearDown() override {
     // Explicitly destruct IdentityAccessorImpl so that it doesn't outlive its
@@ -109,15 +58,6 @@ class IdentityAccessorImplTest : public testing::Test {
                                  const AccountState& account_state) {
     *caller_account_info = account_info;
     *caller_account_state = account_state;
-    quit_closure.Run();
-  }
-
-  void OnReceivedAccountInfoFromGaiaId(
-      base::RepeatingClosure quit_closure,
-      const base::Optional<AccountInfo>& account_info,
-      const AccountState& account_state) {
-    account_info_from_gaia_id_ = account_info;
-    account_state_from_gaia_id_ = account_state;
     quit_closure.Run();
   }
 
@@ -169,26 +109,11 @@ class IdentityAccessorImplTest : public testing::Test {
   base::Optional<std::string> access_token_;
   GoogleServiceAuthError access_token_error_;
 
-  AccountTrackerService* account_tracker() { return &account_tracker_; }
-  FakeProfileOAuth2TokenService* token_service() { return &token_service_; }
-
   IdentityTestEnvironment* identity_test_environment() {
     return &identity_test_environment_;
   }
 
  private:
-  sync_preferences::TestingPrefServiceSyncable pref_service_;
-  AccountTrackerService account_tracker_;
-  AccountFetcherService account_fetcher_;
-  TestSigninClient signin_client_;
-  FakeProfileOAuth2TokenService token_service_;
-#if defined(OS_CHROMEOS)
-  SigninManagerBase signin_manager_;
-#else
-  SigninManager signin_manager_;
-#endif
-  GaiaCookieManagerService gaia_cookie_manager_service_;
-
   identity::IdentityTestEnvironment identity_test_environment_;
   service_manager::TestConnectorFactory test_connector_factory_;
   IdentityService service_;
@@ -363,34 +288,14 @@ TEST_F(IdentityAccessorImplTest,
 
   // Set the refresh token, but don't sign in yet.
   std::string account_id_to_use =
-      account_tracker()->SeedAccountInfo(kTestGaiaId, kTestEmail);
+      identity_test_environment()->MakeAccountAvailable(kTestEmail).account_id;
   identity_test_environment()->SetRefreshTokenForAccount(account_id_to_use);
+
   base::RunLoop run_loop;
   GetIdentityAccessorImpl()->GetPrimaryAccountWhenAvailable(base::BindRepeating(
       &IdentityAccessorImplTest::OnPrimaryAccountAvailable,
       base::Unretained(this), run_loop.QuitClosure(),
       base::Unretained(&account_info), base::Unretained(&account_state)));
-
-  // Verify that the account is present and has a refresh token, but that the
-  // primary account is not yet considered available (this also serves to ensure
-  // that the preceding call has been received by the IdentityAccessor before
-  // proceeding).
-  base::RunLoop run_loop2;
-  GetIdentityAccessorImpl()->GetAccountInfoFromGaiaId(
-      kTestGaiaId,
-      base::BindRepeating(
-          &IdentityAccessorImplTest::OnReceivedAccountInfoFromGaiaId,
-          base::Unretained(this), run_loop2.QuitClosure()));
-  run_loop2.Run();
-
-  EXPECT_TRUE(account_info_from_gaia_id_);
-  EXPECT_EQ(account_id_to_use, account_info_from_gaia_id_->account_id);
-  EXPECT_EQ(kTestGaiaId, account_info_from_gaia_id_->gaia);
-  EXPECT_EQ(kTestEmail, account_info_from_gaia_id_->email);
-  EXPECT_TRUE(account_state_from_gaia_id_.has_refresh_token);
-  EXPECT_FALSE(account_state_from_gaia_id_.is_primary_account);
-
-  EXPECT_TRUE(account_info.account_id.empty());
 
   // Sign the user in and check that the callback is invoked as expected (i.e.,
   // the primary account is now considered available).
@@ -495,61 +400,6 @@ TEST_F(IdentityAccessorImplTest,
   EXPECT_EQ(kTestEmail, account_info.email);
   EXPECT_TRUE(account_state.has_refresh_token);
   EXPECT_TRUE(account_state.is_primary_account);
-}
-
-// Check that the account info for a given GAIA ID is null if that GAIA ID is
-// unknown.
-TEST_F(IdentityAccessorImplTest, GetAccountInfoForUnknownGaiaID) {
-  base::RunLoop run_loop;
-  GetIdentityAccessorImpl()->GetAccountInfoFromGaiaId(
-      kTestGaiaId,
-      base::BindRepeating(
-          &IdentityAccessorImplTest::OnReceivedAccountInfoFromGaiaId,
-          base::Unretained(this), run_loop.QuitClosure()));
-  run_loop.Run();
-  EXPECT_FALSE(account_info_from_gaia_id_);
-}
-
-// Check that the account info for a given GAIA ID has expected values if that
-// GAIA ID is known and there is no refresh token available for it.
-TEST_F(IdentityAccessorImplTest, GetAccountInfoForKnownGaiaIdNoRefreshToken) {
-  std::string account_id =
-      account_tracker()->SeedAccountInfo(kTestGaiaId, kTestEmail);
-  base::RunLoop run_loop;
-  GetIdentityAccessorImpl()->GetAccountInfoFromGaiaId(
-      kTestGaiaId,
-      base::BindRepeating(
-          &IdentityAccessorImplTest::OnReceivedAccountInfoFromGaiaId,
-          base::Unretained(this), run_loop.QuitClosure()));
-  run_loop.Run();
-  EXPECT_TRUE(account_info_from_gaia_id_);
-  EXPECT_EQ(account_id, account_info_from_gaia_id_->account_id);
-  EXPECT_EQ(kTestGaiaId, account_info_from_gaia_id_->gaia);
-  EXPECT_EQ(kTestEmail, account_info_from_gaia_id_->email);
-  EXPECT_FALSE(account_state_from_gaia_id_.has_refresh_token);
-  EXPECT_FALSE(account_state_from_gaia_id_.is_primary_account);
-}
-
-// Check that the account info for a given GAIA ID has expected values if that
-// GAIA ID is known and has a refresh token available.
-TEST_F(IdentityAccessorImplTest, GetAccountInfoForKnownGaiaIdRefreshToken) {
-  std::string account_id =
-      account_tracker()->SeedAccountInfo(kTestGaiaId, kTestEmail);
-  identity_test_environment()->SetRefreshTokenForAccount(account_id);
-
-  base::RunLoop run_loop;
-  GetIdentityAccessorImpl()->GetAccountInfoFromGaiaId(
-      kTestGaiaId,
-      base::BindRepeating(
-          &IdentityAccessorImplTest::OnReceivedAccountInfoFromGaiaId,
-          base::Unretained(this), run_loop.QuitClosure()));
-  run_loop.Run();
-  EXPECT_TRUE(account_info_from_gaia_id_);
-  EXPECT_EQ(account_id, account_info_from_gaia_id_->account_id);
-  EXPECT_EQ(kTestGaiaId, account_info_from_gaia_id_->gaia);
-  EXPECT_EQ(kTestEmail, account_info_from_gaia_id_->email);
-  EXPECT_TRUE(account_state_from_gaia_id_.has_refresh_token);
-  EXPECT_FALSE(account_state_from_gaia_id_.is_primary_account);
 }
 
 // Check that the expected error is received if requesting an access token when

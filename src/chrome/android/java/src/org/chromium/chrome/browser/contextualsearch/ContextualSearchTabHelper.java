@@ -108,7 +108,7 @@ public class ContextualSearchTabHelper
             // This leaves the handling of the hooks to the responsibility of the activity tab.
             // Restoring them will be then done by the tab that was the activity tab when
             // the panel was shown.
-            Tab activityTab = mTab.getActivity().getActivityTabProvider().getActivityTab();
+            Tab activityTab = mTab.getActivity().getActivityTabProvider().get();
             if (activityTab != mTab) return;
 
             // Removes the hooks if the panel other than contextual search panel just got shown.

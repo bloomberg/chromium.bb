@@ -172,22 +172,19 @@ void SecurityHandler::DidChangeVisibleSecurityState() {
                   security_style_explanations.info_explanations,
                   explanations.get());
 
+  // We can set everything to default values because this field is ignored by
+  // the frontend, though it's still required by the protocol. Once the field is
+  // deleted in the protocol, we can delete it here.
   std::unique_ptr<Security::InsecureContentStatus> insecure_status =
       Security::InsecureContentStatus::Create()
-          .SetRanMixedContent(security_style_explanations.ran_mixed_content)
-          .SetDisplayedMixedContent(
-              security_style_explanations.displayed_mixed_content)
-          .SetContainedMixedForm(
-              security_style_explanations.contained_mixed_form)
-          .SetRanContentWithCertErrors(
-              security_style_explanations.ran_content_with_cert_errors)
-          .SetDisplayedContentWithCertErrors(
-              security_style_explanations.displayed_content_with_cert_errors)
-          .SetRanInsecureContentStyle(SecurityStyleToProtocolSecurityState(
-              security_style_explanations.ran_insecure_content_style))
+          .SetRanMixedContent(false)
+          .SetDisplayedMixedContent(false)
+          .SetContainedMixedForm(false)
+          .SetRanContentWithCertErrors(false)
+          .SetDisplayedContentWithCertErrors(false)
+          .SetRanInsecureContentStyle(Security::SecurityStateEnum::Unknown)
           .SetDisplayedInsecureContentStyle(
-              SecurityStyleToProtocolSecurityState(
-                  security_style_explanations.displayed_insecure_content_style))
+              Security::SecurityStateEnum::Unknown)
           .Build();
 
   frontend_->SecurityStateChanged(

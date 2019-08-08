@@ -8,17 +8,16 @@
   html {
     --google-blue-50-rgb: 232, 240, 254;  /* #e8f0fe */
     --google-blue-50: rgb(var(--google-blue-50-rgb));
-    --google-blue-600-rgb: 26, 115, 232;
+    --google-blue-600-rgb: 26, 115, 232;  /* #1a73e8 */
     --google-blue-600: rgb(var(--google-blue-600-rgb));
-    --google-blue-900-rgb: 13, 71, 161;
 
     --google-grey-200-rgb: 232, 234, 237;  /* #e8eaed */
     --google-grey-200: rgb(var(--google-grey-200-rgb));
     --google-grey-400-rgb: 189, 193, 198;  /* #bdc1c6 */
     --google-grey-400: rgb(var(--google-grey-400-rgb));
-    --google-grey-600-rgb: 128, 134, 139;
+    --google-grey-600-rgb: 128, 134, 139;  /* #80868b */
     --google-grey-600: rgb(var(--google-grey-600-rgb));
-    --google-grey-800-rgb: 60, 64, 67;
+    --google-grey-800-rgb: 60, 64, 67;  /* #3c4043 */
     --google-grey-800: rgb(var(--google-grey-800-rgb));
     --google-grey-900-rgb: 32, 33, 36;  /* #202124 */
     --google-grey-900: rgb(var(--google-grey-900-rgb));
@@ -50,6 +49,9 @@
 
     --google-red-refresh-300-rgb: 242, 139, 130;  /* #f28b82 */
     --google-red-refresh-300: rgb(var(--google-red-refresh-300-rgb));
+
+    --google-yellow-refresh-300-rgb: 253, 214, 51;  /* #fdd633 */
+    --google-yellow-refresh-300: rgb(var(--google-yellow-refresh-300-rgb));
 
     --cr-primary-text-color: var(--google-grey-900);
     --cr-secondary-text-color: var(--google-grey-refresh-700);
@@ -160,7 +162,7 @@
       font-weight: 400;
     }
 
-    /* TODO (scottchen): re-implement with paddings instead; */
+    /* TODO (johntlee): re-implement with paddings instead; */
     /* These are used for row items such as radio buttons, check boxes, list
      * items etc. */
     --cr-section-min-height: 48px;
@@ -236,11 +238,13 @@
 
     --cr-toolbar-overlay-animation-duration: 150ms;
 
+    --cr-container-shadow-height: 6px;
+    --cr-container-shadow-margin: calc(-1 * var(--cr-container-shadow-height));
     --cr-container-shadow: {
       box-shadow: inset 0 5px 6px -3px rgba(0, 0, 0, .4);
-      height: 6px;
+      height: var(--cr-container-shadow-height);
       left: 0;
-      margin-bottom: -6px;
+      margin: 0 0 var(--cr-container-shadow-margin);
       opacity: 0;
       pointer-events: none;
       position: relative;

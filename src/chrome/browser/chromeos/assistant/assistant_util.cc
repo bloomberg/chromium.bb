@@ -34,9 +34,6 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
   if (profile->IsLegacySupervised())
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER;
 
-  if (profile->IsChild())
-    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_CHILD_USER;
-
   if (chromeos::DemoSession::IsDeviceInDemoMode())
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_DEMO_MODE;
 
@@ -59,6 +56,8 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
                                          ULOC_UK,
                                          ULOC_US,
                                          "da",
+                                         "en_AU",
+                                         "en_NZ",
                                          "nb",
                                          "nl",
                                          "nn",
@@ -71,7 +70,9 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
   // Also accept runtime locale which maybe an approximation of user's pref
   // locale.
   const std::string kRuntimeLocale = icu::Locale::getDefault().getName();
-  if (!pref_locale.empty()) {
+  // Bypass locale check when using fake gaia login. There is no need to enforce
+  // in these test environments.
+  if (!chromeos::switches::IsGaiaServicesDisabled() && !pref_locale.empty()) {
     base::ReplaceChars(pref_locale, "-", "_", &pref_locale);
     bool disallowed = !base::ContainsValue(kAllowedLocales, pref_locale) &&
                       !base::ContainsValue(kAllowedLocales, kRuntimeLocale);
@@ -91,11 +92,11 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
         IdentityManagerFactory::GetForProfileIfExists(profile);
 
     if (identity_manager) {
-      const std::string hosted_domain =
-          identity_manager->GetPrimaryAccountInfo().hosted_domain;
-      // |kNoHostedDomainFound| means it's gmail.com accounts.
-      if (hosted_domain == kNoHostedDomainFound ||
-          hosted_domain == "google.com") {
+      const std::string email = identity_manager->GetPrimaryAccountInfo().email;
+      if (base::EndsWith(email, "@gmail.com",
+                         base::CompareCase::INSENSITIVE_ASCII) ||
+          base::EndsWith(email, "@google.com",
+                         base::CompareCase::INSENSITIVE_ASCII)) {
         account_supported = true;
       }
     }

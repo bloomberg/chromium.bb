@@ -55,6 +55,9 @@ class DownloadOfflineContentProvider : public OfflineContentProvider,
       OfflineContentProvider::VisualsCallback callback) override;
   void GetShareInfoForItem(const ContentId& id,
                            ShareCallback callback) override;
+  void RenameItem(const ContentId& id,
+                  const std::string& name,
+                  RenameCallback callback) override;
   void AddObserver(OfflineContentProvider::Observer* observer) override;
   void RemoveObserver(OfflineContentProvider::Observer* observer) override;
 
@@ -67,6 +70,7 @@ class DownloadOfflineContentProvider : public OfflineContentProvider,
   // DownloadItem::Observer overrides
   void OnDownloadUpdated(DownloadItem* item) override;
   void OnDownloadRemoved(DownloadItem* item) override;
+  void OnDownloadDestroyed(DownloadItem* download) override;
 
   // DownloadManager::Observer overrides
   void ManagerGoingDown(DownloadManager* manager) override;

@@ -11,6 +11,8 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/welcome/nux/bookmark_item.h"
+#include "chrome/browser/ui/webui/welcome/nux_helper.h"
+#include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/onboarding_welcome_resources.h"
 #include "components/favicon/core/favicon_service.h"
@@ -27,12 +29,13 @@ namespace nux {
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class GoogleApps {
-  kGmailDoNotUse = 0,  // Deprecated.
+  kGmail = 0,
   kYouTube = 1,
   kMaps = 2,
   kTranslate = 3,
   kNews = 4,
-  kChromeWebStore = 5,
+  kChromeWebStoreDoNotUse = 5,  // Deprecated.
+  kSearch = 6,
   kCount,
 };
 
@@ -41,33 +44,52 @@ const char* kGoogleAppsInteractionHistogram =
 
 constexpr const int kGoogleAppIconSize = 48;  // Pixels.
 
-GoogleAppsHandler::GoogleAppsHandler()
-    :  // Do not translate icon name as it is not human visible and needs to
-       // match CSS.
-      google_apps_{{
-          {static_cast<int>(GoogleApps::kYouTube),
-           l10n_util::GetStringUTF8(
-               IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_YOUTUBE),
-           "youtube", "https://youtube.com", IDR_NUX_GOOGLE_APPS_YOUTUBE_1X},
-          {static_cast<int>(GoogleApps::kMaps),
-           l10n_util::GetStringUTF8(
-               IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_MAPS),
-           "maps", "https://maps.google.com", IDR_NUX_GOOGLE_APPS_MAPS_1X},
-          {static_cast<int>(GoogleApps::kNews),
-           l10n_util::GetStringUTF8(
-               IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_NEWS),
-           "news", "https://news.google.com", IDR_NUX_GOOGLE_APPS_NEWS_1X},
-          {static_cast<int>(GoogleApps::kTranslate),
-           l10n_util::GetStringUTF8(
-               IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_TRANSLATE),
-           "translate", "https://translate.google.com",
-           IDR_NUX_GOOGLE_APPS_TRANSLATE_1X},
-          {static_cast<int>(GoogleApps::kChromeWebStore),
-           l10n_util::GetStringUTF8(
-               IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_WEB_STORE),
-           "web-store", "https://chrome.google.com/webstore",
-           IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X},
-      }} {}
+GoogleAppsHandler::GoogleAppsHandler() {
+  // Do not translate icon name as it is not human visible and needs to
+  // match CSS.
+
+  BookmarkItem gmail = {
+      static_cast<int>(GoogleApps::kGmail),
+      l10n_util::GetStringUTF8(IDS_ONBOARDING_WELCOME_NUX_GOOGLE_GMAIL),
+      "gmail", "https://accounts.google.com/b/0/AddMailService",
+      IDR_NUX_GOOGLE_APPS_GMAIL_1X};
+
+  if (IsAppVariationEnabled()) {
+#if defined(GOOGLE_CHROME_BUILD)
+    google_apps_.push_back(
+        {static_cast<int>(GoogleApps::kSearch),
+         l10n_util::GetStringUTF8(IDS_ONBOARDING_WELCOME_NUX_GOOGLE_SEARCH),
+         "search", "https://google.com", IDS_ONBOARDING_WELCOME_SEARCH});
+#endif  // GOOGLE_CHROME_BUILD
+  } else {
+    google_apps_.push_back(gmail);
+  }
+
+  google_apps_.push_back(
+      {static_cast<int>(GoogleApps::kYouTube),
+       l10n_util::GetStringUTF8(IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_YOUTUBE),
+       "youtube", "https://youtube.com", IDR_NUX_GOOGLE_APPS_YOUTUBE_1X});
+
+  google_apps_.push_back(
+      {static_cast<int>(GoogleApps::kMaps),
+       l10n_util::GetStringUTF8(IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_MAPS),
+       "maps", "https://maps.google.com", IDR_NUX_GOOGLE_APPS_MAPS_1X});
+
+  if (IsAppVariationEnabled()) {
+    google_apps_.push_back(gmail);
+  } else {
+    google_apps_.push_back(
+        {static_cast<int>(GoogleApps::kNews),
+         l10n_util::GetStringUTF8(IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_NEWS),
+         "news", "https://news.google.com", IDR_NUX_GOOGLE_APPS_NEWS_1X});
+  }
+
+  google_apps_.push_back({static_cast<int>(GoogleApps::kTranslate),
+                          l10n_util::GetStringUTF8(
+                              IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_TRANSLATE),
+                          "translate", "https://translate.google.com",
+                          IDR_NUX_GOOGLE_APPS_TRANSLATE_1X});
+}
 
 GoogleAppsHandler::~GoogleAppsHandler() {}
 
@@ -88,9 +110,9 @@ void GoogleAppsHandler::HandleCacheGoogleAppIcon(const base::ListValue* args) {
   args->GetInteger(0, &appId);
 
   const BookmarkItem* selectedApp = NULL;
-  for (size_t i = 0; i < kGoogleAppCount; i++) {
-    if (google_apps_[i].id == appId) {
-      selectedApp = &google_apps_[i];
+  for (const auto& google_app : google_apps_) {
+    if (google_app.id == appId) {
+      selectedApp = &google_app;
       break;
     }
   }
@@ -116,7 +138,7 @@ void GoogleAppsHandler::HandleGetGoogleAppsList(const base::ListValue* args) {
   CHECK(args->Get(0, &callback_id));
   ResolveJavascriptCallback(
       *callback_id,
-      BookmarkItemsToListValue(google_apps_.data(), kGoogleAppCount));
+      BookmarkItemsToListValue(google_apps_.data(), google_apps_.size()));
 }
 
 }  // namespace nux

@@ -79,7 +79,7 @@ bool ContentLoFiDecider::IsClientLoFiImageRequest(
   content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(&request);
   return request_info &&
-         request_info->GetResourceType() == content::RESOURCE_TYPE_IMAGE &&
+         request_info->GetResourceType() == content::ResourceType::kImage &&
          (request_info->GetPreviewsState() & content::CLIENT_LOFI_ON);
 }
 

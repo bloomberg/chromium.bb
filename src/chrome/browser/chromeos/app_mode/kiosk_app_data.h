@@ -92,6 +92,10 @@ class KioskAppData : public KioskAppDataBase,
   void OnIconLoadSuccess(const gfx::ImageSkia& icon) override;
   void OnIconLoadFailure() override;
 
+  // Tests do not always fake app data download.
+  // This allows to ignore download errors.
+  static void SetIgnoreKioskAppDataLoadFailuresForTesting(bool value);
+
  private:
   class CrxLoader;
   class WebstoreDataParser;

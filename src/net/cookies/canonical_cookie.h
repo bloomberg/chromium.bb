@@ -59,6 +59,17 @@ class NET_EXPORT CanonicalCookie {
     EXCLUDE_NOT_ON_PATH,
     EXCLUDE_SAMESITE_STRICT,
     EXCLUDE_SAMESITE_LAX,
+    // TODO(crbug.com/953995): Implement EXTENDED_MODE which will use the
+    // following value.
+    EXCLUDE_SAMESITE_EXTENDED,
+    // The following two are used for the SameSiteByDefaultCookies experiment,
+    // where if the SameSite attribute is not specified, it will be treated as
+    // SameSite=Lax by default.
+    EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
+    // This is used if SameSite=None is specified, but the cookie is not Secure.
+    // TODO(chlily): Implement the above.
+    EXCLUDE_SAMESITE_NONE_INSECURE,
+    EXCLUDE_USER_PREFERENCES,
 
     // Statuses specific to setting cookies
     EXCLUDE_FAILURE_TO_STORE,
@@ -67,7 +78,9 @@ class NET_EXPORT CanonicalCookie {
     EXCLUDE_OVERWRITE_HTTP_ONLY,
     EXCLUDE_INVALID_DOMAIN,
     EXCLUDE_INVALID_PREFIX,
-    EXCLUDE_THIRD_PARTY_POLICY
+
+    // Please keep last
+    EXCLUDE_UNKNOWN_ERROR
   };
 
   // Creates a new |CanonicalCookie| from the |cookie_line| and the
@@ -166,6 +179,16 @@ class NET_EXPORT CanonicalCookie {
   // section 5.1.3 of RFC 6265.
   bool IsDomainMatch(const std::string& host) const;
 
+  // Returns the effective SameSite mode to apply to this cookie. Depends on the
+  // value of the given SameSite attribute and whether the
+  // SameSiteByDefaultCookies feature is enabled.
+  // Note: If you are converting to a different representation of a cookie, you
+  // probably want to use SameSite() instead of this method. Otherwise, if you
+  // are considering using this method, consider whether you should use
+  // IncludeForRequestURL() or IsSetPermittedInContext() instead of doing the
+  // SameSite computation yourself.
+  CookieSameSite GetEffectiveSameSite() const;
+
   // Returns if the cookie should be included (and if not, why) for the given
   // request |url| using the CookieInclusionStatus enum. HTTP only cookies can
   // be filter by using appropriate cookie |options|. PLEASE NOTE that this
@@ -191,6 +214,8 @@ class NET_EXPORT CanonicalCookie {
   // are identical for PartialCompare().
   bool PartialCompare(const CanonicalCookie& other) const;
 
+  // TODO(chlily): Remove this. There should not be multiple cookies for which
+  // PartialCompare disagrees. This is only used in tests.
   // Returns true if the cookie is less than |other|, considering all fields.
   // FullCompare() is consistent with PartialCompare(): cookies sorted using
   // FullCompare() are also sorted with respect to PartialCompare().

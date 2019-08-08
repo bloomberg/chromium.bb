@@ -119,7 +119,6 @@ static_library("test_support") {
     "simple_test_tick_clock.h",
     "task_runner_test_template.cc",
     "task_runner_test_template.h",
-    "task_scheduler_test_helpers_android.cc",
     "test_discardable_memory_allocator.cc",
     "test_discardable_memory_allocator.h",
     "test_file_util.cc",
@@ -152,6 +151,7 @@ static_library("test_support") {
     "test_support_android.h",
     "test_support_ios.h",
     "test_support_ios.mm",
+    "thread_pool_test_helpers_android.cc",
     "thread_test_helper.cc",
     "thread_test_helper.h",
     "trace_event_analyzer.cc",
@@ -424,7 +424,9 @@ if (is_linux) {
       ]
     }
   }
+}
 
+if (is_fuchsia || is_linux) {
   shared_library("malloc_wrapper") {
     testonly = true
     sources = [
@@ -450,7 +452,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/MainReturnCodeResult.java",
       "android/java/src/org/chromium/base/MultiprocessTestClientLauncher.java",
       "android/javatests/src/org/chromium/base/test/ReachedCodeProfiler.java",
-      "android/javatests/src/org/chromium/base/test/task/TaskSchedulerTestHelpers.java",
+      "android/javatests/src/org/chromium/base/test/task/ThreadPoolTestHelpers.java",
       "android/javatests/src/org/chromium/base/test/util/UrlUtils.java",
     ]
     jni_package = "base"
@@ -462,7 +464,7 @@ if (is_android) {
       "//base:base_java",
       "//base:base_java_test_support",
       "//testing/android/native_test:native_main_runner_java",
-      "//third_party/android_deps:android_support_annotations_java",
+      "//third_party/android_deps:com_android_support_support_annotations_java",
       "//third_party/jsr-305:jsr_305_javalib",
     ]
     srcjar_deps = [ ":test_support_java_aidl" ]

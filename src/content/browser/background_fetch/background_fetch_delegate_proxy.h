@@ -22,6 +22,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 
+class SkBitmap;
+
 namespace content {
 
 class BrowserContext;
@@ -106,11 +108,12 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   // Updates the representation of this registration in the user interface to
   // match the given |title| or |icon|.
   // Called from the Controller (on the IO thread).
-  void UpdateUI(const std::string& job_unique_id,
-                const base::Optional<std::string>& title,
-                const base::Optional<SkBitmap>& icon,
-                blink::mojom::BackgroundFetchService::UpdateUICallback
-                    update_ui_callback);
+  void UpdateUI(
+      const std::string& job_unique_id,
+      const base::Optional<std::string>& title,
+      const base::Optional<SkBitmap>& icon,
+      blink::mojom::BackgroundFetchRegistrationService::UpdateUICallback
+          update_ui_callback);
 
   // Aborts in progress downloads for the given registration. Called from the
   // Controller (on the IO thread) after it is aborted. May occur even if all
@@ -166,7 +169,8 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   std::map<std::string, base::WeakPtr<Controller>> controller_map_;
 
   // The callback to run after the UI information has been updated.
-  std::map<std::string, blink::mojom::BackgroundFetchService::UpdateUICallback>
+  std::map<std::string,
+           blink::mojom::BackgroundFetchRegistrationService::UpdateUICallback>
       update_ui_callback_map_;
 
   DispatchClickEventCallback click_event_dispatcher_callback_;

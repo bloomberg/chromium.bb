@@ -51,7 +51,9 @@ void NGInlineBoxFragmentPainter::Paint(const PaintInfo& paint_info,
     PaintBackgroundBorderShadow(paint_info, adjusted_paint_offset);
 
   NGBoxFragmentPainter box_painter(inline_box_fragment_);
-  box_painter.PaintObject(paint_info, adjusted_paint_offset, true);
+  bool suppress_box_decoration_background = true;
+  box_painter.PaintObject(paint_info, adjusted_paint_offset,
+                          suppress_box_decoration_background);
 }
 
 void NGInlineBoxFragmentPainter::PaintBackgroundBorderShadow(

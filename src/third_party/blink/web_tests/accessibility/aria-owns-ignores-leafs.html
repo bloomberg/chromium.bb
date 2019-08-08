@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div class="container" id="container1" role="group" aria-label="Container">
     <div id="heading1" role="heading" aria-owns="menu1">heading</div>
@@ -9,7 +8,7 @@
 </div>
 
 <script>
-test_after_layout_and_paint(function(t) {
+test(function(t) {
     // No problem with using aria-owns to put a menu inside a heading.
     var axHeading1 = accessibilityController.accessibleElementById("heading1");
     assert_equals(axHeading1.name, "heading");
@@ -25,7 +24,7 @@ test_after_layout_and_paint(function(t) {
 </div>
 
 <script>
-test_after_layout_and_paint(function(t)
+test(function(t)
 {
     // A button can't have children, so we should ignore aria-owns.
     var axButton2 = accessibilityController.accessibleElementById("button2");
@@ -49,7 +48,7 @@ input, textarea {
 </div>
 
 <script>
-test_after_layout_and_paint(function(t)
+test(function(t)
 {
     var axTextfield3 = accessibilityController.accessibleElementById("textfield3");
     assert_equals(axTextfield3.name, "textfield");
@@ -70,7 +69,7 @@ test_after_layout_and_paint(function(t)
 </div>
 
 <script>
-test_after_layout_and_paint(function(t)
+test(function(t)
 {
     var axTextfield4 = accessibilityController.accessibleElementById("textfield4");
     assert_equals(axTextfield4.name, "textfield");
@@ -89,7 +88,7 @@ test_after_layout_and_paint(function(t)
 </div>
 
 <script>
-test_after_layout_and_paint(function(t)
+test(function(t)
 {
     var axTextfield5 = accessibilityController.accessibleElementById("textfield5");
     assert_equals(axTextfield5.name, "textfield");

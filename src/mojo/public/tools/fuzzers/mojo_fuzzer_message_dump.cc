@@ -11,17 +11,17 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/tools/fuzzers/fuzz.mojom.h"
 #include "mojo/public/tools/fuzzers/fuzz_impl.h"
 
 /* Environment for the executable. Initializes the mojo EDK and sets up a
- * TaskScheduler, because Mojo messages must be sent and processed from
+ * ThreadPool, because Mojo messages must be sent and processed from
  * TaskRunners. */
 struct Environment {
   Environment() : message_loop() {
-    base::TaskScheduler::CreateAndStartWithDefaultParams(
+    base::ThreadPool::CreateAndStartWithDefaultParams(
         "MojoFuzzerMessageDumpProcess");
     mojo::core::Init();
   }

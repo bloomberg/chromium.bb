@@ -23,8 +23,12 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 
+import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ThemeColorProvider;
+import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
+import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.compositor.Invalidator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
@@ -39,6 +43,7 @@ import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarTabController;
+import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.UrlExpansionObserver;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
@@ -50,9 +55,12 @@ import org.chromium.ui.UiUtils;
  * interaction that are not from Views inside Toolbar hierarchy all interactions should be done
  * through {@link Toolbar} rather than using this class directly.
  */
-public abstract class ToolbarLayout extends FrameLayout {
+public abstract class ToolbarLayout
+        extends FrameLayout implements TintObserver, ThemeColorObserver {
     private Invalidator mInvalidator;
 
+    protected final ObserverList<UrlExpansionObserver> mUrlExpansionObservers =
+            new ObserverList<>();
     private final int[] mTempPosition = new int[2];
 
     /**
@@ -60,11 +68,11 @@ public abstract class ToolbarLayout extends FrameLayout {
      */
     private MenuButton mMenuButtonWrapper;
 
-    protected final ColorStateList mDarkModeTint;
-    protected final ColorStateList mLightModeTint;
+    private final ColorStateList mDefaultTint;
 
     private ToolbarDataProvider mToolbarDataProvider;
     private ToolbarTabController mToolbarTabController;
+
     @Nullable
     protected ToolbarProgressBar mProgressBar;
 
@@ -75,13 +83,14 @@ public abstract class ToolbarLayout extends FrameLayout {
 
     private boolean mFindInPageToolbarShowing;
 
+    private ThemeColorProvider mThemeColorProvider;
+
     /**
      * Basic constructor for {@link ToolbarLayout}.
      */
     public ToolbarLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mDarkModeTint = ColorUtils.getThemedToolbarIconTint(getContext(), false);
-        mLightModeTint = ColorUtils.getThemedToolbarIconTint(getContext(), true);
+        mDefaultTint = ColorUtils.getThemedToolbarIconTint(getContext(), false);
         mProgressBar = createProgressBar();
 
         addOnLayoutChangeListener(new OnLayoutChangeListener() {
@@ -122,7 +131,57 @@ public abstract class ToolbarLayout extends FrameLayout {
     /**
      * Cleans up any code as necessary.
      */
-    void destroy() {}
+    void destroy() {
+        if (mThemeColorProvider != null) {
+            mThemeColorProvider.removeTintObserver(this);
+            mThemeColorProvider.removeThemeColorObserver(this);
+            mThemeColorProvider = null;
+        }
+    }
+
+    /**
+     * @param urlExpansionObserver The observer that observes URL expansion percentage change.
+     */
+    void addUrlExpansionObserver(UrlExpansionObserver urlExpansionObserver) {
+        mUrlExpansionObservers.addObserver(urlExpansionObserver);
+    }
+
+    /**
+     * @param urlExpansionObserver The observer that observes URL expansion percentage change.
+     */
+    void removeUrlExpansionObserver(UrlExpansionObserver urlExpansionObserver) {
+        mUrlExpansionObservers.removeObserver(urlExpansionObserver);
+    }
+
+    /**
+     * @param themeColorProvider The {@link ThemeColorProvider} used for tinting the toolbar
+     *                           buttons.
+     */
+    void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
+        mThemeColorProvider = themeColorProvider;
+        mThemeColorProvider.addTintObserver(this);
+        mThemeColorProvider.addThemeColorObserver(this);
+    }
+
+    /**
+     * @return The tint the toolbar buttons should use.
+     */
+    protected ColorStateList getTint() {
+        return mThemeColorProvider == null ? mDefaultTint : mThemeColorProvider.getTint();
+    }
+
+    /**
+     * @return Whether to use light assets.
+     */
+    protected boolean useLight() {
+        return mThemeColorProvider != null && mThemeColorProvider.useLight();
+    }
+
+    @Override
+    public void onTintChanged(ColorStateList tint, boolean useLight) {}
+
+    @Override
+    public void onThemeColorChanged(int color, boolean shouldAnimate) {}
 
     /**
      * Set the height that the progress bar should be.
@@ -799,7 +858,6 @@ public abstract class ToolbarLayout extends FrameLayout {
     /**
      * Sets the menu button's background depending on whether or not we are highlighting and whether
      * or not we are using light or dark assets.
-     * @param highlighting Whether or not the menu button should be highlighted.
      */
     void setMenuButtonHighlightDrawable() {
         if (mMenuButtonWrapper == null) return;

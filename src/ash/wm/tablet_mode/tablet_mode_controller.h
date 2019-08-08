@@ -12,6 +12,7 @@
 #include "ash/ash_export.h"
 #include "ash/bluetooth_devices_observer.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/kiosk_next/kiosk_next_shell_observer.h"
 #include "ash/public/interfaces/tablet_mode.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
@@ -22,7 +23,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "ui/aura/window_occlusion_tracker.h"
@@ -51,6 +52,7 @@ class InternalInputDevicesEventBlocker;
 class TabletModeObserver;
 class TabletModeWindowManager;
 
+// When EC (Embedded Controller) cannot handle lid angle calculation,
 // TabletModeController listens to accelerometer events and automatically
 // enters and exits tablet mode when the lid is opened beyond the triggering
 // angle and rotates the display to match the device when in tablet mode.
@@ -61,7 +63,8 @@ class ASH_EXPORT TabletModeController
       public ShellObserver,
       public WindowTreeHostManager::Observer,
       public SessionObserver,
-      public ui::InputDeviceEventObserver {
+      public ui::InputDeviceEventObserver,
+      public KioskNextShellObserver {
  public:
   // Used for keeping track if the user wants the machine to behave as a
   // clamshell/tablet regardless of hardware orientation.
@@ -140,6 +143,9 @@ class ASH_EXPORT TabletModeController
   void OnInputDeviceConfigurationChanged(uint8_t input_device_types) override;
   void OnDeviceListsComplete() override;
 
+  // KioskNextShellObserver:
+  void OnKioskNextEnabled() override;
+
   void increment_app_window_drag_count() { ++app_window_drag_count_; }
   void increment_app_window_drag_in_splitview_count() {
     ++app_window_drag_in_splitview_count_;
@@ -159,8 +165,8 @@ class ASH_EXPORT TabletModeController
     TABLET_MODE_INTERVAL_ACTIVE
   };
 
-  // Detect hinge rotation from base and lid accelerometers and automatically
-  // start / stop tablet mode.
+  // If EC cannot handle lid angle calc, browser detects hinge rotation from
+  // base and lid accelerometers and automatically start / stop tablet mode.
   void HandleHingeRotation(scoped_refptr<const AccelerometerUpdate> update);
 
   void OnGetSwitchStates(
@@ -194,7 +200,8 @@ class ASH_EXPORT TabletModeController
   void RecordTabletModeUsageInterval(TabletModeIntervalType type);
 
   // Reports an UMA histogram containing the value of |lid_angle_|.
-  // Called periodically by |record_lid_angle_timer_|.
+  // Called periodically by |record_lid_angle_timer_|. If EC can handle lid
+  // angle calc, |lid_angle_| is unavailable to browser.
   void RecordLidAngle();
 
   // Returns TABLET_MODE_INTERVAL_ACTIVE if TabletMode is currently active,
@@ -228,7 +235,8 @@ class ASH_EXPORT TabletModeController
   void UpdateInternalInputDevicesEventBlocker();
 
   // Returns true if the current lid angle can be detected and is in tablet mode
-  // angle range.
+  // angle range. If EC can handle lid angle calc, lid angle is unavailable to
+  // browser.
   bool LidAngleIsInTabletModeRange();
 
   // Suspends |occlusion_tracker_pauser_| for the duration of
@@ -245,14 +253,17 @@ class ASH_EXPORT TabletModeController
   // internal keyboard and touchpad.
   std::unique_ptr<InternalInputDevicesEventBlocker> event_blocker_;
 
-  // Whether we have ever seen accelerometer data.
+  // Whether we have ever seen accelerometer data. When ChromeOS EC lid angle is
+  // present, convertible device cannot see accelerometer data.
   bool have_seen_accelerometer_data_ = false;
 
-  // Whether the lid angle can be detected. If it's true, the device is a
-  // convertible device (both screen acclerometer and keyboard acclerometer are
-  // available, thus lid angle is detectable). And if it's false, the device is
-  // either a laptop device or a tablet device (only the screen acclerometer is
-  // available).
+  // Whether the lid angle can be detected by browser. If it's true, the device
+  // is a convertible device (both screen acclerometer and keyboard acclerometer
+  // are available), and doesn't have ChromeOS EC lid angle driver, in this way
+  // lid angle should be calculated by browser. And if it's false, the device is
+  // probably a convertible device with ChromeOS EC lid angle driver, or the
+  // device is either a laptop device or a tablet device (only the screen
+  // acclerometer is available).
   bool can_detect_lid_angle_ = false;
 
   // Tracks time spent in (and out of) tablet mode.
@@ -296,6 +307,9 @@ class ASH_EXPORT TabletModeController
 
   // Counts of the tab drag from top when splitview is active.
   int tab_drag_in_splitview_count_ = 0;
+
+  // Tracks KioskNext state separately to simplify testing.
+  bool kiosk_next_enabled_ = false;
 
   // Tracks smoothed accelerometer data over time. This is done when the hinge
   // is approaching vertical to remove abrupt acceleration that can lead to

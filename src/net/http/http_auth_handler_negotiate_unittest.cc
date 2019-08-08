@@ -259,12 +259,12 @@ TEST_F(HttpAuthHandlerNegotiateTest, DisableCname) {
   EXPECT_EQ(OK, CreateHandler(
       true, false, true, "http://alias:500", &auth_handler));
 
-  ASSERT_TRUE(auth_handler.get() != NULL);
+  ASSERT_TRUE(auth_handler.get() != nullptr);
   TestCompletionCallback callback;
   HttpRequestInfo request_info;
   std::string token;
   EXPECT_EQ(OK, callback.GetResult(auth_handler->GenerateAuthToken(
-                    NULL, &request_info, callback.callback(), &token)));
+                    nullptr, &request_info, callback.callback(), &token)));
 #if defined(OS_WIN)
   EXPECT_EQ("HTTP/alias", auth_handler->spn_for_testing());
 #elif defined(OS_POSIX)
@@ -277,12 +277,12 @@ TEST_F(HttpAuthHandlerNegotiateTest, DisableCnameStandardPort) {
   std::unique_ptr<HttpAuthHandlerNegotiate> auth_handler;
   EXPECT_EQ(OK, CreateHandler(
       true, true, true, "http://alias:80", &auth_handler));
-  ASSERT_TRUE(auth_handler.get() != NULL);
+  ASSERT_TRUE(auth_handler.get() != nullptr);
   TestCompletionCallback callback;
   HttpRequestInfo request_info;
   std::string token;
   EXPECT_EQ(OK, callback.GetResult(auth_handler->GenerateAuthToken(
-                    NULL, &request_info, callback.callback(), &token)));
+                    nullptr, &request_info, callback.callback(), &token)));
 #if defined(OS_WIN)
   EXPECT_EQ("HTTP/alias", auth_handler->spn_for_testing());
 #elif defined(OS_POSIX)
@@ -295,12 +295,12 @@ TEST_F(HttpAuthHandlerNegotiateTest, DisableCnameNonstandardPort) {
   std::unique_ptr<HttpAuthHandlerNegotiate> auth_handler;
   EXPECT_EQ(OK, CreateHandler(
       true, true, true, "http://alias:500", &auth_handler));
-  ASSERT_TRUE(auth_handler.get() != NULL);
+  ASSERT_TRUE(auth_handler.get() != nullptr);
   TestCompletionCallback callback;
   HttpRequestInfo request_info;
   std::string token;
   EXPECT_EQ(OK, callback.GetResult(auth_handler->GenerateAuthToken(
-                    NULL, &request_info, callback.callback(), &token)));
+                    nullptr, &request_info, callback.callback(), &token)));
 #if defined(OS_WIN)
   EXPECT_EQ("HTTP/alias:500", auth_handler->spn_for_testing());
 #elif defined(OS_POSIX)
@@ -313,12 +313,12 @@ TEST_F(HttpAuthHandlerNegotiateTest, CnameSync) {
   std::unique_ptr<HttpAuthHandlerNegotiate> auth_handler;
   EXPECT_EQ(OK, CreateHandler(
       false, false, true, "http://alias:500", &auth_handler));
-  ASSERT_TRUE(auth_handler.get() != NULL);
+  ASSERT_TRUE(auth_handler.get() != nullptr);
   TestCompletionCallback callback;
   HttpRequestInfo request_info;
   std::string token;
   EXPECT_EQ(OK, callback.GetResult(auth_handler->GenerateAuthToken(
-                    NULL, &request_info, callback.callback(), &token)));
+                    nullptr, &request_info, callback.callback(), &token)));
 #if defined(OS_WIN)
   EXPECT_EQ("HTTP/canonical.example.com", auth_handler->spn_for_testing());
 #elif defined(OS_POSIX)
@@ -331,12 +331,13 @@ TEST_F(HttpAuthHandlerNegotiateTest, CnameAsync) {
   std::unique_ptr<HttpAuthHandlerNegotiate> auth_handler;
   EXPECT_EQ(OK, CreateHandler(
       false, false, false, "http://alias:500", &auth_handler));
-  ASSERT_TRUE(auth_handler.get() != NULL);
+  ASSERT_TRUE(auth_handler.get() != nullptr);
   TestCompletionCallback callback;
   HttpRequestInfo request_info;
   std::string token;
-  EXPECT_EQ(ERR_IO_PENDING, auth_handler->GenerateAuthToken(
-      NULL, &request_info, callback.callback(), &token));
+  EXPECT_EQ(ERR_IO_PENDING,
+            auth_handler->GenerateAuthToken(nullptr, &request_info,
+                                            callback.callback(), &token));
   EXPECT_THAT(callback.WaitForResult(), IsOk());
 #if defined(OS_WIN)
   EXPECT_EQ("HTTP/canonical.example.com", auth_handler->spn_for_testing());

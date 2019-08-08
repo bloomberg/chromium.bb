@@ -671,9 +671,28 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
 
   void RecordMetricsOnStartRequest(const ScheduledResourceRequestImpl& request,
                                    base::TimeTicks ticks_now) const {
+    const size_t non_delayable_requests_in_flight_count =
+        in_flight_requests_.size() - in_flight_delayable_count_;
+
     // Record the number of delayable requests in-flight when a non-delayable
     // request starts.
     if (!RequestAttributesAreSet(request.attributes(), kAttributeDelayable)) {
+      if (non_delayable_requests_in_flight_count > 0) {
+        if (last_non_delayable_request_start_) {
+          UMA_HISTOGRAM_MEDIUM_TIMES(
+              "ResourceScheduler.NonDelayableLastStartToNonDelayableStart."
+              "NonDelayableInFlight",
+              ticks_now - last_non_delayable_request_start_.value());
+        }
+      } else {
+        if (last_non_delayable_request_end_) {
+          UMA_HISTOGRAM_MEDIUM_TIMES(
+              "ResourceScheduler.NonDelayableLastEndToNonDelayableStart."
+              "NonDelayableNotInFlight",
+              ticks_now - last_non_delayable_request_end_.value());
+        }
+      }
+
       UMA_HISTOGRAM_COUNTS_100(
           "ResourceScheduler.NumDelayableRequestsInFlightAtStart.NonDelayable",
           in_flight_delayable_count_);

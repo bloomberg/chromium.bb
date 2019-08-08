@@ -76,7 +76,7 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   // OverrideContainingBlockContentLogicalWidth/Height are used by e.g. grid
   // layout. Override sizes are padding box size, not border box, so we must add
   // borders and scrollbars to compensate.
-  NGBoxStrut borders_and_scrollbars =
+  NGBoxStrut border_scrollbar =
       ComputeBorders(constraint_space, container_node) +
       NGBlockNode(container).GetScrollbarSizes();
 
@@ -92,14 +92,14 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   if (HasOverrideContainingBlockContentLogicalWidth()) {
     container_border_box_logical_width =
         OverrideContainingBlockContentLogicalWidth() +
-        borders_and_scrollbars.InlineSum();
+        border_scrollbar.InlineSum();
   } else {
     container_border_box_logical_width = container->LogicalWidth();
   }
   if (HasOverrideContainingBlockContentLogicalHeight()) {
     container_border_box_logical_height =
         OverrideContainingBlockContentLogicalHeight() +
-        borders_and_scrollbars.BlockSum();
+        border_scrollbar.BlockSum();
   } else {
     container_border_box_logical_height = container->LogicalHeight();
   }
@@ -133,10 +133,10 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   // Run(). Otherwise, NGOutOfFlowLayoutPart may also lay out other objects
   // it discovers that are part of the same containing block, but those
   // should get laid out by the actual containing block.
-  NGOutOfFlowLayoutPart(
-      &container_builder, css_container->CanContainAbsolutePositionObjects(),
-      css_container->CanContainFixedPositionObjects(), borders_and_scrollbars,
-      constraint_space, *container_style, initial_containing_block_fixed_size)
+  NGOutOfFlowLayoutPart(css_container->CanContainAbsolutePositionObjects(),
+                        css_container->CanContainFixedPositionObjects(),
+                        *container_style, constraint_space, border_scrollbar,
+                        &container_builder, initial_containing_block_fixed_size)
       .Run(/* only_layout */ this);
   scoped_refptr<const NGLayoutResult> result =
       container_builder.ToBoxFragment();
@@ -145,8 +145,7 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
        result->OutOfFlowPositionedDescendants())
     descendant.node.UseOldOutOfFlowPositioning();
 
-  const NGPhysicalBoxFragment* fragment =
-      ToNGPhysicalBoxFragment(result->PhysicalFragment());
+  const auto* fragment = To<NGPhysicalBoxFragment>(result->PhysicalFragment());
   DCHECK_GT(fragment->Children().size(), 0u);
   // Copy sizes of all child fragments to Legacy.
   // There could be multiple fragments, when this node has descendants whose

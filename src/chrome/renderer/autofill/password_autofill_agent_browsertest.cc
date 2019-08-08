@@ -42,6 +42,10 @@
 #include "third_party/blink/public/web/web_widget.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
+#if defined(OS_WIN)
+#include "third_party/blink/public/web/win/web_font_rendering.h"
+#endif
+
 using autofill::FillingStatus;
 using autofill::FormTracker;
 using autofill::PasswordForm;
@@ -289,6 +293,13 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
 
   void SetUp() override {
     ChromeRenderViewTest::SetUp();
+
+#if defined(OS_WIN)
+    // Autofill uses the system font to render suggestion previews. On Windows
+    // an extra step is required to ensure that the system font is configured.
+    blink::WebFontRendering::SetMenuFontMetrics(
+        base::ASCIIToUTF16("Arial").c_str(), 12);
+#endif
 
     // TODO(crbug/862989): Remove workaround preventing non-test classes to bind
     // fake_driver_ or fake_pw_client_.
@@ -717,7 +728,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   }
 
   FakeMojoPasswordManagerDriver fake_driver_;
-  FakePasswordGenerationDriver fake_pw_client_;
+  testing::NiceMock<FakePasswordGenerationDriver> fake_pw_client_;
 
   base::string16 username1_;
   base::string16 username2_;
@@ -2568,7 +2579,7 @@ TEST_F(PasswordAutofillAgentTest, PasswordGenerationTriggered_TypedPassword) {
                                          GetMainFrame()->GetDocument(), 0, 2);
 
   // Generation event is triggered due to focus events.
-  EXPECT_CALL(fake_pw_client_, AutomaticGenerationStatusChanged(false, _))
+  EXPECT_CALL(fake_pw_client_, GenerationElementLostFocus())
       .Times(testing::AnyNumber());
   SimulateUsernameTyping("NewGuy");
   SimulatePasswordTyping("NewPassword");
@@ -2660,13 +2671,13 @@ TEST_F(PasswordAutofillAgentTest, PasswordGenerationSupersedesAutofill) {
   // Simulate the field being clicked to start typing. This should trigger
   // generation but not password autofill.
   SetFocused(password_element_);
-  EXPECT_CALL(fake_pw_client_, AutomaticGenerationStatusChanged(true, _));
+  EXPECT_CALL(fake_pw_client_, AutomaticGenerationAvailable(_));
   SimulateElementClick("new_password");
   base::RunLoop().RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(&fake_pw_client_);
   EXPECT_FALSE(GetCalledShowPasswordSuggestions());
   // On destruction the state is updated.
-  EXPECT_CALL(fake_pw_client_, AutomaticGenerationStatusChanged(false, _))
+  EXPECT_CALL(fake_pw_client_, GenerationElementLostFocus())
       .Times(testing::AnyNumber());
 }
 

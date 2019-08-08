@@ -19,7 +19,8 @@ LocalFrame* SingleChildLocalFrameClient::CreateFrame(
   DCHECK(!child_) << "This test helper only supports one child frame.";
 
   LocalFrame* parent_frame = owner_element->GetDocument().GetFrame();
-  auto* child_client = LocalFrameClientWithParent::Create(parent_frame);
+  auto* child_client =
+      MakeGarbageCollected<LocalFrameClientWithParent>(parent_frame);
   child_ =
       LocalFrame::Create(child_client, *parent_frame->GetPage(), owner_element);
   child_->CreateView(IntSize(500, 500), Color::kTransparent);
@@ -35,7 +36,7 @@ void LocalFrameClientWithParent::Detached(FrameDetachType) {
 
 ChromeClient& RenderingTest::GetChromeClient() const {
   DEFINE_STATIC_LOCAL(Persistent<EmptyChromeClient>, client,
-                      (EmptyChromeClient::Create()));
+                      (MakeGarbageCollected<EmptyChromeClient>()));
   return *client;
 }
 
@@ -99,7 +100,7 @@ void RenderingTest::SetChildFrameHTML(const String& html) {
   auto* state_machine = ChildDocument().GetFrame()->Loader().StateMachine();
   if (state_machine->IsDisplayingInitialEmptyDocument())
     state_machine->AdvanceTo(FrameLoaderStateMachine::kCommittedFirstRealLoad);
-  // And let the frame view  exit the initial throttled state.
+  // And let the frame view exit the initial throttled state.
   ChildDocument().View()->BeginLifecycleUpdates();
 }
 

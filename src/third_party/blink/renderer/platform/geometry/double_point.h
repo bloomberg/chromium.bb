@@ -24,15 +24,16 @@ class PLATFORM_EXPORT DoublePoint {
   constexpr DoublePoint(double x, double y) : x_(x), y_(y) {}
   constexpr DoublePoint(const IntPoint& p) : x_(p.X()), y_(p.Y()) {}
   constexpr DoublePoint(const FloatPoint& p) : x_(p.X()), y_(p.Y()) {}
-  explicit DoublePoint(const LayoutPoint&);
+  // We also have conversion operator to DoublePoint defined in LayoutPoint.
 
-  constexpr explicit DoublePoint(const IntSize& size)
-      : x_(size.Width()), y_(size.Height()) {}
-
-  explicit DoublePoint(const FloatSize&);
-
+  constexpr explicit DoublePoint(const IntSize& s)
+      : x_(s.Width()), y_(s.Height()) {}
+  constexpr explicit DoublePoint(const FloatSize& s)
+      : x_(s.Width()), y_(s.Height()) {}
   constexpr explicit DoublePoint(const DoubleSize& size)
       : x_(size.Width()), y_(size.Height()) {}
+
+  constexpr explicit operator FloatPoint() const { return FloatPoint(x_, y_); }
 
   static constexpr DoublePoint Zero() { return DoublePoint(); }
 

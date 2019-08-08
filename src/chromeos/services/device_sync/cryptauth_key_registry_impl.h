@@ -26,6 +26,7 @@ class CryptAuthKeyRegistryImpl : public CryptAuthKeyRegistry {
    public:
     static Factory* Get();
     static void SetFactoryForTesting(Factory* test_factory);
+    virtual ~Factory();
     virtual std::unique_ptr<CryptAuthKeyRegistry> BuildInstance(
         PrefService* pref_service);
 
@@ -41,7 +42,7 @@ class CryptAuthKeyRegistryImpl : public CryptAuthKeyRegistry {
  private:
   // Populates the in-memory key bundle map with the enrolled key bundles
   // persisted in a pref.
-  CryptAuthKeyRegistryImpl(PrefService* pref_service);
+  explicit CryptAuthKeyRegistryImpl(PrefService* pref_service);
 
   // CryptAuthKeyRegistry:
   void OnKeyRegistryUpdated() override;

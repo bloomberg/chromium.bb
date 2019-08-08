@@ -57,6 +57,17 @@ class BaseSearchProvider : public AutocompleteProvider {
       const TemplateURL* template_url,
       const SearchTermsData& search_terms_data);
 
+  // A helper function to convert result from on device providers to
+  // AutocompleteMatch instance.
+  static AutocompleteMatch CreateOnDeviceSearchSuggestion(
+      AutocompleteProvider* autocomplete_provider,
+      const AutocompleteInput& input,
+      const base::string16& suggestion,
+      int relevance,
+      const TemplateURL* template_url,
+      const SearchTermsData& search_terms_data,
+      int accepted_suggestion);
+
   // Appends specific suggest client based on page |page_classification| to
   // the additional query params of |search_terms_args| only for Google template
   // URLs.

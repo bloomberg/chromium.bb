@@ -49,29 +49,30 @@ BackgroundBase.prototype.onLaunched_ = function(launchData) {
     return;
   }
 
-  this.initializationPromise_.then(() => {
-    // Volume list needs to be initialized (more precisely,
-    // chrome.fileSystem.requestFileSystem needs to be called to grant access)
-    // before resolveIsolatedEntries().
-    return volumeManagerFactory.getInstance();
-  }).then(() => {
-    const isolatedEntries = launchData.items.map(item => {
-      return item.entry;
-    });
-
-    // Obtains entries in non-isolated file systems.
-    // The entries in launchData are stored in the isolated file system.
-    // We need to map the isolated entries to the normal entries to retrieve
-    // their parent directory.
-    chrome.fileManagerPrivate.resolveIsolatedEntries(
-        isolatedEntries,
-        externalEntries => {
-          const urls = util.entriesToURLs(externalEntries);
-          if (this.launchHandler_) {
-            this.launchHandler_(urls);
-          }
+  this.initializationPromise_
+      .then(() => {
+        // Volume list needs to be initialized (more precisely,
+        // chrome.fileSystem.requestFileSystem needs to be called to grant
+        // access) before resolveIsolatedEntries().
+        return volumeManagerFactory.getInstance();
+      })
+      .then(() => {
+        const isolatedEntries = launchData.items.map(item => {
+          return item.entry;
         });
-  });
+
+        // Obtains entries in non-isolated file systems.
+        // The entries in launchData are stored in the isolated file system.
+        // We need to map the isolated entries to the normal entries to retrieve
+        // their parent directory.
+        chrome.fileManagerPrivate.resolveIsolatedEntries(
+            isolatedEntries, externalEntries => {
+              const urls = util.entriesToURLs(externalEntries);
+              if (this.launchHandler_) {
+                this.launchHandler_(urls);
+              }
+            });
+      });
 };
 
 /**
@@ -85,5 +86,4 @@ BackgroundBase.prototype.setLaunchHandler = function(handler) {
 /**
  * Called when an app is restarted.
  */
-BackgroundBase.prototype.onRestarted_ = () => {
-};
+BackgroundBase.prototype.onRestarted_ = () => {};

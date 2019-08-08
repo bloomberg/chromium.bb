@@ -20,7 +20,7 @@
 #include "absl/memory/memory.h"
 #include "absl/types/optional.h"
 #include "api/rtc_event_log_output.h"
-#include "api/task_queue/global_task_queue_factory.h"
+#include "api/task_queue/queued_task.h"
 #include "logging/rtc_event_log/encoder/rtc_event_log_encoder_legacy.h"
 #include "logging/rtc_event_log/encoder/rtc_event_log_encoder_new_format.h"
 #include "rtc_base/checks.h"
@@ -29,7 +29,7 @@
 #include "rtc_base/logging.h"
 #include "rtc_base/numerics/safe_conversions.h"
 #include "rtc_base/numerics/safe_minmax.h"
-#include "rtc_base/sequenced_task_checker.h"
+#include "rtc_base/synchronization/sequence_checker.h"
 #include "rtc_base/task_queue.h"
 #include "rtc_base/thread_annotations.h"
 #include "rtc_base/time_utils.h"
@@ -48,7 +48,7 @@ constexpr size_t kMaxEventsInConfigHistory = 1000;
 // unique_ptr to a lambda (a copy constructor is required). We should get
 // rid of this when we move to C++14.
 template <typename T>
-class ResourceOwningTask final : public rtc::QueuedTask {
+class ResourceOwningTask final : public QueuedTask {
  public:
   ResourceOwningTask(std::unique_ptr<T> resource,
                      std::function<void(std::unique_ptr<T>)> handler)
@@ -113,7 +113,7 @@ class RtcEventLogImpl final : public RtcEventLog {
 
   // Make sure that the event log is "managed" - created/destroyed, as well
   // as started/stopped - from the same thread/task-queue.
-  rtc::SequencedTaskChecker owner_sequence_checker_;
+  SequenceChecker owner_sequence_checker_;
 
   // History containing all past configuration events.
   std::deque<std::unique_ptr<RtcEvent>> config_history_
@@ -157,7 +157,7 @@ RtcEventLogImpl::RtcEventLogImpl(
 }
 
 RtcEventLogImpl::~RtcEventLogImpl() {
-  RTC_DCHECK_CALLED_SEQUENTIALLY(&owner_sequence_checker_);
+  RTC_DCHECK_RUN_ON(&owner_sequence_checker_);
 
   // If we're logging to the output, this will stop that. Blocking function.
   StopLogging();
@@ -171,7 +171,7 @@ RtcEventLogImpl::~RtcEventLogImpl() {
 
 bool RtcEventLogImpl::StartLogging(std::unique_ptr<RtcEventLogOutput> output,
                                    int64_t output_period_ms) {
-  RTC_DCHECK_CALLED_SEQUENTIALLY(&owner_sequence_checker_);
+  RTC_DCHECK_RUN_ON(&owner_sequence_checker_);
 
   RTC_DCHECK(output_period_ms == kImmediateOutput || output_period_ms > 0);
 
@@ -206,7 +206,7 @@ bool RtcEventLogImpl::StartLogging(std::unique_ptr<RtcEventLogOutput> output,
 }
 
 void RtcEventLogImpl::StopLogging() {
-  RTC_DCHECK_CALLED_SEQUENTIALLY(&owner_sequence_checker_);
+  RTC_DCHECK_RUN_ON(&owner_sequence_checker_);
 
   RTC_LOG(LS_INFO) << "Stopping WebRTC event log.";
 
@@ -329,9 +329,9 @@ void RtcEventLogImpl::WriteConfigsAndHistoryToOutput(
   // This function is used to merge the strings instead of calling the output
   // object twice with small strings. The function also avoids copying any
   // strings in the typical case where there are no config events.
-  if (encoded_configs.size() == 0) {
+  if (encoded_configs.empty()) {
     WriteToOutput(encoded_history);  // Typical case.
-  } else if (encoded_history.size() == 0) {
+  } else if (encoded_history.empty()) {
     WriteToOutput(encoded_configs);  // Very unusual case.
   } else {
     WriteToOutput(encoded_configs + encoded_history);
@@ -370,10 +370,6 @@ void RtcEventLogImpl::WriteToOutput(const std::string& output_string) {
 #endif  // ENABLE_RTC_EVENT_LOG
 
 // RtcEventLog member functions.
-std::unique_ptr<RtcEventLog> RtcEventLog::Create(EncodingType encoding_type) {
-  return RtcEventLog::Create(encoding_type, &GlobalTaskQueueFactory());
-}
-
 std::unique_ptr<RtcEventLog> RtcEventLog::Create(
     RtcEventLog::EncodingType encoding_type,
     TaskQueueFactory* task_queue_factory) {

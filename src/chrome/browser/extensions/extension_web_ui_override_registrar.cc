@@ -6,11 +6,11 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/one_shot_event.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/common/one_shot_event.h"
 
 namespace extensions {
 
@@ -23,9 +23,8 @@ ExtensionWebUIOverrideRegistrar::ExtensionWebUIOverrideRegistrar(
   extension_registry_observer_.Add(ExtensionRegistry::Get(context));
   ExtensionSystem::Get(context)->ready().Post(
       FROM_HERE,
-      base::Bind(&ExtensionWebUIOverrideRegistrar::OnExtensionSystemReady,
-                 weak_factory_.GetWeakPtr(),
-                 context));
+      base::BindOnce(&ExtensionWebUIOverrideRegistrar::OnExtensionSystemReady,
+                     weak_factory_.GetWeakPtr(), context));
 }
 
 ExtensionWebUIOverrideRegistrar::~ExtensionWebUIOverrideRegistrar() {

@@ -32,7 +32,7 @@ class TaskWorkletGlobalScope : public WorkletGlobalScope {
                                                     v8::Isolate*);
 
  private:
-  HeapHashMap<String, TraceWrapperMember<TaskDefinition>> task_definitions_;
+  HeapHashMap<String, Member<TaskDefinition>> task_definitions_;
 };
 
 }  // namespace blink

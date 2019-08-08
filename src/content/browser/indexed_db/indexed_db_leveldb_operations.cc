@@ -156,9 +156,9 @@ DeleteAndRecreateDatabase(
   LOG(ERROR) << "IndexedDB backing store cleanup succeeded, reopening";
   state.reset();
   bool is_disk_full;
-  std::tie(state, status, is_disk_full) =
-      ldb_factory->OpenLevelDB(database_path, GetDefaultIndexedDBComparator(),
-                               GetDefaultLevelDBComparator());
+  std::tie(state, status, is_disk_full) = ldb_factory->OpenLevelDBState(
+      database_path, GetDefaultIndexedDBComparator(),
+      GetDefaultLevelDBComparator());
   if (!status.ok()) {
     LOG(ERROR) << "IndexedDB backing store reopen after recovery failed";
     ReportOpenStatus(
@@ -410,7 +410,7 @@ Status SetMaxObjectStoreId(LevelDBTransaction* transaction,
   }
 
   if (object_store_id <= max_object_store_id) {
-    INTERNAL_CONSISTENCY_ERROR_UNTESTED(SET_MAX_OBJECT_STORE_ID);
+    INTERNAL_CONSISTENCY_ERROR(SET_MAX_OBJECT_STORE_ID);
     return indexed_db::InternalInconsistencyStatus();
   }
   indexed_db::PutInt(transaction, max_object_store_id_key, object_store_id);
@@ -717,9 +717,9 @@ OpenAndVerifyLevelDBDatabase(
   std::unique_ptr<LevelDBDatabase> database;
   leveldb::Status status;
   scoped_refptr<LevelDBState> state;
-  std::tie(state, status, is_disk_full) =
-      ldb_factory->OpenLevelDB(database_path, GetDefaultIndexedDBComparator(),
-                               GetDefaultLevelDBComparator());
+  std::tie(state, status, is_disk_full) = ldb_factory->OpenLevelDBState(
+      database_path, GetDefaultIndexedDBComparator(),
+      GetDefaultLevelDBComparator());
   bool is_schema_known = false;
   // On I/O error the database isn't deleted, in case the issue is temporary.
   if (status.IsIOError()) {

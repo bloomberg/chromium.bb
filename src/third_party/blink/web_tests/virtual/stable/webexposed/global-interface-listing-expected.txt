@@ -39,6 +39,35 @@ interface AnalyserNode : AudioNode
     setter maxDecibels
     setter minDecibels
     setter smoothingTimeConstant
+interface Animation : EventTarget
+    attribute @@toStringTag
+    getter currentTime
+    getter effect
+    getter id
+    getter oncancel
+    getter onfinish
+    getter playState
+    getter playbackRate
+    getter startTime
+    method cancel
+    method constructor
+    method finish
+    method pause
+    method play
+    method reverse
+    setter currentTime
+    setter effect
+    setter id
+    setter oncancel
+    setter onfinish
+    setter playbackRate
+    setter startTime
+interface AnimationEffect
+    attribute @@toStringTag
+    method constructor
+    method getComputedTiming
+    method getTiming
+    method updateTiming
 interface AnimationEvent : Event
     attribute @@toStringTag
     getter animationName
@@ -3364,6 +3393,7 @@ interface HTMLVideoElement : HTMLMediaElement
     getter height
     getter onenterpictureinpicture
     getter onleavepictureinpicture
+    getter playsInline
     getter poster
     getter videoHeight
     getter videoWidth
@@ -3382,6 +3412,7 @@ interface HTMLVideoElement : HTMLMediaElement
     setter height
     setter onenterpictureinpicture
     setter onleavepictureinpicture
+    setter playsInline
     setter poster
     setter width
 interface HashChangeEvent : Event
@@ -3703,6 +3734,11 @@ interface KeyboardLayoutMap
     method has
     method keys
     method values
+interface KeyframeEffect : AnimationEffect
+    attribute @@toStringTag
+    getter target
+    method constructor
+    setter target
 interface LinearAccelerationSensor : Accelerometer
     attribute @@toStringTag
     method constructor
@@ -4896,6 +4932,15 @@ interface RTCDataChannelEvent : Event
     attribute @@toStringTag
     getter channel
     method constructor
+interface RTCDtlsTransport : EventTarget
+    attribute @@toStringTag
+    getter iceTransport
+    getter onerror
+    getter onstatechange
+    getter state
+    method constructor
+    setter onerror
+    setter onstatechange
 interface RTCError : DOMException
     attribute @@toStringTag
     getter errorDetail
@@ -4927,6 +4972,23 @@ interface RTCIceCandidate
     getter usernameFragment
     method constructor
     method toJSON
+interface RTCIceTransport : EventTarget
+    attribute @@toStringTag
+    getter gatheringState
+    getter ongatheringstatechange
+    getter onselectedcandidatepairchange
+    getter onstatechange
+    getter role
+    getter state
+    method constructor
+    method getLocalCandidates
+    method getLocalParameters
+    method getRemoteCandidates
+    method getRemoteParameters
+    method getSelectedCandidatePair
+    setter ongatheringstatechange
+    setter onselectedcandidatepairchange
+    setter onstatechange
 interface RTCPeerConnection : EventTarget
     static method generateCertificate
     attribute @@toStringTag
@@ -4989,7 +5051,9 @@ interface RTCPeerConnectionIceEvent : Event
 interface RTCRtpReceiver
     static method getCapabilities
     attribute @@toStringTag
+    getter rtcpTransport
     getter track
+    getter transport
     method constructor
     method getContributingSources
     method getParameters
@@ -4999,7 +5063,9 @@ interface RTCRtpSender
     static method getCapabilities
     attribute @@toStringTag
     getter dtmf
+    getter rtcpTransport
     getter track
+    getter transport
     method constructor
     method getParameters
     method getStats

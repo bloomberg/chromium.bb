@@ -73,6 +73,29 @@ static gfx::Transform window_matrix(int x, int y, int width, int height) {
 // been produced.
 constexpr int kNumberOfFramesBeforeDisablingDCLayers = 60;
 
+// Returns the bounding box that contains the specified rounded corner.
+gfx::RectF ComputeRoundedCornerBoundingBox(const gfx::RRectF& rrect,
+                                           const gfx::RRectF::Corner corner) {
+  auto radii = rrect.GetCornerRadii(corner);
+  gfx::RectF bounding_box(radii.x(), radii.y());
+  switch (corner) {
+    case gfx::RRectF::Corner::kUpperLeft:
+      bounding_box.Offset(rrect.rect().x(), rrect.rect().y());
+      break;
+    case gfx::RRectF::Corner::kUpperRight:
+      bounding_box.Offset(rrect.rect().right() - radii.x(), rrect.rect().y());
+      break;
+    case gfx::RRectF::Corner::kLowerRight:
+      bounding_box.Offset(rrect.rect().right() - radii.x(),
+                          rrect.rect().bottom() - radii.y());
+      break;
+    case gfx::RRectF::Corner::kLowerLeft:
+      bounding_box.Offset(rrect.rect().x(), rrect.rect().bottom() - radii.y());
+      break;
+  }
+  return bounding_box;
+}
+
 }  // namespace
 
 namespace viz {
@@ -504,13 +527,13 @@ const cc::FilterOperations* DirectRenderer::FiltersForPass(
   return it == render_pass_filters_.end() ? nullptr : it->second;
 }
 
-const cc::FilterOperations* DirectRenderer::BackgroundFiltersForPass(
+const cc::FilterOperations* DirectRenderer::BackdropFiltersForPass(
     RenderPassId render_pass_id) const {
   auto it = render_pass_backdrop_filters_.find(render_pass_id);
   return it == render_pass_backdrop_filters_.end() ? nullptr : it->second;
 }
 
-const gfx::RRectF* DirectRenderer::BackgroundFilterBoundsForPass(
+const gfx::RRectF* DirectRenderer::BackdropFilterBoundsForPass(
     RenderPassId render_pass_id) const {
   auto it = render_pass_backdrop_filter_bounds_.find(render_pass_id);
   return it == render_pass_backdrop_filter_bounds_.end() ? nullptr : it->second;
@@ -791,6 +814,29 @@ void DirectRenderer::SetCurrentFrameForTesting(const DrawingFrame& frame) {
 bool DirectRenderer::HasAllocatedResourcesForTesting(
     const RenderPassId& render_pass_id) const {
   return IsRenderPassResourceAllocated(render_pass_id);
+}
+
+bool DirectRenderer::ShouldApplyRoundedCorner(const DrawQuad* quad) const {
+  const SharedQuadState* sqs = quad->shared_quad_state;
+  const gfx::RRectF& rounded_corner_bounds = sqs->rounded_corner_bounds;
+
+  // There is no rounded corner set.
+  if (rounded_corner_bounds.IsEmpty())
+    return false;
+
+  const gfx::RectF target_quad = cc::MathUtil::MapClippedRect(
+      sqs->quad_to_target_transform, gfx::RectF(quad->visible_rect));
+
+  const gfx::RRectF::Corner corners[] = {
+      gfx::RRectF::Corner::kUpperLeft, gfx::RRectF::Corner::kUpperRight,
+      gfx::RRectF::Corner::kLowerRight, gfx::RRectF::Corner::kLowerLeft};
+  for (auto c : corners) {
+    if (ComputeRoundedCornerBoundingBox(rounded_corner_bounds, c)
+            .Intersects(target_quad)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace viz

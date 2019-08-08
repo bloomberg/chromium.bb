@@ -68,10 +68,6 @@ Polymer({
 
     if (this.isNonDefaultAsk_(site.setting, site.source)) {
       assert(
-          this.$.permission.disabled,
-          'The \'Ask\' entry is for display-only and cannot be set by the ' +
-              'user.');
-      assert(
           this.$.permission.value == settings.ContentSetting.ASK,
           '\'Ask\' should only show up when it\'s currently selected.');
     }
@@ -266,8 +262,10 @@ Polymer({
 
     assert(
         source == settings.SiteSettingSource.EXTENSION ||
-            source == settings.SiteSettingSource.POLICY,
-        'Only extensions or enterprise policy can change the setting to ASK.');
+            source == settings.SiteSettingSource.POLICY ||
+            source == settings.SiteSettingSource.PREFERENCE,
+        'Only extensions, enterprise policy or preferences can change ' +
+            'the setting to ASK.');
     return true;
   },
 

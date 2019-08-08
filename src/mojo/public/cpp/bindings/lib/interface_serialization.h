@@ -123,7 +123,7 @@ struct Serializer<InterfacePtrDataView<Base>, PendingRemote<T>> {
   static void Serialize(PendingRemote<T>& input,
                         Interface_Data* output,
                         SerializationContext* context) {
-    context->AddInterfaceInfo(input.TakePipe(), input.version(), output);
+    context->AddInterfaceInfo(input.PassPipe(), input.version(), output);
   }
 
   static bool Deserialize(Interface_Data* input,
@@ -162,7 +162,7 @@ struct Serializer<InterfaceRequestDataView<Base>, PendingReceiver<T>> {
   static void Serialize(PendingReceiver<T>& input,
                         Handle_Data* output,
                         SerializationContext* context) {
-    context->AddHandle(ScopedHandle::From(input.TakePipe()), output);
+    context->AddHandle(ScopedHandle::From(input.PassPipe()), output);
   }
 
   static bool Deserialize(Handle_Data* input,

@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -94,14 +95,14 @@ class DummyComboboxModel : public ui::ComboboxModel {
   // Overridden from ui::ComboboxModel:
   int GetItemCount() const override { return 10; }
   base::string16 GetItemAt(int index) override {
-    return ASCIIToUTF16("Item ") + base::IntToString16(index);
+    return ASCIIToUTF16("Item ") + base::NumberToString16(index);
   }
 };
 
 // A View that can act as a pane.
 class PaneView : public View, public FocusTraversable {
  public:
-  PaneView() : focus_search_(NULL) {}
+  PaneView() = default;
 
   // If this method is called, this view will use GetPaneFocusTraversable to
   // have this provided FocusSearch used instead of the default one, allowing
@@ -115,16 +116,16 @@ class PaneView : public View, public FocusTraversable {
     if (focus_search_)
       return this;
     else
-      return NULL;
+      return nullptr;
   }
 
   // Overridden from FocusTraversable:
   views::FocusSearch* GetFocusSearch() override { return focus_search_; }
-  FocusTraversable* GetFocusTraversableParent() override { return NULL; }
-  View* GetFocusTraversableParentView() override { return NULL; }
+  FocusTraversable* GetFocusTraversableParent() override { return nullptr; }
+  View* GetFocusTraversableParentView() override { return nullptr; }
 
  private:
-  FocusSearch* focus_search_;
+  FocusSearch* focus_search_ = nullptr;
 };
 
 // BorderView is a view containing a native window with its own view hierarchy.
@@ -197,7 +198,7 @@ class FocusTraversalTest : public FocusManagerTest {
     view = search_border_view_->GetContentsRootView()->GetViewByID(id);
     if (view)
       return view;
-    return NULL;
+    return nullptr;
   }
 
  protected:
@@ -219,8 +220,8 @@ class FocusTraversalTest : public FocusManagerTest {
     }
   }
 
-  TabbedPane* style_tab_;
-  BorderView* search_border_view_;
+  TabbedPane* style_tab_ = nullptr;
+  BorderView* search_border_view_ = nullptr;
   DummyComboboxModel combobox_model_;
   PaneView* left_container_;
   PaneView* right_container_;
@@ -228,13 +229,9 @@ class FocusTraversalTest : public FocusManagerTest {
   DISALLOW_COPY_AND_ASSIGN(FocusTraversalTest);
 };
 
-FocusTraversalTest::FocusTraversalTest()
-    : style_tab_(NULL),
-      search_border_view_(NULL) {
-}
+FocusTraversalTest::FocusTraversalTest() = default;
 
-FocusTraversalTest::~FocusTraversalTest() {
-}
+FocusTraversalTest::~FocusTraversalTest() = default;
 
 void FocusTraversalTest::InitContentView() {
   // Create a complicated view hierarchy with lots of control types for
@@ -374,7 +371,7 @@ void FocusTraversalTest::InitContentView() {
 
   y += label_height + gap_between_labels;
 
-  LabelButton* button = MdTextButton::Create(NULL, ASCIIToUTF16("Click me"));
+  LabelButton* button = MdTextButton::Create(nullptr, ASCIIToUTF16("Click me"));
   button->SetBounds(label_x, y + 10, 80, 30);
   button->set_id(FRUIT_BUTTON_ID);
   left_container_->AddChildView(button);
@@ -435,11 +432,12 @@ void FocusTraversalTest::InitContentView() {
   inner_container->AddChildView(scroll_view);
   scroll_view->SetBounds(1, 1, 148, 178);
 
-  View* scroll_content = new View();
+  auto scroll_content = std::make_unique<View>();
   scroll_content->SetBounds(0, 0, 200, 200);
   scroll_content->SetBackground(
       CreateSolidBackground(SkColorSetRGB(200, 200, 200)));
-  scroll_view->SetContents(scroll_content);
+  auto* scroll_content_ptr =
+      scroll_view->SetContents(std::move(scroll_content));
 
   static const char* const kTitles[] = {
       "Rosetta", "Stupeur et tremblement", "The diner game",
@@ -462,34 +460,34 @@ void FocusTraversalTest::InitContentView() {
     Link* link = new Link(ASCIIToUTF16(kTitles[i]));
     link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     link->set_id(kIDs[i]);
-    scroll_content->AddChildView(link);
+    scroll_content_ptr->AddChildView(link);
     link->SetBounds(5, y, 300, 15);
     y += 15;
   }
 
   y = 250;
   int width = 60;
-  button = MdTextButton::Create(NULL, ASCIIToUTF16("OK"));
+  button = MdTextButton::Create(nullptr, ASCIIToUTF16("OK"));
   button->set_id(OK_BUTTON_ID);
   button->SetIsDefault(true);
 
   GetContentsView()->AddChildView(button);
   button->SetBounds(150, y, width, 30);
 
-  button = MdTextButton::Create(NULL, ASCIIToUTF16("Cancel"));
+  button = MdTextButton::Create(nullptr, ASCIIToUTF16("Cancel"));
   button->set_id(CANCEL_BUTTON_ID);
   GetContentsView()->AddChildView(button);
   button->SetBounds(220, y, width, 30);
 
-  button = MdTextButton::Create(NULL, ASCIIToUTF16("Help"));
+  button = MdTextButton::Create(nullptr, ASCIIToUTF16("Help"));
   button->set_id(HELP_BUTTON_ID);
   GetContentsView()->AddChildView(button);
   button->SetBounds(290, y, width, 30);
 
   y += 40;
 
-  View* contents = NULL;
-  Link* link = NULL;
+  View* contents = nullptr;
+  Link* link = nullptr;
 
   // Left bottom box with style checkboxes.
   contents = new View();
@@ -534,7 +532,7 @@ void FocusTraversalTest::InitContentView() {
   text_field->SetBounds(10, 10, 100, 20);
   text_field->set_id(SEARCH_TEXTFIELD_ID);
 
-  button = MdTextButton::Create(NULL, ASCIIToUTF16("Search"));
+  button = MdTextButton::Create(nullptr, ASCIIToUTF16("Search"));
   contents->AddChildView(button);
   button->SetBounds(112, 5, 60, 30);
   button->set_id(SEARCH_BUTTON_ID);
@@ -557,11 +555,11 @@ void FocusTraversalTest::InitContentView() {
   contents->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   contents->SetBackground(CreateSolidBackground(SK_ColorBLUE));
   contents->set_id(THUMBNAIL_CONTAINER_ID);
-  button = MdTextButton::Create(NULL, ASCIIToUTF16("Star"));
+  button = MdTextButton::Create(nullptr, ASCIIToUTF16("Star"));
   contents->AddChildView(button);
   button->SetBounds(5, 5, 50, 30);
   button->set_id(THUMBNAIL_STAR_ID);
-  button = MdTextButton::Create(NULL, ASCIIToUTF16("SuperStar"));
+  button = MdTextButton::Create(nullptr, ASCIIToUTF16("SuperStar"));
   contents->AddChildView(button);
   button->SetBounds(60, 5, 100, 30);
   button->set_id(THUMBNAIL_SUPER_STAR_ID);
@@ -706,7 +704,7 @@ TEST_F(FocusTraversalTest, TraversalWithNonEnabledViews) {
   // Let's disable some views.
   for (size_t i = 0; i < base::size(kDisabledIDs); i++) {
     View* v = FindViewByID(kDisabledIDs[i]);
-    ASSERT_TRUE(v != NULL);
+    ASSERT_TRUE(v != nullptr);
     v->SetEnabled(false);
   }
 
@@ -746,7 +744,7 @@ TEST_F(FocusTraversalTest, TraversalWithInvisibleViews) {
   // Let's make some views invisible.
   for (size_t i = 0; i < base::size(kInvisibleIDs); i++) {
     View* v = FindViewByID(kInvisibleIDs[i]);
-    ASSERT_TRUE(v != NULL);
+    ASSERT_TRUE(v != nullptr);
     v->SetVisible(false);
   }
 
@@ -810,12 +808,12 @@ TEST_F(FocusTraversalTest, PaneTraversal) {
 
 class FocusTraversalNonFocusableTest : public FocusManagerTest {
  public:
-  ~FocusTraversalNonFocusableTest() override {}
+  ~FocusTraversalNonFocusableTest() override = default;
 
   void InitContentView() override;
 
  protected:
-  FocusTraversalNonFocusableTest() {}
+  FocusTraversalNonFocusableTest() = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FocusTraversalNonFocusableTest);

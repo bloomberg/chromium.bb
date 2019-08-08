@@ -67,3 +67,11 @@
   (global-name "com.apple.lsd.mapdb")
   (global-name "com.apple.system.notification_center")  ; https://crbug.com/792217
 )
+
+; For V8 to use in thread calculations.
+(if (>= os-version 1014)
+  (begin
+    (allow sysctl-read (sysctl-name "kern.tcsm_enable"))
+    (allow sysctl-write (sysctl-name "kern.tcsm_enable"))
+    (allow sysctl-read (sysctl-name "kern.tcsm_available"))
+))

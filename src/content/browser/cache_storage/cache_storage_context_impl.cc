@@ -30,10 +30,13 @@ CacheStorageContextImpl::~CacheStorageContextImpl() {
 
 void CacheStorageContextImpl::Init(
     const base::FilePath& user_data_directory,
+    scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   is_incognito_ = user_data_directory.empty();
+  special_storage_policy_ = std::move(special_storage_policy);
+
   scoped_refptr<base::SequencedTaskRunner> cache_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
@@ -128,6 +131,39 @@ void CacheStorageContextImpl::CreateCacheStorageManager(
 
 void CacheStorageContextImpl::ShutdownOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // Delete session-only ("clear on exit") origins.
+  if (special_storage_policy_ &&
+      special_storage_policy_->HasSessionOnlyOrigins()) {
+    cache_manager_->GetAllOriginsUsage(
+        CacheStorageOwner::kCacheAPI,
+        // TODO(jsbell): Make this BindOnce.
+        base::BindRepeating(
+            [](scoped_refptr<CacheStorageManager> cache_manager,
+               scoped_refptr<storage::SpecialStoragePolicy>
+                   special_storage_policy,
+               const std::vector<StorageUsageInfo>& usage_info) {
+              for (const auto& info : usage_info) {
+                if (special_storage_policy->IsStorageSessionOnly(
+                        info.origin.GetURL()) &&
+                    !special_storage_policy->IsStorageProtected(
+                        info.origin.GetURL())) {
+                  cache_manager->DeleteOriginData(
+                      info.origin, CacheStorageOwner::kCacheAPI,
+
+                      // Retain a reference to the manager until the deletion is
+                      // complete, since it internally uses weak pointers for
+                      // the various stages of deletion and nothing else will
+                      // keep it alive during shutdown.
+                      base::BindOnce(
+                          [](scoped_refptr<CacheStorageManager> cache_manager,
+                             blink::mojom::QuotaStatusCode) {},
+                          cache_manager));
+                }
+              }
+            },
+            cache_manager_, special_storage_policy_));
+  }
 
   // Release |cache_manager_|. New clients will get a nullptr if they request
   // an instance of CacheStorageManager after this. Any other client that

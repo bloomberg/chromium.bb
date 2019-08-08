@@ -26,20 +26,19 @@ class WaitUntilObserver;
 // overriding onResponseFulfilled, onResponseRejected and onNoResponse.
 class MODULES_EXPORT RespondWithObserver
     : public GarbageCollectedFinalized<RespondWithObserver>,
-      public ContextLifecycleObserver {
+      public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(RespondWithObserver);
 
  public:
   virtual ~RespondWithObserver() = default;
 
-  void ContextDestroyed(ExecutionContext*) override;
-
   void WillDispatchEvent();
   void DidDispatchEvent(DispatchEventResult dispatch_result);
 
-  // The respondWith() observes the promise until the given promise is resolved
-  // or rejected and then delays calling ServiceWorkerGlobalScopeClient::
-  // didHandle*Event() in order to notify the result to the client.
+  // Observes the given promise and calls OnResponseRejected() or
+  // OnResponseFulfilled() when it settles. It also keeps the event alive by
+  // telling the event's WaitUntilObserver to observe the promise. The result of
+  // RespondWith() is therefore reported back before the event finishes.
   void RespondWith(ScriptState*, ScriptPromise, ExceptionState&);
 
   // Called when the respondWith() promise was rejected.

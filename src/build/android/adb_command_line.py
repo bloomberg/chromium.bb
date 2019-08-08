@@ -19,6 +19,20 @@ from devil.utils import cmd_helper
 from devil.utils import logging_common
 
 
+def CheckBuildTypeSupportsFlags(device, command_line_flags_file):
+  is_webview = command_line_flags_file == 'webview-command-line'
+  if device.IsUserBuild() and is_webview:
+    raise device_errors.CommandFailedError(
+        'WebView only respects flags on a userdebug or eng device, yours '
+        'is a user build.', device)
+  elif device.IsUserBuild():
+    logging.warning(
+        'Your device (%s) is a user build; Chrome may or may not pick up '
+        'your commandline flags. Check your '
+        '"command_line_on_non_rooted_enabled" preference, or switch '
+        'devices.', device)
+
+
 def main():
   parser = argparse.ArgumentParser(description=__doc__)
   parser.usage = '''%(prog)s --name FILENAME [--device SERIAL] [flags...]
@@ -55,19 +69,8 @@ Otherwise: Writes command-line file.
   else:
     action = 'Wrote command line file. '
 
-  is_webview = args.name == 'webview-command-line'
-
   def update_flags(device):
-    if device.IsUserBuild() and is_webview:
-      raise device_errors.CommandFailedError(
-          'WebView only respects flags on a userdebug or eng device, yours '
-          'is a user build.', device)
-    elif device.IsUserBuild():
-      logging.warning(
-          'Your device (%s) is a user build; Chrome may or may not pick up '
-          'your commandline flags. Check your '
-          '"command_line_on_non_rooted_enabled" preference, or switch '
-          'devices.', device)
+    CheckBuildTypeSupportsFlags(device, args.name)
     changer = flag_changer.FlagChanger(device, args.name)
     if remote_args is not None:
       flags = changer.ReplaceFlags(remote_args)

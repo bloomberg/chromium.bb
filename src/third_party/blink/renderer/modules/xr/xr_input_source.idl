@@ -17,8 +17,11 @@ enum XRTargetRayMode {
 [
     SecureContext,
     Exposed=Window,
-    OriginTrialEnabled=WebXR
+    RuntimeEnabled=WebXR
 ] interface XRInputSource {
   readonly attribute XRHandedness handedness;
   readonly attribute XRTargetRayMode targetRayMode;
+  readonly attribute XRSpace targetRaySpace;
+  readonly attribute XRSpace? gripSpace;
+  readonly attribute Gamepad? gamepad;
 };

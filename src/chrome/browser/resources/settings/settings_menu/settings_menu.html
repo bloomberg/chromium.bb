@@ -51,7 +51,6 @@
       }
 
       #advancedButton {
-        background-color: unset;
         border: none;
         border-radius: initial;
         height: unset;
@@ -139,11 +138,15 @@
         <iron-icon icon="settings:play-prism"></iron-icon>
         $i18n{androidAppsPageTitle}
       </a>
-</if>
-<if expr="chromeos">
       <a href="/crostini" hidden="[[!showCrostini]]">
         <iron-icon icon="settings:crostini-mascot"></iron-icon>
         $i18n{crostiniPageTitle}
+      </a>
+      <a href="/pluginVm" hidden="[[!showPluginVm]]">
+        <!-- TODO(crbug.com/950738): The placeholder iron-icon here is needed
+          for spacing. Replace this once we get the proper icon. -->
+        <iron-icon icon="cr:info"></iron-icon>
+        $i18n{pluginVmPageTitle}
       </a>
 </if>
 <if expr="not chromeos">

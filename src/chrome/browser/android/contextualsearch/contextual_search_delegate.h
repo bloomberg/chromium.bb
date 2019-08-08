@@ -68,6 +68,8 @@ class ContextualSearchDelegate
       content::WebContents* web_contents);
 
   // Gets the target language for translation purposes for this user.
+  // TODO(donnd): remove these language accessors once the transition to the
+  // Chrome Language Model is complete.
   std::string GetTargetLanguage();
 
   // Returns the accept languages preference string.
@@ -152,7 +154,8 @@ class ContextualSearchDelegate
       QuickActionCategory* quick_action_category,
       int64_t* logged_event_id,
       std::string* search_url_full,
-      std::string* search_url_preload);
+      std::string* search_url_preload,
+      int* coca_card_tag);
 
   // Extracts the start and end location from a mentions list, and sets the
   // integers referenced by |startResult| and |endResult|.

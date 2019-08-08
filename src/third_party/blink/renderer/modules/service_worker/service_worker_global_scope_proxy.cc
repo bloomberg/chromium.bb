@@ -187,6 +187,11 @@ void ServiceWorkerGlobalScopeProxy::SetRegistration(
   WorkerGlobalScope()->SetRegistration(std::move(info));
 }
 
+void ServiceWorkerGlobalScopeProxy::SetFetchHandlerExistence(
+    FetchHandlerExistence fetch_handler_existence) {
+  WorkerGlobalScope()->SetFetchHandlerExistence(fetch_handler_existence);
+}
+
 void ServiceWorkerGlobalScopeProxy::ReadyToEvaluateScript() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WorkerGlobalScope()->ReadyToEvaluateScript();
@@ -194,7 +199,7 @@ void ServiceWorkerGlobalScopeProxy::ReadyToEvaluateScript() {
 
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchAbortEvent(
     int event_id,
-    const WebBackgroundFetchRegistration& registration) {
+    WebBackgroundFetchRegistration registration) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetchAbort, event_id);
@@ -209,7 +214,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchAbortEvent(
   BackgroundFetchEventInit* init = BackgroundFetchEventInit::Create();
   init->setRegistration(MakeGarbageCollected<BackgroundFetchRegistration>(
       WorkerGlobalScope()->registration() /* service_worker_registration */,
-      registration));
+      std::move(registration)));
 
   BackgroundFetchEvent* event = BackgroundFetchEvent::Create(
       event_type_names::kBackgroundfetchabort, init, observer);
@@ -219,7 +224,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchAbortEvent(
 
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchClickEvent(
     int event_id,
-    const WebBackgroundFetchRegistration& registration) {
+    WebBackgroundFetchRegistration registration) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetchClick, event_id);
@@ -227,7 +232,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchClickEvent(
   BackgroundFetchEventInit* init = BackgroundFetchEventInit::Create();
   init->setRegistration(MakeGarbageCollected<BackgroundFetchRegistration>(
       WorkerGlobalScope()->registration() /* service_worker_registration */,
-      registration));
+      std::move(registration)));
 
   BackgroundFetchEvent* event = BackgroundFetchEvent::Create(
       event_type_names::kBackgroundfetchclick, init, observer);
@@ -237,7 +242,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchClickEvent(
 
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
     int event_id,
-    const WebBackgroundFetchRegistration& registration) {
+    WebBackgroundFetchRegistration registration) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetchFail, event_id);
@@ -252,7 +257,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
   BackgroundFetchEventInit* init = BackgroundFetchEventInit::Create();
   init->setRegistration(MakeGarbageCollected<BackgroundFetchRegistration>(
       WorkerGlobalScope()->registration() /* service_worker_registration */,
-      registration));
+      std::move(registration)));
 
   BackgroundFetchUpdateUIEvent* event = BackgroundFetchUpdateUIEvent::Create(
       event_type_names::kBackgroundfetchfail, init, observer,
@@ -263,7 +268,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
 
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchSuccessEvent(
     int event_id,
-    const WebBackgroundFetchRegistration& registration) {
+    WebBackgroundFetchRegistration registration) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetchSuccess,
@@ -279,7 +284,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchSuccessEvent(
   BackgroundFetchEventInit* init = BackgroundFetchEventInit::Create();
   init->setRegistration(MakeGarbageCollected<BackgroundFetchRegistration>(
       WorkerGlobalScope()->registration() /* service_worker_registration */,
-      registration));
+      std::move(registration)));
 
   BackgroundFetchUpdateUIEvent* event = BackgroundFetchUpdateUIEvent::Create(
       event_type_names::kBackgroundfetchsuccess, init, observer,
@@ -434,8 +439,8 @@ void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadError(
                                        : error->unsanitized_message;
   if (!error_message.IsEmpty()) {
     WorkerGlobalScope()->AddConsoleMessage(ConsoleMessage::Create(
-        kWorkerMessageSource, mojom::ConsoleMessageLevel::kError,
-        error_message));
+        mojom::ConsoleMessageSource::kWorker,
+        mojom::ConsoleMessageLevel::kError, error_message));
   }
   // Reject the preloadResponse promise.
   fetch_event->OnNavigationPreloadError(
@@ -613,7 +618,7 @@ void ServiceWorkerGlobalScopeProxy::ReportException(
 }
 
 void ServiceWorkerGlobalScopeProxy::ReportConsoleMessage(
-    MessageSource source,
+    mojom::ConsoleMessageSource source,
     mojom::ConsoleMessageLevel level,
     const String& message,
     SourceLocation* location) {

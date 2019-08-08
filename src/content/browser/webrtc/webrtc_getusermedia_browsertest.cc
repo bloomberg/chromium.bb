@@ -756,7 +756,9 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
 }
 
 // Flaky on Win, see https://crbug.com/915135
-#if defined(OS_WIN)
+// Flaky on tsan and asan with accelerated canvases,
+// see https://crbug.com/952381
+#if defined(OS_WIN) || defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
 #define MAYBE_ApplyConstraintsNonDevice DISABLED_ApplyConstraintsNonDevice
 #else
 #define MAYBE_ApplyConstraintsNonDevice ApplyConstraintsNonDevice
@@ -874,6 +876,22 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
   service_testing_api->Crash();
 
   ExecuteJavascriptAndWaitForOk("verifyAfterAudioServiceCrash()");
+}
+
+// Test crashes on MSAN. See https://crbug.com/941934
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GetUserMediaCloneAndApplyConstraints \
+  DISABLED_GetUserMediaCloneAndApplyConstraints
+#else
+#define MAYBE_GetUserMediaCloneAndApplyConstraints \
+  GetUserMediaCloneAndApplyConstraints
+#endif
+IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
+                       MAYBE_GetUserMediaCloneAndApplyConstraints) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+  ExecuteJavascriptAndWaitForOk("getUserMediaCloneAndApplyConstraints()");
 }
 
 // We run these tests with the audio service both in and out of the the browser

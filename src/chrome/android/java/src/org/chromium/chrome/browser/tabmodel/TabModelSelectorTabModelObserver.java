@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.tab.Tab;
 
 import java.util.List;
@@ -37,7 +38,8 @@ public class TabModelSelectorTabModelObserver extends EmptyTabModelObserver {
             mSelectorObserver = new EmptyTabModelSelectorObserver() {
                 @Override
                 public void onNewTabCreated(Tab tab) {
-                    assert false : "onChange should have happened and unregistered this listener.";
+                    throw new IllegalStateException(
+                            "onChange should have happened and unregistered this listener.");
                 }
 
                 @Override
@@ -49,7 +51,10 @@ public class TabModelSelectorTabModelObserver extends EmptyTabModelObserver {
             };
             mTabModelSelector.addObserver(mSelectorObserver);
         } else {
-            registerModelObservers();
+            // Run this asynchronously so it is done after the tasks in the constructor of
+            // the inherited classes (specifically when used in TabModelSelectoTabObserver)
+            // are completed.
+            ThreadUtils.getUiThreadHandler().postAtFrontOfQueue(() -> registerModelObservers());
         }
     }
 

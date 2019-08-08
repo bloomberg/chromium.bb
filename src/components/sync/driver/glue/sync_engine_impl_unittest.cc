@@ -28,7 +28,6 @@
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
-#include "components/sync/base/experiments.h"
 #include "components/sync/base/invalidation_helper.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/base/test_unrecoverable_error_handler.h"
@@ -82,7 +81,6 @@ class TestSyncEngineHost : public SyncEngineHostStub {
   void OnEngineInitialized(ModelTypeSet initial_types,
                            const WeakHandle<JsBackend>&,
                            const WeakHandle<DataTypeDebugInfoListener>&,
-                           const std::string&,
                            const std::string&,
                            const std::string&,
                            const std::string&,
@@ -206,9 +204,6 @@ class SyncEngineImplTest : public testing::Test {
     backend_ = std::make_unique<SyncEngineImpl>(
         "dummyDebugName", &invalidator_, sync_prefs_->AsWeakPtr(),
         temp_dir_.GetPath().Append(base::FilePath(kTestSyncDir)));
-    credentials_.account_id = "user@example.com";
-    credentials_.email = "user@example.com";
-    credentials_.sync_token = "sync_token";
 
     fake_manager_factory_ = std::make_unique<FakeSyncManagerFactory>(
         &fake_manager_, network::TestNetworkConnectionTracker::GetInstance());
@@ -255,7 +250,7 @@ class SyncEngineImplTest : public testing::Test {
     params.encryption_observer_proxy =
         std::make_unique<NullEncryptionObserver>();
     params.http_factory_getter = std::move(http_post_provider_factory_getter);
-    params.credentials = credentials_;
+    params.authenticated_account_id = "user@example.com";
     params.sync_manager_factory = std::move(fake_manager_factory_);
     params.delete_sync_data_folder = true;
     params.unrecoverable_error_handler =
@@ -326,7 +321,6 @@ class SyncEngineImplTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   base::Thread sync_thread_;
   TestSyncEngineHost host_;
-  SyncCredentials credentials_;
   TestUnrecoverableErrorHandler test_unrecoverable_error_handler_;
   std::unique_ptr<SyncPrefs> sync_prefs_;
   std::unique_ptr<SyncEngineImpl> backend_;
@@ -659,7 +653,7 @@ TEST_F(SyncEngineImplTest, DownloadControlTypes) {
   // Set sync manager behavior before passing it down. Experiments and device
   // info are new types without progress markers or initial sync ended, while
   // all other types have been fully downloaded and applied.
-  ModelTypeSet new_types(EXPERIMENTS, NIGORI);
+  ModelTypeSet new_types(NIGORI);
   ModelTypeSet old_types = Difference(enabled_types_, new_types);
   fake_manager_factory_->set_progress_marker_types(old_types);
   fake_manager_factory_->set_initial_sync_ended_types(old_types);
@@ -720,7 +714,7 @@ TEST_F(SyncEngineImplTest, DownloadControlTypesRestart) {
             fake_manager_->GetAndResetConfigureReason());
 }
 
-// It is SyncBackendHostCore responsibility to cleanup Sync Data folder if sync
+// It is SyncEngineBackend's responsibility to cleanup Sync Data folder if sync
 // setup hasn't been completed. This test ensures that cleanup happens.
 TEST_F(SyncEngineImplTest, TestStartupWithOldSyncData) {
   const char* nonsense = "slon";

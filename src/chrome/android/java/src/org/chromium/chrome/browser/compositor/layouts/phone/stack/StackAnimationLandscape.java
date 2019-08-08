@@ -6,11 +6,19 @@ package org.chromium.chrome.browser.compositor.layouts.phone.stack;
 
 import static org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.AnimatableAnimation.addAnimation;
 
+import android.animation.Animator;
+import android.animation.AnimatorSet;
+import android.util.Pair;
+
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
+import org.chromium.chrome.browser.compositor.animation.FloatProperty;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.base.LocalizationUtils;
+
+import java.util.ArrayList;
 
 class StackAnimationLandscape extends StackAnimation {
     /**
@@ -24,9 +32,11 @@ class StackAnimationLandscape extends StackAnimation {
     }
 
     @Override
-    protected ChromeAnimation<?> createEnterStackAnimatorSet(
-            StackTab[] tabs, int focusIndex, int spacing) {
-        ChromeAnimation<Animatable> set = new ChromeAnimation<Animatable>();
+    protected Pair<AnimatorSet, ArrayList<FloatProperty>> createEnterStackAnimatorSet(
+            StackTab[] tabs, int focusIndex, int spacing, CompositorAnimationHandler handler) {
+        ArrayList<Animator> animationList = new ArrayList<>();
+        ArrayList<FloatProperty> propertyList = new ArrayList<>();
+
         final float initialScrollOffset = mStack.screenToScroll(0);
 
         for (int i = 0; i < tabs.length; ++i) {
@@ -40,34 +50,41 @@ class StackAnimationLandscape extends StackAnimation {
 
             final float scrollOffset = mStack.screenToScroll(i * spacing);
 
-            addAnimation(set, tab.getLayoutTab(), LayoutTab.Property.MAX_CONTENT_HEIGHT,
+            addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
+                    LayoutTab.MAX_CONTENT_HEIGHT,
                     tab.getLayoutTab().getUnclampedOriginalContentHeight(),
                     mStack.getMaxTabHeight(), ENTER_STACK_ANIMATION_DURATION, 0);
             if (i < focusIndex) {
-                addAnimation(set, tab, StackTab.Property.SCROLL_OFFSET, initialScrollOffset,
-                        scrollOffset, ENTER_STACK_ANIMATION_DURATION, 0);
+                addToAnimation(animationList, propertyList, handler, tab, StackTab.SCROLL_OFFSET,
+                        initialScrollOffset, scrollOffset, ENTER_STACK_ANIMATION_DURATION, 0);
             } else if (i > focusIndex) {
                 tab.setScrollOffset(scrollOffset);
-                addAnimation(set, tab, StackTab.Property.X_IN_STACK_OFFSET,
+                addToAnimation(animationList, propertyList, handler, tab,
+                        StackTab.X_IN_STACK_OFFSET,
                         (mWidth > mHeight && LocalizationUtils.isLayoutRtl()) ? -mWidth : mWidth,
                         0.0f, ENTER_STACK_ANIMATION_DURATION, 0);
             } else {
                 tab.setScrollOffset(scrollOffset);
-                addAnimation(set, tab, StackTab.Property.X_IN_STACK_INFLUENCE, 0.0f, 1.0f,
+                addToAnimation(animationList, propertyList, handler, tab,
+                        StackTab.X_IN_STACK_INFLUENCE, 0.0f, 1.0f,
                         ENTER_STACK_BORDER_ALPHA_DURATION, 0);
-                addAnimation(set, tab, StackTab.Property.SCALE, 1.0f, mStack.getScaleAmount(),
-                        ENTER_STACK_BORDER_ALPHA_DURATION, 0);
-                addAnimation(set, tab.getLayoutTab(), LayoutTab.Property.TOOLBAR_ALPHA, 1.f, 0.f,
-                        ENTER_STACK_TOOLBAR_ALPHA_DURATION, ENTER_STACK_TOOLBAR_ALPHA_DELAY);
-                addAnimation(set, tab.getLayoutTab(), LayoutTab.Property.TOOLBAR_Y_OFFSET, 0.f,
-                        getToolbarOffsetToLineUpWithBorder(), ENTER_STACK_BORDER_ALPHA_DURATION,
+                addToAnimation(animationList, propertyList, handler, tab, StackTab.SCALE, 1.0f,
+                        mStack.getScaleAmount(), ENTER_STACK_BORDER_ALPHA_DURATION, 0);
+                addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
+                        LayoutTab.TOOLBAR_ALPHA, 1.f, 0.f, ENTER_STACK_TOOLBAR_ALPHA_DURATION,
+                        ENTER_STACK_TOOLBAR_ALPHA_DELAY);
+                addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
+                        LayoutTab.TOOLBAR_Y_OFFSET, 0.f, getToolbarOffsetToLineUpWithBorder(),
+                        ENTER_STACK_BORDER_ALPHA_DURATION, TAB_FOCUSED_TOOLBAR_ALPHA_DELAY);
+                addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
+                        LayoutTab.SIDE_BORDER_SCALE, 0.f, 1.f, ENTER_STACK_BORDER_ALPHA_DURATION,
                         TAB_FOCUSED_TOOLBAR_ALPHA_DELAY);
-                addAnimation(set, tab.getLayoutTab(), LayoutTab.Property.SIDE_BORDER_SCALE, 0.f,
-                        1.f, ENTER_STACK_BORDER_ALPHA_DURATION, TAB_FOCUSED_TOOLBAR_ALPHA_DELAY);
             }
         }
 
-        return set;
+        AnimatorSet set = new AnimatorSet();
+        set.playTogether(animationList);
+        return Pair.create(set, propertyList);
     }
 
     @Override

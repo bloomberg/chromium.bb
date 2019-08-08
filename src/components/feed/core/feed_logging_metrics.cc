@@ -22,6 +22,22 @@ namespace feed {
 
 namespace {
 
+//  Instead of using base::UMA_HISTOGRAM_TIMES which has 50 buckets, we use 20
+//  buckets here.
+#define TASK_CUSTOM_UMA_HISTOGRAM_TIMES(histogram_name, time)         \
+  UMA_HISTOGRAM_CUSTOM_TIMES(histogram_name,                          \
+                             base::TimeDelta::FromMilliseconds(time), \
+                             base::TimeDelta::FromMilliseconds(1),    \
+                             base::TimeDelta::FromSeconds(10), 20);
+
+#define REPORT_TASK_HISTOGRAM_TIMES(histogram_base, delay_time, task_time) \
+  TASK_CUSTOM_UMA_HISTOGRAM_TIMES(                                         \
+      base::StringPrintf("%s.%s", histogram_base.c_str(), "DelayTime"),    \
+      delay_time);                                                         \
+  TASK_CUSTOM_UMA_HISTOGRAM_TIMES(                                         \
+      base::StringPrintf("%s.%s", histogram_base.c_str(), "TaskTime"),     \
+      task_time);
+
 // The constant integers(bucket sizes) and strings(UMA names) in this file need
 // matching with Zine's in the file
 // components/ntp_snippets/content_suggestions_metrics.cc. The purpose to have
@@ -54,6 +70,46 @@ enum class SpinnerType {
   kMaxValue = KInfiniteFeed
 };
 
+// Values correspond to
+// third_party/feed/src/src/main/java/com/google/android/libraries/feed/host/
+// logging/Task.java.
+enum class TaskType {
+  KUnknown = 0,
+  KCleanUpSessionJournals = 1,
+  KClearAll = 2,
+  KClearAllWithRefresh = 3,
+  KClearPersistentStoreTask = 4,
+  KCommitTask = 5,
+  KCreateAndUpload = 6,
+  KDetachSession = 7,
+  KDismissLocal = 8,
+  KDumpEphemeralActions = 9,
+  KExecuteUploadActionRequest = 10,
+  KGarbageCollectContent = 11,
+  KGetExistingSession = 12,
+  KGetNewSession = 13,
+  KGetStreamFeaturesFromHead = 14,
+  KHandleResponseBytes = 15,
+  KHandleSyntheticToken = 16,
+  KHandleToken = 17,
+  KHandleUploadableActionResponseBytes = 18,
+  KInvalidateHead = 19,
+  KInvalidateSession = 20,
+  KLocalActionGC = 21,
+  KNoCardErrorClear = 22,
+  KPersistMutation = 23,
+  KPopulateNewSession = 24,
+  KRequestFailure = 25,
+  KRequestManagerTriggerRefresh = 26,
+  KSendRequest = 27,
+  KSessionManagerTriggerRefresh = 28,
+  KSessionMutation = 29,
+  KTaskQueueInitialize = 30,
+  KUpdateContentTracker = 31,
+  KUploadAllActionsForURL = 32,
+  kMaxValue = KUploadAllActionsForURL
+};
+
 // Each suffix here should correspond to an entry under histogram suffix
 // ContentSuggestionCategory in histograms.xml.
 std::string GetSpinnerTypeSuffix(SpinnerType spinner_type) {
@@ -74,6 +130,205 @@ std::string GetSpinnerTypeSuffix(SpinnerType spinner_type) {
   // java side.
   NOTREACHED();
   return std::string();
+}
+
+// Each suffix here should correspond to an entry under histogram suffix
+// FeedTaskType in histograms.xml.
+void ReportTaskTime(TaskType task_type, int delay_time_ms, int task_time_ms) {
+  switch (task_type) {
+    case TaskType::KUnknown:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s", "Unknown"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KCleanUpSessionJournals:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "CleanUpSessionJournals"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KClearAll:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s", "ClearAll"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KClearAllWithRefresh:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "ClearAllWithRefresh"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KClearPersistentStoreTask:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "ClearPersistentStoreTask"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KCommitTask:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s", "CommitTask"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KCreateAndUpload:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "CreateAndUpload"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KDetachSession:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "DetachSession"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KDismissLocal:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s", "DismissLocal"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KDumpEphemeralActions:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "DumpEphemeralActions"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KExecuteUploadActionRequest:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "ExecuteUploadActionRequest"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KGarbageCollectContent:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "GarbageCollectContent"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KGetExistingSession:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "GetExistingSession"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KGetNewSession:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "GetNewSession"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KGetStreamFeaturesFromHead:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "GetStreamFeaturesFromHead"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KHandleResponseBytes:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "HandleResponseBytes"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KHandleSyntheticToken:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "HandleSyntheticToken"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KHandleToken:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s", "HandleToken"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KHandleUploadableActionResponseBytes:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "HandleUploadableActionResponseBytes"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KInvalidateHead:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "InvalidateHead"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KInvalidateSession:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "InvalidateSession"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KLocalActionGC:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "LocalActionGC"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KNoCardErrorClear:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "NoCardErrorClear"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KPersistMutation:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "PersistMutation"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KPopulateNewSession:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "PopulateNewSession"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KRequestFailure:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "RequestFailure"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KRequestManagerTriggerRefresh:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "RequestManagerTriggerRefresh"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KSendRequest:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s", "SendRequest"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KSessionManagerTriggerRefresh:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "SessionManagerTriggerRefresh"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KSessionMutation:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "SessionMutation"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KTaskQueueInitialize:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "TaskQueueInitialize"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KUpdateContentTracker:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "UpdateContentTracker"),
+          delay_time_ms, task_time_ms);
+      break;
+    case TaskType::KUploadAllActionsForURL:
+      REPORT_TASK_HISTOGRAM_TIMES(
+          base::StringPrintf("ContentSuggestions.Feed.Task.%s",
+                             "UploadAllActionsForURL"),
+          delay_time_ms, task_time_ms);
+      break;
+  }
 }
 
 // Records ContentSuggestions usage. Therefore the day is sliced into 20min
@@ -126,6 +381,10 @@ void RecordUndoableActionUMA(const std::string& histogram_base,
 
   // Since the |histogram_name| is dynamic, we can't use the regular macro.
   base::UmaHistogramExactLinear(histogram_name, position, kMaxSuggestionsTotal);
+
+  // Report to |histogram_base| as well, then |histogram_base| will be the sum
+  // of "Commit" and "Undo".
+  base::UmaHistogramExactLinear(histogram_base, position, kMaxSuggestionsTotal);
 }
 
 void CheckURLVisitedDone(int position, bool committed, bool visited) {
@@ -401,6 +660,13 @@ void FeedLoggingMetrics::OnZeroStateRefreshCompleted(int new_content_count,
   UMA_HISTOGRAM_EXACT_LINEAR(
       "ContentSuggestions.Feed.ZeroStateRefreshCompleted.TokenCount",
       new_token_count, kMaxTokenCount);
+}
+
+void FeedLoggingMetrics::OnTaskFinished(int task_type,
+                                        int delay_time_ms,
+                                        int task_time_ms) {
+  TaskType type = static_cast<TaskType>(task_type);
+  ReportTaskTime(type, delay_time_ms, task_time_ms);
 }
 
 void FeedLoggingMetrics::ReportScrolledAfterOpen() {

@@ -58,16 +58,6 @@ bool MediaControlElementsHelper::IsUserInteractionEventForSlider(
 }
 
 // static
-MediaControlElementType MediaControlElementsHelper::GetMediaControlElementType(
-    const Node* node) {
-  SECURITY_DCHECK(node->IsMediaControlElement());
-  const HTMLElement* element = ToHTMLElement(node);
-  if (IsHTMLInputElement(*element))
-    return static_cast<const MediaControlInputElement*>(element)->DisplayType();
-  return static_cast<const MediaControlDivElement*>(element)->DisplayType();
-}
-
-// static
 const HTMLMediaElement* MediaControlElementsHelper::ToParentMediaElement(
     const Node* node) {
   if (!node)

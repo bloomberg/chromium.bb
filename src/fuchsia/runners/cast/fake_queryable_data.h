@@ -5,10 +5,12 @@
 #ifndef FUCHSIA_RUNNERS_CAST_FAKE_QUERYABLE_DATA_H_
 #define FUCHSIA_RUNNERS_CAST_FAKE_QUERYABLE_DATA_H_
 
-#include <map>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
@@ -20,13 +22,18 @@ class FakeQueryableData : public chromium::cast::QueryableData {
   FakeQueryableData();
   ~FakeQueryableData() override;
 
-  void Add(base::StringPiece key, const base::Value& value);
+  // Sends, or prepares to send, a set of changed values to the page.
+  void SendChanges(
+      std::vector<std::pair<base::StringPiece, base::Value&&>> changes);
+
+ private:
+  void DeliverChanges();
 
   // chromium::cast::QueryableData implementation.
   void GetChangedEntries(GetChangedEntriesCallback callback) override;
 
- private:
-  std::map<std::string, chromium::cast::QueryableDataEntry> entries_;
+  base::Optional<GetChangedEntriesCallback> get_changed_callback_;
+  std::vector<chromium::cast::QueryableDataEntry> changes_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeQueryableData);
 };

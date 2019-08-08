@@ -34,37 +34,30 @@ Polymer({
 
   properties: {
     /** @private */
-    isValid_: {
+    isEmail_: {
       type: Boolean,
       value: false,
+    },
+
+    /** @private */
+    isEmpty_: {
+      type: Boolean,
+      value: true,
     },
   },
 
   open: function() {
-    this.isValid_ = false;
+    this.$.addUserInput.value = '';
+    this.onInput_();
     this.$.dialog.showModal();
-  },
-
-  /** @private */
-  onCancelTap_: function() {
-    this.$.dialog.cancel();
-  },
-
-  /**
-   * Validates that the new user entered is valid.
-   * @private
-   * @return {boolean}
-   */
-  validate_: function() {
-    const input = this.$.addUserInput.value;
-    this.isValid_ = NAME_ONLY_REGEX.test(input) || EMAIL_REGEX.test(input);
-    return this.isValid_;
+    // Set to valid initially since the user has not typed anything yet.
+    this.$.addUserInput.invalid = false;
   },
 
   /** @private */
   addUser_: function() {
     // May be submitted by the Enter key even if the input value is invalid.
-    if (!this.validate_()) {
+    if (this.$.addUserInput.disabled) {
       return;
     }
 
@@ -86,6 +79,34 @@ Polymer({
         /* callback */ function(success) {});
     this.$.addUserInput.value = '';
     this.$.dialog.close();
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  canAddUser_: function() {
+    return this.isEmail_ && !this.isEmpty_;
+  },
+
+  /** @private */
+  onCancelTap_: function() {
+    this.$.dialog.cancel();
+  },
+
+  /** @private */
+  onInput_: function() {
+    const input = this.$.addUserInput.value;
+    this.isEmail_ = NAME_ONLY_REGEX.test(input) || EMAIL_REGEX.test(input);
+    this.isEmpty_ = input.length == 0;
+  },
+
+  /**
+   * @private
+   * @return {boolean}
+   */
+  shouldShowError_: function() {
+    return !this.isEmail_ && !this.isEmpty_;
   },
 });
 

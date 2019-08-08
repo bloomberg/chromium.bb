@@ -25,7 +25,6 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import clactions
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_collections
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import git
@@ -172,7 +171,7 @@ def GetChildConfigListMetadata(child_configs, config_status_map):
 
 
 def _UploadAndLinkGomaLogIfNecessary(
-    stage_name, goma_dir, goma_client_json, goma_tmp_dir):
+    stage_name, cbb_config_name, goma_dir, goma_client_json, goma_tmp_dir):
   """Uploads the logs for goma, if needed. Also create a link to the visualizer.
 
   If |goma_tmp_dir| is given, |goma_dir| and |goma_client_json| must not be
@@ -180,6 +179,7 @@ def _UploadAndLinkGomaLogIfNecessary(
 
   Args:
     stage_name: Name of the stage where goma is used.
+    cbb_config_name: Name of cbb_config used for the build.
     goma_dir: Path to goma installed directory.
     goma_client_json: Path to the service account json file.
     goma_tmp_dir: Goma's working directory.
@@ -191,7 +191,7 @@ def _UploadAndLinkGomaLogIfNecessary(
   # Just in case, stop the goma. E.g. In case of timeout, we do not want to
   # keep goma compiler_proxy running.
   goma.Stop()
-  goma_urls = goma.UploadLogs()
+  goma_urls = goma.UploadLogs(cbb_config_name)
   if goma_urls:
     for label, url in goma_urls:
       logging.PrintBuildbotLink('%s %s' % (stage_name, label), url)
@@ -340,28 +340,15 @@ class SlaveFailureSummaryStage(generic_stages.BuilderStage):
 
     child_failures = self.buildstore.GetBuildsFailures(
         self.GetScheduledSlaveBuildbucketIds())
-    failures_by_build = cros_collections.GroupNamedtuplesByKey(
-        child_failures, 'build_id')
-    for _, build_failures in sorted(failures_by_build.items()):
-      failures_by_stage = cros_collections.GroupNamedtuplesByKey(
-          build_failures, 'build_stage_id')
-      # Surface a link to each slave stage that failed, in stage_id sorted
-      # order.
-      for stage_id in sorted(failures_by_stage):
-        failure = failures_by_stage[stage_id][0]
-        # Ignore failures that did not cause their enclosing stage to fail.
-        # Ignore slave builds that are still inflight, because some stage logs
-        # might not have been printed to buildbot yet.
-        # TODO(akeshet) revisit this approach, if we seem to be suppressing
-        # useful information as a result of it.
-        if (failure.stage_status != constants.BUILDER_STATUS_FAILED or
-            failure.build_status == constants.BUILDER_STATUS_INFLIGHT):
-          continue
-        slave_stage_url = tree_status.ConstructLegolandBuildURL(
-            failure.buildbucket_id)
-        logging.PrintBuildbotLink('%s %s' % (failure.build_config,
-                                             failure.stage_name),
-                                  slave_stage_url)
+    for failure in child_failures:
+      if (failure.stage_status != constants.BUILDER_STATUS_FAILED or
+          failure.build_status == constants.BUILDER_STATUS_INFLIGHT):
+        continue
+      slave_stage_url = tree_status.ConstructLegolandBuildURL(
+          failure.buildbucket_id)
+      logging.PrintBuildbotLink('%s %s' % (failure.build_config,
+                                           failure.stage_name),
+                                slave_stage_url)
 
 
 class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
@@ -394,7 +381,7 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
     build_id = build_identifier.cidb_id
     if self.buildstore.AreClientsReady():
       builds = self.buildstore.GetBuildHistory(
-          self._run.config.name, 2, branch=self._run.options.branch_name,
+          self._run.config.name, 2, branch=self._run.options.branch,
           ignore_build_id=build_id)
       for build in builds:
         old_version = build['full_version']
@@ -527,11 +514,9 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
       # is resolved
       per_board_dict = self._run.attrs.metadata.GetDict()['board-metadata']
       for board, board_metadata in per_board_dict.items():
-        db.InsertBoardPerBuild(build_id, board)
+        self.buildstore.InsertBoardPerBuild(build_id, board)
         if board_metadata:
-          db.UpdateBoardPerBuildMetadata(build_id, board, board_metadata)
-      for child_config in self._run.attrs.metadata.GetValue('child-configs'):
-        db.InsertChildConfigPerBuild(build_id, child_config['name'])
+          self.buildstore.InsertBoardPerBuild(build_id, board, board_metadata)
 
     # Abort previous hw test suites. This happens after reexecution as it
     # requires chromite/third_party/swarming.client, which is not available
@@ -731,12 +716,12 @@ class ReportStage(generic_stages.BuilderStage,
     logging.PrintBuildbotLink('Artifacts[%s]' % links_build_description,
                               artifacts_url)
 
-  def _UploadBuildStagesTimeline(self, builder_run, build_id):
+  def _UploadBuildStagesTimeline(self, builder_run, buildbucket_id):
     """Upload an HTML timeline for the build stages at remote archive location.
 
     Args:
       builder_run: BuilderRun object for this run.
-      build_id: CIDB id for the current build.
+      buildbucket_id: Buildbucket id for the current build.
 
     Returns:
       If an index file is uploaded then a dict is returned where each value
@@ -759,7 +744,7 @@ class ReportStage(generic_stages.BuilderStage,
     timeline = os.path.join(archive_path, timeline_file)
 
     # Gather information about this build from CIDB.
-    stages = self.buildstore.GetBuildsStages(build_ids=[build_id])
+    stages = self.buildstore.GetBuildsStages(buildbucket_ids=[buildbucket_id])
     # Many stages are started in parallel after the build finishes. Stages are
     # sorted by start_time first bceause it shows that progression most
     # clearly. Sort by finish_time secondarily to display those paralllel
@@ -779,12 +764,12 @@ class ReportStage(generic_stages.BuilderStage,
         debug=self._run.options.debug_forced, update_list=True, acl=self.acl)
     return os.path.join(archive.download_url_file, timeline_file)
 
-  def _UploadSlavesTimeline(self, builder_run, build_id):
+  def _UploadSlavesTimeline(self, builder_run, build_identifier):
     """Upload an HTML timeline for the slaves at remote archive location.
 
     Args:
       builder_run: BuilderRun object for this run.
-      build_id: CIDB id for the master build.
+      build_identifier: BuildIdentifier instance for the master build.
 
     Returns:
       The URL of the timeline is returned if slave builds exists.  If no
@@ -805,7 +790,7 @@ class ReportStage(generic_stages.BuilderStage,
     timeline = os.path.join(archive_path, timeline_file)
 
     # Gather information about this build from CIDB.
-    statuses = self.buildstore.GetSlaveStatuses(build_id)
+    statuses = self.buildstore.GetSlaveStatuses(build_identifier)
     if statuses is None or len(statuses) == 0:
       return None
     # Slaves may be started at slightly different times, but what matters most
@@ -863,14 +848,12 @@ class ReportStage(generic_stages.BuilderStage,
         builder_run, get_statuses_from_slaves, config, stage, final_status,
         completion_instance, child_configs_list)
 
-  def ArchiveResults(self, final_status, build_id, db):
+  def ArchiveResults(self, final_status):
     """Archive our build results.
 
     Args:
       final_status: constants.BUILDER_STATUS_PASSED or
                     constants.BUILDER_STATUS_FAILED
-      build_id: CIDB id for the current build.
-      db: CIDBConnection instance.
     """
     # Make sure local archive directory is prepared, if it was not already.
     if not os.path.exists(self.archive_path):
@@ -885,14 +868,17 @@ class ReportStage(generic_stages.BuilderStage,
     if final_status == constants.BUILDER_STATUS_FAILED:
       self._SendPreCQInfraAlertMessageIfNeeded()
 
+    build_identifier, db = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
+    buildbucket_id = build_identifier.buildbucket_id
     # Iterate through each builder run, whether there is just the main one
     # or multiple child builder runs.
     for builder_run in self._run.GetUngroupedBuilderRuns():
       if db is not None:
-        timeline = self._UploadBuildStagesTimeline(builder_run, build_id)
+        timeline = self._UploadBuildStagesTimeline(builder_run, buildbucket_id)
         logging.PrintBuildbotLink('Build stages timeline', timeline)
 
-        timeline = self._UploadSlavesTimeline(builder_run, build_id)
+        timeline = self._UploadSlavesTimeline(builder_run, build_identifier)
         if timeline is not None:
           logging.PrintBuildbotLink('Slaves timeline', timeline)
 
@@ -935,7 +921,7 @@ class ReportStage(generic_stages.BuilderStage,
     This includes final metadata archival, and update CIDB with our final status
     as well as producting a logged build result summary.
     """
-    build_identifier, db = self._run.GetCIDBHandle()
+    build_identifier, _ = self._run.GetCIDBHandle()
     build_id = build_identifier.cidb_id
     buildbucket_id = build_identifier.buildbucket_id
     if results_lib.Results.BuildSucceededSoFar(self.buildstore, buildbucket_id,
@@ -989,7 +975,7 @@ class ReportStage(generic_stages.BuilderStage,
     # Some operations can only be performed if a valid version is available.
     try:
       self._run.GetVersionInfo()
-      self.ArchiveResults(final_status, build_id, db)
+      self.ArchiveResults(final_status)
       metadata_url = os.path.join(self.upload_url, constants.METADATA_JSON)
     except cbuildbot_run.VersionNotSetError:
       logging.error('A valid version was never set for this run. '
@@ -1002,11 +988,13 @@ class ReportStage(generic_stages.BuilderStage,
     # Upload goma log if used for BuildPackage and TestSimpleChrome.
     _UploadAndLinkGomaLogIfNecessary(
         'BuildPackages',
+        self._run.config.name,
         self._run.options.goma_dir,
         self._run.options.goma_client_json,
         self._run.attrs.metadata.GetValueWithDefault('goma_tmp_dir'))
     _UploadAndLinkGomaLogIfNecessary(
         'TestSimpleChromeWorkflow',
+        self._run.config.name,
         self._run.options.goma_dir,
         self._run.options.goma_client_json,
         self._run.attrs.metadata.GetValueWithDefault(
@@ -1014,12 +1002,6 @@ class ReportStage(generic_stages.BuilderStage,
 
     if self.buildstore.AreClientsReady():
       status_for_db = final_status
-
-      child_metadatas = self._run.attrs.metadata.GetDict().get(
-          'child-configs', [])
-      for child_metadata in child_metadatas:
-        self.buildstore.FinishChildConfig(build_id, child_metadata['name'],
-                                          child_metadata['status'])
 
       # TODO(pprabhu): After BuildData and CBuildbotMetdata are merged, remove
       # this extra temporary object creation.
@@ -1093,8 +1075,13 @@ class ReportStage(generic_stages.BuilderStage,
     """
     build_identifier, _ = self._run.GetCIDBHandle()
     if self.buildstore.AreClientsReady():
-      build_id = build_identifier.cidb_id
-      build_info = self.buildstore.GetBuildStatuses(build_ids=[build_id])[0]
+      buildbucket_id = build_identifier.buildbucket_id
+      build_info = self.buildstore.GetBuildStatuses(
+          buildbucket_ids=[buildbucket_id])[0]
+      # If we query from Buildbucket, the build isn't finished yet.
+      # So, finish_time is None. Use current time instead.
+      if build_info['finish_time'] is None:
+        build_info['finish_time'] = datetime.datetime.now()
       duration = (build_info['finish_time'] -
                   build_info['start_time']).total_seconds()
       return duration

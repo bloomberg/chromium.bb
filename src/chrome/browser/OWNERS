@@ -2,6 +2,7 @@
 # usual OWNERS rules.
 per-file about_flags.cc=*
 per-file flag_descriptions.*=*
+per-file flag-metadata.json=*
 
 per-file about_flags_unittest.cc=file://components/flags_ui/OWNERS
 
@@ -38,15 +39,14 @@ per-file chrome_security_exploit_browsertest.cc=file://content/OWNERS
 
 per-file chrome_service_worker_browsertest.cc=file://content/browser/service_worker/OWNERS
 
-per-file chrome_site_per_process_browsertest.cc=file://content/OWNERS
-per-file chrome_site_per_process_browsertest.cc=kenrb@chromium.org
-
 per-file chrome_webusb_browser_client*=file://chrome/browser/usb/OWNERS
+
+per-file chrome_worker_browsertest.cc=file://content/browser/worker_host/OWNERS
 
 per-file exo_parts.*=reveman@chromium.org
 
-per-file flag-metadata.json=avi@chromium.org
-per-file flag-metadata.json=ellyjones@chromium.org
+per-file flag-never-expire-list.json=avi@chromium.org
+per-file flag-never-expire-list.json=ellyjones@chromium.org
 
 per-file io_thread*=mmenke@chromium.org
 per-file io_thread*=rch@chromium.org
@@ -67,12 +67,6 @@ per-file media_router_resources.grdp=file://chrome/browser/media/router/OWNERS
 per-file shell_integration_win*=gab@chromium.org
 per-file shell_integration_win*=grt@chromium.org
 per-file shell_integration_linux*=thomasanderson@chromium.org
-
-per-file site_details*=creis@chromium.org
-per-file site_details*=nasko@chromium.org
-
-per-file site_per_process_interactive_browsertest.cc=file://content/OWNERS
-per-file site_per_process_interactive_browsertest.cc=kenrb@chromium.org
 
 per-file unload_browsertest.cc=file://content/OWNERS
 

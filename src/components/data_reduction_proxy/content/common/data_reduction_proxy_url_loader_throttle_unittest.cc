@@ -5,8 +5,10 @@
 #include "components/data_reduction_proxy/content/common/data_reduction_proxy_url_loader_throttle.h"
 
 #include "base/run_loop.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
@@ -108,7 +110,7 @@ std::unique_ptr<DataReductionProxyThrottleManager> CreateManager(
 DataReductionProxyServer MakeCoreDrpServer(const std::string pac_string) {
   auto proxy_server = net::ProxyServer::FromPacString(pac_string);
   EXPECT_TRUE(proxy_server.is_valid());
-  return DataReductionProxyServer(proxy_server, ProxyServer_ProxyType_CORE);
+  return DataReductionProxyServer(proxy_server);
 }
 
 class DataReductionProxyURLLoaderThrottleTest : public ::testing::Test {
@@ -122,7 +124,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest, AcceptTransformHeaderSet) {
                                                manager.get());
   network::ResourceRequest request;
   request.url = GURL("http://example.com");
-  request.resource_type = content::RESOURCE_TYPE_MEDIA;
+  request.resource_type = static_cast<int>(content::ResourceType::kMedia);
   bool defer = false;
 
   throttle.WillStartRequest(&request, &defer);
@@ -141,7 +143,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest,
                                                manager.get());
   network::ResourceRequest request;
   request.url = GURL("http://example.com");
-  request.resource_type = content::RESOURCE_TYPE_MAIN_FRAME;
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.previews_state = content::SERVER_LITE_PAGE_ON;
   bool defer = false;
 
@@ -178,7 +180,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest, UseAlternateProxyList) {
   DataReductionProxyURLLoaderThrottle throttle((net::HttpRequestHeaders()),
                                                manager.get());
   network::ResourceRequest request;
-  request.resource_type = content::RESOURCE_TYPE_MEDIA;
+  request.resource_type = static_cast<int>(content::ResourceType::kMedia);
   request.url = GURL("http://example.com");
   bool defer = false;
 
@@ -192,7 +194,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest, DontUseAlternateProxyList) {
   DataReductionProxyURLLoaderThrottle throttle((net::HttpRequestHeaders()),
                                                manager.get());
   network::ResourceRequest request;
-  request.resource_type = content::RESOURCE_TYPE_MAIN_FRAME;
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.url = GURL("http://example.com");
   bool defer = false;
 
@@ -202,7 +204,8 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest, DontUseAlternateProxyList) {
 }
 
 void RestartBypassProxyAndCacheHelper(bool response_came_from_drp) {
-  auto drp_server = MakeCoreDrpServer("HTTPS localhost");
+  base::HistogramTester histogram_tester;
+  auto drp_server = MakeCoreDrpServer("QUIC proxy.googlezip.net:443");
 
   MockMojoDataReductionProxy* drp;
   auto manager = CreateManager({drp_server}, &drp);
@@ -212,7 +215,7 @@ void RestartBypassProxyAndCacheHelper(bool response_came_from_drp) {
   throttle.set_delegate(&delegate);
 
   network::ResourceRequest request;
-  request.resource_type = content::RESOURCE_TYPE_MAIN_FRAME;
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.url = GURL("http://example.com/");
   bool defer = false;
 
@@ -242,8 +245,12 @@ void RestartBypassProxyAndCacheHelper(bool response_came_from_drp) {
     EXPECT_EQ(1u, delegate.restart_with_flags_called);
     EXPECT_EQ(net::LOAD_BYPASS_PROXY | net::LOAD_BYPASS_CACHE,
               delegate.restart_additional_load_flags);
+    histogram_tester.ExpectUniqueSample("DataReductionProxy.Quic.ProxyStatus",
+                                        QUIC_PROXY_STATUS_AVAILABLE, 1);
   } else {
     EXPECT_EQ(0u, delegate.restart_with_flags_called);
+    histogram_tester.ExpectUniqueSample("DataReductionProxy.Quic.ProxyStatus",
+                                        QUIC_PROXY_NOT_SUPPORTED, 1);
   }
 }
 
@@ -263,6 +270,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest,
 
 TEST_F(DataReductionProxyURLLoaderThrottleTest,
        DisregardChromeProxyFromDirect) {
+  base::HistogramTester histogram_tester;
   auto drp_server = MakeCoreDrpServer("HTTPS localhost");
 
   auto manager = CreateManager({drp_server}, nullptr);
@@ -272,7 +280,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest,
   throttle.set_delegate(&delegate);
 
   network::ResourceRequest request;
-  request.resource_type = content::RESOURCE_TYPE_MAIN_FRAME;
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.url = GURL("http://example.com/");
   bool defer = false;
 
@@ -292,6 +300,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest,
   EXPECT_FALSE(defer);
   EXPECT_EQ(0u, delegate.resume_called);
   EXPECT_EQ(0u, delegate.restart_with_flags_called);
+  histogram_tester.ExpectTotalCount("DataReductionProxy.Quic.ProxyStatus", 0);
 }
 
 TEST_F(DataReductionProxyURLLoaderThrottleTest, MarkProxyAsBadAndRestart) {
@@ -305,7 +314,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest, MarkProxyAsBadAndRestart) {
   throttle.set_delegate(&delegate);
 
   network::ResourceRequest request;
-  request.resource_type = content::RESOURCE_TYPE_MAIN_FRAME;
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.url = GURL("http://www.example.com/");
   bool defer = false;
 

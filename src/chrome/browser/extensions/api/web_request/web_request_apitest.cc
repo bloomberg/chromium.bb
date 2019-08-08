@@ -17,7 +17,6 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "base/time/time_override.h"
 #include "base/values.h"
@@ -551,24 +550,61 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestAuthRequired) {
-  CancelLoginDialog login_dialog_helper;
+enum class ProfileMode {
+  kUserProfile,
+  kIncognito,
+};
 
-  ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_auth_required.html")) <<
-      message_;
-}
+class ExtensionWebRequestApiAuthRequiredTest
+    : public ExtensionWebRequestApiTest,
+      public testing::WithParamInterface<ProfileMode> {
+ public:
+  int GetFlags() {
+    switch (GetParam()) {
+      case ProfileMode::kUserProfile:
+        return kFlagEnableFileAccess;
+      case ProfileMode::kIncognito:
+        return kFlagEnableIncognito | kFlagUseIncognito | kFlagEnableFileAccess;
+    }
+  }
+};
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
-                       WebRequestAuthRequiredIncognito) {
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
+                       WebRequestAuthRequired) {
   CancelLoginDialog login_dialog_helper;
 
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtestWithArgAndFlags(
-      "webrequest", "test_auth_required.html", nullptr,
-      kFlagEnableIncognito | kFlagUseIncognito | kFlagEnableFileAccess))
+      "webrequest", "test_auth_required.html", nullptr, GetFlags()))
       << message_;
 }
+
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
+                       WebRequestAuthRequiredAsync) {
+  CancelLoginDialog login_dialog_helper;
+
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionSubtestWithArgAndFlags(
+      "webrequest", "test_auth_required_async.html", nullptr, GetFlags()))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
+                       WebRequestAuthRequiredParallel) {
+  CancelLoginDialog login_dialog_helper;
+
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionSubtestWithArgAndFlags(
+      "webrequest", "test_auth_required_parallel.html", nullptr, GetFlags()))
+      << message_;
+}
+
+INSTANTIATE_TEST_SUITE_P(UserProfile,
+                         ExtensionWebRequestApiAuthRequiredTest,
+                         ::testing::Values(ProfileMode::kUserProfile));
+INSTANTIATE_TEST_SUITE_P(Incognito,
+                         ExtensionWebRequestApiAuthRequiredTest,
+                         ::testing::Values(ProfileMode::kIncognito));
 
 // This test times out regularly on win_rel trybots. See http://crbug.com/122178
 // Also on Linux/ChromiumOS debug, ASAN and MSAN builds.
@@ -989,14 +1025,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, HostedAppRequest) {
   EXPECT_TRUE(listener2.WaitUntilSatisfied());
 }
 
-// Tests that webRequest works with
-// extensions_features::kRuntimeHostPermissions.
+// Tests that WebRequest works with runtime host permissions.
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebRequestWithWithheldPermissions) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1121,10 +1152,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 // intercept cross-origin requests from that tab.
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebRequestWithheldPermissionsCrossOriginRequests) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1176,10 +1203,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 // https://crbug.com/891586.
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WithheldHostPermissionsForCrossOriginWithoutInitiator) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1299,7 +1322,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   auto make_browser_request = [this](const GURL& url) {
     auto request = std::make_unique<network::ResourceRequest>();
     request->url = url;
-    request->resource_type = content::RESOURCE_TYPE_SUB_RESOURCE;
+    request->resource_type =
+        static_cast<int>(content::ResourceType::kSubResource);
 
     auto* url_loader_factory =
         content::BrowserContext::GetDefaultStoragePartition(profile())
@@ -1536,6 +1560,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       ->CreateWebSocket(std::move(request), network::mojom::kBrowserProcessId,
                         host->GetProcess()->GetID(),
                         url::Origin::Create(GURL("http://example.com")),
+                        network::mojom::kWebSocketOptionNone,
                         std::move(auth_handler), nullptr);
   web_socket.reset();
 }
@@ -2245,10 +2270,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
 // specific permission shouldn't bypass our policy.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
                        WebRequestProtectedByPolicy) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   // Host protected by policy.
   const std::string protected_domain = "example.com";
 

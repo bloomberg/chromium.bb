@@ -39,7 +39,8 @@ Polymer({
     /** @private {boolean} */
     customSelected_: {
       type: Boolean,
-      computed: 'computeCustomSelected_(selectedValue)',
+      computed: 'computeCustomSelected_(settings.customScaling.*, ' +
+          'settings.fitToPage.*)',
     },
 
     /** @private {boolean} */
@@ -64,6 +65,22 @@ Polymer({
   /** @private {string} */
   lastValidScaling_: '',
 
+  /**
+   * Whether the custom scaling setting has been set to true, but the custom
+   * input has not yet been expanded. Used to determine whether changes in the
+   * dropdown are due to user input or sticky settings.
+   * @private {boolean}
+   */
+  customScalingSettingSet_: false,
+
+  /**
+   * Whether the user has selected custom scaling in the dropdown, but the
+   * custom input has not yet been expanded. Used to determine whether to
+   * auto-focus the custom input.
+   * @private {boolean}
+   */
+  userSelectedCustomScaling_: false,
+
   /** @override */
   ready: function() {
     this.ScalingValue = ScalingValue;
@@ -80,6 +97,11 @@ Polymer({
       this.setSetting('fitToPage', false);
     }
     const isCustom = value === ScalingValue.CUSTOM.toString();
+    if (isCustom && !this.customScalingSettingSet_) {
+      this.userSelectedCustomScaling_ = true;
+    } else {
+      this.customScalingSettingSet_ = false;
+    }
     this.setSetting('customScaling', isCustom);
     if (isCustom) {
       this.setSetting('scaling', this.currentValue_);
@@ -117,6 +139,8 @@ Polymer({
         /** @type {boolean} */ (this.getSetting('customScaling').value);
     if (!isCustom) {
       this.updateScalingToValid_();
+    } else {
+      this.customScalingSettingSet_ = true;
     }
     this.selectedValue = isCustom ? ScalingValue.CUSTOM.toString() :
                                     ScalingValue.DEFAULT.toString();
@@ -163,13 +187,17 @@ Polymer({
    * @private
    */
   computeCustomSelected_: function() {
-    return this.selectedValue === ScalingValue.CUSTOM.toString();
+    return /** @type {boolean} */ (this.getSettingValue('customScaling')) &&
+        (!this.getSetting('fitToPage').available ||
+         !(/** @type {boolean} */ (this.getSettingValue('fitToPage'))));
   },
 
   /** @private */
   onCollapseChanged_: function() {
-    if (this.customSelected_) {
+    if (this.customSelected_ && this.userSelectedCustomScaling_) {
       this.$$('print-preview-number-settings-section').getInput().focus();
     }
+    this.customScalingSettingSet_ = false;
+    this.userSelectedCustomScaling_ = false;
   },
 });

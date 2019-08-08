@@ -121,50 +121,12 @@ bool Details::UpdateFromSelectedCreditCard(const ShowDetailsProto& proto,
   return true;
 }
 
-base::Value Details::GetDebugContext() const {
-  base::Value dict(base::Value::Type::DICTIONARY);
-  if (!detailsProto().title().empty())
-    dict.SetKey("title", base::Value(detailsProto().title()));
-
-  if (!detailsProto().image_url().empty())
-    dict.SetKey("image_url", base::Value(detailsProto().image_url()));
-
-  if (!detailsProto().total_price().empty())
-    dict.SetKey("total_price", base::Value(detailsProto().total_price()));
-
-  if (!detailsProto().description_line_1().empty())
-    dict.SetKey("description_line_1",
-                base::Value(detailsProto().description_line_1()));
-
-  if (!detailsProto().description_line_2().empty())
-    dict.SetKey("description_line_2",
-                base::Value(detailsProto().description_line_2()));
-
-  if (detailsProto().has_datetime()) {
-    dict.SetKey("datetime",
-                base::Value(base::StringPrintf(
-                    "%d-%02d-%02dT%02d:%02d:%02d",
-                    static_cast<int>(detailsProto().datetime().date().year()),
-                    detailsProto().datetime().date().month(),
-                    detailsProto().datetime().date().day(),
-                    detailsProto().datetime().time().hour(),
-                    detailsProto().datetime().time().minute(),
-                    detailsProto().datetime().time().second())));
-  }
-  if (!datetime_.empty())
-    dict.SetKey("datetime_str", base::Value(datetime_));
-
-  dict.SetKey("user_approval_required",
-              base::Value(changes().user_approval_required()));
-  dict.SetKey("highlight_title", base::Value(changes().highlight_title()));
-  dict.SetKey("highlight_line1", base::Value(changes().highlight_line1()));
-  dict.SetKey("highlight_line2", base::Value(changes().highlight_line2()));
-
-  return dict;
-}
-
 bool Details::UpdateFromParameters(
     const std::map<std::string, std::string>& parameters) {
+  const auto iter = parameters.find("DETAILS_SHOW_INITIAL");
+  if (iter != parameters.end() && iter->second.compare("false") == 0) {
+    return false;
+  }
   // Whenever details are updated from parameters we want to animate missing
   // data.
   proto_.set_animate_placeholders(true);
@@ -224,8 +186,22 @@ bool Details::MaybeUpdateFromDetailsParameters(
       continue;
     }
 
+    if (key == "DETAILS_DESCRIPTION_LINE_3") {
+      proto_.set_description_line_3(iter.second);
+      details_updated = true;
+      continue;
+    }
+
     if (key == "DETAILS_IMAGE_URL") {
       proto_.set_image_url(iter.second);
+      details_updated = true;
+      continue;
+    }
+
+    if (key == "DETAILS_IMAGE_CLICKTHROUGH_URL") {
+      proto_.mutable_image_clickthrough_data()->set_allow_clickthrough(true);
+      proto_.mutable_image_clickthrough_data()->set_clickthrough_url(
+          iter.second);
       details_updated = true;
       continue;
     }

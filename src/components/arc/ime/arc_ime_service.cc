@@ -13,7 +13,6 @@
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/ime/arc_ime_bridge_impl.h"
-#include "components/exo/shell_surface_util.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -32,9 +31,6 @@
 namespace arc {
 
 namespace {
-
-// TODO(yhanada): Remove this once IsArcAppWindow is fixed for ARC++ Kiosk app.
-constexpr char kArcAppIdPrefix[] = "org.chromium.arc";
 
 base::Optional<double> g_override_default_device_scale_factor;
 
@@ -66,13 +62,9 @@ class ArcWindowDelegateImpl : public ArcImeService::ArcWindowDelegate {
       // TODO(yhanada): Make IsArcAppWindow support a window of ARC++ Kiosk.
       // Specifically, a window of ARC++ Kiosk should have ash::AppType::ARC_APP
       // property. Please see implementation of IsArcAppWindow().
-      if (window == active) {
-        const std::string* app_id = exo::GetShellApplicationId(window);
-        if (IsArcKioskMode() && app_id &&
-            base::StartsWith(*app_id, kArcAppIdPrefix,
-                             base::CompareCase::SENSITIVE)) {
-          return true;
-        }
+      if (window == active && IsArcKioskMode() &&
+          GetWindowTaskId(window) != kNoTaskId) {
+        return true;
       }
     }
     return false;

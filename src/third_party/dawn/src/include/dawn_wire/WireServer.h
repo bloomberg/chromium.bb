@@ -27,10 +27,12 @@ namespace dawn_wire {
 
     class DAWN_WIRE_EXPORT WireServer : public CommandHandler {
       public:
-        WireServer(dawnDevice device, const dawnProcTable& procs, CommandSerializer* serializer);
+        WireServer(DawnDevice device, const DawnProcTable& procs, CommandSerializer* serializer);
         ~WireServer();
 
         const char* HandleCommands(const char* commands, size_t size) override final;
+
+        bool InjectTexture(DawnTexture texture, uint32_t id, uint32_t generation);
 
       private:
         std::unique_ptr<server::Server> mImpl;

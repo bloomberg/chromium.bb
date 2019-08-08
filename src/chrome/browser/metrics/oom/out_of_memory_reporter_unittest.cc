@@ -43,7 +43,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/common/descriptors_android.h"
+#include "chrome/common/chrome_descriptors.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/content/browser/child_process_crash_observer_android.h"
 #endif

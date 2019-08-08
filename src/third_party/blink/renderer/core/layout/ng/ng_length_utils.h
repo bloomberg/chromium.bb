@@ -34,8 +34,8 @@ enum class LengthResolvePhase { kIntrinsic, kLayout };
 // based on its CSS property. E.g.
 // kMinSize - min-width / min-height
 // kMaxSize - max-width / max-height
-// kContentSize - width / height
-enum class LengthResolveType { kMinSize, kMaxSize, kContentSize };
+// kMainSize - width / height
+enum class LengthResolveType { kMinSize, kMaxSize, kMainSize };
 
 inline bool NeedMinMaxSize(const ComputedStyle& style) {
   // This check is technically too broad (fill-available does not need intrinsic
@@ -47,7 +47,7 @@ inline bool NeedMinMaxSize(const ComputedStyle& style) {
 }
 
 // Whether the caller needs to compute min-content and max-content sizes to
-// pass them to ResolveInlineLength / ComputeInlineSizeForFragment.
+// pass them to ResolveMainInlineLength / ComputeInlineSizeForFragment.
 // If this function returns false, it is safe to pass an empty
 // MinMaxSize struct to those functions.
 inline bool NeedMinMaxSize(const NGConstraintSpace& constraint_space,
@@ -63,34 +63,145 @@ inline bool NeedMinMaxSize(const NGConstraintSpace& constraint_space,
 CORE_EXPORT bool NeedMinMaxSizeForContentContribution(WritingMode mode,
                                                       const ComputedStyle&);
 
-// Resolve means translate a Length to a LayoutUnit, using parent info
-// (represented by ConstraintSpace) as necessary for things like percents.
-//  - |MinMaxSize| is only used when the length is intrinsic (fit-content, etc).
-//  - |Length| is the length to resolve.
-//  - |LengthResolveType| is the type of length function, based on its CSS
-//    property (see definition above).
-//  - |LengthResolveType| indicates what type of layout pass we are within (see
-//    definition above).
-CORE_EXPORT LayoutUnit ResolveInlineLength(const NGConstraintSpace&,
-                                           const ComputedStyle&,
-                                           const NGBoxStrut& border_padding,
-                                           const base::Optional<MinMaxSize>&,
-                                           const Length&,
-                                           LengthResolveType,
-                                           LengthResolvePhase);
+// Returns if the given |Length| is unresolvable, e.g. the length is %-based
+// during the intrinsic phase.
+CORE_EXPORT bool InlineLengthUnresolvable(const Length&, LengthResolvePhase);
+CORE_EXPORT bool BlockLengthUnresolvable(
+    const NGConstraintSpace&,
+    const Length&,
+    LengthResolvePhase,
+    const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
+        nullptr);
 
-// Same as ResolveInlineLength, except here |content_size| roughly plays the
-// part of |MinMaxSize|.
-CORE_EXPORT LayoutUnit ResolveBlockLength(
+// Resolve means translate a Length to a LayoutUnit.
+//  - |NGConstraintSpace| the information given by the parent, e.g. the
+//    available-size.
+//  - |ComputedStyle| the style of the node.
+//  - |border_padding| the resolved border, and padding of the node.
+//  - |MinMaxSize| is only used when the length is intrinsic (fit-content).
+//  - |Length| is the length to resolve.
+CORE_EXPORT LayoutUnit
+ResolveInlineLengthInternal(const NGConstraintSpace&,
+                            const ComputedStyle&,
+                            const NGBoxStrut& border_padding,
+                            const base::Optional<MinMaxSize>&,
+                            const Length&);
+
+// Same as ResolveInlineLengthInternal, except here |content_size| roughly plays
+// the part of |MinMaxSize|.
+CORE_EXPORT LayoutUnit ResolveBlockLengthInternal(
     const NGConstraintSpace&,
     const ComputedStyle&,
     const NGBoxStrut& border_padding,
     const Length&,
     LayoutUnit content_size,
-    LengthResolveType,
     LengthResolvePhase,
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
         nullptr);
+
+// Used for resolving min inline lengths, (|ComputedStyle::MinLogicalWidth|).
+inline LayoutUnit ResolveMinInlineLength(
+    const NGConstraintSpace& constraint_space,
+    const ComputedStyle& style,
+    const NGBoxStrut& border_padding,
+    const base::Optional<MinMaxSize>& min_and_max,
+    const Length& length,
+    LengthResolvePhase phase) {
+  if (LIKELY(length.IsAuto() || InlineLengthUnresolvable(length, phase)))
+    return border_padding.InlineSum();
+
+  return ResolveInlineLengthInternal(constraint_space, style, border_padding,
+                                     min_and_max, length);
+}
+
+// Used for resolving max inline lengths, (|ComputedStyle::MaxLogicalWidth|).
+inline LayoutUnit ResolveMaxInlineLength(
+    const NGConstraintSpace& constraint_space,
+    const ComputedStyle& style,
+    const NGBoxStrut& border_padding,
+    const base::Optional<MinMaxSize>& min_and_max,
+    const Length& length,
+    LengthResolvePhase phase) {
+  if (LIKELY(length.IsMaxSizeNone() || InlineLengthUnresolvable(length, phase)))
+    return LayoutUnit::Max();
+
+  return ResolveInlineLengthInternal(constraint_space, style, border_padding,
+                                     min_and_max, length);
+}
+
+// Used for resolving main inline lengths, (|ComputedStyle::LogicalWidth|).
+inline LayoutUnit ResolveMainInlineLength(
+    const NGConstraintSpace& constraint_space,
+    const ComputedStyle& style,
+    const NGBoxStrut& border_padding,
+    const base::Optional<MinMaxSize>& min_and_max,
+    const Length& length) {
+  return ResolveInlineLengthInternal(constraint_space, style, border_padding,
+                                     min_and_max, length);
+}
+
+// Used for resolving min block lengths, (|ComputedStyle::MinLogicalHeight|).
+inline LayoutUnit ResolveMinBlockLength(
+    const NGConstraintSpace& constraint_space,
+    const ComputedStyle& style,
+    const NGBoxStrut& border_padding,
+    const Length& length,
+    LayoutUnit content_size,
+    LengthResolvePhase phase,
+    const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
+        nullptr) {
+  if (LIKELY(length.IsAuto() ||
+             BlockLengthUnresolvable(
+                 constraint_space, length, phase,
+                 opt_percentage_resolution_block_size_for_min_max)))
+    return border_padding.BlockSum();
+
+  return ResolveBlockLengthInternal(
+      constraint_space, style, border_padding, length, content_size, phase,
+      opt_percentage_resolution_block_size_for_min_max);
+}
+
+// Used for resolving max block lengths, (|ComputedStyle::MaxLogicalHeight|).
+inline LayoutUnit ResolveMaxBlockLength(
+    const NGConstraintSpace& constraint_space,
+    const ComputedStyle& style,
+    const NGBoxStrut& border_padding,
+    const Length& length,
+    LayoutUnit content_size,
+    LengthResolvePhase phase,
+    const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
+        nullptr) {
+  if (LIKELY(length.IsMaxSizeNone() ||
+             BlockLengthUnresolvable(
+                 constraint_space, length, phase,
+                 opt_percentage_resolution_block_size_for_min_max)))
+    return LayoutUnit::Max();
+
+  return ResolveBlockLengthInternal(
+      constraint_space, style, border_padding, length, content_size, phase,
+      opt_percentage_resolution_block_size_for_min_max);
+}
+
+// Used for resolving main block lengths, (|ComputedStyle::LogicalHeight|).
+inline LayoutUnit ResolveMainBlockLength(
+    const NGConstraintSpace& constraint_space,
+    const ComputedStyle& style,
+    const NGBoxStrut& border_padding,
+    const Length& length,
+    LayoutUnit content_size,
+    LengthResolvePhase phase,
+    const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
+        nullptr) {
+  if (UNLIKELY((length.IsPercentOrCalc() || length.IsFillAvailable()) &&
+               BlockLengthUnresolvable(
+                   constraint_space, length, phase,
+                   opt_percentage_resolution_block_size_for_min_max)))
+    return content_size;
+
+  return ResolveBlockLengthInternal(
+      constraint_space, style, border_padding, length, content_size, phase,
+      opt_percentage_resolution_block_size_for_min_max);
+}
 
 // For the given style and min/max content sizes, computes the min and max
 // content contribution (https://drafts.csswg.org/css-sizing/#contributions).
@@ -119,7 +230,16 @@ ComputeMinAndMaxContentContribution(WritingMode writing_mode,
 MinMaxSize ComputeMinAndMaxContentContribution(
     const ComputedStyle& parent_style,
     NGLayoutInputNode child,
-    const MinMaxSizeInput& input);
+    const MinMaxSizeInput&);
+
+// Computes the min/max-content size for an out-of-flow positioned node and
+// returns it, using the cache where possible. ALways computes it in the writing
+// mode of the node itself.
+MinMaxSize ComputeMinAndMaxContentSizeForOutOfFlow(
+    const NGConstraintSpace&,
+    NGLayoutInputNode,
+    const NGBoxStrut& border_padding,
+    const MinMaxSizeInput&);
 
 // Returns inline size of the node's border box by resolving the computed value
 // in style.logicalWidth (Length) to a layout unit, adding border and padding,
@@ -197,7 +317,7 @@ inline NGBoxStrut ComputeMarginsFor(const ComputedStyle& child_style,
 inline NGBoxStrut ComputeMarginsForSelf(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style) {
-  if (constraint_space.IsAnonymous())
+  if (!style.MayHaveMargin() || constraint_space.IsAnonymous())
     return NGBoxStrut();
   LayoutUnit percentage_resolution_size =
       constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
@@ -212,7 +332,7 @@ inline NGBoxStrut ComputeMarginsForSelf(
 inline NGLineBoxStrut ComputeLineMarginsForSelf(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style) {
-  if (constraint_space.IsAnonymous())
+  if (!style.MayHaveMargin() || constraint_space.IsAnonymous())
     return NGLineBoxStrut();
   LayoutUnit percentage_resolution_size =
       constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
@@ -225,7 +345,7 @@ inline NGLineBoxStrut ComputeLineMarginsForSelf(
 inline NGLineBoxStrut ComputeLineMarginsForVisualContainer(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style) {
-  if (constraint_space.IsAnonymous())
+  if (!style.MayHaveMargin() || constraint_space.IsAnonymous())
     return NGLineBoxStrut();
   LayoutUnit percentage_resolution_size =
       constraint_space.PercentageResolutionInlineSizeForParentWritingMode();

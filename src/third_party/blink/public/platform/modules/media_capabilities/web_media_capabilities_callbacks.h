@@ -16,9 +16,6 @@ namespace blink {
 using WebMediaCapabilitiesDecodingInfoCallbacks =
     WebCallbacks<std::unique_ptr<WebMediaCapabilitiesDecodingInfo>, void>;
 
-using WebMediaCapabilitiesEncodingInfoCallbacks =
-    WebCallbacks<std::unique_ptr<WebMediaCapabilitiesInfo>, void>;
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIA_CAPABILITIES_WEB_MEDIA_CAPABILITIES_CALLBACKS_H_

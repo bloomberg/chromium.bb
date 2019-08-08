@@ -4,5 +4,5 @@
 
 // https://wicg.github.io/portals/#the-portalhost-interface
 
-[RuntimeEnabled=Portals]
+[Exposed=Window, RuntimeEnabled=Portals]
 interface PortalHost : EventTarget {};

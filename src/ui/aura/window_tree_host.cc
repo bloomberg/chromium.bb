@@ -20,8 +20,8 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host_observer.h"
+#include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/ime/input_method_factory.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/view_prop.h"
@@ -252,7 +252,8 @@ ui::InputMethod* WindowTreeHost::GetInputMethod() {
 }
 
 void WindowTreeHost::SetSharedInputMethod(ui::InputMethod* input_method) {
-  DCHECK(!input_method_);
+  if (input_method_ && owned_input_method_)
+    delete input_method_;
   input_method_ = input_method;
   owned_input_method_ = false;
 }

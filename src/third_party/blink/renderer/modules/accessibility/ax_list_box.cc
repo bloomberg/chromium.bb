@@ -43,11 +43,6 @@ AXListBox::AXListBox(LayoutObject* layout_object,
 
 AXListBox::~AXListBox() = default;
 
-AXListBox* AXListBox::Create(LayoutObject* layout_object,
-                             AXObjectCacheImpl& ax_object_cache) {
-  return MakeGarbageCollected<AXListBox>(layout_object, ax_object_cache);
-}
-
 ax::mojom::Role AXListBox::DetermineAccessibilityRole() {
   if ((aria_role_ = DetermineAriaRoleAttribute()) != ax::mojom::Role::kUnknown)
     return aria_role_;

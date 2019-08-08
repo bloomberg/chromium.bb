@@ -57,7 +57,13 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
   }
 
   // WorkerGlobalScope
-  void ImportModuleScript(
+  void FetchAndRunClassicScript(
+      const KURL& script_url,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      const v8_inspector::V8StackTraceId& stack_id) override {
+    NOTREACHED();
+  }
+  void FetchAndRunModuleScript(
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       network::mojom::FetchCredentialsMode) override {
@@ -65,10 +71,6 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
   }
 
   void ExceptionThrown(ErrorEvent*) override {}
-
-  mojom::RequestContextType GetDestinationForMainScript() override {
-    return mojom::RequestContextType::WORKER;
-  }
 };
 
 class WorkerThreadForTest : public WorkerThread {
@@ -76,7 +78,7 @@ class WorkerThreadForTest : public WorkerThread {
   explicit WorkerThreadForTest(
       WorkerReportingProxy& mock_worker_reporting_proxy)
       : WorkerThread(mock_worker_reporting_proxy),
-        worker_backing_thread_(WorkerBackingThread::Create(
+        worker_backing_thread_(std::make_unique<WorkerBackingThread>(
             ThreadCreationParams(WebThreadType::kTestThread))) {}
 
   ~WorkerThreadForTest() override = default;
@@ -104,7 +106,7 @@ class WorkerThreadForTest : public WorkerThread {
         CalculateHttpsState(security_origin), worker_clients,
         mojom::IPAddressSpace::kLocal, nullptr,
         base::UnguessableToken::Create(),
-        std::make_unique<WorkerSettings>(Settings::Create().get()),
+        std::make_unique<WorkerSettings>(std::make_unique<Settings>().get()),
         kV8CacheOptionsDefault, nullptr /* worklet_module_responses_map */);
 
     Start(std::move(creation_params),

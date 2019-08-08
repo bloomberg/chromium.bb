@@ -496,6 +496,10 @@ bool NetworkQualityEstimator::RequestProvidesRTTObservation(
 void NetworkQualityEstimator::OnConnectionTypeChanged(
     NetworkChangeNotifier::ConnectionType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // It's possible that |type| has the same value as |current_network_id_.type|.
+  // This can happen if the device switches from one WiFi SSID to another.
+
   DCHECK_EQ(nqe::internal::OBSERVATION_CATEGORY_COUNT,
             base::size(rtt_ms_observations_));
 
@@ -1319,7 +1323,12 @@ void NetworkQualityEstimator::AddAndNotifyObserversOfRTT(
 
   // Maybe recompute the effective connection type since a new RTT observation
   // is available.
-  MaybeComputeEffectiveConnectionType();
+  if (observation.source() !=
+          NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE &&
+      observation.source() !=
+          NETWORK_QUALITY_OBSERVATION_SOURCE_TRANSPORT_CACHED_ESTIMATE) {
+    MaybeComputeEffectiveConnectionType();
+  }
   for (auto& observer : rtt_observer_list_) {
     observer.OnRTTObservation(observation.value(), observation.timestamp(),
                               observation.source());
@@ -1355,7 +1364,12 @@ void NetworkQualityEstimator::AddAndNotifyObserversOfThroughput(
 
   // Maybe recompute the effective connection type since a new throughput
   // observation is available.
-  MaybeComputeEffectiveConnectionType();
+  if (observation.source() !=
+          NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE &&
+      observation.source() !=
+          NETWORK_QUALITY_OBSERVATION_SOURCE_TRANSPORT_CACHED_ESTIMATE) {
+    MaybeComputeEffectiveConnectionType();
+  }
   for (auto& observer : throughput_observer_list_) {
     observer.OnThroughputObservation(
         observation.value(), observation.timestamp(), observation.source());

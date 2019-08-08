@@ -9,13 +9,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "components/autofill/core/browser/autofill_client.h"
-#include "components/autofill/core/browser/autofill_metrics.h"
-#include "components/autofill/core/browser/credit_card.h"
+#include "base/strings/string16.h"
 #include "components/autofill/core/browser/form_data_importer.h"
-#include "components/autofill/core/browser/form_structure.h"
-#include "components/autofill/core/browser/metrics/form_events.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
 
 namespace autofill {
@@ -155,7 +150,8 @@ void CreditCardFormEventLogger::OnSuggestionsShownSubmittedOnce(
 }
 
 void CreditCardFormEventLogger::OnLog(const std::string& name,
-                                      FormEvent event) const {
+                                      FormEvent event,
+                                      const FormStructure& form) const {
   // Log in a different histogram for credit card forms on nonsecure pages so
   // that form interactions on nonsecure pages can be analyzed on their own.
   if (!is_context_secure_) {

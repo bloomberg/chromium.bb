@@ -6,6 +6,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   deps = [
+    ":descriptor_panel",
     ":device_page",
     ":usb_internals",
   ]
@@ -13,7 +14,7 @@ js_type_check("closure_compile") {
 
 js_library("usb_internals") {
   deps = [
-    ":device_page"
+    ":device_page",
     "//chrome/browser/ui/webui/usb_internals:mojo_bindings_js_library_for_compile",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:util",
@@ -22,4 +23,10 @@ js_library("usb_internals") {
 }
 
 js_library("devices_page") {
+  deps = [
+    ":descriptor_panel",
+  ]
+}
+
+js_library("descriptor_panel") {
 }

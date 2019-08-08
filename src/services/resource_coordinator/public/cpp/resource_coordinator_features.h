@@ -14,30 +14,11 @@
 
 namespace features {
 
-// The features should be documented alongside the definition of their values
-// in the .cc file.
-extern const COMPONENT_EXPORT(SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_FEATURES)
-    base::Feature kGlobalResourceCoordinator;
-extern const COMPONENT_EXPORT(SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_FEATURES)
-    base::Feature kPageAlmostIdle;
-extern const COMPONENT_EXPORT(SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_FEATURES)
-    base::Feature kPerformanceMeasurement;
-
 #if defined(OS_WIN)
 extern const COMPONENT_EXPORT(SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_FEATURES)
     base::Feature kEmptyWorkingSet;
 #endif
 
 }  // namespace features
-
-namespace resource_coordinator {
-
-bool COMPONENT_EXPORT(SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_FEATURES)
-    IsPageAlmostIdleSignalEnabled();
-
-int COMPONENT_EXPORT(SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_FEATURES)
-    GetMainThreadTaskLoadLowThreshold();
-
-}  // namespace resource_coordinator
 
 #endif  // SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_RESOURCE_COORDINATOR_FEATURES_H_

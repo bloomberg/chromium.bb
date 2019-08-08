@@ -37,6 +37,11 @@ bool IsDownloadAutoResumptionEnabledInNative() {
   return Java_FeatureUtilities_isDownloadAutoResumptionEnabledInNative(env);
 }
 
+bool IsNoTouchModeEnabled() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_FeatureUtilities_isNoTouchModeEnabled(env);
+}
+
 } // namespace android
 } // namespace chrome
 

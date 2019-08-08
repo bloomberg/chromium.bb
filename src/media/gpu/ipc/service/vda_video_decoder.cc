@@ -603,17 +603,23 @@ void VdaVideoDecoder::PictureReadyOnParentThread(Picture picture) {
     visible_rect = config_.visible_rect();
 
   // Look up the decode timestamp.
+  base::TimeDelta timestamp;
   int32_t bitstream_buffer_id = picture.bitstream_buffer_id();
   const auto timestamp_it = timestamps_.Peek(bitstream_buffer_id);
   if (timestamp_it == timestamps_.end()) {
     DLOG(ERROR) << "Unknown bitstream buffer " << bitstream_buffer_id;
-    EnterErrorState();
-    return;
+    // TODO(sandersd): This should be fatal but DXVA VDA is triggering it, and
+    // playback works if we ignore the error (use a zero timestamp).
+    //
+    // EnterErrorState();
+    // return;
+  } else {
+    timestamp = timestamp_it->second;
   }
 
   // Create a VideoFrame for the picture.
   scoped_refptr<VideoFrame> frame = picture_buffer_manager_->CreateVideoFrame(
-      picture, timestamp_it->second, visible_rect,
+      picture, timestamp, visible_rect,
       GetNaturalSize(visible_rect, config_.GetPixelAspectRatio()));
   if (!frame) {
     EnterErrorState();

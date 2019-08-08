@@ -1934,6 +1934,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ComparePhoneNumbers) {
   profile.SetRawInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("San Jose"));
   profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
   profile.SetRawInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("95110"));
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("1-408-555-4567"));
   SetTestProfile(browser(), profile);
 
@@ -2215,36 +2216,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
                         {ObservedUiEvents::kPreviewFormData});
 }
 
-// Test that dynamic forms don't get filled when the feature is disabled.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DynamicChangingFormFill) {
-  // Explicitly disable the filling of dynamic forms.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kAutofillDynamicForms);
-
-  CreateTestProfile();
-
-  GURL url =
-      embedded_test_server()->GetURL("/autofill/dynamic_form_disabled.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
-
-  TriggerFormFill("firstname");
-
-  // Wait for the re-fill to happen.
-  bool has_refilled = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      GetWebContents(), "hasRefilled()", &has_refilled));
-  ASSERT_FALSE(has_refilled);
-
-  // Make sure that the new form was not filled.
-  ExpectFieldValue("firstname_form1", "");
-  ExpectFieldValue("address_form1", "");
-  ExpectFieldValue("state_form1", "CA");  // Default value.
-  ExpectFieldValue("city_form1", "");
-  ExpectFieldValue("company_form1", "");
-  ExpectFieldValue("email_form1", "");
-  ExpectFieldValue("phone_form1", "");
-}
-
 // Test that a page with 2 forms with no name and id containing fields with no
 // name or if get filled properly.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
@@ -2309,8 +2280,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
                        Dynamic_MultipleNoNameForms_BadNames_FourthForm) {
   CreateTestProfile();
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kAutofillDynamicForms);
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/multiple_noname_forms_badnames.html");
@@ -2337,8 +2306,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
                        Dynamic_MultipleNoNameForms_BadNames_ThirdForm) {
   CreateTestProfile();
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kAutofillDynamicForms);
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/multiple_noname_forms_badnames.html");
@@ -2365,8 +2332,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
                        Dynamic_MultipleNoNameForms_BadNames_SecondForm) {
   CreateTestProfile();
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kAutofillDynamicForms);
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/multiple_noname_forms_badnames.html");
@@ -2390,8 +2355,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
                        Dynamic_MultipleNoNameForms_BadNames_FirstForm) {
   CreateTestProfile();
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kAutofillDynamicForms);
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/multiple_noname_forms_badnames.html");
@@ -2849,12 +2812,6 @@ class AutofillDynamicFormInteractiveTest
     } else {
       disabled_features.push_back(features::kAutofillEnableCompanyName);
     }
-
-    // Explicitly enable the filling of dynamic forms and disabled the
-    // requirement for a secure context to fill credit cards.
-    enabled_features.push_back(features::kAutofillDynamicForms);
-    disabled_features.push_back(
-        features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
 
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
     AutofillInteractiveTestBase::SetUp();

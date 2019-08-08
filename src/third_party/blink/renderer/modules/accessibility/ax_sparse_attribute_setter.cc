@@ -85,7 +85,6 @@ class ObjectVectorAttributeSetter : public AXSparseAttributeSetter {
     if (attribute_value.IsEmpty())
       return;
 
-    attribute_value.SimplifyWhiteSpace();
     Vector<String> ids;
     attribute_value.Split(' ', ids);
     if (ids.IsEmpty())

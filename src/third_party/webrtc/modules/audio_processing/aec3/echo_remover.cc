@@ -13,6 +13,7 @@
 #include <stddef.h>
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <memory>
 
 #include "api/array_view.h"
@@ -96,12 +97,6 @@ class EchoRemoverImpl final : public EchoRemover {
                       RenderBuffer* render_buffer,
                       std::vector<std::vector<float>>* capture) override;
 
-  // Returns the internal delay estimate in blocks.
-  absl::optional<int> Delay() const override {
-    // TODO(peah): Remove or reactivate this functionality.
-    return absl::nullopt;
-  }
-
   // Updates the status on whether echo leakage is detected in the output of the
   // echo remover.
   void UpdateEchoLeakageStatus(bool leakage_detected) override {
@@ -171,7 +166,7 @@ EchoRemoverImpl::~EchoRemoverImpl() = default;
 
 void EchoRemoverImpl::GetMetrics(EchoControl::Metrics* metrics) const {
   // Echo return loss (ERL) is inverted to go from gain to attenuation.
-  metrics->echo_return_loss = -10.0 * log10(aec_state_.ErlTimeDomain());
+  metrics->echo_return_loss = -10.0 * std::log10(aec_state_.ErlTimeDomain());
   metrics->echo_return_loss_enhancement =
       Log2TodB(aec_state_.FullBandErleLog2());
 }
@@ -295,16 +290,23 @@ void EchoRemoverImpl::ProcessCapture(
   // Estimate the comfort noise.
   cng_.Compute(aec_state_, Y2, &comfort_noise, &high_band_comfort_noise);
 
-  // Compute and apply the suppression gain.
+  // Suppressor echo estimate.
   const auto& echo_spectrum =
       aec_state_.UsableLinearEstimate() ? S2_linear : R2;
 
-  std::array<float, kFftLengthBy2Plus1> E2_bounded;
-  std::transform(E2.begin(), E2.end(), Y2.begin(), E2_bounded.begin(),
-                 [](float a, float b) { return std::min(a, b); });
+  // Suppressor nearend estimate.
+  std::array<float, kFftLengthBy2Plus1> nearend_spectrum_bounded;
+  if (aec_state_.UsableLinearEstimate()) {
+    std::transform(E2.begin(), E2.end(), Y2.begin(),
+                   nearend_spectrum_bounded.begin(),
+                   [](float a, float b) { return std::min(a, b); });
+  }
+  auto& nearend_spectrum =
+      aec_state_.UsableLinearEstimate() ? nearend_spectrum_bounded : Y2;
 
-  suppression_gain_.GetGain(E2, E2_bounded, echo_spectrum, R2,
-                            cng_.NoiseSpectrum(), E, Y, render_signal_analyzer_,
+  // Compute and apply the suppression gain.
+  suppression_gain_.GetGain(nearend_spectrum, echo_spectrum, R2,
+                            cng_.NoiseSpectrum(), render_signal_analyzer_,
                             aec_state_, x, &high_bands_gain, &G);
 
   suppression_filter_.ApplyGain(comfort_noise, high_band_comfort_noise, G,

@@ -27,10 +27,10 @@ namespace syncer {
 namespace {
 
 static const ModelType kStartOrder[] = {
-    NIGORI,       //  Listed for completeness.
-    DEVICE_INFO,  //  Listed for completeness.
-    EXPERIMENTS,  //  Listed for completeness.
-    PROXY_TABS,   //  Listed for completeness.
+    NIGORI,  //  Listed for completeness.
+    DEVICE_INFO,
+    DEPRECATED_EXPERIMENTS,  //  Listed for completeness.
+    PROXY_TABS,              //  Listed for completeness.
 
     // Kick off the association of the non-UI types first so they can associate
     // in parallel with the UI types.
@@ -50,7 +50,7 @@ static const ModelType kStartOrder[] = {
     SEND_TAB_TO_SELF, SECURITY_EVENTS};
 
 static_assert(base::size(kStartOrder) ==
-                  MODEL_TYPE_COUNT - FIRST_REAL_MODEL_TYPE,
+                  ModelType::NUM_ENTRIES - FIRST_REAL_MODEL_TYPE,
               "When adding a new type, update kStartOrder.");
 
 // The amount of time we wait for association to finish. If some types haven't
@@ -449,7 +449,7 @@ void ModelAssociationManager::ModelAssociationDone(State new_state) {
       // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
       UMA_HISTOGRAM_ENUMERATION("Sync.ConfigureFailed",
                                 ModelTypeToHistogramInt(dtc->type()),
-                                static_cast<int>(MODEL_TYPE_COUNT));
+                                static_cast<int>(ModelType::NUM_ENTRIES));
       StopDatatypeImpl(SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
                                  "Association timed out.", dtc->type()),
                        STOP_SYNC, dtc, base::DoNothing());

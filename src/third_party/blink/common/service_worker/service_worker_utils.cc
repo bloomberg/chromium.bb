@@ -29,11 +29,6 @@ constexpr base::FeatureParam<EagerCodeCacheStrategy>
 
 }  // namespace
 
-// static
-bool ServiceWorkerUtils::IsServicificationEnabled() {
-  return true;
-}
-
 bool ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled() {
   return base::FeatureList::IsEnabled(
       blink::features::kServiceWorkerImportedScriptUpdateCheck);

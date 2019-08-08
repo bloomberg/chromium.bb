@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -139,7 +140,8 @@ class URLLoaderInterceptor::IOState
   }
 
   // Callback on IO thread whenever NavigationURLLoaderImpl needs a
-  // URLLoaderFactory with a network::mojom::TrustedURLLoaderHeaderClient.
+  // URLLoaderFactory with a network::mojom::TrustedURLLoaderHeaderClient or
+  // for a non-network-service scheme.
   void InterceptNavigationRequestCallback(
       network::mojom::URLLoaderFactoryRequest* request) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -171,7 +173,8 @@ class URLLoaderInterceptor::IOState
   std::unique_ptr<Interceptor> rmf_interceptor_;
   // For intercepting subresources with network service. There is one per
   // active render frame commit. Only accessed on IO thread.
-  std::set<std::unique_ptr<SubresourceWrapper>> subresource_wrappers_;
+  std::set<std::unique_ptr<SubresourceWrapper>, base::UniquePtrComparator>
+      subresource_wrappers_;
   std::set<std::unique_ptr<URLLoaderFactoryNavigationWrapper>>
       navigation_wrappers_;
 
@@ -574,14 +577,9 @@ bool URLLoaderInterceptor::Intercept(RequestParams* params) {
 void URLLoaderInterceptor::IOState::SubresourceWrapperBindingError(
     SubresourceWrapper* wrapper) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  for (auto& it : subresource_wrappers_) {
-    if (it.get() == wrapper) {
-      subresource_wrappers_.erase(it);
-      return;
-    }
-  }
-
-  NOTREACHED();
+  auto it = subresource_wrappers_.find(wrapper);
+  DCHECK(it != subresource_wrappers_.end());
+  subresource_wrappers_.erase(it);
 }
 
 void URLLoaderInterceptor::IOState::Initialize(base::OnceClosure closure) {

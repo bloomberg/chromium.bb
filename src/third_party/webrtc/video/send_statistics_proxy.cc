@@ -15,6 +15,7 @@
 #include <limits>
 #include <utility>
 
+#include "absl/algorithm/container.h"
 #include "modules/video_coding/include/video_codec_interface.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
@@ -673,10 +674,12 @@ void SendStatisticsProxy::OnEncoderReconfigured(
 
 void SendStatisticsProxy::OnEncodedFrameTimeMeasured(int encode_time_ms,
                                                      int encode_usage_percent) {
+  RTC_DCHECK_GE(encode_time_ms, 0);
   rtc::CritScope lock(&crit_);
   uma_container_->encode_time_counter_.Add(encode_time_ms);
   encode_time_.Apply(1.0f, encode_time_ms);
   stats_.avg_encode_time_ms = round(encode_time_.filtered());
+  stats_.total_encode_time_ms += encode_time_ms;
   stats_.encode_usage_percent = encode_usage_percent;
 }
 
@@ -749,13 +752,10 @@ VideoSendStream::StreamStats* SendStatisticsProxy::GetStatsEntry(
   if (it != stats_.substreams.end())
     return &it->second;
 
-  bool is_media = std::find(rtp_config_.ssrcs.begin(), rtp_config_.ssrcs.end(),
-                            ssrc) != rtp_config_.ssrcs.end();
+  bool is_media = absl::c_linear_search(rtp_config_.ssrcs, ssrc);
   bool is_flexfec = rtp_config_.flexfec.payload_type != -1 &&
                     ssrc == rtp_config_.flexfec.ssrc;
-  bool is_rtx =
-      std::find(rtp_config_.rtx.ssrcs.begin(), rtp_config_.rtx.ssrcs.end(),
-                ssrc) != rtp_config_.rtx.ssrcs.end();
+  bool is_rtx = absl::c_linear_search(rtp_config_.rtx.ssrcs, ssrc);
   if (!is_media && !is_flexfec && !is_rtx)
     return nullptr;
 
@@ -927,7 +927,7 @@ void SendStatisticsProxy::OnSendEncodedImage(
   }
 
   uma_container_->key_frame_counter_.Add(encoded_image._frameType ==
-                                         kVideoFrameKey);
+                                         VideoFrameType::kVideoFrameKey);
 
   if (encoded_image.qp_ != -1) {
     if (!stats_.qp_sum)

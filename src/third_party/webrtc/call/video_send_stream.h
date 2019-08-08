@@ -68,6 +68,8 @@ class VideoSendStream {
     int avg_encode_time_ms = 0;
     int encode_usage_percent = 0;
     uint32_t frames_encoded = 0;
+    // https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-totalencodetime
+    uint64_t total_encode_time_ms = 0;
     uint32_t frames_dropped_by_capturer = 0;
     uint32_t frames_dropped_by_encoder_queue = 0;
     uint32_t frames_dropped_by_rate_limiter = 0;
@@ -150,10 +152,6 @@ class VideoSendStream {
 
     // Per PeerConnection cryptography options.
     CryptoOptions crypto_options;
-
-    // Forces spatial scalability to be implemented via spatial layers
-    // instead of simulcast.
-    bool is_svc = false;
 
    private:
     // Access to the copy constructor is private to force use of the Copy()

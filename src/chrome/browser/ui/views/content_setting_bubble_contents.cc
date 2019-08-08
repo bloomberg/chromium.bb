@@ -455,11 +455,12 @@ void ContentSettingBubbleContents::Init() {
 
   // Layout for the item list (blocked plugins and popups).
   if (!bubble_content.list_items.empty()) {
-    list_item_container_ = new ListItemContainer(this);
-    list_item_container_->SetBorder(
+    auto list_item_container = std::make_unique<ListItemContainer>(this);
+    list_item_container->SetBorder(
         views::CreateEmptyBorder(0, margins().left(), 0, margins().right()));
     auto scroll_view = std::make_unique<views::ScrollView>();
-    scroll_view->SetContents(list_item_container_);
+    list_item_container_ =
+        scroll_view->SetContents(std::move(list_item_container));
     rows.push_back({std::move(scroll_view), LayoutRowType::FULL_WIDTH});
 
     for (const ContentSettingBubbleModel::ListItem& list_item :

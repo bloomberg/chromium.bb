@@ -26,6 +26,7 @@
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/platform/features.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/platform/platform_channel_server_endpoint.h"
@@ -124,11 +125,20 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
     case LaunchType::NAMED_CHILD:
     case LaunchType::NAMED_PEER: {
 #if defined(OS_POSIX)
-      base::FilePath temp_dir;
-      CHECK(base::PathService::Get(base::DIR_TEMP, &temp_dir));
-      server_name =
-          temp_dir.AppendASCII(base::NumberToString(base::RandUint64()))
-              .value();
+#if defined(OS_MACOSX)
+      if (base::FeatureList::IsEnabled(features::kMojoChannelMac)) {
+        server_name = NamedPlatformChannel::ServerNameFromUTF8(
+            "mojo.test." + base::NumberToString(base::RandUint64()));
+      } else {
+#endif  // defined(OS_MACOSX)
+        base::FilePath temp_dir;
+        CHECK(base::PathService::Get(base::DIR_TEMP, &temp_dir));
+        server_name =
+            temp_dir.AppendASCII(base::NumberToString(base::RandUint64()))
+                .value();
+#if defined(OS_MACOSX)
+      }
+#endif  // defined(OS_MACOSX)
 #elif defined(OS_WIN)
       server_name = base::NumberToString16(base::RandUint64());
 #else

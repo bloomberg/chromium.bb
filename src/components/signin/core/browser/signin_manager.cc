@@ -36,11 +36,9 @@ SigninManager::SigninManager(
       account_consistency_(account_consistency),
       weak_pointer_factory_(this) {}
 
-SigninManager::~SigninManager() {}
-
-void SigninManager::HandleAuthError(const GoogleServiceAuthError& error) {
-  for (auto& observer : observer_list_)
-    observer.GoogleSigninFailed(error);
+SigninManager::~SigninManager() {
+  token_service()->RemoveObserver(this);
+  local_state_pref_registrar_.RemoveAll();
 }
 
 void SigninManager::SignOut(
@@ -184,12 +182,6 @@ void SigninManager::FinalizeInitBeforeLoadingRefreshTokens(
   token_service()->AddObserver(this);
 }
 
-void SigninManager::Shutdown() {
-  token_service()->RemoveObserver(this);
-  local_state_pref_registrar_.RemoveAll();
-  SigninManagerBase::Shutdown();
-}
-
 void SigninManager::OnGoogleServicesUsernamePatternChanged() {
   if (IsAuthenticated() &&
       !IsAllowedUsername(GetAuthenticatedAccountInfo().email)) {
@@ -230,7 +222,7 @@ bool SigninManager::IsAllowedUsername(const std::string& username) const {
   return identity::IsUsernameAllowedByPattern(username, pattern);
 }
 
-void SigninManager::OnExternalSigninCompleted(const std::string& username) {
+void SigninManager::SignIn(const std::string& username) {
   AccountInfo info =
       account_tracker_service()->FindAccountInfoByEmail(username);
   DCHECK(!info.gaia.empty());
@@ -253,13 +245,14 @@ void SigninManager::OnExternalSigninCompleted(const std::string& username) {
 
 void SigninManager::FireGoogleSigninSucceeded() {
   const AccountInfo account_info = GetAuthenticatedAccountInfo();
-  for (auto& observer : observer_list_)
-    observer.GoogleSigninSucceeded(account_info);
+  if (observer_ != nullptr) {
+    observer_->GoogleSigninSucceeded(account_info);
+  }
 }
 
 void SigninManager::FireGoogleSignedOut(const AccountInfo& account_info) {
-  for (auto& observer : observer_list_) {
-    observer.GoogleSignedOut(account_info);
+  if (observer_ != nullptr) {
+    observer_->GoogleSignedOut(account_info);
   }
 }
 

@@ -87,14 +87,6 @@ ReaderPairType CreateFftCoeffsReader() {
   return {std::move(ptr), rtc::CheckedDivExact(ptr->data_length(), row_size)};
 }
 
-ReaderPairType CreateBandEnergyCoeffsReader() {
-  constexpr size_t num_bands = 22;
-  auto ptr = absl::make_unique<BinaryFileReader<float>>(
-      test::ResourcePath("audio_processing/agc2/rnn_vad/band_energies", "dat"),
-      num_bands);
-  return {std::move(ptr), rtc::CheckedDivExact(ptr->data_length(), num_bands)};
-}
-
 ReaderPairType CreateSilenceFlagsFeatureMatrixReader() {
   constexpr size_t feature_vector_size = 42;
   auto ptr = absl::make_unique<BinaryFileReader<float>>(
@@ -109,6 +101,28 @@ ReaderPairType CreateVadProbsReader() {
   auto ptr = absl::make_unique<BinaryFileReader<float>>(
       test::ResourcePath("audio_processing/agc2/rnn_vad/vad_prob", "dat"));
   return {std::move(ptr), ptr->data_length()};
+}
+
+PitchTestData::PitchTestData() {
+  auto test_data_reader = CreatePitchSearchTestDataReader();
+  test_data_reader->ReadChunk(test_data_);
+}
+
+PitchTestData::~PitchTestData() = default;
+
+rtc::ArrayView<const float, kBufSize24kHz> PitchTestData::GetPitchBufView() {
+  return {test_data_.data(), kBufSize24kHz};
+}
+
+rtc::ArrayView<const float, kNumPitchBufSquareEnergies>
+PitchTestData::GetPitchBufSquareEnergiesView() {
+  return {test_data_.data() + kBufSize24kHz, kNumPitchBufSquareEnergies};
+}
+
+rtc::ArrayView<const float, kNumPitchBufAutoCorrCoeffs>
+PitchTestData::GetPitchBufAutoCorrCoeffsView() {
+  return {test_data_.data() + kBufSize24kHz + kNumPitchBufSquareEnergies,
+          kNumPitchBufAutoCorrCoeffs};
 }
 
 }  // namespace test

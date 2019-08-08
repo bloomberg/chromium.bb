@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -70,8 +71,10 @@ gfx::NativeWindow ShowWebDialogWithParams(
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(
           Profile::FromBrowserContext(context));
-  if (user) {
-    // Dialogs should not be shown for other users when logged in.
+  if (user && session_manager::SessionManager::Get()->session_state() ==
+                  session_manager::SessionState::ACTIVE) {
+    // Dialogs should not be shown for other users when logged in and the
+    // session is active.
     MultiUserWindowManagerClient::GetInstance()->SetWindowOwner(
         window, user->GetAccountId());
   }

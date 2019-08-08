@@ -60,8 +60,6 @@
 #include "chrome/browser/component_updater/optimization_hints_component_installer.h"
 #include "chrome/browser/component_updater/origin_trials_component_installer.h"
 #include "chrome/browser/component_updater/pepper_flash_component_installer.h"
-#include "chrome/browser/component_updater/recovery_component_installer.h"
-#include "chrome/browser/component_updater/recovery_improved_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_installer.h"
 #include "chrome/browser/component_updater/subresource_filter_component_installer.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
@@ -92,9 +90,10 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/resource_coordinator/render_process_probe.h"
 #include "chrome/browser/sessions/chrome_serialized_navigation_driver.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/site_isolation/site_isolation_policy.h"
+#include "chrome/browser/startup_data.h"
 #include "chrome/browser/tracing/background_tracing_field_trial.h"
 #include "chrome/browser/tracing/navigation_tracing.h"
 #include "chrome/browser/tracing/trace_event_system_stats_monitor.h"
@@ -262,6 +261,12 @@
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #endif
+
+#if defined(OS_WIN)
+#include "chrome/browser/component_updater/recovery_improved_component_installer.h"
+#else
+#include "chrome/browser/component_updater/recovery_component_installer.h"
+#endif  // defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 #include "chrome/browser/background/background_mode_manager.h"
@@ -446,10 +451,12 @@ OSStatus KeychainCallback(SecKeychainEvent keychain_event,
 void RegisterComponentsForUpdate(PrefService* profile_prefs) {
   auto* const cus = g_browser_process->component_updater();
 
-  if (base::FeatureList::IsEnabled(features::kImprovedRecoveryComponent))
-    RegisterRecoveryImprovedComponent(cus, g_browser_process->local_state());
-  else
-    RegisterRecoveryComponent(cus, g_browser_process->local_state());
+#if defined(OS_WIN)
+  RegisterRecoveryImprovedComponent(cus, g_browser_process->local_state());
+#else
+  // TODO(crbug.com/687231): Implement the Improved component on Mac, etc.
+  RegisterRecoveryComponent(cus, g_browser_process->local_state());
+#endif  // defined(OS_WIN)
 
 #if !defined(OS_ANDROID)
   RegisterPepperFlashComponent(cus);
@@ -597,19 +604,6 @@ bool IsWebDriverOverridingPolicy(PrefService* local_state) {
                 prefs::kWebDriverOverridesIncompatiblePolicies)));
 }
 
-bool IsSiteIsolationEnterprisePolicyApplicable() {
-#if defined(OS_ANDROID)
-  // https://crbug.com/844118: Limiting policy to devices with > 1GB RAM.
-  // Using 1077 rather than 1024 because 1) it helps ensure that devices with
-  // exactly 1GB of RAM won't get included because of inaccuracies or off-by-one
-  // errors and 2) this is the bucket boundary in Memory.Stats.Win.TotalPhys2.
-  bool have_enough_memory = base::SysInfo::AmountOfPhysicalMemoryMB() > 1077;
-  return have_enough_memory;
-#else
-  return true;
-#endif
-}
-
 // Sets up the ThreadProfiler for the browser process, runs it, and returns the
 // profiler.
 std::unique_ptr<ThreadProfiler> CreateAndStartBrowserMainThreadProfiler() {
@@ -624,7 +618,7 @@ std::unique_ptr<ThreadProfiler> CreateAndStartBrowserMainThreadProfiler() {
 
 ChromeBrowserMainParts::ChromeBrowserMainParts(
     const content::MainFunctionParams& parameters,
-    ChromeFeatureListCreator* chrome_feature_list_creator)
+    StartupData* startup_data)
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line),
       result_code_(service_manager::RESULT_CODE_NORMAL_EXIT),
@@ -634,8 +628,8 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
           !parameters.ui_task),
       profile_(NULL),
       run_message_loop_(true),
-      chrome_feature_list_creator_(chrome_feature_list_creator) {
-  DCHECK(chrome_feature_list_creator_);
+      startup_data_(startup_data) {
+  DCHECK(startup_data_);
   // If we're running tests (ui_task is non-null).
   if (parameters.ui_task)
     browser_defaults::enable_help_app = false;
@@ -662,7 +656,8 @@ void ChromeBrowserMainParts::SetupMetrics() {
   // Now that field trials have been created, initializes metrics recording.
   metrics->InitializeMetricsRecordingState();
 
-  chrome_feature_list_creator_->browser_field_trials()
+  startup_data_->chrome_feature_list_creator()
+      ->browser_field_trials()
       ->RegisterSyntheticTrials();
 }
 
@@ -790,18 +785,20 @@ int ChromeBrowserMainParts::PreEarlyInitialization() {
 
   // Create BrowserProcess in PreEarlyInitialization() so that we can load
   // field trials (and all it depends upon).
-  browser_process_ =
-      std::make_unique<BrowserProcessImpl>(chrome_feature_list_creator_);
+  browser_process_ = std::make_unique<BrowserProcessImpl>(startup_data_);
 
   bool failed_to_load_resource_bundle = false;
   const int load_local_state_result =
       OnLocalStateLoaded(&failed_to_load_resource_bundle);
 
   // Reuses the MetricsServicesManager and GetMetricsServicesManagerClient
-  // instances created in the FeatureListCreator so they won't be created again.
+  // instances created in the FeatureListCreator so they won't be created
+  // again.
+  auto* chrome_feature_list_creator =
+      startup_data_->chrome_feature_list_creator();
   browser_process_->SetMetricsServices(
-      chrome_feature_list_creator_->TakeMetricsServicesManager(),
-      chrome_feature_list_creator_->GetMetricsServicesManagerClient());
+      chrome_feature_list_creator->TakeMetricsServicesManager(),
+      chrome_feature_list_creator->GetMetricsServicesManagerClient());
 
   if (load_local_state_result == chrome::RESULT_CODE_MISSING_DATA &&
       failed_to_load_resource_bundle) {
@@ -841,7 +838,7 @@ void ChromeBrowserMainParts::PostMainMessageLoopStart() {
   ui_thread_profiler_->SetMainThreadTaskRunner(
       base::ThreadTaskRunnerHandle::Get());
 
-  heap_profiler_controller_->StartIfEnabled();
+  heap_profiler_controller_->Start();
 
   system_monitor_ = performance_monitor::SystemMonitor::Create();
 
@@ -909,7 +906,8 @@ int ChromeBrowserMainParts::OnLocalStateLoaded(
   }
 #endif  // defined(OS_WIN)
 
-  std::string locale = chrome_feature_list_creator_->actual_locale();
+  std::string locale =
+      startup_data_->chrome_feature_list_creator()->actual_locale();
   if (locale.empty()) {
     *failed_to_load_resource_bundle = true;
     return chrome::RESULT_CODE_MISSING_DATA;
@@ -935,7 +933,7 @@ int ChromeBrowserMainParts::ApplyFirstRunPrefs() {
   master_prefs_ = std::make_unique<first_run::MasterPrefs>();
 
   std::unique_ptr<installer::MasterPreferences> installer_master_prefs =
-      chrome_feature_list_creator_->TakeMasterPrefs();
+      startup_data_->chrome_feature_list_creator()->TakeMasterPrefs();
   if (!installer_master_prefs)
     return service_manager::RESULT_CODE_NORMAL_EXIT;
 
@@ -1102,23 +1100,12 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     auto* command_line = base::CommandLine::ForCurrentProcess();
     // Add Site Isolation switches as dictated by policy.
     if (local_state->GetBoolean(prefs::kSitePerProcess) &&
-        IsSiteIsolationEnterprisePolicyApplicable() &&
+        SiteIsolationPolicy::IsEnterprisePolicyApplicable() &&
         !command_line->HasSwitch(switches::kSitePerProcess)) {
       command_line->AppendSwitch(switches::kSitePerProcess);
     }
-    // We apply the flag always when it differs from the command line state,
-    // because we don't want the command-line switch to take precedence over
-    // enterprise policy. (This behavior is in harmony with other enterprise
-    // policy settings.)
-    if (local_state->HasPrefPath(prefs::kIsolateOrigins) &&
-        IsSiteIsolationEnterprisePolicyApplicable() &&
-        (!command_line->HasSwitch(switches::kIsolateOrigins) ||
-         command_line->GetSwitchValueASCII(switches::kIsolateOrigins) !=
-             local_state->GetString(prefs::kIsolateOrigins))) {
-      command_line->AppendSwitchASCII(
-          switches::kIsolateOrigins,
-          local_state->GetString(prefs::kIsolateOrigins));
-    }
+    // IsolateOrigins policy is taken care of through SiteIsolationPrefsObserver
+    // (constructed and owned by BrowserProcessImpl).
   }
 
   // The admin should also be able to use these policies to force Site Isolation

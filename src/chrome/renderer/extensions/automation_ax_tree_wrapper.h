@@ -41,6 +41,14 @@ class AutomationAXTreeWrapper : public ui::AXTreeObserver {
   // Returns true if this is the desktop tree.
   bool IsDesktopTree() const;
 
+  // Returns whether |node_id| is the focused node in this tree. Accounts for
+  // cases where this tree itself is not focused. Behaves similarly to
+  // document.activeElement (within the DOM).
+  bool IsInFocusChain(int32_t node_id);
+
+  static std::map<ui::AXTreeID, AutomationAXTreeWrapper*>&
+  GetChildTreeIDReverseMap();
+
  private:
   // AXTreeObserver overrides.
   void OnNodeDataWillChange(ui::AXTree* tree,

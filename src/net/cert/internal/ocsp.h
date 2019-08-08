@@ -39,7 +39,7 @@ class ParsedCertificate;
 //    issuerKeyHash           OCTET STRING, -- Hash of issuer's public key
 //    serialNumber            CertificateSerialNumber
 // }
-struct OCSPCertID {
+struct NET_EXPORT_PRIVATE OCSPCertID {
   OCSPCertID();
   ~OCSPCertID();
 

@@ -36,11 +36,9 @@ namespace internal {
 
 namespace {
 
-class GwpAsanTest : public testing::Test {};
-
 constexpr size_t kAllocationSize = 902;
 constexpr int kSuccess = 0;
-constexpr size_t kTotalPages = AllocatorState::kGpaMaxPages;
+constexpr size_t kTotalPages = AllocatorState::kMaxSlots;
 
 int HandlerMainAdaptor(int argc, char* argv[]) {
   crashpad::UserStreamDataSources user_stream_data_sources;
@@ -78,7 +76,8 @@ MULTIPROCESS_TEST_MAIN(CrashpadHandler) {
 // Child process that launches the crashpad handler and then crashes.
 MULTIPROCESS_TEST_MAIN(CrashingProcess) {
   base::NoDestructor<GuardedPageAllocator> gpa;
-  gpa->Init(AllocatorState::kGpaMaxPages, kTotalPages);
+  gpa->Init(AllocatorState::kMaxMetadata, AllocatorState::kMaxMetadata,
+            kTotalPages);
 
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   base::FilePath directory = cmd_line->GetSwitchValuePath("directory");
@@ -134,6 +133,25 @@ MULTIPROCESS_TEST_MAIN(CrashingProcess) {
     void* ptr = gpa->Allocate(kAllocationSize);
     uintptr_t bad_address = reinterpret_cast<uintptr_t>(ptr) + 1;
     gpa->Deallocate(reinterpret_cast<void*>(bad_address));
+  } else if (test_name == "MissingMetadata") {
+    // Consume all allocations/metadata
+    void* ptrs[AllocatorState::kMaxMetadata];
+    for (size_t i = 0; i < AllocatorState::kMaxMetadata; i++)
+      ptrs[i] = gpa->Allocate(1);
+
+    gpa->Deallocate(ptrs[0]);
+
+    // Take the remaining metadata slot with an allocation on a different page.
+    while (1) {
+      void* new_alloc = gpa->Allocate(1);
+      if (new_alloc != ptrs[0])
+        break;
+      gpa->Deallocate(new_alloc);
+    }
+
+    // Cause a crash accessing an allocation that no longer has metadata
+    // associated with it.
+    *(uint8_t*)(ptrs[0]) = 0;
   } else {
     LOG(ERROR) << "Unknown test name " << test_name;
   }
@@ -249,6 +267,9 @@ class CrashHandlerTest : public base::MultiProcessTest {
     EXPECT_EQ(proto_.region_start() & (base::GetPageSize() - 1), 0U);
     EXPECT_EQ(proto_.region_size(),
               base::GetPageSize() * (2 * kTotalPages + 1));
+
+    EXPECT_TRUE(proto_.has_missing_metadata());
+    EXPECT_FALSE(proto_.missing_metadata());
   }
 
   gwp_asan::Crash proto_;
@@ -286,6 +307,22 @@ TEST_F(CrashHandlerTest, MAYBE_DISABLED(FreeInvalidAddress)) {
   ASSERT_TRUE(gwp_asan_found_);
   checkProto(Crash_ErrorType_FREE_INVALID_ADDRESS, false);
   EXPECT_TRUE(proto_.has_free_invalid_address());
+}
+
+TEST_F(CrashHandlerTest, MAYBE_DISABLED(MissingMetadata)) {
+  ASSERT_TRUE(gwp_asan_found_);
+
+  ASSERT_TRUE(proto_.has_missing_metadata());
+  EXPECT_TRUE(proto_.missing_metadata());
+
+  EXPECT_FALSE(proto_.has_error_type());
+  EXPECT_FALSE(proto_.has_allocation_address());
+  EXPECT_FALSE(proto_.has_allocation_size());
+  EXPECT_FALSE(proto_.has_allocation());
+  EXPECT_FALSE(proto_.has_deallocation());
+  EXPECT_FALSE(proto_.has_free_invalid_address());
+  EXPECT_TRUE(proto_.has_region_start());
+  EXPECT_TRUE(proto_.has_region_size());
 }
 
 TEST_F(CrashHandlerTest, MAYBE_DISABLED(UnrelatedException)) {

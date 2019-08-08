@@ -224,8 +224,8 @@ CSSNumericValue* CSSNumericValue::parse(const String& css_text,
       return CSSUnitValue::Create(token.NumericValue(), token.GetUnitType());
     }
     case kFunctionToken:
-      if (range.Peek().FunctionId() == CSSValueCalc ||
-          range.Peek().FunctionId() == CSSValueWebkitCalc) {
+      if (range.Peek().FunctionId() == CSSValueID::kCalc ||
+          range.Peek().FunctionId() == CSSValueID::kWebkitCalc) {
         CSSCalcValue* calc_value = CSSCalcValue::Create(range, kValueRangeAll);
         if (!calc_value)
           break;

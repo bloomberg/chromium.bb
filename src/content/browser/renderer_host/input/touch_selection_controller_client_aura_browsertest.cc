@@ -566,8 +566,8 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraSiteIsolationTest,
   ui::TouchSelectionControllerTestApi selection_controller_test_api(
       selection_controller);
 
-  scoped_refptr<SynchronizeVisualPropertiesMessageFilter> filter =
-      new SynchronizeVisualPropertiesMessageFilter();
+  auto filter =
+      base::MakeRefCounted<SynchronizeVisualPropertiesMessageFilter>();
   root->current_frame_host()->GetProcess()->AddFilter(filter.get());
 
   // Find the location of some text to select.
@@ -662,9 +662,9 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraSiteIsolationTest,
   ui::GestureEvent scroll_end(scroll_end_position.x(), scroll_end_position.y(),
                               0, ui::EventTimeForNow(), scroll_end_details);
   parent_view->OnGestureEvent(&scroll_end);
+  EXPECT_FALSE(selection_controller_test_api.temporarily_hidden());
   EXPECT_EQ(ui::TouchSelectionController::SELECTION_ACTIVE,
             parent_view->selection_controller()->active_status());
-  EXPECT_FALSE(selection_controller_test_api.temporarily_hidden());
   EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
 
   // 3) Send touch-end.

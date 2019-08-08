@@ -13,13 +13,14 @@ import android.support.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
 import org.chromium.components.background_task_scheduler.BackgroundTask;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.background_task_scheduler.TaskParameters;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
  * Manages scheduling and running of the Omaha client code.
@@ -38,14 +39,11 @@ public class OmahaService extends OmahaBase implements BackgroundTask {
                 Log.i(OmahaBase.TAG, "Scheduled using AlarmManager and IntentService");
             } else {
                 final long delay = nextTimestampMs - currentTimestampMs;
-                ThreadUtils.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (scheduleJobService(getContext(), delay)) {
-                            Log.i(OmahaBase.TAG, "Scheduled using JobService");
-                        } else {
-                            Log.e(OmahaBase.TAG, "Failed to schedule job");
-                        }
+                PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+                    if (scheduleJobService(getContext(), delay)) {
+                        Log.i(OmahaBase.TAG, "Scheduled using JobService");
+                    } else {
+                        Log.e(OmahaBase.TAG, "Failed to schedule job");
                     }
                 });
             }

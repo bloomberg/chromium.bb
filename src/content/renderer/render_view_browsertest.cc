@@ -76,7 +76,6 @@
 #include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame_content_dumper.h"
-#include "third_party/blink/public/web/web_global_object_reuse_policy.h"
 #include "third_party/blink/public/web/web_history_commit_type.h"
 #include "third_party/blink/public/web/web_history_item.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
@@ -201,7 +200,7 @@ FrameReplicationState ReconstructReplicationStateForTesting(
   // blink API...
   result.name = frame->AssignedName().Utf8();
   result.unique_name = test_render_frame->unique_name();
-  result.frame_policy.sandbox_flags = frame->EffectiveSandboxFlags();
+  result.frame_policy.sandbox_flags = frame->EffectiveSandboxFlagsForTesting();
   // result.should_enforce_strict_mixed_content_checking is calculated in the
   // browser...
   result.origin = frame->GetSecurityOrigin();
@@ -549,6 +548,54 @@ class RenderViewImplDisableZoomForDSFTest
   }
 };
 
+TEST_F(RenderViewImplTest, IsPinchGestureActivePropagatesToProxies) {
+  LoadHTML(
+      "<body style='min-height:1000px;'>"
+      "  <iframe src='data:text/html,frame 1'></iframe>"
+      "  <iframe src='data:text/html,frame 2'></iframe>"
+      "</body>");
+
+  // Verify child's proxy doesn't think we're pinching.
+  blink::WebFrame* root_web_frame = frame()->GetWebFrame();
+  ASSERT_TRUE(root_web_frame->FirstChild()->IsWebLocalFrame());
+  TestRenderFrame* child_frame_1 =
+      static_cast<TestRenderFrame*>(RenderFrame::FromWebFrame(
+          root_web_frame->FirstChild()->ToWebLocalFrame()));
+  ASSERT_TRUE(child_frame_1);
+  TestRenderFrame* child_frame_2 =
+      static_cast<TestRenderFrame*>(RenderFrame::FromWebFrame(
+          root_web_frame->FirstChild()->NextSibling()->ToWebLocalFrame()));
+  ASSERT_TRUE(child_frame_2);
+  child_frame_1->SwapOut(kProxyRoutingId, true,
+                         ReconstructReplicationStateForTesting(child_frame_1));
+  EXPECT_TRUE(root_web_frame->FirstChild()->IsWebRemoteFrame());
+  RenderFrameProxy* child_proxy_1 = RenderFrameProxy::FromWebFrame(
+      root_web_frame->FirstChild()->ToWebRemoteFrame());
+  ASSERT_TRUE(child_proxy_1);
+  EXPECT_FALSE(child_proxy_1->is_pinch_gesture_active_for_testing());
+
+  // Set the |is_pinch_gesture_active| flag.
+  view()->PageScaleFactorChanged(1.f, true);
+  EXPECT_TRUE(child_proxy_1->is_pinch_gesture_active_for_testing());
+
+  // Create a new remote child, and get its proxy. Swapping out will force
+  // creation and registering of a new RenderFrameProxy, which should pick up
+  // the existing setting.
+  child_frame_2->SwapOut(kProxyRoutingId + 1, true,
+                         ReconstructReplicationStateForTesting(child_frame_2));
+  EXPECT_TRUE(root_web_frame->FirstChild()->NextSibling()->IsWebRemoteFrame());
+  RenderFrameProxy* child_proxy_2 = RenderFrameProxy::FromWebFrame(
+      root_web_frame->FirstChild()->NextSibling()->ToWebRemoteFrame());
+
+  // Verify new child has the flag too.
+  EXPECT_TRUE(child_proxy_2->is_pinch_gesture_active_for_testing());
+
+  // Reset the flag, make sure both children respond.
+  view()->PageScaleFactorChanged(1.f, false);
+  EXPECT_FALSE(child_proxy_1->is_pinch_gesture_active_for_testing());
+  EXPECT_FALSE(child_proxy_2->is_pinch_gesture_active_for_testing());
+}
+
 // Test that we get form state change notifications when input fields change.
 TEST_F(RenderViewImplTest, OnNavStateChanged) {
   view()->set_send_content_state_immediately(true);
@@ -656,11 +703,12 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
   request.SetFetchCredentialsMode(
       network::mojom::FetchCredentialsMode::kInclude);
   request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kManual);
-  request.SetFrameType(network::mojom::RequestContextFrameType::kTopLevel);
   request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
   request.SetRequestorOrigin(requestor_origin);
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
   navigation_info->url_request = request;
+  navigation_info->frame_type =
+      network::mojom::RequestContextFrameType::kTopLevel;
   navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
   navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
   DCHECK(!navigation_info->url_request.RequestorOrigin().IsNull());
@@ -673,8 +721,10 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
   auto form_navigation_info = std::make_unique<blink::WebNavigationInfo>();
   form_navigation_info->url_request =
       blink::WebURLRequest(GURL("chrome://foo"));
-  form_navigation_info->url_request.SetHTTPMethod("POST");
+  form_navigation_info->url_request.SetHttpMethod("POST");
   form_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
+  form_navigation_info->frame_type =
+      network::mojom::RequestContextFrameType::kTopLevel;
   form_navigation_info->navigation_type =
       blink::kWebNavigationTypeFormSubmitted;
   form_navigation_info->navigation_policy =
@@ -690,6 +740,8 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
   popup_navigation_info->url_request =
       blink::WebURLRequest(GURL("chrome://foo"));
   popup_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
+  popup_navigation_info->frame_type =
+      network::mojom::RequestContextFrameType::kAuxiliary;
   popup_navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
   popup_navigation_info->navigation_policy =
       blink::kWebNavigationPolicyNewForegroundTab;
@@ -718,6 +770,8 @@ TEST_F(RenderViewImplTest, BeginNavigationHandlesAllTopLevel) {
     navigation_info->url_request = blink::WebURLRequest(GURL("http://foo.com"));
     navigation_info->url_request.SetRequestorOrigin(
         blink::WebSecurityOrigin::Create(GURL("http://foo.com")));
+    navigation_info->frame_type =
+        network::mojom::RequestContextFrameType::kTopLevel;
     navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
     navigation_info->navigation_type = kNavTypes[i];
 
@@ -739,6 +793,8 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
   navigation_info->url_request = blink::WebURLRequest(GURL("http://foo.com"));
   navigation_info->url_request.SetRequestorOrigin(requestor_origin);
+  navigation_info->frame_type =
+      network::mojom::RequestContextFrameType::kTopLevel;
   navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
   navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
 
@@ -752,6 +808,8 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   webui_navigation_info->url_request =
       blink::WebURLRequest(GURL("chrome://foo"));
   webui_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
+  webui_navigation_info->frame_type =
+      network::mojom::RequestContextFrameType::kTopLevel;
   webui_navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
   webui_navigation_info->navigation_policy =
       blink::kWebNavigationPolicyCurrentTab;
@@ -765,7 +823,9 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   data_navigation_info->url_request =
       blink::WebURLRequest(GURL("data:text/html,foo"));
   data_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
-  data_navigation_info->url_request.SetHTTPMethod("POST");
+  data_navigation_info->url_request.SetHttpMethod("POST");
+  data_navigation_info->frame_type =
+      network::mojom::RequestContextFrameType::kTopLevel;
   data_navigation_info->navigation_type =
       blink::kWebNavigationTypeFormSubmitted;
   data_navigation_info->navigation_policy =
@@ -782,12 +842,14 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   popup_request.SetRequestorOrigin(requestor_origin);
   blink::WebView* new_web_view = view()->CreateView(
       GetMainFrame(), popup_request, blink::WebWindowFeatures(), "foo",
-      blink::kWebNavigationPolicyNewForegroundTab, false,
+      blink::kWebNavigationPolicyNewForegroundTab,
       blink::WebSandboxFlags::kNone, blink::FeaturePolicy::FeatureState(),
       blink::AllocateSessionStorageNamespaceId());
   RenderViewImpl* new_view = RenderViewImpl::FromWebView(new_web_view);
   auto popup_navigation_info = std::make_unique<blink::WebNavigationInfo>();
   popup_navigation_info->url_request = popup_request;
+  popup_navigation_info->frame_type =
+      network::mojom::RequestContextFrameType::kAuxiliary;
   popup_navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
   popup_navigation_info->navigation_policy =
       blink::kWebNavigationPolicyNewForegroundTab;
@@ -832,6 +894,8 @@ TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkEmptyUrl) {
   // Empty url should never fork.
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
   navigation_info->url_request = blink::WebURLRequest(empty_url);
+  navigation_info->frame_type =
+      network::mojom::RequestContextFrameType::kTopLevel;
   navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
   frame()->BeginNavigation(std::move(navigation_info));
   EXPECT_FALSE(render_thread_->sink().GetUniqueMessageMatching(
@@ -849,6 +913,8 @@ TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkAboutBlank) {
   // About blank should never fork.
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
   navigation_info->url_request = blink::WebURLRequest(blank_url);
+  navigation_info->frame_type =
+      network::mojom::RequestContextFrameType::kTopLevel;
   navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
   frame()->BeginNavigation(std::move(navigation_info));
   EXPECT_FALSE(render_thread_->sink().GetUniqueMessageMatching(
@@ -859,10 +925,6 @@ TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkAboutBlank) {
 // continues to receive the original ScreenInfo and not the emualted
 // ScreenInfo.
 TEST_F(RenderViewImplScaleFactorTest, DeviceEmulationWithOOPIF) {
-  // This test should only run with --site-per-process.
-  if (!AreAllSitesIsolatedForTesting())
-    return;
-
   const float device_scale = 2.0f;
   float compositor_dsf =
       compositor_deps_->IsUseZoomForDSFEnabled() ? 1.f : device_scale;
@@ -912,11 +974,6 @@ TEST_F(RenderViewImplScaleFactorTest, DeviceEmulationWithOOPIF) {
 // Verify that security origins are replicated properly to RenderFrameProxies
 // when swapping out.
 TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
-  // This test should only run with --site-per-process, since origin
-  // replication only happens in that mode.
-  if (!AreAllSitesIsolatedForTesting())
-    return;
-
   LoadHTML(
       "Hello <iframe src='data:text/html,frame 1'></iframe>"
       "<iframe src='data:text/html,frame 2'></iframe>");
@@ -1028,10 +1085,6 @@ TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
 // destroyed along with the proxy.  This protects against races in
 // https://crbug.com/526304 and https://crbug.com/568676.
 TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
-  // This test should only run with --site-per-process.
-  if (!AreAllSitesIsolatedForTesting())
-    return;
-
   LoadHTML("Hello <iframe src='data:text/html,frame 1'></iframe>");
   WebFrame* web_frame = frame()->GetWebFrame();
   TestRenderFrame* child_frame = static_cast<TestRenderFrame*>(
@@ -2584,7 +2637,7 @@ TEST_F(RenderViewImplDisableZoomForDSFTest,
        ConverViewportToWindowWithoutZoomForDSF) {
   SetDeviceScaleFactor(2.f);
   blink::WebRect rect(20, 10, 200, 100);
-  view()->WidgetClient()->ConvertViewportToWindow(&rect);
+  view()->GetWidget()->ConvertViewportToWindow(&rect);
   EXPECT_EQ(20, rect.x);
   EXPECT_EQ(10, rect.y);
   EXPECT_EQ(200, rect.width);
@@ -2653,7 +2706,7 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
   SetDeviceScaleFactor(1.f);
   {
     blink::WebRect rect(20, 10, 200, 100);
-    view()->WidgetClient()->ConvertViewportToWindow(&rect);
+    view()->GetWidget()->ConvertViewportToWindow(&rect);
     EXPECT_EQ(20, rect.x);
     EXPECT_EQ(10, rect.y);
     EXPECT_EQ(200, rect.width);
@@ -2663,7 +2716,7 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
   SetDeviceScaleFactor(2.f);
   {
     blink::WebRect rect(20, 10, 200, 100);
-    view()->WidgetClient()->ConvertViewportToWindow(&rect);
+    view()->GetWidget()->ConvertViewportToWindow(&rect);
     EXPECT_EQ(10, rect.x);
     EXPECT_EQ(5, rect.y);
     EXPECT_EQ(100, rect.width);

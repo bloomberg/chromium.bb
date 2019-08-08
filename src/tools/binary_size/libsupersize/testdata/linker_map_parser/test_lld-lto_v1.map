@@ -254,6 +254,19 @@
  1401789  1401789       a4     1                 $_21::operator()(FamilyData*, char const*, char const**) const
  1401818  1401818        0     1                 $d.79
 
+# Sections prefixed with ".unlikely" or ".hot"
+ 1401820  1401820       10     4         thinlto-cache/Thin-826b9f.tmp.o:(.text.unlikely.UnlikelyFunc)
+ 1401820  1401820        0     1                 $t.78
+ 1401821  1401821       10     1                 UnlikelyFunc
+ 1401831  1401831       10     1                 UnlikelyFunc2
+ 1401841  1401841        0     1                 $d.79
+
+# Sections prefixed with ".startup"
+ 1401850  1401850       10     4         thinlto-cache/Thin-826b9f.tmp.o:(.text.startup)
+ 1401850  1401850        0     1                 $t.78
+ 1401851  1401851       10     1                 StartUpFunc
+ 1401861  1401861        0     1                 $d.79
+
 # Size-only sections.
  2d4a7f0  2d4a7f0     17d0    16 .plt
  2d4a7f0  2d4a7f0     17d0    16         <internal>:(.plt)

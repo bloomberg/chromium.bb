@@ -23,10 +23,10 @@ class ModuleWatcherTest : public testing::Test {
   void OnModuleEvent(const ModuleWatcher::ModuleEvent& event) {
     ++module_event_count_;
     switch (event.event_type) {
-      case mojom::ModuleEventType::MODULE_ALREADY_LOADED:
+      case ModuleWatcher::ModuleEventType::kModuleAlreadyLoaded:
         ++module_already_loaded_event_count_;
         break;
-      case mojom::ModuleEventType::MODULE_LOADED:
+      case ModuleWatcher::ModuleEventType::kModuleLoaded:
         ++module_loaded_event_count_;
         break;
     }

@@ -152,7 +152,7 @@ void URLRequestContentJobTest::RunRequest(const Range* range,
       GURL(path.value()), net::DEFAULT_PRIORITY, &delegate_));
 
   ResourceRequestInfo::AllocateForTesting(request.get(),
-                                          RESOURCE_TYPE_MAIN_FRAME,
+                                          ResourceType::kMainFrame,
                                           nullptr,  // context
                                           0,        // render_process_id
                                           0,        // render_view_id

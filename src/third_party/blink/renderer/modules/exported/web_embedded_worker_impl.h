@@ -50,15 +50,15 @@ namespace blink {
 
 class FetchClientSettingsObjectSnapshot;
 class ServiceWorkerInstalledScriptsManager;
+class ServiceWorkerThread;
 class WorkerClassicScriptLoader;
-class WorkerThread;
 
 class MODULES_EXPORT WebEmbeddedWorkerImpl final
     : public WebEmbeddedWorker,
       public WorkerShadowPage::Client {
  public:
   WebEmbeddedWorkerImpl(
-      std::unique_ptr<WebServiceWorkerContextClient>,
+      WebServiceWorkerContextClient*,
       std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>,
       std::unique_ptr<ServiceWorkerContentSettingsProxy>,
       mojom::blink::CacheStoragePtrInfo,
@@ -80,8 +80,10 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   void OnShadowPageInitialized() override;
 
   static std::unique_ptr<WebEmbeddedWorkerImpl> CreateForTesting(
-      std::unique_ptr<WebServiceWorkerContextClient>,
+      WebServiceWorkerContextClient*,
       std::unique_ptr<ServiceWorkerInstalledScriptsManager>);
+
+  void WaitForShutdownForTesting();
 
  private:
   // WebDevToolsAgentImpl::Client overrides.
@@ -97,7 +99,8 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
 
   WebEmbeddedWorkerStartData worker_start_data_;
 
-  std::unique_ptr<WebServiceWorkerContextClient> worker_context_client_;
+  // Client must remain valid through the entire life time of the worker.
+  WebServiceWorkerContextClient* const worker_context_client_;
 
   // These are valid until StartWorkerThread() is called. After the worker
   // thread is created, these are passed to the worker thread.
@@ -108,7 +111,7 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   // Kept around only while main script loading is ongoing.
   Persistent<WorkerClassicScriptLoader> main_script_loader_;
 
-  std::unique_ptr<WorkerThread> worker_thread_;
+  std::unique_ptr<ServiceWorkerThread> worker_thread_;
 
   std::unique_ptr<WorkerShadowPage> shadow_page_;
 

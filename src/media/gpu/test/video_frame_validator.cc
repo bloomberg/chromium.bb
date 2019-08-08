@@ -6,15 +6,15 @@
 
 #include "base/bind.h"
 #include "base/files/file.h"
-#include "base/md5.h"
+#include "base/hash/md5.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
-#include "media/gpu/test/video_frame_mapper.h"
-#include "media/gpu/test/video_frame_mapper_factory.h"
+#include "media/gpu/video_frame_mapper.h"
+#include "media/gpu/video_frame_mapper_factory.h"
 
 namespace media {
 namespace test {
@@ -30,7 +30,7 @@ std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
     LOG(ERROR) << "Failed to create VideoFrameMapper.";
     return nullptr;
   }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
   auto video_frame_validator = base::WrapUnique(new VideoFrameValidator(
       expected_frame_checksums, std::move(video_frame_mapper),
@@ -73,10 +73,6 @@ void VideoFrameValidator::Destroy() {
   frame_validator_thread_.Stop();
   base::AutoLock auto_lock(frame_validator_lock_);
   DCHECK_EQ(0u, num_frames_validating_);
-}
-
-const std::vector<std::string>& VideoFrameValidator::GetFrameChecksums() const {
-  return frame_checksums_;
 }
 
 std::vector<VideoFrameValidator::MismatchedFrameInfo>
@@ -129,7 +125,7 @@ void VideoFrameValidator::ProcessVideoFrameTask(
 #if defined(OS_LINUX)
   if (validated_frame->storage_type() == VideoFrame::STORAGE_DMABUFS)
     validated_frame = video_frame_mapper_->Map(std::move(validated_frame));
-#endif
+#endif  // defined(OS_LINUX)
 
   if (validated_frame->format() != validation_format_) {
     validated_frame =
@@ -140,7 +136,6 @@ void VideoFrameValidator::ProcessVideoFrameTask(
   std::string computed_md5 = ComputeMD5FromVideoFrame(validated_frame.get());
 
   base::AutoLock auto_lock(frame_validator_lock_);
-  frame_checksums_.push_back(computed_md5);
 
   if (expected_frame_checksums_.size() > 0) {
     LOG_IF(FATAL, frame_index >= expected_frame_checksums_.size())

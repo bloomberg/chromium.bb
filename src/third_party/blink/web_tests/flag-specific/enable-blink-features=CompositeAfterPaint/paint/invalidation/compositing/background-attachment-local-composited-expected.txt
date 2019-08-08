@@ -8,11 +8,6 @@
     },
     {
       "name": "LayoutBlockFlow DIV id='container'",
-      "bounds": [400, 400],
-      "transform": 1
-    },
-    {
-      "name": "LayoutBlockFlow DIV id='container'",
       "bounds": [400, 2000],
       "backgroundColor": "#0000FF",
       "paintInvalidations": [

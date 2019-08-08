@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
-#include "chrome/browser/browser_features.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/native_theme/native_theme.h"
@@ -65,7 +65,6 @@ std::unique_ptr<base::DictionaryValue> DarkModeHandler::GetDataSourceUpdate()
   auto update = std::make_unique<base::DictionaryValue>();
   bool use_dark_mode = UseDarkMode();
   update->SetKey("dark", base::Value(use_dark_mode ? "dark" : ""));
-  update->SetKey("darkMode", base::Value(use_dark_mode));
   return update;
 }
 

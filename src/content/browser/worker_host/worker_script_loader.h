@@ -5,7 +5,13 @@
 #ifndef CONTENT_BROWSER_WORKER_HOST_WORKER_SCRIPT_LOADER_H_
 #define CONTENT_BROWSER_WORKER_HOST_WORKER_SCRIPT_LOADER_H_
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/macros.h"
+#include "base/optional.h"
 #include "content/common/navigation_subresource_loader_params.h"
 #include "content/common/single_request_url_loader_factory.h"
 #include "mojo/public/cpp/bindings/binding.h"

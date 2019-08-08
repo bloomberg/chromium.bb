@@ -7,6 +7,7 @@
 #include "ash/frame/ash_frame_caption_controller.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
@@ -54,7 +55,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   }
 
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override {
+      const views::ViewHierarchyChangedDetails& details) override {
     if (details.is_add && details.child == this) {
       caption_button_container_ = new FrameCaptionButtonContainerView(
           GetWidget(), &caption_controller_);
@@ -286,6 +287,41 @@ TEST_F(FrameSizeButtonTest, RightMouseButton) {
   generator->ReleaseRightButton();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(window_state()->IsNormalStateType());
+}
+
+// Test that during the waiting to snap mode, if the window's state is changed,
+// or the window is put in overview, we should cancel the waiting to snap mode.
+TEST_F(FrameSizeButtonTest, CancelSnapTest) {
+  EXPECT_EQ(views::Button::STATE_NORMAL, size_button()->state());
+
+  // Press on the size button and drag toward to close buton to enter waiting-
+  // for-snap mode.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(CenterPointInScreen(size_button()));
+  generator->PressLeftButton();
+  generator->MoveMouseTo(CenterPointInScreen(close_button()));
+  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
+  EXPECT_TRUE(
+      static_cast<FrameSizeButton*>(size_button())->in_snap_mode_for_testing());
+  // Maximize the window.
+  window_state()->Maximize();
+  EXPECT_EQ(views::Button::STATE_NORMAL, size_button()->state());
+  EXPECT_FALSE(
+      static_cast<FrameSizeButton*>(size_button())->in_snap_mode_for_testing());
+  generator->ReleaseLeftButton();
+
+  // Test that if window is put in overview, the waiting-to-snap is canceled.
+  generator->MoveMouseTo(CenterPointInScreen(size_button()));
+  generator->PressLeftButton();
+  generator->MoveMouseTo(CenterPointInScreen(close_button()));
+  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
+  EXPECT_TRUE(
+      static_cast<FrameSizeButton*>(size_button())->in_snap_mode_for_testing());
+  window_state()->window()->SetProperty(kIsShowingInOverviewKey, true);
+  EXPECT_EQ(views::Button::STATE_NORMAL, size_button()->state());
+  EXPECT_FALSE(
+      static_cast<FrameSizeButton*>(size_button())->in_snap_mode_for_testing());
+  generator->ReleaseLeftButton();
 }
 
 // Test that upon releasing the mouse button after having pressed the size

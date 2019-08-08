@@ -36,13 +36,7 @@ class HTMLFrameOwnerElement;
 
 enum class SpatialNavigationDirection { kNone, kUp, kRight, kDown, kLeft };
 
-inline double MaxDistance() {
-  return std::numeric_limits<double>::max();
-}
-
-inline int FudgeFactor() {
-  return 2;
-}
+constexpr double kMaxDistance = std::numeric_limits<double>::max();
 
 CORE_EXPORT bool IsSpatialNavigationEnabled(const LocalFrame*);
 
@@ -51,10 +45,7 @@ struct FocusCandidate {
 
  public:
   FocusCandidate()
-      : visible_node(nullptr),
-        focusable_node(nullptr),
-        is_offscreen(true),
-        is_offscreen_after_scrolling(true) {}
+      : visible_node(nullptr), focusable_node(nullptr), is_offscreen(true) {}
 
   FocusCandidate(Node*, SpatialNavigationDirection);
   explicit FocusCandidate(HTMLAreaElement*, SpatialNavigationDirection);
@@ -71,27 +62,23 @@ struct FocusCandidate {
   Member<Node> focusable_node;
   LayoutRect rect_in_root_frame;
   bool is_offscreen;
-  bool is_offscreen_after_scrolling;
 };
 
 CORE_EXPORT bool HasRemoteFrame(const Node*);
+CORE_EXPORT FloatRect RectInViewport(const Node&);
 CORE_EXPORT bool IsOffscreen(const Node*);
-CORE_EXPORT bool IsOffscreenAfterFrameScroll(const Node*,
-                                             SpatialNavigationDirection);
+CORE_EXPORT bool IsUnobscured(const FocusCandidate&);
 bool ScrollInDirection(Node* container, SpatialNavigationDirection);
 CORE_EXPORT bool IsScrollableNode(const Node* node);
 CORE_EXPORT bool IsScrollableAreaOrDocument(const Node*);
 CORE_EXPORT Node* ScrollableAreaOrDocumentOf(Node*);
 bool CanScrollInDirection(const Node* container, SpatialNavigationDirection);
 bool CanScrollInDirection(const LocalFrame*, SpatialNavigationDirection);
-bool AreElementsOnSameLine(const FocusCandidate& first_candidate,
-                           const FocusCandidate& second_candidate);
 
 double ComputeDistanceDataForNode(SpatialNavigationDirection,
                                   const FocusCandidate& current_interest,
                                   const FocusCandidate& candidate);
-CORE_EXPORT LayoutRect NodeRectInRootFrame(const Node*,
-                                           bool ignore_border = false);
+CORE_EXPORT LayoutRect NodeRectInRootFrame(const Node*);
 CORE_EXPORT LayoutRect OppositeEdge(SpatialNavigationDirection side,
                                     const LayoutRect& box,
                                     LayoutUnit thickness = LayoutUnit());

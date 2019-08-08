@@ -29,13 +29,13 @@
 #include <atomic>
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_database_callback.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_authorizer.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_basic_types.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_error.h"
 #include "third_party/blink/renderer/modules/webdatabase/sql_transaction.h"
 #include "third_party/blink/renderer/modules/webdatabase/sql_transaction_backend.h"
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_database.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -58,7 +58,7 @@ class Database final : public ScriptWrappable {
            const String& name,
            const String& expected_version,
            const String& display_name,
-           unsigned estimated_size);
+           uint32_t estimated_size);
   ~Database() override;
   void Trace(blink::Visitor*) override;
 
@@ -101,7 +101,7 @@ class Database final : public ScriptWrappable {
   const SecurityOrigin* GetSecurityOrigin() const;
   String StringIdentifier() const;
   String DisplayName() const;
-  unsigned EstimatedSize() const;
+  uint32_t EstimatedSize() const;
   String FileName() const;
   SQLiteDatabase& SqliteDatabase() { return sqlite_database_; }
 
@@ -178,7 +178,7 @@ class Database final : public ScriptWrappable {
   String name_;
   String expected_version_;
   String display_name_;
-  unsigned estimated_size_;
+  uint32_t estimated_size_;
   String filename_;
 
   DatabaseGuid guid_;
@@ -189,9 +189,9 @@ class Database final : public ScriptWrappable {
 
   bool new_;
 
+  DatabaseAuthorizer database_authorizer_;
   SQLiteDatabase sqlite_database_;
 
-  Member<DatabaseAuthorizer> database_authorizer_;
   Deque<CrossThreadPersistent<SQLTransactionBackend>> transaction_queue_;
   Mutex transaction_in_progress_mutex_;
   bool transaction_in_progress_;

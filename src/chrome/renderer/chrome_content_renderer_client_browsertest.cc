@@ -44,9 +44,6 @@
 using InstantProcessNavigationTest = ChromeRenderViewTest;
 using ChromeContentRendererClientSearchBoxTest = ChromeRenderViewTest;
 
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data");
-
 const char kHtmlWithIframe[] ="<iframe srcdoc=\"Nothing here\"></iframe>";
 
 // Tests that renderer-initiated navigations from an Instant render process get
@@ -181,7 +178,7 @@ class ChromeContentRendererClientBrowserTest :
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
 
-    https_server_->ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+    https_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     https_server_->RegisterRequestMonitor(base::Bind(
         &ChromeContentRendererClientBrowserTest::MonitorRequestHandler,
         base::Unretained(this)));

@@ -167,8 +167,25 @@ void AssistantSettingsManagerImpl::StopSpeakerIdEnrollment(
 void AssistantSettingsManagerImpl::SyncSpeakerIdEnrollmentStatus() {
   DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
 
-  // Disable status check on M74 since we do not have the API available.
-  return;
+  if (service_->assistant_state()->allowed_state() !=
+          ash::mojom::AssistantAllowedState::ALLOWED ||
+      !base::FeatureList::IsEnabled(
+          assistant::features::kAssistantVoiceMatch)) {
+    return;
+  }
+
+  assistant_manager_service_->assistant_manager_internal()
+      ->GetSpeakerIdEnrollmentStatus(
+          kUserID,
+          [weak_ptr = weak_factory_.GetWeakPtr(),
+           task_runner = service_->main_task_runner()](
+              const assistant_client::SpeakerIdEnrollmentStatus& status) {
+            task_runner->PostTask(
+                FROM_HERE,
+                base::BindOnce(&AssistantSettingsManagerImpl::
+                                   HandleSpeakerIdEnrollmentStatusSync,
+                               weak_ptr, status));
+          });
 }
 
 void AssistantSettingsManagerImpl::HandleSpeakerIdEnrollmentUpdate(
@@ -197,6 +214,24 @@ void AssistantSettingsManagerImpl::HandleSpeakerIdEnrollmentUpdate(
     case SpeakerIdEnrollmentState::UPLOAD:
     case SpeakerIdEnrollmentState::FETCH:
       break;
+  }
+}
+
+void AssistantSettingsManagerImpl::HandleSpeakerIdEnrollmentStatusSync(
+    const assistant_client::SpeakerIdEnrollmentStatus& status) {
+  DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
+
+  speaker_id_enrollment_done_ = status.user_model_exists;
+
+  if (speaker_id_enrollment_done_) {
+    assistant_manager_service_->UpdateInternalOptions(
+        assistant_manager_service_->assistant_manager_internal());
+
+  } else {
+    // If hotword is enabled but there is no voice model found, launch the
+    // enrollment flow.
+    if (service_->assistant_state()->hotword_enabled().value())
+      service_->assistant_controller()->StartSpeakerIdEnrollmentFlow();
   }
 }
 

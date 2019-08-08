@@ -14,7 +14,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import org.junit.Assert;
 
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -29,7 +28,9 @@ import org.chromium.components.offline_pages.core.prefetch.proto.OfflinePages.Pa
 import org.chromium.components.offline_pages.core.prefetch.proto.OfflinePages.PageParameters;
 import org.chromium.components.offline_pages.core.prefetch.proto.OperationOuterClass.Operation;
 import org.chromium.components.offline_pages.core.prefetch.proto.StatusOuterClass;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.util.WebServer;
+import org.chromium.net.test.util.WebServer.HTTPHeader;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -49,6 +50,11 @@ public class TestOfflinePageService {
     // Determines how this fake service responds to requests for pages.
     private HashMap<String, PageBehavior> mPageBehaviors = new HashMap<String, PageBehavior>();
     private StatusOuterClass.Code mDefaultGenerateStatus = StatusOuterClass.Code.OK;
+
+    private boolean mForbidGeneratePageBundle;
+    public void setForbidGeneratePageBundle(boolean shouldForbid) {
+        mForbidGeneratePageBundle = shouldForbid;
+    }
 
     private static int sNextOperationIndex = 1;
     private static String newOperationName() {
@@ -102,9 +108,13 @@ public class TestOfflinePageService {
         if (request.getMethod().equals("POST")
                 && request.getURI().startsWith("/v1:GeneratePageBundle")) {
             try {
-                GeneratePageBundleRequest bundleRequest =
-                        GeneratePageBundleRequest.parseFrom(request.getBody());
-                handleGeneratePageBundle(bundleRequest, stream);
+                if (mForbidGeneratePageBundle) {
+                    respondForbidden(stream);
+                } else {
+                    GeneratePageBundleRequest bundleRequest =
+                            GeneratePageBundleRequest.parseFrom(request.getBody());
+                    handleGeneratePageBundle(bundleRequest, stream);
+                }
                 GeneratePageBundleCalled.notifyCalled();
                 return true;
             } catch (InvalidProtocolBufferException e) {
@@ -114,6 +124,13 @@ public class TestOfflinePageService {
             String suffix = request.getURI().substring(10);
             String[] nameAndQuery = suffix.split("[?]", 2);
             if (nameAndQuery.length == 2) {
+                for (HTTPHeader header : request.getHeaders()) {
+                    if (header.key.equalsIgnoreCase("range")) {
+                        // The server is not equipped to correctly handle range requests for the
+                        // initial request, as the response won't be cached.
+                        Assert.fail("received range request for page data. Range=" + header.value);
+                    }
+                }
                 if (handleRead(nameAndQuery[0], stream)) {
                     ReadCalled.notifyCalled();
                     return true;
@@ -207,11 +224,20 @@ public class TestOfflinePageService {
     /** Handle a GeneratePageBundle request. */
     private void handleGeneratePageBundle(GeneratePageBundleRequest request, OutputStream output)
             throws IOException {
-        String operationName = newOperationName();
+        String operationName = "operations/empty";
+        if (request.getPagesCount() > 0) {
+            operationName = newOperationName();
+        }
         mOperations.put(operationName, request);
         if (!writeOperationResponse(operationName, request, true, output)) {
             mIncompleteOperations.add(operationName);
         }
+    }
+
+    /** Send a "Forbidden by OPS" response. */
+    private void respondForbidden(OutputStream output) throws IOException {
+        WebServer.writeResponse(
+                output, "403 Forbidden", "... request forbidden by OPS ...".getBytes());
     }
 
     /**
@@ -229,7 +255,7 @@ public class TestOfflinePageService {
                 FakeInstanceIDWithSubtype.getSubtypeAndAuthorizedEntityOfOnlyToken();
         final String appId = appIdAndSenderId.first;
         final String senderId = appIdAndSenderId.second;
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Context context = InstrumentationRegistry.getInstrumentation()
                                       .getTargetContext()
                                       .getApplicationContext();

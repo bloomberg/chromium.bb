@@ -33,8 +33,7 @@ ButtonExample::ButtonExample() : ExampleBase("Button") {
   icon_ = rb.GetImageNamed(IDR_CLOSE_H).ToImageSkia();
 }
 
-ButtonExample::~ButtonExample() {
-}
+ButtonExample::~ButtonExample() = default;
 
 void ButtonExample::CreateExampleView(View* container) {
   container->SetBackground(CreateSolidBackground(SK_ColorWHITE));

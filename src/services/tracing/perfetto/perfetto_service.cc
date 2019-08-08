@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
+#include "services/tracing/perfetto/consumer_host.h"
 #include "services/tracing/perfetto/producer_host.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/tracing_service.h"
@@ -54,10 +55,39 @@ void PerfettoService::ConnectToProducerHost(
   auto new_producer = std::make_unique<ProducerHost>();
   uint32_t producer_pid = bindings_.dispatch_context();
   new_producer->Initialize(std::move(producer_client), service_.get(),
-                           base::StrCat({mojom::kPerfettoProducerName, ".",
+                           base::StrCat({mojom::kPerfettoProducerNamePrefix,
                                          base::NumberToString(producer_pid)}));
   producer_bindings_.AddBinding(std::move(new_producer),
                                 std::move(producer_host_request));
+}
+
+void PerfettoService::AddActiveServicePid(base::ProcessId pid) {
+  active_service_pids_.insert(pid);
+  for (auto* consumer_host : consumer_hosts_) {
+    consumer_host->OnActiveServicePidAdded(pid);
+  }
+}
+
+void PerfettoService::RemoveActiveServicePid(base::ProcessId pid) {
+  active_service_pids_.erase(pid);
+  for (auto* consumer_host : consumer_hosts_) {
+    consumer_host->OnActiveServicePidRemoved(pid);
+  }
+}
+
+void PerfettoService::SetActiveServicePidsInitialized() {
+  active_service_pids_initialized_ = true;
+  for (auto* consumer_host : consumer_hosts_) {
+    consumer_host->OnActiveServicePidsInitialized();
+  }
+}
+
+void PerfettoService::RegisterConsumerHost(ConsumerHost* consumer_host) {
+  consumer_hosts_.insert(consumer_host);
+}
+
+void PerfettoService::UnregisterConsumerHost(ConsumerHost* consumer_host) {
+  consumer_hosts_.erase(consumer_host);
 }
 
 }  // namespace tracing

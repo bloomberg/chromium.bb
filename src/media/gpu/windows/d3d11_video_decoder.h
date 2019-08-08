@@ -37,6 +37,42 @@ class D3D11VideoDecoderImpl;
 class D3D11VideoDecoderTest;
 class MediaLog;
 
+// Stores different pixel formats and DGXI formats, and checks for decoder
+// GUID support.
+class TextureSelector {
+ public:
+  TextureSelector(VideoPixelFormat pixfmt,
+                  DXGI_FORMAT dxgifmt,
+                  GUID decoder_guid,
+                  bool is_encrypted,
+                  bool supports_swap_chain)
+      : pixel_format(pixfmt),
+        dxgi_format(dxgifmt),
+        decoder_guid(decoder_guid),
+        is_encrypted_(is_encrypted),
+        supports_swap_chain_(supports_swap_chain) {}
+  ~TextureSelector() = default;
+
+  static std::unique_ptr<TextureSelector> Create(
+      const VideoDecoderConfig& config);
+
+  D3D11_VIDEO_DECODER_DESC DecoderDescriptor(gfx::Size size);
+  D3D11_TEXTURE2D_DESC TextureDescriptor(gfx::Size size);
+  bool SupportsDevice(Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device);
+
+  const VideoPixelFormat pixel_format;
+  const DXGI_FORMAT dxgi_format;
+  const GUID decoder_guid;
+
+  // TODO(liberato): what's the minimum that we need for the decoder?
+  // the VDA requests 20.
+  static constexpr int BUFFER_COUNT = 20;
+
+ private:
+  const bool is_encrypted_;
+  const bool supports_swap_chain_;
+};
+
 // Video decoder that uses D3D11 directly.  It is intended that this class will
 // run the decoder on whatever thread it lives on.  However, at the moment, it
 // only works if it's on the gpu main thread.
@@ -126,9 +162,6 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
 
   // Query the video device for a specific decoder ID.
   bool DeviceHasDecoderID(GUID decoder_guid);
-
-  // Gets the Decoder GUID from the config.
-  GUID GetD3D11DecoderGUID(const VideoDecoderConfig& config);
 
   // Create new PictureBuffers.  Currently, this completes synchronously, but
   // really should have an async interface since it must do some work on the
@@ -232,7 +265,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
 
   std::unique_ptr<AcceleratedVideoDecoder> accelerated_video_decoder_;
 
-  GUID decoder_guid_;
+  std::unique_ptr<TextureSelector> texture_selector_;
 
   std::list<std::pair<scoped_refptr<DecoderBuffer>, DecodeCB>>
       input_buffer_queue_;

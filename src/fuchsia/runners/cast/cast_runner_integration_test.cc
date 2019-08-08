@@ -5,6 +5,7 @@
 #include <lib/fidl/cpp/binding.h>
 #include <lib/zx/channel.h>
 
+#include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
@@ -16,9 +17,8 @@
 #include "fuchsia/base/agent_impl.h"
 #include "fuchsia/base/fake_component_context.h"
 #include "fuchsia/base/fit_adapter.h"
+#include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/result_receiver.h"
-#include "fuchsia/engine/test/test_common.h"
-#include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "fuchsia/runners/cast/cast_runner.h"
 #include "fuchsia/runners/cast/fake_application_config_manager.h"
 #include "fuchsia/runners/common/web_component.h"
@@ -51,7 +51,7 @@ class FakeCastChannel : public chromium::cast::CastChannel {
   }
 
  protected:
-  // chromium::web::CastChannel implementation.
+  // chromium::cast::CastChannel implementation.
   void OnOpened(fidl::InterfaceHandle<chromium::web::MessagePort> channel,
                 OnOpenedCallback callback_ignored) override {
     port_ = channel.Bind();
@@ -76,8 +76,11 @@ class FakeCastChannel : public chromium::cast::CastChannel {
 
 class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
  public:
-  explicit FakeComponentState(base::StringPiece component_url)
+  FakeComponentState(
+      base::StringPiece component_url,
+      chromium::cast::ApplicationConfigManager* app_config_manager)
       : ComponentStateBase(component_url),
+        app_config_binding_(service_directory(), app_config_manager),
         cast_channel_(std::make_unique<FakeCastChannel>(service_directory())) {}
   ~FakeComponentState() override {
     if (on_delete_)
@@ -92,6 +95,9 @@ class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
   void ClearCastChannel() { cast_channel_.reset(); }
 
  protected:
+  const base::fuchsia::ScopedServiceBinding<
+      chromium::cast::ApplicationConfigManager>
+      app_config_binding_;
   std::unique_ptr<FakeCastChannel> cast_channel_;
   base::OnceClosure on_delete_;
 
@@ -105,22 +111,17 @@ class CastRunnerIntegrationTest : public testing::Test {
   CastRunnerIntegrationTest()
       : run_timeout_(
             TestTimeouts::action_timeout(),
-            base::MakeExpectedNotRunClosure(FROM_HERE, "Run() timed out.")),
-        app_config_binding_(&app_config_manager_) {
+            base::MakeExpectedNotRunClosure(FROM_HERE, "Run() timed out.")) {
     // Create a new test ServiceDirectory, and ServiceDirectoryClient connected
     // to it, for tests to use to drive the CastRunner.
     fidl::InterfaceHandle<fuchsia::io::Directory> directory;
     public_services_ = std::make_unique<base::fuchsia::ServiceDirectory>(
         directory.NewRequest());
 
-    // Create the AppConfigManager.
-    chromium::cast::ApplicationConfigManagerPtr app_config_manager_ptr;
-    app_config_binding_.Bind(app_config_manager_ptr.NewRequest());
-
     // Create the CastRunner, published into |test_services_|.
     cast_runner_ = std::make_unique<CastRunner>(
-        public_services_.get(), WebContentRunner::CreateDefaultWebContext(),
-        std::move(app_config_manager_ptr), cast_runner_run_loop_.QuitClosure());
+        public_services_.get(), WebContentRunner::CreateIncognitoWebContext(),
+        cast_runner_run_loop_.QuitClosure());
 
     // Connect to the CastRunner's fuchsia.sys.Runner interface.
     base::fuchsia::ServiceDirectoryClient public_directory_client(
@@ -154,7 +155,7 @@ class CastRunnerIntegrationTest : public testing::Test {
     component_state_->cast_channel()->set_on_opened(run_loop.QuitClosure());
     run_loop.Run();
 
-    DCHECK(component_state_->cast_channel()->port());
+    ASSERT_TRUE(component_state_->cast_channel()->port());
   }
 
   fuchsia::sys::ComponentControllerPtr StartCastComponent(
@@ -176,7 +177,8 @@ class CastRunnerIntegrationTest : public testing::Test {
     startup_info.launch_info.url = component_url.as_string();
 
     // Place the ServiceDirectory in the |flat_namespace|.
-    startup_info.flat_namespace.paths.emplace_back("/svc");
+    startup_info.flat_namespace.paths.emplace_back(
+        base::fuchsia::kServiceDirectoryPath);
     startup_info.flat_namespace.directories.emplace_back(
         directory.TakeChannel());
 
@@ -195,7 +197,8 @@ class CastRunnerIntegrationTest : public testing::Test {
  protected:
   std::unique_ptr<cr_fuchsia::AgentImpl::ComponentStateBase> OnComponentConnect(
       base::StringPiece component_url) {
-    auto component_state = std::make_unique<FakeComponentState>(component_url);
+    auto component_state = std::make_unique<FakeComponentState>(
+        component_url, &app_config_manager_);
     component_state_ = component_state.get();
     return component_state;
   }
@@ -206,7 +209,6 @@ class CastRunnerIntegrationTest : public testing::Test {
 
   // Returns fake Cast application information to the CastRunner.
   FakeApplicationConfigManager app_config_manager_;
-  fidl::Binding<chromium::cast::ApplicationConfigManager> app_config_binding_;
 
   // Incoming service directory, ComponentContext and per-component state.
   std::unique_ptr<base::fuchsia::ServiceDirectory> component_services_;
@@ -238,7 +240,7 @@ TEST_F(CastRunnerIntegrationTest, BasicRequest) {
 
   // Access the NavigationController from the WebComponent. The test will hang
   // here if no WebComponent was created.
-  chromium::web::NavigationControllerPtr nav_controller;
+  fuchsia::web::NavigationControllerPtr nav_controller;
   {
     base::RunLoop run_loop;
     cr_fuchsia::ResultReceiver<WebComponent*> web_component(
@@ -251,15 +253,16 @@ TEST_F(CastRunnerIntegrationTest, BasicRequest) {
         ->GetNavigationController(nav_controller.NewRequest());
   }
 
-  // Ensure the NavigationEntry has the expected URL.
+  // Ensure the NavigationState has the expected URL.
   {
     base::RunLoop run_loop;
-    cr_fuchsia::ResultReceiver<std::unique_ptr<chromium::web::NavigationEntry>>
-        nav_entry(run_loop.QuitClosure());
+    cr_fuchsia::ResultReceiver<fuchsia::web::NavigationState> nav_entry(
+        run_loop.QuitClosure());
     nav_controller->GetVisibleEntry(
         cr_fuchsia::CallbackToFitFunction(nav_entry.GetReceiveCallback()));
     run_loop.Run();
-    EXPECT_EQ(nav_entry->get()->url, test_server_.GetURL(kBlankAppPath).spec());
+    ASSERT_TRUE(nav_entry->has_url());
+    EXPECT_EQ(nav_entry->url(), test_server_.GetURL(kBlankAppPath).spec());
   }
 
   // Verify that the component is torn down when |component_controller| is
@@ -303,7 +306,7 @@ TEST_F(CastRunnerIntegrationTest, CastChannel) {
 
   // Access the NavigationController from the WebComponent. The test will hang
   // here if no WebComponent was created.
-  chromium::web::NavigationControllerPtr nav_controller;
+  fuchsia::web::NavigationControllerPtr nav_controller;
   {
     base::RunLoop run_loop;
     cr_fuchsia::ResultReceiver<WebComponent*> web_component(
@@ -316,15 +319,16 @@ TEST_F(CastRunnerIntegrationTest, CastChannel) {
         ->GetNavigationController(nav_controller.NewRequest());
   }
 
-  // Ensure the NavigationEntry has the expected URL.
+  // Ensure the NavigationState has the expected URL.
   {
     base::RunLoop run_loop;
-    cr_fuchsia::ResultReceiver<std::unique_ptr<chromium::web::NavigationEntry>>
-        nav_entry(run_loop.QuitClosure());
+    cr_fuchsia::ResultReceiver<fuchsia::web::NavigationState> nav_entry(
+        run_loop.QuitClosure());
     nav_controller->GetVisibleEntry(
         cr_fuchsia::CallbackToFitFunction(nav_entry.GetReceiveCallback()));
     run_loop.Run();
-    EXPECT_EQ(nav_entry->get()->url,
+    ASSERT_TRUE(nav_entry->has_url());
+    EXPECT_EQ(nav_entry->url(),
               test_server_.GetURL(kCastChannelAppPath).spec());
   }
 
@@ -339,7 +343,9 @@ TEST_F(CastRunnerIntegrationTest, CastChannel) {
         cr_fuchsia::CallbackToFitFunction(message.GetReceiveCallback()));
     run_loop.Run();
 
-    EXPECT_EQ(cr_fuchsia::StringFromMemBufferOrDie(message->data), expected);
+    std::string data;
+    ASSERT_TRUE(cr_fuchsia::StringFromMemBuffer(message->data, &data));
+    EXPECT_EQ(data, expected);
   }
 
   // Shutdown the component and wait for the teardown of its state.

@@ -59,6 +59,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       import {QueryArgs} from './js/cottontail/src/util/query-args.js';
       import {FallbackHelper} from './js/cottontail/src/util/fallback-helper.js';
       import {SkyboxNode} from './js/cottontail/src/nodes/skybox.js';
+      import {BoundsRenderer} from './js/cottontail/src/nodes/bounds-renderer.js';
 
       // If requested, initialize the WebXR polyfill
       if (QueryArgs.getBool('allowPolyfill', false)) {
@@ -74,6 +75,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let gl = null;
       let renderer = null;
       let scene = new Scene();
+      let boundsRenderer = null;
       scene.addNode(new Gltf2Node({url: '../media/gltf/camp/camp.gltf'}));
       scene.addNode(new SkyboxNode({url: '../media/textures/eilenriede-park-2k.png'}));
       scene.standingStats(true);
@@ -81,16 +83,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       function initXR() {
         xrButton = new XRDeviceButton({
           onRequestSession: onRequestSession,
-          onEndSession: onEndSession
+          onEndSession: onEndSession,
+          supportedSessionTypes: ['immersive-vr']
         });
         document.querySelector('header').appendChild(xrButton.domElement);
 
         if (navigator.xr) {
-          navigator.xr.supportsSessionMode('immersive-vr').then(() => {
-            xrButton.enabled = true;
-          });
-
-          navigator.xr.requestSession().then(onSessionStarted);
+          navigator.xr.requestSession('inline').then(onSessionStarted);
         } else {
           initFallback();
         }
@@ -104,7 +103,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onRequestSession() {
-        navigator.xr.requestSession({ mode: 'immersive-vr' }).then((session) => {
+        navigator.xr.requestSession('immersive-vr').then((session) => {
           xrButton.setSession(session);
           onSessionStarted(session);
         });
@@ -136,18 +135,50 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             outputContext: outputCanvas.getContext('xrpresent')
         });
 
-        // Get a stage frame of reference, which will align the user's physical
-        // floor with Y=0 and can provide boundaries that indicate where the
-        // user can safely walk. If the system can't natively provide stage
-        // coordinates (for example, with a 3DoF device) then it will return an
-        // emulated stage, where the view is translated up by a static height so
-        // that the scene still renders in approximately the right place.
-        session.requestReferenceSpace({ type: 'stationary', subtype: 'floor-level' }).then((refSpace) => {
+        // Attempt to get a 'bounded' reference space, which will align the
+        // user's physical floor with Y=0 and provide boundaries that indicate
+        // where the user can safely walk.
+        session.requestReferenceSpace({ type: 'bounded' }).then((refSpace) => {
+          if (!boundsRenderer) {
+            boundsRenderer = new BoundsRenderer(refSpace);
+            scene.addNode(boundsRenderer);
+          } else {
+            boundsRenderer.boundedRefSpace = refSpace;
+          }
+          return refSpace;
+        }).catch(() => {
+          // If a bounded reference space isn't supported, fall back to a
+          // stationary/floor-level reference space. This still provides a
+          // floor-relative space and will always be supported for
+          // immersive sessions. It will not, however, provide boundaries
+          // and generally expects the user to stand in one place.
+          // If the device doesn't have a way of determining the floor 
+          // level (for example, with a 3DoF device) then it will return
+          // an emulated floor-level space, where the view is translated
+          // up by a static height so that the scene still renders in
+          // approximately the right place.
+          console.log('Falling back to floor-level reference space');
+          return session.requestReferenceSpace({ type: 'stationary', subtype: 'floor-level' }).catch((e) => {
+            if (!session.mode.startsWith('immersive')) {
+              // If we're in inline mode, our underlying platform may not support
+              // the stationary reference space, but an identity space is guaranteed.
+              console.log('Falling back to identity reference space');
+              return session.requestReferenceSpace({ type: 'identity' }).then((refSpace) => {
+                // If we use an identity reference space we need to scoot the
+                // origin down a bit to put the camera at approximately the
+                // right level. (Here we're moving it 1.6 meters, which should
+                // *very* roughly align us with the eye height of an "average"
+                // adult human.)
+                refSpace.originOffset = new XRRigidTransform({y: -1.6});
+                return refSpace;
+              });
+            } else {
+              throw e;
+            }
+          });
+        }).then((refSpace) => {
           if (session.mode.startsWith('immersive')) {
             xrImmersiveRefSpace = refSpace;
-            let boundsRenderer = new BoundsRenderer();
-            boundsRenderer.stageBounds = refSpace.bounds;
-            scene.addNode(boundsRenderer);
           } else {
             xrNonImmersiveRefSpace = refSpace;
           }

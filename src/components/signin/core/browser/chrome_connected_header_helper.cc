@@ -22,6 +22,8 @@ namespace signin {
 
 namespace {
 
+const char kConsistencyEnabledByDefaultAttrName[] =
+    "consistency_enabled_by_default";
 const char kContinueUrlAttrName[] = "continue_url";
 const char kEmailAttrName[] = "email";
 const char kEnableAccountConsistencyAttrName[] = "enable_account_consistency";
@@ -39,8 +41,6 @@ GAIAServiceType GetGAIAServiceTypeFromHeader(const std::string& header_value) {
     return GAIA_SERVICE_TYPE_INCOGNITO;
   else if (header_value == "ADDSESSION")
     return GAIA_SERVICE_TYPE_ADDSESSION;
-  else if (header_value == "REAUTH")
-    return GAIA_SERVICE_TYPE_REAUTH;
   else if (header_value == "SIGNUP")
     return GAIA_SERVICE_TYPE_SIGNUP;
   else if (header_value == "DEFAULT")
@@ -169,20 +169,23 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
     const GURL& url,
     const std::string& account_id,
     int profile_mode_mask) {
-// If we are on mobile, an empty |account_id| corresponds to the user not signed
-// into Sync. Do not enforce account consistency, unless Mice is enabled on
-// Android.
+#if defined(OS_ANDROID)
+  bool is_mice_enabled = base::FeatureList::IsEnabled(kMiceFeature);
+#else
+  bool is_mice_enabled = false;
+#endif
+
+// If we are on mobile or desktop, an empty |account_id| corresponds to the user
+// not signed into Sync. Do not enforce account consistency, unless Mice is
+// enabled on Android.
 // On Chrome OS, an empty |account_id| corresponds to Public Sessions, Guest
 // Sessions and Active Directory logins. Guest Sessions have already been
 // filtered upstream and we want to enforce account consistency in Public
 // Sessions and Active Directory logins.
-#if defined(OS_ANDROID)
-  if (account_id.empty() && !base::FeatureList::IsEnabled(kMiceFeature))
+#if !defined(OS_CHROMEOS)
+  if (account_id.empty() && !is_mice_enabled)
     return std::string();
-#elif !defined(OS_CHROMEOS)
-  if (account_id.empty())
-    return std::string();
-#endif
+#endif  // !defined(OS_CHROMEOS)
 
   std::vector<std::string> parts;
   if (!account_id.empty() &&
@@ -198,6 +201,9 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
       account_consistency_ == AccountConsistencyMethod::kMirror;
   parts.push_back(base::StringPrintf("%s=%s", kEnableAccountConsistencyAttrName,
                                      is_mirror_enabled ? "true" : "false"));
+  parts.push_back(base::StringPrintf("%s=%s",
+                                     kConsistencyEnabledByDefaultAttrName,
+                                     is_mice_enabled ? "true" : "false"));
 
   return base::JoinString(parts, is_header_request ? "," : ":");
 }

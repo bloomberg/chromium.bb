@@ -9,7 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/debug/alias.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
@@ -477,6 +477,9 @@ class GpuImageDecodeTaskImpl : public TileTask {
         task_type_(task_type) {
     DCHECK(!SkipImage(draw_image));
   }
+  GpuImageDecodeTaskImpl(const GpuImageDecodeTaskImpl&) = delete;
+
+  GpuImageDecodeTaskImpl& operator=(const GpuImageDecodeTaskImpl&) = delete;
 
   // Overridden from Task:
   void RunOnWorkerThread() override {
@@ -503,8 +506,6 @@ class GpuImageDecodeTaskImpl : public TileTask {
   DrawImage image_;
   const ImageDecodeCache::TracingInfo tracing_info_;
   const GpuImageDecodeCache::DecodeTaskType task_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(GpuImageDecodeTaskImpl);
 };
 
 // Task which creates an image from decoded data. Typically this involves
@@ -526,6 +527,9 @@ class ImageUploadTaskImpl : public TileTask {
     if (decode_dependency)
       dependencies_.push_back(std::move(decode_dependency));
   }
+  ImageUploadTaskImpl(const ImageUploadTaskImpl&) = delete;
+
+  ImageUploadTaskImpl& operator=(const ImageUploadTaskImpl&) = delete;
 
   // Override from Task:
   void RunOnWorkerThread() override {
@@ -546,8 +550,6 @@ class ImageUploadTaskImpl : public TileTask {
   GpuImageDecodeCache* cache_;
   DrawImage image_;
   const ImageDecodeCache::TracingInfo tracing_info_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageUploadTaskImpl);
 };
 
 GpuImageDecodeCache::ImageDataBase::ImageDataBase() = default;
@@ -1509,6 +1511,15 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
     auto found_persistent = persistent_cache_.Peek(draw_image.frame_key());
     if (found_persistent != persistent_cache_.end())
       RemoveFromPersistentCache(found_persistent);
+  }
+
+  // Don't keep discardable cpu memory for GPU backed images. The cache hit rate
+  // of the cpu fallback (in case we don't find this image in gpu memory) is
+  // too low to cache this data.
+  if (image_data->decode.ref_count == 0 &&
+      image_data->mode != DecodedDataMode::kCpu &&
+      image_data->HasUploadedData()) {
+    image_data->decode.ResetData();
   }
 
   // If we have no refs on an uploaded image, it should be unlocked. Do this

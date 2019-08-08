@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/layers/recording_source.h"
@@ -42,6 +41,9 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
     ImageProvider* image_provider = nullptr;
   };
 
+  RasterSource(const RasterSource&) = delete;
+  RasterSource& operator=(const RasterSource&) = delete;
+
   // Helper function to apply a few common operations before passing the canvas
   // to the shorter version. This is useful for rastering into tiles.
   // canvas is expected to be backed by a tile, with a default state.
@@ -52,7 +54,6 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // canvas_playback_rect can be used to replay only part of the recording in,
   // the content space, so only a sub-rect of the tile gets rastered.
   void PlaybackToCanvas(SkCanvas* canvas,
-                        const gfx::ColorSpace& target_color_space,
                         const gfx::Size& content_size,
                         const gfx::Rect& canvas_bitmap_rect,
                         const gfx::Rect& canvas_playback_rect,
@@ -153,8 +154,6 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   const gfx::Size size_;
   const int slow_down_raster_scale_factor_for_debug_;
   const float recording_scale_factor_;
-
-  DISALLOW_COPY_AND_ASSIGN(RasterSource);
 };
 
 }  // namespace cc

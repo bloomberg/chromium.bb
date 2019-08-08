@@ -384,7 +384,7 @@ const FakeGaia::AccessTokenInfo* FakeGaia::FindAccessTokenInfo(
     const std::string& client_id,
     const std::string& scope_string) const {
   if (auth_token.empty() || client_id.empty())
-    return NULL;
+    return nullptr;
 
   std::vector<std::string> scope_list = base::SplitString(
       scope_string, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
@@ -401,7 +401,7 @@ const FakeGaia::AccessTokenInfo* FakeGaia::FindAccessTokenInfo(
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 const FakeGaia::AccessTokenInfo* FakeGaia::GetAccessTokenInfo(
@@ -414,7 +414,7 @@ const FakeGaia::AccessTokenInfo* FakeGaia::GetAccessTokenInfo(
       return &(entry->second);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 void FakeGaia::HandleServiceLogin(const HttpRequest& request,
@@ -665,7 +665,7 @@ void FakeGaia::HandleAuthToken(const HttpRequest& request,
 
 void FakeGaia::HandleTokenInfo(const HttpRequest& request,
                                BasicHttpResponse* http_response) {
-  const AccessTokenInfo* token_info = NULL;
+  const AccessTokenInfo* token_info = nullptr;
   std::string access_token;
   if (GetQueryParameter(request.content, "access_token", &access_token))
     token_info = GetAccessTokenInfo(access_token);
@@ -730,7 +730,7 @@ void FakeGaia::HandleGetUserInfo(const HttpRequest& request,
 void FakeGaia::HandleOAuthUserInfo(
     const net::test_server::HttpRequest& request,
     net::test_server::BasicHttpResponse* http_response) {
-  const AccessTokenInfo* token_info = NULL;
+  const AccessTokenInfo* token_info = nullptr;
   std::string access_token;
   if (GetAccessToken(request, kAuthHeaderBearer, &access_token) ||
       GetAccessToken(request, kAuthHeaderOAuth, &access_token)) {

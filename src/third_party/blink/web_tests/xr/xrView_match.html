@@ -14,7 +14,7 @@ let testName = "XRFrame contains the expected views";
 
 let fakeDeviceInitParams = { supportsImmersive:true };
 
-let requestSessionOptions = [{ mode: 'immersive-vr' }];
+let requestSessionOptions = ['immersive-vr'];
 
 let testFunction = function(session, t, fakeDeviceController) {
   // Session must have a baseLayer or frame requests will be ignored.
@@ -38,6 +38,20 @@ let testFunction = function(session, t, fakeDeviceController) {
       assert_not_equals(pose, null);
       assert_not_equals(pose.views, null);
       assert_equals(pose.views.length, 2);
+
+      {
+        let pose2 = xrFrame.getPose(session.viewerSpace, referenceSpace);
+        assert_not_equals(pose2, null);
+
+        // This pose should have the same transform as the viewer pose, but without
+        // the views array. It should be an XRPose instead of the XRViewerPose derived
+        // class.
+        assert_true(pose2 instanceof XRPose);
+        assert_false(pose2 instanceof XRViewerPose);
+        assert_not_equals(pose2.transform, null);
+        assert_not_equals(pose2.transform.matrix, null);
+        assert_matrices_approx_equal(pose.transform.matrix, pose2.transform.matrix);
+      }
 
       // Ensure that two views are provided.
       let leftView = pose.views[0];

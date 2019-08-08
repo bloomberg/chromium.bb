@@ -79,7 +79,7 @@ if (is_android || is_chromeos) {
   }
 
   if (android_sdk_release == "o_mr1") {
-    default_android_sdk_root = "//third_party/android_tools/sdk"
+    default_android_sdk_root = "//third_party/android_sdk/public"
     default_android_sdk_version = 27
     default_android_sdk_build_tools_version = "27.0.3"
     default_android_sdk_tools_version_suffix = "-26.0.0-dev"
@@ -87,7 +87,7 @@ if (is_android || is_chromeos) {
   }
 
   if (android_sdk_release == "p") {
-    default_android_sdk_root = "//third_party/android_tools/sdk"
+    default_android_sdk_root = "//third_party/android_sdk/public"
     default_android_sdk_version = 28
     default_android_sdk_build_tools_version = "27.0.3"
     default_android_sdk_tools_version_suffix = "-26.0.0-dev"
@@ -97,7 +97,7 @@ if (is_android || is_chromeos) {
   if (!defined(default_lint_android_sdk_root)) {
     # Purposefully repeated so that downstream can change
     # default_android_sdk_root without changing lint version.
-    default_lint_android_sdk_root = "//third_party/android_tools/sdk"
+    default_lint_android_sdk_root = "//third_party/android_sdk/public"
     default_lint_android_sdk_version = 26
   }
 
@@ -105,7 +105,7 @@ if (is_android || is_chromeos) {
     # Purposefully repeated so that downstream can change
     # default_android_sdk_root without changing where we load the SDK extras
     # from. (Google Play services, etc.)
-    default_extras_android_sdk_root = "//third_party/android_tools/sdk"
+    default_extras_android_sdk_root = "//third_party/android_sdk/public"
   }
 
   if (!defined(default_android_keystore_path)) {
@@ -129,7 +129,7 @@ if (is_android || is_chromeos) {
   }
 
   webview_public_framework_dep =
-      "//third_party/android_system_sdk:public_framework_system_java"
+      "//third_party/android_sdk:public_framework_system_java"
   if (!defined(webview_framework_dep)) {
     webview_framework_dep = webview_public_framework_dep
   }
@@ -226,15 +226,16 @@ if (is_android || is_chromeos) {
     # Checks that proguard flags have not changed (!is_java_debug only).
     check_android_configuration = false
 
-    # Enables instantiation of 64-bit browser targets.
-    enable_64_bit_browser = true
-
     # Enable the chrome build for devices without touchscreens.
     notouch_build = false
 
     # Move Trichrome assets to the shared library APK. This will be removed
     # once P builds are no longer supported. https://crbug.com/943637
     trichrome_shared_assets = android_sdk_release == "q"
+  }
+
+  if (notouch_build && defined(extra_keymappings)) {
+    keycode_conversion_data_android_path = extra_keymappings
   }
 
   assert(!(check_android_configuration && is_java_debug),

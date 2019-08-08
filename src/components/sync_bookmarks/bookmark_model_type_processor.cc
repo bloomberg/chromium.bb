@@ -11,6 +11,8 @@
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/trace_event/memory_usage_estimator.h"
+#include "base/trace_event/trace_event.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -140,8 +142,12 @@ void BookmarkModelTypeProcessor::GetLocalChanges(
     GetLocalChangesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BookmarkLocalChangesBuilder builder(bookmark_tracker_.get(), bookmark_model_);
-  std::vector<syncer::CommitRequestData> local_changes =
+  syncer::CommitRequestDataList local_changes =
       builder.BuildCommitRequests(max_entries);
+  for (const std::unique_ptr<syncer::CommitRequestData>& local_change :
+       local_changes) {
+    bookmark_tracker_->MarkCommitMayHaveStarted(local_change->entity->id);
+  }
   std::move(callback).Run(std::move(local_changes));
 }
 
@@ -167,7 +173,7 @@ void BookmarkModelTypeProcessor::OnCommitCompleted(
 
 void BookmarkModelTypeProcessor::OnUpdateReceived(
     const sync_pb::ModelTypeState& model_type_state,
-    const syncer::UpdateResponseDataList& updates) {
+    syncer::UpdateResponseDataList updates) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!model_type_state.cache_guid().empty());
   DCHECK_EQ(model_type_state.cache_guid(), cache_guid_);
@@ -257,6 +263,9 @@ void BookmarkModelTypeProcessor::ModelReadyToSync(
   DCHECK(!bookmark_model_);
   DCHECK(!bookmark_tracker_);
   DCHECK(!bookmark_model_observer_);
+
+  // TODO(crbug.com/950869): Remove after investigations are completed.
+  TRACE_EVENT0("browser", "BookmarkModelTypeProcessor::ModelReadyToSync");
 
   bookmark_model_ = model;
   schedule_save_closure_ = schedule_save_closure;

@@ -157,6 +157,7 @@ interface TestObject {
     [MeasureAs=TestFeature] attribute long measureAsLongAttribute;
     [NotEnumerable] attribute long notEnumerableLongAttribute;
     [OriginTrialEnabled=FeatureName] attribute long originTrialEnabledLongAttribute;
+    [RuntimeEnabled=OriginTrialFeature] attribute long originTrialEnabledLongAttribute2;
     [PerWorldBindings] readonly attribute TestInterfaceEmpty perWorldBindingsReadonlyTestInterfaceEmptyAttribute;
     [LogActivity, LogAllWorlds, PerWorldBindings] attribute long activityLoggingAccessPerWorldBindingsLongAttribute;
     [LogActivity, PerWorldBindings] attribute long activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute;
@@ -167,7 +168,6 @@ interface TestObject {
     [PutForwards=hrefCallWith] readonly attribute TestNode locationWithCallWith;
     [PutForwards=hrefByteString] readonly attribute TestNode locationByteString;
     [PerWorldBindings, PutForwards=href] readonly attribute TestNode locationWithPerWorldBindings;
-    [PutForwards=href, LegacyInterfaceTypeChecking] readonly attribute TestNode locationLegacyInterfaceTypeChecking;
     [RaisesException] attribute long raisesExceptionLongAttribute;
     [RaisesException=Getter] attribute long raisesExceptionGetterLongAttribute;
     [RaisesException=Setter] attribute long setterRaisesExceptionLongAttribute;
@@ -201,12 +201,9 @@ interface TestObject {
 
     [Replaceable] readonly attribute long replaceableReadonlyLongAttribute;
     [PutForwards=href] readonly attribute TestNode locationPutForwards;
-    [RuntimeEnabled=FeatureName] attribute long runtimeEnabledLongAttribute;
+    [RuntimeEnabled=RuntimeFeature] attribute long runtimeEnabledLongAttribute;
     [SetterCallWith=ExecutionContext] attribute DOMString setterCallWithExecutionContextStringAttribute;
     attribute [TreatNullAs=EmptyString] DOMString treatNullAsEmptyStringStringAttribute;
-    [LegacyInterfaceTypeChecking] attribute float legacyInterfaceTypeCheckingFloatAttribute; // nop for non-interface types
-    [LegacyInterfaceTypeChecking] attribute TestInterface legacyInterfaceTypeCheckingTestInterfaceAttribute;
-    [LegacyInterfaceTypeChecking] attribute TestInterface? legacyInterfaceTypeCheckingTestInterfaceOrNullAttribute;
     [Reflect, URL] attribute DOMString urlStringAttribute;
     [Reflect=reflectUrlAttribute, URL] attribute DOMString urlStringAttribute;
     [Unforgeable] attribute long unforgeableLongAttribute;
@@ -216,9 +213,9 @@ interface TestObject {
     [SameObject, SaveSameObject] static readonly attribute TestInterface staticSaveSameObjectAttribute;
     [Unscopable] attribute long unscopableLongAttribute;
     [Unscopable, OriginTrialEnabled=FeatureName] attribute long unscopableOriginTrialEnabledLongAttribute;
-    [Unscopable, RuntimeEnabled=FeatureName] attribute long unscopableRuntimeEnabledLongAttribute;
+    [Unscopable, RuntimeEnabled=RuntimeFeature] attribute long unscopableRuntimeEnabledLongAttribute;
     [Unscopable] void unscopableVoidMethod();
-    [Unscopable, RuntimeEnabled=FeatureName] void unscopableRuntimeEnabledVoidMethod();
+    [Unscopable, RuntimeEnabled=RuntimeFeature] void unscopableRuntimeEnabledVoidMethod();
 
     // Methods
     //
@@ -417,8 +414,6 @@ interface TestObject {
     void overloadedMethodI(double doubleArg);
     void overloadedMethodJ(DOMString stringArg);
     void overloadedMethodJ(TestDictionary testDictionaryArg);
-    void overloadedMethodK(CallbackFunctionTreatedAsScriptValue functionArg);
-    void overloadedMethodK(DOMString stringArg);
     void overloadedMethodL(long longArg, any... restArgs);
     void overloadedMethodL(DOMString stringArg, any... restArgs);
     void overloadedMethodN(TestInterface testInterfaceArg);
@@ -527,16 +522,14 @@ interface TestObject {
     [RaisesException] TestInterfaceEmpty raisesExceptionTestInterfaceEmptyVoidMethod();
     [RaisesException] XPathNSResolver raisesExceptionXPathNSResolverVoidMethod();
     [CallWith=ExecutionContext, RaisesException] void callWithExecutionContextRaisesExceptionVoidMethodLongArg(long longArg);
-    [RuntimeEnabled=FeatureName] void runtimeEnabledVoidMethod();
-    [PerWorldBindings, RuntimeEnabled=FeatureName] void perWorldBindingsRuntimeEnabledVoidMethod();
-    [RuntimeEnabled=FeatureName] void runtimeEnabledOverloadedVoidMethod(DOMString stringArg);
-    [RuntimeEnabled=FeatureName] void runtimeEnabledOverloadedVoidMethod(long longArg);
-    [RuntimeEnabled=FeatureName1] void partiallyRuntimeEnabledOverloadedVoidMethod(DOMString stringArg);
-    [RuntimeEnabled=FeatureName2] void partiallyRuntimeEnabledOverloadedVoidMethod(TestInterface testInterfaceArg);
+    [RuntimeEnabled=RuntimeFeature] void runtimeEnabledVoidMethod();
+    [PerWorldBindings, RuntimeEnabled=RuntimeFeature] void perWorldBindingsRuntimeEnabledVoidMethod();
+    [RuntimeEnabled=RuntimeFeature] void runtimeEnabledOverloadedVoidMethod(DOMString stringArg);
+    [RuntimeEnabled=RuntimeFeature] void runtimeEnabledOverloadedVoidMethod(long longArg);
+    [RuntimeEnabled=RuntimeFeature1] void partiallyRuntimeEnabledOverloadedVoidMethod(DOMString stringArg);
+    [RuntimeEnabled=RuntimeFeature2] void partiallyRuntimeEnabledOverloadedVoidMethod(TestInterface testInterfaceArg);
     void partiallyRuntimeEnabledOverloadedVoidMethod(long longArg, DOMString stringArg);
-    [RuntimeEnabled=FeatureName3] void partiallyRuntimeEnabledOverloadedVoidMethod(long longArg, DOMString stringArg, TestInterface testInterfaceArg);
-    [LegacyInterfaceTypeChecking] void legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
-    [LegacyInterfaceTypeChecking] void legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArg(TestInterfaceEmpty... testInterfaceEmptyArg);
+    [RuntimeEnabled=RuntimeFeature3] void partiallyRuntimeEnabledOverloadedVoidMethod(long longArg, DOMString stringArg, TestInterface testInterfaceArg);
     // Avoid redundant type checking
     void useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg(Node node1, optional Node node2);
     void useToImpl4ArgumentsCheckingIfPossibleWithNullableArg(Node node1, Node? node2);
@@ -551,5 +544,5 @@ interface TestObject {
     attribute TestInterface testInterfaceAttribute; // [ImplementedAs]
 
     maplike<[EnforceRange] long, DOMStringOrDouble>;
-    [RuntimeEnabled=FeatureName, CallWith=ScriptState, RaisesException, ImplementedAs=myMaplikeClear] boolean clear();
+    [RuntimeEnabled=RuntimeFeature, CallWith=ScriptState, RaisesException, ImplementedAs=myMaplikeClear] boolean clear();
 };

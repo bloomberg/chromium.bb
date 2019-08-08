@@ -19,10 +19,10 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.List;
 
@@ -84,7 +84,7 @@ public final class FeedJournalStorageConformanceTest extends JournalStorageConfo
 
     @Before
     public void setUp() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             // journalStorage is declared and tested in JournalStorageConformanceTest.
             journalStorage = new JournalStorageWrapper(Profile.getLastUsedProfile());
         });
@@ -92,7 +92,7 @@ public final class FeedJournalStorageConformanceTest extends JournalStorageConfo
 
     @After
     public void tearDown() {
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { ((JournalStorageWrapper) journalStorage).destroy(); });
         journalStorage = null;
     }

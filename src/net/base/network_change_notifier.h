@@ -437,15 +437,6 @@ class NET_EXPORT NetworkChangeNotifier {
   // Return a string equivalent to |type|.
   static const char* ConnectionTypeToString(ConnectionType type);
 
-  // Invoked at the time a new user metrics log record is being finalized, on
-  // the main thread. NCN Histograms that want to be logged once per record
-  // should be logged in this method. Platform-specific histograms should be
-  // logged in an overridden implementaton of OnFinalizingMetricsLogRecord.
-  static void FinalizingMetricsLogRecord();
-
-  // Log the |NCN.NetworkOperatorMCCMNC| histogram.
-  static void LogOperatorCodeHistogram(ConnectionType type);
-
   // Allows a second NetworkChangeNotifier to be created for unit testing, so
   // the test suite can create a MockNetworkChangeNotifier, but platform
   // specific NetworkChangeNotifiers can also be created for testing.  To use,
@@ -521,10 +512,6 @@ class NET_EXPORT NetworkChangeNotifier {
       NetworkHandle network) const;
   virtual NetworkHandle GetCurrentDefaultNetwork() const;
 
-  // Hook that allows derived implementations to log histograms at the time a
-  // new histogram record is being finalized.
-  virtual void OnFinalizingMetricsLogRecord() {}
-
   // Broadcasts a notification to all registered observers.  Note that this
   // happens asynchronously, even for observers on the current thread, even in
   // tests.
@@ -550,7 +537,7 @@ class NET_EXPORT NetworkChangeNotifier {
   static ConnectionType ConnectionTypeFromInterfaces();
 
  private:
-  friend class HostResolverImplDnsTest;
+  friend class HostResolverManagerDnsTest;
   friend class NetworkChangeNotifierAndroidTest;
   friend class NetworkChangeNotifierLinuxTest;
   friend class NetworkChangeNotifierWinTest;

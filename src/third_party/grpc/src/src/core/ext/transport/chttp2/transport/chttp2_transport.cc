@@ -824,10 +824,10 @@ static const char* write_state_name(grpc_chttp2_write_state st) {
 
 static void set_write_state(grpc_chttp2_transport* t,
                             grpc_chttp2_write_state st, const char* reason) {
-  GRPC_CHTTP2_IF_TRACING(gpr_log(GPR_INFO, "W:%p %s state %s -> %s [%s]", t,
-                                 t->is_client ? "CLIENT" : "SERVER",
-                                 write_state_name(t->write_state),
-                                 write_state_name(st), reason));
+  GRPC_CHTTP2_IF_TRACING(
+      gpr_log(GPR_INFO, "W:%p %s [%s] state %s -> %s [%s]", t,
+              t->is_client ? "CLIENT" : "SERVER", t->peer_string,
+              write_state_name(t->write_state), write_state_name(st), reason));
   t->write_state = st;
   /* If the state is being reset back to idle, it means a write was just
    * finished. Make sure all the run_after_write closures are scheduled.
@@ -1129,15 +1129,17 @@ static void queue_setting_update(grpc_chttp2_transport* t,
 
 void grpc_chttp2_add_incoming_goaway(grpc_chttp2_transport* t,
                                      uint32_t goaway_error,
-                                     grpc_slice goaway_text) {
+                                     const grpc_slice& goaway_text) {
   // Discard the error from a previous goaway frame (if any)
   if (t->goaway_error != GRPC_ERROR_NONE) {
     GRPC_ERROR_UNREF(t->goaway_error);
   }
   t->goaway_error = grpc_error_set_str(
       grpc_error_set_int(
-          GRPC_ERROR_CREATE_FROM_STATIC_STRING("GOAWAY received"),
-          GRPC_ERROR_INT_HTTP2_ERROR, static_cast<intptr_t>(goaway_error)),
+          grpc_error_set_int(
+              GRPC_ERROR_CREATE_FROM_STATIC_STRING("GOAWAY received"),
+              GRPC_ERROR_INT_HTTP2_ERROR, static_cast<intptr_t>(goaway_error)),
+          GRPC_ERROR_INT_GRPC_STATUS, GRPC_STATUS_UNAVAILABLE),
       GRPC_ERROR_STR_RAW_BYTES, goaway_text);
 
   /* We want to log this irrespective of whether http tracing is enabled */
@@ -2474,7 +2476,6 @@ static grpc_error* try_http_parsing(grpc_chttp2_transport* t) {
   size_t i = 0;
   grpc_error* error = GRPC_ERROR_NONE;
   grpc_http_response response;
-  memset(&response, 0, sizeof(response));
 
   grpc_http_parser_init(&parser, GRPC_HTTP_RESPONSE, &response);
 
@@ -2577,7 +2578,8 @@ static void read_action_locked(void* tp, grpc_error* error) {
   grpc_slice_buffer_reset_and_unref_internal(&t->read_buffer);
 
   if (keep_reading) {
-    grpc_endpoint_read(t->ep, &t->read_buffer, &t->read_action_locked);
+    const bool urgent = t->goaway_error != GRPC_ERROR_NONE;
+    grpc_endpoint_read(t->ep, &t->read_buffer, &t->read_action_locked, urgent);
     grpc_chttp2_act_on_flowctl_action(t->flow_control->MakeAction(), t,
                                       nullptr);
     GRPC_CHTTP2_UNREF_TRANSPORT(t, "keep_reading");
@@ -2996,7 +2998,7 @@ void Chttp2IncomingByteStream::PublishError(grpc_error* error) {
   grpc_chttp2_cancel_stream(transport_, stream_, GRPC_ERROR_REF(error));
 }
 
-grpc_error* Chttp2IncomingByteStream::Push(grpc_slice slice,
+grpc_error* Chttp2IncomingByteStream::Push(const grpc_slice& slice,
                                            grpc_slice* slice_out) {
   if (remaining_bytes_ < GRPC_SLICE_LENGTH(slice)) {
     grpc_error* error =

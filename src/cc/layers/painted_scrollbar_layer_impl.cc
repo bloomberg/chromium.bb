@@ -46,7 +46,9 @@ PaintedScrollbarLayerImpl::PaintedScrollbarLayerImpl(
       thumb_thickness_(0),
       thumb_length_(0),
       track_start_(0),
-      track_length_(0) {}
+      track_length_(0),
+      back_button_rect_(gfx::Rect(0, 0)),
+      forward_button_rect_(gfx::Rect(0, 0)) {}
 
 PaintedScrollbarLayerImpl::~PaintedScrollbarLayerImpl() = default;
 
@@ -70,6 +72,8 @@ void PaintedScrollbarLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   scrollbar_layer->SetThumbLength(thumb_length_);
   scrollbar_layer->SetTrackStart(track_start_);
   scrollbar_layer->SetTrackLength(track_length_);
+  scrollbar_layer->SetBackButtonRect(back_button_rect_);
+  scrollbar_layer->SetForwardButtonRect(forward_button_rect_);
 
   scrollbar_layer->set_track_ui_resource_id(track_ui_resource_id_);
   scrollbar_layer->set_thumb_ui_resource_id(thumb_ui_resource_id_);
@@ -188,6 +192,29 @@ void PaintedScrollbarLayerImpl::SetTrackStart(int track_start) {
 
 int PaintedScrollbarLayerImpl::TrackStart() const {
   return track_start_;
+}
+
+void PaintedScrollbarLayerImpl::SetBackButtonRect(gfx::Rect back_button_rect) {
+  if (back_button_rect_ == back_button_rect)
+    return;
+  back_button_rect_ = back_button_rect;
+  NoteLayerPropertyChanged();
+}
+
+gfx::Rect PaintedScrollbarLayerImpl::BackButtonRect() const {
+  return back_button_rect_;
+}
+
+void PaintedScrollbarLayerImpl::SetForwardButtonRect(
+    gfx::Rect forward_button_rect) {
+  if (forward_button_rect_ == forward_button_rect)
+    return;
+  forward_button_rect_ = forward_button_rect;
+  NoteLayerPropertyChanged();
+}
+
+gfx::Rect PaintedScrollbarLayerImpl::ForwardButtonRect() const {
+  return forward_button_rect_;
 }
 
 void PaintedScrollbarLayerImpl::SetTrackLength(int track_length) {

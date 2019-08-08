@@ -8,6 +8,7 @@
 <translation id="1664224225747386870">ಏನನ್ನೂ ರೆಕಾರ್ಡ್ ಮಾಡಲಾಗಿಲ್ಲ</translation>
 <translation id="1862930711583847113"><ph name="FILE" /> ರಫ್ತು ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ</translation>
 <translation id="2036868001356139588">ಟೈಮರ್ ಅವಧಿ</translation>
+<translation id="2050339315714019657">ಪೋಟ್ರೇಟ್</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> ಸಕ್ರಿಯ</translation>
 <translation id="229579744168541441">ಡಿಸ್ಕ್‌ಗೆ ರಫ್ತು ಮಾಡಿ</translation>
 <translation id="2501278716633472235">ಹಿಂದಿರುಗಿ</translation>
@@ -20,14 +21,19 @@
 <translation id="3081586908890909590">ವೀಡಿಯೊ ರೆಕಾರ್ಡ್ ಮೋಡ್‌ಗೆ ಬದಲಿಸಿ</translation>
 <translation id="3183731565330012717">ಗ್ರಿಡ್ ಪ್ರಕಾರ</translation>
 <translation id="3227137524299004712">ಮೈಕ್ರೋಫೋನ್</translation>
+<translation id="3517926952904427380">ಪೋರ್ಟ್ರೇಟ್ ಫೋಟೋ ತೆಗೆಯಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ</translation>
 <translation id="3569311554794739032">ನೀವು ನಿಜವಾಗಿಯೂ <ph name="FILE" /> ತೆಗೆದುಹಾಕಲು ಬಯಸುವಿರಾ?</translation>
+<translation id="3810838688059735925">ವೀಡಿಯೊ</translation>
 <translation id="4279490309300973883">ಪ್ರತಿಬಿಂಬಿಸುವಿಕೆ</translation>
+<translation id="4329152592498422850">ಚೌಕಾಕಾರದ ಫೋಟೋ ತೆಗೆಯಲು ಬದಲಾಯಿಸಿ</translation>
 <translation id="4445542136948522167">ಫೋಟೋ ತೆಗೆಯುವುದನ್ನು ನಿಲ್ಲಿಸಿ</translation>
+<translation id="4628948037717959914">ಫೋಟೋ</translation>
 <translation id="4649291346448517080">ಫೈಲ್ ಉಳಿಸಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ</translation>
 <translation id="4890010094662541459">3 x 3</translation>
 <translation id="5057360777601936059">ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಪ್ರಸ್ತುತ ಲಭ್ಯವಿಲ್ಲ.
         ಕ್ಯಾಮರಾ ಸರಿಯಾಗಿ ಸಂಪರ್ಕಗೊಂಡಿದೆಯೇ ಎಂಬುದನ್ನು ಪರೀಕ್ಷಿಸಿ.</translation>
 <translation id="5152121255775685072">ಗ್ಯಾಲರಿಗೆ ಹೋಗಿ</translation>
+<translation id="5671277269877808209">ಚೌಕ</translation>
 <translation id="5869546221129391014">ಗ್ರಿಡ್</translation>
 <translation id="6073451960410192870">ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ</translation>
 <translation id="6233780560267770709">3 x 3</translation>
@@ -46,6 +52,7 @@
 <translation id="8145038249676204903">ಫೋಟೋ ತೆಗೆದುಕೊಳ್ಳಿ ಮೋಡ್‌ಗೆ ಬದಲಿಸಿ</translation>
 <translation id="8261506727792406068">ಅಳಿಸಿ</translation>
 <translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
+<translation id="8815966864175525708">ಪೋರ್ಟ್ರೇಟ್ ಫೋಟೋ ತೆಗೆಯಲು ಬದಲಾಯಿಸಿ</translation>
 <translation id="8870695351537079478">ರೆಕಾರ್ಡಿಂಗ್ ಪ್ರಾರಂಭಿಸಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ</translation>
 <translation id="9045155556724273246">10 ಸೆಕೆಂಡುಗಳು</translation>
 <translation id="945522503751344254">ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಕಳುಹಿಸಿ</translation>

@@ -132,8 +132,7 @@ void ImeWarningBubbleView::InitAnchorView() {
   views::View* reference_view = nullptr;
 
   anchor_to_action_ =
-      extensions::ActionInfo::GetBrowserActionInfo(extension_) ||
-      extensions::ActionInfo::GetPageActionInfo(extension_);
+      extensions::ActionInfo::GetAnyActionInfo(extension_) != nullptr;
   if (anchor_to_action_) {
     // Anchors the bubble to the browser action of the extension.
     reference_view = container_->GetViewForId(extension_->id());

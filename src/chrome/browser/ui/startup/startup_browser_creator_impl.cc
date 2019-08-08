@@ -81,6 +81,10 @@
 #include "chrome/credential_provider/common/gcp_strings.h"
 #endif  // defined(OS_WIN)
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "chrome/browser/plugins/flash_deprecation_infobar_delegate.h"
+#endif
+
 #if BUILDFLAG(ENABLE_RLZ)
 #include "components/google/core/common/google_util.h"
 #include "components/rlz/rlz_tracker.h"  // nogncheck
@@ -575,7 +579,6 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
     // Check if there are any incompatible applications cached from the last
     // Chrome run.
     has_incompatible_applications =
-        IncompatibleApplicationsUpdater::IsWarningEnabled() &&
         IncompatibleApplicationsUpdater::HasCachedApplications();
   }
 #endif
@@ -833,6 +836,13 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
            browser_creator_->is_default_browser_dialog_suppressed())) {
         ShowDefaultBrowserPrompt(profile_);
       }
+    }
+#endif
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+    if (FlashDeprecationInfoBarDelegate::ShouldDisplayFlashDeprecation(
+            profile_)) {
+      FlashDeprecationInfoBarDelegate::Create(infobar_service);
     }
 #endif
   }

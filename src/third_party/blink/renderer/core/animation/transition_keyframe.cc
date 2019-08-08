@@ -44,8 +44,9 @@ TransitionKeyframe::CreatePropertySpecificKeyframe(
   DCHECK(offset == offset_);
   EffectModel::CompositeOperation composite =
       composite_.value_or(effect_composite);
-  return PropertySpecificKeyframe::Create(CheckedOffset(), &Easing(), composite,
-                                          value_->Clone(), compositor_value_);
+  return MakeGarbageCollected<PropertySpecificKeyframe>(
+      CheckedOffset(), &Easing(), composite, value_->Clone(),
+      compositor_value_);
 }
 
 Interpolation*

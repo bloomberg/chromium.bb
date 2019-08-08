@@ -13,7 +13,7 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/run_loop.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -28,7 +28,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/test/in_process_context_factory.h"
 #include "ui/events/event.h"
@@ -145,7 +145,7 @@ int DemoMain() {
 
   // Create the message-loop here before creating the root window.
   base::MessageLoopForUI message_loop;
-  base::TaskScheduler::CreateAndStartWithDefaultParams("demo");
+  base::ThreadPool::CreateAndStartWithDefaultParams("demo");
   ui::InitializeInputMethodForTesting();
 
   // The ContextFactory must exist before any Compositors are created.

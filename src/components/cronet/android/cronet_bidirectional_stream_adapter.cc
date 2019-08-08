@@ -17,6 +17,7 @@
 #include "components/cronet/android/url_request_error.h"
 #include "components/cronet/metrics_util.h"
 #include "jni/CronetBidirectionalStream_jni.h"
+#include "net/base/http_user_agent_settings.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/bidirectional_stream_request_info.h"
@@ -26,9 +27,8 @@
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_info.h"
-#include "net/third_party/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
-#include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "url/gurl.h"
 

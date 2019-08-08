@@ -4,11 +4,15 @@
 
 #include "ui/ozone/platform/drm/gpu/vulkan_implementation_gbm.h"
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/native_library.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_instance.h"
+#include "gpu/vulkan/vulkan_posix_util.h"
 #include "gpu/vulkan/vulkan_surface.h"
+#include "gpu/vulkan/vulkan_util.h"
 #include "ui/gfx/gpu_fence.h"
 
 namespace ui {
@@ -17,7 +21,8 @@ VulkanImplementationGbm::VulkanImplementationGbm() {}
 
 VulkanImplementationGbm::~VulkanImplementationGbm() {}
 
-bool VulkanImplementationGbm::InitializeVulkanInstance() {
+bool VulkanImplementationGbm::InitializeVulkanInstance(bool using_surface) {
+  DLOG_IF(ERROR, using_surface) << "VK_KHR_surface is not supported.";
   gpu::VulkanFunctionPointers* vulkan_function_pointers =
       gpu::GetVulkanFunctionPointers();
 
@@ -79,11 +84,11 @@ bool VulkanImplementationGbm::GetPhysicalDevicePresentationSupport(
 
 std::vector<const char*>
 VulkanImplementationGbm::GetRequiredDeviceExtensions() {
-  return {
-      "VK_KHR_external_fence", "VK_KHR_external_fence_fd",
-  };
+  return {VK_KHR_EXTERNAL_FENCE_EXTENSION_NAME,
+          VK_KHR_EXTERNAL_FENCE_FD_EXTENSION_NAME,
+          VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
+          VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME};
 }
-
 VkFence VulkanImplementationGbm::CreateVkFenceForGpuFence(VkDevice vk_device) {
   VkFenceCreateInfo fence_create_info = {};
   fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -123,6 +128,30 @@ std::unique_ptr<gfx::GpuFence> VulkanImplementationGbm::ExportVkFenceToGpuFence(
   gpu_fence_handle.native_fd =
       base::FileDescriptor(fence_fd, true /* auto_close */);
   return std::make_unique<gfx::GpuFence>(gpu_fence_handle);
+}
+
+VkSemaphore VulkanImplementationGbm::CreateExternalSemaphore(
+    VkDevice vk_device) {
+  return gpu::CreateExternalVkSemaphore(
+      vk_device, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT);
+}
+
+VkSemaphore VulkanImplementationGbm::ImportSemaphoreHandle(
+    VkDevice vk_device,
+    gpu::SemaphoreHandle sync_handle) {
+  return gpu::ImportVkSemaphoreHandlePosix(vk_device, std::move(sync_handle));
+}
+
+gpu::SemaphoreHandle VulkanImplementationGbm::GetSemaphoreHandle(
+    VkDevice vk_device,
+    VkSemaphore vk_semaphore) {
+  return gpu::GetVkSemaphoreHandlePosix(
+      vk_device, vk_semaphore, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT);
+}
+
+VkExternalMemoryHandleTypeFlagBits
+VulkanImplementationGbm::GetExternalImageHandleType() {
+  return VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT;
 }
 
 }  // namespace ui

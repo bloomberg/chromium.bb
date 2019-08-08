@@ -17,8 +17,8 @@
 #include "base/rand_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "gin/per_isolate_data.h"
@@ -371,11 +371,11 @@ int V8Platform::NumberOfWorkerThreads() {
   // V8Platform assumes the scheduler uses the same set of workers for default
   // and user blocking tasks.
   const int num_foreground_workers =
-      base::TaskScheduler::GetInstance()
+      base::ThreadPool::GetInstance()
           ->GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
               kDefaultTaskTraits);
   DCHECK_EQ(num_foreground_workers,
-            base::TaskScheduler::GetInstance()
+            base::ThreadPool::GetInstance()
                 ->GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
                     kBlockingTaskTraits));
   return std::max(1, num_foreground_workers);

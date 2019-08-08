@@ -15,6 +15,7 @@
 
 namespace syncer {
 
+class KeystoreKeysHandler;
 class SyncEncryptionHandler;
 class TestDirectorySetterUpper;
 
@@ -70,6 +71,13 @@ class TestUserShare {
   // Sync's encryption handler. Used by tests to invoke the sync encryption
   // methods normally handled via the SyncEngine.
   SyncEncryptionHandler* encryption_handler();
+
+  // KeystoreKeysHandler is required for construction of ModelTypeRegistry in
+  // several unittests. Currently owned by |dir_maker_|.
+  // TODO(crbug.com/922900): the ownership of KeystoreKeysHandler should be
+  // moved outside of TestDirectorySetterUpper, since we need to support USS
+  // implementation of Nigori.
+  KeystoreKeysHandler* keystore_keys_handler();
 
   // Returns the directory's transaction observer.  This transaction observer
   // has methods which can be helpful when writing test assertions.

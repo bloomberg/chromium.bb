@@ -158,6 +158,16 @@ void ThreadProfiler::SetMainThreadTaskRunner(
   ScheduleNextPeriodicCollection();
 }
 
+void ThreadProfiler::AddAuxUnwinder(std::unique_ptr<base::Unwinder> unwinder) {
+  if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
+    return;
+
+  aux_unwinder_ = std::move(unwinder);
+  startup_profiler_->AddAuxUnwinder(aux_unwinder_.get());
+  if (periodic_profiler_)
+    periodic_profiler_->AddAuxUnwinder(aux_unwinder_.get());
+}
+
 // static
 void ThreadProfiler::StartOnChildThread(CallStackProfileParams::Thread thread) {
   if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
@@ -224,7 +234,9 @@ ThreadProfiler::ThreadProfiler(
       std::make_unique<CallStackProfileBuilder>(
           CallStackProfileParams(GetProcess(), thread,
                                  CallStackProfileParams::PROCESS_STARTUP),
-          work_id_recorder_.get()));
+          work_id_recorder_.get(),
+          &metrics::CallStackProfileBuilder::
+              GetStackSamplingProfilerMetadataRecorder()));
 
   startup_profiler_->Start();
 
@@ -270,10 +282,14 @@ void ThreadProfiler::StartPeriodicSamplingCollection() {
       std::make_unique<CallStackProfileBuilder>(
           CallStackProfileParams(GetProcess(), thread_,
                                  CallStackProfileParams::PERIODIC_COLLECTION),
-          work_id_recorder_.get(), nullptr,
+          work_id_recorder_.get(),
+          &metrics::CallStackProfileBuilder::
+              GetStackSamplingProfilerMetadataRecorder(),
           base::BindOnce(&ThreadProfiler::OnPeriodicCollectionCompleted,
                          owning_thread_task_runner_,
                          weak_factory_.GetWeakPtr())));
+  if (aux_unwinder_)
+    periodic_profiler_->AddAuxUnwinder(aux_unwinder_.get());
 
   periodic_profiler_->Start();
 }

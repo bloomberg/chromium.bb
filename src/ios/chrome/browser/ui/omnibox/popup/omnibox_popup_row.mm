@@ -7,7 +7,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "components/omnibox/common/omnibox_features.h"
-#import "ios/chrome/browser/ui/omnibox/truncating_attributed_label.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_truncating_label.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"

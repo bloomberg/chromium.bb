@@ -19,7 +19,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -134,7 +134,7 @@ class RendererFreezerTest : public testing::Test {
   ~RendererFreezerTest() override = default;
 
   // testing::Test:
-  void SetUp() override { PowerManagerClient::Initialize(); }
+  void SetUp() override { PowerManagerClient::InitializeFake(); }
 
   void TearDown() override {
     DCHECK(renderer_freezer_);

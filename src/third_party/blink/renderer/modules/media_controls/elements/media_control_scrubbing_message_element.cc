@@ -16,7 +16,7 @@ namespace blink {
 
 MediaControlScrubbingMessageElement::MediaControlScrubbingMessageElement(
     MediaControlsImpl& media_controls)
-    : MediaControlDivElement(media_controls, kMediaIgnore) {
+    : MediaControlDivElement(media_controls) {
   SetShadowPseudoId(AtomicString("-internal-media-controls-scrubbing-message"));
   CreateUserAgentShadowRoot();
   SetIsWanted(false);

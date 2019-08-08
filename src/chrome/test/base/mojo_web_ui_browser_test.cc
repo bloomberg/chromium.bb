@@ -5,6 +5,7 @@
 #include "chrome/test/base/mojo_web_ui_browser_test.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "chrome/browser/ui/browser.h"
@@ -104,9 +105,11 @@ void MojoWebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
       browser()->tab_strip_model()->GetActiveWebContents();
   if (use_mojo_lite_bindings_) {
     web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
-        l10n_util::GetStringUTF16(IDR_WEB_UI_TEST_MOJO_LITE_JS));
+        l10n_util::GetStringUTF16(IDR_WEB_UI_TEST_MOJO_LITE_JS),
+        base::NullCallback());
   } else {
     web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
-        l10n_util::GetStringUTF16(IDR_WEB_UI_TEST_MOJO_JS));
+        l10n_util::GetStringUTF16(IDR_WEB_UI_TEST_MOJO_JS),
+        base::NullCallback());
   }
 }

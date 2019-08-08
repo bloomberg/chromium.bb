@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_TRACING_ARC_TRACING_BRIDGE_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_TRACING_ARC_TRACING_BRIDGE_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -17,7 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "components/arc/common/tracing.mojom.h"
-#include "components/arc/connection_observer.h"
+#include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "services/tracing/public/cpp/base_agent.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"

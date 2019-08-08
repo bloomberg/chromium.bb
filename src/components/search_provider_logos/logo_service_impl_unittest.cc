@@ -262,14 +262,13 @@ class MockLogoCache : public LogoCache {
 
 class FakeImageDecoder : public image_fetcher::ImageDecoder {
  public:
-  void DecodeImage(
-      const std::string& image_data,
-      const gfx::Size& desired_image_frame_size,
-      const image_fetcher::ImageDecodedCallback& callback) override {
+  void DecodeImage(const std::string& image_data,
+                   const gfx::Size& desired_image_frame_size,
+                   image_fetcher::ImageDecodedCallback callback) override {
     gfx::Image image = gfx::Image::CreateFrom1xPNGBytes(
         reinterpret_cast<const uint8_t*>(image_data.data()), image_data.size());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, image));
+        FROM_HERE, base::BindOnce(std::move(callback), image));
   }
 };
 

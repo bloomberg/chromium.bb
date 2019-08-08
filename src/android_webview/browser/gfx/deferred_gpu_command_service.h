@@ -55,6 +55,7 @@ class DeferredGpuCommandService : public gpu::CommandBufferTaskExecutor {
       override;
   void ScheduleOutOfOrderTask(base::OnceClosure task) override;
   void ScheduleDelayedWork(base::OnceClosure task) override;
+  void PostNonNestableToClient(base::OnceClosure callback) override;
 
   const gpu::GPUInfo& gpu_info() const { return gpu_info_; }
 
@@ -83,7 +84,7 @@ class DeferredGpuCommandService : public gpu::CommandBufferTaskExecutor {
   // Called by ScopedAllowGL and ScheduleTask().
   void RunTasks();
 
-  bool HasMoreTasks();
+  void RunAllTasks();
 
   // Called by TaskForwardingSequence. |out_of_order| indicates if task should
   // be run ahead of already enqueued tasks.
@@ -93,6 +94,7 @@ class DeferredGpuCommandService : public gpu::CommandBufferTaskExecutor {
   THREAD_CHECKER(task_queue_thread_checker_);
   base::circular_deque<base::OnceClosure> tasks_;
   base::queue<std::pair<base::Time, base::OnceClosure>> idle_tasks_;
+  base::queue<base::OnceClosure> client_tasks_;
 
   bool inside_run_tasks_ = false;
   bool inside_run_idle_tasks_ = false;

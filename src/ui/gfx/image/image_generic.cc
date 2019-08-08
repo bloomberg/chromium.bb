@@ -17,11 +17,11 @@ namespace internal {
 namespace {
 
 // Returns a 16x16 red image to visually show error in decoding PNG.
-std::unique_ptr<ImageSkia> GetErrorImageSkia() {
+ImageSkia GetErrorImageSkia() {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(16, 16);
   bitmap.eraseARGB(0xff, 0xff, 0, 0);
-  return std::make_unique<ImageSkia>(ImageSkiaRep(bitmap, 1.0f));
+  return ImageSkia(ImageSkiaRep(bitmap, 1.0f));
 }
 
 class PNGImageSource : public ImageSkiaSource {
@@ -90,8 +90,7 @@ class PNGImageSource : public ImageSkiaSource {
 
 }  // namespace
 
-std::unique_ptr<ImageSkia> ImageSkiaFromPNG(
-    const std::vector<ImagePNGRep>& image_png_reps) {
+ImageSkia ImageSkiaFromPNG(const std::vector<ImagePNGRep>& image_png_reps) {
   if (image_png_reps.empty())
     return GetErrorImageSkia();
   std::unique_ptr<PNGImageSource> image_source(new PNGImageSource);
@@ -104,7 +103,7 @@ std::unique_ptr<ImageSkia> ImageSkiaFromPNG(
   DCHECK(!size.IsEmpty());
   if (size.IsEmpty())
     return GetErrorImageSkia();
-  return std::make_unique<ImageSkia>(std::move(image_source), size);
+  return ImageSkia(std::move(image_source), size);
 }
 
 scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromImageSkia(

@@ -50,6 +50,20 @@ enum class PreviewsType {
   LAST = 9,
 };
 
+enum class CoinFlipHoldbackResult {
+  // Either the page load was not eligible for any previews, or the coin flip
+  // holdback experiment was disabled.
+  kNotSet = 0,
+
+  // A preview was likely for the page load, and a random coin flip allowed the
+  // preview to be shown to the user.
+  kAllowed = 1,
+
+  // A preview was likely for the page load, and a random coin flip did not
+  // allow the preview to be shown to the user.
+  kHoldback = 2,
+};
+
 typedef std::vector<std::pair<PreviewsType, int>> PreviewsTypeList;
 
 // Gets the string representation of |type|.
@@ -68,9 +82,9 @@ size_t MaxStoredHistoryLengthForHostIndifferentBlackList();
 // The maximum number of hosts allowed in the in memory black list.
 size_t MaxInMemoryHostsInBlackList();
 
-// The maximum number of hosts requested by the client to the OnePlatform
-// Service.
-size_t MaxOnePlatformUpdateHosts();
+// The maximum number of hosts allowed to be requested by the client to the
+// remote Optimzation Guide Service.
+size_t MaxHostsForOptimizationGuideServiceHintsFetch();
 
 // The number of recent navigations that were opted out of for a given host that
 // would trigger that host to be blacklisted.
@@ -100,6 +114,12 @@ base::TimeDelta LitePagePreviewsNavigationTimeoutDuration();
 // The host for Lite Page server previews.
 GURL GetLitePagePreviewsDomainURL();
 
+// The API key for the One Platform Optimization Guide Service.
+std::string GetOptimizationGuideServiceAPIKey();
+
+// The host for the One Platform Optimization Guide Service.
+GURL GetOptimizationGuideServiceURL();
+
 // The duration of a single bypass for Lite Page Server Previews.
 base::TimeDelta LitePagePreviewsSingleBypassDuration();
 
@@ -126,9 +146,6 @@ size_t LitePageRedirectPreviewMaxNavigationRestarts();
 
 // The maximum number of seconds to loadshed the Previews server for.
 int PreviewServerLoadshedMaxSeconds();
-
-// The experimental config to send to the previews server.
-std::string LitePageRedirectPreviewExperiment();
 
 // Returns true if we should only report metrics and not trigger when the Lite
 // Page Redirect preview is enabled.
@@ -171,9 +188,9 @@ size_t GetMaxPageHintsInMemoryThreshhold();
 // Whether server optimization hints are enabled.
 bool IsOptimizationHintsEnabled();
 
-// Returns true if the feature to fetch user-specific hints using
-// the OnePlatform API is enabled.
-bool IsOnePlatformHintsEnabled();
+// Returns true if the feature to fetch hints from the remote Optimization Guide
+// Service is enabled.
+bool IsHintsFetchingEnabled();
 
 // For estimating NoScript data savings, this is the percentage factor to
 // multiple by the network bytes for inflating the original_bytes count.
@@ -191,6 +208,9 @@ int ResourceLoadingHintsPreviewsInflationPercent();
 // For estimating ResourceLoadingHints data savings, this is the number of
 // bytes to for inflating the original_bytes count.
 int ResourceLoadingHintsPreviewsInflationBytes();
+
+// Forces the coin flip holdback, if enabled, to always come up "holdback".
+bool ShouldOverrideCoinFlipHoldbackResult();
 
 }  // namespace params
 

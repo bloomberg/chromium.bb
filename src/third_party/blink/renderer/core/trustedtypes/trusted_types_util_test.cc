@@ -41,8 +41,7 @@ void GetStringFromTrustedTypeThrows(
 
 void GetStringFromTrustedHTMLThrows(
     const StringOrTrustedHTML& string_or_trusted_html) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   document.GetContentSecurityPolicy()->DidReceiveHeader(
       "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
@@ -59,8 +58,7 @@ void GetStringFromTrustedHTMLThrows(
 
 void GetStringFromTrustedScriptThrows(
     const StringOrTrustedScript& string_or_trusted_script) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   document.GetContentSecurityPolicy()->DidReceiveHeader(
       "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
@@ -77,8 +75,7 @@ void GetStringFromTrustedScriptThrows(
 
 void GetStringFromTrustedScriptURLThrows(
     const StringOrTrustedScriptURL& string_or_trusted_script_url) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   document.GetContentSecurityPolicy()->DidReceiveHeader(
       "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
@@ -95,8 +92,7 @@ void GetStringFromTrustedScriptURLThrows(
 
 void GetStringFromTrustedURLThrows(
     const USVStringOrTrustedURL& string_or_trusted_url) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   document.GetContentSecurityPolicy()->DidReceiveHeader(
       "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
@@ -131,8 +127,7 @@ void GetStringFromTrustedTypeWorks(
 void GetStringFromTrustedHTMLWorks(
     const StringOrTrustedHTML& string_or_trusted_html,
     String expected) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   document.GetContentSecurityPolicy()->DidReceiveHeader(
       "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
@@ -147,8 +142,7 @@ void GetStringFromTrustedHTMLWorks(
 void GetStringFromTrustedScriptWorks(
     const StringOrTrustedScript& string_or_trusted_script,
     String expected) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   document.GetContentSecurityPolicy()->DidReceiveHeader(
       "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
@@ -163,8 +157,7 @@ void GetStringFromTrustedScriptWorks(
 void GetStringFromTrustedScriptURLWorks(
     const StringOrTrustedScriptURL& string_or_trusted_script_url,
     String expected) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   document.GetContentSecurityPolicy()->DidReceiveHeader(
       "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
@@ -179,8 +172,7 @@ void GetStringFromTrustedScriptURLWorks(
 void GetStringFromTrustedURLWorks(
     const USVStringOrTrustedURL& string_or_trusted_url,
     String expected) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   document.GetContentSecurityPolicy()->DidReceiveHeader(
       "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
@@ -194,7 +186,7 @@ void GetStringFromTrustedURLWorks(
 
 // GetStringFromTrustedType() tests
 TEST(TrustedTypesUtilTest, GetStringFromTrustedType_TrustedHTML) {
-  TrustedHTML* html = TrustedHTML::Create("A string");
+  auto* html = MakeGarbageCollected<TrustedHTML>("A string");
   StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL
       trusted_value =
           StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL::
@@ -203,7 +195,7 @@ TEST(TrustedTypesUtilTest, GetStringFromTrustedType_TrustedHTML) {
 }
 
 TEST(TrustedTypesUtilTest, GetStringFromTrustedType_TrustedScript) {
-  TrustedScript* script = TrustedScript::Create("A string");
+  auto* script = MakeGarbageCollected<TrustedScript>("A string");
   StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL
       trusted_value =
           StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL::
@@ -213,7 +205,7 @@ TEST(TrustedTypesUtilTest, GetStringFromTrustedType_TrustedScript) {
 
 TEST(TrustedTypesUtilTest, GetStringFromTrustedType_TrustedScriptURL) {
   String url_address = "http://www.example.com/";
-  TrustedScriptURL* script_url = TrustedScriptURL::Create(url_address);
+  auto* script_url = MakeGarbageCollected<TrustedScriptURL>(url_address);
   StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL
       trusted_value =
           StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL::
@@ -223,7 +215,7 @@ TEST(TrustedTypesUtilTest, GetStringFromTrustedType_TrustedScriptURL) {
 
 TEST(TrustedTypesUtilTest, GetStringFromTrustedType_TrustedScriptURL_Relative) {
   String url_address = "relative/url.html";
-  TrustedScriptURL* script_url = TrustedScriptURL::Create(url_address);
+  auto* script_url = MakeGarbageCollected<TrustedScriptURL>(url_address);
   StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL
       trusted_value =
           StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL::
@@ -233,7 +225,7 @@ TEST(TrustedTypesUtilTest, GetStringFromTrustedType_TrustedScriptURL_Relative) {
 
 TEST(TrustedTypesUtilTest, GetStringFromTrustedType_TrustedURL) {
   String url_address = "http://www.example.com/";
-  TrustedURL* url = TrustedURL::Create(url_address);
+  auto* url = MakeGarbageCollected<TrustedURL>(url_address);
   StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL
       trusted_value =
           StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL::
@@ -243,7 +235,7 @@ TEST(TrustedTypesUtilTest, GetStringFromTrustedType_TrustedURL) {
 
 TEST(TrustedTypesUtilTest, GetStringFromTrustedType_TrustedURL_Relative) {
   String url_address = "relative/url.html";
-  TrustedURL* url = TrustedURL::Create(url_address);
+  auto* url = MakeGarbageCollected<TrustedURL>(url_address);
   StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL
       trusted_value =
           StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL::
@@ -261,7 +253,7 @@ TEST(TrustedTypesUtilTest, GetStringFromTrustedType_String) {
 
 // GetStringFromTrustedTypeWithoutCheck() tests
 TEST(TrustedTypesUtilTest, GetStringFromTrustedTypeWithoutCheck_TrustedHTML) {
-  TrustedHTML* html = TrustedHTML::Create("A string");
+  auto* html = MakeGarbageCollected<TrustedHTML>("A string");
   StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL
       trusted_value =
           StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL::
@@ -271,7 +263,7 @@ TEST(TrustedTypesUtilTest, GetStringFromTrustedTypeWithoutCheck_TrustedHTML) {
 }
 
 TEST(TrustedTypesUtilTest, GetStringFromTrustedTypeWithoutCheck_TrustedScript) {
-  TrustedScript* script = TrustedScript::Create("A string");
+  auto* script = MakeGarbageCollected<TrustedScript>("A string");
   StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL
       trusted_value =
           StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL::
@@ -283,7 +275,7 @@ TEST(TrustedTypesUtilTest, GetStringFromTrustedTypeWithoutCheck_TrustedScript) {
 TEST(TrustedTypesUtilTest,
      GetStringFromTrustedTypeWithoutCheck_TrustedScriptURL) {
   String url_address = "http://www.example.com/";
-  TrustedScriptURL* script_url = TrustedScriptURL::Create(url_address);
+  auto* script_url = MakeGarbageCollected<TrustedScriptURL>(url_address);
   StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL
       trusted_value =
           StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL::
@@ -294,7 +286,7 @@ TEST(TrustedTypesUtilTest,
 
 TEST(TrustedTypesUtilTest, GetStringFromTrustedTypeWithoutCheck_TrustedURL) {
   String url_address = "http://www.example.com/";
-  TrustedURL* url = TrustedURL::Create(url_address);
+  auto* url = MakeGarbageCollected<TrustedURL>(url_address);
   StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL
       trusted_value =
           StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL::
@@ -321,7 +313,7 @@ TEST(TrustedTypesUtilTest, GetStringFromTrustedTypeWithoutCheck_Null) {
 
 // GetStringFromTrustedHTML tests
 TEST(TrustedTypesUtilTest, GetStringFromTrustedHTML_TrustedHTML) {
-  TrustedHTML* html = TrustedHTML::Create("A string");
+  auto* html = MakeGarbageCollected<TrustedHTML>("A string");
   StringOrTrustedHTML trusted_value =
       StringOrTrustedHTML::FromTrustedHTML(html);
   GetStringFromTrustedHTMLWorks(trusted_value, "A string");
@@ -335,7 +327,7 @@ TEST(TrustedTypesUtilTest, GetStringFromTrustedHTML_String) {
 
 // GetStringFromTrustedScript tests
 TEST(TrustedTypesUtilTest, GetStringFromTrustedScript_TrustedScript) {
-  TrustedScript* script = TrustedScript::Create("A string");
+  auto* script = MakeGarbageCollected<TrustedScript>("A string");
   StringOrTrustedScript trusted_value =
       StringOrTrustedScript::FromTrustedScript(script);
   GetStringFromTrustedScriptWorks(trusted_value, "A string");
@@ -350,7 +342,7 @@ TEST(TrustedTypesUtilTest, GetStringFromTrustedScript_String) {
 // GetStringFromTrustedScriptURL tests
 TEST(TrustedTypesUtilTest, GetStringFromTrustedScriptURL_TrustedScriptURL) {
   String url_address = "http://www.example.com/";
-  TrustedScriptURL* script_url = TrustedScriptURL::Create(url_address);
+  auto* script_url = MakeGarbageCollected<TrustedScriptURL>(url_address);
   StringOrTrustedScriptURL trusted_value =
       StringOrTrustedScriptURL::FromTrustedScriptURL(script_url);
   GetStringFromTrustedScriptURLWorks(trusted_value, "http://www.example.com/");
@@ -365,7 +357,7 @@ TEST(TrustedTypesUtilTest, GetStringFromTrustedScriptURL_String) {
 // GetStringFromTrustedURL tests
 TEST(TrustedTypesUtilTest, GetStringFromTrustedURL_TrustedURL) {
   String url_address = "http://www.example.com/";
-  TrustedURL* url = TrustedURL::Create(url_address);
+  auto* url = MakeGarbageCollected<TrustedURL>(url_address);
   USVStringOrTrustedURL trusted_value =
       USVStringOrTrustedURL::FromTrustedURL(url);
   GetStringFromTrustedURLWorks(trusted_value, "http://www.example.com/");

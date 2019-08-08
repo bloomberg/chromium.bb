@@ -17,6 +17,8 @@
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/payments/content/origin_security_checker.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -112,15 +114,19 @@ class ReadOnlyOriginView : public views::View {
     top_level_columns->AddColumn(views::GridLayout::LEADING,
                                  views::GridLayout::CENTER, 1.0,
                                  views::GridLayout::USE_PREF, 0, 0);
-    // Payment handler icon comes from Web Manifest, which are square.
-    constexpr int kPaymentHandlerIconSize = 32;
-    bool has_icon = icon_image_skia && icon_image_skia->width();
+    // Payment handler icon should be 32 pixels tall.
+    constexpr int kPaymentHandlerIconHeight = 32;
+    bool has_icon = icon_image_skia && icon_image_skia->width() &&
+                    icon_image_skia->height();
+    float adjusted_width = base::checked_cast<float>(icon_image_skia->width());
     if (has_icon) {
+      adjusted_width = adjusted_width * kPaymentHandlerIconHeight /
+                       icon_image_skia->height();
       // A column for the instrument icon.
       top_level_columns->AddColumn(
           views::GridLayout::LEADING, views::GridLayout::FILL,
           views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-          kPaymentHandlerIconSize, kPaymentHandlerIconSize);
+          adjusted_width, kPaymentHandlerIconHeight);
       top_level_columns->AddPaddingColumn(views::GridLayout::kFixedSize, 8);
     }
 
@@ -131,7 +137,7 @@ class ReadOnlyOriginView : public views::View {
           CreateInstrumentIconView(/*icon_id=*/0, icon_image_skia,
                                    /*label=*/page_title);
       instrument_icon_view->SetImageSize(
-          gfx::Size(kPaymentHandlerIconSize, kPaymentHandlerIconSize));
+          gfx::Size(adjusted_width, kPaymentHandlerIconHeight));
       top_level_layout->AddView(instrument_icon_view.release());
     }
   }
@@ -145,12 +151,12 @@ PaymentHandlerWebFlowViewController::PaymentHandlerWebFlowViewController(
     PaymentRequestSpec* spec,
     PaymentRequestState* state,
     PaymentRequestDialogView* dialog,
-    content::WebContents* log_destination,
+    content::WebContents* payment_request_web_contents,
     Profile* profile,
     GURL target,
     PaymentHandlerOpenWindowCallback first_navigation_complete_callback)
     : PaymentRequestSheetController(spec, state, dialog),
-      log_(log_destination),
+      log_(payment_request_web_contents),
       profile_(profile),
       target_(target),
       show_progress_bar_(false),
@@ -160,7 +166,16 @@ PaymentHandlerWebFlowViewController::PaymentHandlerWebFlowViewController(
       first_navigation_complete_callback_(
           std::move(first_navigation_complete_callback)),
       https_prefix_(base::UTF8ToUTF16(url::kHttpsScheme) +
-                    base::UTF8ToUTF16(url::kStandardSchemeSeparator)) {
+                    base::UTF8ToUTF16(url::kStandardSchemeSeparator)),
+      // Borrow the browser's WebContentModalDialogHost to display modal dialogs
+      // triggered by the payment handler's web view (e.g. WebAuthn dialogs).
+      // The browser's WebContentModalDialogHost is valid throughout the
+      // lifetime of this controller because the payment sheet itself is a modal
+      // dialog.
+      dialog_manager_delegate_(
+          static_cast<web_modal::WebContentsModalDialogManagerDelegate*>(
+              chrome::FindBrowserWithWebContents(payment_request_web_contents))
+              ->GetWebContentsModalDialogHost()) {
   progress_bar_->set_owned_by_client();
   progress_bar_->set_foreground_color(gfx::kGoogleBlue500);
   progress_bar_->set_background_color(SK_ColorTRANSPARENT);
@@ -169,7 +184,9 @@ PaymentHandlerWebFlowViewController::PaymentHandlerWebFlowViewController(
       ui::NativeTheme::kColorId_SeparatorColor));
 }
 
-PaymentHandlerWebFlowViewController::~PaymentHandlerWebFlowViewController() {}
+PaymentHandlerWebFlowViewController::~PaymentHandlerWebFlowViewController() {
+  state()->OnPaymentAppWindowClosed();
+}
 
 base::string16 PaymentHandlerWebFlowViewController::GetSheetTitle() {
   return GetPaymentHandlerDialogTitle(web_contents(), https_prefix_);
@@ -183,6 +200,13 @@ void PaymentHandlerWebFlowViewController::FillContentView(
   Observe(web_view->GetWebContents());
   web_contents()->SetDelegate(this);
   web_view->LoadInitialURL(target_);
+
+  // Enable modal dialogs for web-based payment handlers.
+  dialog_manager_delegate_.SetWebContents(web_contents());
+  web_modal::WebContentsModalDialogManager::CreateForWebContents(
+      web_contents());
+  web_modal::WebContentsModalDialogManager::FromWebContents(web_contents())
+      ->SetDelegate(&dialog_manager_delegate_);
 
   // The webview must get an explicitly set height otherwise the layout doesn't
   // make it fill its container. This is likely because it has no content at the
@@ -222,7 +246,7 @@ PaymentHandlerWebFlowViewController::GetHeaderBackground() {
       PaymentRequestSheetController::GetHeaderBackground();
   if (web_contents()) {
     return views::CreateSolidBackground(color_utils::GetResultingPaintColor(
-        web_contents()->GetThemeColor(),
+        web_contents()->GetThemeColor().value_or(SK_ColorTRANSPARENT),
         default_header_background->get_color()));
   }
   return default_header_background;

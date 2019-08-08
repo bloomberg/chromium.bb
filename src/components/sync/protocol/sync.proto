@@ -382,8 +382,7 @@ message SyncEntity {
   // This field is present in both GetUpdatesResponse and CommitMessage, if the
   // item's type requires it and the client that wrote the item supports it (M26
   // or higher).  Clients must also be prepared to handle updates from clients
-  // that do not set this field.  See the comments on
-  // |server_position_in_parent| for more information on how this is handled.
+  // that do not set this field.
   //
   // This field will not be set for items whose type ignores positioning.
   // Clients should not attempt to read this field on the receipt of an item of
@@ -858,12 +857,9 @@ message CommitResponse {
     // should be filled if our parent was assigned a new ID.
     optional string parent_id_string = 4;
 
-    // This value is the same as the position_in_parent value returned within
-    // the SyncEntity message in GetUpdatesResponse.  There was a time when the
-    // client would attempt to honor this position, but nowadays the server
-    // should ensure it is no different from the position_in_parent sent up in
-    // the commit request and the client should not read it.
-    optional int64 position_in_parent = 5;
+    // This used to be set to the same as the position_in_parent value in
+    // the SyncEntity message in GetUpdatesResponse, but it's not set anymore.
+    optional int64 deprecated_position_in_parent = 5 [deprecated = true];
 
     // The item's current version.
     optional int64 version = 6;

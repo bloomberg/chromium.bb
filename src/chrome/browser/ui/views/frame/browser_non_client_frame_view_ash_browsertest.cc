@@ -60,7 +60,7 @@
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/custom_tab_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
-#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view_base.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -102,9 +102,6 @@
 #include "ui/views/window/frame_caption_button.h"
 
 namespace {
-
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data");
 
 // Toggles fullscreen mode and waits for the notification.
 void ToggleFullscreenModeAndWait(Browser* browser) {
@@ -463,8 +460,6 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest, ImmersiveFullscreen) {
 
   ImmersiveModeController* immersive_mode_controller =
       browser_view->immersive_mode_controller();
-  ASSERT_EQ(ImmersiveModeController::Type::ASH,
-            immersive_mode_controller->type());
 
   // Immersive fullscreen starts disabled.
   ASSERT_FALSE(browser_view->GetWidget()->IsFullscreen());
@@ -472,8 +467,8 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest, ImmersiveFullscreen) {
 
   // Frame paints by default.
   EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_LT(
-      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
+  EXPECT_LT(0, frame_view->GetBoundsForTabStripRegion(browser_view->tabstrip())
+                   .bottom());
 
   // Enter both browser fullscreen and tab fullscreen. Entering browser
   // fullscreen should enable immersive fullscreen.
@@ -493,8 +488,8 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest, ImmersiveFullscreen) {
   revealed_lock.reset();
   EXPECT_FALSE(immersive_mode_controller->IsRevealed());
   EXPECT_FALSE(frame_view->ShouldPaint());
-  EXPECT_EQ(
-      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
+  EXPECT_EQ(0, frame_view->GetBoundsForTabStripRegion(browser_view->tabstrip())
+                   .bottom());
 
   // Repeat test but without tab fullscreen.
   ExitFullscreenModeForTabAndWait(browser(), web_contents);
@@ -504,23 +499,23 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest, ImmersiveFullscreen) {
       ImmersiveModeController::ANIMATE_REVEAL_NO));
   EXPECT_TRUE(immersive_mode_controller->IsRevealed());
   EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_LT(
-      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
+  EXPECT_LT(0, frame_view->GetBoundsForTabStripRegion(browser_view->tabstrip())
+                   .bottom());
 
   // Ending the reveal. Immersive browser should have the same behavior as full
   // screen, i.e., having an origin of (0,0).
   revealed_lock.reset();
   EXPECT_FALSE(frame_view->ShouldPaint());
-  EXPECT_EQ(
-      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
+  EXPECT_EQ(0, frame_view->GetBoundsForTabStripRegion(browser_view->tabstrip())
+                   .bottom());
 
   // Exiting immersive fullscreen should make the caption buttons and the frame
   // visible again.
   ExitFullscreenModeAndWait(browser_view);
   EXPECT_FALSE(immersive_mode_controller->IsEnabled());
   EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_LT(
-      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
+  EXPECT_LT(0, frame_view->GetBoundsForTabStripRegion(browser_view->tabstrip())
+                   .bottom());
 }
 
 // Tests IDC_SELECT_TAB_0, IDC_SELECT_NEXT_TAB, IDC_SELECT_PREVIOUS_TAB and
@@ -811,7 +806,7 @@ class HostedAppNonClientFrameViewAshTest
     // Start secure local server.
     host_resolver()->AddRule("*", "127.0.0.1");
     cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
-    https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
+    https_server_.AddDefaultHandlers(GetChromeTestDataDir());
     ASSERT_TRUE(https_server_.Start());
     ASSERT_TRUE(embedded_test_server()->Start());
   }
@@ -861,7 +856,7 @@ class HostedAppNonClientFrameViewAshTest
 
   PageActionIconView* GetPageActionIcon(PageActionIconType type) {
     return browser_view_->toolbar_button_provider()
-        ->GetPageActionIconContainerView()
+        ->GetOmniboxPageActionIconContainerView()
         ->GetPageActionIconView(type);
   }
 
@@ -939,6 +934,17 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FocusableViews) {
   EXPECT_TRUE(app_menu_button_->HasFocus());
   browser_view_->GetFocusManager()->AdvanceFocus(false);
   EXPECT_TRUE(browser_view_->contents_web_view()->HasFocus());
+}
+
+IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
+                       ButtonVisibilityInOverviewMode) {
+  SetUpHostedApp();
+  EXPECT_TRUE(hosted_app_button_container_->visible());
+
+  ToggleOverview();
+  EXPECT_FALSE(hosted_app_button_container_->visible());
+  ToggleOverview();
+  EXPECT_TRUE(hosted_app_button_container_->visible());
 }
 
 // Tests that a web app's theme color is set.

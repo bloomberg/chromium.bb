@@ -4,6 +4,8 @@
 
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 
+#include <fuchsia/web/cpp/fidl.h>
+
 #include "base/fuchsia/fuchsia_logging.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_browser_main_parts.h"
@@ -38,19 +40,17 @@ void WebEngineBrowserTest::PostRunTestOnMainThread() {
 }
 
 void WebEngineBrowserTest::TearDownOnMainThread() {
-  navigation_observer_bindings_.CloseAll();
+  navigation_listener_bindings_.CloseAll();
 }
 
-chromium::web::FramePtr WebEngineBrowserTest::CreateFrame(
-    chromium::web::NavigationEventObserver* observer) {
-  chromium::web::FramePtr frame;
+fuchsia::web::FramePtr WebEngineBrowserTest::CreateFrame(
+    fuchsia::web::NavigationEventListener* listener) {
+  fuchsia::web::FramePtr frame;
   context_->CreateFrame(frame.NewRequest());
 
-  if (observer) {
-    fidl::InterfaceRequest<chromium::web::NavigationEventObserver>
-        observer_request;
-    frame->SetNavigationEventObserver(
-        navigation_observer_bindings_.AddBinding(observer));
+  if (listener) {
+    frame->SetNavigationEventListener(
+        navigation_listener_bindings_.AddBinding(listener));
   }
 
   // Pump the messages so that the caller can use the Frame instance
@@ -70,7 +70,7 @@ ContextImpl* WebEngineBrowserTest::context_impl() const {
   return WebEngineMainDelegate::GetInstanceForTest()
       ->browser_client()
       ->main_parts_for_test()
-      ->context();
+      ->context_for_test();
 }
 
 }  // namespace cr_fuchsia

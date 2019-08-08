@@ -35,6 +35,7 @@ class HostCache;
 class HostPortPair;
 class IPEndPoint;
 class RuleBasedHostResolverProc;
+class URLRequestContext;
 
 // Fills |*addrlist| with a socket address for |host_list| which should be a
 // comma-separated list of IPv4 or IPv6 literal(s) without enclosing brackets.
@@ -125,6 +126,7 @@ class MockHostResolverBase
                  HostCache::EntryStaleness* stale_out,
                  bool* secure_out) const override;
   void SetDnsConfigOverrides(const DnsConfigOverrides& overrides) override {}
+  void SetRequestContext(URLRequestContext* request_context) override {}
 
   // Preloads the cache with what would currently be the result of a request
   // with the given parameters. Returns the net error of the cached result.
@@ -207,6 +209,7 @@ class MockHostResolverBase
  private:
   friend class MockHostResolver;
   friend class MockCachingHostResolver;
+  friend class MockHostResolverFactory;
 
   typedef std::map<size_t, RequestImpl*> RequestMap;
 
@@ -289,6 +292,38 @@ class MockCachingHostResolver : public MockHostResolverBase {
   explicit MockCachingHostResolver(int cache_invalidation_num = 0)
       : MockHostResolverBase(true /*use_caching*/, cache_invalidation_num) {}
   ~MockCachingHostResolver() override {}
+};
+
+// Factory that will always create and return Mock(Caching)HostResolvers.
+//
+// The default behavior is to create a non-caching mock, even if the tested code
+// requests caching enabled (via the |enable_caching| parameter in the creation
+// methods). A caching mock will only be created if both |use_caching| is set on
+// factory construction and |enable_caching| is set in the creation method.
+class MockHostResolverFactory : public HostResolver::Factory {
+ public:
+  MockHostResolverFactory(
+      scoped_refptr<RuleBasedHostResolverProc> rules = nullptr,
+      bool use_caching = false,
+      int cache_invalidation_num = 0);
+  ~MockHostResolverFactory() override;
+
+  std::unique_ptr<HostResolver> CreateResolver(
+      HostResolverManager* manager,
+      base::StringPiece host_mapping_rules,
+      bool enable_caching) override;
+  std::unique_ptr<HostResolver> CreateStandaloneResolver(
+      NetLog* net_log,
+      const HostResolver::Options& options,
+      base::StringPiece host_mapping_rules,
+      bool enable_caching) override;
+
+ private:
+  const scoped_refptr<RuleBasedHostResolverProc> rules_;
+  const bool use_caching_;
+  const int cache_invalidation_num_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockHostResolverFactory);
 };
 
 // RuleBasedHostResolverProc applies a set of rules to map a host string to

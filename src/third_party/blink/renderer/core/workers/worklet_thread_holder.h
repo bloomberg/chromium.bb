@@ -30,7 +30,8 @@ class WorkletThreadHolder {
     if (thread_holder_instance_)
       return;
     thread_holder_instance_ = new WorkletThreadHolder<DerivedWorkletThread>;
-    thread_holder_instance_->Initialize(WorkerBackingThread::Create(params));
+    thread_holder_instance_->Initialize(
+        std::make_unique<WorkerBackingThread>(params));
   }
 
   static void ClearInstance() {

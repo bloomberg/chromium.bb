@@ -17,7 +17,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -27,6 +26,7 @@ import org.chromium.chrome.browser.preferences.website.PermissionInfo;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Tests for GeolocationHeader and GeolocationTracker.
@@ -149,28 +149,22 @@ public class GeolocationHeaderTest {
 
     private void checkHeaderWithPermission(final @ContentSettingValues int httpsPermission,
             final long locationTime, final boolean shouldBeNull) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                PermissionInfo infoHttps = new PermissionInfo(
-                        PermissionInfo.Type.GEOLOCATION, SEARCH_URL_1, null, false);
-                infoHttps.setContentSetting(httpsPermission);
-                String header = GeolocationHeader.getGeoHeader(
-                        SEARCH_URL_1, mActivityTestRule.getActivity().getActivityTab());
-                assertHeaderState(header, locationTime, shouldBeNull);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PermissionInfo infoHttps =
+                    new PermissionInfo(PermissionInfo.Type.GEOLOCATION, SEARCH_URL_1, null, false);
+            infoHttps.setContentSetting(httpsPermission);
+            String header = GeolocationHeader.getGeoHeader(
+                    SEARCH_URL_1, mActivityTestRule.getActivity().getActivityTab());
+            assertHeaderState(header, locationTime, shouldBeNull);
         });
     }
 
     private void checkHeaderWithLocation(final long locationTime, final boolean shouldBeNull) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                setMockLocation(locationTime);
-                String header = GeolocationHeader.getGeoHeader(SEARCH_URL_1,
-                        mActivityTestRule.getActivity().getActivityTab());
-                assertHeaderState(header, locationTime, shouldBeNull);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            setMockLocation(locationTime);
+            String header = GeolocationHeader.getGeoHeader(
+                    SEARCH_URL_1, mActivityTestRule.getActivity().getActivityTab());
+            assertHeaderState(header, locationTime, shouldBeNull);
         });
     }
 
@@ -209,12 +203,8 @@ public class GeolocationHeaderTest {
     private void assertNullHeader(final String url, final boolean isIncognito) {
         try {
             final Tab tab = mActivityTestRule.loadUrlInNewTab("about:blank", isIncognito);
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    Assert.assertNull(GeolocationHeader.getGeoHeader(url, tab));
-                }
-            });
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> { Assert.assertNull(GeolocationHeader.getGeoHeader(url, tab)); });
         } catch (InterruptedException e) {
             Assert.fail(e.getMessage());
         }
@@ -224,11 +214,8 @@ public class GeolocationHeaderTest {
             final String url, final boolean isIncognito, final long locationTime) {
         try {
             final Tab tab = mActivityTestRule.loadUrlInNewTab("about:blank", isIncognito);
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    assertHeaderEquals(locationTime, GeolocationHeader.getGeoHeader(url, tab));
-                }
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                assertHeaderEquals(locationTime, GeolocationHeader.getGeoHeader(url, tab));
             });
         } catch (InterruptedException e) {
             Assert.fail(e.getMessage());

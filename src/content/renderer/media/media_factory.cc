@@ -13,6 +13,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "build/buildflag.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "content/public/common/content_client.h"
@@ -141,17 +142,13 @@ namespace content {
 // static
 blink::WebMediaPlayer::SurfaceLayerMode
 MediaFactory::GetVideoSurfaceLayerMode() {
-  // Web tests do not support SurfaceLayer by default at the moment.
-  // See https://crbug.com/838128
-  content::RenderThreadImpl* render_thread =
-      content::RenderThreadImpl::current();
-  if (render_thread && render_thread->web_test_mode() &&
-      !render_thread->WebTestModeUsesDisplayCompositorPixelDump()) {
-    return blink::WebMediaPlayer::SurfaceLayerMode::kNever;
-  }
-
   if (features::IsMultiProcessMash())
     return blink::WebMediaPlayer::SurfaceLayerMode::kNever;
+
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(media::kDisableSurfaceLayerForVideo))
+    return blink::WebMediaPlayer::SurfaceLayerMode::kNever;
+#endif  // OS_ANDROID
 
   if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo))
     return blink::WebMediaPlayer::SurfaceLayerMode::kAlways;
@@ -433,7 +430,6 @@ MediaFactory::CreateRendererFactorySelector(
   // MediaPlayerRendererClientFactory setup.
   auto mojo_media_player_renderer_factory =
       std::make_unique<media::MojoRendererFactory>(
-          media::MojoRendererFactory::GetGpuFactoriesCB(),
           GetMediaInterfaceFactory());
 
   // Always give |factory_selector| a MediaPlayerRendererClient factory. WMPI
@@ -452,7 +448,6 @@ MediaFactory::CreateRendererFactorySelector(
 
   // FlingingRendererClientFactory (FRCF) setup.
   auto mojo_flinging_factory = std::make_unique<media::MojoRendererFactory>(
-      media::MojoRendererFactory::GetGpuFactoriesCB(),
       GetMediaInterfaceFactory());
 
   auto flinging_factory = std::make_unique<FlingingRendererClientFactory>(
@@ -474,8 +469,6 @@ MediaFactory::CreateRendererFactorySelector(
   use_mojo_renderer_factory = enable_mojo_renderer;
   if (use_mojo_renderer_factory) {
     auto mojo_renderer_factory = std::make_unique<media::MojoRendererFactory>(
-        base::Bind(&RenderThreadImpl::GetGpuFactories,
-                   base::Unretained(render_thread)),
         GetMediaInterfaceFactory());
 
     // The "default" MojoRendererFactory can be wrapped by a
@@ -541,12 +534,6 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
     blink::WebLayerTreeView* layer_tree_view,
     const cc::LayerTreeSettings& settings) {
   RenderThreadImpl* const render_thread = RenderThreadImpl::current();
-
-  scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner =
-      render_thread->compositor_task_runner();
-  if (!compositor_task_runner.get())
-    compositor_task_runner =
-        render_frame_->GetTaskRunner(blink::TaskType::kInternalMediaRealTime);
 
   scoped_refptr<base::SingleThreadTaskRunner>
       video_frame_compositor_task_runner;

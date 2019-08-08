@@ -314,14 +314,16 @@ SkBitmap IconUtil::CreateSkBitmapFromHICON(HICON icon) {
   return CreateSkBitmapFromHICONHelper(icon, icon_size);
 }
 
-base::win::ScopedHICON IconUtil::CreateCursorFromDIB(const gfx::Size& icon_size,
-                                                     const gfx::Point& hotspot,
-                                                     const void* dib_bits,
-                                                     size_t dib_size) {
+base::win::ScopedHICON IconUtil::CreateCursorFromSkBitmap(
+    const SkBitmap& bitmap,
+    const gfx::Point& hotspot) {
+  // Only 32 bit ARGB bitmaps are supported.
+  if (bitmap.empty() || bitmap.colorType() != kN32_SkColorType)
+    return base::win::ScopedHICON();
+
   BITMAPINFO icon_bitmap_info = {};
   skia::CreateBitmapHeader(
-      icon_size.width(),
-      icon_size.height(),
+      bitmap.width(), bitmap.height(),
       reinterpret_cast<BITMAPINFOHEADER*>(&icon_bitmap_info));
 
   base::win::ScopedGetDC dc(NULL);
@@ -333,15 +335,8 @@ base::win::ScopedHICON IconUtil::CreateCursorFromDIB(const gfx::Size& icon_size,
                        0,
                        0,
                        0));
-  if (dib_size > 0) {
-    SetDIBits(0,
-              bitmap_handle.get(),
-              0,
-              icon_size.height(),
-              dib_bits,
-              &icon_bitmap_info,
-              DIB_RGB_COLORS);
-  }
+  SetDIBits(0, bitmap_handle.get(), 0, bitmap.height(), bitmap.getPixels(),
+            &icon_bitmap_info, DIB_RGB_COLORS);
 
   HBITMAP old_bitmap = reinterpret_cast<HBITMAP>(
       SelectObject(working_dc.Get(), bitmap_handle.get()));
@@ -349,11 +344,7 @@ base::win::ScopedHICON IconUtil::CreateCursorFromDIB(const gfx::Size& icon_size,
   SelectObject(working_dc.Get(), old_bitmap);
 
   base::win::ScopedGDIObject<HBITMAP> mask(
-      CreateBitmap(icon_size.width(),
-                   icon_size.height(),
-                   1,
-                   1,
-                   NULL));
+      CreateBitmap(bitmap.width(), bitmap.height(), 1, 1, NULL));
   ICONINFO ii = {0};
   ii.fIcon = FALSE;
   ii.xHotspot = hotspot.x();

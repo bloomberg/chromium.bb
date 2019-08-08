@@ -80,7 +80,7 @@ void HRTFDatabaseLoader::LoadTask() {
   // thread.
   MutexLocker locker(lock_);
   // Load the default HRTF database.
-  hrtf_database_ = HRTFDatabase::Create(database_sample_rate_);
+  hrtf_database_ = std::make_unique<HRTFDatabase>(database_sample_rate_);
 }
 
 void HRTFDatabaseLoader::LoadAsynchronously() {

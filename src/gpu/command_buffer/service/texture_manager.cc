@@ -3140,19 +3140,19 @@ void TextureManager::ValidateAndDoTexSubImage(
     // NOTE: In OpenGL ES 2/3 border is always zero. If that changes we'll need
     // to look it up.
     if (args.command_type == DoTexSubImageArguments::kTexSubImage3D) {
-      glTexImage3D(
-          args.target, args.level,
-          AdjustTexInternalFormat(feature_info_.get(), internal_format),
-          args.width, args.height, args.depth, 0,
-          AdjustTexFormat(feature_info_.get(), args.format), args.type,
-          args.pixels);
+      glTexImage3D(args.target, args.level,
+                   AdjustTexInternalFormat(feature_info_.get(), internal_format,
+                                           args.type),
+                   args.width, args.height, args.depth, 0,
+                   AdjustTexFormat(feature_info_.get(), args.format), args.type,
+                   args.pixels);
     } else {
-      glTexImage2D(
-          args.target, args.level,
-          AdjustTexInternalFormat(feature_info_.get(), internal_format),
-          args.width, args.height, 0,
-          AdjustTexFormat(feature_info_.get(), args.format), args.type,
-          args.pixels);
+      glTexImage2D(args.target, args.level,
+                   AdjustTexInternalFormat(feature_info_.get(), internal_format,
+                                           args.type),
+                   args.width, args.height, 0,
+                   AdjustTexFormat(feature_info_.get(), args.format), args.type,
+                   args.pixels);
     }
   } else {
     TRACE_EVENT0("gpu", "SubImage");
@@ -3390,12 +3390,36 @@ const Texture::CompatibilitySwizzle* TextureManager::GetCompatibilitySwizzle(
 // static
 GLenum TextureManager::AdjustTexInternalFormat(
     const gles2::FeatureInfo* feature_info,
-    GLenum format) {
+    GLenum format,
+    GLenum type) {
   if (feature_info->gl_version_info().NeedsLuminanceAlphaEmulation()) {
     const Texture::CompatibilitySwizzle* swizzle =
         GetCompatibilitySwizzleInternal(format);
-    if (swizzle)
-      return swizzle->dest_format;
+    if (swizzle) {
+      if (swizzle->dest_format == GL_RED) {
+        switch (type) {
+          case GL_FLOAT:
+            return GL_R32F;
+          case GL_HALF_FLOAT:
+          case GL_HALF_FLOAT_OES:
+            return GL_R16F;
+          default:
+            return GL_R8;
+        }
+      } else if (swizzle->dest_format == GL_RG) {
+        switch (type) {
+          case GL_FLOAT:
+            return GL_RG32F;
+          case GL_HALF_FLOAT:
+          case GL_HALF_FLOAT_OES:
+            return GL_RG16F;
+          default:
+            return GL_RG8;
+        }
+      } else {
+        NOTREACHED();
+      }
+    }
   }
   return format;
 }
@@ -3491,19 +3515,19 @@ void TextureManager::DoTexImage(DecoderTextureState* texture_state,
   ERRORSTATE_COPY_REAL_GL_ERRORS_TO_WRAPPER(error_state, function_name);
   {
     if (args.command_type == DoTexImageArguments::kTexImage3D) {
-      glTexImage3D(
-          args.target, args.level,
-          AdjustTexInternalFormat(feature_info_.get(), args.internal_format),
-          args.width, args.height, args.depth, args.border,
-          AdjustTexFormat(feature_info_.get(), args.format), args.type,
-          args.pixels);
+      glTexImage3D(args.target, args.level,
+                   AdjustTexInternalFormat(feature_info_.get(),
+                                           args.internal_format, args.type),
+                   args.width, args.height, args.depth, args.border,
+                   AdjustTexFormat(feature_info_.get(), args.format), args.type,
+                   args.pixels);
     } else {
-      glTexImage2D(
-          args.target, args.level,
-          AdjustTexInternalFormat(feature_info_.get(), args.internal_format),
-          args.width, args.height, args.border,
-          AdjustTexFormat(feature_info_.get(), args.format), args.type,
-          args.pixels);
+      glTexImage2D(args.target, args.level,
+                   AdjustTexInternalFormat(feature_info_.get(),
+                                           args.internal_format, args.type),
+                   args.width, args.height, args.border,
+                   AdjustTexFormat(feature_info_.get(), args.format), args.type,
+                   args.pixels);
     }
   }
   GLenum error = ERRORSTATE_PEEK_GL_ERROR(error_state, function_name);
@@ -3932,7 +3956,9 @@ GLenum Texture::GetInternalFormatOfBaseLevel() const {
   return level_info ? level_info->internal_format : GL_NONE;
 }
 
-bool Texture::CompatibleWithSamplerUniformType(GLenum type) const {
+bool Texture::CompatibleWithSamplerUniformType(
+    GLenum type,
+    const SamplerState& sampler_state) const {
   enum {
     SAMPLER_INVALID,
     SAMPLER_FLOAT,
@@ -3978,7 +4004,7 @@ bool Texture::CompatibleWithSamplerUniformType(GLenum type) const {
   }
   if ((level_info->format == GL_DEPTH_COMPONENT ||
        level_info->format == GL_DEPTH_STENCIL) &&
-      sampler_state_.compare_mode != GL_NONE) {
+      sampler_state.compare_mode != GL_NONE) {
     // If TEXTURE_COMPARE_MODE is set, then depth textures can only be sampled
     // by shadow samplers.
     return category == SAMPLER_SHADOW;

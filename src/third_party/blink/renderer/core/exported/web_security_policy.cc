@@ -99,11 +99,12 @@ void WebSecurityPolicy::ClearOriginAccessList() {
   SecurityPolicy::ClearOriginAccessList();
 }
 
-void WebSecurityPolicy::AddOriginTrustworthyWhiteList(const WebString& origin) {
-  SecurityPolicy::AddOriginTrustworthyWhiteList(origin);
+void WebSecurityPolicy::AddOriginToTrustworthySafelist(
+    const WebString& origin) {
+  SecurityPolicy::AddOriginToTrustworthySafelist(origin);
 }
 
-void WebSecurityPolicy::AddSchemeToBypassSecureContextWhitelist(
+void WebSecurityPolicy::AddSchemeToSecureContextSafelist(
     const WebString& scheme) {
   SchemeRegistry::RegisterURLSchemeBypassingSecureContextCheck(scheme);
 }

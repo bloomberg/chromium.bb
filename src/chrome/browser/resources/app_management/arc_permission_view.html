@@ -6,12 +6,12 @@
 <link rel="import" href="permission_view_header.html">
 <link rel="import" href="shared_style.html">
 <link rel="import" href="store_client.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 
 <dom-module id="app-management-arc-permission-view">
   <template>
@@ -23,9 +23,8 @@
         <paper-button class="native-settings-button secondary-text"
             on-click="onClickNativeSettingsButton_">
           $i18n{openAndroidSettings}
-          <paper-icon-button-light class="native-settings-icon icon-external">
-            <button></button>
-          </paper-icon-button-light>
+          <cr-icon-button class="native-settings-icon icon-external" noink>
+          </cr-icon-button>
         </paper-button>
       </div>
     </app-management-permission-view-header>
@@ -33,25 +32,20 @@
 <!--TODO(crbug.com/906508): Factor the expandable card into a separate
     element. -->
     <div class="permission-list card-container">
-<!--  TODO(rekanorman): Uncomment once notifications permissions are
-      implemented for ARCs. -->
-<!--  <app-management-permission-item
+      <app-management-permission-item
         class="permission-card-row separated-row header-text"
         permission-label="$i18n{notifications}"
         permission-type="NOTIFICATIONS">
-      </app-management-permission-item> -->
+      </app-management-permission-item>
       <div class="permission-card-row">
         <div class="subpermission-list">
-          <div class="subpermission-row separated-row"
+          <div id="subpermission-expand-row"
+              class="subpermission-row separated-row"
               on-click="toggleListExpanded_">
             <div class="header-text">$i18n{permissions}</div>
             <div class="permission-row-controls">
-              <paper-icon-button-light>
-                <button>
-                  <iron-icon icon="[[getCollapsedIcon_(listExpanded_)]]">
-                  </iron-icon>
-                </button>
-              </paper-icon-button-light>
+              <cr-icon-button iron-icon="[[getCollapsedIcon_(listExpanded_)]]">
+              </cr-icon-button>
             </div>
           </div>
 

@@ -233,6 +233,7 @@ void DisplayResolutionHandler::ApplyChanges(
     resized_display_ids_.insert(display_id);
     cros_display_config->SetDisplayProperties(
         display_unit_info->id, std::move(new_config),
+        ash::mojom::DisplayConfigSource::kPolicy,
         base::BindOnce([](ash::mojom::DisplayConfigResult result) {
           if (result == ash::mojom::DisplayConfigResult::kSuccess) {
             VLOG(1) << "Successfully changed display mode.";

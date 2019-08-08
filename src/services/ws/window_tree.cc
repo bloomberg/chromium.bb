@@ -32,6 +32,7 @@
 #include "services/ws/window_service_delegate.h"
 #include "services/ws/window_service_observer.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
@@ -704,6 +705,9 @@ mojom::WindowDataPtr WindowTree::WindowToWindowData(aura::Window* window) {
                        : kInvalidTransportId;
   window_data->bounds =
       is_top_level ? window->GetBoundsInScreen() : window->bounds();
+  window_data->state = is_top_level
+                           ? window->GetProperty(aura::client::kShowStateKey)
+                           : ui::SHOW_STATE_DEFAULT;
   window_data->properties =
       window_service_->property_converter()->GetTransportProperties(window);
   window_data->visible = (!IsClientRootWindow(window) || is_top_level)
@@ -1197,6 +1201,21 @@ bool WindowTree::SetWindowOpacityImpl(const ClientWindowId& window_id,
   return false;
 }
 
+bool WindowTree::SetWindowTransparentImpl(const ClientWindowId& window_id,
+                                          bool transparent) {
+  aura::Window* window = GetWindowByClientId(window_id);
+  DVLOG(3) << "SetWindowTransparent client=" << client_id_
+           << " client window_id=" << window_id.ToString();
+  if (IsClientCreatedWindow(window) || IsClientRootWindow(window)) {
+    if (window->transparent() == transparent)
+      return true;
+    window->SetTransparent(transparent);
+    return true;
+  }
+  DVLOG(1) << "SetWindowTransparent failed (invalid window or access denied)";
+  return false;
+}
+
 bool WindowTree::SetWindowBoundsImpl(
     const ClientWindowId& window_id,
     const gfx::Rect& bounds,
@@ -1282,9 +1301,10 @@ bool WindowTree::SetWindowBoundsImpl(
   // The window's bounds changed, but not to the value the client requested.
   // Tell the client the new value, and return false, which triggers the client
   // to use the value supplied to OnWindowBoundsChanged().
-  window_tree_client_->OnWindowBoundsChanged(TransportIdForWindow(window),
-                                             window->bounds(),
-                                             local_surface_id_allocation);
+  window_tree_client_->OnWindowBoundsChanged(
+      TransportIdForWindow(window), window->bounds(),
+      window->GetProperty(aura::client::kShowStateKey),
+      local_surface_id_allocation);
   return false;
 }
 
@@ -1835,6 +1855,14 @@ void WindowTree::SetWindowOpacity(uint32_t change_id,
       SetWindowOpacityImpl(MakeClientWindowId(transport_window_id), opacity));
 }
 
+void WindowTree::SetWindowTransparent(uint32_t change_id,
+                                      Id transport_window_id,
+                                      bool transparent) {
+  window_tree_client_->OnChangeCompleted(
+      change_id, SetWindowTransparentImpl(
+                     MakeClientWindowId(transport_window_id), transparent));
+}
+
 void WindowTree::AttachCompositorFrameSink(
     Id transport_window_id,
     viz::mojom::CompositorFrameSinkRequest compositor_frame_sink,
@@ -2380,6 +2408,25 @@ void WindowTree::UnpauseWindowOcclusionTracking() {
   }
 
   window_occlusion_tracking_pauses_.pop_back();
+}
+
+void WindowTree::ConnectToImeEngine(ime::mojom::ImeEngineRequest engine_request,
+                                    ime::mojom::ImeEngineClientPtr client) {
+  aura::Window* focused_window =
+      window_service_->focus_client()->GetFocusedWindow();
+  if (!focused_window) {
+    DVLOG(1) << "ConnectToImeEngine failed (no focused window)";
+    return;
+  }
+
+  if (!IsClientCreatedWindow(focused_window) &&
+      !IsClientRootWindow(focused_window)) {
+    DVLOG(1) << "ConnectToImeEngine failed (the caller client is not focused)";
+    return;
+  }
+
+  window_service_->delegate()->ConnectToImeEngine(std::move(engine_request),
+                                                  std::move(client));
 }
 
 }  // namespace ws

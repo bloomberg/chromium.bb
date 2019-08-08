@@ -5,7 +5,9 @@
 #include <string>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/strings/string_split.h"
+#include "base/test/bind_test_util.h"
 #include "net/cookies/cookie_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -354,6 +356,71 @@ TEST(CookieUtilTest, ComputeSameSiteContextForRequest) {
                 "POST", GURL("http://example.com"), GURL("http://example.com"),
                 url::Origin::Create(GURL("http://from-elsewhere.com")),
                 false /*attach_same_site_cookies*/));
+}
+
+TEST(CookieUtilTest, IgnoreCookieStatusList) {
+  CookieList cookie_list_out;
+  base::OnceCallback<void(const CookieList&)> callback =
+      base::BindLambdaForTesting(
+          [&cookie_list_out](const CookieList& cookie_list) {
+            cookie_list_out = cookie_list;
+          });
+  base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
+      adapted_callback =
+          cookie_util::IgnoreCookieStatusList(std::move(callback));
+
+  CookieList cookie_list_in = {CanonicalCookie()};
+  std::move(adapted_callback).Run(cookie_list_in, CookieStatusList());
+
+  EXPECT_EQ(1u, cookie_list_out.size());
+}
+
+TEST(CookieUtilTest, AddCookieStatusList) {
+  CookieList cookie_list_out;
+  CookieStatusList excluded_cookies_out = {CookieWithStatus()};
+  base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
+      callback = base::BindLambdaForTesting(
+          [&cookie_list_out, &excluded_cookies_out](
+              const CookieList& cookie_list,
+              const CookieStatusList& excluded_cookies) {
+            cookie_list_out = cookie_list;
+            excluded_cookies_out = excluded_cookies;
+          });
+  base::OnceCallback<void(const CookieList&)> adapted_callback =
+      cookie_util::AddCookieStatusList(std::move(callback));
+
+  CookieList cookie_list_in = {CanonicalCookie()};
+  std::move(adapted_callback).Run(cookie_list_in);
+
+  EXPECT_EQ(1u, cookie_list_out.size());
+  EXPECT_EQ(0u, excluded_cookies_out.size());
+}
+
+TEST(CookieUtilTest, AdaptCookieInclusionStatusToBool) {
+  bool result_out = true;
+  base::OnceCallback<void(bool)> callback = base::BindLambdaForTesting(
+      [&result_out](bool result) { result_out = result; });
+
+  base::OnceCallback<void(CanonicalCookie::CookieInclusionStatus)>
+      adapted_callback =
+          cookie_util::AdaptCookieInclusionStatusToBool(std::move(callback));
+
+  std::move(adapted_callback)
+      .Run(CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR);
+
+  EXPECT_FALSE(result_out);
+
+  result_out = false;
+  callback = base::BindLambdaForTesting(
+      [&result_out](bool result) { result_out = result; });
+
+  adapted_callback =
+      cookie_util::AdaptCookieInclusionStatusToBool(std::move(callback));
+
+  std::move(adapted_callback)
+      .Run(CanonicalCookie::CookieInclusionStatus::INCLUDE);
+
+  EXPECT_TRUE(result_out);
 }
 
 }  // namespace

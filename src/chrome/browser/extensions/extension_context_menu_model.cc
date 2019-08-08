@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -79,6 +80,11 @@ int GetVisibilityStringId(
     Profile* profile,
     const Extension* extension,
     ExtensionContextMenuModel::ButtonVisibility button_visibility) {
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+    return button_visibility == ExtensionContextMenuModel::VISIBLE
+               ? IDS_EXTENSIONS_UNPIN_FROM_TOOLBAR
+               : IDS_EXTENSIONS_PIN_TO_TOOLBAR;
+  }
   DCHECK(profile);
   int string_id = -1;
   // We display "show" or "hide" based on the icon's visibility, and can have
@@ -95,6 +101,7 @@ int GetVisibilityStringId(
       string_id = IDS_EXTENSIONS_SHOW_BUTTON_IN_TOOLBAR;
       break;
   }
+
   return string_id;
 }
 
@@ -408,11 +415,9 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
     AddItemWithStringId(MANAGE_EXTENSIONS, IDS_MANAGE_EXTENSION);
   }
 
-  const ActionInfo* action_info = ActionInfo::GetPageActionInfo(extension);
-  if (!action_info)
-    action_info = ActionInfo::GetBrowserActionInfo(extension);
-  if (profile_->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode) &&
-      delegate_ && !is_component_ && action_info && !action_info->synthesized) {
+  const ActionInfo* action_info = ActionInfo::GetAnyActionInfo(extension);
+  if (delegate_ && !is_component_ && action_info && !action_info->synthesized &&
+      profile_->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode)) {
     AddSeparator(ui::NORMAL_SEPARATOR);
     AddItemWithStringId(INSPECT_POPUP, IDS_EXTENSION_ACTION_INSPECT_POPUP);
   }

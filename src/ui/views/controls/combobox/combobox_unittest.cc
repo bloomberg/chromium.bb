@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/combobox/combobox.h"
 
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
@@ -71,8 +72,8 @@ class TestCombobox : public Combobox {
 // A concrete class is needed to test the combobox.
 class TestComboboxModel : public ui::ComboboxModel {
  public:
-  TestComboboxModel() {}
-  ~TestComboboxModel() override {}
+  TestComboboxModel() = default;
+  ~TestComboboxModel() override = default;
 
   enum { kItemCount = 10 };
 
@@ -117,12 +118,14 @@ class VectorComboboxModel : public ui::ComboboxModel {
  public:
   explicit VectorComboboxModel(std::vector<std::string>* values)
       : values_(values) {}
-  ~VectorComboboxModel() override {}
+  ~VectorComboboxModel() override = default;
 
   void set_default_index(int default_index) { default_index_ = default_index; }
 
   // ui::ComboboxModel:
-  int GetItemCount() const override { return (int)values_->size(); }
+  int GetItemCount() const override {
+    return static_cast<int>(values_->size());
+  }
   base::string16 GetItemAt(int index) override {
     return ASCIIToUTF16(values_->at(index));
   }
@@ -138,8 +141,8 @@ class VectorComboboxModel : public ui::ComboboxModel {
 
 class EvilListener : public ComboboxListener {
  public:
-  EvilListener() : deleted_(false) {}
-  ~EvilListener() override {}
+  EvilListener() = default;
+  ~EvilListener() override = default;
 
   // ComboboxListener:
   void OnPerformAction(Combobox* combobox) override {
@@ -150,15 +153,15 @@ class EvilListener : public ComboboxListener {
   bool deleted() const { return deleted_; }
 
  private:
-  bool deleted_;
+  bool deleted_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(EvilListener);
 };
 
 class TestComboboxListener : public views::ComboboxListener {
  public:
-  TestComboboxListener() : perform_action_index_(-1), actions_performed_(0) {}
-  ~TestComboboxListener() override {}
+  TestComboboxListener() = default;
+  ~TestComboboxListener() override = default;
 
   void OnPerformAction(views::Combobox* combobox) override {
     perform_action_index_ = combobox->selected_index();
@@ -178,8 +181,8 @@ class TestComboboxListener : public views::ComboboxListener {
   }
 
  private:
-  int perform_action_index_;
-  int actions_performed_;
+  int perform_action_index_ = -1;
+  int actions_performed_ = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestComboboxListener);
@@ -189,7 +192,7 @@ class TestComboboxListener : public views::ComboboxListener {
 
 class ComboboxTest : public ViewsTestBase {
  public:
-  ComboboxTest() {}
+  ComboboxTest() = default;
 
   void TearDown() override {
     if (widget_)
@@ -198,14 +201,14 @@ class ComboboxTest : public ViewsTestBase {
   }
 
   void InitCombobox(const std::set<int>* separators) {
-    model_.reset(new TestComboboxModel());
+    model_ = std::make_unique<TestComboboxModel>();
 
     if (separators)
       model_->SetSeparators(*separators);
 
     ASSERT_FALSE(combobox_);
     combobox_ = new TestCombobox(model_.get());
-    test_api_.reset(new ComboboxTestApi(combobox_));
+    test_api_ = std::make_unique<ComboboxTestApi>(combobox_);
     test_api_->InstallTestMenuRunner(&menu_show_count_);
     combobox_->set_id(1);
 
@@ -329,7 +332,7 @@ TEST_F(ComboboxTest, KeyTestMac) {
 // Check that if a combobox is disabled before it has a native wrapper, then the
 // native wrapper inherits the disabled state when it gets created.
 TEST_F(ComboboxTest, DisabilityTest) {
-  model_.reset(new TestComboboxModel());
+  model_ = std::make_unique<TestComboboxModel>();
 
   ASSERT_FALSE(combobox_);
   combobox_ = new TestCombobox(model_.get());

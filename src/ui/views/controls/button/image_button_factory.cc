@@ -103,4 +103,4 @@ void SetToggledImageFromVectorIcon(ToggleImageButton* button,
   button->SetToggledImage(Button::STATE_DISABLED, &disabled_image);
 }
 
-}  // views
+}  // namespace views

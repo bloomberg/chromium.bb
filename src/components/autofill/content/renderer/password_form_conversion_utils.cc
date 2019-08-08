@@ -28,7 +28,6 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -438,11 +437,8 @@ bool GetPasswordForm(
   }
 
   // Evaluate the context of the fields.
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kHtmlBasedUsernameDetector)) {
-    password_form->form_data.username_predictions = GetUsernamePredictions(
-        control_elements, form_data, username_detector_cache);
-  }
+  password_form->form_data.username_predictions = GetUsernamePredictions(
+      control_elements, form_data, username_detector_cache);
 
   // Narrow the scope to enabled text inputs.
   std::vector<const FormFieldData*> enabled_fields;
@@ -614,14 +610,11 @@ bool GetPasswordForm(
 
   // Evaluate the context of the fields.
   const FormFieldData* username_field_by_context = nullptr;
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kHtmlBasedUsernameDetector)) {
-    // Use HTML based username detector only if neither server predictions nor
-    // autocomplete attributes were useful to detect the username.
-    if (!predicted_username_field && !username_by_attribute) {
-      username_field_by_context = FindUsernameInPredictions(
-          form_data.username_predictions, plausible_usernames);
-    }
+  // Use HTML based username detector only if neither server predictions nor
+  // autocomplete attributes were useful to detect the username.
+  if (!predicted_username_field && !username_by_attribute) {
+    username_field_by_context = FindUsernameInPredictions(
+        form_data.username_predictions, plausible_usernames);
   }
 
   // Populate all_possible_passwords and form_has_autofilled_value in

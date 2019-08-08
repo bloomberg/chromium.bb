@@ -52,6 +52,10 @@ buildflag_header("buildflags") {
     "PGO_BUILD=$pgo_build",
     "OPTIMIZE_WEBUI=$optimize_webui",
   ]
+
+  if (is_mac) {
+    flags += [ "NEW_MAC_BUNDLE_STRUCTURE=$new_mac_bundle_structure" ]
+  }
 }
 
 source_set("channel_info") {
@@ -114,6 +118,7 @@ static_library("common") {
     "chrome_content_client.cc",
     "chrome_content_client.h",
     "chrome_content_client_constants.cc",
+    "chrome_descriptors.h",
     "chrome_isolated_world_ids.h",
     "chrome_result_codes.h",
     "client_hints/client_hints.cc",
@@ -126,12 +131,13 @@ static_library("common") {
     "component_flash_hint_file_linux.h",
     "conflicts/module_watcher_win.cc",
     "conflicts/module_watcher_win.h",
+    "conflicts/remote_module_watcher_win.cc",
+    "conflicts/remote_module_watcher_win.h",
     "content_restriction.h",
     "crash_keys.cc",
     "crash_keys.h",
     "custom_handlers/protocol_handler.cc",
     "custom_handlers/protocol_handler.h",
-    "descriptors_android.h",
     "google_url_loader_throttle.cc",
     "google_url_loader_throttle.h",
     "heap_profiler_controller.cc",
@@ -147,6 +153,8 @@ static_library("common") {
     "mac/launchd.mm",
     "mac/service_management.h",
     "mac/service_management.mm",
+    "mac/staging_watcher.h",
+    "mac/staging_watcher.mm",
     "media/media_resource_provider.cc",
     "media/media_resource_provider.h",
     "media/webrtc_logging_message_data.cc",
@@ -399,7 +407,7 @@ static_library("common") {
     public_deps += [ ":app_mode_app_support" ]
   }
   if (is_chromeos) {
-    public_deps += [ "//chromeos" ]
+    deps += [ "//chromeos/constants" ]
   }
 
   if (enable_nacl) {
@@ -742,7 +750,7 @@ mojom("mojo_bindings") {
     "//components/content_settings/core/common:mojo_bindings",
     "//content/public/common:interfaces",
     "//mojo/public/mojom/base",
-    "//third_party/blink/public:mojo_bindings",
+    "//third_party/blink/public/mojom:mojom_platform",
     "//ui/gfx/geometry/mojo",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
@@ -757,7 +765,7 @@ mojom("mojo_bindings") {
   }
 
   overridden_deps = [
-    "//third_party/blink/public:mojo_bindings",
+    "//third_party/blink/public/mojom:mojom_platform",
     "//content/public/common:interfaces",
   ]
 

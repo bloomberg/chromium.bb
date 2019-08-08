@@ -207,7 +207,7 @@ class BreakingContext {
   bool ignoring_spaces_;
   bool current_character_is_space_;
   bool previous_character_is_space_;
-  bool single_leading_space_;
+  bool has_former_opportunity_;
   unsigned current_start_offset_;  // initial offset for the current text
   bool applied_start_width_;
   bool include_end_width_;
@@ -383,7 +383,7 @@ inline void BreakingContext::InitializeForCurrentObject() {
   // initial offset of the current handle text so that we can then identify
   // a single leading white-space as potential breaking opportunities.
   current_start_offset_ = current_.Offset();
-  single_leading_space_ = false;
+  has_former_opportunity_ = false;
 }
 
 inline void BreakingContext::Increment() {
@@ -842,7 +842,7 @@ ALWAYS_INLINE bool BreakingContext::RewindToFirstMidWordBreak(
   // If the first break opportunity doesn't fit, and if there's a break
   // opportunity in previous runs, break at the opportunity.
   if (!width_.FitsOnLine(width) &&
-      (width_.CommittedWidth() || single_leading_space_))
+      (width_.CommittedWidth() || has_former_opportunity_))
     return false;
   return RewindToMidWordBreak(word_measurement, end, width);
 }
@@ -1050,14 +1050,15 @@ inline bool BreakingContext::HandleText(WordMeasurements& word_measurements,
     UChar c = current_.Current();
     SetCurrentCharacterIsSpace(c);
 
-    // Auto-wrapping text should not wrap in the middle of a word if it has
-    // an opportunity to break at a leading white-space.
-    // TODO (jfernandez): This change is questionable, but it's required to
-    // achieve the expected behavior for 'break-word' (cases 2.1 and 2.2), while
-    // keeping current behavior for 'break-all' (cases 4.1 and 4.2)
-    // https://github.com/w3c/csswg-drafts/issues/2907
-    if (single_leading_space_)
+    // A single preserved leading white-space doesn't fulfill the 'betweenWords'
+    // condition, however it's indeed a soft-breaking opportunty so we may want
+    // to avoid breaking in the middle of the word.
+    if (at_start_ && current_character_is_space_ &&
+        !previous_character_is_space_) {
+      has_former_opportunity_ = can_break_mid_word;
+      break_words = false;
       can_break_mid_word = break_all;
+    }
 
     if (!collapse_white_space_ || !current_character_is_space_) {
       line_info_.SetEmpty(false);
@@ -1236,6 +1237,7 @@ inline bool BreakingContext::HandleText(WordMeasurements& word_measurements,
       width_from_last_breaking_opportunity = 0;
       line_break_.MoveTo(current_.GetLineLayoutItem(), current_.Offset(),
                          current_.NextBreakablePosition());
+      has_former_opportunity_ = can_break_mid_word;
       break_words = false;
       can_break_mid_word = break_all;
       width_measurement_at_last_break_opportunity = last_width_measurement;
@@ -1365,8 +1367,6 @@ inline void BreakingContext::PrepareForNextCharacter(
     if (auto_wrap_ && current_style_->BreakOnlyAfterWhiteSpace()) {
       line_break_.MoveTo(current_.GetLineLayoutItem(), current_.Offset(),
                          current_.NextBreakablePosition());
-      if (current_.Offset() == current_start_offset_ + 1)
-        single_leading_space_ = true;
     }
   }
   if (collapse_white_space_ && current_character_is_space_ && !ignoring_spaces_)
@@ -1423,7 +1423,7 @@ inline void BreakingContext::TrailingSpacesHang(bool can_break_mid_word) {
   DCHECK(curr_ws_ == EWhiteSpace::kBreakSpaces);
   // Avoid breaking before the first white-space after a word if there is a
   // breaking opportunity before.
-  if (single_leading_space_ && !previous_character_is_space_)
+  if (has_former_opportunity_)
     return;
 
   line_break_.MoveTo(current_.GetLineLayoutItem(), current_.Offset(),

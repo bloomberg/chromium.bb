@@ -274,18 +274,11 @@ struct VideoFrameInfo{
   // This field is only optional to work around the issue of native enums
   // not being usable for non-Chromium Mojo clients.
   // TODO(chfremer): Make this non-optional once gfx.mojom.ColorSpace has been
-  // migrated to a full Mojo struct.
+  // migrated to a full Mojo struct. See https://crbug.com/893203.
   gfx.mojom.ColorSpace? color_space;
   // Optionally, stride information can be provided.
   // If not provided, it is assumed that frame data is tightly packed.
   PlaneStrides? strides;
-};
-
-struct VideoCaptureDeviceDescriptorCameraCalibration {
-  double focal_length_x;
-  double focal_length_y;
-  double depth_near;
-  double depth_far;
 };
 
 struct VideoCaptureDeviceDescriptor {
@@ -295,7 +288,6 @@ struct VideoCaptureDeviceDescriptor {
   VideoFacingMode facing_mode;
   VideoCaptureApi capture_api;
   VideoCaptureTransportType transport_type;
-  VideoCaptureDeviceDescriptorCameraCalibration? camera_calibration;
 };
 
 struct VideoCaptureDeviceInfo {

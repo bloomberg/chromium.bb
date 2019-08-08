@@ -25,7 +25,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -212,7 +212,6 @@ class MCSProbe {
   std::unique_ptr<net::URLRequestContext> url_request_context_;
   net::NetLog net_log_;
   std::unique_ptr<net::FileNetLogObserver> logger_;
-  std::unique_ptr<net::HostResolver> host_resolver_;
   MCSProbeAuthPreferences http_auth_preferences_;
   std::unique_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory_;
 
@@ -339,13 +338,13 @@ void MCSProbe::InitializeNetworkState() {
     logger_->StartObserving(&net_log_, capture_mode);
   }
 
-  host_resolver_ = net::HostResolver::CreateDefaultResolver(&net_log_);
   http_auth_handler_factory_ = net::HttpAuthHandlerRegistryFactory::Create(
       &http_auth_preferences_, std::vector<std::string>{net::kBasicAuthScheme});
 
   net::URLRequestContextBuilder builder;
   builder.set_net_log(&net_log_);
-  builder.set_shared_host_resolver(host_resolver_.get());
+  builder.set_host_resolver(
+      net::HostResolver::CreateStandaloneResolver(&net_log_));
   builder.set_shared_http_auth_handler_factory(
       http_auth_handler_factory_.get());
   builder.set_proxy_resolution_service(
@@ -359,7 +358,8 @@ void MCSProbe::InitializeNetworkState() {
   // Wrap it up with network service APIs.
   network_context_ = std::make_unique<network::NetworkContext>(
       nullptr /* network_service */, mojo::MakeRequest(&network_context_pipe_),
-      url_request_context_.get());
+      url_request_context_.get(),
+      /*cors_exempt_header_list=*/std::vector<std::string>());
   auto url_loader_factory_params =
       network::mojom::URLLoaderFactoryParams::New();
   url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
@@ -444,7 +444,7 @@ int MCSProbeMain(int argc, char* argv[]) {
   mojo::core::Init();
 
   base::MessageLoopForIO message_loop;
-  base::TaskScheduler::CreateAndStartWithDefaultParams("MCSProbe");
+  base::ThreadPool::CreateAndStartWithDefaultParams("MCSProbe");
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -455,7 +455,7 @@ int MCSProbeMain(int argc, char* argv[]) {
   base::RunLoop run_loop;
   run_loop.Run();
 
-  base::TaskScheduler::GetInstance()->Shutdown();
+  base::ThreadPool::GetInstance()->Shutdown();
 
   return 0;
 }

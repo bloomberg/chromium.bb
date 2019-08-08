@@ -157,6 +157,8 @@ jumbo_component("gfx") {
     "skbitmap_operations.h",
     "sys_color_change_listener.cc",
     "sys_color_change_listener.h",
+    "system_fonts_win.cc",
+    "system_fonts_win.h",
     "text_constants.h",
     "text_elider.cc",
     "text_elider.h",
@@ -493,6 +495,8 @@ jumbo_source_set("memory_buffer_sources") {
   sources = [
     "buffer_format_util.cc",
     "buffer_format_util.h",
+    "buffer_usage_util.cc",
+    "buffer_usage_util.h",
     "ca_layer_params.cc",
     "ca_layer_params.h",
     "client_native_pixmap.h",
@@ -505,8 +509,6 @@ jumbo_source_set("memory_buffer_sources") {
     "gpu_fence_handle.cc",
     "gpu_fence_handle.h",
     "native_pixmap.h",
-    "native_pixmap_handle.cc",
-    "native_pixmap_handle.h",
     "overlay_transform.h",
   ]
 
@@ -559,6 +561,13 @@ jumbo_source_set("memory_buffer_sources") {
 
   if (is_win) {
     public_deps += [ "//ipc:message_support" ]
+  }
+
+  if ((is_linux || use_ozone) && !is_nacl) {
+    sources += [
+      "native_pixmap_handle.cc",
+      "native_pixmap_handle.h",
+    ]
   }
 }
 
@@ -632,6 +641,8 @@ test("gfx_unittests") {
     "text_elider_unittest.cc",
     "text_utils_unittest.cc",
   ]
+
+  include_dirs = [ "//third_party/skia/include/private" ]
 
   data = [
     "test/data/",
@@ -760,6 +771,7 @@ test("gfx_unittests") {
       "icon_util_unittests_resource.h",
       "path_win_unittest.cc",
       "platform_font_win_unittest.cc",
+      "system_fonts_win_unittest.cc",
       "win/text_analysis_source_unittest.cc",
     ]
 

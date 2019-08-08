@@ -4,7 +4,7 @@
 <link rel="import" href="shared_style.html">
 <link rel="import" href="store_client.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 
 <dom-module id="app-management-main-view">
   <template>
@@ -49,10 +49,9 @@
         list-title="$i18n{appListTitle}">
       <template is="dom-repeat" items="[[appsList]]" as="app" notify-dom-change>
         <app-management-app-item app="[[app]]">
-          <paper-icon-button-light slot="right-content"
+          <cr-icon-button slot="right-content"
               class="subpage-arrow app-management-item-arrow" actionable>
-            <button></button>
-          </paper-icon-button-light>
+          </cr-icon-button>
         </app-management-app-item>
       </template>
     </app-management-expandable-app-list>
@@ -65,9 +64,7 @@
           </div>
           <div id="notifications-sublabel" class="secondary-text"></div>
         </div>
-        <paper-icon-button-light class="subpage-arrow" actionable>
-          <button></button>
-        </paper-icon-button-light>
+        <cr-icon-button class="subpage-arrow" actionable></cr-icon-button>
       </span>
     </div>
   </template>

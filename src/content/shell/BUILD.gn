@@ -46,6 +46,30 @@ source_set("android_shell_descriptors") {
   ]
 }
 
+source_set("web_test_messages") {
+  testonly = true
+  sources = [
+    # Note that if this target becomes jumbofied, it should use
+    # jumbo_excluded_sources to exclude the messages.cc files.
+    # IPC uses multiple inclusions in different macro contexts to
+    # generate the code. This is not compatible with jumbo
+    # compilations since all other files need the "clean" version of
+    # the message headers.
+    "common/web_test/blink_test_messages.cc",
+    "common/web_test/blink_test_messages.h",
+    "common/web_test/web_test_messages.cc",
+    "common/web_test/web_test_messages.h",
+  ]
+
+  deps = [
+    "//content/public/common",
+    "//ipc",
+    "//net",
+    "//skia",
+    "//url/ipc:url_ipc",
+  ]
+}
+
 source_set("web_test_switches") {
   testonly = true
   sources = [
@@ -186,16 +210,12 @@ jumbo_static_library("content_shell_lib") {
     "common/power_monitor_test_impl.h",
     "common/shell_content_client.cc",
     "common/shell_content_client.h",
-    "common/shell_messages.cc",
-    "common/shell_messages.h",
     "common/shell_origin_trial_policy.cc",
     "common/shell_origin_trial_policy.h",
     "common/shell_switches.cc",
     "common/shell_switches.h",
     "common/web_test/web_test_content_client.cc",
     "common/web_test/web_test_content_client.h",
-    "common/web_test/web_test_messages.cc",
-    "common/web_test/web_test_messages.h",
     "gpu/shell_content_gpu_client.cc",
     "gpu/shell_content_gpu_client.h",
     "renderer/shell_content_renderer_client.cc",
@@ -220,15 +240,6 @@ jumbo_static_library("content_shell_lib") {
     "renderer/web_test/web_test_render_thread_observer.h",
     "utility/shell_content_utility_client.cc",
     "utility/shell_content_utility_client.h",
-  ]
-
-  jumbo_excluded_sources = [
-    # IPC uses multiple inclusions in different macro contexts to
-    # generate the code. This is not compatible with jumbo
-    # compilations since all other files need the "clean" version of
-    # the message headers.
-    "common/web_test/web_test_messages.cc",
-    "common/shell_messages.cc",
   ]
 
   configs += [
@@ -258,11 +269,11 @@ jumbo_static_library("content_shell_lib") {
     "//content/public/gpu",
     "//content/public/renderer",
     "//content/public/utility",
-    "//ipc",
     "//services/network:network_service",
   ]
   deps = [
     ":resources",
+    ":web_test_messages",
     ":web_test_switches",
     ":web_test_utils",
     "//base",
@@ -278,6 +289,7 @@ jumbo_static_library("content_shell_lib") {
     "//components/download/public/background_service:public",
     "//components/download/public/common:public",
     "//components/keyed_service/content",
+    "//components/keyed_service/core:test_support",
     "//components/network_session_configurator/browser",
     "//components/plugins/renderer",
     "//components/url_formatter",
@@ -328,7 +340,7 @@ jumbo_static_library("content_shell_lib") {
     "//third_party/icu",
     "//ui/base",
     "//ui/base/clipboard",
-    "//ui/base/ime",
+    "//ui/base/ime/init",
     "//ui/display",
     "//ui/events:events_base",
     "//ui/gfx",
@@ -746,6 +758,7 @@ if (is_mac) {
 
     framework_contents = [
       "Helpers",
+      "Libraries",
       "Resources",
     ]
 
@@ -852,7 +865,7 @@ if (is_mac) {
   }
 
   if (use_egl) {
-    # Add the ANGLE .dylibs in the MODULE_DIR of Chromium.app
+    # Add the ANGLE .dylibs in the Libraries directory of the Framework.
     bundle_data("content_shell_angle_binaries") {
       sources = [
         "$root_out_dir/egl_intermediates/libEGL.dylib",
@@ -866,7 +879,7 @@ if (is_mac) {
       ]
     }
 
-    # Add the SwiftShader .dylibs in the MODULE_DIR of Chromium.app
+    # Add the SwiftShader .dylibs in the Libraries directory of the Framework.
     bundle_data("content_shell_swiftshader_binaries") {
       sources = [
         "$root_out_dir/egl_intermediates/libswiftshader_libEGL.dylib",

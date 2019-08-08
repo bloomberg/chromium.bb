@@ -9,5 +9,5 @@ module content.mojom;
 interface Child {
   // Force the child process to crash immediately (i.e. a hard crash, no
   // cleanup, generating a crash report).
-  Crash();
+  CrashHungProcess();
 };

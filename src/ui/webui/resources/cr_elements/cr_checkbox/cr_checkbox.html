@@ -144,15 +144,23 @@ List of customizable styles:
       :host(.no-label) #label-container {
         display: none;
       }
+
+      /* Hidden from UI, but not screen readers. */
+      #ariaLabel,
+      #ariaDescription {
+        height: 0;
+        overflow: hidden;
+        width: 0;
+      }
     </style>
-    <!-- Mousing down then moving cursor out of this element should not trigger
-         click on the parent. With <button> this works as expected, while <div>
-         does not. -->
-    <button id="checkbox" tabindex="-1" on-focus="onButtonFocus_"
-        aria-hidden="true">
+    <div id="checkbox" tabindex$="[[tabIndex]]" role="checkbox"
+        on-keydown="onKeyDown_" aria-disabled="false" aria-checked="false"
+        aria-labelledby="label-container" aria-describedby="ariaDescription">
       <span id="checkmark"></span>
-    </button>
+    </div>
     <div id="label-container"><slot></slot></div>
+    <div id="ariaLabel">[[ariaLabel]]</div>
+    <div id="ariaDescription">[[ariaDescription]]</div>
   </template>
   <script src="cr_checkbox.js"></script>
 </dom-module>

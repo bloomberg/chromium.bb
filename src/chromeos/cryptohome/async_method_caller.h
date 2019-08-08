@@ -9,8 +9,8 @@
 
 #include "base/callback_forward.h"
 #include "base/component_export.h"
-#include "chromeos/dbus/attestation_constants.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/constants/attestation_constants.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace cryptohome {

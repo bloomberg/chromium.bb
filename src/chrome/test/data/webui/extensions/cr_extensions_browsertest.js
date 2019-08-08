@@ -444,6 +444,10 @@ TEST_F('CrExtensionsManagerUnitTest', 'ItemOrder', function() {
   this.runMochaTest(extension_manager_tests.TestNames.ItemOrder);
 });
 
+TEST_F('CrExtensionsManagerUnitTest', 'SetItemData', function() {
+  this.runMochaTest(extension_manager_tests.TestNames.SetItemData);
+});
+
 TEST_F('CrExtensionsManagerUnitTest', 'UpdateItemData', function() {
   this.runMochaTest(extension_manager_tests.TestNames.UpdateItemData);
 });

@@ -507,6 +507,10 @@ int FeedSchedulerHost::GetLastFetchStatusForDebugging() const {
   return last_fetch_status_;
 }
 
+TriggerType FeedSchedulerHost::GetLastFetchTriggerTypeForDebugging() const {
+  return last_fetch_trigger_type_;
+}
+
 void FeedSchedulerHost::OnEulaAccepted() {
   OnForegrounded();
 }
@@ -597,6 +601,8 @@ FeedSchedulerHost::ShouldRefreshResult FeedSchedulerHost::ShouldRefresh(
   outstanding_request_until_ =
       clock_->Now() +
       base::TimeDelta::FromSeconds(kTimeoutDurationSeconds.Get());
+
+  last_fetch_trigger_type_ = trigger;
 
   return kShouldRefresh;
 }

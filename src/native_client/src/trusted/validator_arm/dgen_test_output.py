@@ -118,6 +118,8 @@ parsed table representations.
 #
 # is used instead.
 
+from __future__ import print_function
+
 import dgen_core
 import dgen_opt
 import dgen_output
@@ -469,7 +471,7 @@ NAMED_DECODER_H_FOOTER="""
 """
 
 def generate_named_decoder_h(decoder, decoder_name, filename, out, cl_args):
-    """Generates the named decoder for testing.
+  """Generates the named decoder for testing.
 
     Args:
         tables: list of Table objects to process.
@@ -478,25 +480,25 @@ def generate_named_decoder_h(decoder, decoder_name, filename, out, cl_args):
         out: a COutput object to write to.
         cl_args: A dictionary of additional command line arguments.
     """
-    global _cl_args
-    assert filename.endswith('_named_decoder.h')
-    _cl_args = cl_args
+  global _cl_args
+  assert filename.endswith('_named_decoder.h')
+  _cl_args = cl_args
 
-    values = {
-        'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
-        'NOT_TCB_MESSAGE' : dgen_output.NOT_TCB_BOILERPLATE,
-        'IFDEF_NAME' : dgen_output.ifdef_name(filename),
-        'FILENAME_BASE': filename[:-len('_named_decoder.h')],
-        'decoder_name': decoder_name,
-        }
-    out.write(NAMED_DECODER_H_HEADER % values)
-    _generate_baseline_and_actual(DECODER_STATE_FIELD, DECODER_STATE_FIELD_NAME,
-                                  decoder, values, out)
-    out.write(DECODER_STATE_DECODER_COMMENTS)
-    for table in decoder.tables():
-      values['table'] = table.name
-      out.write(DECODER_STATE_DECODER % values)
-    out.write(NAMED_DECODER_H_FOOTER % values)
+  values = {
+      'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
+      'NOT_TCB_MESSAGE': dgen_output.NOT_TCB_BOILERPLATE,
+      'IFDEF_NAME': dgen_output.ifdef_name(filename),
+      'FILENAME_BASE': filename[:-len('_named_decoder.h')],
+      'decoder_name': decoder_name,
+  }
+  out.write(NAMED_DECODER_H_HEADER % values)
+  _generate_baseline_and_actual(DECODER_STATE_FIELD, DECODER_STATE_FIELD_NAME,
+                                decoder, values, out)
+  out.write(DECODER_STATE_DECODER_COMMENTS)
+  for table in decoder.tables():
+    values['table'] = table.name
+    out.write(DECODER_STATE_DECODER % values)
+  out.write(NAMED_DECODER_H_FOOTER % values)
 
 # Defines the source for DECODER_named.cc
 NAMED_CC_HEADER="""%(FILE_HEADER)s
@@ -565,7 +567,7 @@ decode(const nacl_arm_dec::Instruction inst) const {
 """
 
 def generate_named_cc(decoder, decoder_name, filename, out, cl_args):
-    """Implementation of the test decoder in .cc file
+  """Implementation of the test decoder in .cc file
 
     Args:
         tables: list of Table objects to process.
@@ -574,20 +576,21 @@ def generate_named_cc(decoder, decoder_name, filename, out, cl_args):
         out: a COutput object to write to.
         cl_args: A dictionary of additional command line arguments.
     """
-    global _cl_args
-    assert filename.endswith('.cc')
-    _cl_args = cl_args
+  global _cl_args
+  assert filename.endswith('.cc')
+  _cl_args = cl_args
 
-    values = {
-        'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
-        'NOT_TCB_MESSAGE' : dgen_output.NOT_TCB_BOILERPLATE,
-        'FILENAME_BASE' : filename[:-len('.cc')],
-        'decoder_name': decoder_name,
-        'entry_table_name': decoder.primary.name,
-        }
-    out.write(NAMED_CC_HEADER % values)
-    _generate_decoder_method_bodies(decoder, values, out)
-    out.write(NAMED_CC_FOOTER % values)
+  values = {
+      'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
+      'NOT_TCB_MESSAGE': dgen_output.NOT_TCB_BOILERPLATE,
+      'FILENAME_BASE': filename[:-len('.cc')],
+      'decoder_name': decoder_name,
+      'entry_table_name': decoder.primary.name,
+  }
+  out.write(NAMED_CC_HEADER % values)
+  _generate_decoder_method_bodies(decoder, values, out)
+  out.write(NAMED_CC_FOOTER % values)
+
 
 def _generate_decoder_method_bodies(decoder, values, out):
   global _cl_args
@@ -601,14 +604,14 @@ def _generate_decoder_method_bodies(decoder, values, out):
       opt_rows.append(table.default_row)
 
     opt_rows = table.add_column_to_rows(opt_rows)
-    print ("Table %s: %d rows minimized to %d"
-           % (table.name, len(table.rows()), len(opt_rows)))
+    print("Table %s: %d rows minimized to %d" % (table.name, len(table.rows()),
+                                                 len(opt_rows)))
 
     values['table_name'] = table.name
     values['citation'] = table.citation,
     out.write(PARSE_TABLE_METHOD_HEADER % values)
     if _cl_args.get('trace') == 'True':
-        out.write(METHOD_HEADER_TRACE % values)
+      out.write(METHOD_HEADER_TRACE % values)
 
     # Add message to stop compilation warnings if this table
     # doesn't require subtables to select a class decoder.
@@ -645,7 +648,7 @@ def _generate_decoder_method_bodies(decoder, values, out):
         out.write(METHOD_DISPATCH_CONTINUE % p.to_commented_bool())
       out.write(METHOD_DISPATCH_END)
       if _cl_args.get('trace') == 'True':
-          out.write(METHOD_DISPATCH_TRACE % count)
+        out.write(METHOD_DISPATCH_TRACE % count)
       values['action'] = action
       out.write(PARSE_TABLE_METHOD_ROW % values)
       out.write(METHOD_DISPATCH_CLOSE)

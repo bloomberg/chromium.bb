@@ -30,6 +30,7 @@ class CPDF_Font;
 class CPDF_FontEncoding;
 class CPDF_IccProfile;
 class CPDF_LinearizedHeader;
+class CPDF_Object;
 class CPDF_Pattern;
 class CPDF_ReadValidator;
 class CPDF_StreamAcc;
@@ -120,7 +121,8 @@ class CPDF_Document : public Observable<CPDF_Document>,
   void IncrementParsedPageCount() { ++m_ParsedPageCount; }
   uint32_t GetParsedPageCountForTesting() { return m_ParsedPageCount; }
 
-  CPDF_Font* AddStandardFont(const char* font, CPDF_FontEncoding* pEncoding);
+  CPDF_Font* AddStandardFont(const char* font,
+                             const CPDF_FontEncoding* pEncoding);
   CPDF_Font* AddFont(CFX_Font* pFont, int charset);
 
 #if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_

@@ -9,10 +9,13 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chromeos/components/account_manager/account_manager.h"
+#include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
@@ -154,20 +157,39 @@ std::string OAuth2LoginManager::GetPrimaryAccountId() {
 }
 
 void OAuth2LoginManager::StoreOAuth2Token() {
-  identity::IdentityManager* identity_manager = GetIdentityManager();
-  DCHECK(identity_manager->HasPrimaryAccount());
   DCHECK(!refresh_token_.empty());
 
-  // On ChromeOS, the primary account is set via
-  // IdentityManager::SetPrimaryAccountSynchronously(), which seeds the account
-  // info with AccountTrackerService. Hence, the primary account info will be
-  // available at this point.
-  const CoreAccountInfo primary_account_info =
-      identity_manager->GetPrimaryAccountInfo();
-  identity_manager->GetAccountsMutator()->AddOrUpdateAccount(
-      primary_account_info.gaia, primary_account_info.email, refresh_token_,
-      primary_account_info.is_under_advanced_protection,
-      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+  if (switches::IsAccountManagerEnabled()) {
+    AccountManagerFactory* factory =
+        g_browser_process->platform_part()->GetAccountManagerFactory();
+    AccountManager* account_manager =
+        factory->GetAccountManager(user_profile_->GetPath().value());
+
+    user_manager::User* const user =
+        ProfileHelper::Get()->GetUserByProfile(user_profile_);
+    account_manager->UpsertAccount(
+        AccountManager::AccountKey{
+            user->GetAccountId().GetGaiaId(),
+            account_manager::AccountType::ACCOUNT_TYPE_GAIA},
+        user->display_email() /* raw_email */, refresh_token_);
+  } else {
+    // TODO(sinhak): Remove this when Account Manager is enabled by default.
+
+    identity::IdentityManager* identity_manager = GetIdentityManager();
+    DCHECK(identity_manager->HasPrimaryAccount());
+
+    // On ChromeOS, the primary account is set via
+    // IdentityManager::LegacySetPrimaryAccount(), which seeds the account
+    // info with AccountTrackerService. Hence, the primary account info will be
+    // available at this point.
+    const CoreAccountInfo primary_account_info =
+        identity_manager->GetPrimaryAccountInfo();
+
+    identity_manager->GetAccountsMutator()->AddOrUpdateAccount(
+        primary_account_info.gaia, primary_account_info.email, refresh_token_,
+        primary_account_info.is_under_advanced_protection,
+        signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+  }
 
   for (auto& observer : observer_list_)
     observer.OnNewRefreshTokenAvaiable(user_profile_);

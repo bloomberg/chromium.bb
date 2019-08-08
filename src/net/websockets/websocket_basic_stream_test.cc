@@ -18,8 +18,10 @@
 #include "base/stl_util.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/test_net_log.h"
+#include "net/socket/connect_job.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
+#include "net/socket/ssl_client_socket.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -103,7 +105,23 @@ class StrictStaticSocketDataProvider : public StaticSocketDataProvider {
 class WebSocketBasicStreamSocketTest : public TestWithScopedTaskEnvironment {
  protected:
   WebSocketBasicStreamSocketTest()
-      : pool_(1, 1, &factory_),
+      : common_connect_job_params_(
+            &factory_,
+            nullptr /* host_resolver */,
+            nullptr /* http_auth_cache */,
+            nullptr /* http_auth_handler_factory */,
+            nullptr /* spdy_session_pool */,
+            nullptr /* quic_supported_versions */,
+            nullptr /* quic_stream_factory */,
+            nullptr /* proxy_delegate */,
+            nullptr /* http_user_agent_settings */,
+            SSLClientSocketContext(),
+            SSLClientSocketContext(),
+            nullptr /* socket_performance_watcher_factory */,
+            nullptr /* network_quality_estimator */,
+            nullptr /* net_log */,
+            nullptr /* websocket_endpoint_lock_manager */),
+        pool_(1, 1, &common_connect_job_params_),
         generator_(&GenerateNulMaskingKey),
         expect_all_io_to_complete_(true) {}
 
@@ -122,9 +140,12 @@ class WebSocketBasicStreamSocketTest : public TestWithScopedTaskEnvironment {
     factory_.AddSocketDataProvider(socket_data_.get());
 
     auto transport_socket = std::make_unique<ClientSocketHandle>();
-    scoped_refptr<MockTransportSocketParams> params;
+    scoped_refptr<ClientSocketPool::SocketParams> null_params;
+    ClientSocketPool::GroupId group_id(HostPortPair("a", 80),
+                                       ClientSocketPool::SocketType::kHttp,
+                                       false /* privacy_mode */);
     transport_socket->Init(
-        "a", params, MEDIUM, SocketTag(),
+        group_id, null_params, MEDIUM, SocketTag(),
         ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
         ClientSocketPool::ProxyAuthCallback(), &pool_, NetLogWithSource());
     return transport_socket;
@@ -146,6 +167,7 @@ class WebSocketBasicStreamSocketTest : public TestWithScopedTaskEnvironment {
 
   std::unique_ptr<SocketDataProvider> socket_data_;
   MockClientSocketFactory factory_;
+  const CommonConnectJobParams common_connect_job_params_;
   MockTransportClientSocketPool pool_;
   std::vector<std::unique_ptr<WebSocketFrame>> frames_;
   TestCompletionCallback cb_;

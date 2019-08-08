@@ -417,8 +417,8 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
     VLOG(0) << "Minidump generation specified. Will save dumps to: "
             << capabilities.minidump_path;
 
-    options.environ["CHROME_HEADLESS"] = 1;
-    options.environ["BREAKPAD_DUMP_LOCATION"] = capabilities.minidump_path;
+    options.environment["CHROME_HEADLESS"] = 1;
+    options.environment["BREAKPAD_DUMP_LOCATION"] = capabilities.minidump_path;
 
     if (!command.HasSwitch(kEnableCrashReport))
       command.AppendSwitch(kEnableCrashReport);
@@ -430,7 +430,7 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
 
 #if !defined(OS_WIN)
   if (!capabilities.log_path.empty())
-    options.environ["CHROME_LOG_FILE"] = capabilities.log_path;
+    options.environment["CHROME_LOG_FILE"] = capabilities.log_path;
   if (capabilities.detach)
     options.new_process_group = true;
 #endif

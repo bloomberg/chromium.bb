@@ -48,8 +48,6 @@ class LinkImport final : public LinkResource, public HTMLImportChildClient {
   USING_GARBAGE_COLLECTED_MIXIN(LinkImport);
 
  public:
-  static LinkImport* Create(HTMLLinkElement* owner);
-
   explicit LinkImport(HTMLLinkElement* owner);
   ~LinkImport() final;
 

@@ -73,47 +73,48 @@ class AnimationAnimationInputHelpersTest : public PageTestBase {
 
   void TearDown() override {
     document.Release();
-    ThreadState::Current()->CollectAllGarbage();
+    ThreadState::Current()->CollectAllGarbageForTesting();
   }
 
   Persistent<Document> document;
 };
 
 TEST_F(AnimationAnimationInputHelpersTest, ParseKeyframePropertyAttributes) {
-  EXPECT_EQ(CSSPropertyLineHeight,
+  EXPECT_EQ(CSSPropertyID::kLineHeight,
             KeyframeAttributeToCSSProperty("lineHeight"));
-  EXPECT_EQ(CSSPropertyBorderTopWidth,
+  EXPECT_EQ(CSSPropertyID::kBorderTopWidth,
             KeyframeAttributeToCSSProperty("borderTopWidth"));
-  EXPECT_EQ(CSSPropertyWidth, KeyframeAttributeToCSSProperty("width"));
-  EXPECT_EQ(CSSPropertyFloat, KeyframeAttributeToCSSProperty("float"));
-  EXPECT_EQ(CSSPropertyFloat, KeyframeAttributeToCSSProperty("cssFloat"));
-  EXPECT_EQ(CSSPropertyVariable, KeyframeAttributeToCSSProperty("--"));
-  EXPECT_EQ(CSSPropertyVariable, KeyframeAttributeToCSSProperty("---"));
-  EXPECT_EQ(CSSPropertyVariable, KeyframeAttributeToCSSProperty("--x"));
-  EXPECT_EQ(CSSPropertyVariable,
+  EXPECT_EQ(CSSPropertyID::kWidth, KeyframeAttributeToCSSProperty("width"));
+  EXPECT_EQ(CSSPropertyID::kFloat, KeyframeAttributeToCSSProperty("float"));
+  EXPECT_EQ(CSSPropertyID::kFloat, KeyframeAttributeToCSSProperty("cssFloat"));
+  EXPECT_EQ(CSSPropertyID::kVariable, KeyframeAttributeToCSSProperty("--"));
+  EXPECT_EQ(CSSPropertyID::kVariable, KeyframeAttributeToCSSProperty("---"));
+  EXPECT_EQ(CSSPropertyID::kVariable, KeyframeAttributeToCSSProperty("--x"));
+  EXPECT_EQ(CSSPropertyID::kVariable,
             KeyframeAttributeToCSSProperty("--webkit-custom-property"));
 
-  EXPECT_EQ(CSSPropertyInvalid, KeyframeAttributeToCSSProperty(""));
-  EXPECT_EQ(CSSPropertyInvalid, KeyframeAttributeToCSSProperty("-"));
-  EXPECT_EQ(CSSPropertyInvalid, KeyframeAttributeToCSSProperty("line-height"));
-  EXPECT_EQ(CSSPropertyInvalid,
+  EXPECT_EQ(CSSPropertyID::kInvalid, KeyframeAttributeToCSSProperty(""));
+  EXPECT_EQ(CSSPropertyID::kInvalid, KeyframeAttributeToCSSProperty("-"));
+  EXPECT_EQ(CSSPropertyID::kInvalid,
+            KeyframeAttributeToCSSProperty("line-height"));
+  EXPECT_EQ(CSSPropertyID::kInvalid,
             KeyframeAttributeToCSSProperty("border-topWidth"));
-  EXPECT_EQ(CSSPropertyInvalid, KeyframeAttributeToCSSProperty("Width"));
-  EXPECT_EQ(CSSPropertyInvalid,
+  EXPECT_EQ(CSSPropertyID::kInvalid, KeyframeAttributeToCSSProperty("Width"));
+  EXPECT_EQ(CSSPropertyID::kInvalid,
             KeyframeAttributeToCSSProperty("-epub-text-transform"));
-  EXPECT_EQ(CSSPropertyInvalid,
+  EXPECT_EQ(CSSPropertyID::kInvalid,
             KeyframeAttributeToCSSProperty("EpubTextTransform"));
-  EXPECT_EQ(CSSPropertyInvalid,
+  EXPECT_EQ(CSSPropertyID::kInvalid,
             KeyframeAttributeToCSSProperty("-internal-marquee-repetition"));
-  EXPECT_EQ(CSSPropertyInvalid,
+  EXPECT_EQ(CSSPropertyID::kInvalid,
             KeyframeAttributeToCSSProperty("InternalMarqueeRepetition"));
-  EXPECT_EQ(CSSPropertyInvalid,
+  EXPECT_EQ(CSSPropertyID::kInvalid,
             KeyframeAttributeToCSSProperty("-webkit-filter"));
-  EXPECT_EQ(CSSPropertyInvalid,
+  EXPECT_EQ(CSSPropertyID::kInvalid,
             KeyframeAttributeToCSSProperty("-webkit-transform"));
-  EXPECT_EQ(CSSPropertyInvalid,
+  EXPECT_EQ(CSSPropertyID::kInvalid,
             KeyframeAttributeToCSSProperty("webkitTransform"));
-  EXPECT_EQ(CSSPropertyInvalid,
+  EXPECT_EQ(CSSPropertyID::kInvalid,
             KeyframeAttributeToCSSProperty("WebkitTransform"));
 }
 

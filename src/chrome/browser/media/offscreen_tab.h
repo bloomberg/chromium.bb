@@ -90,7 +90,7 @@ class OffscreenTab : protected content::WebContentsDelegate,
   bool ShouldFocusPageAfterCrash() final;
   void CanDownload(const GURL& url,
                    const std::string& request_method,
-                   const base::RepeatingCallback<void(bool)>& callback) final;
+                   base::OnceCallback<void(bool)> callback) final;
   bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
                          const content::ContextMenuParams& params) final;
   content::KeyboardEventProcessingResult PreHandleKeyboardEvent(

@@ -78,7 +78,6 @@ html[dir=rtl] #edit-bg {
 
 .ep-enhanced #edit-bg-icon {
   background-color: rgb(var(--GB600-rgb));
-  margin-inline-start: 12px;
 }
 
 html[darkmode=true] .ep-enhanced #edit-bg-icon {
@@ -86,19 +85,26 @@ html[darkmode=true] .ep-enhanced #edit-bg-icon {
 }
 
 #edit-bg-text {
-  display: none;
-}
-
-.ep-enhanced #edit-bg-text {
   color: rgb(var(--GB600-rgb));
-  display: inline;
+  display: none;
   font-size: 14px;
   padding-inline-end: 12px;
   padding-inline-start: 8px;
+  user-select: none;
 }
 
 html[darkmode=true] .ep-enhanced #edit-bg-text {
   color: rgb(var(--GB300-rgb));
+}
+
+@media (min-width: 550px) {
+  .ep-enhanced #edit-bg-icon {
+    margin-inline-start: 12px;
+  }
+
+  .ep-enhanced #edit-bg-text {
+    display: inline;
+  }
 }
 
 #edit-bg-dialog::backdrop {
@@ -200,7 +206,8 @@ html[darkmode=true] .bg-option.bg-option-disabled {
   outline: none;
 }
 
-.bg-option.bg-option-disabled:hover {
+.bg-option.bg-option-disabled:hover,
+html[darkmode=true] .bg-option.bg-option-disabled:hover {
   background-color: transparent;
 }
 
@@ -580,9 +587,10 @@ html[darkmode=true] .selected-check::after {
   color: #FFF;
   display: inline-block;
   font-size: 13px;
-  height: 32px;
+  line-height: 1.6;
+  min-height: 32px;
   overflow: hidden;
-  padding: 8px 16px 0 16px;
+  padding: 8px 16px;
   position: absolute;
   text-overflow: ellipsis;
   user-select: none;
@@ -637,6 +645,7 @@ html[dir=rtl] .plus-icon {
   color: white;
   font-weight: 500;
   left: 16px;
+  max-width: 80%;
   padding: 8px 8px 8px 8px;
   position: fixed;
   text-shadow: 0 0 16px rgba(0, 0, 0, 0.3);
@@ -649,26 +658,26 @@ html[dir=rtl] #custom-bg-attr {
   right: 16px;
 }
 
-.attr1 {
+.attr-common {
   font-size: 13px;
   height: 20px;
   line-height: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   vertical-align: middle;
+  white-space: nowrap;
+  width: -webkit-fill-available;
 }
 
-.attr2 {
+.attr-common.attr-small {
   font-size: 11px;
-  height: 20px;
-  line-height: 20px;
-  vertical-align: middle;
 }
 
 #custom-bg-attr.attr-link:hover {
   background: rgba(var(--GG900-rgb), .1);
 }
 
-.attr1.attr-link,
-.attr2.attr-link {
+.attr-link {
   display: inline-block;
   text-decoration: underline;
 }

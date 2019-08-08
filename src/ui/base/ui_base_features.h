@@ -13,13 +13,9 @@
 namespace features {
 
 // Keep sorted!
+
 COMPONENT_EXPORT(UI_BASE_FEATURES)
-extern const base::Feature kEnableFullscreenHandwritingVirtualKeyboard;
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-extern const base::Feature kEnableStylusVirtualKeyboard;
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-extern const base::Feature kEnableVirtualKeyboardUkm;
-COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kExperimentalUi;
+extern const base::Feature kCompositorThreadedScrollbarScrolling;
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kSettingsShowsPerKeyboardSettings;
@@ -83,6 +79,10 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kMashOopViz;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kSingleProcessMash;
 
+#if defined(OS_CHROMEOS)
+COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kMojoIMF;
+#endif
+
 // Returns true if Chrome's aura usage is backed by the WindowService.
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsUsingWindowService();
 
@@ -99,6 +99,11 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsMashOopVizEnabled();
 // similar to kMash, but leaves ash and browser running in the same process.
 // See //ash/README.md.
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsSingleProcessMash();
+
+// Returns true if the client connects the active ime engine through mojo IPCs.
+// This can only return true on Chrome OS, and it can only take effect when
+// IsSingleProcessMash() returns true.
+COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsMojoImfEnabled();
 
 // Whether the UI may accommodate touch input in response to hardware changes.
 COMPONENT_EXPORT(UI_BASE_FEATURES)

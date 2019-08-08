@@ -5,16 +5,21 @@
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/browser_features.h"
+#include "base/metrics/user_metrics.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/existing_tab_group_sub_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using base::UserMetricsAction;
 
 TabMenuModel::TabMenuModel(ui::SimpleMenuModel::Delegate* delegate,
                            TabStripModel* tab_strip,
@@ -46,7 +51,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
     }
 
     for (size_t index = 0; index < affected_indices.size(); index++) {
-      if (tab_strip->GetTabGroupForTab(affected_indices[index]) != nullptr) {
+      if (tab_strip->GetTabGroupForTab(affected_indices[index]).has_value()) {
         AddItemWithStringId(TabStripModel::CommandRemoveFromGroup,
                             IDS_TAB_CXMENU_REMOVE_TAB_FROM_GROUP);
         break;
@@ -64,8 +69,11 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
                    : l10n_util::GetPluralStringFUTF16(IDS_TAB_CXMENU_UNPIN_TAB,
                                                       num_affected_tabs));
   if (base::FeatureList::IsEnabled(features::kFocusMode)) {
-    AddItemWithStringId(TabStripModel::CommandFocusMode,
-                        IDS_TAB_CXMENU_FOCUS_THIS_TAB);
+    // TODO(crbug.com/941577): Allow Focus Mode in Incognito and Guest Session.
+    if (!tab_strip->profile()->IsOffTheRecord()) {
+      AddItemWithStringId(TabStripModel::CommandFocusMode,
+                          IDS_TAB_CXMENU_FOCUS_THIS_TAB);
+    }
   }
   const bool will_mute =
       !chrome::AreAllSitesMuted(*tab_strip, affected_indices);
@@ -75,11 +83,14 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
                     : l10n_util::GetPluralStringFUTF16(
                           IDS_TAB_CXMENU_SOUND_UNMUTE_SITE, num_affected_tabs));
 
-  Browser* browser =
-      chrome::FindBrowserWithWebContents(tab_strip->GetWebContentsAt(index));
-  if (send_tab_to_self::ShouldOfferFeature(browser)) {
-    AddItemWithStringId(TabStripModel::CommandSendToMyDevices,
-                        IDS_TAB_CXMENU_SEND_TO_MY_DEVICES);
+  if (send_tab_to_self::ShouldOfferFeature(
+          tab_strip->GetWebContentsAt(index))) {
+    send_tab_to_self::RecordSendTabToSelfClickResult(
+        send_tab_to_self::kTabMenu, SendTabToSelfClickResult::kShowItem);
+    AddSeparator(ui::NORMAL_SEPARATOR);
+    AddItemWithStringIdAndIcon(TabStripModel::CommandSendTabToSelf,
+                               IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
+                               *send_tab_to_self::GetImageSkia());
   }
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItem(TabStripModel::CommandCloseTab,

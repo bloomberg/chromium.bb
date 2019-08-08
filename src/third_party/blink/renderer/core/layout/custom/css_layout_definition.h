@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "v8/include/v8.h"
@@ -95,9 +94,9 @@ class CSSLayoutDefinition final
   // This object keeps the class instances, constructor function, intrinsic
   // sizes function, and layout function alive. It participates in wrapper
   // tracing as it holds onto V8 wrappers.
-  TraceWrapperMember<V8NoArgumentConstructor> constructor_;
-  TraceWrapperMember<V8Function> unused_intrinsic_sizes_;
-  TraceWrapperMember<V8LayoutCallback> layout_;
+  Member<V8NoArgumentConstructor> constructor_;
+  Member<V8Function> unused_intrinsic_sizes_;
+  Member<V8LayoutCallback> layout_;
 
   // If a constructor call ever fails, we'll refuse to create any more
   // instances of the web developer provided class.

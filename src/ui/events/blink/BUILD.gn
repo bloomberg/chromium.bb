@@ -5,12 +5,23 @@
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 
+jumbo_component("blink_features") {
+  defines = [ "IS_BLINK_FEATURES_IMPL" ]
+
+  sources = [
+    "blink_features.cc",
+    "blink_features.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}
+
 jumbo_source_set("blink") {
   sources = [
     "blink_event_util.cc",
     "blink_event_util.h",
-    "blink_features.cc",
-    "blink_features.h",
     "compositor_thread_event_queue.cc",
     "compositor_thread_event_queue.h",
     "did_overscroll_params.cc",
@@ -40,6 +51,10 @@ jumbo_source_set("blink") {
     "web_input_event.h",
     "web_input_event_traits.cc",
     "web_input_event_traits.h",
+  ]
+
+  public_deps = [
+    ":blink_features",
   ]
 
   deps = [

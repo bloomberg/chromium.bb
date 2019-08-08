@@ -43,7 +43,7 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   HICON GetDefaultWindowIcon() const override;
   HICON GetSmallWindowIcon() const override;
   int GetAppbarAutohideEdges(HMONITOR monitor,
-                             const base::Closure& callback) override;
+                             base::OnceClosure callback) override;
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
   gfx::ImageSkia* GetDefaultWindowIcon() const override;
   bool WindowManagerProvidesTitleBar(bool maximized) override;
@@ -64,7 +64,7 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
 
   // Callback on main thread with the edges. |returned_edges| is the value that
   // was returned from the call to GetAutohideEdges() that initiated the lookup.
-  void OnGotAppbarAutohideEdges(const base::Closure& callback,
+  void OnGotAppbarAutohideEdges(base::OnceClosure callback,
                                 HMONITOR monitor,
                                 int returned_edges,
                                 int edges);

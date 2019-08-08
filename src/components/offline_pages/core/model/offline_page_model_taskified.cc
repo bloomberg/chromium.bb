@@ -19,17 +19,17 @@
 #include "components/offline_pages/core/archive_manager.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/model/add_page_task.h"
-#include "components/offline_pages/core/model/cleanup_thumbnails_task.h"
+#include "components/offline_pages/core/model/cleanup_visuals_task.h"
 #include "components/offline_pages/core/model/delete_page_task.h"
 #include "components/offline_pages/core/model/get_pages_task.h"
-#include "components/offline_pages/core/model/get_thumbnail_task.h"
-#include "components/offline_pages/core/model/has_thumbnail_task.h"
+#include "components/offline_pages/core/model/get_visuals_task.h"
 #include "components/offline_pages/core/model/mark_page_accessed_task.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/model/persistent_page_consistency_check_task.h"
 #include "components/offline_pages/core/model/startup_maintenance_task.h"
-#include "components/offline_pages/core/model/store_thumbnail_task.h"
+#include "components/offline_pages/core/model/store_visuals_task.h"
 #include "components/offline_pages/core/model/update_file_path_task.h"
+#include "components/offline_pages/core/model/visuals_availability_task.h"
 #include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
@@ -170,10 +170,6 @@ void OnUpdateFilePathDone(PublishPageCallback publish_done_callback,
 }  // namespace
 
 // static
-constexpr base::TimeDelta
-    OfflinePageModelTaskified::kInitialUpgradeSelectionDelay;
-
-// static
 constexpr base::TimeDelta OfflinePageModelTaskified::kMaintenanceTasksDelay;
 
 // static
@@ -195,8 +191,6 @@ OfflinePageModelTaskified::OfflinePageModelTaskified(
       weak_ptr_factory_(this) {
   DCHECK_LT(kMaintenanceTasksDelay, OfflinePageMetadataStore::kClosingDelay);
   CreateArchivesDirectoryIfNeeded();
-  // TODO(fgorski): Call from here, when upgrade task is available:
-  // PostSelectItemsMarkedForUpgrade();
 }
 
 OfflinePageModelTaskified::~OfflinePageModelTaskified() {}
@@ -319,84 +313,31 @@ void OfflinePageModelTaskified::DeleteCachedPagesByURLPredicate(
 
 void OfflinePageModelTaskified::GetAllPages(
     MultipleOfflinePageItemCallback callback) {
-  auto task = GetPagesTask::CreateTaskMatchingAllPages(
-      store_.get(),
-      base::BindOnce(&ReportSavedPagesCount, std::move(callback)));
-  task_queue_.AddTask(std::move(task));
+  GetPagesWithCriteria(PageCriteria(), base::BindOnce(&ReportSavedPagesCount,
+                                                      std::move(callback)));
   ScheduleMaintenanceTasks();
 }
 
 void OfflinePageModelTaskified::GetPageByOfflineId(
     int64_t offline_id,
     SingleOfflinePageItemCallback callback) {
-  auto task = GetPagesTask::CreateTaskMatchingOfflineId(
-      store_.get(), std::move(callback), offline_id);
-  task_queue_.AddTask(std::move(task));
+  PageCriteria criteria;
+  criteria.offline_id = offline_id;
+  // Adapt multiple result to single result callback.
+  auto wrapped_callback = base::BindOnce(
+      [](SingleOfflinePageItemCallback callback,
+         const std::vector<OfflinePageItem>& pages) {
+        std::move(callback).Run(pages.empty() ? nullptr : &pages[0]);
+      },
+      std::move(callback));
+  GetPagesWithCriteria(criteria, std::move(wrapped_callback));
 }
 
-void OfflinePageModelTaskified::GetPageByGuid(
-    const std::string& guid,
-    SingleOfflinePageItemCallback callback) {
-  auto task = GetPagesTask::CreateTaskMatchingGuid(store_.get(),
-                                                   std::move(callback), guid);
-  task_queue_.AddTask(std::move(task));
-}
-
-void OfflinePageModelTaskified::GetPagesByClientIds(
-    const std::vector<ClientId>& client_ids,
+void OfflinePageModelTaskified::GetPagesWithCriteria(
+    const PageCriteria& criteria,
     MultipleOfflinePageItemCallback callback) {
-  auto task = GetPagesTask::CreateTaskMatchingClientIds(
-      store_.get(), std::move(callback), client_ids);
-  task_queue_.AddTask(std::move(task));
-}
-
-void OfflinePageModelTaskified::GetPagesByURL(
-    const GURL& url,
-    MultipleOfflinePageItemCallback callback) {
-  auto task = GetPagesTask::CreateTaskMatchingUrl(store_.get(),
-                                                  std::move(callback), url);
-  task_queue_.AddTask(std::move(task));
-}
-
-void OfflinePageModelTaskified::GetPagesByNamespace(
-    const std::string& name_space,
-    MultipleOfflinePageItemCallback callback) {
-  auto task = GetPagesTask::CreateTaskMatchingNamespace(
-      store_.get(), std::move(callback), name_space);
-  task_queue_.AddTask(std::move(task));
-}
-
-void OfflinePageModelTaskified::GetPagesRemovedOnCacheReset(
-    MultipleOfflinePageItemCallback callback) {
-  auto task = GetPagesTask::CreateTaskMatchingPagesRemovedOnCacheReset(
-      store_.get(), std::move(callback), policy_controller_.get());
-  task_queue_.AddTask(std::move(task));
-}
-
-void OfflinePageModelTaskified::GetPagesSupportedByDownloads(
-    MultipleOfflinePageItemCallback callback) {
-  auto task = GetPagesTask::CreateTaskMatchingPagesSupportedByDownloads(
-      store_.get(), std::move(callback), policy_controller_.get());
-  task_queue_.AddTask(std::move(task));
-}
-
-void OfflinePageModelTaskified::GetPagesByRequestOrigin(
-    const std::string& request_origin,
-    MultipleOfflinePageItemCallback callback) {
-  auto task = GetPagesTask::CreateTaskMatchingRequestOrigin(
-      store_.get(), std::move(callback), request_origin);
-  task_queue_.AddTask(std::move(task));
-}
-
-void OfflinePageModelTaskified::GetPageBySizeAndDigest(
-    int64_t file_size,
-    const std::string& digest,
-    SingleOfflinePageItemCallback callback) {
-  DCHECK_GT(file_size, 0);
-  DCHECK(!digest.empty());
-  auto task = GetPagesTask::CreateTaskMatchingSizeAndDigest(
-      store_.get(), std::move(callback), file_size, digest);
-  task_queue_.AddTask(std::move(task));
+  task_queue_.AddTask(std::make_unique<GetPagesTask>(
+      store_.get(), policy_controller_.get(), criteria, std::move(callback)));
 }
 
 void OfflinePageModelTaskified::GetOfflineIdsForClientId(
@@ -405,32 +346,39 @@ void OfflinePageModelTaskified::GetOfflineIdsForClientId(
   // We're currently getting offline IDs by querying offline items based on
   // client ids, and then extract the offline IDs from the items. This is fine
   // since we're not expecting many pages with the same client ID.
-  auto task = GetPagesTask::CreateTaskMatchingClientIds(
-      store_.get(),
-      base::BindOnce(&WrapInMultipleItemsCallback, std::move(callback)),
-      {client_id});
-  task_queue_.AddTask(std::move(task));
+  PageCriteria criteria;
+  criteria.client_ids = {client_id};
+  GetPagesWithCriteria(criteria, base::BindOnce(&WrapInMultipleItemsCallback,
+                                                std::move(callback)));
 }
 
-void OfflinePageModelTaskified::StoreThumbnail(
-    const OfflinePageThumbnail& thumb) {
-  task_queue_.AddTask(std::make_unique<StoreThumbnailTask>(
-      store_.get(), thumb,
+void OfflinePageModelTaskified::StoreThumbnail(int64_t offline_id,
+                                               std::string thumbnail) {
+  task_queue_.AddTask(StoreVisualsTask::MakeStoreThumbnailTask(
+      store_.get(), offline_id, std::move(thumbnail),
       base::BindOnce(&OfflinePageModelTaskified::OnStoreThumbnailDone,
-                     weak_ptr_factory_.GetWeakPtr(), thumb)));
+                     weak_ptr_factory_.GetWeakPtr(), offline_id)));
 }
 
-void OfflinePageModelTaskified::GetThumbnailByOfflineId(
-    int64_t offline_id,
-    base::OnceCallback<void(std::unique_ptr<OfflinePageThumbnail>)> callback) {
-  task_queue_.AddTask(std::make_unique<GetThumbnailTask>(
-      store_.get(), offline_id, std::move(callback)));
+void OfflinePageModelTaskified::StoreFavicon(int64_t offline_id,
+                                             std::string favicon) {
+  task_queue_.AddTask(StoreVisualsTask::MakeStoreFaviconTask(
+      store_.get(), offline_id, std::move(favicon),
+      base::BindOnce(&OfflinePageModelTaskified::OnStoreFaviconDone,
+                     weak_ptr_factory_.GetWeakPtr(), offline_id)));
 }
 
-void OfflinePageModelTaskified::HasThumbnailForOfflineId(
+void OfflinePageModelTaskified::GetVisualsByOfflineId(
     int64_t offline_id,
-    base::OnceCallback<void(bool)> callback) {
-  task_queue_.AddTask(std::make_unique<HasThumbnailTask>(
+    base::OnceCallback<void(std::unique_ptr<OfflinePageVisuals>)> callback) {
+  task_queue_.AddTask(std::make_unique<GetVisualsTask>(store_.get(), offline_id,
+                                                       std::move(callback)));
+}
+
+void OfflinePageModelTaskified::GetVisualsAvailability(
+    int64_t offline_id,
+    base::OnceCallback<void(VisualsAvailability)> callback) {
+  task_queue_.AddTask(std::make_unique<VisualsAvailabilityTask>(
       store_.get(), offline_id, std::move(callback)));
 }
 
@@ -687,12 +635,21 @@ void OfflinePageModelTaskified::OnDeleteDone(
     std::move(callback).Run(result);
 }
 
-void OfflinePageModelTaskified::OnStoreThumbnailDone(
-    const OfflinePageThumbnail& thumbnail,
-    bool success) {
+void OfflinePageModelTaskified::OnStoreThumbnailDone(int64_t offline_id,
+                                                     bool success,
+                                                     std::string thumbnail) {
   if (success) {
     for (Observer& observer : observers_)
-      observer.ThumbnailAdded(this, thumbnail);
+      observer.ThumbnailAdded(this, offline_id, thumbnail);
+  }
+}
+
+void OfflinePageModelTaskified::OnStoreFaviconDone(int64_t offline_id,
+                                                   bool success,
+                                                   std::string favicon) {
+  if (success) {
+    for (Observer& observer : observers_)
+      observer.FaviconAdded(this, offline_id, favicon);
   }
 }
 
@@ -731,7 +688,7 @@ void OfflinePageModelTaskified::RunMaintenanceTasks(base::Time now,
     task_queue_.AddTask(std::make_unique<StartupMaintenanceTask>(
         store_.get(), archive_manager_.get(), policy_controller_.get()));
 
-    task_queue_.AddTask(std::make_unique<CleanupThumbnailsTask>(
+    task_queue_.AddTask(std::make_unique<CleanupVisualsTask>(
         store_.get(), OfflineTimeNow(), base::DoNothing()));
   }
 
@@ -766,33 +723,6 @@ void OfflinePageModelTaskified::OnClearCachedPagesDone(
     UMA_HISTOGRAM_COUNTS_1M("OfflinePages.ClearTemporaryPages.BatchSize",
                             deleted_page_count);
   }
-}
-
-void OfflinePageModelTaskified::PostSelectItemsMarkedForUpgrade() {
-  // TODO(fgorski): Make storage permission check. Here or later?
-  // TODO(fgorski): Check disk space here.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindRepeating(
-          &OfflinePageModelTaskified::SelectItemsMarkedForUpgrade,
-          weak_ptr_factory_.GetWeakPtr()),
-      kInitialUpgradeSelectionDelay);
-}
-
-void OfflinePageModelTaskified::SelectItemsMarkedForUpgrade() {
-  // TODO(fgorski): Add legacy Persistent path in archive manager to know which
-  // files still need upgrade.
-  auto task = GetPagesTask::CreateTaskSelectingItemsMarkedForUpgrade(
-      store_.get(),
-      base::BindRepeating(
-          &OfflinePageModelTaskified::OnSelectItemsMarkedForUpgradeDone,
-          weak_ptr_factory_.GetWeakPtr()));
-  task_queue_.AddTask(std::move(task));
-}
-
-void OfflinePageModelTaskified::OnSelectItemsMarkedForUpgradeDone(
-    const MultipleOfflinePageItemResult& pages_for_upgrade) {
-  // TODO(fgorski): Save the list of ID to feed them into the upgrade task.
 }
 
 void OfflinePageModelTaskified::RemovePagesMatchingUrlAndNamespace(

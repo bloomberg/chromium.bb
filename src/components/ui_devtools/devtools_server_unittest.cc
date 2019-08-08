@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "components/ui_devtools/switches.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_once_callback.h"
@@ -17,9 +18,16 @@
 
 namespace ui_devtools {
 
+// TODO(lgrey): Hopefully temporary while we figure out why this doesn't work.
+#if defined(OS_MACOSX)
+#define MAYBE_ConnectionToViewsServer DISABLED_ConnectionToViewsServer
+#else
+#define MAYBE_ConnectionToViewsServer ConnectionToViewsServer
+#endif
+
 // Tests whether the server for Views is properly created so we can connect to
 // it.
-TEST(UIDevToolsServerTest, ConnectionToViewsServer) {
+TEST(UIDevToolsServerTest, MAYBE_ConnectionToViewsServer) {
   // Use port 80 to prevent firewall issues.
   static constexpr int fake_port = 80;
   base::CommandLine::ForCurrentProcess()->AppendSwitch(

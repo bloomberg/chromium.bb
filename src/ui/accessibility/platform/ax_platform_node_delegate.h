@@ -9,9 +9,12 @@
 #include <utility>
 #include <vector>
 
+#include "ui/accessibility/ax_clipping_behavior.h"
+#include "ui/accessibility/ax_coordinate_system.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_node_position.h"
+#include "ui/accessibility/ax_offscreen_result.h"
 #include "ui/accessibility/ax_position.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
@@ -78,13 +81,28 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Get the child of a node given a 0-based index.
   virtual gfx::NativeViewAccessible ChildAtIndex(int index) = 0;
 
-  // Get the bounds of this node in screen coordinates, applying clipping
-  // to all bounding boxes so that the resulting rect is within the window.
-  virtual gfx::Rect GetClippedScreenBoundsRect() const = 0;
+  // Return the bounds of this node in the coordinate system indicated. If the
+  // clipping behavior is set to clipped, clipping is applied. If an offscreen
+  // result address is provided, it will be populated depending on whether the
+  // returned bounding box is onscreen or offscreen.
+  virtual gfx::Rect GetBoundsRect(
+      const AXCoordinateSystem coordinate_system,
+      const AXClippingBehavior clipping_behavior,
+      AXOffscreenResult* offscreen_result = nullptr) const = 0;
 
-  // Get the bounds of this node in screen coordinates without applying
-  // any clipping; it may be outside of the window or offscreen.
-  virtual gfx::Rect GetUnclippedScreenBoundsRect() const = 0;
+  // Return the bounds of the text range given by text offsets in the coordinate
+  // system indicated. When determining the text offset of a node, the text of
+  // this node is included while descendant text may be accounted for with a
+  // single special character. If the clipping behavior is set to clipped,
+  // clipping is applied. If an offscreen result address is provided, it will be
+  // populated depending on whether the returned bounding box is onscreen or
+  // offscreen.
+  virtual gfx::Rect GetRangeBoundsRect(
+      const int start_offset,
+      const int end_offset,
+      const AXCoordinateSystem coordinate_system,
+      const AXClippingBehavior clipping_behavior,
+      AXOffscreenResult* offscreen_result = nullptr) const = 0;
 
   // Do a *synchronous* hit test of the given location in global screen
   // coordinates, and the node within this node's subtree (inclusive) that's
@@ -139,12 +157,19 @@ class AX_EXPORT AXPlatformNodeDelegate {
 
   // This method finds text boundaries in the text used for platform text APIs.
   // Implementations may use side-channel data such as line or word indices to
-  // produce appropriate results.
-  using EnclosingBoundaryOffsets = base::Optional<std::pair<size_t, size_t>>;
-  virtual EnclosingBoundaryOffsets FindTextBoundariesAtOffset(
+  // produce appropriate results. It may optionally return no value, indicating
+  // that the delegate does not have all the information required to calculate
+  // this value and it is the responsibility of the AXPlatformNode itself to
+  // to calculate it.
+  virtual base::Optional<int> FindTextBoundary(
       TextBoundaryType boundary_type,
       int offset,
+      TextBoundaryDirection direction,
       ax::mojom::TextAffinity affinity) const = 0;
+
+  // Return a vector of all the descendants of this delegate's node.
+  virtual const std::vector<gfx::NativeViewAccessible> GetDescendants()
+      const = 0;
 
   //
   // Tables. All of these should be called on a node that's a table-like
@@ -180,6 +205,10 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual int32_t GetCellId(int32_t row_index, int32_t col_index) const = 0;
   virtual int32_t CellIndexToId(int32_t cell_index) const = 0;
 
+  // Helper methods to check if a cell is an ARIA-1.1+ 'cell' or 'gridcell'
+  virtual bool IsCellOrHeaderOfARIATable() const = 0;
+  virtual bool IsCellOrHeaderOfARIAGrid() const = 0;
+
   // Ordered-set-like and item-like nodes.
   virtual bool IsOrderedSetItem() const = 0;
   virtual bool IsOrderedSet() const = 0;
@@ -210,6 +239,8 @@ class AX_EXPORT AXPlatformNodeDelegate {
       const = 0;
   virtual base::string16 GetLocalizedStringForImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus status) const = 0;
+  virtual base::string16 GetLocalizedStringForLandmarkType() const = 0;
+  virtual base::string16 GetStyleNameAttributeAsLocalizedString() const = 0;
 
   //
   // Testing.

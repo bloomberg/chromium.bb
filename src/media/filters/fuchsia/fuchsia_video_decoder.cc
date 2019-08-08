@@ -104,11 +104,19 @@ class CodecBuffer {
   CodecBuffer() = default;
 
   bool Initialize(const fuchsia::media::StreamBufferConstraints& constraints) {
-    size_ = constraints.per_packet_buffer_bytes_recommended;
+    if (!constraints.has_per_packet_buffer_bytes_recommended()) {
+      return false;
+    }
 
-    if (constraints.is_physically_contiguous_required) {
+    size_ = constraints.per_packet_buffer_bytes_recommended();
+
+    if (constraints.has_is_physically_contiguous_required() &&
+        constraints.is_physically_contiguous_required()) {
+      if (!constraints.has_very_temp_kludge_bti_handle()) {
+        return false;
+      }
       vmo_ =
-          CreateContiguousVmo(size_, constraints.very_temp_kludge_bti_handle);
+          CreateContiguousVmo(size_, constraints.very_temp_kludge_bti_handle());
     } else {
       vmo_ = CreateVmo(size_);
     }
@@ -131,14 +139,14 @@ class CodecBuffer {
     }
 
     fuchsia::media::StreamBufferDataVmo buf_data;
-    buf_data.vmo_handle = std::move(vmo_dup);
+    buf_data.set_vmo_handle(std::move(vmo_dup));
 
-    buf_data.vmo_usable_start = 0;
-    buf_data.vmo_usable_size = size_;
+    buf_data.set_vmo_usable_start(0);
+    buf_data.set_vmo_usable_size(size_);
 
-    buffer->data.set_vmo(std::move(buf_data));
-    buffer->buffer_lifetime_ordinal = buffer_lifetime_ordinal;
-    buffer->buffer_index = buffer_index;
+    buffer->mutable_data()->set_vmo(std::move(buf_data));
+    buffer->set_buffer_lifetime_ordinal(buffer_lifetime_ordinal);
+    buffer->set_buffer_index(buffer_index);
 
     return true;
   }
@@ -374,23 +382,23 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
   auto done_callback = BindToCurrentLoop(init_cb);
 
   fuchsia::mediacodec::CreateDecoder_Params codec_params;
-  codec_params.input_details.format_details_version_ordinal = 0;
+  codec_params.mutable_input_details()->set_format_details_version_ordinal(0);
 
   switch (config.codec()) {
     case kCodecH264:
-      codec_params.input_details.mime_type = "video/h264";
+      codec_params.mutable_input_details()->set_mime_type("video/h264");
       break;
     case kCodecVP8:
-      codec_params.input_details.mime_type = "video/vp8";
+      codec_params.mutable_input_details()->set_mime_type("video/vp8");
       break;
     case kCodecVP9:
-      codec_params.input_details.mime_type = "video/vp9";
+      codec_params.mutable_input_details()->set_mime_type("video/vp9");
       break;
     case kCodecHEVC:
-      codec_params.input_details.mime_type = "video/hevc";
+      codec_params.mutable_input_details()->set_mime_type("video/hevc");
       break;
     case kCodecAV1:
-      codec_params.input_details.mime_type = "video/av1";
+      codec_params.mutable_input_details()->set_mime_type("video/av1");
       break;
 
     default:
@@ -398,8 +406,8 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
       return;
   }
 
-  codec_params.promise_separate_access_units_on_input = true;
-  codec_params.require_hw = !enable_sw_decoding_;
+  codec_params.set_promise_separate_access_units_on_input(true);
+  codec_params.set_require_hw(!enable_sw_decoding_);
 
   auto codec_factory =
       base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
@@ -503,23 +511,30 @@ void FuchsiaVideoDecoder::OnInputConstraints(
 
 void FuchsiaVideoDecoder::OnFreeInputPacket(
     fuchsia::media::PacketHeader free_input_packet) {
-  if (free_input_packet.buffer_lifetime_ordinal !=
+  if (!free_input_packet.has_buffer_lifetime_ordinal() ||
+      !free_input_packet.has_packet_index()) {
+    DLOG(ERROR) << "Received OnFreeInputPacket() with missing required fields.";
+    OnError();
+    return;
+  }
+
+  if (free_input_packet.buffer_lifetime_ordinal() !=
       input_buffer_lifetime_ordinal_) {
     return;
   }
 
-  if (free_input_packet.packet_index >= input_buffers_.size()) {
+  if (free_input_packet.packet_index() >= input_buffers_.size()) {
     DLOG(ERROR) << "fuchsia.mediacodec sent OnFreeInputPacket() for an unknown "
                    "packet: buffer_lifetime_ordinal="
-                << free_input_packet.buffer_lifetime_ordinal
-                << " packet_index=" << free_input_packet.packet_index;
+                << free_input_packet.buffer_lifetime_ordinal()
+                << " packet_index=" << free_input_packet.packet_index();
     OnError();
     return;
   }
 
   DCHECK_GT(num_used_input_buffers_, 0);
   num_used_input_buffers_--;
-  input_buffers_[free_input_packet.packet_index].OnDoneDecoding(
+  input_buffers_[free_input_packet.packet_index()].OnDoneDecoding(
       DecodeStatus::OK);
 
   // Try to pump input in case it was blocked.
@@ -528,32 +543,57 @@ void FuchsiaVideoDecoder::OnFreeInputPacket(
 
 void FuchsiaVideoDecoder::OnOutputConfig(
     fuchsia::media::StreamOutputConfig output_config) {
-  if (output_config.stream_lifetime_ordinal != stream_lifetime_ordinal_)
+  if (!output_config.has_stream_lifetime_ordinal() ||
+      !output_config.has_format_details()) {
+    DLOG(ERROR) << "Received OnOutputConfig() with missing required fields.";
+    OnError();
     return;
+  }
 
-  auto& format = output_config.format_details;
+  if (output_config.stream_lifetime_ordinal() != stream_lifetime_ordinal_) {
+    return;
+  }
 
-  if (!format.domain->is_video() || !format.domain->video().is_uncompressed()) {
+  auto* format = output_config.mutable_format_details();
+
+  if (!format->has_domain() || !format->domain().is_video() ||
+      !format->domain().video().is_uncompressed()) {
     DLOG(ERROR) << "Received OnOutputConfig() with invalid format.";
     OnError();
     return;
   }
 
-  if (output_config.buffer_constraints_action_required) {
-    if (!InitializeOutputBuffers(std::move(output_config.buffer_constraints))) {
+  if (output_config.has_buffer_constraints_action_required() &&
+      output_config.buffer_constraints_action_required()) {
+    if (!output_config.has_buffer_constraints()) {
+      DLOG(ERROR) << "Received OnOutputConfig() which requires buffer "
+                     "constraints action, but without buffer constraints.";
+      OnError();
+      return;
+    }
+    if (!InitializeOutputBuffers(
+            std::move(*output_config.mutable_buffer_constraints()))) {
       DLOG(ERROR) << "Failed to initialize output buffers.";
       OnError();
       return;
     }
   }
 
-  output_format_ = std::move(format.domain->video().uncompressed());
+  output_format_ = std::move(format->mutable_domain()->video().uncompressed());
 }
 
 void FuchsiaVideoDecoder::OnOutputPacket(fuchsia::media::Packet output_packet,
                                          bool error_detected_before,
                                          bool error_detected_during) {
-  if (output_packet.header.buffer_lifetime_ordinal !=
+  if (!output_packet.has_header() ||
+      !output_packet.header().has_buffer_lifetime_ordinal() ||
+      !output_packet.header().has_packet_index()) {
+    DLOG(ERROR) << "Received OnOutputPacket() with missing required fields.";
+    OnError();
+    return;
+  }
+
+  if (output_packet.header().buffer_lifetime_ordinal() !=
       output_buffer_lifetime_ordinal_) {
     return;
   }
@@ -598,15 +638,16 @@ void FuchsiaVideoDecoder::OnOutputPacket(fuchsia::media::Packet output_packet,
   }
 
   if (!layout) {
-    codec_->RecycleOutputPacket(output_packet.header);
+    codec_->RecycleOutputPacket(fidl::Clone(output_packet.header()));
     return;
   }
 
   base::TimeDelta timestamp;
-  if (output_packet.has_timestamp_ish)
-    timestamp = base::TimeDelta::FromNanoseconds(output_packet.timestamp_ish);
+  if (output_packet.has_timestamp_ish()) {
+    timestamp = base::TimeDelta::FromNanoseconds(output_packet.timestamp_ish());
+  }
 
-  auto packet_index = output_packet.header.packet_index;
+  auto packet_index = output_packet.header().packet_index();
   auto& buffer = output_buffers_[packet_index];
 
   DCHECK_LT(num_used_output_buffers_, static_cast<int>(output_buffers_.size()));
@@ -692,13 +733,21 @@ bool FuchsiaVideoDecoder::InitializeInputBuffers(
     fuchsia::media::StreamBufferConstraints constraints) {
   input_buffer_lifetime_ordinal_ += 2;
 
-  auto settings = constraints.default_settings;
-  settings.buffer_lifetime_ordinal = input_buffer_lifetime_ordinal_;
-  settings.packet_count_for_client = 0;
-  codec_->SetInputBufferSettings(settings);
+  if (!constraints.has_default_settings() ||
+      !constraints.default_settings().has_packet_count_for_server() ||
+      !constraints.default_settings().has_packet_count_for_client()) {
+    DLOG(ERROR)
+        << "Received InitializeInputBuffers() with missing required fields.";
+    OnError();
+    return false;
+  }
+
+  auto settings = fidl::Clone(constraints.default_settings());
+  settings.set_buffer_lifetime_ordinal(input_buffer_lifetime_ordinal_);
+  codec_->SetInputBufferSettings(fidl::Clone(settings));
 
   int total_buffers =
-      settings.packet_count_for_server + settings.packet_count_for_client;
+      settings.packet_count_for_server() + settings.packet_count_for_client();
   std::vector<InputBuffer> new_buffers(total_buffers);
 
   for (int i = 0; i < total_buffers; ++i) {
@@ -755,15 +804,16 @@ void FuchsiaVideoDecoder::PumpInput() {
         input_buffer->FillFromDecodeBuffer(&pending_decodes_.front());
 
     fuchsia::media::Packet packet;
-    packet.header.buffer_lifetime_ordinal = input_buffer_lifetime_ordinal_;
-    packet.header.packet_index = input_buffer - input_buffers_.begin();
-    packet.buffer_index = packet.header.packet_index;
-    packet.has_timestamp_ish = true;
-    packet.timestamp_ish =
-        pending_decodes_.front().buffer().timestamp().InNanoseconds();
-    packet.stream_lifetime_ordinal = stream_lifetime_ordinal_;
-    packet.start_offset = 0;
-    packet.valid_length_bytes = bytes_filled;
+    packet.mutable_header()->set_buffer_lifetime_ordinal(
+        input_buffer_lifetime_ordinal_);
+    packet.mutable_header()->set_packet_index(input_buffer -
+                                              input_buffers_.begin());
+    packet.set_buffer_index(packet.header().packet_index());
+    packet.set_timestamp_ish(
+        pending_decodes_.front().buffer().timestamp().InNanoseconds());
+    packet.set_stream_lifetime_ordinal(stream_lifetime_ordinal_);
+    packet.set_start_offset(0);
+    packet.set_valid_length_bytes(bytes_filled);
 
     active_stream_ = true;
     codec_->QueueInputPacket(std::move(packet));
@@ -776,21 +826,31 @@ void FuchsiaVideoDecoder::PumpInput() {
 
 bool FuchsiaVideoDecoder::InitializeOutputBuffers(
     fuchsia::media::StreamBufferConstraints constraints) {
+  if (!constraints.has_default_settings() ||
+      !constraints.has_packet_count_for_client_max() ||
+      !constraints.default_settings().has_packet_count_for_server() ||
+      !constraints.default_settings().has_packet_count_for_client()) {
+    DLOG(ERROR)
+        << "Received InitializeOutputBuffers() with missing required fields.";
+    OnError();
+    return false;
+  }
+
   // mediacodec API expects odd buffer lifetime ordinal, which is incremented by
   // 2 for each buffer generation.
   output_buffer_lifetime_ordinal_ += 2;
 
-  auto settings = constraints.default_settings;
-  settings.buffer_lifetime_ordinal = output_buffer_lifetime_ordinal_;
+  auto settings = fidl::Clone(constraints.default_settings());
+  settings.set_buffer_lifetime_ordinal(output_buffer_lifetime_ordinal_);
 
   max_used_output_buffers_ =
-      std::min(kMaxUsedOutputFrames, constraints.packet_count_for_client_max);
-  settings.packet_count_for_client = max_used_output_buffers_;
+      std::min(kMaxUsedOutputFrames, constraints.packet_count_for_client_max());
+  settings.set_packet_count_for_client(max_used_output_buffers_);
 
-  codec_->SetOutputBufferSettings(std::move(settings));
+  codec_->SetOutputBufferSettings(fidl::Clone(settings));
 
   int total_buffers =
-      settings.packet_count_for_server + settings.packet_count_for_client;
+      settings.packet_count_for_server() + settings.packet_count_for_client();
   std::vector<scoped_refptr<OutputBuffer>> new_buffers(total_buffers);
 
   for (int i = 0; i < total_buffers; ++i) {
@@ -821,8 +881,10 @@ void FuchsiaVideoDecoder::OnFrameDestroyed(scoped_refptr<OutputBuffer> buffer,
   if (buffer_lifetime_ordinal == output_buffer_lifetime_ordinal_) {
     DCHECK_GT(num_used_output_buffers_, 0);
     num_used_output_buffers_--;
-    codec_->RecycleOutputPacket(
-        fuchsia::media::PacketHeader{buffer_lifetime_ordinal, packet_index});
+    fuchsia::media::PacketHeader header;
+    header.set_buffer_lifetime_ordinal(buffer_lifetime_ordinal);
+    header.set_packet_index(packet_index);
+    codec_->RecycleOutputPacket(std::move(header));
   }
 }
 

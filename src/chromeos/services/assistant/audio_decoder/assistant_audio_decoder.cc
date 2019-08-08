@@ -136,8 +136,8 @@ void AssistantAudioDecoder::OnBufferDecodedOnThread(
     const int bytes_to_alloc =
         audio_bus->frames() * kBytesPerSample * audio_bus->channels();
     std::vector<uint8_t> buffer(bytes_to_alloc);
-    audio_bus->ToInterleaved(audio_bus->frames(), kBytesPerSample,
-                             buffer.data());
+    audio_bus->ToInterleaved<media::SignedInt16SampleTypeTraits>(
+        audio_bus->frames(), reinterpret_cast<int16_t*>(buffer.data()));
     buffers.emplace_back(buffer);
   }
   client_->OnNewBuffers(buffers);

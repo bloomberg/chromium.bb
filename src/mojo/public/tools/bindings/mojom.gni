@@ -40,6 +40,10 @@ declare_args() {
   # where compilation is supported, any mojom target "foo" will also have a
   # corresponding "foo_js_library_for_compile" target generated.
   enable_mojom_closure_compile = closure_compile && optimize_webui
+
+  # Enable adding annotations to generated C++ headers that are used for
+  # cross-references in CodeSearch.
+  enable_kythe_annotations = false
 }
 
 # NOTE: We would like to avoid scrambling message IDs where it doesn't add
@@ -679,6 +683,10 @@ template("mojom") {
           "base/component_export.h",
         ]
       }
+
+      if (enable_kythe_annotations) {
+        args += [ "--enable_kythe_annotations" ]
+      }
     }
   } else {
     group(generator_cpp_message_ids_target_name) {
@@ -909,6 +917,10 @@ template("mojom") {
         if (defined(invoker.support_lazy_serialization) &&
             invoker.support_lazy_serialization) {
           args += [ "--support_lazy_serialization" ]
+        }
+
+        if (enable_kythe_annotations) {
+          args += [ "--enable_kythe_annotations" ]
         }
       }
     }

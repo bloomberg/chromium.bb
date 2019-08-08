@@ -8,7 +8,7 @@
 
 #include <algorithm>
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"

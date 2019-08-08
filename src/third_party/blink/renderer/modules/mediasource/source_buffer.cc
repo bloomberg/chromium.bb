@@ -116,7 +116,7 @@ SourceBuffer::SourceBuffer(std::unique_ptr<WebSourceBuffer> web_source_buffer,
     : ContextLifecycleObserver(source->GetExecutionContext()),
       web_source_buffer_(std::move(web_source_buffer)),
       source_(source),
-      track_defaults_(TrackDefaultList::Create()),
+      track_defaults_(MakeGarbageCollected<TrackDefaultList>()),
       async_event_queue_(async_event_queue),
       mode_(SegmentsKeyword()),
       updating_(false),
@@ -132,8 +132,10 @@ SourceBuffer::SourceBuffer(std::unique_ptr<WebSourceBuffer> web_source_buffer,
   DCHECK(web_source_buffer_);
   DCHECK(source_);
   DCHECK(source_->MediaElement());
-  audio_tracks_ = AudioTrackList::Create(*source_->MediaElement());
-  video_tracks_ = VideoTrackList::Create(*source_->MediaElement());
+  audio_tracks_ =
+      MakeGarbageCollected<AudioTrackList>(*source_->MediaElement());
+  video_tracks_ =
+      MakeGarbageCollected<VideoTrackList>(*source_->MediaElement());
   web_source_buffer_->SetClient(this);
 }
 
@@ -1072,8 +1074,8 @@ bool SourceBuffer::InitializationSegmentReceived(
       const auto& kind = track_info.kind;
       // 5.3.7 TODO(servolk): Implement track kind processing.
       // 5.3.8.2 Let new video track be a new VideoTrack object.
-      VideoTrack* video_track =
-          VideoTrack::Create(track_info.id, kind, label, language, false);
+      auto* video_track = MakeGarbageCollected<VideoTrack>(
+          track_info.id, kind, label, language, false);
       SourceBufferTrackBaseSupplement::SetSourceBuffer(*video_track, this);
       // 5.3.8.7 If videoTracks.length equals 0, then run the following steps:
       if (videoTracks().length() == 0) {

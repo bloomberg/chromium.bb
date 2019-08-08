@@ -37,6 +37,10 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessUndoAllMostVisitedDeletions() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
+bool SearchIPCRouterPolicyImpl::ShouldProcessToggleMostVisitedOrCustomLinks() {
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}
+
 bool SearchIPCRouterPolicyImpl::ShouldProcessAddCustomLink() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
@@ -62,6 +66,10 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessResetCustomLinks() {
 }
 
 bool SearchIPCRouterPolicyImpl::ShouldProcessLogEvent() {
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}
+
+bool SearchIPCRouterPolicyImpl::ShouldProcessLogSuggestionEventWithValue() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 

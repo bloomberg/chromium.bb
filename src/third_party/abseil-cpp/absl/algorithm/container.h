@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -36,7 +36,6 @@
 // For template parameter and variable naming, `C` indicates the container type
 // to which the function is applied, `Pred` indicates the predicate object type
 // to be used by the function and `T` indicates the applicable element type.
-//
 
 #ifndef ABSL_ALGORITHM_CONTAINER_H_
 #define ABSL_ALGORITHM_CONTAINER_H_
@@ -648,7 +647,6 @@ container_algorithm_internal::ContainerIter<C> c_generate_n(C& c, Size n,
 // and `unique()` are omitted, because it's not clear whether or not such
 // functions should call erase on their supplied sequences afterwards. Either
 // behavior would be surprising for a different set of users.
-//
 
 // c_remove_copy()
 //

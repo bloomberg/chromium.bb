@@ -163,8 +163,8 @@ void ImageController::ConvertPaintWorkletImagesToTask(
     }
     scoped_refptr<TileTask> result =
         paint_worklet_image_cache_.GetTaskForPaintWorkletImage(*it);
-    DCHECK(result);
-    tasks->push_back(std::move(result));
+    if (result)
+      tasks->push_back(std::move(result));
     // Remove it so that there is no need to check whether an image is
     // PaintWorklet generated or not in TileManager's
     // work_to_schedule->extra_prepaint_images.insert.

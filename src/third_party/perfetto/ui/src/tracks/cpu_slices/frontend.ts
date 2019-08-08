@@ -12,15 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {search, searchEq} from '../../base/binary_search';
 import {assertTrue} from '../../base/logging';
 import {Actions} from '../../common/actions';
+import {cropText, drawDoubleHeadedArrow} from '../../common/canvas_utils';
 import {TrackState} from '../../common/state';
+import {timeToString} from '../../common/time';
 import {checkerboardExcept} from '../../frontend/checkerboard';
 import {colorForThread, hueForCpu} from '../../frontend/colorizer';
 import {globals} from '../../frontend/globals';
 import {Track} from '../../frontend/track';
 import {trackRegistry} from '../../frontend/track_registry';
-import {searchEq, search} from '../../base/binary_search';
 
 import {
   Config,
@@ -33,22 +35,6 @@ import {
 
 const MARGIN_TOP = 5;
 const RECT_HEIGHT = 30;
-
-function cropText(str: string, charWidth: number, rectWidth: number) {
-  const maxTextWidth = rectWidth - 4;
-  let displayText = '';
-  const nameLength = str.length * charWidth;
-  if (nameLength < maxTextWidth) {
-    displayText = str;
-  } else {
-    // -3 for the 3 ellipsis.
-    const displayedChars = Math.floor(maxTextWidth / charWidth) - 3;
-    if (displayedChars > 3) {
-      displayText = str.substring(0, displayedChars) + '...';
-    }
-  }
-  return displayText;
-}
 
 class CpuSliceTrack extends Track<Config, Data> {
   static readonly kind = CPU_SLICE_TRACK_KIND;
@@ -195,26 +181,64 @@ class CpuSliceTrack extends Track<Config, Data> {
       ctx.fillText(subTitle, rectXCenter, MARGIN_TOP + RECT_HEIGHT / 2 + 11);
     }
 
-    // Draw a rectangle around the slice that is currently selected.
     const selection = globals.state.currentSelection;
+    const details = globals.sliceDetails;
     if (selection !== null && selection.kind === 'SLICE') {
-      const sliceIndex = searchEq(data.ids, selection.id);
-      if (sliceIndex[0] !== sliceIndex[1]) {
-        const tStart = data.starts[sliceIndex[0]];
-        const tEnd = data.ends[sliceIndex[0]];
-        const utid = data.utids[sliceIndex[0]];
+      const [startIndex, endIndex] = searchEq(data.ids, selection.id);
+      if (startIndex !== endIndex) {
+        const tStart = data.starts[startIndex];
+        const tEnd = data.ends[startIndex];
+        const utid = data.utids[startIndex];
         const color = colorForThread(globals.threads.get(utid));
         const rectStart = timeScale.timeToPx(tStart);
         const rectEnd = timeScale.timeToPx(tEnd);
+        // Draw a rectangle around the slice that is currently selected.
         ctx.strokeStyle = `hsl(${color.h}, ${color.s}%, 30%)`;
         ctx.beginPath();
         ctx.lineWidth = 3;
-        ctx.moveTo(rectStart, MARGIN_TOP - 1.5);
-        ctx.lineTo(rectEnd, MARGIN_TOP - 1.5);
-        ctx.lineTo(rectEnd, MARGIN_TOP + RECT_HEIGHT + 1.5);
-        ctx.lineTo(rectStart, MARGIN_TOP + RECT_HEIGHT + 1.5);
-        ctx.lineTo(rectStart, MARGIN_TOP - 1.5);
-        ctx.stroke();
+        ctx.strokeRect(
+            rectStart, MARGIN_TOP - 1.5, rectEnd - rectStart, RECT_HEIGHT + 3);
+        ctx.closePath();
+        // Draw arrow from wakeup time of current slice.
+        if (details.wakeupTs) {
+          const wakeupPos = timeScale.timeToPx(details.wakeupTs);
+          const latencyWidth = rectStart - wakeupPos;
+          drawDoubleHeadedArrow(
+              ctx,
+              wakeupPos,
+              MARGIN_TOP + RECT_HEIGHT,
+              latencyWidth,
+              latencyWidth >= 20);
+          // Latency time with a white semi-transparent background.
+          const displayText = timeToString(tStart - details.wakeupTs);
+          const measured = ctx.measureText(displayText);
+          if (latencyWidth >= measured.width + 2) {
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.fillRect(
+                wakeupPos + latencyWidth / 2 - measured.width / 2 - 1,
+                MARGIN_TOP + RECT_HEIGHT - 12,
+                measured.width + 2,
+                11);
+            ctx.textBaseline = 'bottom';
+            ctx.fillStyle = 'black';
+            ctx.fillText(
+                displayText,
+                wakeupPos + (latencyWidth) / 2,
+                MARGIN_TOP + RECT_HEIGHT - 1);
+          }
+        }
+      }
+
+      // Draw diamond if the track being drawn is the cpu of the waker.
+      if (this.config.cpu === details.wakerCpu && details.wakeupTs) {
+        const wakeupPos = timeScale.timeToPx(details.wakeupTs);
+        ctx.beginPath();
+        ctx.moveTo(wakeupPos, MARGIN_TOP + RECT_HEIGHT / 2 + 8);
+        ctx.fillStyle = 'black';
+        ctx.lineTo(wakeupPos + 6, MARGIN_TOP + RECT_HEIGHT / 2);
+        ctx.lineTo(wakeupPos, MARGIN_TOP + RECT_HEIGHT / 2 - 8);
+        ctx.lineTo(wakeupPos - 6, MARGIN_TOP + RECT_HEIGHT / 2);
+        ctx.fill();
         ctx.closePath();
       }
     }

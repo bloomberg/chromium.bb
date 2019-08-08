@@ -49,6 +49,8 @@ class AuthDelegateImpl : public DriveFsAuth::Delegate {
     return "salt-" + account_id_.GetAccountIdKey();
   }
 
+  bool IsMetricsCollectionEnabled() override { return false; }
+
   const std::unique_ptr<service_manager::Connector> connector_;
   const AccountId account_id_;
 

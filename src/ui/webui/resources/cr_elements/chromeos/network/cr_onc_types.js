@@ -388,6 +388,23 @@ CrOnc.getIPConfigForType = function(properties, type) {
 };
 
 /**
+ * Determines whether the provided properties represent a connecting/connected
+ * network.
+ * @param {!CrOnc.NetworkProperties|undefined} properties
+ * @return {boolean} Whether the properties provided indicate that the network
+ *     is connecting or connected.
+ */
+CrOnc.isConnectingOrConnected = function(properties) {
+  if (!properties) {
+    return false;
+  }
+
+  const connectionState = properties.ConnectionState;
+  return connectionState == CrOnc.ConnectionState.CONNECTED ||
+      connectionState == CrOnc.ConnectionState.CONNECTING;
+};
+
+/**
  * Gets the SignalStrength value from |properties| based on properties.Type.
  * @param {!CrOnc.NetworkProperties|!CrOnc.NetworkStateProperties|undefined}
  *     properties The ONC network properties or state properties.
@@ -707,4 +724,19 @@ CrOnc.getValidType = function(typeStr) {
     return /** @type {!CrOnc.Type} */ (typeStr);
   }
   return undefined;
+};
+
+/**
+ * Returns whether |properties| has a Cellular or Tether network type.
+ * @param {!CrOnc.NetworkProperties|!CrOnc.NetworkStateProperties|undefined}
+ *     properties The ONC property dictionary to be checked.
+ * @return {boolean}
+ */
+CrOnc.isMobileNetwork = function(properties) {
+  if (!properties) {
+    return false;
+  }
+
+  const type = properties.Type;
+  return type == CrOnc.Type.CELLULAR || type == CrOnc.Type.TETHER;
 };

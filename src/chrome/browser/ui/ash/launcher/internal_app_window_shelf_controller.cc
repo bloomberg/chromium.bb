@@ -9,11 +9,13 @@
 #include "ash/shell.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/ash/launcher/app_window_base.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -98,7 +100,16 @@ void InternalAppWindowShelfController::OnWindowVisibilityChanging(
 
   ash::ShelfID shelf_id =
       ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
-  if (shelf_id.IsNull() || !app_list::IsInternalApp(shelf_id.app_id))
+
+  if (shelf_id.IsNull()) {
+    if (!plugin_vm::IsPluginVmWindow(window))
+      return;
+    shelf_id = ash::ShelfID(plugin_vm::kPluginVmAppId);
+    window->SetProperty(ash::kShelfIDKey,
+                        new std::string(shelf_id.Serialize()));
+  }
+
+  if (!app_list::IsInternalApp(shelf_id.app_id))
     return;
 
   RegisterAppWindow(window, shelf_id);

@@ -10,18 +10,17 @@
 
 #include "pc/playout_latency.h"
 
-#include "iostream"
-
 #include "rtc_base/checks.h"
 #include "rtc_base/location.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/numerics/safe_conversions.h"
+#include "rtc_base/numerics/safe_minmax.h"
 #include "rtc_base/thread.h"
 #include "rtc_base/thread_checker.h"
 
 namespace {
 constexpr int kDefaultLatency = 0;
-constexpr int kRoundToZeroThresholdMs = 10;
+constexpr int kMaximumDelayMs = 10000;
 }  // namespace
 
 namespace webrtc {
@@ -52,16 +51,9 @@ void PlayoutLatency::OnStop() {
 
 void PlayoutLatency::SetLatency(double latency) {
   RTC_DCHECK_RUN_ON(worker_thread_);
-  RTC_DCHECK_GE(latency, 0);
-  RTC_DCHECK_LE(latency, 10);
 
   int delay_ms = rtc::dchecked_cast<int>(latency * 1000);
-  // In JitterBuffer 0 delay has special meaning of being unconstrained value
-  // that is why we round delay to 0 if it is small enough during conversion
-  // from latency.
-  if (delay_ms <= kRoundToZeroThresholdMs) {
-    delay_ms = 0;
-  }
+  delay_ms = rtc::SafeClamp(delay_ms, 0, kMaximumDelayMs);
 
   cached_latency_ = latency;
   if (media_channel_ && ssrc_) {

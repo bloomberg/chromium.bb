@@ -189,6 +189,13 @@ TEST(AESTest, WrapBadLengths) {
   }
 }
 
+TEST(AESTest, InvalidKeySize) {
+  static const uint8_t kZero[8] = {0};
+  AES_KEY key;
+  EXPECT_LT(AES_set_encrypt_key(kZero, 42, &key), 0);
+  EXPECT_LT(AES_set_decrypt_key(kZero, 42, &key), 0);
+}
+
 #if defined(SUPPORTS_ABI_TEST)
 TEST(AESTest, ABI) {
   for (int bits : {128, 192, 256}) {
@@ -250,6 +257,9 @@ TEST(AESTest, ABI) {
         SCOPED_TRACE(blocks);
         CHECK_ABI(vpaes_cbc_encrypt, buf, buf, AES_BLOCK_SIZE * blocks, &key,
                   block, AES_ENCRYPT);
+#if defined(VPAES_CTR32)
+        CHECK_ABI(vpaes_ctr32_encrypt_blocks, buf, buf, blocks, &key, block);
+#endif
       }
 
       CHECK_ABI(vpaes_set_decrypt_key, kKey, bits, &key);

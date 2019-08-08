@@ -48,12 +48,13 @@ interface GuestView {
 // and is used by the browser to ask the renderer to start the MimeHandlerView
 // creation process (by creating a MimeHandlerViewFrameContainer).
 interface MimeHandlerViewContainerManager {
-  // Asks the renderer to set up a MimeHandlerViewFrameContainer. The passed
-  // arguments are later used in GuestView mojo calls above to create a
-  // MimeHandlerViewGuest on the browser side.
-  CreateFrameContainer(url.mojom.Url resource_url,
-                       string mime_type,
-                       string view_id);
+  // Called by the browser to request a BeforeUnloadControl interface pointer
+  // which will later be connected to the request from the extension page to
+  // provide the beforeunload API (to setup beforeunload in the embedder
+  // document). This is only relevant for the non-embedded MimeHandlerView (
+  // e.g., full page navigations to a relevant MIME type).
+  CreateBeforeUnloadControl()
+      => (extensions.mime_handler.BeforeUnloadControl before_unload_control);
 
   // Asks the renderer to destroy the MimeHandlerViewFrameContainer associated
   // with |element_instance_id|.

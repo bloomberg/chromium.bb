@@ -90,6 +90,7 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre
     "libavcodec/vorbis_data.c",
     "libavcodec/vorbis_parser.c",
     "libavcodec/vorbisdec.c",
+    "libavcodec/vp9_parser.c",
     "libavcodec/xiph.c",
     "libavformat/allformats.c",
     "libavformat/autorename_libavformat_options.c",

@@ -96,7 +96,6 @@ static_library("test_support") {
     "//base",
     "//base/test:test_support",
     "//components/offline_items_collection/core/test_support",
-    "//components/offline_pages/core",
     "//net",
     "//services/network:test_support",
     "//services/network/public/cpp",

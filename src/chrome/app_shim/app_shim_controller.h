@@ -13,6 +13,7 @@
 #include "chrome/common/mac/app_shim.mojom.h"
 #include "chrome/common/mac/app_shim_param_traits.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
 
 @class AppShimDelegate;
@@ -35,8 +36,10 @@ class AppShimController : public chrome::mojom::AppShim {
                     const std::vector<base::FilePath>& files);
 
  private:
-  // Create a channel from |socket_path| and send a LaunchApp message.
-  void CreateChannelAndSendLaunchApp(const base::FilePath& socket_path);
+  friend class TestShimClient;
+
+  // Create a channel from the Mojo |endpoint| and send a LaunchApp message.
+  void CreateChannelAndSendLaunchApp(mojo::PlatformChannelEndpoint endpoint);
   // Builds main menu bar items.
   void SetUpMenu();
   void ChannelError(uint32_t custom_reason, const std::string& description);
@@ -58,6 +61,11 @@ class AppShimController : public chrome::mojom::AppShim {
 
   // Terminates the app shim process.
   void Close();
+
+  // Sets up a connection to the AppShimHostManager at the given Mach
+  // endpoint name.
+  static mojo::PlatformChannelEndpoint ConnectToBrowser(
+      const mojo::NamedPlatformChannel::ServerName& server_name);
 
   // Connects to Chrome and sends a LaunchApp message.
   void InitBootstrapPipe();

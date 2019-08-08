@@ -45,6 +45,19 @@ ASH_EXPORT extern const char kFullscreenMagnifierToggleAccelNotificationId[];
 class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
                                          public mojom::AcceleratorController {
  public:
+  // Fields of the side volume button location info.
+  static constexpr const char* kVolumeButtonRegion = "region";
+  static constexpr const char* kVolumeButtonSide = "side";
+
+  // Values of kVolumeButtonRegion.
+  static constexpr const char* kVolumeButtonRegionKeyboard = "keyboard";
+  static constexpr const char* kVolumeButtonRegionScreen = "screen";
+  // Values of kVolumeButtonSide.
+  static constexpr const char* kVolumeButtonSideLeft = "left";
+  static constexpr const char* kVolumeButtonSideRight = "right";
+  static constexpr const char* kVolumeButtonSideTop = "top";
+  static constexpr const char* kVolumeButtonSideBottom = "bottom";
+
   AcceleratorController();
   ~AcceleratorController() override;
 
@@ -61,6 +74,21 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
 
     // Don't process the accelerator and prevent propagation to other targets.
     RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION
+  };
+
+  // Some Chrome OS devices have volume up and volume down buttons on their
+  // side. We want the button that's closer to the top/right to increase the
+  // volume and the button that's closer to the bottom/left to decrease the
+  // volume, so we use the buttons' location and the device orientation to
+  // determine whether the buttons should be swapped.
+  struct SideVolumeButtonLocation {
+    // The button can be at the side of the keyboard or the display. Then value
+    // of the region could be kVolumeButtonRegionKeyboard or
+    // kVolumeButtonRegionScreen.
+    std::string region;
+    // Side info of region. The value could be kVolumeButtonSideLeft,
+    // kVolumeButtonSideRight, kVolumeButtonSideTop or kVolumeButtonSideBottom.
+    std::string side;
   };
 
   // Registers global keyboard accelerators for the specified target. If
@@ -105,7 +133,9 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
 
   // Performs the specified action if it is enabled. Returns whether the action
   // was performed successfully.
-  bool PerformActionIfEnabled(AcceleratorAction action);
+  bool PerformActionIfEnabled(
+      AcceleratorAction action,
+      const ui::Accelerator& accelerator = ui::Accelerator());
 
   // Returns the restriction for the current context.
   AcceleratorProcessingRestriction GetCurrentAcceleratorRestriction();
@@ -146,8 +176,22 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
                                    int dialog_text_id,
                                    base::OnceClosure on_accept_callback);
 
+  // Read the side volume button location info from local file under
+  // kSideVolumeButtonLocationFilePath, parse and write it into
+  // |side_volume_button_location_|.
+  void ParseSideVolumeButtonLocationInfo();
+
   // Accessor to accelerator confirmation dialog.
-  AcceleratorConfirmationDialog* confirmation_dialog_for_testing();
+  AcceleratorConfirmationDialog* confirmation_dialog_for_testing() {
+    return confirmation_dialog_.get();
+  }
+
+  void set_side_volume_button_file_path_for_testing(base::FilePath path) {
+    side_volume_button_location_file_path_ = path;
+  }
+  SideVolumeButtonLocation side_volume_button_location_for_testing() {
+    return side_volume_button_location_;
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AcceleratorControllerTest, GlobalAccelerators);
@@ -246,6 +290,14 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
 
   // Holds a weak pointer to the accelerator confirmation dialog.
   base::WeakPtr<AcceleratorConfirmationDialog> confirmation_dialog_;
+
+  // Path of the file that contains the side volume button location info. It
+  // should always be kSideVolumeButtonLocationFilePath. But it is allowed to be
+  // set to different paths in test.
+  base::FilePath side_volume_button_location_file_path_;
+
+  // Stores the location info of side volume button.
+  SideVolumeButtonLocation side_volume_button_location_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorController);
 };

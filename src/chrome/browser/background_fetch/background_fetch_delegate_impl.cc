@@ -816,6 +816,13 @@ void BackgroundFetchDelegateImpl::GetShareInfoForItem(
                                 nullptr /* OfflineItemShareInfo */));
 }
 
+void BackgroundFetchDelegateImpl::RenameItem(
+    const offline_items_collection::ContentId& id,
+    const std::string& name,
+    RenameCallback callback) {
+  NOTIMPLEMENTED();
+}
+
 void BackgroundFetchDelegateImpl::AddObserver(Observer* observer) {
   DCHECK(!observers_.count(observer));
 

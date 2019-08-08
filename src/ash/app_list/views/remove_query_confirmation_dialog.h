@@ -48,6 +48,7 @@ class RemoveQueryConfirmationDialog
 
   // ContentsView::SearchBoxUpdateObserver
   void OnSearchBoxBoundsUpdated() override;
+  void OnSearchBoxClearAndDeactivated() override;
 
   void UpdateBounds();
 

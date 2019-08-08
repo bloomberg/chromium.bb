@@ -4,6 +4,7 @@
 #include "content/public/browser/media_device_id.h"
 
 #include "base/strings/string_util.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "media/audio/audio_device_description.h"
@@ -36,6 +37,18 @@ bool GetMediaDeviceIDForHMAC(blink::MediaStreamType stream_type,
   return manager->TranslateSourceIdToDeviceId(blink::MEDIA_DEVICE_VIDEO_CAPTURE,
                                               salt, security_origin, source_id,
                                               device_id);
+}
+
+void GetMediaDeviceIDForHMAC(
+    blink::MediaStreamType stream_type,
+    std::string salt,
+    url::Origin security_origin,
+    std::string hmac_device_id,
+    base::OnceCallback<void(const base::Optional<std::string>&)> callback) {
+  MediaStreamManager::GetMediaDeviceIDForHMAC(
+      stream_type, std::move(salt), std::move(security_origin),
+      std::move(hmac_device_id), base::SequencedTaskRunnerHandle::Get(),
+      std::move(callback));
 }
 
 bool IsValidDeviceId(const std::string& device_id) {

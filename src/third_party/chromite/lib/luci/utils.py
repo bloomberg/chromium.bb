@@ -119,6 +119,20 @@ def parse_rfc3339_datetime(value):
       seconds += (int(timezone[1:pos]) * 60 + int(timezone[pos + 1:])) * 60
   return timestamp_to_datetime(int(seconds) * 1e6 + int(nanos) / 1e3)
 
+def TimestampToDatetime(input_time):
+  """Converts seconds in google.protobuf.Timestamp to readable format.
+
+  Args:
+    input_time: google.protobuf.Timestamp instance.
+
+  Returns:
+    datetime.datetime instance corresponding to input_time.
+  """
+  if input_time and input_time.seconds != 0:
+    return datetime.datetime.fromtimestamp(input_time.seconds)
+  else:
+    return None
+
 
 def constant_time_equals(a, b):
   """Compares two strings in constant time regardless of theirs content."""

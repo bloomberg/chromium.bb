@@ -11,7 +11,6 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/browser/service_worker/service_worker_write_to_cache_job.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "net/base/ip_endpoint.h"
@@ -86,33 +85,9 @@ void ServiceWorkerInstalledScriptLoader::OnHttpInfoRead(
         *info);
   }
 
-  network::ResourceResponseHead head;
-  head.request_start = request_start_;
-  head.response_start = base::TimeTicks::Now();
-  head.request_time = info->request_time;
-  head.response_time = info->response_time;
-  head.headers = info->headers;
-  head.headers->GetMimeType(&head.mime_type);
-  head.charset = encoding_;
-  head.content_length = body_size_;
-  head.was_fetched_via_spdy = info->was_fetched_via_spdy;
-  head.was_alpn_negotiated = info->was_alpn_negotiated;
-  head.connection_info = info->connection_info;
-  head.alpn_negotiated_protocol = info->alpn_negotiated_protocol;
-  head.remote_endpoint = info->remote_endpoint;
-  head.cert_status = info->ssl_info.cert_status;
-
-  if (options_ & network::mojom::kURLLoadOptionSendSSLInfoWithResponse)
-    head.ssl_info = info->ssl_info;
-
-  client_->OnReceiveResponse(head);
-
-  if (info->metadata) {
-    const uint8_t* data =
-        reinterpret_cast<const uint8_t*>(info->metadata->data());
-    client_->OnReceiveCachedMetadata(
-        std::vector<uint8_t>(data, data + info->metadata->size()));
-  }
+  ServiceWorkerUtils::SendHttpResponseInfoToClient(
+      info, options_, request_start_, base::TimeTicks::Now(),
+      http_info->response_data_size, client_.get());
 
   client_->OnStartLoadingResponseBody(std::move(body_handle_));
   // We continue in OnFinished().

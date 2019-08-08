@@ -29,12 +29,21 @@ struct EnumTraits<network::mojom::CookieSameSite, net::CookieSameSite> {
 };
 
 template <>
-struct EnumTraits<network::mojom::CookieSameSiteFilter,
+struct EnumTraits<network::mojom::CookieInclusionStatus,
+                  net::CanonicalCookie::CookieInclusionStatus> {
+  static network::mojom::CookieInclusionStatus ToMojom(
+      net::CanonicalCookie::CookieInclusionStatus input);
+  static bool FromMojom(network::mojom::CookieInclusionStatus input,
+                        net::CanonicalCookie::CookieInclusionStatus* output);
+};
+
+template <>
+struct EnumTraits<network::mojom::CookieSameSiteContext,
                   net::CookieOptions::SameSiteCookieContext> {
-  static network::mojom::CookieSameSiteFilter ToMojom(
+  static network::mojom::CookieSameSiteContext ToMojom(
       net::CookieOptions::SameSiteCookieContext input);
 
-  static bool FromMojom(network::mojom::CookieSameSiteFilter input,
+  static bool FromMojom(network::mojom::CookieSameSiteContext input,
                         net::CookieOptions::SameSiteCookieContext* output);
 };
 
@@ -43,7 +52,7 @@ struct StructTraits<network::mojom::CookieOptionsDataView, net::CookieOptions> {
   static bool exclude_httponly(const net::CookieOptions& o) {
     return o.exclude_httponly();
   }
-  static net::CookieOptions::SameSiteCookieContext cookie_same_site_filter(
+  static net::CookieOptions::SameSiteCookieContext same_site_cookie_context(
       const net::CookieOptions& o) {
     return o.same_site_cookie_context();
   }
@@ -54,6 +63,9 @@ struct StructTraits<network::mojom::CookieOptionsDataView, net::CookieOptions> {
     if (!o.has_server_time())
       return base::nullopt;
     return base::Optional<base::Time>(o.server_time());
+  }
+  static bool return_excluded_cookies(const net::CookieOptions& o) {
+    return o.return_excluded_cookies();
   }
 
   static bool Read(network::mojom::CookieOptionsDataView mojo_options,
@@ -95,6 +107,20 @@ struct StructTraits<network::mojom::CanonicalCookieDataView,
 
   static bool Read(network::mojom::CanonicalCookieDataView cookie,
                    net::CanonicalCookie* out);
+};
+
+template <>
+struct StructTraits<network::mojom::CookieWithStatusDataView,
+                    net::CookieWithStatus> {
+  static const net::CanonicalCookie& cookie(const net::CookieWithStatus& c) {
+    return c.cookie;
+  }
+  static const net::CanonicalCookie::CookieInclusionStatus& status(
+      const net::CookieWithStatus& c) {
+    return c.status;
+  }
+  static bool Read(network::mojom::CookieWithStatusDataView cookie,
+                   net::CookieWithStatus* out);
 };
 
 }  // namespace mojo

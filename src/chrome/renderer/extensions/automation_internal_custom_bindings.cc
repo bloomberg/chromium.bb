@@ -29,11 +29,12 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/automation.h"
 #include "extensions/common/manifest_handlers/background_info.h"
-#include "extensions/renderer/extension_bindings_system.h"
+#include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/script_context.h"
 #include "gin/converter.h"
 #include "gin/data_object_builder.h"
 #include "ipc/message_filter.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_event.h"
@@ -438,11 +439,12 @@ class NodeIDPlusDimensionsWrapper
 
 class AutomationMessageFilter : public IPC::MessageFilter {
  public:
-  explicit AutomationMessageFilter(AutomationInternalCustomBindings* owner)
-      : owner_(owner), removed_(false) {
+  AutomationMessageFilter(
+      AutomationInternalCustomBindings* owner,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : owner_(owner), removed_(false), task_runner_(std::move(task_runner)) {
     DCHECK(owner);
     content::RenderThread::Get()->AddFilter(this);
-    task_runner_ = base::ThreadTaskRunnerHandle::Get();
   }
 
   void Detach() {
@@ -489,7 +491,7 @@ class AutomationMessageFilter : public IPC::MessageFilter {
 
 AutomationInternalCustomBindings::AutomationInternalCustomBindings(
     ScriptContext* context,
-    ExtensionBindingsSystem* bindings_system)
+    NativeExtensionBindingsSystem* bindings_system)
     : ObjectBackedNativeHandler(context),
       is_active_profile_(true),
       tree_change_observer_overall_filter_(0),
@@ -570,45 +572,104 @@ void AutomationInternalCustomBindings::AddRoutes() {
       "GetAnchorObjectID",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper) {
-        result.Set(v8::Number::New(
-            isolate, tree_wrapper->tree()->data().sel_anchor_object_id));
+        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
+        result.Set(v8::Number::New(isolate, tree_data.sel_anchor_object_id));
       });
   RouteTreeIDFunction(
       "GetAnchorOffset",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper) {
-        result.Set(v8::Number::New(
-            isolate, tree_wrapper->tree()->data().sel_anchor_offset));
+        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
+        result.Set(v8::Number::New(isolate, tree_data.sel_anchor_offset));
       });
   RouteTreeIDFunction(
       "GetAnchorAffinity",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper) {
-        result.Set(CreateV8String(
-            isolate,
-            ui::ToString(tree_wrapper->tree()->data().sel_anchor_affinity)));
+        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
+        result.Set(CreateV8String(isolate,
+                                  ui::ToString(tree_data.sel_anchor_affinity)));
       });
   RouteTreeIDFunction(
       "GetFocusObjectID",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper) {
-        result.Set(v8::Number::New(
-            isolate, tree_wrapper->tree()->data().sel_focus_object_id));
+        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
+        result.Set(v8::Number::New(isolate, tree_data.sel_focus_object_id));
       });
   RouteTreeIDFunction(
       "GetFocusOffset",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper) {
-        result.Set(v8::Number::New(
-            isolate, tree_wrapper->tree()->data().sel_focus_offset));
+        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
+        result.Set(v8::Number::New(isolate, tree_data.sel_focus_offset));
       });
   RouteTreeIDFunction(
       "GetFocusAffinity",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper) {
-        result.Set(CreateV8String(
-            isolate,
-            ui::ToString(tree_wrapper->tree()->data().sel_focus_affinity)));
+        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
+        result.Set(CreateV8String(isolate,
+                                  ui::ToString(tree_data.sel_focus_affinity)));
+      });
+  RouteTreeIDFunction(
+      "GetSelectionStartObjectID",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper) {
+        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
+        int32_t start_object_id = tree_data.sel_is_backward
+                                      ? tree_data.sel_focus_object_id
+                                      : tree_data.sel_anchor_object_id;
+        result.Set(v8::Number::New(isolate, start_object_id));
+      });
+  RouteTreeIDFunction(
+      "GetSelectionStartOffset",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper) {
+        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
+        int start_offset = tree_data.sel_is_backward
+                               ? tree_data.sel_focus_offset
+                               : tree_data.sel_anchor_offset;
+        result.Set(v8::Number::New(isolate, start_offset));
+      });
+  RouteTreeIDFunction(
+      "GetSelectionStartAffinity",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper) {
+        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
+        ax::mojom::TextAffinity start_affinity =
+            tree_data.sel_is_backward ? tree_data.sel_focus_affinity
+                                      : tree_data.sel_anchor_affinity;
+        result.Set(CreateV8String(isolate, ui::ToString(start_affinity)));
+      });
+  RouteTreeIDFunction(
+      "GetSelectionEndObjectID",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper) {
+        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
+        int32_t end_object_id = tree_data.sel_is_backward
+                                    ? tree_data.sel_anchor_object_id
+                                    : tree_data.sel_focus_object_id;
+        result.Set(v8::Number::New(isolate, end_object_id));
+      });
+  RouteTreeIDFunction(
+      "GetSelectionEndOffset",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper) {
+        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
+        int end_offset = tree_data.sel_is_backward ? tree_data.sel_anchor_offset
+                                                   : tree_data.sel_focus_offset;
+        result.Set(v8::Number::New(isolate, end_offset));
+      });
+  RouteTreeIDFunction(
+      "GetSelectionEndAffinity",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper) {
+        const ui::AXTreeData& tree_data = tree_wrapper->tree()->data();
+        ax::mojom::TextAffinity end_affinity =
+            tree_data.sel_is_backward ? tree_data.sel_anchor_affinity
+                                      : tree_data.sel_focus_affinity;
+        result.Set(CreateV8String(isolate, ui::ToString(end_affinity)));
       });
 
   // Bindings that take a Tree ID and Node ID and return a property of the node.
@@ -675,11 +736,14 @@ void AutomationInternalCustomBindings::AddRoutes() {
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
         const std::vector<int> line_starts =
             node->GetOrComputeLineStartOffsets();
+        v8::Local<v8::Context> context = isolate->GetCurrentContext();
         v8::Local<v8::Array> array_result(
             v8::Array::New(isolate, line_starts.size()));
         for (size_t i = 0; i < line_starts.size(); ++i) {
-          array_result->Set(static_cast<uint32_t>(i),
-                            v8::Integer::New(isolate, line_starts[i]));
+          array_result
+              ->CreateDataProperty(context, static_cast<uint32_t>(i),
+                                   v8::Integer::New(isolate, line_starts[i]))
+              .Check();
         }
         result.Set(array_result);
       });
@@ -816,14 +880,12 @@ void AutomationInternalCustomBindings::AddRoutes() {
             ui::ParseIntAttribute(attribute_name.c_str());
         int attr_value;
 
-        if (attribute == ax::mojom::IntAttribute::kPosInSet) {
+        if (attribute == ax::mojom::IntAttribute::kPosInSet &&
+            node->GetPosInSet()) {
           attr_value = node->GetPosInSet();
-          if (attr_value == 0)
-            return;
-        } else if (attribute == ax::mojom::IntAttribute::kSetSize) {
+        } else if (attribute == ax::mojom::IntAttribute::kSetSize &&
+                   node->GetSetSize()) {
           attr_value = node->GetSetSize();
-          if (attr_value == 0)
-            return;
         } else if (!node->data().GetIntAttribute(attribute, &attr_value)) {
           return;
         }
@@ -839,11 +901,14 @@ void AutomationInternalCustomBindings::AddRoutes() {
             ui::ParseIntAttribute(attribute_name.c_str());
         std::set<int32_t> ids =
             tree->GetReverseRelations(attribute, node->id());
+        v8::Local<v8::Context> context = isolate->GetCurrentContext();
         v8::Local<v8::Array> array_result(v8::Array::New(isolate, ids.size()));
         size_t count = 0;
         for (int32_t id : ids) {
-          array_result->Set(static_cast<uint32_t>(count++),
-                            v8::Integer::New(isolate, id));
+          array_result
+              ->CreateDataProperty(context, static_cast<uint32_t>(count++),
+                                   v8::Integer::New(isolate, id))
+              .Check();
         }
         result.Set(array_result);
       });
@@ -877,11 +942,14 @@ void AutomationInternalCustomBindings::AddRoutes() {
         const std::vector<int32_t>& attr_value =
             node->data().GetIntListAttribute(attribute);
 
+        v8::Local<v8::Context> context = isolate->GetCurrentContext();
         v8::Local<v8::Array> array_result(
             v8::Array::New(isolate, attr_value.size()));
         for (size_t i = 0; i < attr_value.size(); ++i)
-          array_result->Set(static_cast<uint32_t>(i),
-                            v8::Integer::New(isolate, attr_value[i]));
+          array_result
+              ->CreateDataProperty(context, static_cast<uint32_t>(i),
+                                   v8::Integer::New(isolate, attr_value[i]))
+              .Check();
         result.Set(array_result);
       });
   RouteNodeIDPlusAttributeFunction(
@@ -893,11 +961,14 @@ void AutomationInternalCustomBindings::AddRoutes() {
             ui::ParseIntListAttribute(attribute_name.c_str());
         std::set<int32_t> ids =
             tree->GetReverseRelations(attribute, node->id());
+        v8::Local<v8::Context> context = isolate->GetCurrentContext();
         v8::Local<v8::Array> array_result(v8::Array::New(isolate, ids.size()));
         size_t count = 0;
         for (int32_t id : ids) {
-          array_result->Set(static_cast<uint32_t>(count++),
-                            v8::Integer::New(isolate, id));
+          array_result
+              ->CreateDataProperty(context, static_cast<uint32_t>(count++),
+                                   v8::Integer::New(isolate, id))
+              .Check();
         }
         result.Set(array_result);
       });
@@ -1029,13 +1100,17 @@ void AutomationInternalCustomBindings::AddRoutes() {
           return;
         }
 
+        v8::Local<v8::Context> context = isolate->GetCurrentContext();
         v8::Local<v8::Array> custom_actions(
             v8::Array::New(isolate, custom_action_ids.size()));
         for (size_t i = 0; i < custom_action_ids.size(); i++) {
           gin::DataObjectBuilder custom_action(isolate);
           custom_action.Set("id", custom_action_ids[i]);
           custom_action.Set("description", custom_action_descriptions[i]);
-          custom_actions->Set(static_cast<uint32_t>(i), custom_action.Build());
+          custom_actions
+              ->CreateDataProperty(context, static_cast<uint32_t>(i),
+                                   custom_action.Build())
+              .Check();
         }
         result.Set(custom_actions);
       });
@@ -1120,6 +1195,16 @@ void AutomationInternalCustomBindings::AddRoutes() {
                                            v8::NewStringType::kNormal)
                        .ToLocalChecked());
       });
+  RouteNodeIDFunction(
+      "GetHasPopup",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        ax::mojom::HasPopup has_popup = node->data().GetHasPopup();
+        std::string has_popup_str = ui::ToString(has_popup);
+        result.Set(v8::String::NewFromUtf8(isolate, has_popup_str.c_str(),
+                                           v8::NewStringType::kNormal)
+                       .ToLocalChecked());
+      });
   RouteNodeIDPlusStringBoolFunction(
       "GetNextTextMatch",
       [this](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
@@ -1166,11 +1251,14 @@ void AutomationInternalCustomBindings::AddRoutes() {
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
         std::vector<int32_t> col_headers;
         node->GetTableCellColHeaderNodeIds(&col_headers);
+        v8::Local<v8::Context> context = isolate->GetCurrentContext();
         v8::Local<v8::Array> array_result(
             v8::Array::New(isolate, col_headers.size()));
         for (size_t i = 0; i < col_headers.size(); ++i)
-          array_result->Set(static_cast<uint32_t>(i),
-                            v8::Integer::New(isolate, col_headers[i]));
+          array_result
+              ->CreateDataProperty(context, static_cast<uint32_t>(i),
+                                   v8::Integer::New(isolate, col_headers[i]))
+              .Check();
         result.Set(array_result);
       });
   RouteNodeIDFunction(
@@ -1179,11 +1267,14 @@ void AutomationInternalCustomBindings::AddRoutes() {
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
         std::vector<int32_t> row_headers;
         node->GetTableCellRowHeaderNodeIds(&row_headers);
+        v8::Local<v8::Context> context = isolate->GetCurrentContext();
         v8::Local<v8::Array> array_result(
             v8::Array::New(isolate, row_headers.size()));
         for (size_t i = 0; i < row_headers.size(); ++i)
-          array_result->Set(static_cast<uint32_t>(i),
-                            v8::Integer::New(isolate, row_headers[i]));
+          array_result
+              ->CreateDataProperty(context, static_cast<uint32_t>(i),
+                                   v8::Integer::New(isolate, row_headers[i]))
+              .Check();
         result.Set(array_result);
       });
   RouteNodeIDFunction(
@@ -1243,8 +1334,12 @@ void AutomationInternalCustomBindings::StartCachingAccessibilityTrees(
   if (should_ignore_context_)
     return;
 
-  if (!message_filter_)
-    message_filter_ = new AutomationMessageFilter(this);
+  if (!message_filter_) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+        context()->web_frame()->GetTaskRunner(
+            blink::TaskType::kInternalDefault);
+    message_filter_ = new AutomationMessageFilter(this, std::move(task_runner));
+  }
 }
 
 void AutomationInternalCustomBindings::GetSchemaAdditions(
@@ -1291,6 +1386,14 @@ void AutomationInternalCustomBindings::DestroyAccessibilityTree(
 
   ui::AXTreeID tree_id = ui::AXTreeID::FromString(
       *v8::String::Utf8Value(args.GetIsolate(), args[0]));
+  auto& child_tree_id_reverse_map =
+      AutomationAXTreeWrapper::GetChildTreeIDReverseMap();
+  base::EraseIf(
+      child_tree_id_reverse_map,
+      [tree_id](const std::pair<ui::AXTreeID, AutomationAXTreeWrapper*>& pair) {
+        return pair.first == tree_id || pair.second->tree_id() == tree_id;
+      });
+
   auto iter = tree_id_to_tree_wrapper_map_.find(tree_id);
   if (iter == tree_id_to_tree_wrapper_map_.end())
     return;
@@ -1475,16 +1578,12 @@ void AutomationInternalCustomBindings::GetState(
     top_tree_wrapper = walker;
     GetParent(walker->tree()->root(), &walker);
   }
-  AutomationAXTreeWrapper* focused_tree_wrapper = nullptr;
-  ui::AXNode* focused_node = nullptr;
-  const bool focused =
-      (GetFocusInternal(top_tree_wrapper, &focused_tree_wrapper,
-                        &focused_node) &&
-       focused_tree_wrapper == tree_wrapper && focused_node == node) ||
-      tree_wrapper->tree()->data().focus_id == node->id();
-  if (focused)
+
+  const bool focused = tree_wrapper->IsInFocusChain(node->id());
+  if (focused) {
     state.Set(api::automation::ToString(api::automation::STATE_TYPE_FOCUSED),
               true);
+  }
 
   bool offscreen = false;
   ComputeGlobalNodeBounds(tree_wrapper, node, gfx::RectF(), &offscreen);
@@ -1910,6 +2009,8 @@ AutomationInternalCustomBindings::GetLocalizedStringForImageAnnotationStatus(
       break;
     case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
     case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed:
+      message_id = IDS_AX_IMAGE_ANNOTATION_NO_DESCRIPTION;
+      break;
     case ax::mojom::ImageAnnotationStatus::kNone:
     case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
     case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:

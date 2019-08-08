@@ -15,16 +15,13 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
-#include "third_party/blink/renderer/core/streams/transform_stream_default_controller.h"
+#include "third_party/blink/renderer/core/streams/transform_stream_default_controller_interface.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
-#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
-#include "third_party/blink/renderer/core/testing/garbage_collected_script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
@@ -37,19 +34,14 @@ using ::testing::Mock;
 
 class TransformStreamTest : public ::testing::Test {
  public:
-  void TearDown() override {
-    if (holder_)
-      ClearHolder();
-  }
+  TransformStream* Stream() const { return stream_; }
 
   void Init(TransformStreamTransformer* transformer,
             ScriptState* script_state,
             ExceptionState& exception_state) {
-    holder_ = MakeGarbageCollected<Holder>(script_state);
-    holder_->Stream()->Init(transformer, script_state, exception_state);
+    stream_ = MakeGarbageCollected<TransformStream>();
+    stream_->Init(transformer, script_state, exception_state);
   }
-
-  TransformStream* Stream() const { return holder_->Stream(); }
 
   // This takes the |readable| and |writable| properties of the TransformStream
   // and copies them onto the global object so they can be accessed by Eval().
@@ -70,56 +62,19 @@ class TransformStreamTest : public ::testing::Test {
                     .IsJust());
   }
 
-  void ClearHolder() {
-    holder_->Destroy();
-    holder_ = nullptr;
-  }
-
  private:
-  // In normal use, TransformStream will be referenced by a ScriptWrappable and
-  // so will be visible to the V8 garbage collector via wrapper tracing. For
-  // testing purposes we need a dummy ScriptWrappable object to do the same
-  // thing.
-  // TODO(ricea): Remove this once unified GC has replaced wrapper tracing.
-  class Holder : public GarbageCollectedScriptWrappable {
-   public:
-    explicit Holder(ScriptState* script_state)
-        : GarbageCollectedScriptWrappable("Holder"),
-          this_as_v8_value_(
-              ScriptValue(script_state, ToV8(this, script_state))),
-          stream_(MakeGarbageCollected<TransformStream>()) {}
-
-    // Destroy() must be called to break the reference cycle.
-    void Destroy() {
-      this_as_v8_value_.Clear();
-      stream_ = nullptr;
-    }
-
-    TransformStream* Stream() const { return stream_.Get(); }
-
-    void Trace(Visitor* visitor) override {
-      visitor->Trace(stream_);
-      GarbageCollectedScriptWrappable::Trace(visitor);
-    }
-
-   private:
-    // Self-reference to keep this object referenced from V8.
-    ScriptValue this_as_v8_value_;
-    TraceWrapperMember<TransformStream> stream_;
-  };
-
-  Persistent<Holder> holder_;
+  Persistent<TransformStream> stream_;
 };
 
 class IdentityTransformer final : public TransformStreamTransformer {
  public:
   void Transform(v8::Local<v8::Value> chunk,
-                 TransformStreamDefaultController* controller,
+                 TransformStreamDefaultControllerInterface* controller,
                  ExceptionState& exception_state) override {
     controller->Enqueue(chunk, exception_state);
   }
 
-  void Flush(TransformStreamDefaultController* controller,
+  void Flush(TransformStreamDefaultControllerInterface* controller,
              ExceptionState& exception_state) override {}
 };
 
@@ -127,9 +82,11 @@ class MockTransformStreamTransformer : public TransformStreamTransformer {
  public:
   MOCK_METHOD3(Transform,
                void(v8::Local<v8::Value> chunk,
-                    TransformStreamDefaultController*,
+                    TransformStreamDefaultControllerInterface*,
                     ExceptionState&));
-  MOCK_METHOD2(Flush, void(TransformStreamDefaultController*, ExceptionState&));
+  MOCK_METHOD2(Flush,
+               void(TransformStreamDefaultControllerInterface*,
+                    ExceptionState&));
 };
 
 // If this doesn't work then nothing else will.
@@ -329,9 +286,9 @@ TEST_F(TransformStreamTest, EnqueueFromFlush) {
         : global_(global), isolate_(isolate) {}
 
     void Transform(v8::Local<v8::Value>,
-                   TransformStreamDefaultController*,
+                   TransformStreamDefaultControllerInterface*,
                    ExceptionState&) override {}
-    void Flush(TransformStreamDefaultController* controller,
+    void Flush(TransformStreamDefaultControllerInterface* controller,
                ExceptionState& exception_state) override {
       controller->Enqueue(ToV8("a", global_, isolate_), exception_state);
     }
@@ -367,11 +324,12 @@ TEST_F(TransformStreamTest, ThrowFromTransform) {
   class ThrowFromTransformTransformer : public TransformStreamTransformer {
    public:
     void Transform(v8::Local<v8::Value>,
-                   TransformStreamDefaultController*,
+                   TransformStreamDefaultControllerInterface*,
                    ExceptionState& exception_state) override {
       exception_state.ThrowTypeError(kMessage);
     }
-    void Flush(TransformStreamDefaultController*, ExceptionState&) override {}
+    void Flush(TransformStreamDefaultControllerInterface*,
+               ExceptionState&) override {}
   };
   V8TestingScope scope;
   auto* script_state = scope.GetScriptState();
@@ -407,9 +365,9 @@ TEST_F(TransformStreamTest, ThrowFromFlush) {
   class ThrowFromFlushTransformer : public TransformStreamTransformer {
    public:
     void Transform(v8::Local<v8::Value>,
-                   TransformStreamDefaultController*,
+                   TransformStreamDefaultControllerInterface*,
                    ExceptionState&) override {}
-    void Flush(TransformStreamDefaultController*,
+    void Flush(TransformStreamDefaultControllerInterface*,
                ExceptionState& exception_state) override {
       exception_state.ThrowTypeError(kMessage);
     }

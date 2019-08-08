@@ -186,16 +186,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
    public:
     enum Type { kEventBase, kSyncbase, kAccessKey };
 
-    static Condition* Create(Type type,
-                             BeginOrEnd begin_or_end,
-                             const AtomicString& base_id,
-                             const AtomicString& name,
-                             SMILTime offset,
-                             int repeat = -1) {
-      return MakeGarbageCollected<Condition>(type, begin_or_end, base_id, name,
-                                             offset, repeat);
-    }
-
     Condition(Type,
               BeginOrEnd,
               const AtomicString& base_id,

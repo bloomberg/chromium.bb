@@ -9,13 +9,13 @@
 #include <stdint.h>
 #include <vector>
 
+#include "base/component_export.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
-#include "ui/base/ime/ui_base_ime_export.h"
 #include "ui/events/event.h"
 
 namespace chromeos {
 
-class UI_BASE_IME_EXPORT MockIMEEngineHandler
+class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) MockIMEEngineHandler
     : public ui::IMEEngineHandlerInterface {
  public:
   MockIMEEngineHandler();

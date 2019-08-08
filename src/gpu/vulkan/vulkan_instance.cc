@@ -105,6 +105,23 @@ bool VulkanInstance::Initialize(
     }
   }
 
+#if DCHECK_IS_ON()
+  for (const char* enabled_extension : enabled_extensions) {
+    bool found = false;
+    for (const VkExtensionProperties& ext_property : instance_exts) {
+      if (strcmp(ext_property.extensionName, enabled_extension) == 0) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      DLOG(ERROR) << "Required extension " << enabled_extension
+                  << " missing from enumerated Vulkan extensions. "
+                     "vkCreateInstance will likely fail.";
+    }
+  }
+#endif
+
   std::vector<const char*> enabled_layer_names;
 #if DCHECK_IS_ON()
   uint32_t num_instance_layers = 0;
@@ -204,6 +221,19 @@ bool VulkanInstance::Initialize(
         vkGetInstanceProcAddr(vk_instance_, "vkDestroySurfaceKHR"));
     if (!vkDestroySurfaceKHR)
       return false;
+
+#if defined(USE_X11)
+    vkCreateXlibSurfaceKHR = reinterpret_cast<PFN_vkCreateXlibSurfaceKHR>(
+        vkGetInstanceProcAddr(vk_instance_, "vkCreateXlibSurfaceKHR"));
+    if (!vkCreateXlibSurfaceKHR)
+      return false;
+    vkGetPhysicalDeviceXlibPresentationSupportKHR =
+        reinterpret_cast<PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR>(
+            vkGetInstanceProcAddr(
+                vk_instance_, "vkGetPhysicalDeviceXlibPresentationSupportKHR"));
+    if (!vkGetPhysicalDeviceXlibPresentationSupportKHR)
+      return false;
+#endif
 
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR =
         reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR>(

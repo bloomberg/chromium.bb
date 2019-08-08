@@ -12,16 +12,17 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/hash/sha1.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
-#include "base/sha1.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/conflicts/module_blacklist_cache_util_win.h"
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/browser/conflicts/module_info_util_win.h"
@@ -155,6 +156,8 @@ bool ShouldInsertInBlacklistCache(ModuleBlockingDecision blocking_decision) {
       break;
 
     // All of these are reasons that allow the module to be loaded.
+    case ModuleBlockingDecision::kNotLoaded:
+    case ModuleBlockingDecision::kAllowedInProcessType:
     case ModuleBlockingDecision::kAllowedIME:
     case ModuleBlockingDecision::kAllowedSameCertificate:
     case ModuleBlockingDecision::kAllowedSameDirectory:
@@ -175,9 +178,6 @@ bool ShouldInsertInBlacklistCache(ModuleBlockingDecision blocking_decision) {
 }
 
 }  // namespace
-
-// static
-constexpr base::TimeDelta ModuleBlacklistCacheUpdater::kUpdateTimerDuration;
 
 ModuleBlacklistCacheUpdater::ModuleBlacklistCacheUpdater(
     ModuleDatabaseEventSource* module_database_event_source,
@@ -206,11 +206,8 @@ ModuleBlacklistCacheUpdater::~ModuleBlacklistCacheUpdater() {
 }
 
 // static
-bool ModuleBlacklistCacheUpdater::IsThirdPartyModuleBlockingEnabled() {
-  // The ThirdPartyConflictsManager can exist even if the blocking is disabled
-  // because that class also controls the warning of incompatible applications.
-  return ModuleDatabase::GetInstance() &&
-         ModuleDatabase::GetInstance()->third_party_conflicts_manager() &&
+bool ModuleBlacklistCacheUpdater::IsBlockingEnabled() {
+  return base::win::GetVersion() >= base::win::VERSION_WIN8 &&
          base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking);
 }
 
@@ -312,12 +309,6 @@ void ModuleBlacklistCacheUpdater::DisableModuleAnalysis() {
   module_analysis_disabled_ = true;
 }
 
-void ModuleBlacklistCacheUpdater::OnTimerExpired() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  StartModuleBlacklistCacheUpdate();
-}
-
 ModuleBlacklistCacheUpdater::ModuleListState
 ModuleBlacklistCacheUpdater::DetermineModuleListState(
     const ModuleInfoKey& module_key,
@@ -339,6 +330,17 @@ ModuleBlacklistCacheUpdater::DetermineModuleBlockingDecision(
     const ModuleInfoKey& module_key,
     const ModuleInfoData& module_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Don't analyze unloaded modules.
+  if ((module_data.module_properties & ModuleInfoData::kPropertyLoadedModule) ==
+      0) {
+    return ModuleBlockingDecision::kNotLoaded;
+  }
+
+  // Don't add modules to the blacklist if they were never loaded in a process
+  // where blocking is enabled.
+  if (!IsBlockingEnabledInProcessTypes(module_data.process_types))
+    return ModuleBlockingDecision::kAllowedInProcessType;
 
   // New modules should not be added to the cache when the module analysis is
   // disabled.

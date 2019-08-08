@@ -10,6 +10,9 @@ import org.chromium.base.annotations.JNINamespace;
 import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
+import java.util.concurrent.FutureTask;
 
 /**
  * Java interface to the native chromium scheduler.  Note tasks can be posted before native
@@ -21,7 +24,8 @@ public class PostTask {
     private static final Object sLock = new Object();
     private static Set<TaskRunner> sPreNativeTaskRunners =
             Collections.newSetFromMap(new WeakHashMap<TaskRunner, Boolean>());
-
+    private static final Executor sPrenativeThreadPoolExecutor = new ChromeThreadPoolExecutor();
+    private static Executor sPrenativeThreadPoolExecutorOverride;
     private static final TaskExecutor sTaskExecutors[] = getInitialTaskExecutors();
 
     private static TaskExecutor[] getInitialTaskExecutors() {
@@ -41,6 +45,8 @@ public class PostTask {
     }
 
     /**
+     * Creates and returns a SequencedTaskRunner. SequencedTaskRunners automatically destroy
+     * themselves, so the destroy() function is not required to be called.
      * @param traits The TaskTraits that describe the desired TaskRunner.
      * @return The TaskRunner for the specified TaskTraits.
      */
@@ -108,6 +114,62 @@ public class PostTask {
     }
 
     /**
+     * This function executes the task immediately if the current thread is the
+     * same as the one corresponding to the SingleThreadTaskRunner, otherwise it
+     * posts it and blocks until the task finishes.
+     *
+     * It should be executed only for tasks with traits corresponding to
+     * executors backed by a SingleThreadTaskRunner, like UiThreadTaskTraits.
+     *
+     * Use this only for trivial tasks as it ignores task priorities.
+     *
+     * @deprecated In tests, use {@link
+     *         org.chromium.content_public.browser.test.util.TestThreadUtils#runOnUiThreadBlocking(Runnable)
+     *         TestThreadUtils.runOnUiThreadBlocking(Runnable)} instead. Non-test usage is heavily
+     *         discouraged. For non-tests, use callbacks rather than blocking threads. If you
+     * absolutely must block the thread, use FutureTask.get().
+     * @param taskTraits The TaskTraits that describe the desired TaskRunner.
+     * @param task The task to be run with the specified traits.
+     * @return The result of the callable
+     */
+    @Deprecated
+    public static <T> T runSynchronously(TaskTraits taskTraits, Callable<T> c) {
+        return runSynchronouslyInternal(taskTraits, new FutureTask<T>(c));
+    }
+
+    /**
+     * This function executes the task immediately if the current thread is the
+     * same as the one corresponding to the SingleThreadTaskRunner, otherwise it
+     * posts it and blocks until the task finishes.
+     *
+     * It should be executed only for tasks with traits corresponding to
+     * executors backed by a SingleThreadTaskRunner, like UiThreadTaskTraits.
+     *
+     * Use this only for trivial tasks as it ignores task priorities.
+     *
+     * @deprecated In tests, use {@link
+     *         org.chromium.content_public.browser.test.util.TestThreadUtils#runOnUiThreadBlocking(Runnable)
+     *         TestThreadUtils.runOnUiThreadBlocking(Runnable)} instead. Non-test usage is heavily
+     *         discouraged. For non-tests, use callbacks rather than blocking threads. If you
+     * absolutely must block the thread, use FutureTask.get().
+     * @param taskTraits The TaskTraits that describe the desired TaskRunner.
+     * @param task The task to be run with the specified traits.
+     */
+    @Deprecated
+    public static void runSynchronously(TaskTraits taskTraits, Runnable r) {
+        runSynchronouslyInternal(taskTraits, new FutureTask<Void>(r, null));
+    }
+
+    private static <T> T runSynchronouslyInternal(TaskTraits taskTraits, FutureTask<T> task) {
+        runOrPostTask(taskTraits, task);
+        try {
+            return task.get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
      * Registers a TaskExecutor, this must be called before any other usages of this API.
      *
      * @param extensionId The id associated with the TaskExecutor.
@@ -119,6 +181,37 @@ public class PostTask {
             assert extensionId <= TaskTraits.MAX_EXTENSION_ID;
             assert sTaskExecutors[extensionId] == null;
             sTaskExecutors[extensionId] = taskExecutor;
+        }
+    }
+
+    /**
+     * Lets a test override the pre-native thread pool executor.
+     *
+     * @param executor The Executor to use for pre-native thread pool tasks.
+     */
+    public static void setPrenativeThreadPoolExecutorForTesting(Executor executor) {
+        synchronized (sLock) {
+            sPrenativeThreadPoolExecutorOverride = executor;
+        }
+    }
+
+    /**
+     * Clears an override set by setPrenativeThreadPoolExecutorOverrideForTesting.
+     */
+    public static void resetPrenativeThreadPoolExecutorForTesting() {
+        synchronized (sLock) {
+            sPrenativeThreadPoolExecutorOverride = null;
+        }
+    }
+
+    /**
+     * @return The current Executor that PrenativeThreadPool tasks should run on.
+     */
+    static Executor getPrenativeThreadPoolExecutor() {
+        synchronized (sLock) {
+            if (sPrenativeThreadPoolExecutorOverride != null)
+                return sPrenativeThreadPoolExecutorOverride;
+            return sPrenativeThreadPoolExecutor;
         }
     }
 
@@ -144,7 +237,7 @@ public class PostTask {
     }
 
     @CalledByNative
-    private static void onNativeTaskSchedulerReady() {
+    private static void onNativeSchedulerReady() {
         synchronized (sLock) {
             for (TaskRunner taskRunner : sPreNativeTaskRunners) {
                 taskRunner.initNativeTaskRunner();
@@ -155,7 +248,7 @@ public class PostTask {
 
     // This is here to make C++ tests work.
     @CalledByNative
-    private static void onNativeTaskSchedulerShutdown() {
+    private static void onNativeSchedulerShutdown() {
         synchronized (sLock) {
             sPreNativeTaskRunners =
                     Collections.newSetFromMap(new WeakHashMap<TaskRunner, Boolean>());

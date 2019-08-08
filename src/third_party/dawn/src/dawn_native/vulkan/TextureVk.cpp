@@ -14,6 +14,7 @@
 
 #include "dawn_native/vulkan/TextureVk.h"
 
+#include "dawn_native/vulkan/AdapterVk.h"
 #include "dawn_native/vulkan/DeviceVk.h"
 #include "dawn_native/vulkan/FencedDeleter.h"
 
@@ -191,6 +192,22 @@ namespace dawn_native { namespace vulkan {
             return {extent.width, extent.height, extent.depth};
         }
 
+        bool IsSampleCountSupported(const dawn_native::vulkan::Device* device,
+                                    const VkImageCreateInfo& imageCreateInfo) {
+            ASSERT(device);
+
+            VkPhysicalDevice physicalDevice = ToBackend(device->GetAdapter())->GetPhysicalDevice();
+            VkImageFormatProperties properties;
+            if (device->fn.GetPhysicalDeviceImageFormatProperties(
+                    physicalDevice, imageCreateInfo.format, imageCreateInfo.imageType,
+                    imageCreateInfo.tiling, imageCreateInfo.usage, imageCreateInfo.flags,
+                    &properties) != VK_SUCCESS) {
+                UNREACHABLE();
+            }
+
+            return properties.sampleCounts & imageCreateInfo.samples;
+        }
+
     }  // namespace
 
     // Converts Dawn texture format to Vulkan formats.
@@ -245,8 +262,19 @@ namespace dawn_native { namespace vulkan {
         return flags;
     }
 
+    VkSampleCountFlagBits VulkanSampleCount(uint32_t sampleCount) {
+        switch (sampleCount) {
+            case 1:
+                return VK_SAMPLE_COUNT_1_BIT;
+            case 4:
+                return VK_SAMPLE_COUNT_4_BIT;
+            default:
+                UNREACHABLE();
+        }
+    }
+
     Texture::Texture(Device* device, const TextureDescriptor* descriptor)
-        : TextureBase(device, descriptor) {
+        : TextureBase(device, descriptor, TextureState::OwnedInternal) {
         // Create the Vulkan image "container". We don't need to check that the format supports the
         // combination of sample, usage etc. because validation should have been done in the Dawn
         // frontend already based on the minimum supported formats in the Vulkan spec
@@ -259,13 +287,15 @@ namespace dawn_native { namespace vulkan {
         createInfo.extent = VulkanExtent3D(GetSize());
         createInfo.mipLevels = GetNumMipLevels();
         createInfo.arrayLayers = GetArrayLayers();
-        createInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        createInfo.samples = VulkanSampleCount(GetSampleCount());
         createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
         createInfo.usage = VulkanImageUsage(GetUsage(), GetFormat());
         createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         createInfo.queueFamilyIndexCount = 0;
         createInfo.pQueueFamilyIndices = nullptr;
         createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+        ASSERT(IsSampleCountSupported(device, createInfo));
 
         if (GetArrayLayers() >= 6 && GetSize().width == GetSize().height) {
             createInfo.flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
@@ -291,17 +321,23 @@ namespace dawn_native { namespace vulkan {
         }
     }
 
+    // With this constructor, the lifetime of the resource is externally managed.
     Texture::Texture(Device* device, const TextureDescriptor* descriptor, VkImage nativeImage)
-        : TextureBase(device, descriptor), mHandle(nativeImage) {
+        : TextureBase(device, descriptor, TextureState::OwnedExternal), mHandle(nativeImage) {
     }
 
     Texture::~Texture() {
+        DestroyInternal();
+    }
+
+    void Texture::DestroyImpl() {
         Device* device = ToBackend(GetDevice());
 
         // If we own the resource, release it.
         if (mMemoryAllocation.GetMemory() != VK_NULL_HANDLE) {
-            // We need to free both the memory allocation and the container. Memory should be freed
-            // after the VkImage is destroyed and this is taken care of by the FencedDeleter.
+            // We need to free both the memory allocation and the container. Memory should be
+            // freed after the VkImage is destroyed and this is taken care of by the
+            // FencedDeleter.
             device->GetMemoryAllocator()->Free(&mMemoryAllocation);
 
             if (mHandle != VK_NULL_HANDLE) {

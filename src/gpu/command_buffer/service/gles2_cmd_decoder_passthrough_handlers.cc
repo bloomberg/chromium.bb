@@ -2018,17 +2018,6 @@ error::Error GLES2DecoderPassthroughImpl::HandleDescheduleUntilFinishedCHROMIUM(
   return DoDescheduleUntilFinishedCHROMIUM();
 }
 
-error::Error GLES2DecoderPassthroughImpl::HandleInsertFenceSyncCHROMIUM(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  const volatile gles2::cmds::InsertFenceSyncCHROMIUM& c =
-      *static_cast<const volatile gles2::cmds::InsertFenceSyncCHROMIUM*>(
-          cmd_data);
-  GLuint64 release_count = c.release_count();
-
-  return DoInsertFenceSyncCHROMIUM(release_count);
-}
-
 error::Error GLES2DecoderPassthroughImpl::HandleDiscardBackbufferCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {

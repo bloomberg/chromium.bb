@@ -12,17 +12,17 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "v8/include/v8.h"
 
 namespace blink {
 
-class Image;
-class ImageResourceObserver;
 class ScriptState;
+class StylePropertyMapReadOnly;
 class V8NoArgumentConstructor;
 class V8PaintCallback;
 
@@ -33,15 +33,6 @@ class MODULES_EXPORT CSSPaintDefinition final
     : public GarbageCollectedFinalized<CSSPaintDefinition>,
       public NameClient {
  public:
-  static CSSPaintDefinition* Create(
-      ScriptState*,
-      V8NoArgumentConstructor* constructor,
-      V8PaintCallback* paint,
-      const Vector<CSSPropertyID>&,
-      const Vector<AtomicString>& custom_invalidation_properties,
-      const Vector<CSSSyntaxDescriptor>& input_argument_types,
-      const PaintRenderingContext2DSettings*);
-
   CSSPaintDefinition(
       ScriptState*,
       V8NoArgumentConstructor* constructor,
@@ -60,9 +51,10 @@ class MODULES_EXPORT CSSPaintDefinition final
   // throws an error.
   //
   // The |container_size| is without subpixel snapping.
-  scoped_refptr<Image> Paint(const ImageResourceObserver&,
-                             const FloatSize& container_size,
-                             const CSSStyleValueVector*);
+  sk_sp<PaintRecord> Paint(const FloatSize& container_size,
+                           float zoom,
+                           StylePropertyMapReadOnly*,
+                           const CSSStyleValueVector*);
   const Vector<CSSPropertyID>& NativeInvalidationProperties() const {
     return native_invalidation_properties_;
   }
@@ -92,8 +84,8 @@ class MODULES_EXPORT CSSPaintDefinition final
   // This object keeps the class instance object, constructor function and
   // paint function alive. It participates in wrapper tracing as it holds onto
   // V8 wrappers.
-  TraceWrapperMember<V8NoArgumentConstructor> constructor_;
-  TraceWrapperMember<V8PaintCallback> paint_;
+  Member<V8NoArgumentConstructor> constructor_;
+  Member<V8PaintCallback> paint_;
 
   // At the moment there is only ever one instance of a paint class per type.
   TraceWrapperV8Reference<v8::Value> instance_;

@@ -16,6 +16,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include "absl/types/optional.h"
+#include "api/array_view.h"
 #include "api/call/transport.h"
 #include "api/fec_controller.h"
 #include "api/video_codecs/video_encoder.h"
@@ -26,6 +28,7 @@
 #include "logging/rtc_event_log/rtc_event_log.h"
 #include "modules/rtp_rtcp/include/flexfec_sender.h"
 #include "modules/rtp_rtcp/source/rtp_sender_video.h"
+#include "modules/rtp_rtcp/source/rtp_sequence_number_map.h"
 #include "modules/rtp_rtcp/source/rtp_video_header.h"
 #include "modules/utility/include/process_thread.h"
 #include "rtc_base/constructor_magic.h"
@@ -76,7 +79,6 @@ class RtpVideoSender : public RtpVideoSenderInterface,
       const RtpConfig& rtp_config,
       int rtcp_report_interval_ms,
       Transport* send_transport,
-      bool is_svc,
       const RtpSenderObservers& observers,
       RtpTransportControllerSendInterface* transport,
       RtcEventLog* event_log,
@@ -139,6 +141,10 @@ class RtpVideoSender : public RtpVideoSenderInterface,
                        size_t height,
                        size_t num_temporal_layers) override;
 
+  std::vector<RtpSequenceNumberMap::Info> GetSentRtpPacketInfos(
+      uint32_t ssrc,
+      rtc::ArrayView<const uint16_t> sequence_numbers) const override;
+
   // From PacketFeedbackObserver.
   void OnPacketAdded(uint32_t ssrc, uint16_t seq_num) override;
   void OnPacketFeedbackVector(
@@ -190,8 +196,6 @@ class RtpVideoSender : public RtpVideoSenderInterface,
 
   std::vector<FrameCounts> frame_counts_ RTC_GUARDED_BY(crit_);
   FrameCountObserver* const frame_count_observer_;
-
-  const bool is_svc_;
 
   RTC_DISALLOW_COPY_AND_ASSIGN(RtpVideoSender);
 };

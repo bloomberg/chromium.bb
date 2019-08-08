@@ -14,9 +14,9 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/policy/android_management_client.h"
-#include "chromeos/dbus/session_manager_client.h"
-#include "components/arc/arc_session_runner.h"
-#include "components/arc/arc_stop_reason.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "components/arc/session/arc_session_runner.h"
+#include "components/arc/session/arc_stop_reason.h"
 
 class ArcAppLauncher;
 class Profile;
@@ -143,6 +143,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   static ArcSessionManager* Get();
 
   static void SetUiEnabledForTesting(bool enabled);
+  static void SetArcTermsOfServiceOobeNegotiatorEnabledForTesting(bool enabled);
   static void EnableCheckAndroidManagementForTesting(bool enable);
 
   // Returns true if ARC is allowed to run for the current session.

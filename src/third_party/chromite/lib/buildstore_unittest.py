@@ -14,16 +14,17 @@ from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import buildstore
 from chromite.lib import buildbucket_v2
+from chromite.lib import failure_message_lib
 
 BuildStore = buildstore.BuildStore
 
 
 class TestBuildStore(cros_test_lib.MockTestCase):
   """Test buildstore.BuildStore."""
+  # pylint: disable=protected-access
 
   def testIsCIDBClientMissing(self):
     """Tests _IsCIDBClientMissing function."""
-    # pylint: disable=protected-access
     # Test CIDB needed and client missing.
     bs = BuildStore(_read_from_bb=False, _write_to_cidb=True)
     self.assertEqual(bs._IsCIDBClientMissing(), True)
@@ -47,7 +48,6 @@ class TestBuildStore(cros_test_lib.MockTestCase):
 
   def testIsBuildbucketClientMissing(self):
     """Tests _IsBuildbucketClientMissing function."""
-    # pylint: disable=protected-access
     # Test Buildbucket needed and client missing.
     bs = BuildStore(_read_from_bb=True, _write_to_bb=True)
     self.assertEqual(bs._IsBuildbucketClientMissing(), True)
@@ -67,7 +67,15 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     self.assertEqual(bs._IsBuildbucketClientMissing(), False)
     # Test Buildbucket is not needed.
     bs = BuildStore(_read_from_bb=False, _write_to_bb=False)
+    bs._transitioning_to_bb = False
     self.assertEqual(bs._IsBuildbucketClientMissing(), False)
+    # Test _transitioning_to_bb logic.
+    bs = BuildStore(_read_from_bb=False, _write_to_bb=False)
+    bs._transitioning_to_bb = False
+    bs.bb_client = None
+    self.assertFalse(bs._IsBuildbucketClientMissing())
+    bs._transitioning_to_bb = True
+    self.assertTrue(bs._IsBuildbucketClientMissing())
 
   def testInitializeClientsWithCIDBSetup(self):
     """Tests InitializeClients with mock CIDB."""
@@ -147,41 +155,60 @@ class TestBuildStore(cros_test_lib.MockTestCase):
         'something-paladin', 'bot_hostname', important=True,
         timeout_seconds='timeout')
     buildbucket_v2.UpdateSelfCommonBuildProperties.assert_called_once_with(
-        critical=True)
+        cidb_id=build_id, critical=True)
     self.assertEqual(build_id, 0)
 
-  def testGetBuildMessages(self):
-    """Tests the redirect for GetBuildMessages function."""
+  def testGetKilledChildBuilds(self):
+    """Tests the redirect for GetKilledChildBuilds function."""
     init = self.PatchObject(BuildStore, 'InitializeClients',
                             return_value=True)
-    bs = BuildStore()
+    bs = BuildStore(_read_from_bb=False)
+    bs._transitioning_to_bb = False
+    fake_result = [
+        {'message_value': 1234},
+        {'message_value': 2341},
+        {'message_value': 3412}]
     bs.cidb_conn = mock.MagicMock()
-    build_id = 1234
+    self.PatchObject(bs.cidb_conn, 'GetBuildMessages', return_value=fake_result)
+    build_identifier = buildstore.BuildIdentifier(cidb_id=1,
+                                                  buildbucket_id=1234)
     # Test for buildbucket_ids.
-    bs.GetBuildMessages(build_id,
-                        message_type=constants.MESSAGE_TYPE_IGNORED_REASON)
+    result = bs.GetKilledChildBuilds(build_identifier)
     bs.cidb_conn.GetBuildMessages.assert_called_once_with(
-        build_id, message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
+        1, message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
         message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION)
+    self.assertEqual(result, [1234, 2341, 3412])
+    bs = BuildStore(_read_from_bb=True)
+    bs.bb_client = mock.MagicMock()
+    bs.GetKilledChildBuilds(build_identifier)
+    bs.bb_client.GetKilledChildBuilds.assert_called_once_with(1234)
     init.return_value = False
     with self.assertRaises(buildstore.BuildStoreException):
-      bs.GetBuildsFailures(build_id)
+      bs.GetKilledChildBuilds(build_identifier)
 
   def testInsertBuildMessage(self):
     """Tests the redirect for InsertBuildMessage function."""
     init = self.PatchObject(BuildStore, 'InitializeClients',
                             return_value=True)
-    bs = BuildStore()
+    bs = BuildStore(_write_to_bb=True)
     bs.cidb_conn = mock.MagicMock()
+    buildbucket_v2.UpdateSelfCommonBuildProperties = mock.MagicMock()
     self.PatchObject(bs.cidb_conn, 'InsertBuildMessage')
-    bs.InsertBuildMessage(1234, message_value=8921795536486453568)
-    bs.cidb_conn.InsertBuildMessage.assert_called_once_with(
+    bs.InsertBuildMessage(1234,
+                          message_value=[8921795536486453568,
+                                         8921795536486453567])
+    bs.cidb_conn.InsertBuildMessage.assert_called_with(
         1234, message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
         message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION,
-        message_value=8921795536486453568, board=None)
+        message_value='8921795536486453567', board=None)
+    buildbucket_v2.UpdateSelfCommonBuildProperties.assert_called_once_with(
+        killed_child_builds=[8921795536486453568, 8921795536486453567])
+    # Test error conditions.
+    with self.assertRaises(AssertionError):
+      bs.InsertBuildMessage(1234, message_value=8921795536486453568)
     init.return_value = False
     with self.assertRaises(buildstore.BuildStoreException):
-      bs.InsertBuildMessage(1234, message_value=8921795536486453568)
+      bs.InsertBuildMessage(1234, message_value=[8921795536486453568])
 
   def testGetBuildHistory(self):
     """Tests the redirect for GetBuildHistory function."""
@@ -222,19 +249,27 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     """Tests the redirect for GetSlaveStatuses function."""
     init = self.PatchObject(BuildStore, 'InitializeClients',
                             return_value=True)
-    bs = BuildStore()
+    bs = BuildStore(_read_from_bb=False)
     fake_statuses = object()
     bs.cidb_conn = mock.MagicMock()
     self.PatchObject(bs.cidb_conn, 'GetSlaveStatuses',
                      return_value=fake_statuses)
-    result = bs.GetSlaveStatuses(
-        1234, [3214, 2341])
+    result = bs.GetSlaveStatuses(buildstore.BuildIdentifier(cidb_id=1234))
     bs.cidb_conn.GetSlaveStatuses.assert_called_once_with(
-        1234, [3214, 2341])
+        1234, None)
     self.assertEqual(result, fake_statuses)
+    bs = BuildStore(_read_from_bb=True)
+    fake_statuses = object()
+    bs.bb_client = mock.MagicMock()
+    self.PatchObject(bs.bb_client, 'GetChildStatuses',
+                     return_value=fake_statuses)
+    result = bs.GetSlaveStatuses(buildstore.BuildIdentifier(
+        cidb_id=1234, buildbucket_id=1234))
+    self.assertEqual(result, fake_statuses)
+    bs.bb_client.GetChildStatuses.assert_called_once_with(1234)
     init.return_value = False
     with self.assertRaises(buildstore.BuildStoreException):
-      bs.GetSlaveStatuses(1234, [3214, 2341])
+      bs.GetSlaveStatuses(1234)
 
   def testStartBuildStage(self):
     """Tests the redirect for StartBuildStage function."""
@@ -338,6 +373,50 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     with self.assertRaises(buildstore.BuildStoreException):
       bs.FinishChildConfig(constants.MOCK_BUILD_ID, child_config, status=status)
 
+  def testInsertBoardPerBuildWithoutMetadata(self):
+    """Tests the InsertBoardPerBuild function when metadata isn't available."""
+    self.PatchObject(BuildStore, 'InitializeClients',
+                     return_value=True)
+    bs = BuildStore(_write_to_cidb=True, _write_to_bb=True)
+    bs.cidb_conn = mock.MagicMock()
+    buildbucket_v2.UpdateSelfCommonBuildProperties = mock.MagicMock()
+    build_id = 1234
+    board = 'grunt'
+    bs.InsertBoardPerBuild(build_id, board)
+    bs.cidb_conn.InsertBoardPerBuild.assert_called_once_with(
+        build_id, board)
+    buildbucket_v2.UpdateSelfCommonBuildProperties.assert_called_once_with(
+        board=board)
+
+  def testInsertBoardPerBuildWithMetadata(self):
+    """Tests the InsertBoardPerBuild function when metadata is available."""
+    self.PatchObject(BuildStore, 'InitializeClients',
+                     return_value=True)
+    bs = BuildStore(_write_to_cidb=True, _write_to_bb=True)
+    bs.cidb_conn = mock.MagicMock()
+    buildbucket_v2.UpdateSelfCommonBuildProperties = mock.MagicMock()
+    build_id = 1234
+    board = 'grunt'
+    fake_metadata = {'main-firmware-version': '1.2.3.4',
+                     'ec-firmware-version': '2.3.4.5'}
+    bs.InsertBoardPerBuild(build_id, board, fake_metadata)
+    bs.cidb_conn.UpdateBoardPerBuildMetadata.assert_called_once_with(
+        build_id, board, fake_metadata)
+    buildbucket_v2.UpdateSelfCommonBuildProperties.assert_called_with(
+        board=board,
+        main_firmware_version=fake_metadata['main-firmware-version'],
+        ec_firmware_version=fake_metadata['ec-firmware-version'])
+
+  def testInsertBoardPerBuildWithoutRequisiteClients(self):
+    """Tests the redirect for InsertBoardPerBuild function."""
+    self.PatchObject(BuildStore, 'InitializeClients',
+                     return_value=False)
+    build_id = 1234
+    board = 'grunt'
+    bs = BuildStore(_write_to_cidb=True, _write_to_bb=True)
+    with self.assertRaises(buildstore.BuildStoreException):
+      bs.InsertBoardPerBuild(build_id, board)
+
   def testUpdateMetadata(self):
     """Tests the redirect for UpdateMetadata function."""
     init = self.PatchObject(BuildStore, 'InitializeClients',
@@ -359,17 +438,31 @@ class TestBuildStore(cros_test_lib.MockTestCase):
 
   def testGetBuildsFailures(self):
     """Tests the redirect for GetBuildsFailures function."""
+    # pylint: disable=protected-access
     init = self.PatchObject(BuildStore, 'InitializeClients',
                             return_value=True)
-    bs = BuildStore()
+    bs = BuildStore(_read_from_bb=False)
+    bs._transitioning_to_bb = False
     bs.cidb_conn = mock.MagicMock()
-    buildbucket_ids = ['bucket 1', 'bucket 2']
-    # Test for buildbucket_ids.
+    buildbucket_ids = [1234, 2341]
+    # Test for CIDB redirect.
     bs.GetBuildsFailures(buildbucket_ids=buildbucket_ids)
     bs.cidb_conn.GetBuildsFailures.assert_called_once_with(
         buildbucket_ids)
     # Test for empty argument.
     self.assertEqual(bs.GetBuildsFailures([]), [])
+    fake_return = [{'stage_name': 'stage_1',
+                    'stage_status': 'fail',
+                    'buildbucket_id': 1234,
+                    'build_config': 'something-paladin',
+                    'build_status': 'pass',
+                    'important': True}]
+    bs = BuildStore(_read_from_bb=True)
+    bs.bb_client = mock.MagicMock()
+    self.PatchObject(bs.bb_client, 'GetStageFailures', return_value=fake_return)
+    fail = bs.GetBuildsFailures(buildbucket_ids=[1234])
+    bs.bb_client.GetStageFailures.assert_called_with(1234)
+    self.assertTrue(isinstance(fail[0], failure_message_lib.StageFailure))
     init.return_value = False
     with self.assertRaises(buildstore.BuildStoreException):
       bs.GetBuildsFailures(buildbucket_ids=buildbucket_ids)
@@ -378,54 +471,49 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     """Tests the redirect for GetBuildsStages function."""
     init = self.PatchObject(BuildStore, 'InitializeClients',
                             return_value=True)
-    bs = BuildStore()
+    bs = BuildStore(_read_from_bb=False)
+    bs._transitioning_to_bb = False
     bs.cidb_conn = mock.MagicMock()
-    build_ids = ['build 1', 'build 2']
     buildbucket_ids = ['bucket 1', 'bucket 2']
     # Test for buildbucket_ids.
     bs.GetBuildsStages(buildbucket_ids=buildbucket_ids)
     bs.cidb_conn.GetBuildsStagesWithBuildbucketIds.assert_called_once_with(
         buildbucket_ids)
-    # Test for build_ids.
-    bs.GetBuildsStages(build_ids=build_ids)
-    bs.cidb_conn.GetBuildsStages.assert_called_once_with(build_ids)
-    # Test for neither arguments.
-    self.assertEqual(bs.GetBuildsStages(), [])
+    bs = BuildStore(_read_from_bb=True)
+    bs.bb_client = mock.MagicMock()
+    buildbucket_ids = [1234]
+    # Test for buildbucket_ids.
+    bs.GetBuildsStages(buildbucket_ids=buildbucket_ids)
+    bs.bb_client.GetBuildStages.assert_called_once_with(1234)
+    # Test for empty argument.
+    self.assertEqual(bs.GetBuildsStages([]), [])
     init.return_value = False
     with self.assertRaises(buildstore.BuildStoreException):
-      bs.GetBuildsStages(build_ids=build_ids)
-
-  def testExtendDeadline(self):
-    """Tests the redirect for ExtendDeadline function."""
-    init = self.PatchObject(BuildStore, 'InitializeClients',
-                            return_value=True)
-    bs = BuildStore()
-    bs.cidb_conn = mock.MagicMock()
-    mock_timeout = mock.Mock()
-    self.PatchObject(bs.cidb_conn, 'ExtendDeadline')
-    bs.ExtendDeadline(constants.MOCK_BUILD_ID, mock_timeout)
-    bs.cidb_conn.ExtendDeadline.assert_called_once_with(
-        constants.MOCK_BUILD_ID, mock_timeout)
-    init.return_value = False
-    with self.assertRaises(buildstore.BuildStoreException):
-      bs.ExtendDeadline(constants.MOCK_BUILD_ID, mock_timeout)
+      bs.GetBuildsStages(buildbucket_ids=buildbucket_ids)
 
   def testGetBuildStatuses(self):
     """Tests the redirect for GetBuildStatuses function."""
     init = self.PatchObject(BuildStore, 'InitializeClients',
                             return_value=True)
-    bs = BuildStore()
+    bs = BuildStore(_read_from_bb=False)
+    bs._transitioning_to_bb = False
     bs.cidb_conn = mock.MagicMock()
     build_ids = ['build 1', 'build 2']
-    buildbucket_ids = ['bucket 1', 'bucket 2']
+    buildbucket_ids = [1234, 2341]
+    # Test for build_ids.
+    bs.GetBuildStatuses(build_ids=build_ids)
+    bs.cidb_conn.GetBuildStatuses.assert_called_once_with(build_ids)
     # Test for buildbucket_ids.
     bs.GetBuildStatuses(buildbucket_ids)
     bs.cidb_conn.GetBuildStatusesWithBuildbucketIds.assert_called_once_with(
         buildbucket_ids)
-    # Test for build_ids.
-    bs.GetBuildStatuses(build_ids=build_ids)
-    bs.cidb_conn.GetBuildStatuses.assert_called_once_with(build_ids)
-    # Test for neither arguments.
+    bs = BuildStore(_read_from_bb=True)
+    bs.bb_client = mock.MagicMock()
+    bs.GetBuildStatuses(buildbucket_ids)
+    bs.bb_client.GetBuildStatus.assert_called_with(2341)
+    # Test for error conditions.
+    with self.assertRaises(buildstore.BuildStoreException):
+      bs.GetBuildStatuses(buildbucket_ids=buildbucket_ids, build_ids=build_ids)
     self.assertEqual(bs.GetBuildStatuses(), [])
     init.return_value = False
     with self.assertRaises(buildstore.BuildStoreException):

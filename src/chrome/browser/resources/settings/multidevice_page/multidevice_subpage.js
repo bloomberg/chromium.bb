@@ -134,4 +134,15 @@ Polymer({
     // disabled, regardless if Messages requires further setup.
     return !this.pageContentData.isAndroidSmsPairingComplete;
   },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isAndroidMessagesSetupButtonDisabled_: function() {
+    const messagesFeatureState = this.getFeatureState(
+        settings.MultiDeviceFeature.MESSAGES);
+    return !this.isSuiteOn() ||  messagesFeatureState ===
+        settings.MultiDeviceFeatureState.PROHIBITED_BY_POLICY;
+  }
 });

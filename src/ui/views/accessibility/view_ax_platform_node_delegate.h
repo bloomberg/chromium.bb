@@ -28,7 +28,6 @@ class AXUniqueId;
 namespace views {
 
 class View;
-class Widget;
 
 // Shared base class for platforms that require an implementation of
 // |ViewAXPlatformNodeDelegate| to interface with the native accessibility
@@ -52,8 +51,10 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
   gfx::NativeViewAccessible GetNSWindow() override;
   gfx::NativeViewAccessible GetParent() override;
-  gfx::Rect GetClippedScreenBoundsRect() const override;
-  gfx::Rect GetUnclippedScreenBoundsRect() const override;
+  gfx::Rect GetBoundsRect(
+      const ui::AXCoordinateSystem coordinate_system,
+      const ui::AXClippingBehavior clipping_behavior,
+      ui::AXOffscreenResult* offscreen_result) const override;
   gfx::NativeViewAccessible HitTestSync(int x, int y) override;
   gfx::NativeViewAccessible GetFocus() override;
   ui::AXPlatformNode* GetFromNodeID(int32_t id) override;
@@ -67,11 +68,9 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
   explicit ViewAXPlatformNodeDelegate(View* view);
 
  private:
-  // |is_tab_modal_showing| is set to true if, instead of populating
-  // |result_child_widgets| normally, a single child widget was returned (e.g. a
-  // dialog that should be read instead of the rest of the page contents).
-  void PopulateChildWidgetVector(std::vector<Widget*>* result_child_widgets,
-                                 bool* is_tab_modal_showing);
+  struct ChildWidgetsResult;
+
+  ChildWidgetsResult GetChildWidgets() const;
 
   void OnMenuItemActive();
   void OnMenuStart();

@@ -40,8 +40,14 @@ bool WebFrame::Swap(WebFrame* frame) {
   // wasn't detached before continuing with the swap.
   // FIXME: There is no unit test for this condition, so one needs to be
   // written.
-  if (!old_frame->PrepareForCommit())
+  if (!old_frame->PrepareForCommit()) {
+    // If the Swap() fails, it should be because the frame has been detached
+    // already. Otherwise the caller will not detach the frame when we return
+    // false, and the browser and renderer will disagree about the destruction
+    // of |old_frame|.
+    CHECK(!old_frame->IsAttached());
     return false;
+  }
 
   // If there is a local parent, it might incorrectly declare itself complete
   // during the detach phase of this swap. Suppress its completion until swap is
@@ -50,7 +56,7 @@ bool WebFrame::Swap(WebFrame* frame) {
   auto* parent_web_local_frame = DynamicTo<WebLocalFrameImpl>(parent_);
   std::unique_ptr<IncrementLoadEventDelayCount> delay_parent_load =
       parent_web_local_frame
-          ? IncrementLoadEventDelayCount::Create(
+          ? std::make_unique<IncrementLoadEventDelayCount>(
                 *parent_web_local_frame->GetFrame()->GetDocument())
           : nullptr;
 
@@ -115,8 +121,6 @@ bool WebFrame::Swap(WebFrame* frame) {
     } else {
       Page* other_page = local_frame.GetPage();
       other_page->SetMainFrame(&local_frame);
-      if (PageScheduler* page_scheduler = other_page->GetPageScheduler())
-        page_scheduler->SetIsMainFrameLocal(true);
       // This trace event is needed to detect the main frame of the
       // renderer in telemetry metrics. See crbug.com/692112#c11.
       TRACE_EVENT_INSTANT1("loading", "markAsMainFrame",
@@ -153,14 +157,11 @@ WebSecurityOrigin WebFrame::GetSecurityOrigin() const {
       ToCoreFrame(*this)->GetSecurityContext()->GetSecurityOrigin());
 }
 
-void WebFrame::SetFrameOwnerPolicy(
-    WebSandboxFlags flags,
-    const blink::ParsedFeaturePolicy& container_policy) {
+void WebFrame::SetFrameOwnerPolicy(const FramePolicy& frame_policy) {
   // At the moment, this is only used to replicate sandbox flags and container
   // policy for frames with a remote owner.
-  auto* owner = To<RemoteFrameOwner>(ToCoreFrame(*this)->Owner());
-  owner->SetSandboxFlags(static_cast<SandboxFlags>(flags));
-  owner->SetContainerPolicy(container_policy);
+  To<RemoteFrameOwner>(ToCoreFrame(*this)->Owner())
+      ->SetFramePolicy(frame_policy);
 }
 
 WebInsecureRequestPolicy WebFrame::GetInsecureRequestPolicy() const {

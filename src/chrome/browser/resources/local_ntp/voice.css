@@ -284,13 +284,13 @@ html[darkmode=true] .button:active {
  *   - voice-text-5l - 5 line style class */
 
 /* Styles applied to the positioning text-container element. */
-.text-container {
+#text-container {
   pointer-events: none;
 }
 
 /* Full Page UI style for the text-container. */
-.overlay .text-container,
-.overlay-hidden .text-container {
+.overlay #text-container,
+.overlay-hidden #text-container {
   position: absolute;
 }
 

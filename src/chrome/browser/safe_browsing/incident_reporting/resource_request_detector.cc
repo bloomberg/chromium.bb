@@ -158,9 +158,9 @@ void ResourceRequestDetector::ProcessResourceRequest(
   if (!request->url.SchemeIsHTTPOrHTTPS())
     return;
 
-  if (request->resource_type == content::RESOURCE_TYPE_SUB_FRAME ||
-      request->resource_type == content::RESOURCE_TYPE_SCRIPT ||
-      request->resource_type == content::RESOURCE_TYPE_OBJECT) {
+  if (request->resource_type == content::ResourceType::kSubFrame ||
+      request->resource_type == content::ResourceType::kScript ||
+      request->resource_type == content::ResourceType::kObject) {
     ResourceRequestDetectorClient::Start(
         request->url, database_manager_,
         base::BindOnce(&ResourceRequestDetector::ReportIncidentOnUIThread,

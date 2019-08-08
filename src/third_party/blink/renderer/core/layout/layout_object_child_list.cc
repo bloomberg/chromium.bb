@@ -115,6 +115,10 @@ LayoutObject* LayoutObjectChildList::RemoveChildNode(
                ToLayoutBox(old_child)->IsOrthogonalWritingModeRoot()) {
       ToLayoutBox(old_child)->UnmarkOrthogonalWritingModeRoot();
     }
+
+    if (old_child->IsInLayoutNGInlineFormattingContext()) {
+      owner->SetNeedsCollectInlines();
+    }
   }
 
   // WARNING: There should be no code running between willBeRemovedFromTree and
@@ -198,6 +202,11 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
       // when moving.
       InvalidateInlineItems(new_child);
     }
+
+    if (owner->IsInLayoutNGInlineFormattingContext() ||
+        (owner->EverHadLayout() && owner->ChildrenInline())) {
+      owner->SetNeedsCollectInlines();
+    }
   }
 
   // Propagate the need to notify ancestors down into any
@@ -210,9 +219,12 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
   if (new_child->WasNotifiedOfSubtreeChange())
     owner->NotifyAncestorsOfSubtreeChange();
 
-  // Clear NeedsCollectInlines to ensure the marking doesn't stop on
-  // |new_child|.
-  new_child->ClearNeedsCollectInlines();
+  if (owner->ForceLegacyLayout()) {
+    new_child->SetForceLegacyLayout();
+    // TODO(crbug.com/943574): This would be a great place to DCHECK that the
+    // child isn't an NG object, but there are unfortunately cases where this
+    // actually happens.
+  }
 
   new_child->SetNeedsLayoutAndPrefWidthsRecalc(
       layout_invalidation_reason::kAddedToLayout);
@@ -228,8 +240,6 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
   if (!owner->NormalChildNeedsLayout()) {
     owner->SetChildNeedsLayout();  // We may supply the static position for an
                                    // absolute positioned child.
-  } else {
-    owner->MarkContainerNeedsCollectInlines();
   }
 
   if (!owner->DocumentBeingDestroyed())

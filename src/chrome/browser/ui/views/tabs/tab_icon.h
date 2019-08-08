@@ -161,6 +161,8 @@ class TabIcon : public views::View, public gfx::AnimationDelegate {
 
   SkColor bg_color_ = SK_ColorBLACK;
 
+  bool has_tab_renderer_data_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(TabIcon);
 };
 

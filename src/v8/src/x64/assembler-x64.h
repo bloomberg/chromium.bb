@@ -47,6 +47,9 @@
 #include "src/x64/constants-x64.h"
 #include "src/x64/register-x64.h"
 #include "src/x64/sse-instr.h"
+#if defined(V8_OS_WIN_X64)
+#include "src/unwinding-info-win64.h"
+#endif
 
 namespace v8 {
 namespace internal {
@@ -426,50 +429,45 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   // - Instructions on 64-bit (quadword) operands/registers use 'q'.
   // - Instructions on operands/registers with pointer size use 'p'.
 
-#define DECLARE_INSTRUCTION(instruction)                                       \
-  template <class P1>                                                          \
-  void instruction##_tagged(P1 p1) {                                           \
-    STATIC_ASSERT(kTaggedSize == kSystemPointerSize);                          \
-    /* TODO(ishell): change to kTaggedSize */                                  \
-    emit_##instruction(p1, COMPRESS_POINTERS_BOOL ? kInt32Size : kTaggedSize); \
-  }                                                                            \
-                                                                               \
-  template <class P1>                                                          \
-  void instruction##l(P1 p1) {                                                 \
-    emit_##instruction(p1, kInt32Size);                                        \
-  }                                                                            \
-                                                                               \
-  template <class P1>                                                          \
-  void instruction##q(P1 p1) {                                                 \
-    emit_##instruction(p1, kInt64Size);                                        \
-  }                                                                            \
-                                                                               \
-  template <class P1, class P2>                                                \
-  void instruction##_tagged(P1 p1, P2 p2) {                                    \
-    STATIC_ASSERT(kTaggedSize == kSystemPointerSize);                          \
-    /* TODO(ishell): change to kTaggedSize */                                  \
-    emit_##instruction(p1, p2,                                                 \
-                       COMPRESS_POINTERS_BOOL ? kInt32Size : kTaggedSize);     \
-  }                                                                            \
-                                                                               \
-  template <class P1, class P2>                                                \
-  void instruction##l(P1 p1, P2 p2) {                                          \
-    emit_##instruction(p1, p2, kInt32Size);                                    \
-  }                                                                            \
-                                                                               \
-  template <class P1, class P2>                                                \
-  void instruction##q(P1 p1, P2 p2) {                                          \
-    emit_##instruction(p1, p2, kInt64Size);                                    \
-  }                                                                            \
-                                                                               \
-  template <class P1, class P2, class P3>                                      \
-  void instruction##l(P1 p1, P2 p2, P3 p3) {                                   \
-    emit_##instruction(p1, p2, p3, kInt32Size);                                \
-  }                                                                            \
-                                                                               \
-  template <class P1, class P2, class P3>                                      \
-  void instruction##q(P1 p1, P2 p2, P3 p3) {                                   \
-    emit_##instruction(p1, p2, p3, kInt64Size);                                \
+#define DECLARE_INSTRUCTION(instruction)        \
+  template <class P1>                           \
+  void instruction##_tagged(P1 p1) {            \
+    emit_##instruction(p1, kTaggedSize);        \
+  }                                             \
+                                                \
+  template <class P1>                           \
+  void instruction##l(P1 p1) {                  \
+    emit_##instruction(p1, kInt32Size);         \
+  }                                             \
+                                                \
+  template <class P1>                           \
+  void instruction##q(P1 p1) {                  \
+    emit_##instruction(p1, kInt64Size);         \
+  }                                             \
+                                                \
+  template <class P1, class P2>                 \
+  void instruction##_tagged(P1 p1, P2 p2) {     \
+    emit_##instruction(p1, p2, kTaggedSize);    \
+  }                                             \
+                                                \
+  template <class P1, class P2>                 \
+  void instruction##l(P1 p1, P2 p2) {           \
+    emit_##instruction(p1, p2, kInt32Size);     \
+  }                                             \
+                                                \
+  template <class P1, class P2>                 \
+  void instruction##q(P1 p1, P2 p2) {           \
+    emit_##instruction(p1, p2, kInt64Size);     \
+  }                                             \
+                                                \
+  template <class P1, class P2, class P3>       \
+  void instruction##l(P1 p1, P2 p2, P3 p3) {    \
+    emit_##instruction(p1, p2, p3, kInt32Size); \
+  }                                             \
+                                                \
+  template <class P1, class P2, class P3>       \
+  void instruction##q(P1 p1, P2 p2, P3 p3) {    \
+    emit_##instruction(p1, p2, p3, kInt64Size); \
   }
   ASSEMBLER_INSTRUCTION_LIST(DECLARE_INSTRUCTION)
 #undef DECLARE_INSTRUCTION
@@ -735,8 +733,13 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   // Call near relative 32-bit displacement, relative to next instruction.
   void call(Label* L);
   void call(Address entry, RelocInfo::Mode rmode);
-  void near_call(Address entry, RelocInfo::Mode rmode);
-  void near_jmp(Address entry, RelocInfo::Mode rmode);
+
+  // Explicitly emit a near call / near jump. The displacement is relative to
+  // the next instructions (which starts at {pc_offset() + kNearJmpInstrSize}).
+  static constexpr int kNearJmpInstrSize = 5;
+  void near_call(intptr_t disp, RelocInfo::Mode rmode);
+  void near_jmp(intptr_t disp, RelocInfo::Mode rmode);
+
   void call(Handle<Code> target,
             RelocInfo::Mode rmode = RelocInfo::CODE_TARGET);
 
@@ -877,6 +880,8 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
 
   void andps(XMMRegister dst, XMMRegister src);
   void andps(XMMRegister dst, Operand src);
+  void andnps(XMMRegister dst, XMMRegister src);
+  void andnps(XMMRegister dst, Operand src);
   void orps(XMMRegister dst, XMMRegister src);
   void orps(XMMRegister dst, Operand src);
   void xorps(XMMRegister dst, XMMRegister src);
@@ -1072,6 +1077,7 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
 
   // SSE 4.1 instruction
   void insertps(XMMRegister dst, XMMRegister src, byte imm8);
+  void insertps(XMMRegister dst, Operand src, byte imm8);
   void extractps(Register dst, XMMRegister src, byte imm8);
   void pextrb(Register dst, XMMRegister src, int8_t imm8);
   void pextrb(Operand dst, XMMRegister src, int8_t imm8);
@@ -1324,6 +1330,7 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   AVX_SP_3(vmin, 0x5d)
   AVX_SP_3(vmax, 0x5f)
   AVX_P_3(vand, 0x54)
+  AVX_P_3(vandn, 0x55)
   AVX_P_3(vor, 0x56)
   AVX_P_3(vxor, 0x57)
   AVX_3(vcvtsd2ss, 0x5a, vsd)
@@ -1780,6 +1787,10 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
 
   byte byte_at(int pos) { return buffer_start_[pos]; }
   void set_byte_at(int pos, byte value) { buffer_start_[pos] = value; }
+
+#if defined(V8_OS_WIN_X64)
+  win64_unwindinfo::BuiltinUnwindInfo GetUnwindInfo() const;
+#endif
 
  protected:
   // Call near indirect
@@ -2251,6 +2262,10 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   ConstPool constpool_;
 
   friend class ConstPool;
+
+#if defined(V8_OS_WIN_X64)
+  std::unique_ptr<win64_unwindinfo::XdataEncoder> xdata_encoder_;
+#endif
 };
 
 

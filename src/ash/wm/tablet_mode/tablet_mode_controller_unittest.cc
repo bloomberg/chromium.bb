@@ -15,6 +15,7 @@
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_properties.h"
@@ -29,9 +30,9 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -149,8 +150,9 @@ class TabletModeControllerTest : public AshTestBase {
 
   base::UserActionTester* user_action_tester() { return &user_action_tester_; }
 
-  bool GetDeferBoundsUpdates(aura::Window* window) {
-    return test_api_->GetDeferBoundsUpdates(window);
+  void SuspendImminent() { test_api_->SuspendImminent(); }
+  void SuspendDone(const base::TimeDelta& sleep_duration) {
+    test_api_->SuspendDone(sleep_duration);
   }
 
   // Creates a test window snapped on the left in desktop mode.
@@ -1122,7 +1124,6 @@ TEST_F(TabletModeControllerTest, StartTabletActiveNoSnap) {
   tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_EQ(SplitViewController::NO_SNAP, split_view_controller->state());
   EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
-  EXPECT_FALSE(GetDeferBoundsUpdates(window.get()));
 }
 
 // Test that if the active window is snapped on the left before tablet mode,
@@ -1136,7 +1137,6 @@ TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnap) {
   EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
   EXPECT_EQ(window.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
-  EXPECT_FALSE(GetDeferBoundsUpdates(window.get()));
 }
 
 // Test that if the active window is snapped on the right before tablet mode,
@@ -1150,7 +1150,6 @@ TEST_F(TabletModeControllerTest, StartTabletActiveRightSnap) {
   EXPECT_EQ(SplitViewController::RIGHT_SNAPPED, split_view_controller->state());
   EXPECT_EQ(window.get(), split_view_controller->right_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
-  EXPECT_FALSE(GetDeferBoundsUpdates(window.get()));
 }
 
 // Test that if before tablet mode, the active window is snapped on the left and
@@ -1168,8 +1167,6 @@ TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnapPreviousRightSnap) {
   EXPECT_EQ(left_window.get(), split_view_controller->left_window());
   EXPECT_EQ(right_window.get(), split_view_controller->right_window());
   EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
-  EXPECT_FALSE(GetDeferBoundsUpdates(left_window.get()));
-  EXPECT_FALSE(GetDeferBoundsUpdates(right_window.get()));
 }
 
 // Test that if before tablet mode, the active window is snapped on the right
@@ -1187,8 +1184,6 @@ TEST_F(TabletModeControllerTest, StartTabletActiveRightSnapPreviousLeftSnap) {
   EXPECT_EQ(left_window.get(), split_view_controller->left_window());
   EXPECT_EQ(right_window.get(), split_view_controller->right_window());
   EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
-  EXPECT_FALSE(GetDeferBoundsUpdates(left_window.get()));
-  EXPECT_FALSE(GetDeferBoundsUpdates(right_window.get()));
 }
 
 // Test that if before tablet mode, the active window is an ARC window snapped
@@ -1207,8 +1202,6 @@ TEST_F(TabletModeControllerTest,
   tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_EQ(SplitViewController::NO_SNAP, split_view_controller->state());
   EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
-  EXPECT_FALSE(GetDeferBoundsUpdates(left_window.get()));
-  EXPECT_FALSE(GetDeferBoundsUpdates(right_window.get()));
 }
 
 // Test that if before tablet mode, the active window is snapped on the left,
@@ -1232,9 +1225,6 @@ TEST_F(TabletModeControllerTest,
   EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
   EXPECT_EQ(left_window.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
-  EXPECT_FALSE(GetDeferBoundsUpdates(left_window.get()));
-  EXPECT_TRUE(GetDeferBoundsUpdates(right_window.get()));
-  EXPECT_TRUE(GetDeferBoundsUpdates(extra_right_window.get()));
 }
 
 // Test that if before tablet mode, the active window is a transient child of a
@@ -1253,7 +1243,6 @@ TEST_F(TabletModeControllerTest, StartTabletActiveTransientChildOfLeftSnap) {
   EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
   EXPECT_EQ(parent.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
-  EXPECT_FALSE(GetDeferBoundsUpdates(parent.get()));
 }
 
 // Test that if before tablet mode, the active window is the app list and the
@@ -1271,7 +1260,6 @@ TEST_F(TabletModeControllerTest, StartTabletActiveAppListPreviousLeftSnap) {
   EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
   EXPECT_EQ(window.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
-  EXPECT_FALSE(GetDeferBoundsUpdates(window.get()));
 }
 
 // Test that if before tablet mode, the active window is being dragged and the
@@ -1296,7 +1284,6 @@ TEST_F(TabletModeControllerTest, StartTabletActiveDraggedPreviousLeftSnap) {
   EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
   EXPECT_EQ(snapped_window.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
-  EXPECT_FALSE(GetDeferBoundsUpdates(snapped_window.get()));
 }
 
 // Test that if before tablet mode, the active window is hidden from overview
@@ -1317,7 +1304,6 @@ TEST_F(TabletModeControllerTest,
   EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
   EXPECT_EQ(snapped_window.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
-  EXPECT_FALSE(GetDeferBoundsUpdates(snapped_window.get()));
 }
 
 // Test that if before tablet mode, the active window is snapped on the left but
@@ -1331,7 +1317,7 @@ TEST_F(TabletModeControllerTest,
   std::unique_ptr<aura::Window> left_window(CreateTestWindowInShellWithDelegate(
       &left_window_delegate, /*id=*/-1, /*bounds=*/gfx::Rect(0, 0, 400, 400)));
   const gfx::Rect display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           left_window.get());
   left_window_delegate.set_minimum_size(
       gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
@@ -1347,8 +1333,6 @@ TEST_F(TabletModeControllerTest,
   tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_EQ(SplitViewController::NO_SNAP, split_view_controller->state());
   EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
-  EXPECT_FALSE(GetDeferBoundsUpdates(left_window.get()));
-  EXPECT_FALSE(GetDeferBoundsUpdates(right_window.get()));
 }
 
 // Test that if before tablet mode, the active window is snapped on the right
@@ -1365,7 +1349,7 @@ TEST_F(TabletModeControllerTest,
           &right_window_delegate, /*id=*/-1,
           /*bounds=*/gfx::Rect(0, 0, 400, 400)));
   const gfx::Rect display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           right_window.get());
   right_window_delegate.set_minimum_size(
       gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
@@ -1379,8 +1363,6 @@ TEST_F(TabletModeControllerTest,
   tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_EQ(SplitViewController::NO_SNAP, split_view_controller->state());
   EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
-  EXPECT_FALSE(GetDeferBoundsUpdates(left_window.get()));
-  EXPECT_FALSE(GetDeferBoundsUpdates(right_window.get()));
 }
 
 // Test that if before tablet mode, the active window is snapped on the left and
@@ -1398,7 +1380,7 @@ TEST_F(TabletModeControllerTest,
           &right_window_delegate, /*id=*/-1,
           /*bounds=*/gfx::Rect(0, 0, 400, 400)));
   const gfx::Rect display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           right_window.get());
   right_window_delegate.set_minimum_size(
       gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
@@ -1413,8 +1395,6 @@ TEST_F(TabletModeControllerTest,
   EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
   EXPECT_EQ(left_window.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
-  EXPECT_FALSE(GetDeferBoundsUpdates(left_window.get()));
-  EXPECT_TRUE(GetDeferBoundsUpdates(right_window.get()));
 }
 
 // Test that if before tablet mode, the active window is snapped on the right
@@ -1429,7 +1409,7 @@ TEST_F(TabletModeControllerTest,
   std::unique_ptr<aura::Window> left_window(CreateTestWindowInShellWithDelegate(
       &left_window_delegate, /*id=*/-1, /*bounds=*/gfx::Rect(0, 0, 400, 400)));
   const gfx::Rect display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           left_window.get());
   left_window_delegate.set_minimum_size(
       gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
@@ -1446,8 +1426,6 @@ TEST_F(TabletModeControllerTest,
   EXPECT_EQ(SplitViewController::RIGHT_SNAPPED, split_view_controller->state());
   EXPECT_EQ(right_window.get(), split_view_controller->right_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
-  EXPECT_TRUE(GetDeferBoundsUpdates(left_window.get()));
-  EXPECT_FALSE(GetDeferBoundsUpdates(right_window.get()));
 }
 
 // Test that if overview is triggered on entering tablet mode, then the app list
@@ -1462,50 +1440,10 @@ TEST_F(TabletModeControllerTest, AppListWorksAfterEnteringTabletForOverview) {
   EXPECT_TRUE(app_list_controller->IsVisible());
 }
 
-// Test that bounds updates are deferred for windows in overview.
-TEST_F(TabletModeControllerTest, DeferBoundsUpdatesForWindowsInOverview) {
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
-  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
-  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
-  ::wm::ActivateWindow(window1.get());
-  ASSERT_FALSE(GetDeferBoundsUpdates(window1.get()));
-  ASSERT_FALSE(GetDeferBoundsUpdates(window2.get()));
-  ASSERT_FALSE(GetDeferBoundsUpdates(window3.get()));
-  Shell::Get()->overview_controller()->ToggleOverview();
-  EXPECT_TRUE(GetDeferBoundsUpdates(window1.get()));
-  EXPECT_TRUE(GetDeferBoundsUpdates(window2.get()));
-  EXPECT_TRUE(GetDeferBoundsUpdates(window3.get()));
-}
-
-// Test that bounds updates are deferred for windows in overview, in the case
-// that there are two snapped windows when overview is started.
-TEST_F(TabletModeControllerTest,
-       DeferBoundsUpdatesForWindowsInOverviewEnteredFromSplitView) {
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
-  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
-  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
-  ::wm::ActivateWindow(window1.get());
-  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
-  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
-  ASSERT_FALSE(GetDeferBoundsUpdates(window1.get()));
-  ASSERT_FALSE(GetDeferBoundsUpdates(window2.get()));
-  ASSERT_FALSE(GetDeferBoundsUpdates(window3.get()));
-  Shell::Get()->overview_controller()->ToggleOverview();
-  ASSERT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
-  EXPECT_FALSE(GetDeferBoundsUpdates(window1.get()));
-  EXPECT_TRUE(GetDeferBoundsUpdates(window2.get()));
-  EXPECT_TRUE(GetDeferBoundsUpdates(window3.get()));
-}
-
 // Test that if both the active window and the previous window are snapped on
 // the left before tablet mode, then split view is activated with the active
 // window on the left, and if the user proceeds to snap the other window on the
-// right and then enter overview again, bounds updates are still not deferred on
-// the window that remains snapped.
+// right and then enter overview again.
 TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnapPreviousLeftSnap) {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
@@ -1516,14 +1454,6 @@ TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnapPreviousLeftSnap) {
   EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
   EXPECT_EQ(window1.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
-  EXPECT_FALSE(GetDeferBoundsUpdates(window1.get()));
-  EXPECT_TRUE(GetDeferBoundsUpdates(window2.get()));
-  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
-  EXPECT_FALSE(GetDeferBoundsUpdates(window1.get()));
-  EXPECT_FALSE(GetDeferBoundsUpdates(window2.get()));
-  ASSERT_TRUE(Shell::Get()->overview_controller()->ToggleOverview());
-  EXPECT_FALSE(GetDeferBoundsUpdates(window1.get()));
-  EXPECT_TRUE(GetDeferBoundsUpdates(window2.get()));
 }
 
 // Test that it is okay to write code that first starts split view by snapping a
@@ -1537,7 +1467,65 @@ TEST_F(TabletModeControllerTest,
   ::wm::ActivateWindow(window.get());
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
   EXPECT_TRUE(Shell::Get()->overview_controller()->ToggleOverview());
-  EXPECT_FALSE(GetDeferBoundsUpdates(window.get()));
+}
+
+// Test that when OnKioskNextEnabled() is called the UI mode changes into
+// TabletMode. Ensure that UI mode keeps staying in Tablet Mode.
+TEST_F(TabletModeControllerTest, TestKioskNextModeUI) {
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+  ws::InputDeviceClientTestApi().SetTouchpadDevices({});
+  ws::InputDeviceClientTestApi().SetKeyboardDevices({});
+
+  tablet_mode_controller()->OnKioskNextEnabled();
+  EXPECT_TRUE(IsTabletModeStarted());
+
+  // Attach a mouse. Check that we are still in Tablet Mode.
+  ws::InputDeviceClientTestApi().SetMouseDevices(
+      {ui::InputDevice(0, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
+  EXPECT_TRUE(IsTabletModeStarted());
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+
+  // Attach Touchpad
+  ws::InputDeviceClientTestApi().SetTouchpadDevices(
+      {ui::InputDevice(1, ui::InputDeviceType::INPUT_DEVICE_USB, "touchpad")});
+  EXPECT_TRUE(IsTabletModeStarted());
+  ws::InputDeviceClientTestApi().SetTouchpadDevices({});
+
+  // Attach Keyboard
+  ws::InputDeviceClientTestApi().SetKeyboardDevices(
+      {ui::InputDevice(2, ui::InputDeviceType::INPUT_DEVICE_USB, "keyboard")});
+  EXPECT_TRUE(IsTabletModeStarted());
+  ws::InputDeviceClientTestApi().SetKeyboardDevices({});
+}
+
+// Test that tablet mode controller does not respond to the input device changes
+// during its suspend.
+TEST_F(TabletModeControllerTest, DoNotObserverInputDeviceChangeDuringSuspend) {
+  // Set the current list of devices to empty so that they don't interfere
+  // with the test.
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+
+  // Start in tablet mode.
+  OpenLidToAngle(300.0f);
+  EXPECT_TRUE(IsTabletModeStarted());
+
+  // Attaching external mouse will end tablet mode.
+  ws::InputDeviceClientTestApi().SetMouseDevices(
+      {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
+  EXPECT_FALSE(IsTabletModeStarted());
+
+  // Now suspend the device. Input device changes are no longer be observed.
+  SuspendImminent();
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+  EXPECT_FALSE(IsTabletModeStarted());
+
+  // Resume the device. Input device changes are being observed again.
+  SuspendDone(base::TimeDelta::Max());
+  EXPECT_TRUE(IsTabletModeStarted());
+
+  ws::InputDeviceClientTestApi().SetMouseDevices(
+      {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
+  EXPECT_FALSE(IsTabletModeStarted());
 }
 
 }  // namespace ash

@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -162,54 +161,6 @@ void UpdateCollectedPhantomHandles(v8::Isolate* isolate) {
   stats_collector->IncreaseCollectedWrapperCount(count);
 }
 
-void ScheduleFollowupGCs(ThreadState* thread_state,
-                         v8::GCCallbackFlags flags,
-                         bool is_unified) {
-  DCHECK(!thread_state->IsGCForbidden());
-  // Schedules followup garbage collections. Such garbage collections may be
-  // needed when:
-  // 1. GC is not precise because it has to scan on-stack pointers.
-  // 2. GC needs to reclaim chains persistent handles.
-
-  // v8::kGCCallbackFlagForced is used for testing GCs that need to verify
-  // that objects indeed died.
-  if (flags & v8::kGCCallbackFlagForced) {
-    if (!is_unified) {
-      thread_state->CollectGarbage(
-          BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking,
-          BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
-    }
-
-    // Forces a precise GC at the end of the current event loop.
-    thread_state->ScheduleFullGC();
-  }
-
-  // In the unified world there is little need to schedule followup garbage
-  // collections as the current GC already computed the whole transitive
-  // closure. We ignore chains of persistent handles here. Cleanup of such
-  // handle chains requires GC loops at the caller side, e.g., see thread
-  // termination.
-  if (is_unified)
-    return;
-
-  if ((flags & v8::kGCCallbackFlagCollectAllAvailableGarbage) ||
-      (flags & v8::kGCCallbackFlagCollectAllExternalMemory)) {
-    // This single GC is not enough. See the above comment.
-    thread_state->CollectGarbage(
-        BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking,
-        BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
-
-    // The conservative GC might have left floating garbage. Schedule
-    // precise GC to ensure that we collect all available garbage.
-    thread_state->SchedulePreciseGC();
-  }
-
-  // Schedules a precise GC for the next idle time period.
-  if (flags & v8::kGCCallbackScheduleIdleGarbageCollection) {
-    thread_state->ScheduleIdleGC();
-  }
-}
-
 }  // namespace
 
 void V8GCController::GcEpilogue(v8::Isolate* isolate,
@@ -258,9 +209,12 @@ void V8GCController::GcEpilogue(v8::Isolate* isolate,
 
   ThreadState* current_thread_state = ThreadState::Current();
   if (current_thread_state && !current_thread_state->IsGCForbidden()) {
-    ScheduleFollowupGCs(
-        ThreadState::Current(), flags,
-        RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled());
+    if (flags & v8::kGCCallbackFlagForced) {
+      // Forces a precise GC at the end of the current event loop.
+      // This is required for testing code that cannot use GC internals but
+      // rather has to rely on window.gc().
+      current_thread_state->ScheduleForcedGCForTesting();
+    }
   }
 
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
@@ -276,11 +230,7 @@ void V8GCController::CollectAllGarbageForTesting(
   if (stack_state != v8::EmbedderHeapTracer::EmbedderStackState::kUnknown) {
     V8PerIsolateData* data = V8PerIsolateData::From(isolate);
     v8::EmbedderHeapTracer* tracer =
-        RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled()
-            ? static_cast<v8::EmbedderHeapTracer*>(
-                  data->GetUnifiedHeapController())
-            : static_cast<v8::EmbedderHeapTracer*>(
-                  data->GetScriptWrappableMarkingVisitor());
+        static_cast<v8::EmbedderHeapTracer*>(data->GetUnifiedHeapController());
     // Passing a stack state is only supported when either wrapper tracing or
     // unified heap is enabled.
     CHECK(tracer);

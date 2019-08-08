@@ -5,6 +5,8 @@
 #include "ui/ozone/demo/vulkan_renderer.h"
 
 #include <vulkan/vulkan.h>
+#include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -18,28 +20,33 @@
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_surface.h"
 #include "gpu/vulkan/vulkan_swap_chain.h"
+#include "ui/ozone/public/platform_window_surface.h"
 
 namespace ui {
 
-VulkanRenderer::VulkanRenderer(std::unique_ptr<gpu::VulkanSurface> surface,
-                               gpu::VulkanImplementation* vulkan_implementation,
-                               gfx::AcceleratedWidget widget,
-                               const gfx::Size& size)
+VulkanRenderer::VulkanRenderer(
+    std::unique_ptr<PlatformWindowSurface> window_surface,
+    std::unique_ptr<gpu::VulkanSurface> vulkan_surface,
+    gpu::VulkanImplementation* vulkan_implementation,
+    gfx::AcceleratedWidget widget,
+    const gfx::Size& size)
     : RendererBase(widget, size),
+      window_surface_(std::move(window_surface)),
       vulkan_implementation_(vulkan_implementation),
-      surface_(std::move(surface)),
+      vulkan_surface_(std::move(vulkan_surface)),
       size_(size),
       weak_ptr_factory_(this) {}
 
 VulkanRenderer::~VulkanRenderer() {
   DestroyFramebuffers();
   DestroyRenderPass();
-  surface_->Destroy();
-  surface_.reset();
+  vulkan_surface_->Destroy();
+  vulkan_surface_.reset();
   command_pool_->Destroy();
   command_pool_.reset();
   device_queue_->Destroy();
   device_queue_.reset();
+  window_surface_.reset();
 }
 
 bool VulkanRenderer::Initialize() {
@@ -53,14 +60,14 @@ bool VulkanRenderer::Initialize() {
     LOG(FATAL) << "Failed to init device queue";
   }
 
-  if (!surface_->Initialize(device_queue_.get(),
-                            gpu::VulkanSurface::DEFAULT_SURFACE_FORMAT)) {
+  if (!vulkan_surface_->Initialize(
+          device_queue_.get(), gpu::VulkanSurface::DEFAULT_SURFACE_FORMAT)) {
     LOG(FATAL) << "Failed to init surface";
   }
 
   VkAttachmentDescription render_pass_attachments[] = {{
       /* .flags = */ 0,
-      /* .format = */ surface_->surface_format().format,
+      /* .format = */ vulkan_surface_->surface_format().format,
       /* .samples = */ VK_SAMPLE_COUNT_1_BIT,
       /* .loadOp = */ VK_ATTACHMENT_LOAD_OP_CLEAR,
       /* .storeOp = */ VK_ATTACHMENT_STORE_OP_STORE,
@@ -143,16 +150,16 @@ void VulkanRenderer::RecreateFramebuffers() {
 
   DestroyFramebuffers();
 
-  surface_->SetSize(size_);
+  vulkan_surface_->SetSize(size_);
 
-  gpu::VulkanSwapChain* vulkan_swap_chain = surface_->GetSwapChain();
+  gpu::VulkanSwapChain* vulkan_swap_chain = vulkan_surface_->GetSwapChain();
   const uint32_t num_images = vulkan_swap_chain->num_images();
   framebuffers_.resize(num_images);
 
   for (uint32_t image = 0; image < num_images; ++image) {
     framebuffers_[image] =
         Framebuffer::Create(device_queue_.get(), command_pool_.get(),
-                            render_pass_, surface_.get(), image);
+                            render_pass_, vulkan_surface_.get(), image);
     CHECK(framebuffers_[image]);
   }
 }
@@ -163,7 +170,7 @@ void VulkanRenderer::RenderFrame() {
   VkClearValue clear_value = {
       /* .color = */ {/* .float32 = */ {.5f, 1.f - NextFraction(), .5f, 1.f}}};
 
-  gpu::VulkanSwapChain* vulkan_swap_chain = surface_->GetSwapChain();
+  gpu::VulkanSwapChain* vulkan_swap_chain = vulkan_surface_->GetSwapChain();
   const uint32_t image = vulkan_swap_chain->current_image();
   const Framebuffer& framebuffer = *framebuffers_[image];
 

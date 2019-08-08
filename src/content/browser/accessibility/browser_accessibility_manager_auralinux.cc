@@ -109,23 +109,44 @@ void BrowserAccessibilityManagerAuraLinux::FireBlinkEvent(
   // Need to implement.
 }
 
+void BrowserAccessibilityManagerAuraLinux::FireNameChangedEvent(
+    BrowserAccessibility* node) {
+  ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnNameChanged();
+}
+
+void BrowserAccessibilityManagerAuraLinux::FireDescriptionChangedEvent(
+    BrowserAccessibility* node) {
+  ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnDescriptionChanged();
+}
+
 void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     ui::AXEventGenerator::Event event_type,
     BrowserAccessibility* node) {
   BrowserAccessibilityManager::FireGeneratedEvent(event_type, node);
 
   switch (event_type) {
+    case ui::AXEventGenerator::Event::DOCUMENT_SELECTION_CHANGED: {
+      int32_t focus_id = GetTreeData().sel_focus_object_id;
+      BrowserAccessibility* focus_object = GetFromID(focus_id);
+      if (focus_object)
+        FireEvent(focus_object, ax::mojom::Event::kTextSelectionChanged);
+      break;
+    }
     case ui::AXEventGenerator::Event::CHECKED_STATE_CHANGED:
       FireEvent(node, ax::mojom::Event::kCheckedStateChanged);
       break;
     case ui::AXEventGenerator::Event::COLLAPSED:
       FireExpandedEvent(node, false);
       break;
+    case ui::AXEventGenerator::Event::DOCUMENT_TITLE_CHANGED:
+      FireEvent(node, ax::mojom::Event::kDocumentTitleChanged);
+      break;
     case ui::AXEventGenerator::Event::EXPANDED:
       FireExpandedEvent(node, true);
       break;
     case ui::AXEventGenerator::Event::LOAD_COMPLETE:
       FireLoadingEvent(node, false);
+      FireEvent(node, ax::mojom::Event::kLoadComplete);
       break;
     case ui::AXEventGenerator::Event::LOAD_START:
       FireLoadingEvent(node, true);
@@ -139,6 +160,15 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::VALUE_CHANGED:
       FireEvent(node, ax::mojom::Event::kValueChanged);
+      break;
+    case ui::AXEventGenerator::Event::NAME_CHANGED:
+      FireNameChangedEvent(node);
+      break;
+    case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:
+      FireDescriptionChangedEvent(node);
+      break;
+    case ui::AXEventGenerator::Event::INVALID_STATUS_CHANGED:
+      FireEvent(node, ax::mojom::Event::kInvalidStatusChanged);
       break;
     default:
       // Need to implement.

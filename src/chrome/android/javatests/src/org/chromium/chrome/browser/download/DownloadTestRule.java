@@ -17,7 +17,6 @@ import org.junit.runners.model.Statement;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
@@ -27,6 +26,7 @@ import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -231,14 +231,14 @@ public class DownloadTestRule extends ChromeActivityTestRule<ChromeActivity> {
     private void setUp() throws Exception {
         mActivityStart.customMainActivityStart();
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefServiceBridge.getInstance().setPromptForDownloadAndroid(
                     DownloadPromptStatus.DONT_SHOW);
         });
 
         cleanUpAllDownloads();
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mSavedDownloadManagerService =
                     DownloadManagerService.setDownloadManagerService(new TestDownloadManagerService(
                             new SystemDownloadNotifier(), new Handler(), UPDATE_DELAY_MILLIS));
@@ -251,7 +251,7 @@ public class DownloadTestRule extends ChromeActivityTestRule<ChromeActivity> {
 
     private void tearDown() throws Exception {
         cleanUpAllDownloads();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             DownloadManagerService.setDownloadManagerService(mSavedDownloadManagerService);
             DownloadController.setDownloadNotificationService(mSavedDownloadManagerService);
         });

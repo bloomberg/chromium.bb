@@ -40,7 +40,7 @@ const StylePropertyShorthand& {{property.name.to_lower_camel_case()}}Shorthand()
   };
 
   static StylePropertyShorthand {{property.name.to_lower_camel_case()}}Longhands(
-    {{property.property_id}},
+    CSSPropertyID::{{property.enum_key}},
     {{property.name.to_lower_camel_case()}}Properties,
     base::size({{property.name.to_lower_camel_case()}}Properties));
   return {{property.name.to_lower_camel_case()}}Longhands;
@@ -54,7 +54,7 @@ const StylePropertyShorthand& offsetShorthandWithoutPositionAnchor() {
     &GetCSSPropertyOffsetDistance(),
     &GetCSSPropertyOffsetRotate(),
   };
-  DEFINE_STATIC_LOCAL(StylePropertyShorthand, offsetLonghands, (CSSPropertyOffset, offsetProperties, base::size(offsetProperties)));
+  DEFINE_STATIC_LOCAL(StylePropertyShorthand, offsetLonghands, (CSSPropertyID::kOffset, offsetProperties, base::size(offsetProperties)));
   return offsetLonghands;
 }
 
@@ -63,12 +63,12 @@ const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID) {
   // FIXME: We shouldn't switch between shorthand/not shorthand based on a runtime flag
   static StylePropertyShorthand emptyShorthand;
 
-  if (propertyID == CSSPropertyOffset &&
+  if (propertyID == CSSPropertyID::kOffset &&
       !RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled())
     return offsetShorthandWithoutPositionAnchor();
   switch (propertyID) {
     {% for property in properties %}
-    case {{property.property_id}}:
+    case CSSPropertyID::{{property.enum_key}}:
       return {{property.name.to_lower_camel_case()}}Shorthand();
     {% endfor %}
     default: {
@@ -81,10 +81,10 @@ void getMatchingShorthandsForLonghand(
     CSSPropertyID propertyID, Vector<StylePropertyShorthand, 4>* result) {
   DCHECK(!result->size());
   switch (propertyID) {
-  {% for longhand_id, shorthands in longhands_dictionary.items() %}
-    case {{longhand_id}}: {
+  {% for longhand_enum_key, shorthands in longhands_dictionary.items() %}
+    case CSSPropertyID::{{longhand_enum_key}}: {
       {% for shorthand in shorthands %}
-      if (CSSProperty::Get({{shorthand.property_id}}).IsEnabled())
+      if (CSSProperty::Get(CSSPropertyID::{{shorthand.enum_key}}).IsEnabled())
         result->UncheckedAppend({{shorthand.name.to_lower_camel_case()}}Shorthand());
       {% endfor %}
       break;

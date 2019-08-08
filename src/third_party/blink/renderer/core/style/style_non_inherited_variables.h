@@ -23,13 +23,12 @@ class CORE_EXPORT StyleNonInheritedVariables {
   USING_FAST_MALLOC(StyleNonInheritedVariables);
 
  public:
-  static std::unique_ptr<StyleNonInheritedVariables> Create() {
-    return base::WrapUnique(new StyleNonInheritedVariables);
-  }
-
   std::unique_ptr<StyleNonInheritedVariables> Clone() {
     return base::WrapUnique(new StyleNonInheritedVariables(*this));
   }
+
+  StyleNonInheritedVariables();
+  explicit StyleNonInheritedVariables(StyleNonInheritedVariables&);
 
   bool operator==(const StyleNonInheritedVariables& other) const;
   bool operator!=(const StyleNonInheritedVariables& other) const {
@@ -39,8 +38,7 @@ class CORE_EXPORT StyleNonInheritedVariables {
   void SetVariable(const AtomicString& name,
                    scoped_refptr<CSSVariableData> value) {
     needs_resolution_ =
-        needs_resolution_ || (value && (value->NeedsVariableResolution() ||
-                                        value->NeedsUrlResolution()));
+        needs_resolution_ || (value && value->NeedsVariableResolution());
     data_.Set(name, std::move(value));
   }
   CSSVariableData* GetVariable(const AtomicString& name) const;
@@ -57,9 +55,6 @@ class CORE_EXPORT StyleNonInheritedVariables {
   void ClearNeedsResolution() { needs_resolution_ = false; }
 
  private:
-  StyleNonInheritedVariables();
-  StyleNonInheritedVariables(StyleNonInheritedVariables&);
-
   friend class CSSVariableResolver;
 
   HashMap<AtomicString, scoped_refptr<CSSVariableData>> data_;

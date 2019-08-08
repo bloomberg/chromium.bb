@@ -175,7 +175,7 @@ class FakeDataChannel {
       return;
 
     int copied = PropagateData(read_buf_, read_buf_len_);
-    read_buf_ = NULL;
+    read_buf_ = nullptr;
     read_buf_len_ = 0;
     std::move(read_callback_).Run(copied);
   }
@@ -384,7 +384,6 @@ class SSLServerSocketTest : public PlatformTest,
     server_ssl_private_key_ = WrapOpenSSLPrivateKey(bssl::UpRef(key->key()));
 
     client_ssl_config_.false_start_enabled = false;
-    client_ssl_config_.channel_id_enabled = false;
 
     // Certificate provided by the host doesn't need authority.
     client_ssl_config_.allowed_bad_certs.emplace_back(
@@ -424,7 +423,7 @@ class SSLServerSocketTest : public PlatformTest,
 
     HostPortPair host_and_pair("unittest", 0);
     SSLClientSocketContext context(
-        cert_verifier_.get(), nullptr, transport_security_state_.get(),
+        cert_verifier_.get(), transport_security_state_.get(),
         ct_verifier_.get(), ct_policy_enforcer_.get(),
         ssl_client_session_cache_.get());
 

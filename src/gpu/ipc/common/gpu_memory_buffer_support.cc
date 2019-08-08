@@ -13,7 +13,6 @@
 #endif
 
 #if defined(OS_LINUX)
-#include "gpu/ipc/common/gpu_memory_buffer_impl_native_pixmap.h"
 #include "ui/gfx/client_native_pixmap_factory.h"
 #include "ui/gfx/linux/client_native_pixmap_factory_dmabuf.h"
 #endif
@@ -21,6 +20,10 @@
 #if defined(USE_OZONE)
 #include "ui/ozone/public/client_native_pixmap_factory_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
+#endif
+
+#if defined(USE_OZONE) || defined(OS_LINUX)
+#include "gpu/ipc/common/gpu_memory_buffer_impl_native_pixmap.h"
 #endif
 
 #if defined(OS_WIN)
@@ -51,7 +54,7 @@ GpuMemoryBufferSupport::GetNativeGpuMemoryBufferType() {
   return gfx::IO_SURFACE_BUFFER;
 #elif defined(OS_ANDROID)
   return gfx::ANDROID_HARDWARE_BUFFER;
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(USE_OZONE)
   return gfx::NATIVE_PIXMAP;
 #elif defined(OS_WIN)
   return gfx::DXGI_SHARED_HANDLE;
@@ -71,7 +74,6 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
     case gfx::BufferUsage::SCANOUT:
     case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
       return format == gfx::BufferFormat::BGRA_8888 ||
              format == gfx::BufferFormat::RGBA_8888 ||
              format == gfx::BufferFormat::BGRX_8888 ||
@@ -95,10 +97,10 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
     case gfx::BufferUsage::GPU_READ:
     case gfx::BufferUsage::SCANOUT:
       return format == gfx::BufferFormat::RGBA_8888 ||
-             format == gfx::BufferFormat::RGBX_8888;
+             format == gfx::BufferFormat::RGBX_8888 ||
+             format == gfx::BufferFormat::BGR_565;
     case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
     case gfx::BufferUsage::SCANOUT_VDA_WRITE:
     case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
     case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
@@ -119,7 +121,6 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
              format == gfx::BufferFormat::RGBX_8888;
     case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
     case gfx::BufferUsage::SCANOUT_VDA_WRITE:
     case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
     case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
@@ -166,7 +167,7 @@ GpuMemoryBufferSupport::CreateGpuMemoryBufferImplFromHandle(
       return GpuMemoryBufferImplIOSurface::CreateFromHandle(
           std::move(handle), size, format, usage, std::move(callback));
 #endif
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(USE_OZONE)
     case gfx::NATIVE_PIXMAP:
       return GpuMemoryBufferImplNativePixmap::CreateFromHandle(
           client_native_pixmap_factory(), std::move(handle), size, format,

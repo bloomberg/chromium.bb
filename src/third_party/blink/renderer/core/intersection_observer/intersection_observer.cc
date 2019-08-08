@@ -8,6 +8,7 @@
 #include <limits>
 
 #include "base/macros.h"
+#include "base/numerics/clamped_math.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_intersection_observer_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_intersection_observer_delegate.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
@@ -119,10 +120,10 @@ void ParseThresholds(const DoubleOrDoubleSequence& threshold_parameter,
                      ExceptionState& exception_state) {
   if (threshold_parameter.IsDouble()) {
     thresholds.push_back(
-        MakeClampedNum<float>(threshold_parameter.GetAsDouble()));
+        base::MakeClampedNum<float>(threshold_parameter.GetAsDouble()));
   } else {
     for (auto threshold_value : threshold_parameter.GetAsDoubleSequence())
-      thresholds.push_back(MakeClampedNum<float>(threshold_value));
+      thresholds.push_back(base::MakeClampedNum<float>(threshold_value));
   }
 
   for (auto threshold_value : thresholds) {

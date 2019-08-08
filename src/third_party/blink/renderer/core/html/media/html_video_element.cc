@@ -54,7 +54,6 @@
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -67,6 +66,8 @@ namespace blink {
 using namespace html_names;
 
 namespace {
+
+constexpr float kMostlyFillViewportThreshold = 0.85f;
 
 // This enum is used to record histograms. Do not reorder.
 enum VideoPersistenceControlsType {
@@ -115,6 +116,7 @@ void HTMLVideoElement::Trace(Visitor* visitor) {
   visitor->Trace(wake_lock_);
   visitor->Trace(remoting_interstitial_);
   visitor->Trace(picture_in_picture_interstitial_);
+  visitor->Trace(viewport_intersection_observer_);
   HTMLMediaElement::Trace(visitor);
 }
 
@@ -151,7 +153,8 @@ bool HTMLVideoElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
   return HTMLElement::LayoutObjectIsNeeded(style);
 }
 
-LayoutObject* HTMLVideoElement::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* HTMLVideoElement::CreateLayoutObject(const ComputedStyle&,
+                                                   LegacyLayout) {
   return new LayoutVideo(this);
 }
 
@@ -161,7 +164,7 @@ void HTMLVideoElement::AttachLayoutTree(AttachContext& context) {
   UpdateDisplayState();
   if (ShouldDisplayPosterImage()) {
     if (!image_loader_)
-      image_loader_ = HTMLImageLoader::Create(this);
+      image_loader_ = MakeGarbageCollected<HTMLImageLoader>(this);
     image_loader_->UpdateFromElement();
     if (GetLayoutObject()) {
       ToLayoutImage(GetLayoutObject())
@@ -176,9 +179,9 @@ void HTMLVideoElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kWidthAttr)
-    AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value);
   else if (name == kHeightAttr)
-    AddHTMLLengthToStyle(style, CSSPropertyHeight, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kHeight, value);
   else
     HTMLMediaElement::CollectStyleForPresentationAttribute(name, value, style);
 }
@@ -203,7 +206,7 @@ void HTMLVideoElement::ParseAttribute(
     }
     if (!PosterImageURL().IsEmpty()) {
       if (!image_loader_)
-        image_loader_ = HTMLImageLoader::Create(this);
+        image_loader_ = MakeGarbageCollected<HTMLImageLoader>(this);
       image_loader_->UpdateFromElement(ImageLoader::kUpdateIgnorePreviousError);
     } else {
       if (GetLayoutObject()) {
@@ -232,14 +235,15 @@ void HTMLVideoElement::ParseAttribute(
             &is_default_overridden_intrinsic_size_, &message);
     if (!message.IsEmpty()) {
       GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-          kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
+          mojom::ConsoleMessageSource::kOther,
+          mojom::ConsoleMessageLevel::kWarning, message));
     }
 
     if (intrinsic_size_changed && GetLayoutObject() &&
         GetLayoutObject()->IsVideo())
       ToLayoutVideo(GetLayoutObject())->IntrinsicSizeChanged();
   } else if (params.name == kAutopictureinpictureAttr &&
-             origin_trials::AutoPictureInPictureEnabled(
+             RuntimeEnabledFeatures::AutoPictureInPictureEnabled(
                  GetExecutionContext())) {
     if (!params.new_value.IsNull()) {
       PictureInPictureController::From(GetDocument())
@@ -366,6 +370,21 @@ void HTMLVideoElement::OnBecamePersistentVideo(bool value) {
     GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
 }
 
+void HTMLVideoElement::ActivateViewportIntersectionMonitoring(bool activate) {
+  if (activate && !viewport_intersection_observer_) {
+    viewport_intersection_observer_ = IntersectionObserver::Create(
+        {}, {kMostlyFillViewportThreshold}, &(GetDocument()),
+        WTF::BindRepeating(&HTMLVideoElement::OnViewportIntersectionChanged,
+                           WrapWeakPersistent(this)),
+        IntersectionObserver::kFractionOfRoot);
+    viewport_intersection_observer_->observe(this);
+  } else if (!activate && viewport_intersection_observer_) {
+    viewport_intersection_observer_->disconnect();
+    viewport_intersection_observer_ = nullptr;
+    mostly_filling_viewport_ = false;
+  }
+}
+
 bool HTMLVideoElement::IsPersistent() const {
   return is_persistent_;
 }
@@ -375,6 +394,33 @@ void HTMLVideoElement::UpdateDisplayState() {
     SetDisplayMode(kVideo);
   else if (GetDisplayMode() < kPoster)
     SetDisplayMode(kPoster);
+}
+
+void HTMLVideoElement::OnPlay() {
+  if (!RuntimeEnabledFeatures::VideoAutoFullscreenEnabled() ||
+      FastHasAttribute(html_names::kPlaysinlineAttr)) {
+    return;
+  }
+
+  std::unique_ptr<UserGestureIndicator> gesture =
+      LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  webkitEnterFullscreen();
+}
+
+void HTMLVideoElement::OnLoadStarted() {
+  web_media_player_->BecameDominantVisibleContent(mostly_filling_viewport_);
+}
+
+void HTMLVideoElement::OnLoadFinished() {
+  // If the player did a lazy load, it's expecting to be called when the
+  // element actually becomes visible to complete the load.
+  if (web_media_player_->DidLazyLoad() && !PotentiallyPlaying()) {
+    lazy_load_intersection_observer_ = IntersectionObserver::Create(
+        {}, {IntersectionObserver::kMinimumThreshold}, &GetDocument(),
+        WTF::BindRepeating(&HTMLVideoElement::OnIntersectionChangedForLazyLoad,
+                           WrapWeakPersistent(this)));
+    lazy_load_intersection_observer_->observe(this);
+  }
 }
 
 void HTMLVideoElement::PaintCurrentFrame(
@@ -460,6 +506,18 @@ bool HTMLVideoElement::TexImageImpl(
       xoffset, yoffset, zoffset, flip_y, premultiply_alpha);
 }
 
+bool HTMLVideoElement::PrepareVideoFrameForWebGL(
+    gpu::gles2::GLES2Interface* gl,
+    GLenum target,
+    GLuint texture,
+    bool already_uploaded_id,
+    WebMediaPlayer::VideoFrameUploadMetadata* out_metadata) {
+  if (!GetWebMediaPlayer())
+    return false;
+  return GetWebMediaPlayer()->PrepareVideoFrameForWebGL(
+      gl, target, texture, already_uploaded_id, out_metadata);
+}
+
 bool HTMLVideoElement::HasAvailableVideoFrame() const {
   if (!GetWebMediaPlayer())
     return false;
@@ -535,11 +593,21 @@ void HTMLVideoElement::DidExitFullscreen() {
         kCompositingUpdateRebuildTree);
   }
   in_overlay_fullscreen_video_ = false;
+
+  if (RuntimeEnabledFeatures::VideoAutoFullscreenEnabled() &&
+      !FastHasAttribute(html_names::kPlaysinlineAttr)) {
+    pause();
+  }
 }
 
 void HTMLVideoElement::DidMoveToNewDocument(Document& old_document) {
   if (image_loader_)
     image_loader_->ElementDidMoveToNewDocument();
+
+  if (viewport_intersection_observer_) {
+    ActivateViewportIntersectionMonitoring(false);
+    ActivateViewportIntersectionMonitoring(true);
+  }
 
   HTMLMediaElement::DidMoveToNewDocument(old_document);
 }
@@ -705,6 +773,8 @@ void HTMLVideoElement::OnEnteredPictureInPicture() {
   }
   picture_in_picture_interstitial_->Show();
 
+  PictureInPicturePseudoStateChanged();
+
   DCHECK(GetWebMediaPlayer());
   GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
 }
@@ -712,6 +782,8 @@ void HTMLVideoElement::OnEnteredPictureInPicture() {
 void HTMLVideoElement::OnExitedPictureInPicture() {
   if (picture_in_picture_interstitial_)
     picture_in_picture_interstitial_->Hide();
+
+  PictureInPicturePseudoStateChanged();
 
   if (GetWebMediaPlayer())
     GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
@@ -744,6 +816,29 @@ void HTMLVideoElement::AddedEventListener(
 
 bool HTMLVideoElement::IsRemotingInterstitialVisible() const {
   return remoting_interstitial_ && remoting_interstitial_->IsVisible();
+}
+
+void HTMLVideoElement::OnViewportIntersectionChanged(
+    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
+  const bool is_mostly_filling_viewport =
+      (entries.back()->intersectionRatio() >= kMostlyFillViewportThreshold);
+  if (mostly_filling_viewport_ == is_mostly_filling_viewport)
+    return;
+
+  mostly_filling_viewport_ = is_mostly_filling_viewport;
+  if (web_media_player_)
+    web_media_player_->BecameDominantVisibleContent(mostly_filling_viewport_);
+}
+
+void HTMLVideoElement::OnIntersectionChangedForLazyLoad(
+    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
+  bool is_visible = (entries.back()->intersectionRatio() > 0);
+  if (!is_visible || !web_media_player_)
+    return;
+
+  web_media_player_->OnBecameVisible();
+  lazy_load_intersection_observer_->disconnect();
+  lazy_load_intersection_observer_ = nullptr;
 }
 
 }  // namespace blink

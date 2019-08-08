@@ -20,6 +20,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserverTestRule.TabModelSelectorTestTabModel;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -44,17 +45,17 @@ public class TabModelSelectorTabModelObserverTest {
     }
 
     @Test
-    @UiThreadTest
     @SmallTest
     public void testAlreadyInitializedSelector() throws InterruptedException, TimeoutException {
         final CallbackHelper registrationCompleteCallback = new CallbackHelper();
         TabModelSelectorTabModelObserver observer =
-                new TabModelSelectorTabModelObserver(mSelector) {
-                    @Override
-                    protected void onRegistrationComplete() {
-                        registrationCompleteCallback.notifyCalled();
-                    }
-                };
+                TestThreadUtils.runOnUiThreadBlockingNoException(
+                        () -> new TabModelSelectorTabModelObserver(mSelector) {
+                            @Override
+                            protected void onRegistrationComplete() {
+                                registrationCompleteCallback.notifyCalled();
+                            }
+                        });
         registrationCompleteCallback.waitForCallback(0);
         assertAllModelsHaveObserver(mSelector, observer);
     }

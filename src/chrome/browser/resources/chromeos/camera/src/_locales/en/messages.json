@@ -33,6 +33,10 @@
     "message": "Unable to take photo",
     "description": "Error message shown when failing to take photo."
   },
+  "ERROR_MSG_TAKE_PORTRAIT_PHOTO_FAILED": {
+    "message": "Unable to take portrait photo",
+    "description": "Error message shown when failing to take portrait photo."
+  },
   "ERROR_MSG_RECORD_START_FAILED": {
     "message": "Unable to start recording",
     "description": "Error message shown when failing to start recording video."
@@ -149,11 +153,35 @@
   },
   "SWITCH_RECORD_VIDEO_BUTTON": {
     "message": "Switch to record video",
+    "description": "Label for spoken feedback to read out switch to record video mode button."
+  },
+  "LABEL_SWITCH_RECORD_VIDEO_BUTTON": {
+    "message": "Video",
     "description": "Label for the button to switch to record video mode."
   },
   "SWITCH_TAKE_PHOTO_BUTTON": {
     "message": "Switch to take photo",
+    "description": "Label for spoken feedback to read out switch to take photo mode button."
+  },
+  "LABEL_SWITCH_TAKE_PHOTO_BUTTON": {
+    "message": "Photo",
     "description": "Label for the button to switch to take photo mode."
+  },
+  "SWITCH_TAKE_SQUARE_PHOTO_BUTTON": {
+    "message": "Switch to take square photo",
+    "description": "Label for spoken feedback to read out switch to take square photo mode button."
+  },
+  "LABEL_SWITCH_TAKE_SQUARE_PHOTO_BUTTON": {
+    "message": "Square",
+    "description": "Label for the button to switch to take square photo mode."
+  },
+  "SWITCH_TAKE_PORTRAIT_PHOTO_BUTTON": {
+    "message": "Switch to take portrait photo",
+    "description": "Label for spoken feedback to read out switch to take portrait photo mode button."
+  },
+  "LABEL_SWITCH_TAKE_PORTRAIT_PHOTO_BUTTON": {
+    "message": "Portrait",
+    "description": "Label for the button to switch to take portrait photo mode."
   },
   "TOGGLE_TIMER_BUTTON": {
     "message": "Timer",

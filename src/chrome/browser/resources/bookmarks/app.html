@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_components/managed_footnote/managed_footnote.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast_manager.html">
 <link rel="import" href="chrome://resources/html/cr/ui/splitter.html">
 <link rel="import" href="chrome://resources/html/find_shortcut_behavior.html">
 <link rel="import" href="api_listener.html">
@@ -15,7 +16,6 @@
 <link rel="import" href="shared_vars.html">
 <link rel="import" href="store.html">
 <link rel="import" href="strings.html">
-<link rel="import" href="toast_manager.html">
 <link rel="import" href="toolbar.html">
 <link rel="import" href="util.html">
 
@@ -99,7 +99,9 @@
     </div>
     <bookmarks-router></bookmarks-router>
     <bookmarks-command-manager></bookmarks-command-manager>
-    <bookmarks-toast-manager duration="10000"></bookmarks-toast-manager>
+    <cr-toast-manager duration="10000" on-undo-click="onUndoClick_"
+        undo-label="$i18n{undo}" undo-description="$i18n{undoDescription}">
+    </cr-toast-manager>
   </template>
   <script src="app.js"></script>
 </dom-module>

@@ -30,13 +30,15 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/account_manager/account_manager.h"
-#include "chromeos/account_manager/account_manager_factory.h"
+#include "chromeos/components/account_manager/account_manager.h"
+#include "chromeos/components/account_manager/account_manager_factory.h"
+#include "chromeos/constants/chromeos_pref_names.h"
 #include "components/account_id/account_id.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
+#include "components/user_manager/user.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "services/identity/public/cpp/accounts_in_cookie_jar_info.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -167,7 +169,8 @@ class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
 class DeviceAccountMigration : public AccountMigrationBaseStep,
                                public WebDataServiceConsumer {
  public:
-  DeviceAccountMigration(AccountManager::AccountKey device_account,
+  DeviceAccountMigration(const AccountManager::AccountKey& device_account,
+                         const std::string& device_account_raw_email,
                          AccountManager* account_manager,
                          identity::IdentityManager* identity_manager,
                          scoped_refptr<TokenWebData> token_web_data)
@@ -175,7 +178,8 @@ class DeviceAccountMigration : public AccountMigrationBaseStep,
                                  account_manager,
                                  identity_manager),
         token_web_data_(token_web_data),
-        device_account_(device_account) {}
+        device_account_(device_account),
+        device_account_raw_email_(device_account_raw_email) {}
   ~DeviceAccountMigration() override = default;
 
  private:
@@ -232,7 +236,7 @@ class DeviceAccountMigration : public AccountMigrationBaseStep,
       }
 
       account_manager()->UpsertAccount(
-          device_account_, identity_manager()->GetPrimaryAccountInfo().email,
+          device_account_, device_account_raw_email_ /* raw_email */,
           it->second /* token */);
       is_success = true;
       break;
@@ -252,6 +256,9 @@ class DeviceAccountMigration : public AccountMigrationBaseStep,
 
   // Device Account on Chrome OS.
   const AccountManager::AccountKey device_account_;
+
+  // Raw, un-canonicalized email for the device account.
+  const std::string device_account_raw_email_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -440,9 +447,9 @@ class SuccessStorage : public AccountMigrationRunner::Step {
 
   void Run() override {
     const int num_times_ran_successfully = pref_service_->GetInteger(
-        prefs::kAccountManagerNumTimesMigrationRanSuccessfully);
+        ::prefs::kAccountManagerNumTimesMigrationRanSuccessfully);
     pref_service_->SetInteger(
-        prefs::kAccountManagerNumTimesMigrationRanSuccessfully,
+        ::prefs::kAccountManagerNumTimesMigrationRanSuccessfully,
         num_times_ran_successfully + 1);
     FinishWithSuccess();
   }
@@ -493,7 +500,7 @@ bool AccountManagerMigrator::ShouldRunMigrations() const {
   // Do not unnecessarily run migrations if they have been successfully run
   // before.
   if (profile_->GetPrefs()->GetInteger(
-          prefs::kAccountManagerNumTimesMigrationRanSuccessfully) >=
+          ::prefs::kAccountManagerNumTimesMigrationRanSuccessfully) >=
       kMaxMigrationRuns) {
     VLOG(1) << "Skipping migrations because of previous successful runs";
     return false;
@@ -520,23 +527,34 @@ void AccountManagerMigrator::AddMigrationSteps() {
       IdentityManagerFactory::GetForProfile(profile_);
 
   migration_runner_.AddStep(std::make_unique<DeviceAccountMigration>(
-      GetDeviceAccount(profile_), account_manager, identity_manager,
+      GetDeviceAccount(profile_),
+      ProfileHelper::Get()
+          ->GetUserByProfile(profile_)
+          ->display_email() /* device_account_raw_email */,
+      account_manager, identity_manager,
       WebDataServiceFactory::GetTokenWebDataForProfile(
           profile_, ServiceAccessType::EXPLICIT_ACCESS) /* token_web_data */));
-  migration_runner_.AddStep(std::make_unique<ContentAreaAccountsMigration>(
-      account_manager, identity_manager));
 
-  if (arc::IsArcProvisioned(profile_)) {
-    // Add a migration step for ARC only if ARC has been provisioned. If ARC has
-    // not been provisioned yet, there cannot be any accounts that need to be
-    // migrated.
-    migration_runner_.AddStep(std::make_unique<ArcAccountsMigration>(
-        account_manager, identity_manager,
-        arc::ArcAuthService::GetForBrowserContext(
-            profile_) /* arc_auth_service */));
-  } else {
-    VLOG(1) << "Skipping migration of ARC accounts. ARC has not been "
-               "provisioned yet";
+  const bool is_secondary_google_account_signin_allowed =
+      profile_->GetPrefs()->GetBoolean(
+          chromeos::prefs::kSecondaryGoogleAccountSigninAllowed);
+
+  if (is_secondary_google_account_signin_allowed) {
+    migration_runner_.AddStep(std::make_unique<ContentAreaAccountsMigration>(
+        account_manager, identity_manager));
+
+    if (arc::IsArcProvisioned(profile_)) {
+      // Add a migration step for ARC only if ARC has been provisioned. If ARC
+      // has not been provisioned yet, there cannot be any accounts that need to
+      // be migrated.
+      migration_runner_.AddStep(std::make_unique<ArcAccountsMigration>(
+          account_manager, identity_manager,
+          arc::ArcAuthService::GetForBrowserContext(
+              profile_) /* arc_auth_service */));
+    } else {
+      VLOG(1) << "Skipping migration of ARC accounts. ARC has not been "
+                 "provisioned yet";
+    }
   }
 
   // This MUST be the last step. Check the class level documentation of

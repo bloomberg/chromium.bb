@@ -12,7 +12,10 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/dbus/dbus_client.h"
+
+namespace dbus {
+class Bus;
+}
 
 namespace chromeos {
 
@@ -23,7 +26,7 @@ namespace chromeos {
 //  * the connected base pairing events.
 // The client forwards the received signals to its observers (together with any
 // data extracted from the signal object).
-class COMPONENT_EXPORT(CHROMEOS_DBUS) HammerdClient {
+class COMPONENT_EXPORT(HAMMERD) HammerdClient {
  public:
   class Observer {
    public:
@@ -57,10 +60,16 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) HammerdClient {
   HammerdClient();
   virtual ~HammerdClient();
 
-  // Creates and initializes the global instance. If |bus| is null, a
-  // FakeHammerdClient instance will be created.
+  // Creates and initializes the global instance. |bus| must not be null.
   static void Initialize(dbus::Bus* bus);
+
+  // Creates and initializes a fake global instance if not already created.
+  static void InitializeFake();
+
+  // Destroys the global instance which must have been initialized.
   static void Shutdown();
+
+  // Returns the global instance if initialized. May return null.
   static HammerdClient* Get();
 
   virtual void AddObserver(Observer* observer) = 0;

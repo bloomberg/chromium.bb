@@ -90,7 +90,7 @@ ServiceWorkerContainer* NavigatorServiceWorker::GetOrCreateContainer(
            ->GetSecurityOrigin()
            ->CanAccessServiceWorkers()) {
     String error_message;
-    if (frame->GetSecurityContext()->IsSandboxed(kSandboxOrigin)) {
+    if (frame->GetSecurityContext()->IsSandboxed(WebSandboxFlags::kOrigin)) {
       error_message =
           "Service worker is disabled because the context is sandboxed and "
           "lacks the 'allow-same-origin' flag.";

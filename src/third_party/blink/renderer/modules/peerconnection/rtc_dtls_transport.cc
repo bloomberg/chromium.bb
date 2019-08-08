@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_dtls_transport.h"
 
+#include <memory>
+
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -11,23 +13,11 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/dtls_transport_proxy.h"
-#include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter_cross_thread_factory.h"
-#include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_error_util.h"
-#include "third_party/blink/renderer/modules/peerconnection/rtc_ice_candidate.h"
-#include "third_party/blink/renderer/modules/peerconnection/rtc_ice_gather_options.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport.h"
-#include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event.h"
-#include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event_init.h"
-#include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/webrtc/api/dtls_transport_interface.h"
-#include "third_party/webrtc/api/jsep_ice_candidate.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
-#include "third_party/webrtc/p2p/base/port_allocator.h"
-#include "third_party/webrtc/p2p/base/transport_description.h"
-#include "third_party/webrtc/pc/ice_server_parsing.h"
-#include "third_party/webrtc/pc/webrtc_sdp.h"
 
 namespace blink {
 
@@ -84,12 +74,10 @@ RTCDtlsTransport::RTCDtlsTransport(
 RTCDtlsTransport::~RTCDtlsTransport() {}
 
 String RTCDtlsTransport::state() const {
+  if (closed_from_owner_) {
+    return TransportStateToString(webrtc::DtlsTransportState::kClosed);
+  }
   return TransportStateToString(current_state_.state());
-}
-
-const HeapVector<Member<DOMArrayBuffer>>&
-RTCDtlsTransport::getRemoteCertificates() const {
-  return remote_certificates_;
 }
 
 RTCIceTransport* RTCDtlsTransport::iceTransport() const {
@@ -105,6 +93,14 @@ void RTCDtlsTransport::ChangeState(webrtc::DtlsTransportInformation info) {
   current_state_ = info;
 }
 
+void RTCDtlsTransport::Close() {
+  closed_from_owner_ = true;
+  if (current_state_.state() != webrtc::DtlsTransportState::kClosed) {
+    DispatchEvent(*Event::Create(event_type_names::kStatechange));
+  }
+  ice_transport_->stop();
+}
+
 // Implementation of DtlsTransportProxy::Delegate
 void RTCDtlsTransport::OnStartCompleted(webrtc::DtlsTransportInformation info) {
   current_state_ = info;
@@ -114,10 +110,9 @@ void RTCDtlsTransport::OnStateChange(webrtc::DtlsTransportInformation info) {
   // We depend on closed only happening once for safe garbage collection.
   DCHECK(current_state_.state() != webrtc::DtlsTransportState::kClosed);
   current_state_ = info;
-  DispatchEvent(*Event::Create(event_type_names::kStatechange));
-  // Make sure the ICE transport is also closed. This must happen prior
-  // to garbage collection.
-  ice_transport_->stop();
+  if (!closed_from_owner_) {
+    DispatchEvent(*Event::Create(event_type_names::kStatechange));
+  }
 }
 
 const AtomicString& RTCDtlsTransport::InterfaceName() const {
@@ -128,17 +123,9 @@ ExecutionContext* RTCDtlsTransport::GetExecutionContext() const {
   return ContextClient::GetExecutionContext();
 }
 
-bool RTCDtlsTransport::HasPendingActivity() const {
-  // We have to keep the RTCDtlsTransport alive while new notifications
-  // may arrive.
-  // The closed state is final, so no more events will happen after
-  // seeing that state.
-  return current_state_.state() != webrtc::DtlsTransportState::kClosed;
-}
-
 void RTCDtlsTransport::Trace(Visitor* visitor) {
-  visitor->Trace(remote_certificates_);
   visitor->Trace(ice_transport_);
+  DtlsTransportProxy::Delegate::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
   ContextClient::Trace(visitor);
 }

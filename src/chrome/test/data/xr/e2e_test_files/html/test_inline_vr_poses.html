@@ -11,10 +11,22 @@ test can query for whether each submitted frame used the correct pose.
   </head>
   <body>
     <canvas id="webgl-canvas"></canvas>
+    <script>
+      let shouldDeferNonImmersiveSessionCreation = true;
+    </script>
     <script src="../../../../../../third_party/blink/web_tests/resources/testharness.js"></script>
     <script src="../resources/webxr_e2e.js"></script>
     <script src="../resources/webxr_boilerplate.js"></script>
     <script>
+      // Override the reference space map to only request eye-level stationary
+      // reference spaces, as opposed to the identity MagicWindow/AR spaces.
+      referenceSpaceMap = {
+        [sessionTypes.IMMERSIVE]: { type: 'stationary', subtype: 'eye-level' },
+        [sessionTypes.MAGIC_WINDOW]: { type: 'stationary', subtype: 'eye-level' },
+        [sessionTypes.AR]: { type: 'stationary', subtype: 'eye-level' }
+      }
+      requestMagicWindowSession();
+
       let MAX_FRAME_CALLBACKS = 10;
 
       let num_frame_callbacks = 0;

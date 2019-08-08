@@ -1341,13 +1341,11 @@ std::unique_ptr<PageInfo> VrShell::CreatePageInfo() {
 
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(web_contents_);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-
   return std::make_unique<PageInfo>(
       this, Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
       TabSpecificContentSettings::FromWebContents(web_contents_), web_contents_,
-      entry->GetVirtualURL(), security_info);
+      entry->GetVirtualURL(), helper->GetSecurityLevel(),
+      *helper->GetVisibleSecurityState());
 }
 
 gfx::AcceleratedWidget VrShell::GetRenderSurface() {

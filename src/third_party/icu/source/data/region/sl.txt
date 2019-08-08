@@ -183,11 +183,11 @@ sl{
         MF{"Saint Martin"}
         MG{"Madagaskar"}
         MH{"Marshallovi otoki"}
-        MK{"Makedonija (FYROM)"}
+        MK{"Severna Makedonija"}
         ML{"Mali"}
         MM{"Mjanmar (Burma)"}
         MN{"Mongolija"}
-        MO{"Macao"}
+        MO{"Posebno administrativno območje LR Kitajske Macao"}
         MP{"Severni Marianski otoki"}
         MQ{"Martinik"}
         MR{"Mavretanija"}
@@ -287,6 +287,8 @@ sl{
         VU{"Vanuatu"}
         WF{"Wallis in Futuna"}
         WS{"Samoa"}
+        XA{"psevdonaglasi"}
+        XB{"psevdobidi"}
         XK{"Kosovo"}
         YE{"Jemen"}
         YT{"Mayotte"}
@@ -307,5 +309,5 @@ sl{
         CZ{"Češka republika"}
         TL{"Vzhodni Timor"}
     }
-    Version{"2.1.44.91"}
+    Version{"2.1.48.42"}
 }

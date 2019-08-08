@@ -16,7 +16,6 @@
 <link rel="import" href="../icons.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
-<link rel="import" href="../settings_vars_css.html">
 
 <dom-module id="settings-clear-browsing-data-dialog">
   <template>
@@ -35,9 +34,9 @@
           padding-bottom: 8px;
         };
         --cr-dialog-body-container: {
-          border-top: 1px solid var(--border-top-color);
           height: var(--body-container-height);
         };
+        --cr-dialog-body-border-top: 1px solid var(--border-top-color);
       }
 
       :host-context([dark]) #clearBrowsingDataDialog {
@@ -106,7 +105,7 @@
       }
 
       .divider {
-        border-top: var(--settings-separator-line);
+        border-top: var(--cr-separator-line);
         margin: 0 16px;
       }
 

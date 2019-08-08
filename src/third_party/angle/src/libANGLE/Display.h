@@ -77,6 +77,7 @@ class Display final : public LabeledObject, angle::NonCopyable
     static const std::string &GetClientExtensionString();
 
     std::vector<const Config *> getConfigs(const AttributeMap &attribs) const;
+    std::vector<const Config *> chooseConfig(const AttributeMap &attribs) const;
 
     Error createWindowSurface(const Config *configuration,
                               EGLNativeWindowType window,
@@ -108,7 +109,10 @@ class Display final : public LabeledObject, angle::NonCopyable
                         const AttributeMap &attribs,
                         gl::Context **outContext);
 
-    Error createSync(EGLenum type, const AttributeMap &attribs, Sync **outSync);
+    Error createSync(const gl::Context *currentContext,
+                     EGLenum type,
+                     const AttributeMap &attribs,
+                     Sync **outSync);
 
     Error makeCurrent(Surface *drawSurface, Surface *readSurface, gl::Context *context);
 
@@ -168,9 +172,6 @@ class Display final : public LabeledObject, angle::NonCopyable
                                const void *binary,
                                EGLint binarysize);
     EGLint programCacheResize(EGLint limit, EGLenum mode);
-
-    Error clientWaitSync(Sync *sync, EGLint flags, EGLTime timeout, EGLint *outResult);
-    Error waitSync(Sync *sync, EGLint flags);
 
     const AttributeMap &getAttributeMap() const { return mAttributeMap; }
     EGLNativeDisplayType getNativeDisplayId() const { return mDisplayId; }

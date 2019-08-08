@@ -19,6 +19,7 @@
 
 #include "absl/memory/memory.h"
 #include "absl/strings/string_view.h"
+#include "api/function_view.h"
 #include "api/transport/field_trial_based_config.h"
 #include "api/transport/goog_cc_factory.h"
 #include "call/audio_receive_stream.h"
@@ -26,7 +27,6 @@
 #include "call/call.h"
 #include "call/video_receive_stream.h"
 #include "call/video_send_stream.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "logging/rtc_event_log/rtc_stream_config.h"
 #include "modules/audio_coding/audio_network_adaptor/include/audio_network_adaptor.h"
 #include "modules/audio_coding/neteq/tools/audio_sink.h"
@@ -54,11 +54,11 @@
 #include "modules/rtp_rtcp/source/rtp_utility.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/format_macros.h"
-#include "rtc_base/function_view.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/numerics/sequence_number_util.h"
 #include "rtc_base/rate_statistics.h"
 #include "rtc_base/strings/string_builder.h"
+#include "rtc_tools/event_log_visualizer/log_simulation.h"
 
 #ifndef BWE_TEST_LOGGING_COMPILE_TIME_ENABLE
 #define BWE_TEST_LOGGING_COMPILE_TIME_ENABLE 0
@@ -139,10 +139,10 @@ absl::optional<uint32_t> EstimateRtpClockFrequency(
     int64_t end_time_us) {
   RTC_CHECK(packets.size() >= 2);
   SeqNumUnwrapper<uint32_t> unwrapper;
-  uint64_t first_rtp_timestamp =
+  int64_t first_rtp_timestamp =
       unwrapper.Unwrap(packets[0].rtp.header.timestamp);
   int64_t first_log_timestamp = packets[0].log_time_us();
-  uint64_t last_rtp_timestamp = first_rtp_timestamp;
+  int64_t last_rtp_timestamp = first_rtp_timestamp;
   int64_t last_log_timestamp = first_log_timestamp;
   for (size_t i = 1; i < packets.size(); i++) {
     if (packets[i].log_time_us() > end_time_us)
@@ -1156,6 +1156,51 @@ void EventLogAnalyzer::CreateBitrateAllocationGraph(PacketDirection direction,
     plot->SetTitle("Target bitrate per outgoing layer");
 }
 
+void EventLogAnalyzer::CreateGoogCcSimulationGraph(Plot* plot) {
+  TimeSeries target_rates("Simulated target rate", LineStyle::kStep,
+                          PointStyle::kHighlight);
+  TimeSeries delay_based("Logged delay-based estimate", LineStyle::kStep,
+                         PointStyle::kHighlight);
+  TimeSeries loss_based("Logged loss-based estimate", LineStyle::kStep,
+                        PointStyle::kHighlight);
+  TimeSeries probe_results("Logged probe success", LineStyle::kNone,
+                           PointStyle::kHighlight);
+
+  RtcEventLogNullImpl null_event_log;
+  LogBasedNetworkControllerSimulation simulation(
+      absl::make_unique<GoogCcNetworkControllerFactory>(&null_event_log),
+      [&](const NetworkControlUpdate& update, Timestamp at_time) {
+        if (update.target_rate) {
+          target_rates.points.emplace_back(
+              config_.GetCallTimeSec(at_time.us()),
+              update.target_rate->target_rate.kbps<float>());
+        }
+      });
+
+  simulation.ProcessEventsInLog(parsed_log_);
+  for (const auto& logged : parsed_log_.bwe_delay_updates())
+    delay_based.points.emplace_back(
+        config_.GetCallTimeSec(logged.log_time_us()),
+        logged.bitrate_bps / 1000);
+  for (const auto& logged : parsed_log_.bwe_probe_success_events())
+    probe_results.points.emplace_back(
+        config_.GetCallTimeSec(logged.log_time_us()),
+        logged.bitrate_bps / 1000);
+  for (const auto& logged : parsed_log_.bwe_loss_updates())
+    loss_based.points.emplace_back(config_.GetCallTimeSec(logged.log_time_us()),
+                                   logged.bitrate_bps / 1000);
+
+  plot->AppendTimeSeries(std::move(delay_based));
+  plot->AppendTimeSeries(std::move(loss_based));
+  plot->AppendTimeSeries(std::move(probe_results));
+  plot->AppendTimeSeries(std::move(target_rates));
+
+  plot->SetXAxis(config_.CallBeginTimeSec(), config_.CallEndTimeSec(),
+                 "Time (s)", kLeftMargin, kRightMargin);
+  plot->SetSuggestedYAxis(0, 10, "Bitrate (kbps)", kBottomMargin, kTopMargin);
+  plot->SetTitle("Simulated BWE behavior");
+}
+
 void EventLogAnalyzer::CreateSendSideBweSimulationGraph(Plot* plot) {
   using RtpPacketType = LoggedRtpPacketOutgoing;
   using TransportFeedbackType = LoggedRtcpPacketTransportFeedback;
@@ -1441,6 +1486,10 @@ void EventLogAnalyzer::CreatePacerDelayGraph(Plot* plot) {
   for (const auto& stream : parsed_log_.outgoing_rtp_packets_by_ssrc()) {
     const std::vector<LoggedRtpPacketOutgoing>& packets =
         stream.outgoing_packets;
+
+    if (IsRtxSsrc(kOutgoingPacket, stream.ssrc)) {
+      continue;
+    }
 
     if (packets.size() < 2) {
       RTC_LOG(LS_WARNING)

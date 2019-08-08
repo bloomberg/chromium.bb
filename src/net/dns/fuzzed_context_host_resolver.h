@@ -43,7 +43,8 @@ class FuzzedContextHostResolver : public ContextHostResolver {
  public:
   FuzzedContextHostResolver(const Options& options,
                             NetLog* net_log,
-                            base::FuzzedDataProvider* data_provider);
+                            base::FuzzedDataProvider* data_provider,
+                            bool enable_caching);
   ~FuzzedContextHostResolver() override;
 
   // Enable / disable the async resolver. When enabled, installs a

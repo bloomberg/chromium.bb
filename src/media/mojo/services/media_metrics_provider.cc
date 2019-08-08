@@ -4,6 +4,9 @@
 
 #include "media/mojo/services/media_metrics_provider.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "media/mojo/services/video_decode_stats_recorder.h"
@@ -21,10 +24,12 @@ static uint64_t g_player_id = 0;
 MediaMetricsProvider::MediaMetricsProvider(
     bool is_top_frame,
     ukm::SourceId source_id,
+    learning::FeatureValue origin,
     VideoDecodePerfHistory::SaveCallback save_cb)
     : player_id_(g_player_id++),
       is_top_frame_(is_top_frame),
       source_id_(source_id),
+      origin_(origin),
       save_cb_(std::move(save_cb)) {}
 
 MediaMetricsProvider::~MediaMetricsProvider() {
@@ -77,12 +82,13 @@ MediaMetricsProvider::~MediaMetricsProvider() {
 // static
 void MediaMetricsProvider::Create(bool is_top_frame,
                                   GetSourceIdCallback get_source_id_cb,
+                                  GetOriginCallback get_origin_cb,
                                   VideoDecodePerfHistory::SaveCallback save_cb,
                                   mojom::MediaMetricsProviderRequest request) {
-  mojo::MakeStrongBinding(
-      std::make_unique<MediaMetricsProvider>(
-          is_top_frame, get_source_id_cb.Run(), std::move(save_cb)),
-      std::move(request));
+  mojo::MakeStrongBinding(std::make_unique<MediaMetricsProvider>(
+                              is_top_frame, get_source_id_cb.Run(),
+                              get_origin_cb.Run(), std::move(save_cb)),
+                          std::move(request));
 }
 
 void MediaMetricsProvider::Initialize(bool is_mse,
@@ -163,9 +169,10 @@ void MediaMetricsProvider::AcquireVideoDecodeStatsRecorder(
     return;
   }
 
-  mojo::MakeStrongBinding(std::make_unique<VideoDecodeStatsRecorder>(
-                              save_cb_, source_id_, is_top_frame_, player_id_),
-                          std::move(request));
+  mojo::MakeStrongBinding(
+      std::make_unique<VideoDecodeStatsRecorder>(save_cb_, source_id_, origin_,
+                                                 is_top_frame_, player_id_),
+      std::move(request));
 }
 
 void MediaMetricsProvider::AddBytesReceived(uint64_t bytes_received) {

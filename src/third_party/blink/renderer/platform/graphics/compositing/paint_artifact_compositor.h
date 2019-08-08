@@ -11,7 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer_collections.h"
+#include "cc/layers/picture_layer.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/property_tree_manager.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -20,8 +22,8 @@
 
 namespace cc {
 struct ElementId;
+class EffectTree;
 class Layer;
-class LayerTreeHost;
 }
 
 namespace gfx {
@@ -48,6 +50,57 @@ class LayerListBuilder {
   cc::LayerList list_;
 };
 
+// This class maintains unique stable cc effect IDs (and optionally a persistent
+// mask layer) for reuse across compositing cycles. The mask layer paints a
+// rounded rect, which is an updatable parameter of the class. The caller is
+// responsible for inserting the mask layer into layer list and associating with
+// property nodes. The mask layer may be omitted if the caller determines it is
+// not necessary (e.g. because there is no content to mask).
+//
+// The typical application of the mask layer is to create an isolating effect
+// node to paint the clipped contents, and at the end draw the mask layer with
+// a kDstIn blend effect. This is why two stable cc effect IDs are provided.
+// Even if the mask layer is not present, it's important for the isolation
+// effect node to be stable, to minimize render surface damage.
+class SynthesizedClip : private cc::ContentLayerClient {
+ public:
+  SynthesizedClip() : layer_(nullptr) {
+    mask_isolation_id_ =
+        CompositorElementIdFromUniqueObjectId(NewUniqueObjectId());
+    mask_effect_id_ =
+        CompositorElementIdFromUniqueObjectId(NewUniqueObjectId());
+  }
+  ~SynthesizedClip() override {
+    if (layer_)
+      layer_->ClearClient();
+  }
+
+  void UpdateLayer(bool needs_layer,
+                   const FloatRoundedRect& rrect,
+                   scoped_refptr<const RefCountedPath> path);
+
+  cc::Layer* Layer() { return layer_.get(); }
+  CompositorElementId GetMaskIsolationId() const { return mask_isolation_id_; }
+  CompositorElementId GetMaskEffectId() const { return mask_effect_id_; }
+
+ private:
+  // ContentLayerClient implementation.
+  gfx::Rect PaintableRegion() final { return gfx::Rect(layer_->bounds()); }
+  bool FillsBoundsCompletely() const final { return false; }
+  size_t GetApproximateUnsharedMemoryUsage() const final { return 0; }
+
+  scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList(
+      PaintingControlSetting) final;
+
+ private:
+  scoped_refptr<cc::PictureLayer> layer_;
+  gfx::Vector2dF layer_origin_;
+  SkRRect local_rrect_ = SkRRect::MakeEmpty();
+  scoped_refptr<const RefCountedPath> path_;
+  CompositorElementId mask_isolation_id_;
+  CompositorElementId mask_effect_id_;
+};
+
 // Responsible for managing compositing in terms of a PaintArtifact.
 //
 // Owns a subtree of the compositor layer tree, and updates it in response to
@@ -60,14 +113,10 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   USING_FAST_MALLOC(PaintArtifactCompositor);
 
  public:
-  ~PaintArtifactCompositor();
-
-  static std::unique_ptr<PaintArtifactCompositor> Create(
+  PaintArtifactCompositor(
       base::RepeatingCallback<void(const gfx::ScrollOffset&,
-                                   const cc::ElementId&)> scroll_callback) {
-    return base::WrapUnique(
-        new PaintArtifactCompositor(std::move(scroll_callback)));
-  }
+                                   const cc::ElementId&)> scroll_callback);
+  ~PaintArtifactCompositor();
 
   struct ViewportProperties {
     const TransformPaintPropertyNode* page_scale = nullptr;
@@ -88,6 +137,11 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
               CompositorElementIdSet& composited_element_ids,
               const ViewportProperties& viewport_properties,
               const Settings& settings);
+
+  bool DirectlyUpdateCompositedOpacityValue(const EffectPaintPropertyNode&);
+  bool DirectlyUpdateScrollOffsetTransform(const TransformPaintPropertyNode&);
+  bool DirectlyUpdateTransform(const TransformPaintPropertyNode&);
+  bool DirectlyUpdatePageScaleTransform(const TransformPaintPropertyNode&);
 
   // The root layer of the tree managed by this object.
   cc::Layer* RootLayer() const { return root_layer_.get(); }
@@ -134,6 +188,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   void SetNeedsUpdate() { needs_update_ = true; }
   bool NeedsUpdate() const { return needs_update_; }
+  void ClearNeedsUpdateForTesting() { needs_update_ = false; }
 
  private:
   // A pending layer is a collection of paint chunks that will end up in
@@ -155,18 +210,19 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     // to the chunks as Skia commands.
     void Upcast(const PropertyTreeState&);
 
+    void DecompositeTransform();
+
     const PaintChunk& FirstPaintChunk(const PaintArtifact&) const;
 
     FloatRect bounds;
     Vector<wtf_size_t> paint_chunk_indices;
     FloatRect rect_known_to_be_opaque;
     PropertyTreeState property_tree_state;
+    FloatPoint offset_to_transform_parent;
     bool requires_own_layer;
   };
 
-  PaintArtifactCompositor(
-      base::RepeatingCallback<void(const gfx::ScrollOffset&,
-                                   const cc::ElementId&)> scroll_callback);
+  void DecompositeTransforms(Vector<PendingLayer>* pending_layers) const;
 
   // Collects the PaintChunks into groups which will end up in the same
   // cc layer. This is the entry point of the layerization algorithm.
@@ -231,13 +287,22 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   std::unique_ptr<ContentLayerClientImpl> ClientForPaintChunk(
       const PaintChunk&);
 
-  cc::Layer* CreateOrReuseSynthesizedClipLayer(
+  // if |needs_layer| is false, no cc::Layer is created, |mask_effect_id| is
+  // not set, and the Layer() method on the returned SynthesizedClip returns
+  // nullptr.
+  // However, |mask_isolation_id| is always set.
+  SynthesizedClip& CreateOrReuseSynthesizedClipLayer(
       const ClipPaintPropertyNode&,
+      bool needs_layer,
       CompositorElementId& mask_isolation_id,
       CompositorElementId& mask_effect_id) final;
 
-  static void UpdateRenderSurfaceForEffects(cc::LayerTreeHost&,
-                                            const cc::LayerList&);
+  static void UpdateRenderSurfaceForEffects(
+      cc::EffectTree&,
+      const cc::LayerList&,
+      const Vector<const EffectPaintPropertyNode*>&);
+
+  cc::PropertyTrees* GetPropertyTreesForDirectUpdate();
 
   // Provides a callback for notifying blink of composited scrolling.
   base::RepeatingCallback<void(const gfx::ScrollOffset&, const cc::ElementId&)>
@@ -256,6 +321,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   std::vector<SynthesizedClipEntry> synthesized_clip_cache_;
 
   Vector<scoped_refptr<cc::Layer>> scroll_hit_test_layers_;
+
+  PropertyTreeManager property_tree_manager_;
 
   bool extra_data_for_testing_enabled_ = false;
   std::unique_ptr<ExtraDataForTesting> extra_data_for_testing_;

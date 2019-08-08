@@ -125,7 +125,7 @@ class DesktopWidgetTest : public WidgetTest {
 class TestDesktopWidgetDelegate : public WidgetDelegate {
  public:
   TestDesktopWidgetDelegate();
-  TestDesktopWidgetDelegate(Widget* widget);
+  explicit TestDesktopWidgetDelegate(Widget* widget);
   ~TestDesktopWidgetDelegate() override;
 
   // Initialize the Widget, adding some meaningful default InitParams.

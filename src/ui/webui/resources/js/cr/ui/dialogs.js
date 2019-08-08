@@ -18,10 +18,33 @@ cr.define('cr.ui.dialogs', function() {
     // so we can restore it when we're hidden.
     this.previousActiveElement_ = null;
 
-    this.initDom_();
-
+    // TODO: Rename these protected fields to remove the underscore, to comply
+    // with the style guide.
     /** @private{boolean} */
     this.showing_ = false;
+
+    /** @protected {?Element} */
+    this.container_ = null;
+
+    /** @protected {?Element} */
+    this.frame_ = null;
+
+    /** @protected {?Element} */
+    this.title_ = null;
+
+    /** @protected {?Element} */
+    this.text_ = null;
+
+    /** @protected {?Element} */
+    this.closeButton_ = null;
+
+    /** @protected {?Element} */
+    this.okButton_ = null;
+
+    /** @protected {?Element} */
+    this.cancelButton_ = null;
+
+    this.initDom_();
   }
 
   /**
@@ -53,6 +76,7 @@ cr.define('cr.ui.dialogs', function() {
 
     this.frame_ = doc.createElement('div');
     this.frame_.className = 'cr-dialog-frame';
+    this.frame_.setAttribute('role', 'dialog');
     // Elements that have negative tabIndex can be focused but are not traversed
     // by Tab key.
     this.frame_.tabIndex = -1;
@@ -239,9 +263,11 @@ cr.define('cr.ui.dialogs', function() {
     if (title) {
       this.title_.textContent = title;
       this.title_.hidden = false;
+      this.frame_.setAttribute('aria-label', title);
     } else {
       this.title_.textContent = '';
       this.title_.hidden = true;
+      this.frame_.removeAttribute('aria-label');
     }
 
     const self = this;

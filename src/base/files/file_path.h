@@ -104,6 +104,7 @@
 
 #include <stddef.h>
 
+#include <functional>
 #include <iosfwd>
 #include <string>
 #include <vector>

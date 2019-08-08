@@ -9,9 +9,6 @@ namespace viz {
 FakeDisplayClient::FakeDisplayClient() : binding_(this) {}
 FakeDisplayClient::~FakeDisplayClient() = default;
 
-void FakeDisplayClient::DidSwapAfterSnapshotRequestReceived(
-    const std::vector<ui::LatencyInfo>&) {}
-
 mojom::DisplayClientPtr FakeDisplayClient::BindInterfacePtr() {
   mojom::DisplayClientPtr ptr;
   binding_.Bind(MakeRequest(&ptr));

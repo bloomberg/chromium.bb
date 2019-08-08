@@ -153,13 +153,10 @@ enum ModelType {
   // ---- Control Types ----
   // An object representing a set of Nigori keys.
   NIGORI,
-  FIRST_CONTROL_MODEL_TYPE = NIGORI,
-  // Flags to enable experimental features.
-  EXPERIMENTS,
-  LAST_CONTROL_MODEL_TYPE = EXPERIMENTS,
-  LAST_REAL_MODEL_TYPE = LAST_CONTROL_MODEL_TYPE,
+  DEPRECATED_EXPERIMENTS,
+  LAST_REAL_MODEL_TYPE = DEPRECATED_EXPERIMENTS,
 
-  MODEL_TYPE_COUNT,
+  NUM_ENTRIES,
 };
 
 using ModelTypeSet =
@@ -169,7 +166,7 @@ using ModelTypeNameMap = std::map<ModelType, const char*>;
 
 inline ModelType ModelTypeFromInt(int i) {
   DCHECK_GE(i, 0);
-  DCHECK_LT(i, MODEL_TYPE_COUNT);
+  DCHECK_LT(i, ModelType::NUM_ENTRIES);
   return static_cast<ModelType>(i);
 }
 
@@ -187,19 +184,6 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_entity);
 // prefer using GetModelType where possible.
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics);
 
-// Notes:
-// 1) This list must contain exactly the same elements as the set returned by
-//    UserSelectableTypes().
-// 2) This list must be in the same order as the respective values in the
-//    ModelType enum.
-constexpr const char* kUserSelectableDataTypeNames[] = {
-    "bookmarks",   "preferences", "passwords",  "autofill",
-    "themes",      "typedUrls",   "extensions", "apps",
-#if BUILDFLAG(ENABLE_READING_LIST)
-    "readingList",
-#endif
-    "tabs"};
-
 // Protocol types are those types that have actual protocol buffer
 // representations. This distinguishes them from Proxy types, which have no
 // protocol representation and are never sent to the server.
@@ -215,8 +199,8 @@ constexpr ModelTypeSet ProtocolTypes() {
       SUPERVISED_USER_SETTINGS, DEPRECATED_SUPERVISED_USERS,
       DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS, DEPRECATED_ARTICLES, APP_LIST,
       DEPRECATED_WIFI_CREDENTIALS, SUPERVISED_USER_WHITELISTS, ARC_PACKAGE,
-      PRINTERS, READING_LIST, USER_EVENTS, NIGORI, EXPERIMENTS, MOUNTAIN_SHARES,
-      USER_CONSENTS, SEND_TAB_TO_SELF, SECURITY_EVENTS);
+      PRINTERS, READING_LIST, USER_EVENTS, NIGORI, DEPRECATED_EXPERIMENTS,
+      MOUNTAIN_SHARES, USER_CONSENTS, SEND_TAB_TO_SELF, SECURITY_EVENTS);
 }
 
 // These are the normal user-controlled types. This is to distinguish from
@@ -230,20 +214,6 @@ constexpr ModelTypeSet UserTypes() {
 constexpr ModelTypeSet AlwaysPreferredUserTypes() {
   return ModelTypeSet(DEVICE_INFO, USER_CONSENTS, SUPERVISED_USER_SETTINGS,
                       SUPERVISED_USER_WHITELISTS);
-}
-
-// These are the user-selectable data types.
-constexpr ModelTypeSet UserSelectableTypes() {
-  return ModelTypeSet(BOOKMARKS, PREFERENCES, PASSWORDS, AUTOFILL, THEMES,
-                      TYPED_URLS, EXTENSIONS, APPS,
-#if BUILDFLAG(ENABLE_READING_LIST)
-                      READING_LIST,
-#endif
-                      PROXY_TABS);
-}
-
-constexpr bool IsUserSelectableType(ModelType model_type) {
-  return UserSelectableTypes().Has(model_type);
 }
 
 // This is the subset of UserTypes() that have priority over other types.  These
@@ -271,8 +241,7 @@ constexpr ModelTypeSet ProxyTypes() {
 // - They support custom update application and conflict resolution logic.
 // - All change processing occurs on the sync thread (GROUP_PASSIVE).
 constexpr ModelTypeSet ControlTypes() {
-  return ModelTypeSet::FromRange(FIRST_CONTROL_MODEL_TYPE,
-                                 LAST_CONTROL_MODEL_TYPE);
+  return ModelTypeSet(NIGORI);
 }
 
 // Returns true if this is a control type.
@@ -286,8 +255,6 @@ constexpr bool IsControlType(ModelType model_type) {
 constexpr ModelTypeSet CommitOnlyTypes() {
   return ModelTypeSet(USER_EVENTS, USER_CONSENTS, SECURITY_EVENTS);
 }
-
-ModelTypeNameMap GetUserSelectableTypeNameMap();
 
 // This is the subset of UserTypes() that can be encrypted.
 ModelTypeSet EncryptableUserTypes();

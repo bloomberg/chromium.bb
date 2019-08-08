@@ -48,7 +48,10 @@ extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
 DEFINE_BINARY_PROTO_FUZZER(
     const content::fuzzing::proto::RenderPass& render_pass_spec) {
   static base::NoDestructor<Env> env;
-  viz::CompositorFrame frame =
+
+  viz::FuzzedData fuzzed_data =
       viz::GenerateFuzzedCompositorFrame(render_pass_spec);
-  env->browser_process->EmbedFuzzedCompositorFrame(std::move(frame));
+
+  env->browser_process->EmbedFuzzedCompositorFrame(
+      std::move(fuzzed_data.frame), std::move(fuzzed_data.allocated_bitmaps));
 }

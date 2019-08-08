@@ -48,7 +48,7 @@ function VolumeInfoImpl(
   this.fileSystem_ = fileSystem;
   this.label_ = label;
   this.displayRoot_ = null;
-  this.teamDriveDisplayRoot_ = null;
+  this.sharedDriveDisplayRoot_ = null;
   this.computersDisplayRoot_ = null;
 
   /**
@@ -122,12 +122,12 @@ VolumeInfoImpl.prototype = /** @struct */ {
     return this.displayRoot_;
   },
   /**
-   * @return {DirectoryEntry} The display root path of Team Drives directory.
+   * @return {DirectoryEntry} The display root path of Shared Drives directory.
    * It is null before finishing to resolve the entry. Valid only for Drive
    * volume.
    */
-  get teamDriveDisplayRoot() {
-    return this.teamDriveDisplayRoot_;
+  get sharedDriveDisplayRoot() {
+    return this.sharedDriveDisplayRoot_;
   },
   /**
    * @return {DirectoryEntry} The display root path of Computers directory.
@@ -258,19 +258,19 @@ VolumeInfoImpl.resolveFileSystemUrl_ = url => {
 };
 
 /**
- * Sets |teamDriveDisplayRoot_| if team drives are enabled.
+ * Sets |sharedDriveDisplayRoot_| if team drives are enabled.
  *
  * The return value will resolve once this operation is complete.
  * @return {!Promise<void>}
  */
-VolumeInfoImpl.prototype.resolveTeamDrivesRoot_ = function() {
+VolumeInfoImpl.prototype.resolveSharedDrivesRoot_ = function() {
   return VolumeInfoImpl
       .resolveFileSystemUrl_(
           this.fileSystem_.root.toURL() +
-          VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_NAME)
+          VolumeManagerCommon.SHARED_DRIVES_DIRECTORY_NAME)
       .then(
-          teamDrivesRoot => {
-            this.teamDriveDisplayRoot_ = teamDrivesRoot;
+          sharedDrivesRoot => {
+            this.sharedDriveDisplayRoot_ = sharedDrivesRoot;
           },
           error => {
             if (error.name != 'NotFoundError') {
@@ -324,7 +324,7 @@ VolumeInfoImpl.prototype.resolveDisplayRootImpl_ = function() {
   return Promise
       .all([
         VolumeInfoImpl.resolveFileSystemUrl_(displayRootURL),
-        this.resolveTeamDrivesRoot_(),
+        this.resolveSharedDrivesRoot_(),
         this.resolveComputersRoot_(),
       ])
       .then(([displayRoot]) => {

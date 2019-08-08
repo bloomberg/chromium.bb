@@ -35,6 +35,8 @@ viz_component("service") {
     "display/draw_polygon.h",
     "display/dynamic_geometry_binding.cc",
     "display/dynamic_geometry_binding.h",
+    "display/frame_rate_decider.cc",
+    "display/frame_rate_decider.h",
     "display/geometry_binding.cc",
     "display/geometry_binding.h",
     "display/gl_renderer.cc",
@@ -164,14 +166,14 @@ viz_component("service") {
     "surfaces/surface_deadline_client.h",
     "surfaces/surface_dependency_deadline.cc",
     "surfaces/surface_dependency_deadline.h",
-    "surfaces/surface_dependency_tracker.cc",
-    "surfaces/surface_dependency_tracker.h",
     "surfaces/surface_hittest.cc",
     "surfaces/surface_hittest.h",
     "surfaces/surface_hittest_delegate.h",
     "surfaces/surface_manager.cc",
     "surfaces/surface_manager.h",
     "surfaces/surface_manager_delegate.h",
+    "surfaces/surface_observer.cc",
+    "surfaces/surface_observer.h",
     "surfaces/surface_reference.cc",
     "surfaces/surface_reference.h",
     "viz_service_export.h",
@@ -309,6 +311,14 @@ viz_component("service") {
 # then this build target will no longer be needed.
 viz_source_set("gpu_service_dependencies") {
   sources = [
+    "display_embedder/image_context.cc",
+    "display_embedder/image_context.h",
+    "display_embedder/skia_output_device.cc",
+    "display_embedder/skia_output_device.h",
+    "display_embedder/skia_output_device_gl.cc",
+    "display_embedder/skia_output_device_gl.h",
+    "display_embedder/skia_output_device_offscreen.cc",
+    "display_embedder/skia_output_device_offscreen.h",
     "display_embedder/skia_output_surface_impl.cc",
     "display_embedder/skia_output_surface_impl.h",
     "display_embedder/skia_output_surface_impl_non_ddl.cc",
@@ -347,7 +357,21 @@ viz_source_set("gpu_service_dependencies") {
   }
 
   if (enable_vulkan) {
+    sources += [
+      "display_embedder/skia_output_device_vulkan.cc",
+      "display_embedder/skia_output_device_vulkan.h",
+    ]
+
     public_deps += [ "//gpu/vulkan" ]
+  }
+
+  if (use_x11 && enable_vulkan) {
+    sources += [
+      "display_embedder/skia_output_device_x11.cc",
+      "display_embedder/skia_output_device_x11.h",
+    ]
+    configs = [ "//build/config/linux:x11" ]
+    deps += [ "//ui/gfx/x" ]
   }
 }
 
@@ -362,6 +386,7 @@ viz_source_set("unit_tests") {
     "display/display_scheduler_unittest.cc",
     "display/display_unittest.cc",
     "display/draw_polygon_unittest.cc",
+    "display/frame_rate_decider_unittest.cc",
     "display/gl_renderer_copier_pixeltest.cc",
     "display/gl_renderer_copier_unittest.cc",
     "display/gl_renderer_unittest.cc",
@@ -454,7 +479,10 @@ viz_source_set("unit_tests") {
   }
 
   if (enable_vulkan) {
-    deps += [ "//gpu/vulkan/init" ]
+    deps += [
+      "//gpu/vulkan:test_support",
+      "//gpu/vulkan/init",
+    ]
   }
 }
 

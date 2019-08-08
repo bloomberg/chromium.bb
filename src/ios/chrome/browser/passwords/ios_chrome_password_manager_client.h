@@ -53,6 +53,7 @@ class WebState;
 @end
 
 // An iOS implementation of password_manager::PasswordManagerClient.
+// TODO(crbug.com/958833): write unit tests for this class.
 class IOSChromePasswordManagerClient
     : public password_manager::PasswordManagerClient,
       public password_manager::PasswordManagerClientHelperDelegate {
@@ -72,6 +73,9 @@ class IOSChromePasswordManagerClient
       bool has_generated_password,
       bool is_update) override;
   void HideManualFallbackForSaving() override;
+  void FocusedInputChanged(const url::Origin& last_committed_origin,
+                           bool is_fillable,
+                           bool is_password_field) override;
   bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
       const GURL& origin,
@@ -93,6 +97,7 @@ class IOSChromePasswordManagerClient
       const autofill::PasswordForm& form) override;
   void NotifyStorePasswordCalled() override;
   bool IsSavingAndFillingEnabled(const GURL& url) const override;
+  bool IsFillingEnabled(const GURL& url) const override;
   const GURL& GetLastCommittedEntryURL() const override;
   std::string GetPageLanguage() const override;
   const password_manager::CredentialsFilter* GetStoreResultFilter()
@@ -101,6 +106,9 @@ class IOSChromePasswordManagerClient
   ukm::SourceId GetUkmSourceId() override;
   password_manager::PasswordManagerMetricsRecorder* GetMetricsRecorder()
       override;
+  password_manager::PasswordRequirementsService*
+  GetPasswordRequirementsService() override;
+  bool IsIsolationForPasswordSitesEnabled() const override;
 
  private:
   // password_manager::PasswordManagerClientHelperDelegate implementation.

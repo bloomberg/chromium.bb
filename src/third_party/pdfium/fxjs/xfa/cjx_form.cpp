@@ -48,9 +48,9 @@ CJS_Result CJX_Form::formNodes(
 
   CXFA_ArrayNodeList* pFormNodes = new CXFA_ArrayNodeList(GetDocument());
   CFXJSE_Value* value =
-      GetDocument()->GetScriptContext()->GetJSValueFromMap(pFormNodes);
-  if (!value)
-    return CJS_Result::Success(runtime->NewNull());
+      GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(
+          pFormNodes);
+
   return CJS_Result::Success(
       value->DirectGetValue().Get(runtime->GetIsolate()));
 }
@@ -82,8 +82,8 @@ CJS_Result CJX_Form::recalculate(
     const std::vector<v8::Local<v8::Value>>& params) {
   CXFA_EventParam* pEventParam =
       GetDocument()->GetScriptContext()->GetEventParam();
-  if (pEventParam->m_eType == XFA_EVENT_Calculate ||
-      pEventParam->m_eType == XFA_EVENT_InitCalculate) {
+  if (pEventParam && (pEventParam->m_eType == XFA_EVENT_Calculate ||
+                      pEventParam->m_eType == XFA_EVENT_InitCalculate)) {
     return CJS_Result::Success();
   }
   if (params.size() != 1)

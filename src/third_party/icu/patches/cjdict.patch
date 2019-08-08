@@ -1,5 +1,5 @@
 diff --git a/source/data/brkitr/dictionaries/cjdict.txt b/source/data/brkitr/dictionaries/cjdict.txt
-index 9a474e0..ab389fc 100644
+index 162ae53e..d1e3cf04 100644
 --- a/source/data/brkitr/dictionaries/cjdict.txt
 +++ b/source/data/brkitr/dictionaries/cjdict.txt
 @@ -36727,7 +36727,9 @@
@@ -22,7 +22,7 @@ index 9a474e0..ab389fc 100644
  五天	98
  五太子	150
  五夫	140
-@@ -163789,6 +163794,7 @@
+@@ -163790,6 +163795,7 @@
  春賀	137
  春路	96
  春輔	147
@@ -30,7 +30,7 @@ index 9a474e0..ab389fc 100644
  春近	126
  春近古市場	143
  春遠	126
-@@ -269552,6 +269558,7 @@
+@@ -269553,6 +269559,7 @@
  调情	101
  调戏	107
  调换	105

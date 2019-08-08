@@ -102,6 +102,9 @@ class GpuHost : public viz::GpuHostImpl::Delegate {
       override;
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
+  void RunService(
+      const std::string& service_name,
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver) override;
 #if defined(USE_OZONE)
   void TerminateGpuProcess(const std::string& message) override;
   void SendGpuProcessMessage(IPC::Message* message) override;

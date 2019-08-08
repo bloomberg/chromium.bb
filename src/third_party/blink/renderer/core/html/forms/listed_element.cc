@@ -54,9 +54,6 @@ using namespace html_names;
 
 class FormAttributeTargetObserver : public IdTargetObserver {
  public:
-  static FormAttributeTargetObserver* Create(const AtomicString& id,
-                                             ListedElement*);
-
   FormAttributeTargetObserver(const AtomicString& id, ListedElement*);
 
   void Trace(Visitor*) override;
@@ -86,7 +83,7 @@ void ListedElement::Trace(Visitor* visitor) {
 
 ValidityState* ListedElement::validity() {
   if (!validity_state_)
-    validity_state_ = ValidityState::Create(this);
+    validity_state_ = MakeGarbageCollected<ValidityState>(this);
 
   return validity_state_.Get();
 }
@@ -480,7 +477,7 @@ bool ListedElement::reportValidity() {
   // Update layout now before calling IsFocusable(), which has
   // !LayoutObject()->NeedsLayout() assertion.
   HTMLElement& element = ToHTMLElement(*this);
-  element.GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  element.GetDocument().UpdateStyleAndLayout();
   if (element.IsFocusable()) {
     ShowValidationMessage();
     return false;
@@ -489,8 +486,9 @@ bool ListedElement::reportValidity() {
     String message(
         "An invalid form control with name='%name' is not focusable.");
     message.Replace("%name", GetName());
-    element.GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kRenderingMessageSource, mojom::ConsoleMessageLevel::kError, message));
+    element.GetDocument().AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
+                               mojom::ConsoleMessageLevel::kError, message));
   }
   return false;
 }
@@ -633,7 +631,7 @@ void ListedElement::ResetFormAttributeTargetObserver() {
   const AtomicString& form_id(element->FastGetAttribute(kFormAttr));
   if (!form_id.IsNull() && element->isConnected()) {
     SetFormAttributeTargetObserver(
-        FormAttributeTargetObserver::Create(form_id, this));
+        MakeGarbageCollected<FormAttributeTargetObserver>(form_id, this));
   } else {
     SetFormAttributeTargetObserver(nullptr);
   }
@@ -690,12 +688,6 @@ HTMLElement* ToHTMLElement(ListedElement* listed_element) {
 HTMLElement& ToHTMLElement(ListedElement& listed_element) {
   return const_cast<HTMLElement&>(
       ToHTMLElement(static_cast<const ListedElement&>(listed_element)));
-}
-
-FormAttributeTargetObserver* FormAttributeTargetObserver::Create(
-    const AtomicString& id,
-    ListedElement* element) {
-  return MakeGarbageCollected<FormAttributeTargetObserver>(id, element);
 }
 
 FormAttributeTargetObserver::FormAttributeTargetObserver(const AtomicString& id,

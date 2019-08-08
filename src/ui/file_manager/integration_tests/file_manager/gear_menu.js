@@ -189,21 +189,18 @@ testcase.showHiddenFilesDrive = async () => {
  * Tests that toggle-hidden-android-folders menu item exists when "Play files"
  * is selected, but hidden in Recents.
  */
-testcase.showToggleHiddenAndroidFoldersGearMenuItemsInMyFiles =
-    async () => {
+testcase.showToggleHiddenAndroidFoldersGearMenuItemsInMyFiles = async () => {
   // Open Files.App on Play Files.
   const appId = await openNewWindow(RootPath.ANDROID_FILES);
   await addEntries(['android_files'], BASIC_ANDROID_ENTRY_SET);
 
   // Wait for the file list to appear.
   await remoteCall.waitForElement(appId, '#file-list');
-
-  // Wait for the gear menu button to appear.
-  await remoteCall.waitForElement(appId, '#gear-button:not([hidden])');
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows(BASIC_ANDROID_ENTRY_SET));
 
   // Click the gear menu button.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'fakeMouseClick', appId, ['#gear-button']));
+  await remoteCall.waitAndClickElement(appId, '#gear-button:not([hidden])');
 
   // Wait for the gear menu to appear.
   await remoteCall.waitForElement(appId, '#gear-menu:not([hidden])');
@@ -267,13 +264,11 @@ testcase.hideCurrentDirectoryByTogglingHiddenAndroidFolders = async () => {
 
   // Wait for the file list to appear.
   await remoteCall.waitForElement(appId, '#file-list');
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows(BASIC_ANDROID_ENTRY_SET));
 
   // Wait for the gear menu button to appear.
-  await remoteCall.waitForElement(appId, '#gear-button:not([hidden])');
-
-  // Open the gear menu by clicking the gear button.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'fakeMouseClick', appId, ['#gear-button']));
+  await remoteCall.waitAndClickElement(appId, '#gear-button:not([hidden])');
 
   // Wait for menu to not be hidden.
   await remoteCall.waitForElement(appId, '#gear-menu:not([hidden])');

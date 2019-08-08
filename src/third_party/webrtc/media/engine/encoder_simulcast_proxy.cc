@@ -43,10 +43,10 @@ int EncoderSimulcastProxy::InitEncode(const VideoCodec* inst,
   return ret;
 }
 
-int EncoderSimulcastProxy::Encode(const VideoFrame& input_image,
-                                  const CodecSpecificInfo* codec_specific_info,
-                                  const std::vector<FrameType>* frame_types) {
-  return encoder_->Encode(input_image, codec_specific_info, frame_types);
+int EncoderSimulcastProxy::Encode(
+    const VideoFrame& input_image,
+    const std::vector<VideoFrameType>* frame_types) {
+  return encoder_->Encode(input_image, frame_types);
 }
 
 int EncoderSimulcastProxy::RegisterEncodeCompleteCallback(
@@ -55,10 +55,21 @@ int EncoderSimulcastProxy::RegisterEncodeCompleteCallback(
   return encoder_->RegisterEncodeCompleteCallback(callback);
 }
 
-int EncoderSimulcastProxy::SetRateAllocation(
-    const VideoBitrateAllocation& bitrate,
-    uint32_t new_framerate) {
-  return encoder_->SetRateAllocation(bitrate, new_framerate);
+void EncoderSimulcastProxy::SetRates(const RateControlParameters& parameters) {
+  return encoder_->SetRates(parameters);
+}
+
+void EncoderSimulcastProxy::OnPacketLossRateUpdate(float packet_loss_rate) {
+  return encoder_->OnPacketLossRateUpdate(packet_loss_rate);
+}
+
+void EncoderSimulcastProxy::OnRttUpdate(int64_t rtt_ms) {
+  return encoder_->OnRttUpdate(rtt_ms);
+}
+
+void EncoderSimulcastProxy::OnLossNotification(
+    const LossNotification& loss_notification) {
+  encoder_->OnLossNotification(loss_notification);
 }
 
 VideoEncoder::EncoderInfo EncoderSimulcastProxy::GetEncoderInfo() const {

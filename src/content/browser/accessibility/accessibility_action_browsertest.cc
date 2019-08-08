@@ -81,6 +81,17 @@ class AccessibilityActionBrowserTest : public ContentBrowserTest {
 
 }  // namespace
 
+// Canvas tests rely on the harness producing pixel output in order to read back
+// pixels from a canvas element. So we have to override the setup function.
+class AccessibilityCanvasActionBrowserTest
+    : public AccessibilityActionBrowserTest {
+ public:
+  void SetUp() override {
+    EnablePixelOutput();
+    ContentBrowserTest::SetUp();
+  }
+};
+
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, FocusAction) {
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
@@ -197,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, Scroll) {
   EXPECT_GT(y_after, y_before);
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, CanvasGetImage) {
+IN_PROC_BROWSER_TEST_F(AccessibilityCanvasActionBrowserTest, CanvasGetImage) {
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
@@ -248,7 +259,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, CanvasGetImage) {
   EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(3, 1));
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, CanvasGetImageScale) {
+IN_PROC_BROWSER_TEST_F(AccessibilityCanvasActionBrowserTest,
+                       CanvasGetImageScale) {
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
@@ -501,6 +513,177 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ShowContextMenu) {
   EXPECT_EQ(base::ASCIIToUTF16("2"), context_menu_params.link_text);
   EXPECT_EQ(ui::MenuSourceType::MENU_SOURCE_NONE,
             context_menu_params.source_type);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
+                       AriaGridSelectedChangedEvent) {
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+  GURL url(
+      "data:text/html,"
+      "<body>"
+      "<script>"
+      "function tdclick(ele, event) {"
+      "var selected = ele.getAttribute('aria-selected');"
+      "ele.setAttribute('aria-selected', selected != 'true');"
+      "event.stopPropagation();"
+      "}"
+      "</script>"
+      "<table role='grid' multi aria-multiselectable='true'><tbody>"
+      "<tr>"
+      "<td role='gridcell' aria-selected='true' tabindex='0' "
+      "onclick='tdclick(this, event)'>A</td>"
+      "<td role='gridcell' aria-selected='false' tabindex='-1' "
+      "onclick='tdclick(this, event)'>B</td>"
+      "</tr>"
+      "</tbody></table>"
+      "</body>");
+  NavigateToURL(shell(), url);
+  waiter.WaitForNotification();
+
+  BrowserAccessibility* cell1 = FindNode(ax::mojom::Role::kCell, "A");
+  ASSERT_NE(nullptr, cell1);
+
+  BrowserAccessibility* cell2 = FindNode(ax::mojom::Role::kCell, "B");
+  ASSERT_NE(nullptr, cell2);
+
+  // Initial state
+  EXPECT_TRUE(cell1->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+  EXPECT_FALSE(cell2->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+
+  {
+    AccessibilityNotificationWaiter selection_waiter(
+        shell()->web_contents(), ui::kAXModeComplete,
+        ui::AXEventGenerator::Event::SELECTED_CHANGED);
+    GetManager()->DoDefaultAction(*cell2);
+    selection_waiter.WaitForNotification();
+    EXPECT_EQ(cell2->GetId(), selection_waiter.event_target_id());
+
+    EXPECT_TRUE(cell1->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+    EXPECT_TRUE(cell2->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+  }
+
+  {
+    AccessibilityNotificationWaiter selection_waiter(
+        shell()->web_contents(), ui::kAXModeComplete,
+        ui::AXEventGenerator::Event::SELECTED_CHANGED);
+    GetManager()->DoDefaultAction(*cell1);
+    selection_waiter.WaitForNotification();
+    EXPECT_EQ(cell1->GetId(), selection_waiter.event_target_id());
+
+    EXPECT_FALSE(cell1->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+    EXPECT_TRUE(cell2->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+  }
+
+  {
+    AccessibilityNotificationWaiter selection_waiter(
+        shell()->web_contents(), ui::kAXModeComplete,
+        ui::AXEventGenerator::Event::SELECTED_CHANGED);
+    GetManager()->DoDefaultAction(*cell2);
+    selection_waiter.WaitForNotification();
+    EXPECT_EQ(cell2->GetId(), selection_waiter.event_target_id());
+
+    EXPECT_FALSE(cell1->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+    EXPECT_FALSE(cell2->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
+                       AriaControlsChangedEvent) {
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+  GURL url(
+      "data:text/html,"
+      "<body>"
+      "<script>"
+      "function setcontrols(ele, event) {"
+      "  ele.setAttribute('aria-controls', 'radio1 radio2');"
+      "}"
+      "</script>"
+      "<div id='radiogroup' role='radiogroup' aria-label='group'"
+      "     onclick='setcontrols(this, event)'>"
+      "<div id='radio1' role='radio'>radio1</div>"
+      "<div id='radio2' role='radio'>radio2</div>"
+      "</div>"
+      "</body>");
+  NavigateToURL(shell(), url);
+  waiter.WaitForNotification();
+
+  BrowserAccessibility* target =
+      FindNode(ax::mojom::Role::kRadioGroup, "group");
+  ASSERT_NE(nullptr, target);
+  BrowserAccessibility* radio1 =
+      FindNode(ax::mojom::Role::kRadioButton, "radio1");
+  ASSERT_NE(nullptr, radio1);
+  BrowserAccessibility* radio2 =
+      FindNode(ax::mojom::Role::kRadioButton, "radio2");
+  ASSERT_NE(nullptr, radio2);
+
+  AccessibilityNotificationWaiter waiter2(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ui::AXEventGenerator::Event::CONTROLS_CHANGED);
+  GetManager()->DoDefaultAction(*target);
+  waiter2.WaitForNotification();
+
+  auto&& control_list = target->GetData().GetIntListAttribute(
+      ax::mojom::IntListAttribute::kControlsIds);
+  EXPECT_EQ(2u, control_list.size());
+
+  auto find_radio1 =
+      std::find(control_list.cbegin(), control_list.cend(), radio1->GetId());
+  auto find_radio2 =
+      std::find(control_list.cbegin(), control_list.cend(), radio2->GetId());
+  EXPECT_NE(find_radio1, control_list.cend());
+  EXPECT_NE(find_radio2, control_list.cend());
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, FocusLostOnDeletedNode) {
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+
+  GURL url(
+      "data:text/html,"
+      "<button id='1'>1</button>"
+      "<iframe id='iframe' srcdoc=\""
+      "<button id='2'>2</button>"
+      "\"></iframe>");
+
+  NavigateToURL(shell(), url);
+  EnableAccessibilityForWebContents(shell()->web_contents());
+
+  auto FocusNodeAndReload = [this, &url](const std::string& node_name,
+                                         const std::string& focus_node_script) {
+    WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                  node_name);
+    BrowserAccessibility* node = FindNode(ax::mojom::Role::kButton, node_name);
+    ASSERT_NE(nullptr, node);
+
+    EXPECT_TRUE(ExecuteScript(shell(), focus_node_script));
+    WaitForAccessibilityFocusChange();
+
+    EXPECT_EQ(node->GetId(),
+              GetFocusedAccessibilityNodeInfo(shell()->web_contents()).id);
+
+    // Reloading the frames will achieve two things:
+    //   1. Force the deletion of the node being tested.
+    //   2. Lose focus on the node by focusing a new frame.
+    AccessibilityNotificationWaiter load_waiter(
+        shell()->web_contents(), ui::kAXModeComplete,
+        ax::mojom::Event::kLoadComplete);
+    NavigateToURL(shell(), url);
+    load_waiter.WaitForNotification();
+  };
+
+  FocusNodeAndReload("1", "document.getElementById('1').focus();");
+  FocusNodeAndReload("2",
+                     "var iframe = document.getElementById('iframe');"
+                     "var inner_doc = iframe.contentWindow.document;"
+                     "inner_doc.getElementById('2').focus();");
 }
 
 }  // namespace content

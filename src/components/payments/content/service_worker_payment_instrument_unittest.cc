@@ -72,6 +72,7 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
     total->amount = std::move(amount);
     details->total = std::move(total);
     details->id = base::Optional<std::string>("123456");
+    details->modifiers = std::vector<mojom::PaymentDetailsModifierPtr>();
 
     mojom::PaymentDetailsModifierPtr modifier_1 =
         mojom::PaymentDetailsModifier::New();
@@ -81,7 +82,7 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
     modifier_1->total->amount->value = "4.00";
     modifier_1->method_data = mojom::PaymentMethodData::New();
     modifier_1->method_data->supported_method = "basic-card";
-    details->modifiers.push_back(std::move(modifier_1));
+    details->modifiers->push_back(std::move(modifier_1));
 
     mojom::PaymentDetailsModifierPtr modifier_2 =
         mojom::PaymentDetailsModifier::New();
@@ -91,7 +92,7 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
     modifier_2->total->amount->value = "3.00";
     modifier_2->method_data = mojom::PaymentMethodData::New();
     modifier_2->method_data->supported_method = "https://bobpay.com";
-    details->modifiers.push_back(std::move(modifier_2));
+    details->modifiers->push_back(std::move(modifier_2));
 
     mojom::PaymentDetailsModifierPtr modifier_3 =
         mojom::PaymentDetailsModifier::New();
@@ -101,7 +102,7 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
     modifier_3->total->amount->value = "2.00";
     modifier_3->method_data = mojom::PaymentMethodData::New();
     modifier_3->method_data->supported_method = "https://alicepay.com";
-    details->modifiers.push_back(std::move(modifier_3));
+    details->modifiers->push_back(std::move(modifier_3));
 
     std::vector<mojom::PaymentMethodDataPtr> method_data;
     mojom::PaymentMethodDataPtr entry_1 = mojom::PaymentMethodData::New();

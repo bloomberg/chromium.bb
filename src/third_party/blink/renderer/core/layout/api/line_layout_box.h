@@ -105,9 +105,8 @@ class LineLayoutBox : public LineLayoutBoxModel {
 
   void ShowLineTreeAndMark(const InlineBox* marked_box1,
                            const char* marked_label1) const {
-    if (GetLayoutObject()->IsLayoutBlockFlow())
-      ToLayoutBlockFlow(GetLayoutObject())
-          ->ShowLineTreeAndMark(marked_box1, marked_label1);
+    if (auto* layout_block_flow = DynamicTo<LayoutBlockFlow>(GetLayoutObject()))
+      layout_block_flow->ShowLineTreeAndMark(marked_box1, marked_label1);
   }
 
 #endif

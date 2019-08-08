@@ -39,7 +39,10 @@ class FeedInternalsPageHandler : public feed_internals::mojom::PageHandler {
   void ClearUserClassifierProperties() override;
   void GetLastFetchProperties(GetLastFetchPropertiesCallback) override;
   void ClearCachedDataAndRefreshFeed() override;
+  void RefreshFeed() override;
   void GetCurrentContent(GetCurrentContentCallback) override;
+  void GetFeedProcessScopeDump(GetFeedProcessScopeDumpCallback) override;
+  void GetFeedHistograms(GetFeedHistogramsCallback) override;
 
  private:
   // Binding from the mojo interface to concrete implementation.
@@ -48,6 +51,8 @@ class FeedInternalsPageHandler : public feed_internals::mojom::PageHandler {
   void OnGetCurrentArticleSuggestionsDone(
       GetCurrentContentCallback callback,
       std::vector<offline_pages::PrefetchSuggestion> suggestions);
+
+  bool IsFeedAllowed();
 
   // Services that provide the data and functionality.
   feed::FeedSchedulerHost* feed_scheduler_host_;

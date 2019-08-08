@@ -83,8 +83,7 @@ class RTCRtpReceiverTest : public ::testing::Test {
   scoped_refptr<WebRTCStatsReportObtainer> GetStats() {
     scoped_refptr<WebRTCStatsReportObtainer> obtainer =
         new WebRTCStatsReportObtainer();
-    receiver_->GetStats(obtainer->GetStatsCallbackWrapper(),
-                        blink::RTCStatsFilter::kIncludeOnlyStandardMembers);
+    receiver_->GetStats(obtainer->GetStatsCallbackWrapper(), {});
     return obtainer;
   }
 
@@ -100,7 +99,7 @@ class RTCRtpReceiverTest : public ::testing::Test {
   }
 
   // Code under test expects to be run in a process with an initialized
-  // ChildProcess, which requires TaskScheduler, and a main-thread MessageLoop,
+  // ChildProcess, which requires ThreadPool, and a main-thread MessageLoop,
   // which the ScopedTaskEnvironment also provides.
   base::test::ScopedTaskEnvironment task_environment_;
   ChildProcess child_process_;

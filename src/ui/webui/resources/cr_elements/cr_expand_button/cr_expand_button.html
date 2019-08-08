@@ -21,9 +21,17 @@
         pointer-events: none;
       }
 
+      :host([disabled]) cr-icon-button {
+        display: var(--cr-expand-button-disabled-display, initial);
+      }
+
       #label {
         flex: 1;
         padding: var(--cr-section-vertical-padding) 0;
+      }
+
+      cr-icon-button {
+        --cr-icon-button-size: var(--cr-expand-button-size, 36px);
       }
     </style>
 

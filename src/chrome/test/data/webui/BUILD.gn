@@ -38,12 +38,8 @@ js2gtest("browser_tests_js_webui") {
   # and are handled by a rule, but in the GN build they're in a separate
   # action so need to be separated out.
   sources = [
-    "../../../browser/ui/webui/chromeos/bluetooth_pairing_dialog_browsertest.js",
-    "../../../browser/ui/webui/chromeos/certificate_manager_dialog_browsertest.js",
-    "../../../browser/ui/webui/chromeos/set_time_ui_browsertest.js",
     "../../../browser/ui/webui/identity_internals_ui_browsertest.js",
     "../../../browser/ui/webui/sync_internals_browsertest.js",
-    "../chromeos/oobe_webui_browsertest.js",
     "//third_party/axe-core/axe.js",
     "a11y/accessibility_audit_rules.js",
     "a11y/accessibility_test.js",
@@ -58,6 +54,7 @@ js2gtest("browser_tests_js_webui") {
     "history/history_browsertest.js",
     "js2gtest_browsertest.js",
     "load_time_data_browsertest.js",
+    "management/a11y/management_a11y_test.js",
     "media_router/media_router_elements_browsertest.js",
     "mock4js_browsertest.js",
     "net_internals/chromeos_view.js",
@@ -73,14 +70,8 @@ js2gtest("browser_tests_js_webui") {
     "settings/a11y/accessibility_a11y_test.js",
     "settings/a11y/basic_a11y_test.js",
     "settings/a11y/edit_dictionary_a11y_test.js",
-    "settings/a11y/manage_accessibility_a11y_test.js",
-    "settings/a11y/manage_profile_a11y_test.js",
-    "settings/a11y/multidevice_a11y_test.js",
-    "settings/a11y/multidevice_features_a11y_test.js",
     "settings/a11y/passwords_a11y_test.js",
     "settings/a11y/settings_accessibility_test.js",
-    "settings/a11y/sign_out_a11y_test.js",
-    "settings/a11y/tts_subpage_a11y_test.js",
     "settings/advanced_page_browsertest.js",
     "settings/basic_page_browsertest.js",
     "settings/cr_settings_browsertest.js",
@@ -101,13 +92,23 @@ js2gtest("browser_tests_js_webui") {
 
   if (is_chromeos) {
     sources += [
+      "../../../browser/ui/webui/chromeos/bluetooth_pairing_dialog_browsertest.js",
+      "../../../browser/ui/webui/chromeos/certificate_manager_dialog_browsertest.js",
+      "../chromeos/oobe_webui_browsertest.js",
       "certificate_viewer_dialog_test.js",
+      "set_time_dialog_browsertest.js",
+      "settings/a11y/manage_accessibility_a11y_test.js",
+      "settings/a11y/multidevice_a11y_test.js",
+      "settings/a11y/multidevice_features_a11y_test.js",
+      "settings/a11y/tts_subpage_a11y_test.js",
       "sys_internals/sys_internals_browsertest.js",
     ]
   } else {
     sources += [
-      "md_user_manager/user_manager_browsertest.js",
+      "settings/a11y/manage_profile_a11y_test.js",
+      "settings/a11y/sign_out_a11y_test.js",
       "signin/signin_browsertest.js",
+      "user_manager/user_manager_browsertest.js",
       "welcome/onboarding_welcome_browsertest.js",
     ]
   }
@@ -142,6 +143,7 @@ js2gtest("browser_tests_js_mojo_lite_webui") {
     "engagement/site_engagement_browsertest.js",
     "interventions_internals_browsertest.js",
     "media/media_engagement_browsertest.js",
+    "usb_internals_browsertest.js",
   ]
 
   if (is_win || is_mac || is_desktop_linux || is_chromeos) {

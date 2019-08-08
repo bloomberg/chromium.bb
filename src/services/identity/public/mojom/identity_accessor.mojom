@@ -29,13 +29,6 @@ interface IdentityAccessor {
   GetPrimaryAccountWhenAvailable() => (AccountInfo account_info,
                                        AccountState account_state);
 
-  // Returns the AccountInfo for the user's Google account corresponding to
-  // |gaia_id|, or null if the user has such corresponding account.
-  // |account_state| gives the current state of the account (relevant only if
-  // |account_info| is non-null).
-  GetAccountInfoFromGaiaId(string gaia_id) => (AccountInfo? account_info,
-                                               AccountState account_state);
-
   // Returns an access token with the requested scopes for the given
   // |account_id|, or null if it is not possible to obtain such a token (e.g.,
   // because the user is not signed in with that account). |expiration_time|

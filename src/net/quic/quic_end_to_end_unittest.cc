@@ -30,16 +30,15 @@
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
-#include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_scoped_task_environment.h"
-#include "net/third_party/quic/platform/api/quic_string_piece.h"
-#include "net/third_party/quic/test_tools/crypto_test_utils.h"
-#include "net/third_party/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quic/tools/quic_memory_cache_backend.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
+#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quiche/src/quic/tools/quic_memory_cache_backend.h"
 #include "net/tools/quic/quic_simple_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -131,9 +130,6 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams>,
     session_context_.ssl_config_service = ssl_config_service_.get();
     session_context_.http_auth_handler_factory = auth_handler_factory_.get();
     session_context_.http_server_properties = &http_server_properties_;
-    channel_id_service_.reset(
-        new ChannelIDService(new DefaultChannelIDStore(nullptr)));
-    session_context_.channel_id_service = channel_id_service_.get();
 
     CertVerifyResult verify_result;
     verify_result.verified_cert =
@@ -237,7 +233,6 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams>,
   std::unique_ptr<MockHostResolver> host_resolver_impl_;
   MappedHostResolver host_resolver_;
   MockCertVerifier cert_verifier_;
-  std::unique_ptr<ChannelIDService> channel_id_service_;
   TransportSecurityState transport_security_state_;
   std::unique_ptr<CTVerifier> cert_transparency_verifier_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;

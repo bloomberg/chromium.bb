@@ -28,6 +28,7 @@
 #include "api/transport/media/audio_transport.h"
 #include "api/transport/media/video_transport.h"
 #include "api/units/data_rate.h"
+#include "common_types.h"  // NOLINT(build/include)
 #include "rtc_base/copy_on_write_buffer.h"
 #include "rtc_base/network_route.h"
 
@@ -49,10 +50,20 @@ class AudioPacketReceivedObserver {
   virtual void OnFirstAudioPacketReceived(int64_t channel_id) = 0;
 };
 
+// Used to configure stream allocations.
 struct MediaTransportAllocatedBitrateLimits {
   DataRate min_pacing_rate = DataRate::Zero();
   DataRate max_padding_bitrate = DataRate::Zero();
   DataRate max_total_allocated_bitrate = DataRate::Zero();
+};
+
+// Used to configure target bitrate constraints.
+// If the value is provided, the constraint is updated.
+// If the value is omitted, the value is left unchanged.
+struct MediaTransportTargetRateConstraints {
+  absl::optional<DataRate> min_bitrate;
+  absl::optional<DataRate> max_bitrate;
+  absl::optional<DataRate> starting_bitrate;
 };
 
 // A collection of settings for creation of media transport.
@@ -280,7 +291,18 @@ class MediaTransportInterface {
   // transport overhead (ipv4/6, turn channeldata, tcp/udp, etc.).
   // If the transport is capable of fusing packets together, this overhead
   // might not be a very accurate number.
+  // TODO(nisse): Deprecated.
   virtual size_t GetAudioPacketOverhead() const;
+
+  // Corresponding observers for audio and video overhead. Before destruction,
+  // the observers must be unregistered by setting nullptr.
+
+  // TODO(nisse): Should move to per-stream objects, since packetization
+  // overhead can vary per stream, e.g., depending on negotiated extensions. In
+  // addition, we should move towards reporting total overhead including all
+  // layers. Currently, overhead of the lower layers is reported elsewhere,
+  // e.g., on route change between IPv4 and IPv6.
+  virtual void SetAudioOverheadObserver(OverheadObserver* observer) {}
 
   // Registers an observer for network change events. If the network route is
   // already established when the callback is added, |callback| will be called
@@ -302,6 +324,11 @@ class MediaTransportInterface {
   // TODO(psla): Make abstract when downstream implementation implement it.
   virtual void SetAllocatedBitrateLimits(
       const MediaTransportAllocatedBitrateLimits& limits);
+
+  // Sets starting rate.
+  // TODO(psla): Make abstract when downstream implementation implement it.
+  virtual void SetTargetBitrateLimits(
+      const MediaTransportTargetRateConstraints& target_rate_constraints) {}
 
   // Opens a data |channel_id| for sending.  May return an error if the
   // specified |channel_id| is unusable.  Must be called before |SendData|.

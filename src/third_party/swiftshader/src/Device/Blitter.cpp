@@ -18,6 +18,9 @@
 #include "Reactor/Reactor.hpp"
 #include "System/Memory.hpp"
 #include "Vulkan/VkDebug.hpp"
+#include "Vulkan/VkImage.hpp"
+
+#include <utility>
 
 namespace sw
 {
@@ -31,20 +34,86 @@ namespace sw
 		delete blitCache;
 	}
 
-	void Blitter::clear(void *pixel, VkFormat format, Surface *dest, const SliceRect &dRect, unsigned int rgbaMask)
+	void Blitter::clear(void *pixel, vk::Format format, vk::Image *dest, const vk::Format& viewFormat, const VkImageSubresourceRange& subresourceRange, const VkRect2D* renderArea)
 	{
-		if(fastClear(pixel, format, dest, dRect, rgbaMask))
+		VkImageAspectFlagBits aspect = static_cast<VkImageAspectFlagBits>(subresourceRange.aspectMask);
+		vk::Format dstFormat = vk::Image::GetFormat(viewFormat, aspect);
+		if(dstFormat == VK_FORMAT_UNDEFINED)
 		{
 			return;
 		}
 
-		sw::Surface *color = sw::Surface::create(1, 1, 1, format, pixel, sw::Surface::bytes(format), sw::Surface::bytes(format));
-		SliceRectF sRect(0.5f, 0.5f, 0.5f, 0.5f, 0);   // Sample from the middle.
-		blit(color, sRect, dest, dRect, {rgbaMask});
-		delete color;
+		if(fastClear(pixel, format, dest, dstFormat, subresourceRange, renderArea))
+		{
+			return;
+		}
+
+		State state(format, dstFormat, 1, dest->getSampleCountFlagBits(), { 0xF });
+		Routine *blitRoutine = getRoutine(state);
+		if(!blitRoutine)
+		{
+			return;
+		}
+
+		void(*blitFunction)(const BlitData *data) = (void(*)(const BlitData*))blitRoutine->getEntry();
+
+		VkImageSubresourceLayers subresLayers =
+		{
+			subresourceRange.aspectMask,
+			subresourceRange.baseMipLevel,
+			subresourceRange.baseArrayLayer,
+			1
+		};
+
+		uint32_t lastMipLevel = dest->getLastMipLevel(subresourceRange);
+		uint32_t lastLayer = dest->getLastLayerIndex(subresourceRange);
+
+		VkRect2D area = { { 0, 0 }, { 0, 0 } };
+		if(renderArea)
+		{
+			ASSERT(subresourceRange.levelCount == 1);
+			area = *renderArea;
+		}
+
+		for(; subresLayers.mipLevel <= lastMipLevel; subresLayers.mipLevel++)
+		{
+			VkExtent3D extent = dest->getMipLevelExtent(subresLayers.mipLevel);
+			if(!renderArea)
+			{
+				area.extent.width = extent.width;
+				area.extent.height = extent.height;
+			}
+
+			BlitData data =
+			{
+				pixel, nullptr, // source, dest
+
+				format.bytes(),                                       // sPitchB
+				dest->rowPitchBytes(aspect, subresLayers.mipLevel),   // dPitchB
+				0,                                                    // sSliceB (unused in clear operations)
+				dest->slicePitchBytes(aspect, subresLayers.mipLevel), // dSliceB
+
+				0.5f, 0.5f, 0.0f, 0.0f, // x0, y0, w, h
+
+				area.offset.y, static_cast<int>(area.offset.y + area.extent.height), // y0d, y1d
+				area.offset.x, static_cast<int>(area.offset.x + area.extent.width),  // x0d, x1d
+
+				0, 0, // sWidth, sHeight
+			};
+
+			for(subresLayers.baseArrayLayer = subresourceRange.baseArrayLayer; subresLayers.baseArrayLayer <= lastLayer; subresLayers.baseArrayLayer++)
+			{
+				for(uint32_t depth = 0; depth < extent.depth; depth++)
+				{
+					data.dest = dest->getTexelPointer({ 0, 0, static_cast<int32_t>(depth) }, subresLayers);
+
+					blitFunction(&data);
+				}
+			}
+		}
 	}
 
-	bool Blitter::fastClear(void *pixel, VkFormat format, Surface *dest, const SliceRect &dRect, unsigned int rgbaMask)
+	bool Blitter::fastClear(void *pixel, vk::Format format, vk::Image *dest, const vk::Format& viewFormat, const VkImageSubresourceRange& subresourceRange, const VkRect2D* renderArea)
 	{
 		if(format != VK_FORMAT_R32G32B32A32_SFLOAT)
 		{
@@ -59,16 +128,15 @@ namespace sw
 
 		uint32_t packed;
 
-		switch(dest->getFormat())
+		VkImageAspectFlagBits aspect = static_cast<VkImageAspectFlagBits>(subresourceRange.aspectMask);
+		switch(viewFormat)
 		{
 		case VK_FORMAT_R5G6B5_UNORM_PACK16:
-			if((rgbaMask & 0x7) != 0x7) return false;
 			packed = ((uint16_t)(31 * b + 0.5f) << 0) |
 			         ((uint16_t)(63 * g + 0.5f) << 5) |
 			         ((uint16_t)(31 * r + 0.5f) << 11);
 			break;
 		case VK_FORMAT_B5G6R5_UNORM_PACK16:
-			if((rgbaMask & 0x7) != 0x7) return false;
 			packed = ((uint16_t)(31 * r + 0.5f) << 0) |
 			         ((uint16_t)(63 * g + 0.5f) << 5) |
 			         ((uint16_t)(31 * b + 0.5f) << 11);
@@ -76,149 +144,93 @@ namespace sw
 		case VK_FORMAT_A8B8G8R8_UINT_PACK32:
 		case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
 		case VK_FORMAT_R8G8B8A8_UNORM:
-			if((rgbaMask & 0xF) != 0xF) return false;
 			packed = ((uint32_t)(255 * a + 0.5f) << 24) |
 			         ((uint32_t)(255 * b + 0.5f) << 16) |
 			         ((uint32_t)(255 * g + 0.5f) << 8) |
 			         ((uint32_t)(255 * r + 0.5f) << 0);
 			break;
 		case VK_FORMAT_B8G8R8A8_UNORM:
-			if((rgbaMask & 0xF) != 0xF) return false;
 			packed = ((uint32_t)(255 * a + 0.5f) << 24) |
 			         ((uint32_t)(255 * r + 0.5f) << 16) |
 			         ((uint32_t)(255 * g + 0.5f) << 8) |
 			         ((uint32_t)(255 * b + 0.5f) << 0);
 			break;
 		case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
-			if((rgbaMask & 0x7) != 0x7) return false;
 			packed = R11G11B10F(color);
 			break;
 		case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32:
-			if((rgbaMask & 0x7) != 0x7) return false;
 			packed = RGB9E5(color);
 			break;
 		default:
 			return false;
 		}
 
-		bool useDestInternal = !dest->isExternalDirty();
-		uint8_t *slice = (uint8_t*)dest->lock(dRect.x0, dRect.y0, dRect.slice, sw::LOCK_WRITEONLY, sw::PUBLIC, useDestInternal);
-
-		for(int j = 0; j < dest->getSamples(); j++)
+		VkImageSubresourceLayers subresLayers =
 		{
-			uint8_t *d = slice;
+			subresourceRange.aspectMask,
+			subresourceRange.baseMipLevel,
+			subresourceRange.baseArrayLayer,
+			1
+		};
+		uint32_t lastMipLevel = dest->getLastMipLevel(subresourceRange);
+		uint32_t lastLayer = dest->getLastLayerIndex(subresourceRange);
 
-			switch(Surface::bytes(dest->getFormat()))
-			{
-			case 2:
-				for(int i = dRect.y0; i < dRect.y1; i++)
-				{
-					sw::clear((uint16_t*)d, packed, dRect.x1 - dRect.x0);
-					d += dest->getPitchB(useDestInternal);
-				}
-				break;
-			case 4:
-				for(int i = dRect.y0; i < dRect.y1; i++)
-				{
-					sw::clear((uint32_t*)d, packed, dRect.x1 - dRect.x0);
-					d += dest->getPitchB(useDestInternal);
-				}
-				break;
-			default:
-				assert(false);
-			}
-
-			slice += dest->getSliceB(useDestInternal);
+		VkRect2D area = { { 0, 0 }, { 0, 0 } };
+		if(renderArea)
+		{
+			ASSERT(subresourceRange.levelCount == 1);
+			area = *renderArea;
 		}
 
-		dest->unlock(useDestInternal);
+		for(; subresLayers.mipLevel <= lastMipLevel; subresLayers.mipLevel++)
+		{
+			int rowPitchBytes = dest->rowPitchBytes(aspect, subresLayers.mipLevel);
+			int slicePitchBytes = dest->slicePitchBytes(aspect, subresLayers.mipLevel);
+			VkExtent3D extent = dest->getMipLevelExtent(subresLayers.mipLevel);
+			if(!renderArea)
+			{
+				area.extent.width = extent.width;
+				area.extent.height = extent.height;
+			}
+
+			for(subresLayers.baseArrayLayer = subresourceRange.baseArrayLayer; subresLayers.baseArrayLayer <= lastLayer; subresLayers.baseArrayLayer++)
+			{
+				for(uint32_t depth = 0; depth < extent.depth; depth++)
+				{
+					uint8_t *slice = (uint8_t*)dest->getTexelPointer(
+						{ area.offset.x, area.offset.y, static_cast<int32_t>(depth) }, subresLayers);
+
+					for(int j = 0; j < dest->getSampleCountFlagBits(); j++)
+					{
+						uint8_t *d = slice;
+
+						switch(viewFormat.bytes())
+						{
+						case 2:
+							for(uint32_t i = 0; i < area.extent.height; i++)
+							{
+								sw::clear((uint16_t*)d, packed, area.extent.width);
+								d += rowPitchBytes;
+							}
+							break;
+						case 4:
+							for(uint32_t i = 0; i < area.extent.height; i++)
+							{
+								sw::clear((uint32_t*)d, packed, area.extent.width);
+								d += rowPitchBytes;
+							}
+							break;
+						default:
+							assert(false);
+						}
+
+						slice += slicePitchBytes;
+					}
+				}
+			}
+		}
 
 		return true;
-	}
-
-	void Blitter::blit(Surface *source, const SliceRectF &sourceRect, Surface *dest, const SliceRect &destRect, const Blitter::Options& options)
-	{
-		if(dest->getInternalFormat() == VK_FORMAT_UNDEFINED)
-		{
-			return;
-		}
-
-		if(blitReactor(source, sourceRect, dest, destRect, options))
-		{
-			return;
-		}
-
-		SliceRectF sRect = sourceRect;
-		SliceRect dRect = destRect;
-
-		bool flipX = destRect.x0 > destRect.x1;
-		bool flipY = destRect.y0 > destRect.y1;
-
-		if(flipX)
-		{
-			swap(dRect.x0, dRect.x1);
-			swap(sRect.x0, sRect.x1);
-		}
-		if(flipY)
-		{
-			swap(dRect.y0, dRect.y1);
-			swap(sRect.y0, sRect.y1);
-		}
-
-		source->lockInternal(0, 0, sRect.slice, sw::LOCK_READONLY, sw::PUBLIC);
-		dest->lockInternal(0, 0, dRect.slice, sw::LOCK_WRITEONLY, sw::PUBLIC);
-
-		float w = sRect.width() / dRect.width();
-		float h = sRect.height() / dRect.height();
-
-		float xStart = sRect.x0 + (0.5f - dRect.x0) * w;
-		float yStart = sRect.y0 + (0.5f - dRect.y0) * h;
-
-		for(int j = dRect.y0; j < dRect.y1; j++)
-		{
-			float y = yStart + j * h;
-
-			for(int i = dRect.x0; i < dRect.x1; i++)
-			{
-				float x = xStart + i * w;
-
-				// FIXME: Support RGBA mask
-				dest->copyInternal(source, i, j, x, y, options.filter);
-			}
-		}
-
-		source->unlockInternal();
-		dest->unlockInternal();
-	}
-
-	void Blitter::blit3D(Surface *source, Surface *dest)
-	{
-		source->lockInternal(0, 0, 0, sw::LOCK_READONLY, sw::PUBLIC);
-		dest->lockInternal(0, 0, 0, sw::LOCK_WRITEONLY, sw::PUBLIC);
-
-		float w = static_cast<float>(source->getWidth())  / static_cast<float>(dest->getWidth());
-		float h = static_cast<float>(source->getHeight()) / static_cast<float>(dest->getHeight());
-		float d = static_cast<float>(source->getDepth())  / static_cast<float>(dest->getDepth());
-
-		for(int k = 0; k < dest->getDepth(); k++)
-		{
-			float z = (k + 0.5f) * d;
-
-			for(int j = 0; j < dest->getHeight(); j++)
-			{
-				float y = (j + 0.5f) * h;
-
-				for(int i = 0; i < dest->getWidth(); i++)
-				{
-					float x = (i + 0.5f) * w;
-
-					dest->copyInternal(source, i, j, k, x, y, z, true);
-				}
-			}
-		}
-
-		source->unlockInternal();
-		dest->unlockInternal();
 	}
 
 	bool Blitter::read(Float4 &c, Pointer<Byte> element, const State &state)
@@ -1170,164 +1182,12 @@ namespace sw
 		return true;
 	}
 
-	bool Blitter::GetScale(float4 &scale, VkFormat format)
-	{
-		switch(format)
-		{
-		case VK_FORMAT_R4G4_UNORM_PACK8:
-		case VK_FORMAT_R4G4B4A4_UNORM_PACK16:
-		case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
-			scale = vector(0xF, 0xF, 0xF, 0xF);
-			break;
-		case VK_FORMAT_R8_UNORM:
-		case VK_FORMAT_R8G8_UNORM:
-		case VK_FORMAT_R8G8B8_UNORM:
-		case VK_FORMAT_B8G8R8_UNORM:
-		case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
-		case VK_FORMAT_R8G8B8A8_UNORM:
-		case VK_FORMAT_B8G8R8A8_UNORM:
-		case VK_FORMAT_R8_SRGB:
-		case VK_FORMAT_R8G8_SRGB:
-		case VK_FORMAT_R8G8B8_SRGB:
-		case VK_FORMAT_B8G8R8_SRGB:
-		case VK_FORMAT_A8B8G8R8_SRGB_PACK32:
-		case VK_FORMAT_R8G8B8A8_SRGB:
-		case VK_FORMAT_B8G8R8A8_SRGB:
-			scale = vector(0xFF, 0xFF, 0xFF, 0xFF);
-			break;
-		case VK_FORMAT_R8_SNORM:
-		case VK_FORMAT_R8G8_SNORM:
-		case VK_FORMAT_R8G8B8_SNORM:
-		case VK_FORMAT_B8G8R8_SNORM:
-		case VK_FORMAT_A8B8G8R8_SNORM_PACK32:
-		case VK_FORMAT_R8G8B8A8_SNORM:
-		case VK_FORMAT_B8G8R8A8_SNORM:
-			scale = vector(0x7F, 0x7F, 0x7F, 0x7F);
-			break;
-		case VK_FORMAT_R16_UNORM:
-		case VK_FORMAT_R16G16_UNORM:
-		case VK_FORMAT_R16G16B16_UNORM:
-		case VK_FORMAT_R16G16B16A16_UNORM:
-			scale = vector(0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF);
-			break;
-		case VK_FORMAT_R16_SNORM:
-		case VK_FORMAT_R16G16_SNORM:
-		case VK_FORMAT_R16G16B16_SNORM:
-		case VK_FORMAT_R16G16B16A16_SNORM:
-			scale = vector(0x7FFF, 0x7FFF, 0x7FFF, 0x7FFF);
-			break;
-		case VK_FORMAT_R8_SINT:
-		case VK_FORMAT_R8_UINT:
-		case VK_FORMAT_R8G8_SINT:
-		case VK_FORMAT_R8G8_UINT:
-		case VK_FORMAT_R8G8B8_SINT:
-		case VK_FORMAT_R8G8B8_UINT:
-		case VK_FORMAT_B8G8R8_SINT:
-		case VK_FORMAT_B8G8R8_UINT:
-		case VK_FORMAT_R8G8B8A8_SINT:
-		case VK_FORMAT_R8G8B8A8_UINT:
-		case VK_FORMAT_A8B8G8R8_SINT_PACK32:
-		case VK_FORMAT_A8B8G8R8_UINT_PACK32:
-		case VK_FORMAT_B8G8R8A8_SINT:
-		case VK_FORMAT_B8G8R8A8_UINT:
-		case VK_FORMAT_R8_USCALED:
-		case VK_FORMAT_R8G8_USCALED:
-		case VK_FORMAT_R8G8B8_USCALED:
-		case VK_FORMAT_B8G8R8_USCALED:
-		case VK_FORMAT_R8G8B8A8_USCALED:
-		case VK_FORMAT_B8G8R8A8_USCALED:
-		case VK_FORMAT_A8B8G8R8_USCALED_PACK32:
-		case VK_FORMAT_R8_SSCALED:
-		case VK_FORMAT_R8G8_SSCALED:
-		case VK_FORMAT_R8G8B8_SSCALED:
-		case VK_FORMAT_B8G8R8_SSCALED:
-		case VK_FORMAT_R8G8B8A8_SSCALED:
-		case VK_FORMAT_B8G8R8A8_SSCALED:
-		case VK_FORMAT_A8B8G8R8_SSCALED_PACK32:
-		case VK_FORMAT_R16_SINT:
-		case VK_FORMAT_R16_UINT:
-		case VK_FORMAT_R16G16_SINT:
-		case VK_FORMAT_R16G16_UINT:
-		case VK_FORMAT_R16G16B16A16_SINT:
-		case VK_FORMAT_R16G16B16A16_UINT:
-		case VK_FORMAT_R16_SSCALED:
-		case VK_FORMAT_R16G16_SSCALED:
-		case VK_FORMAT_R16G16B16_SSCALED:
-		case VK_FORMAT_R16G16B16A16_SSCALED:
-		case VK_FORMAT_R16_USCALED:
-		case VK_FORMAT_R16G16_USCALED:
-		case VK_FORMAT_R16G16B16_USCALED:
-		case VK_FORMAT_R16G16B16A16_USCALED:
-		case VK_FORMAT_R32_SINT:
-		case VK_FORMAT_R32_UINT:
-		case VK_FORMAT_R32G32_SINT:
-		case VK_FORMAT_R32G32_UINT:
-		case VK_FORMAT_R32G32B32_SINT:
-		case VK_FORMAT_R32G32B32_UINT:
-		case VK_FORMAT_R32G32B32A32_SINT:
-		case VK_FORMAT_R32G32B32A32_UINT:
-		case VK_FORMAT_R32G32B32A32_SFLOAT:
-		case VK_FORMAT_R32G32B32_SFLOAT:
-		case VK_FORMAT_R32G32_SFLOAT:
-		case VK_FORMAT_R32_SFLOAT:
-		case VK_FORMAT_R16G16B16A16_SFLOAT:
-		case VK_FORMAT_R16G16B16_SFLOAT:
-		case VK_FORMAT_R16G16_SFLOAT:
-		case VK_FORMAT_R16_SFLOAT:
-		case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
-		case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32:
-		case VK_FORMAT_A2R10G10B10_USCALED_PACK32:
-		case VK_FORMAT_A2R10G10B10_SSCALED_PACK32:
-		case VK_FORMAT_A2R10G10B10_UINT_PACK32:
-		case VK_FORMAT_A2R10G10B10_SINT_PACK32:
-		case VK_FORMAT_A2B10G10R10_USCALED_PACK32:
-		case VK_FORMAT_A2B10G10R10_SSCALED_PACK32:
-		case VK_FORMAT_A2B10G10R10_UINT_PACK32:
-		case VK_FORMAT_A2B10G10R10_SINT_PACK32:
-			scale = vector(1.0f, 1.0f, 1.0f, 1.0f);
-			break;
-		case VK_FORMAT_R5G5B5A1_UNORM_PACK16:
-		case VK_FORMAT_B5G5R5A1_UNORM_PACK16:
-		case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
-			scale = vector(0x1F, 0x1F, 0x1F, 0x01);
-			break;
-		case VK_FORMAT_R5G6B5_UNORM_PACK16:
-		case VK_FORMAT_B5G6R5_UNORM_PACK16:
-			scale = vector(0x1F, 0x3F, 0x1F, 1.0f);
-			break;
-		case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
-		case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
-			scale = vector(0x3FF, 0x3FF, 0x3FF, 0x03);
-			break;
-		case VK_FORMAT_A2R10G10B10_SNORM_PACK32:
-		case VK_FORMAT_A2B10G10R10_SNORM_PACK32:
-			scale = vector(0x1FF, 0x1FF, 0x1FF, 0x01);
-			break;
-		case VK_FORMAT_D16_UNORM:
-			scale = vector(0xFFFF, 0.0f, 0.0f, 0.0f);
-			break;
-		case VK_FORMAT_D24_UNORM_S8_UINT:
-		case VK_FORMAT_X8_D24_UNORM_PACK32:
-			scale = vector(0xFFFFFF, 0.0f, 0.0f, 0.0f);
-			break;
-		case VK_FORMAT_D32_SFLOAT:
-		case VK_FORMAT_D32_SFLOAT_S8_UINT:
-		case VK_FORMAT_S8_UINT:
-			scale = vector(1.0f, 1.0f, 1.0f, 1.0f);
-			break;
-		default:
-			return false;
-		}
-
-		return true;
-	}
-
 	bool Blitter::ApplyScaleAndClamp(Float4 &value, const State &state, bool preScaled)
 	{
 		float4 scale, unscale;
 		if(state.clearOperation &&
-		   Surface::isNonNormalizedInteger(state.sourceFormat) &&
-		   !Surface::isNonNormalizedInteger(state.destFormat))
+		   state.sourceFormat.isNonNormalizedInteger() &&
+		   !state.destFormat.isNonNormalizedInteger())
 		{
 			// If we're clearing a buffer from an int or uint color into a normalized color,
 			// then the whole range of the int or uint color must be scaled between 0 and 1.
@@ -1343,18 +1203,18 @@ namespace sw
 				return false;
 			}
 		}
-		else if(!GetScale(unscale, state.sourceFormat))
+		else if(!state.sourceFormat.getScale(unscale))
 		{
 			return false;
 		}
 
-		if(!GetScale(scale, state.destFormat))
+		if(!state.destFormat.getScale(scale))
 		{
 			return false;
 		}
 
-		bool srcSRGB = Surface::isSRGBformat(state.sourceFormat);
-		bool dstSRGB = Surface::isSRGBformat(state.destFormat);
+		bool srcSRGB = state.sourceFormat.isSRGBformat();
+		bool dstSRGB = state.destFormat.isSRGBformat();
 
 		if(state.convertSRGB && ((srcSRGB && !preScaled) || dstSRGB))   // One of the formats is sRGB encoded.
 		{
@@ -1368,14 +1228,14 @@ namespace sw
 			value *= Float4(scale.x / unscale.x, scale.y / unscale.y, scale.z / unscale.z, scale.w / unscale.w);
 		}
 
-		if(Surface::isFloatFormat(state.sourceFormat) && !Surface::isFloatFormat(state.destFormat))
+		if(state.sourceFormat.isFloatFormat() && !state.destFormat.isFloatFormat())
 		{
 			value = Min(value, Float4(scale.x, scale.y, scale.z, scale.w));
 
-			value = Max(value, Float4(Surface::isUnsignedComponent(state.destFormat, 0) ? 0.0f : -scale.x,
-			                          Surface::isUnsignedComponent(state.destFormat, 1) ? 0.0f : -scale.y,
-			                          Surface::isUnsignedComponent(state.destFormat, 2) ? 0.0f : -scale.z,
-			                          Surface::isUnsignedComponent(state.destFormat, 3) ? 0.0f : -scale.w));
+			value = Max(value, Float4(state.destFormat.isUnsignedComponent(0) ? 0.0f : -scale.x,
+			                          state.destFormat.isUnsignedComponent(1) ? 0.0f : -scale.y,
+			                          state.destFormat.isUnsignedComponent(2) ? 0.0f : -scale.z,
+			                          state.destFormat.isUnsignedComponent(3) ? 0.0f : -scale.w));
 		}
 
 		return true;
@@ -1443,13 +1303,13 @@ namespace sw
 			Int sWidth = *Pointer<Int>(blit + OFFSET(BlitData,sWidth));
 			Int sHeight = *Pointer<Int>(blit + OFFSET(BlitData,sHeight));
 
-			bool intSrc = Surface::isNonNormalizedInteger(state.sourceFormat);
-			bool intDst = Surface::isNonNormalizedInteger(state.destFormat);
+			bool intSrc = state.sourceFormat.isNonNormalizedInteger();
+			bool intDst = state.destFormat.isNonNormalizedInteger();
 			bool intBoth = intSrc && intDst;
-			bool srcQuadLayout = Surface::hasQuadLayout(state.sourceFormat);
-			bool dstQuadLayout = Surface::hasQuadLayout(state.destFormat);
-			int srcBytes = Surface::bytes(state.sourceFormat);
-			int dstBytes = Surface::bytes(state.destFormat);
+			bool srcQuadLayout = state.sourceFormat.hasQuadLayout();
+			bool dstQuadLayout = state.destFormat.hasQuadLayout();
+			int srcBytes = state.sourceFormat.bytes();
+			int dstBytes = state.destFormat.bytes();
 
 			bool hasConstantColorI = false;
 			Int4 constantColorI;
@@ -1555,6 +1415,21 @@ namespace sw
 							{
 								return nullptr;
 							}
+
+							if(state.srcSamples > 1) // Resolve multisampled source
+							{
+								Float4 accum = color;
+								for(int i = 1; i < state.srcSamples; i++)
+								{
+									s += *Pointer<Int>(blit + OFFSET(BlitData, sSliceB));
+									if(!read(color, s, state))
+									{
+										return nullptr;
+									}
+									accum += color;
+								}
+								color = accum * Float4(1.0f / static_cast<float>(state.srcSamples));
+							}
 						}
 						else   // Bilinear filtering
 						{
@@ -1588,7 +1463,7 @@ namespace sw
 							Float4 c10; if(!read(c10, s10, state)) return nullptr;
 							Float4 c11; if(!read(c11, s11, state)) return nullptr;
 
-							if(state.convertSRGB && Surface::isSRGBformat(state.sourceFormat)) // sRGB -> RGB
+							if(state.convertSRGB && state.sourceFormat.isSRGBformat()) // sRGB -> RGB
 							{
 								if(!ApplyScaleAndClamp(c00, state)) return nullptr;
 								if(!ApplyScaleAndClamp(c01, state)) return nullptr;
@@ -1628,37 +1503,8 @@ namespace sw
 		return function("BlitRoutine");
 	}
 
-	bool Blitter::blitReactor(Surface *source, const SliceRectF &sourceRect, Surface *dest, const SliceRect &destRect, const Blitter::Options &options)
+	Routine *Blitter::getRoutine(const State &state)
 	{
-		ASSERT(!options.clearOperation || ((source->getWidth() == 1) && (source->getHeight() == 1) && (source->getDepth() == 1)));
-
-		Rect dRect = destRect;
-		RectF sRect = sourceRect;
-		if(destRect.x0 > destRect.x1)
-		{
-			swap(dRect.x0, dRect.x1);
-			swap(sRect.x0, sRect.x1);
-		}
-		if(destRect.y0 > destRect.y1)
-		{
-			swap(dRect.y0, dRect.y1);
-			swap(sRect.y0, sRect.y1);
-		}
-
-		State state(options);
-		state.clampToEdge = (sourceRect.x0 < 0.0f) ||
-		                    (sourceRect.y0 < 0.0f) ||
-		                    (sourceRect.x1 > (float)source->getWidth()) ||
-		                    (sourceRect.y1 > (float)source->getHeight());
-
-		bool useSourceInternal = !source->isExternalDirty();
-		bool useDestInternal = !dest->isExternalDirty();
-		bool isStencil = options.useStencil;
-
-		state.sourceFormat = isStencil ? source->getStencilFormat() : source->getFormat(useSourceInternal);
-		state.destFormat = isStencil ? dest->getStencilFormat() : dest->getFormat(useDestInternal);
-		state.destSamples = dest->getSamples();
-
 		criticalSection.lock();
 		Routine *blitRoutine = blitCache->query(state);
 
@@ -1669,7 +1515,8 @@ namespace sw
 			if(!blitRoutine)
 			{
 				criticalSection.unlock();
-				return false;
+				UNIMPLEMENTED("blitRoutine");
+				return nullptr;
 			}
 
 			blitCache->add(state, blitRoutine);
@@ -1677,47 +1524,136 @@ namespace sw
 
 		criticalSection.unlock();
 
-		void (*blitFunction)(const BlitData *data) = (void(*)(const BlitData*))blitRoutine->getEntry();
+		return blitRoutine;
+	}
 
-		BlitData data;
-
-		bool isRGBA = options.writeMask == 0xF;
-		bool isEntireDest = dest->isEntire(destRect);
-
-		data.source = isStencil ? source->lockStencil(0, 0, 0, sw::PUBLIC) :
-		                          source->lock(0, 0, sourceRect.slice, sw::LOCK_READONLY, sw::PUBLIC, useSourceInternal);
-		data.dest = isStencil ? dest->lockStencil(0, 0, 0, sw::PUBLIC) :
-		                        dest->lock(0, 0, destRect.slice, isRGBA ? (isEntireDest ? sw::LOCK_DISCARD : sw::LOCK_WRITEONLY) : sw::LOCK_READWRITE, sw::PUBLIC, useDestInternal);
-		data.sPitchB = isStencil ? source->getStencilPitchB() : source->getPitchB(useSourceInternal);
-		data.dPitchB = isStencil ? dest->getStencilPitchB() : dest->getPitchB(useDestInternal);
-		data.dSliceB = isStencil ? dest->getStencilSliceB() : dest->getSliceB(useDestInternal);
-
-		data.w = sRect.width() / dRect.width();
-		data.h = sRect.height() / dRect.height();
-		data.x0 = sRect.x0 + (0.5f - dRect.x0) * data.w;
-		data.y0 = sRect.y0 + (0.5f - dRect.y0) * data.h;
-
-		data.x0d = dRect.x0;
-		data.x1d = dRect.x1;
-		data.y0d = dRect.y0;
-		data.y1d = dRect.y1;
-
-		data.sWidth = source->getWidth();
-		data.sHeight = source->getHeight();
-
-		blitFunction(&data);
-
-		if(isStencil)
+	void Blitter::blit(vk::Image *src, vk::Image *dst, VkImageBlit region, VkFilter filter)
+	{
+		if(dst->getFormat() == VK_FORMAT_UNDEFINED)
 		{
-			source->unlockStencil();
-			dest->unlockStencil();
-		}
-		else
-		{
-			source->unlock(useSourceInternal);
-			dest->unlock(useDestInternal);
+			return;
 		}
 
-		return true;
+		if((region.srcSubresource.layerCount != region.dstSubresource.layerCount) ||
+		   (region.srcSubresource.aspectMask != region.dstSubresource.aspectMask))
+		{
+			UNIMPLEMENTED("region");
+		}
+
+		if(region.dstOffsets[0].x > region.dstOffsets[1].x)
+		{
+			std::swap(region.srcOffsets[0].x, region.srcOffsets[1].x);
+			std::swap(region.dstOffsets[0].x, region.dstOffsets[1].x);
+		}
+
+		if(region.dstOffsets[0].y > region.dstOffsets[1].y)
+		{
+			std::swap(region.srcOffsets[0].y, region.srcOffsets[1].y);
+			std::swap(region.dstOffsets[0].y, region.dstOffsets[1].y);
+		}
+
+		VkExtent3D srcExtent = src->getMipLevelExtent(region.srcSubresource.mipLevel);
+
+		int32_t numSlices = (region.srcOffsets[1].z - region.srcOffsets[0].z);
+		ASSERT(numSlices == (region.dstOffsets[1].z - region.dstOffsets[0].z));
+
+		VkImageAspectFlagBits srcAspect = static_cast<VkImageAspectFlagBits>(region.srcSubresource.aspectMask);
+		VkImageAspectFlagBits dstAspect = static_cast<VkImageAspectFlagBits>(region.dstSubresource.aspectMask);
+
+		float widthRatio = static_cast<float>(region.srcOffsets[1].x - region.srcOffsets[0].x) /
+		                   static_cast<float>(region.dstOffsets[1].x - region.dstOffsets[0].x);
+		float heightRatio = static_cast<float>(region.srcOffsets[1].y - region.srcOffsets[0].y) /
+		                    static_cast<float>(region.dstOffsets[1].y - region.dstOffsets[0].y);
+		float x0 = region.srcOffsets[0].x + (0.5f - region.dstOffsets[0].x) * widthRatio;
+		float y0 = region.srcOffsets[0].y + (0.5f - region.dstOffsets[0].y) * heightRatio;
+
+		bool doFilter = (filter != VK_FILTER_NEAREST);
+		State state(src->getFormat(srcAspect), dst->getFormat(dstAspect), src->getSampleCountFlagBits(), dst->getSampleCountFlagBits(),
+		            { doFilter, srcAspect == VK_IMAGE_ASPECT_STENCIL_BIT, doFilter });
+		state.clampToEdge = (region.srcOffsets[0].x < 0) ||
+		                    (region.srcOffsets[0].y < 0) ||
+		                    (static_cast<uint32_t>(region.srcOffsets[1].x) > srcExtent.width) ||
+		                    (static_cast<uint32_t>(region.srcOffsets[1].y) > srcExtent.height) ||
+		                    (doFilter && ((x0 < 0.5f) || (y0 < 0.5f)));
+
+		Routine *blitRoutine = getRoutine(state);
+		if(!blitRoutine)
+		{
+			return;
+		}
+
+		void(*blitFunction)(const BlitData *data) = (void(*)(const BlitData*))blitRoutine->getEntry();
+
+		BlitData data =
+		{
+			nullptr, // source
+			nullptr, // dest
+			src->rowPitchBytes(srcAspect, region.srcSubresource.mipLevel),   // sPitchB
+			dst->rowPitchBytes(dstAspect, region.dstSubresource.mipLevel),   // dPitchB
+			src->slicePitchBytes(srcAspect, region.srcSubresource.mipLevel), // sSliceB
+			dst->slicePitchBytes(dstAspect, region.dstSubresource.mipLevel), // dSliceB
+
+			x0,
+			y0,
+			widthRatio,
+			heightRatio,
+
+			region.dstOffsets[0].y, // y0d
+			region.dstOffsets[1].y, // y1d
+			region.dstOffsets[0].x, // x0d
+			region.dstOffsets[1].x, // x1d
+
+			static_cast<int>(srcExtent.width), // sWidth
+			static_cast<int>(srcExtent.height) // sHeight;
+		};
+
+		VkOffset3D srcOffset = { 0, 0, region.srcOffsets[0].z };
+		VkOffset3D dstOffset = { 0, 0, region.dstOffsets[0].z };
+
+		VkImageSubresourceLayers srcSubresLayers =
+		{
+			region.srcSubresource.aspectMask,
+			region.srcSubresource.mipLevel,
+			region.srcSubresource.baseArrayLayer,
+			1
+		};
+
+		VkImageSubresourceLayers dstSubresLayers =
+		{
+			region.dstSubresource.aspectMask,
+			region.dstSubresource.mipLevel,
+			region.dstSubresource.baseArrayLayer,
+			1
+		};
+
+		VkImageSubresourceRange srcSubresRange =
+		{
+			region.srcSubresource.aspectMask,
+			region.srcSubresource.mipLevel,
+			1,
+			region.srcSubresource.baseArrayLayer,
+			region.srcSubresource.layerCount
+		};
+
+		uint32_t lastLayer = src->getLastLayerIndex(srcSubresRange);
+
+		for(; srcSubresLayers.baseArrayLayer <= lastLayer; srcSubresLayers.baseArrayLayer++, dstSubresLayers.baseArrayLayer++)
+		{
+			srcOffset.z = region.srcOffsets[0].z;
+			dstOffset.z = region.dstOffsets[0].z;
+
+			for(int i = 0; i < numSlices; i++)
+			{
+				data.source = src->getTexelPointer(srcOffset, srcSubresLayers);
+				data.dest = dst->getTexelPointer(dstOffset, dstSubresLayers);
+
+				ASSERT(data.source < src->end());
+				ASSERT(data.dest < dst->end());
+
+				blitFunction(&data);
+				srcOffset.z++;
+				dstOffset.z++;
+			}
+		}
 	}
 }

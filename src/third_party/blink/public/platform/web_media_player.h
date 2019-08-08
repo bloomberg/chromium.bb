@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_PLAYER_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_PLAYER_H_
 
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "third_party/blink/public/platform/web_callbacks.h"
@@ -165,8 +164,8 @@ class WebMediaPlayer {
   virtual WebTimeRanges Seekable() const = 0;
 
   // Attempts to switch the audio output device.
-  virtual void SetSinkId(const WebString& sink_id,
-                         std::unique_ptr<WebSetSinkIdCallbacks>) = 0;
+  virtual void SetSinkId(const WebString& sing_id,
+                         WebSetSinkIdCompleteCallback) = 0;
 
   // True if the loaded media has a playable video/audio track.
   virtual bool HasVideo() const = 0;
@@ -323,6 +322,17 @@ class WebMediaPlayer {
                             int zoffset,
                             bool flip_y,
                             bool premultiply_alpha) {
+    return false;
+  }
+
+  // Share video frame texture to |texture|. If the sharing is impossible or
+  // fails, it returns false.
+  virtual bool PrepareVideoFrameForWebGL(
+      gpu::gles2::GLES2Interface* gl,
+      unsigned target,
+      unsigned texture,
+      int already_uploaded_id = -1,
+      WebMediaPlayer::VideoFrameUploadMetadata* out_metadata = nullptr) {
     return false;
   }
 

@@ -17,12 +17,20 @@ service heapprofd /system/bin/heapprofd
     socket heapprofd stream 0666 root root
     user nobody
     group nobody readproc
-    writepid /dev/cpuset/system-background/tasks
+    # By default, this  daemon is idle. When profiling an app, we should unwind
+    # as fast as possible in the interest of the app being profiled.
+    writepid /dev/cpuset/foreground/tasks
     onrestart exec_background - nobody shell -- /system/bin/heapprofd --cleanup-after-crash
-    capabilities KILL
+    # DAC_READ_SEARCH is denied by SELinux on user builds because the SELinux
+    # permission is userdebug_or_eng only.
+    # This is fine as this is not needed for central heapprofd in fork mode.
+    capabilities KILL DAC_READ_SEARCH
 
 on property:persist.heapprofd.enable=1
     start heapprofd
 
-on property:persist.heapprofd.enable=0
+on property:traced.lazy.heapprofd=1
+    start heapprofd
+
+on property:persist.heapprofd.enable=0 && property:traced.lazy.heapprofd=0
     stop heapprofd

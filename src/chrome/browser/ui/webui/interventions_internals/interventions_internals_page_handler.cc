@@ -18,6 +18,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_switches.h"
+#include "net/base/features.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -99,7 +100,8 @@ std::string GetFeatureFlagStatus(const std::string& feature_name) {
 
 std::string GetNonFlagEctValue() {
   std::map<std::string, std::string> nqe_params;
-  base::GetFieldTrialParams("NetworkQualityEstimator", &nqe_params);
+  base::GetFieldTrialParamsByFeature(net::features::kNetworkQualityEstimator,
+                                     &nqe_params);
   if (nqe_params.find(net::kForceEffectiveConnectionType) != nqe_params.end()) {
     return "Fieldtrial forced " +
            nqe_params[net::kForceEffectiveConnectionType];

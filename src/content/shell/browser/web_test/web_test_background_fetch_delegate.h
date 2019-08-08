@@ -12,6 +12,8 @@
 #include "components/download/public/background_service/client.h"
 #include "content/public/browser/background_fetch_delegate.h"
 
+class SimpleFactoryKey;
+
 namespace download {
 class DownloadService;
 }  // namespace download
@@ -51,6 +53,7 @@ class WebTestBackgroundFetchDelegate : public BackgroundFetchDelegate {
   class WebTestBackgroundFetchDownloadClient;
 
   BrowserContext* browser_context_;
+  std::unique_ptr<SimpleFactoryKey> simple_factory_key_;
 
   // In-memory instance of the Download Service lazily created by the delegate.
   std::unique_ptr<download::DownloadService> download_service_;

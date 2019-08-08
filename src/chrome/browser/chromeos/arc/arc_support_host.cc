@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/hash/sha1.h"
 #include "base/i18n/timezone.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/sha1.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/user_manager/known_user.h"
@@ -739,7 +740,7 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
     DCHECK(error_delegate_);
     error_delegate_->OnSendFeedbackClicked();
   } else if (event == kEventOnOpenPrivacySettingsPageClicked) {
-    chrome::ShowSettingsSubPageForProfile(profile_, "privacy");
+    chrome::ShowSettingsSubPageForProfile(profile_, chrome::kPrivacySubPage);
   } else {
     LOG(ERROR) << "Unknown message: " << event;
     NOTREACHED();

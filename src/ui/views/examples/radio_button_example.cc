@@ -17,10 +17,17 @@
 namespace views {
 namespace examples {
 
+namespace {
+
+const char* BoolToOnOff(bool value) {
+  return value ? "on" : "off";
+}
+
+}  // namespace
+
 RadioButtonExample::RadioButtonExample() : ExampleBase("Radio Button") {}
 
-RadioButtonExample::~RadioButtonExample() {
-}
+RadioButtonExample::~RadioButtonExample() = default;
 
 void RadioButtonExample::CreateExampleView(View* container) {
   select_ = new LabelButton(this, base::ASCIIToUTF16("Select"));

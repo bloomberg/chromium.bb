@@ -217,7 +217,7 @@ def main():
     if sys.platform.startswith('linux'):
       opt_flags += ['--lto-lld']
     build_cmd = [sys.executable, os.path.join(THIS_DIR, 'update.py'),
-                 '--bootstrap', '--force-local-build',
+                 '--bootstrap', '--disable-asserts', '--force-local-build',
                  '--run-tests'] + opt_flags
     TeeCmd(build_cmd, log)
 
@@ -466,18 +466,6 @@ def main():
             filter=PrintTarProgress)
   MaybeUpload(args, objdumpdir, platform)
 
-  # Zip up llvm-cfi-verify for CFI coverage.
-  cfiverifydir = 'llvmcfiverify-' + stamp
-  shutil.rmtree(cfiverifydir, ignore_errors=True)
-  os.makedirs(os.path.join(cfiverifydir, 'bin'))
-  shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', 'llvm-cfi-verify' +
-                           exe_ext),
-              os.path.join(cfiverifydir, 'bin'))
-  with tarfile.open(cfiverifydir + '.tgz', 'w:gz') as tar:
-    tar.add(os.path.join(cfiverifydir, 'bin'), arcname='bin',
-            filter=PrintTarProgress)
-  MaybeUpload(args, cfiverifydir, platform)
-
   # On Mac, lld isn't part of the main zip.  Upload it in a separate zip.
   if sys.platform == 'darwin':
     llddir = 'lld-' + stamp
@@ -494,8 +482,9 @@ def main():
               filter=PrintTarProgress)
     MaybeUpload(args, llddir, platform)
 
-    # dsymutil isn't part of the main zip either, and it gets periodically deployed to CIPD
-    # (manually, not as part of clang rolls) for use in the Mac build toolchain.
+    # dsymutil isn't part of the main zip either, and it gets periodically
+    # deployed to CIPD (manually, not as part of clang rolls) for use in the
+    # Mac build toolchain.
     dsymdir = 'dsymutil-' + stamp
     shutil.rmtree(dsymdir, ignore_errors=True)
     os.makedirs(os.path.join(dsymdir, 'bin'))

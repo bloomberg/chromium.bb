@@ -19,6 +19,9 @@
 #include "chrome/browser/chromeos/printing/cups_print_job_notification_manager.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -95,11 +98,10 @@ void CupsPrintJobNotification::Click(
   CupsPrintJobManager* print_job_manager =
       CupsPrintJobManagerFactory::GetForBrowserContext(profile_);
 
-  if (!print_job_)
-    return;
-
   switch (button_commands_[*button_index]) {
     case ButtonCommand::CANCEL_PRINTING:
+      DCHECK(print_job_);
+
       print_job_manager->CancelPrintJob(print_job_.get());
       // print_job_ was deleted in CancelPrintJob.  Forget the pointer.
       print_job_ = nullptr;
@@ -111,12 +113,22 @@ void CupsPrintJobNotification::Click(
       notification_manager_->OnPrintJobNotificationRemoved(this);
       break;
     case ButtonCommand::PAUSE_PRINTING:
+      DCHECK(print_job_);
+
       print_job_manager->SuspendPrintJob(print_job_.get());
       break;
     case ButtonCommand::RESUME_PRINTING:
+      DCHECK(print_job_);
+
       print_job_manager->ResumePrintJob(print_job_.get());
       break;
     case ButtonCommand::GET_HELP:
+      // Show CUPS printing help page.
+      NavigateParams params(profile_, GURL(chrome::kCupsPrintLearnMoreURL),
+                            ui::PAGE_TRANSITION_LINK);
+      params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+      params.window_action = NavigateParams::SHOW_WINDOW;
+      Navigate(&params);
       break;
   }
 }
@@ -140,16 +152,17 @@ void CupsPrintJobNotification::UpdateNotification() {
       print_job_->state() == CupsPrintJob::State::STATE_PAGE_DONE) {
     // If the notification was closed during the printing, prevent showing the
     // following printing progress.
-    if (!closed_in_middle_)
+    if (!closed_in_middle_) {
       display_service->Display(NotificationHandler::Type::TRANSIENT,
-                               *notification_);
+                               *notification_, /*metadata=*/nullptr);
+    }
   } else {
     closed_in_middle_ = false;
     // In order to make sure it pop up, we should delete it before readding it.
     display_service->Close(NotificationHandler::Type::TRANSIENT,
                            notification_id_);
     display_service->Display(NotificationHandler::Type::TRANSIENT,
-                             *notification_);
+                             *notification_, /*metadata=*/nullptr);
   }
 
   // |print_job_| will be deleted by CupsPrintJobManager if the job is finished

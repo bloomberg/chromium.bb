@@ -112,25 +112,25 @@ void SettingsProviderGSettings::OnMiddleClickActionChanged(GSettings* settings,
 
 void SettingsProviderGSettings::ParseAndStoreMiddleClickValue(
     const std::string& click_action) {
-  GtkUi::NonClientWindowFrameAction action;
+  GtkUi::WindowFrameAction action;
 
   if (click_action == "none") {
-    action = views::LinuxUI::WINDOW_FRAME_ACTION_NONE;
+    action = views::LinuxUI::WindowFrameAction::kNone;
   } else if (click_action == "lower") {
-    action = views::LinuxUI::WINDOW_FRAME_ACTION_LOWER;
+    action = views::LinuxUI::WindowFrameAction::kLower;
   } else if (click_action == "minimize") {
-    action = views::LinuxUI::WINDOW_FRAME_ACTION_MINIMIZE;
+    action = views::LinuxUI::WindowFrameAction::kMinimize;
   } else if (click_action == "toggle-maximize") {
-    action = views::LinuxUI::WINDOW_FRAME_ACTION_TOGGLE_MAXIMIZE;
+    action = views::LinuxUI::WindowFrameAction::kToggleMaximize;
   } else {
     // While we want to have the default state be lower if there isn't a
     // value, we want to default to no action if the user has explicitly
     // chose an action that we don't implement.
-    action = views::LinuxUI::WINDOW_FRAME_ACTION_NONE;
+    action = views::LinuxUI::WindowFrameAction::kNone;
   }
 
-  delegate_->SetNonClientWindowFrameAction(
-      views::LinuxUI::WINDOW_FRAME_ACTION_SOURCE_MIDDLE_CLICK, action);
+  delegate_->SetWindowFrameAction(
+      views::LinuxUI::WindowFrameActionSource::kMiddleClick, action);
 }
 
 }  // namespace libgtkui

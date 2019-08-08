@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/x11/x11_surface_factory.h"
 
+#include <memory>
+
 #include "gpu/vulkan/buildflags.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"

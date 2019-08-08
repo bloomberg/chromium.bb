@@ -44,11 +44,11 @@ public class PageViewTimer {
     @IntDef({DurationBucket.SHORT_CLICK, DurationBucket.MEDIUM_CLICK, DurationBucket.LONG_CLICK})
     @Retention(RetentionPolicy.SOURCE)
     public @interface DurationBucket {
-        int SHORT_CLICK = 0; /** Click <= 4 secconds */
+        int SHORT_CLICK = 0; /** Click <= 4 seconds */
         int MEDIUM_CLICK = 1; /** 4 seconds < Click <= 180 seconds */
         int LONG_CLICK = 2; /** 180 seconds < Click */
+        int NUM_ENTRIES = 3;
     }
-    private static final int DURATION_BUCKET_COUNT = 3;
 
     /** Track the navigation source to report the page view time under. */
     @IntDef({NavigationSource.OTHER, NavigationSource.CONTEXTUAL_SUGGESTIONS})
@@ -228,12 +228,12 @@ public class PageViewTimer {
         if (mNavigationSource == NavigationSource.CONTEXTUAL_SUGGESTIONS) {
             RecordHistogram.recordEnumeratedHistogram(
                     "ContextualSuggestions.PageViewClickLength.ContextualSuggestions",
-                    durationBucket, DURATION_BUCKET_COUNT);
+                    durationBucket, DurationBucket.NUM_ENTRIES);
             return;
         }
 
         RecordHistogram.recordEnumeratedHistogram("ContextualSuggestions.PageViewClickLength.Other",
-                durationBucket, DURATION_BUCKET_COUNT);
+                durationBucket, DurationBucket.NUM_ENTRIES);
     }
 
     private void switchObserverToTab(Tab tab) {

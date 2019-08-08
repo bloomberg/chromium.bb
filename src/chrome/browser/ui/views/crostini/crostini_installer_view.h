@@ -52,6 +52,7 @@ class CrostiniInstallerView
     kErrorFetchingSshKeys = 9,
     kErrorMountingContainer = 10,
     kErrorSettingUpContainer = 11,
+    kErrorInsufficientDiskSpace = 22,
 
     kUserCancelledStart = 12,
     kUserCancelledInstallImageLoader = 13,
@@ -91,14 +92,15 @@ class CrostiniInstallerView
   void OnVmStarted(crostini::CrostiniResult result) override;
   void OnContainerDownloading(int32_t download_percent) override;
   void OnContainerCreated(crostini::CrostiniResult result) override;
-  void OnContainerStarted(crostini::CrostiniResult result) override;
   void OnContainerSetup(crostini::CrostiniResult result) override;
+  void OnContainerStarted(crostini::CrostiniResult result) override;
   void OnSshKeysFetched(crostini::CrostiniResult result) override;
 
   static CrostiniInstallerView* GetActiveViewForTesting();
   void SetCloseCallbackForTesting(base::OnceClosure quit_closure);
   void SetProgressBarCallbackForTesting(
       base::RepeatingCallback<void(double)> callback);
+  void SetGetFreeDiskSpaceCallbackForTesting(base::OnceClosure quit_closure);
 
  private:
   enum class State {
@@ -135,6 +137,10 @@ class CrostiniInstallerView
 
   void RecordSetupResultHistogram(SetupResult result);
 
+  void OnAvailableDiskSpace(int64_t bytes);
+
+  void PressAccept();
+
   State state_ = State::PROMPT;
   views::ImageView* logo_image_ = nullptr;
   views::Label* big_message_label_ = nullptr;
@@ -149,6 +155,8 @@ class CrostiniInstallerView
   base::Time state_start_time_;
   std::unique_ptr<base::RepeatingTimer> state_progress_timer_;
   bool do_cleanup_ = true;
+  base::TimeTicks install_start_time_;
+  int64_t free_disk_space_;
 
   // Whether the result has been logged or not is stored to prevent multiple
   // results being logged for a given setup flow. This can happen due to
@@ -156,8 +164,13 @@ class CrostiniInstallerView
   // able to hit Cancel after any errors occur.
   bool has_logged_result_ = false;
 
+  bool has_logged_timing_result_ = false;
+
+  bool has_logged_free_disk_result_ = false;
+
   base::RepeatingCallback<void(double)> progress_bar_callback_for_testing_;
   base::OnceClosure quit_closure_for_testing_;
+  base::OnceClosure free_disk_space_callback_for_testing_;
 
   base::WeakPtrFactory<CrostiniInstallerView> weak_ptr_factory_;
 

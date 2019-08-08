@@ -69,7 +69,7 @@ WebMouseEvent WebMouseEventFromGestureEvent(const WebGestureEvent& gesture) {
 
   // Only convert touch screen gesture events, do not convert
   // touchpad/mouse wheel gesture events. (crbug.com/620974)
-  if (gesture.SourceDevice() != blink::kWebGestureDeviceTouchscreen)
+  if (gesture.SourceDevice() != blink::WebGestureDevice::kTouchscreen)
     return WebMouseEvent();
 
   WebInputEvent::Type type = WebInputEvent::kUndefined;
@@ -345,6 +345,7 @@ void RenderWidgetFullscreenPepper::SetLayer(cc::Layer* layer) {
   }
   UpdateLayerBounds();
   layer_->SetIsDrawable(true);
+  layer_->SetHitTestable(true);
   layer_tree_view()->SetNonBlinkManagedRootLayer(layer_);
 }
 

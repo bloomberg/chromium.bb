@@ -22,10 +22,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/console_message_level.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -172,7 +172,7 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
   if (selection.warning &&
       activation_level == mojom::ActivationLevel::kEnabled) {
     NavigationConsoleLogger::LogMessageOnCommit(
-        navigation_handle(), content::CONSOLE_MESSAGE_LEVEL_WARNING,
+        navigation_handle(), blink::mojom::ConsoleMessageLevel::kWarning,
         kActivationWarningConsoleMessage);
     activation_level = mojom::ActivationLevel::kDisabled;
   }

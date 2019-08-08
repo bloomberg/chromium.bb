@@ -50,10 +50,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                             std::set<const char*>{
                                 "blink.mojom.DWriteFontProxy",
                             })
-          .ExposeCapability("service_manager:service_factory",
-                            std::set<const char*>{
-                                "service_manager.mojom.ServiceFactory",
-                            })
           .ExposeCapability(
               "renderer",
               std::set<const char*>{
@@ -81,7 +77,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "content.mojom.PushMessaging",
                   "content.mojom.RendererHost",
                   "content.mojom.ReportingServiceProxy",
-                  "content.mojom.ServiceWorkerDispatcherHost",
                   "content.mojom.WorkerURLLoaderFactoryProvider",
                   "device.mojom.BatteryMonitor",
                   "device.mojom.GamepadHapticsManager",
@@ -205,13 +200,10 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "autofill.mojom.AutofillDriver",
                   "autofill.mojom.PasswordManagerDriver",
                   "blink.mojom.AnchorElementMetricsHost",
-                  "blink.mojom.AudioContextManager",
-                  "blink.mojom.Authenticator",
                   "blink.mojom.BackgroundFetchService",
                   "blink.mojom.CacheStorage",
                   "blink.mojom.ColorChooserFactory",
                   "blink.mojom.ContactsManager",
-                  "blink.mojom.CredentialManager",
                   "blink.mojom.DisplayCutoutHost",
                   "blink.mojom.DedicatedWorkerHostFactory",
                   "blink.mojom.FileChooser",
@@ -240,7 +232,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.WakeLockService",
                   "blink.mojom.WebBluetoothService",
                   "blink.mojom.WebUsbService",
-                  "blink.test.mojom.VirtualAuthenticatorManager",
                   "content.mojom.BrowserTarget",
                   "content.mojom.InputInjector",
                   "content.mojom.RendererAudioInputStreamFactory",

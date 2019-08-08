@@ -6,6 +6,7 @@ import common
 from common import TestDriver
 from common import IntegrationTest
 from decorators import ChromeVersionBetweenInclusiveM
+from decorators import ChromeVersionEqualOrAfterM
 from emulation_server import BlackHoleHandler
 from emulation_server import InvalidTLSHandler
 from emulation_server import TCPResetHandler
@@ -13,7 +14,7 @@ from emulation_server import TLSResetHandler
 
 class ProxyConnection(IntegrationTest):
 
-  @ChromeVersionBetweenInclusiveM(63, 72)
+  @ChromeVersionEqualOrAfterM(63)
   def testTLSInjectionAfterHandshake(self):
     port = common.GetOpenPort()
     with TestDriver() as t:
@@ -25,6 +26,8 @@ class ProxyConnection(IntegrationTest):
         '--data-reduction-proxy-http-proxies=https://127.0.0.1:%d' % port)
       t.AddChromeArg(
         '--force-fieldtrials=DataReductionProxyConfigService/Disabled')
+      t.AddChromeArg(
+        '--enable-features=NetworkService,DataReductionProxyEnabledWithNetworkService')
       t.UseEmulationServer(InvalidTLSHandler, port=port)
 
       t.LoadURL('http://check.googlezip.net/test.html')
@@ -37,7 +40,7 @@ class ProxyConnection(IntegrationTest):
       self.assertTrue(t.SleepUntilHistogramHasEntry('DataReductionProxy.'
         'InvalidResponseHeadersReceived.NetError'))
 
-  @ChromeVersionBetweenInclusiveM(63, 72)
+  @ChromeVersionEqualOrAfterM(63)
   def testTCPReset(self):
     port = common.GetOpenPort()
     with TestDriver() as t:
@@ -50,6 +53,8 @@ class ProxyConnection(IntegrationTest):
         '--data-reduction-proxy-http-proxies=http://127.0.0.1:%d' % port)
       t.AddChromeArg(
         '--force-fieldtrials=DataReductionProxyConfigService/Disabled')
+      t.AddChromeArg(
+        '--enable-features=NetworkService,DataReductionProxyEnabledWithNetworkService')
       t.UseEmulationServer(TCPResetHandler, port=port)
 
       t.LoadURL('http://check.googlezip.net/test.html')
@@ -62,7 +67,7 @@ class ProxyConnection(IntegrationTest):
       self.assertTrue(t.SleepUntilHistogramHasEntry('DataReductionProxy.'
         'InvalidResponseHeadersReceived.NetError'))
 
-  @ChromeVersionBetweenInclusiveM(63, 72)
+  @ChromeVersionEqualOrAfterM(63)
   def testTLSReset(self):
     port = common.GetOpenPort()
     with TestDriver() as t:
@@ -75,6 +80,8 @@ class ProxyConnection(IntegrationTest):
         '--data-reduction-proxy-http-proxies=https://127.0.0.1:%d' % port)
       t.AddChromeArg(
         '--force-fieldtrials=DataReductionProxyConfigService/Disabled')
+      t.AddChromeArg(
+        '--enable-features=NetworkService,DataReductionProxyEnabledWithNetworkService')
       t.UseEmulationServer(TLSResetHandler, port=port)
 
       t.LoadURL('http://check.googlezip.net/test.html')

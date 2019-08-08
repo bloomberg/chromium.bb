@@ -11,6 +11,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/webrtc/api/dtls_transport_interface.h"
 #include "third_party/webrtc/api/rtp_parameters.h"
+#include "third_party/webrtc/api/stats/rtc_stats.h"
 
 namespace blink {
 
@@ -46,8 +47,8 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpSender {
   virtual void SetParameters(blink::WebVector<webrtc::RtpEncodingParameters>,
                              webrtc::DegradationPreference,
                              WebRTCVoidRequest) = 0;
-  virtual void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
-                        RTCStatsFilter) = 0;
+  virtual void GetStats(blink::WebRTCStatsReportCallback,
+                        const std::vector<webrtc::NonStandardGroupId>&) = 0;
 };
 
 }  // namespace blink

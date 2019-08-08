@@ -11,7 +11,6 @@ import android.support.v4.util.Pair;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.JustNowProvider;
@@ -183,8 +182,7 @@ class DateOrderedListMediator {
         new OfflineItemStartupLogger(config, mInvalidStateFilter);
 
         mSearchFilter.addObserver(new EmptyStateObserver(mSearchFilter, dateOrderedListObserver));
-        mThumbnailProvider = new ThumbnailProviderImpl(
-                ((ChromeApplication) ContextUtils.getApplicationContext()).getReferencePool(),
+        mThumbnailProvider = new ThumbnailProviderImpl(ChromeApplication.getReferencePool(),
                 config.inMemoryThumbnailCacheSizeBytes,
                 ThumbnailProviderImpl.ClientType.DOWNLOAD_HOME);
         mSelectionObserver = new MediatorSelectionObserver(selectionDelegate);
@@ -200,7 +198,8 @@ class DateOrderedListMediator {
         mModel.getProperties().set(ListProperties.CALLBACK_REMOVE_ALL, this ::onDeleteItems);
         mModel.getProperties().set(ListProperties.PROVIDER_VISUALS, this ::getVisuals);
         mModel.getProperties().set(ListProperties.CALLBACK_SELECTION, this ::onSelection);
-        mModel.getProperties().set(ListProperties.CALLBACK_RENAME, this::onRenameItem);
+        mModel.getProperties().set(ListProperties.CALLBACK_RENAME,
+                mUiConfig.isRenameEnabled ? this::onRenameItem : null);
         mModel.getProperties().set(
                 ListProperties.CALLBACK_START_SELECTION, this ::onStartSelection);
     }
@@ -339,7 +338,7 @@ class DateOrderedListMediator {
     }
 
     private void onRenameItem(OfflineItem item) {
-        // TODO(hesen): Add sanity check canRename for item, and add uma stats.
+        UmaUtils.recordItemAction(ViewAction.MENU_RENAME);
         mRenameController.rename(item.title, (newName, renameCallback) -> {
             mProvider.renameItem(item, newName, renameCallback);
         });

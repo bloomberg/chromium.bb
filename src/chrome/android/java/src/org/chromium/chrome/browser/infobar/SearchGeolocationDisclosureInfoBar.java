@@ -8,6 +8,7 @@ import android.content.Context;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
@@ -37,7 +38,7 @@ public class SearchGeolocationDisclosureInfoBar extends InfoBar {
      */
     private SearchGeolocationDisclosureInfoBar(int iconDrawableId, String messageText,
             int inlineLinkRangeStart, int inlineLinkRangeEnd) {
-        super(iconDrawableId, null, messageText);
+        super(iconDrawableId, R.color.infobar_icon_drawable_color, messageText, null);
         mInlineLinkRangeStart = inlineLinkRangeStart;
         mInlineLinkRangeEnd = inlineLinkRangeEnd;
     }

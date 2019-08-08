@@ -78,12 +78,6 @@ typedef std::set<const wchar_t*, ExtensionsCompare> ExtensionSet;
 // Return true if |path| has a active file extension.
 bool PathHasActiveExtension(const base::FilePath& file_path);
 
-// Return true if an alternate file stream is specified in |file_path|.
-bool HasAlternateFileStream(const base::FilePath& file_path);
-
-// Returns true if the file at |path| contains a DOS executable file header.
-bool HasDosExecutableHeader(const base::FilePath& path);
-
 // Expand environment variables in path into expanded_path. When called
 // expanded_path must be an empty path. If any component of path contains
 // environment variables expands to more than MAX_PATH characters the function
@@ -159,11 +153,6 @@ bool DeleteFileFromTempProcess(const base::FilePath& path,
                                uint32_t delay_before_delete_ms,
                                base::win::ScopedHandle* process_handle);
 
-// Return true when string |value| contains an occurrence of |substring|,
-// ignoring the string case and taking into account that |value| might be a
-// shortened path (with it's tail replaced by ~N).
-bool ShortPathContainsCaseInsensitive(const base::string16& value,
-                                      const base::string16& substring);
 // Return true if both paths represent the same file. This function takes care
 // of short/long path and case sensitive path.
 bool PathEqual(const base::FilePath& path1, const base::FilePath& path2);

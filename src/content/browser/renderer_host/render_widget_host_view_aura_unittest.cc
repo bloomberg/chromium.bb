@@ -97,8 +97,8 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ime/input_method_keyboard_controller.h"
 #include "ui/base/ime/mock_input_method.h"
 #include "ui/base/ui_base_features.h"
@@ -907,7 +907,7 @@ class RenderWidgetHostViewAuraOverscrollTest
 
   void SimulateGestureScrollUpdateEvent(float dX, float dY, int modifiers) {
     SimulateGestureEventCore(SyntheticWebGestureEventBuilder::BuildScrollUpdate(
-        dX, dY, modifiers, blink::kWebGestureDeviceTouchscreen));
+        dX, dY, modifiers, blink::WebGestureDevice::kTouchscreen));
   }
 
   void SimulateGesturePinchUpdateEvent(float scale,
@@ -916,7 +916,7 @@ class RenderWidgetHostViewAuraOverscrollTest
                                        int modifiers) {
     SimulateGestureEventCore(SyntheticWebGestureEventBuilder::BuildPinchUpdate(
         scale, anchorX, anchorY, modifiers,
-        blink::kWebGestureDeviceTouchscreen));
+        blink::WebGestureDevice::kTouchscreen));
   }
 
   // Inject synthetic GestureFlingStart events.
@@ -2410,12 +2410,13 @@ TEST_F(RenderWidgetHostViewAuraTest,
   gesture_event = static_cast<const WebGestureEvent*>(
       events[1]->ToEvent()->Event()->web_event.get());
   EXPECT_EQ(WebInputEvent::kGestureScrollEnd, gesture_event->GetType());
-  EXPECT_EQ(blink::kWebGestureDeviceTouchpad, gesture_event->SourceDevice());
+  EXPECT_EQ(blink::WebGestureDevice::kTouchpad, gesture_event->SourceDevice());
 
   gesture_event = static_cast<const WebGestureEvent*>(
       events[2]->ToEvent()->Event()->web_event.get());
   EXPECT_EQ(WebInputEvent::kGestureScrollBegin, gesture_event->GetType());
-  EXPECT_EQ(blink::kWebGestureDeviceTouchscreen, gesture_event->SourceDevice());
+  EXPECT_EQ(blink::WebGestureDevice::kTouchscreen,
+            gesture_event->SourceDevice());
 }
 
 TEST_F(RenderWidgetHostViewAuraTest,
@@ -2829,6 +2830,46 @@ TEST_F(RenderWidgetHostViewAuraTest, ChildAllocationAcceptedInParent) {
       view_->GetLocalSurfaceIdAllocation());
   EXPECT_NE(local_surface_id_allocation1, local_surface_id_allocation3);
   EXPECT_EQ(local_surface_id_allocation2, local_surface_id_allocation3);
+}
+
+// This test verifies that if the parent is hidden when the child sends a
+// child-allocated viz::LocalSurfaceId, the parent will store it and it will
+// not send a WidgetMsg_SynchronizeVisualProperties back to the child.
+TEST_F(RenderWidgetHostViewAuraTest,
+       ChildAllocationAcceptedInParentWhileHidden) {
+  view_->InitAsChild(nullptr);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+  sink_->ClearMessages();
+  viz::LocalSurfaceIdAllocation local_surface_id_allocation1(
+      view_->GetLocalSurfaceIdAllocation());
+  EXPECT_TRUE(local_surface_id_allocation1.IsValid());
+
+  widget_host_->SetAutoResize(true, gfx::Size(50, 50), gfx::Size(100, 100));
+  viz::ChildLocalSurfaceIdAllocator child_allocator;
+  child_allocator.UpdateFromParent(local_surface_id_allocation1);
+  child_allocator.GenerateId();
+  viz::LocalSurfaceIdAllocation local_surface_id_allocation2 =
+      child_allocator.GetCurrentLocalSurfaceIdAllocation();
+
+  view_->WasOccluded();
+  EXPECT_TRUE(widget_host_->is_hidden());
+
+  {
+    cc::RenderFrameMetadata metadata;
+    metadata.viewport_size_in_pixels = gfx::Size(75, 75);
+    metadata.local_surface_id_allocation = local_surface_id_allocation2;
+    widget_host_->DidUpdateVisualProperties(metadata);
+  }
+
+  viz::LocalSurfaceIdAllocation local_surface_id_allocation3(
+      view_->GetLocalSurfaceIdAllocation());
+  EXPECT_NE(local_surface_id_allocation1, local_surface_id_allocation3);
+  EXPECT_EQ(local_surface_id_allocation2, local_surface_id_allocation3);
+
+  EXPECT_FALSE(sink_->GetUniqueMessageMatching(
+      WidgetMsg_SynchronizeVisualProperties::ID));
 }
 
 // This test verifies that when the child and parent both allocate their own
@@ -4068,7 +4109,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   // GFS with touchpad source and the event doesn't get queued in gesture event
   // queue. The overscroll state doesn't get reset till the fling progress sends
   // the fling end event.
-  SimulateGestureFlingStartEvent(0.f, 0.1f, blink::kWebGestureDeviceTouchpad);
+  SimulateGestureFlingStartEvent(0.f, 0.1f, blink::WebGestureDevice::kTouchpad);
   events = GetAndResetDispatchedMessages();
   bool fling_end_event_sent_ = events.size();
   if (fling_end_event_sent_) {
@@ -4142,7 +4183,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 
   // Send a fling start, but with a zero velocity, the fling should not proceed
   // to the renderer.
-  SimulateGestureFlingStartEvent(0.f, 0.f, blink::kWebGestureDeviceTouchpad);
+  SimulateGestureFlingStartEvent(0.f, 0.f, blink::WebGestureDevice::kTouchpad);
   events = GetAndResetDispatchedMessages();
   for (const auto& event : events) {
     EXPECT_NE(WebInputEvent::kGestureFlingStart,
@@ -4179,7 +4220,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
     // gesture events in the renderer. This should initiate and complete an
     // overscroll.
     SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
-                         blink::kWebGestureDeviceTouchscreen);
+                         blink::WebGestureDevice::kTouchscreen);
     SimulateGestureScrollUpdateEvent(300, -5, 0);
     MockWidgetInputHandler::MessageVector events =
         GetAndResetDispatchedMessages();
@@ -4192,7 +4233,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
     EXPECT_EQ(OVERSCROLL_EAST, overscroll_delegate()->current_mode());
 
     SimulateGestureEvent(WebInputEvent::kGestureScrollEnd,
-                         blink::kWebGestureDeviceTouchscreen);
+                         blink::WebGestureDevice::kTouchscreen);
     events = GetAndResetDispatchedMessages();
     EXPECT_EQ("GestureScrollEnd", GetMessageNames(events));
     EXPECT_EQ(OVERSCROLL_EAST, overscroll_delegate()->completed_mode());
@@ -4208,7 +4249,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
     // first GSU event generated by the fling controller.
     overscroll_delegate()->Reset();
     SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
-                         blink::kWebGestureDeviceTouchscreen);
+                         blink::WebGestureDevice::kTouchscreen);
     SimulateGestureScrollUpdateEvent(-300, -5, 0);
     MockWidgetInputHandler::MessageVector events =
         GetAndResetDispatchedMessages();
@@ -4220,7 +4261,8 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
     EXPECT_EQ(OverscrollSource::TOUCHSCREEN, overscroll_source());
     EXPECT_EQ(OVERSCROLL_WEST, overscroll_delegate()->current_mode());
 
-    SimulateGestureFlingStartEvent(100, 0, blink::kWebGestureDeviceTouchscreen);
+    SimulateGestureFlingStartEvent(100, 0,
+                                   blink::WebGestureDevice::kTouchscreen);
     events = GetAndResetDispatchedMessages();
     // The fling start event is not sent to the renderer.
     EXPECT_EQ(0U, events.size());
@@ -4246,7 +4288,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, GestureScrollOverscrolls) {
 
   PressAndSetTouchActionAuto();
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   MockWidgetInputHandler::MessageVector events =
       GetAndResetDispatchedMessages();
   EXPECT_EQ("GestureScrollBegin", GetMessageNames(events));
@@ -4287,7 +4329,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, GestureScrollOverscrolls) {
   // the event to the renderer. The gesture-event filter should receive this
   // event.
   SimulateGestureEvent(WebInputEvent::kGestureScrollEnd,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ("GestureScrollEnd", GetMessageNames(events));
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
@@ -4305,7 +4347,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollDeltaCap) {
   // Set overscroll cap and start scrolling.
   overscroll_delegate()->set_delta_cap(50);
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   MockWidgetInputHandler::MessageVector events =
       GetAndResetDispatchedMessages();
   EXPECT_EQ("GestureScrollBegin", GetMessageNames(events));
@@ -4354,7 +4396,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollDeltaCap) {
 
   // End overscrolling.
   SimulateGestureEvent(WebInputEvent::kGestureScrollEnd,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ("GestureScrollEnd", GetMessageNames(events));
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
@@ -4370,7 +4412,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, GestureScrollConsumed) {
 
   PressAndSetTouchActionAuto();
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   SimulateGestureScrollUpdateEvent(10, 0, 0);
   MockWidgetInputHandler::MessageVector events =
       GetAndResetDispatchedMessages();
@@ -4406,7 +4448,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   PressAndSetTouchActionAuto();
   // Start scrolling. Receive ACK as it being processed.
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   MockWidgetInputHandler::MessageVector events =
       GetAndResetDispatchedMessages();
   SendScrollBeginAckIfNeeded(events, INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -4420,7 +4462,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   // Quickly end and restart the scroll gesture. These two events should get
   // discarded.
   SimulateGestureEvent(WebInputEvent::kGestureScrollEnd,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   MockWidgetInputHandler::MessageVector second_scroll_update_events =
       GetAndResetDispatchedMessages();
   EXPECT_EQ(0U, second_scroll_update_events.size());
@@ -4428,7 +4470,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 
   PressAndSetTouchActionAuto();
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   second_scroll_update_events = GetAndResetDispatchedMessages();
   EXPECT_EQ(0U, second_scroll_update_events.size());
 
@@ -4487,7 +4529,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   PressAndSetTouchActionAuto();
   // Start scrolling. Receive ACK as it being processed.
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   MockWidgetInputHandler::MessageVector events =
       GetAndResetDispatchedMessages();
   EXPECT_EQ("GestureScrollBegin", GetMessageNames(events));
@@ -4500,7 +4542,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 
   // Send an end event. This should get in the debounce queue.
   SimulateGestureEvent(WebInputEvent::kGestureScrollEnd,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
   ReleaseAndResetDispatchedMessages();
 
@@ -4554,7 +4596,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollWithTouchEvents) {
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
 
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ("GestureScrollBegin", GetMessageNames(events));
   SimulateGestureScrollUpdateEvent(20, 0, 0);
@@ -4640,7 +4682,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollWithTouchEvents) {
   SendNotConsumedAcks(events);
 
   SimulateGestureEvent(blink::WebInputEvent::kGestureScrollEnd,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
   base::RunLoop().RunUntilIdle();
   events = GetAndResetDispatchedMessages();
@@ -4661,7 +4703,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   PressAndSetTouchActionAuto();
   // Start scrolling. Receive ACK as it being processed.
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   MockWidgetInputHandler::MessageVector events =
       GetAndResetDispatchedMessages();
   EXPECT_EQ("GestureScrollBegin", GetMessageNames(events));
@@ -4691,7 +4733,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 
   // Send end event.
   SimulateGestureEvent(blink::WebInputEvent::kGestureScrollEnd,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ(0U, events.size());
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
@@ -4707,7 +4749,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   PressAndSetTouchActionAuto();
   // Start scrolling. Receive ACK as it being processed.
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   events = GetAndResetDispatchedMessages();
   SendScrollBeginAckIfNeeded(events, INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ("GestureScrollBegin", GetMessageNames(events));
@@ -4734,7 +4776,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 
   // Send end event.
   SimulateGestureEvent(blink::WebInputEvent::kGestureScrollEnd,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ(0U, events.size());
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
@@ -4758,7 +4800,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollDirectionChange) {
   PressAndSetTouchActionAuto();
   // Start scrolling. Receive ACK as it being processed.
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   MockWidgetInputHandler::MessageVector events =
       GetAndResetDispatchedMessages();
   EXPECT_EQ("GestureScrollBegin", GetMessageNames(events));
@@ -4800,7 +4842,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 
   PressAndSetTouchActionAuto();
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   MockWidgetInputHandler::MessageVector events =
       GetAndResetDispatchedMessages();
   SendScrollBeginAckIfNeeded(events, INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -4814,7 +4856,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   SimulateGestureScrollUpdateEvent(300, -5, 0);
   // Send GSE immediately before ACKing GSU.
   SimulateGestureEvent(WebInputEvent::kGestureScrollEnd,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
 
   // Now ACK the GSU. Should see a completed overscroll.
   events = GetAndResetDispatchedMessages();
@@ -4834,7 +4876,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 
   PressAndSetTouchActionAuto();
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   SimulateGestureScrollUpdateEvent(30, -5, 0);
   MockWidgetInputHandler::MessageVector events =
       GetAndResetDispatchedMessages();
@@ -4852,7 +4894,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 
   // Send GSE immediately before ACKing GSU.
   SimulateGestureEvent(WebInputEvent::kGestureScrollEnd,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
 
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ("GestureScrollUpdate GestureScrollEnd", GetMessageNames(events));
@@ -4981,7 +5023,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollMouseMoveCompletion) {
   // Now try with gestures.
   PressAndSetTouchActionAuto();
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   SendScrollBeginAckIfNeeded(INPUT_EVENT_ACK_STATE_CONSUMED);
   SimulateGestureScrollUpdateEvent(300, -5, 0);
   events = GetAndResetDispatchedMessages();
@@ -5004,7 +5046,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollMouseMoveCompletion) {
   SendNotConsumedAcks(events);
 
   SimulateGestureEvent(WebInputEvent::kGestureScrollEnd,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
   EXPECT_EQ("GestureScrollEnd", GetMessageNames(events));
@@ -5049,7 +5091,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   EXPECT_TRUE(ScrollStateIsContentConsuming());
 
   // Touchpad scroll can end with a zero-velocity fling which is not dispatched.
-  SimulateGestureFlingStartEvent(0.f, 0.f, blink::kWebGestureDeviceTouchpad);
+  SimulateGestureFlingStartEvent(0.f, 0.f, blink::WebGestureDevice::kTouchpad);
   events = GetAndResetDispatchedMessages();
   for (const auto& event : events) {
     EXPECT_NE(WebInputEvent::kGestureFlingStart,
@@ -5095,7 +5137,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   EXPECT_TRUE(ScrollStateIsOverscrolling());
 
   // Touchpad scroll can end with a zero-velocity fling which is not dispatched.
-  SimulateGestureFlingStartEvent(0.f, 0.f, blink::kWebGestureDeviceTouchpad);
+  SimulateGestureFlingStartEvent(0.f, 0.f, blink::WebGestureDevice::kTouchpad);
   events = GetAndResetDispatchedMessages();
 
   for (const auto& event : events) {
@@ -5127,7 +5169,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollResetsOnBlur) {
   // Start an overscroll with gesture scroll. In the middle of the scroll, blur
   // the host.
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   SimulateGestureScrollUpdateEvent(300, -5, 0);
   MockWidgetInputHandler::MessageVector events =
       GetAndResetDispatchedMessages();
@@ -5148,7 +5190,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollResetsOnBlur) {
   EXPECT_EQ(0.f, overscroll_delegate()->delta_y());
 
   SimulateGestureEvent(WebInputEvent::kGestureScrollEnd,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ("SetFocus GestureScrollEnd", GetMessageNames(events));
   ReleaseAndResetDispatchedMessages();
@@ -5157,7 +5199,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollResetsOnBlur) {
   // Start a scroll gesture again. This should correctly start the overscroll
   // after the threshold.
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   SimulateGestureScrollUpdateEvent(300, -5, 0);
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ("GestureScrollBegin TouchScrollStarted GestureScrollUpdate",
@@ -5171,7 +5213,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollResetsOnBlur) {
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->completed_mode());
 
   SimulateGestureEvent(WebInputEvent::kGestureScrollEnd,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_delegate()->completed_mode());
@@ -5538,7 +5580,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, ScrollDeltasResetOnEnd) {
 
   // Scroll gesture.
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   SimulateGestureScrollUpdateEvent(-30, -5, 0);
   events = GetAndResetDispatchedMessages();
   SendScrollBeginAckIfNeeded(events, INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -5548,7 +5590,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, ScrollDeltasResetOnEnd) {
   EXPECT_EQ(-30.f, overscroll_delta_x());
   EXPECT_EQ(-5.f, overscroll_delta_y());
   SimulateGestureEvent(WebInputEvent::kGestureScrollEnd,
-                       blink::kWebGestureDeviceTouchscreen);
+                       blink::WebGestureDevice::kTouchscreen);
   EXPECT_EQ(0.f, overscroll_delta_x());
   EXPECT_EQ(0.f, overscroll_delta_y());
   events = GetAndResetDispatchedMessages();
@@ -5575,7 +5617,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, ScrollDeltasResetOnEnd) {
   EXPECT_EQ(OverscrollSource::NONE, overscroll_source());
   EXPECT_EQ(15.f, overscroll_delta_x());
   EXPECT_EQ(-5.f, overscroll_delta_y());
-  SimulateGestureFlingStartEvent(0.f, 0.1f, blink::kWebGestureDeviceTouchpad);
+  SimulateGestureFlingStartEvent(0.f, 0.1f, blink::WebGestureDevice::kTouchpad);
   // Fling controller handles GFS with touchpad source and the event doesn't get
   // queued in gesture event queue.
   EXPECT_EQ(0U, events.size());

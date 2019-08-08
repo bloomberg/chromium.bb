@@ -20,6 +20,7 @@ struct ResourceResponseHead;
 
 namespace content {
 
+class ResourceContext;
 class SignedExchangeDevToolsProxy;
 
 namespace signed_exchange_utils {
@@ -42,14 +43,16 @@ void ReportErrorAndTraceEvent(
     base::Optional<SignedExchangeError::FieldIndexPair> error_field =
         base::nullopt);
 
-// Returns true when SignedHTTPExchange feature is enabled.
-CONTENT_EXPORT bool IsSignedExchangeHandlingEnabled();
+// Returns true when SignedHTTPExchange feature is enabled. This must be called
+// on the IO thread.
+CONTENT_EXPORT bool IsSignedExchangeHandlingEnabled(ResourceContext* context);
 
 // Returns true when SignedExchangeReportingForDistributors feature is enabled.
 bool IsSignedExchangeReportingForDistributorsEnabled();
 
 // Returns true when the response should be handled as a signed exchange by
-// checking the mime type and the feature flags.
+// checking the url and the response headers. Note that the caller should also
+// check IsSignedExchangeHandlingEnabled() before really enabling the feature.
 bool ShouldHandleAsSignedHTTPExchange(
     const GURL& request_url,
     const network::ResourceResponseHead& head);

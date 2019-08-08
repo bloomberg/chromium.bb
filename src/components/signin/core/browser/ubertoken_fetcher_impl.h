@@ -33,8 +33,7 @@ namespace signin {
 
 using GaiaAuthFetcherFactory =
     base::RepeatingCallback<std::unique_ptr<GaiaAuthFetcher>(
-        GaiaAuthConsumer*,
-        scoped_refptr<network::SharedURLLoaderFactory>)>;
+        GaiaAuthConsumer*)>;
 
 // Allows to retrieve an uber-auth token.
 class UbertokenFetcherImpl : public UbertokenFetcher,
@@ -49,7 +48,8 @@ class UbertokenFetcherImpl : public UbertokenFetcher,
                               const std::string& token)>;
 
   // Constructs an instance and starts fetching the access token and ubertoken
-  // sequencially for |account_id|.
+  // sequentially for |account_id|. Uses a default GaiaAuthFetcherFactory which
+  // returns base GaiaAuthFetcher instances.
   UbertokenFetcherImpl(
       const std::string& account_id,
       OAuth2TokenService* token_service,
@@ -64,7 +64,6 @@ class UbertokenFetcherImpl : public UbertokenFetcher,
       const std::string& access_token,
       OAuth2TokenService* token_service,
       CompletionCallback ubertoken_callback,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       GaiaAuthFetcherFactory factory,
       bool is_bound_to_channel_id = true);
   ~UbertokenFetcherImpl() override;
@@ -89,7 +88,6 @@ class UbertokenFetcherImpl : public UbertokenFetcher,
 
   OAuth2TokenService* token_service_;
   CompletionCallback ubertoken_callback_;
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   bool is_bound_to_channel_id_;  // defaults to true
   GaiaAuthFetcherFactory gaia_auth_fetcher_factory_;
   std::unique_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;

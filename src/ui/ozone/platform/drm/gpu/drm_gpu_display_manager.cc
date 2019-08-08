@@ -5,6 +5,8 @@
 #include "ui/ozone/platform/drm/gpu/drm_gpu_display_manager.h"
 
 #include <stddef.h>
+#include <memory>
+#include <utility>
 
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
@@ -70,6 +72,11 @@ DrmGpuDisplayManager::DrmGpuDisplayManager(ScreenManager* screen_manager,
 }
 
 DrmGpuDisplayManager::~DrmGpuDisplayManager() {
+}
+
+void DrmGpuDisplayManager::SetClearOverlayCacheCallback(
+    base::RepeatingClosure callback) {
+  clear_overlay_cache_callback_ = std::move(callback);
 }
 
 MovableDisplaySnapshots DrmGpuDisplayManager::GetDisplays() {
@@ -155,6 +162,9 @@ bool DrmGpuDisplayManager::ConfigureDisplay(
     return false;
   }
 
+  if (clear_overlay_cache_callback_)
+    clear_overlay_cache_callback_.Run();
+
   return display->Configure(&mode, origin);
 }
 
@@ -164,6 +174,9 @@ bool DrmGpuDisplayManager::DisableDisplay(int64_t display_id) {
     LOG(ERROR) << "There is no display with ID " << display_id;
     return false;
   }
+
+  if (clear_overlay_cache_callback_)
+    clear_overlay_cache_callback_.Run();
 
   return display->Configure(nullptr, gfx::Point());
 }

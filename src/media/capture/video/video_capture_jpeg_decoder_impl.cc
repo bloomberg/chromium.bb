@@ -11,7 +11,7 @@
 namespace media {
 
 VideoCaptureJpegDecoderImpl::VideoCaptureJpegDecoderImpl(
-    MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory,
+    MojoMjpegDecodeAcceleratorFactoryCB jpeg_decoder_factory,
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
     DecodeDoneCB decode_done_cb,
     base::RepeatingCallback<void(const std::string&)> send_log_message_cb)
@@ -21,7 +21,7 @@ VideoCaptureJpegDecoderImpl::VideoCaptureJpegDecoderImpl(
       send_log_message_cb_(std::move(send_log_message_cb)),
       has_received_decoded_frame_(false),
       next_bitstream_buffer_id_(0),
-      in_buffer_id_(media::JpegDecodeAccelerator::kInvalidBitstreamBufferId),
+      in_buffer_id_(media::MjpegDecodeAccelerator::kInvalidBitstreamBufferId),
       decoder_status_(INIT_PENDING),
       weak_ptr_factory_(this) {}
 
@@ -146,7 +146,7 @@ void VideoCaptureJpegDecoderImpl::DecodeCapturedData(
   // base::Unretained is safe because |decoder_| is deleted on
   // |decoder_task_runner_|.
   decoder_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&media::JpegDecodeAccelerator::Decode,
+      FROM_HERE, base::BindOnce(&media::MjpegDecodeAccelerator::Decode,
                                 base::Unretained(decoder_.get()), in_buffer,
                                 std::move(out_frame)));
 }
@@ -170,7 +170,7 @@ void VideoCaptureJpegDecoderImpl::VideoFrameReady(int32_t bitstream_buffer_id) {
                << ", expected " << in_buffer_id_;
     return;
   }
-  in_buffer_id_ = media::JpegDecodeAccelerator::kInvalidBitstreamBufferId;
+  in_buffer_id_ = media::MjpegDecodeAccelerator::kInvalidBitstreamBufferId;
 
   std::move(decode_done_closure_).Run();
 
@@ -180,7 +180,7 @@ void VideoCaptureJpegDecoderImpl::VideoFrameReady(int32_t bitstream_buffer_id) {
 
 void VideoCaptureJpegDecoderImpl::NotifyError(
     int32_t bitstream_buffer_id,
-    media::JpegDecodeAccelerator::Error error) {
+    media::MjpegDecodeAccelerator::Error error) {
   DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());
   LOG(ERROR) << "Decode error, bitstream_buffer_id=" << bitstream_buffer_id
              << ", error=" << error;
@@ -194,11 +194,11 @@ void VideoCaptureJpegDecoderImpl::FinishInitialization() {
   TRACE_EVENT0("gpu", "VideoCaptureJpegDecoderImpl::FinishInitialization");
   DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());
 
-  media::mojom::JpegDecodeAcceleratorPtr remote_decoder;
+  media::mojom::MjpegDecodeAcceleratorPtr remote_decoder;
   jpeg_decoder_factory_.Run(mojo::MakeRequest(&remote_decoder));
 
   base::AutoLock lock(lock_);
-  decoder_ = std::make_unique<media::MojoJpegDecodeAccelerator>(
+  decoder_ = std::make_unique<media::MojoMjpegDecodeAccelerator>(
       decoder_task_runner_, remote_decoder.PassInterface());
 
   decoder_->InitializeAsync(

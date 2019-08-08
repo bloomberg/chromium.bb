@@ -20,7 +20,6 @@
 
 namespace content {
 class BrowsingInstance;
-class BrowserOrResourceContext;
 class RenderProcessHostFactory;
 
 class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
@@ -58,8 +57,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // without converting them to effective URLs first.  This is useful for
   // avoiding OOPIFs when otherwise same-site URLs may look cross-site via
   // their effective URLs.
-  static bool IsSameWebSite(content::BrowserContext* browser_context,
-                            const IsolationContext& isolation_context,
+  static bool IsSameWebSite(const IsolationContext& isolation_context,
                             const GURL& src_url,
                             const GURL& dest_url,
                             bool should_compare_effective_urls);
@@ -124,7 +122,17 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   const GURL& original_url() { return original_url_; }
 
   // Returns the URL which should be used in a LockToOrigin call for this
-  // SiteInstance's process.
+  // SiteInstance's process.  This is the same as |site_| except for cases
+  // involving effective URLs, such as hosted apps.  In those cases, this URL
+  // is a site URL that is computed without the use of effective URLs.
+  //
+  // NOTE: This URL is currently set even in cases where this SiteInstance's
+  // process is *not* going to be locked to it.  Callers should be careful to
+  // consider this case when comparing lock URLs; ShouldLockToOrigin() may be
+  // used to determine whether the process lock will actually be used.
+  //
+  // TODO(alexmos): See if we can clean this up and not set |lock_url_| if the
+  // SiteInstance's process isn't going to be locked.
   const GURL& lock_url() { return lock_url_; }
 
   // True if |url| resolves to an effective URL that is different from |url|.
@@ -137,19 +145,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // |should_use_effective_urls| defaults to true and specifies whether to
   // resolve |url| to an effective URL (via
   // ContentBrowserClient::GetEffectiveURL()) before determining the site.
-  //
-  // TODO(alexmos): |isolation_context| now also carries a
-  // BrowserOrResourceContext, so |context| should be removed here and in
-  // similar functions.
-  static GURL GetSiteForURL(const BrowserOrResourceContext& context,
-                            const IsolationContext& isolation_context,
-                            const GURL& url,
-                            bool should_use_effective_urls = true);
-
-  // TODO(acolwell): Remove after all call sites have been updated to use
-  // BrowserOrResourceContext.
-  static GURL GetSiteForURL(BrowserContext* context,
-                            const IsolationContext& isolation_context,
+  static GURL GetSiteForURL(const IsolationContext& isolation_context,
                             const GURL& url,
                             bool should_use_effective_urls = true);
 
@@ -163,8 +159,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // Returns the URL to which a process should be locked for the given URL.
   // This is computed similarly to the site URL (see GetSiteForURL), but
   // without resolving effective URLs.
-  static GURL DetermineProcessLockURL(const BrowserOrResourceContext& context,
-                                      const IsolationContext& isolation_context,
+  static GURL DetermineProcessLockURL(const IsolationContext& isolation_context,
                                       const GURL& url);
 
   // Set the web site that this SiteInstance is rendering pages for.
@@ -239,22 +234,26 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // this is true for all sites. In other site isolation modes, only a subset
   // of sites will require dedicated processes.
   static bool DoesSiteRequireDedicatedProcess(
-      BrowserContext* browser_context,
       const IsolationContext& isolation_context,
       const GURL& url);
 
-  // Returns true if a process can be locked to a site |site_url|. Returning
-  // true here also implies that |site_url| requires a dedicated process.
-  // However, the converse does not hold: this might still return false for
-  // certain special cases where an origin lock can't be applied even when
-  // |site_url| requires a dedicated process (e.g., with --site-per-process).
-  // Examples of those cases include <webview> guests, single-process mode, or
-  // extensions where a process is currently allowed to be reused for different
-  // extensions.  Most of these special cases should eventually be removed, and
-  // this function should become equivalent to
+  // Returns true if a process for a site |site_url| should be locked to just
+  // that site. Returning true here also implies that |site_url| requires a
+  // dedicated process. However, the converse does not hold: this might still
+  // return false for certain special cases where an origin lock can't be
+  // applied even when |site_url| requires a dedicated process (e.g., with
+  // --site-per-process). Examples of those cases include <webview> guests,
+  // single-process mode, or extensions where a process is currently allowed to
+  // be reused for different extensions.  Most of these special cases should
+  // eventually be removed, and this function should become equivalent to
   // DoesSiteRequireDedicatedProcess().
-  static bool ShouldLockToOrigin(BrowserContext* browser_context,
-                                 const IsolationContext& isolation_context,
+  //
+  // Note that this function currently requires passing in a site URL (which
+  // may use effective URLs), and not a lock URL to which the process may
+  // eventually be locked via LockToOrigin().  See comments on lock_url() for
+  // more info.
+  // TODO(alexmos):  See if this can take a lock URL instead.
+  static bool ShouldLockToOrigin(const IsolationContext& isolation_context,
                                  GURL site_url);
 
   // Converts |site_url| into an origin that can be used as

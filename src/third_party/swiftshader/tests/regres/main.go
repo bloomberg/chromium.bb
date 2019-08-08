@@ -26,13 +26,12 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -44,8 +43,10 @@ import (
 	"time"
 
 	"./cause"
+	"./consts"
 	"./git"
 	"./shell"
+	"./testlist"
 
 	gerrit "github.com/andygrunwald/go-gerrit"
 )
@@ -57,11 +58,11 @@ const (
 	dataVersion             = 1
 	changeUpdateFrequency   = time.Minute * 5
 	changeQueryFrequency    = time.Minute * 5
-	testTimeout             = time.Minute * 5  // timeout for a single test
+	testTimeout             = time.Minute * 10 // timeout for a single test
 	buildTimeout            = time.Minute * 10 // timeout for a build
 	dailyUpdateTestListHour = 5                // 5am
-	fullTestList            = "tests/regres/full-tests.json"
-	ciTestList              = "tests/regres/ci-tests.json"
+	fullTestListRelPath     = "tests/regres/full-tests.json"
+	ciTestListRelPath       = "tests/regres/ci-tests.json"
 )
 
 var (
@@ -119,19 +120,29 @@ type regres struct {
 // resolveDirs ensures that the necessary directories used can be found, and
 // expands them to absolute paths.
 func (r *regres) resolveDirs() error {
-	for _, path := range []*string{
+	allDirs := []*string{
 		&r.deqpBuild,
 		&r.cacheRoot,
-	} {
+	}
+
+	for _, path := range allDirs {
 		abs, err := filepath.Abs(*path)
 		if err != nil {
 			return cause.Wrap(err, "Couldn't find path '%v'", *path)
 		}
-		if _, err := os.Stat(abs); err != nil {
-			return cause.Wrap(err, "Couldn't find path '%v'", abs)
-		}
 		*path = abs
 	}
+
+	if err := os.MkdirAll(r.cacheRoot, 0777); err != nil {
+		return cause.Wrap(err, "Couldn't create cache root directory")
+	}
+
+	for _, path := range allDirs {
+		if _, err := os.Stat(*path); err != nil {
+			return cause.Wrap(err, "Couldn't find path '%v'", *path)
+		}
+	}
+
 	return nil
 }
 
@@ -233,24 +244,14 @@ func (r *regres) run() error {
 
 		log.Printf("Testing change '%s'\n", change.id)
 
-		// Get the test results for the latest patchset in the change.
-		latest, err := r.newTest(ciTestList, change.latest).lazyRun()
+		// Test the latest patchset in the change, diff against parent change.
+		msg, err := r.test(change)
 		if err != nil {
 			log.Println(cause.Wrap(err, "Failed to test changelist '%s'", change.latest))
 			time.Sleep(time.Minute)
+			change.pending = false
 			continue
 		}
-
-		// Get the test results for the changes's parent changelist.
-		parent, err := r.newTest(ciTestList, change.parent).lazyRun()
-		if err != nil {
-			log.Println(cause.Wrap(err, "Failed to test changelist '%s'", change.parent))
-			time.Sleep(time.Minute)
-			continue
-		}
-
-		// Compare the latest patchset to the change's parent commit.
-		msg := compare(parent, latest)
 
 		// Always include the reportHeader in the message.
 		// changeInfo.update() uses this header to detect whether a patchset has
@@ -273,6 +274,108 @@ func (r *regres) run() error {
 	}
 }
 
+func (r *regres) test(change *changeInfo) (string, error) {
+	log.Printf("Testing latest patchset for change '%s'\n", change.id)
+	latest, testlists, err := r.testLatest(change)
+	if err != nil {
+		return "", cause.Wrap(err, "Failed to test latest change of '%v'", change.id)
+	}
+
+	log.Printf("Testing parent of change '%s'\n", change.id)
+	parent, err := r.testParent(change, testlists)
+	if err != nil {
+		return "", cause.Wrap(err, "Failed to test parent change of '%v'", change.id)
+	}
+
+	log.Println("Comparing latest patchset's results with parent")
+	msg := compare(parent, latest)
+
+	return msg, nil
+}
+
+var additionalTestsRE = regexp.MustCompile(`\n\s*Test[s]?:\s*([^\s]+)[^\n]*`)
+
+func (r *regres) testLatest(change *changeInfo) (*CommitTestResults, testlist.Lists, error) {
+	// Get the test results for the latest patchset in the change.
+	test := r.newTest(change.latest)
+	defer test.cleanup()
+
+	if err := test.checkout(); err != nil {
+		return nil, nil, cause.Wrap(err, "Failed to checkout '%s'", change.latest)
+	}
+
+	testlists, err := test.loadTestLists(ciTestListRelPath)
+	if err != nil {
+		return nil, nil, cause.Wrap(err, "Failed to load '%s'", change.latest)
+	}
+
+	if matches := additionalTestsRE.FindAllStringSubmatch(change.commitMessage, -1); len(matches) > 0 {
+		log.Println("Change description contains additional test patterns")
+
+		// Change specifies additional tests to try. Load the full test list.
+		fullTestLists, err := test.loadTestLists(fullTestListRelPath)
+		if err != nil {
+			return nil, nil, cause.Wrap(err, "Failed to load '%s'", change.latest)
+		}
+
+		// Add any tests in the full list that match the pattern to the list to test.
+		for _, match := range matches {
+			if len(match) > 1 {
+				pattern := match[1]
+				log.Printf("Adding custom tests with pattern '%s'\n", pattern)
+				filtered := fullTestLists.Filter(func(name string) bool {
+					ok, _ := filepath.Match(pattern, name)
+					return ok
+				})
+				testlists = append(testlists, filtered...)
+			}
+		}
+	}
+
+	cachePath := test.resultsCachePath(testlists)
+
+	if results, err := loadCommitTestResults(cachePath); err == nil {
+		return results, testlists, nil // Use cached results
+	}
+
+	// Build the change and test it.
+	results := test.buildAndRun(testlists)
+
+	// Cache the results for future tests
+	if err := results.save(cachePath); err != nil {
+		log.Printf("Warning: Couldn't save results of test to '%v'\n", cachePath)
+	}
+
+	return results, testlists, nil
+}
+
+func (r *regres) testParent(change *changeInfo, testlists testlist.Lists) (*CommitTestResults, error) {
+	// Get the test results for the changes's parent changelist.
+	test := r.newTest(change.parent)
+	defer test.cleanup()
+
+	cachePath := test.resultsCachePath(testlists)
+
+	if results, err := loadCommitTestResults(cachePath); err == nil {
+		return results, nil // Use cached results
+	}
+
+	// Couldn't load cached results. Have to build them.
+	if err := test.checkout(); err != nil {
+		return nil, cause.Wrap(err, "Failed to checkout '%s'", change.parent)
+	}
+
+	// Build the parent change and test it.
+	results := test.buildAndRun(testlists)
+
+	// Store the results of the parent change to the cache.
+	if err := results.save(cachePath); err != nil {
+		log.Printf("Warning: Couldn't save results of test to '%v'\n", cachePath)
+	}
+
+	return results, nil
+}
+
 func (r *regres) updateTestLists(client *gerrit.Client) error {
 	log.Println("Updating test lists")
 
@@ -282,46 +385,58 @@ func (r *regres) updateTestLists(client *gerrit.Client) error {
 	}
 
 	// Get the full test results for latest master.
-	t := r.newTest(fullTestList, headHash)
+	test := r.newTest(headHash)
+	defer test.cleanup()
 
-	// Keep the checked out directory after the test is run. We want this so
-	// we can build a new patchset containing the updated test lists.
-	t.keepCheckouts = true
-	if !r.keepCheckouts {
-		defer os.RemoveAll(t.srcDir)
+	// Always need to checkout the change.
+	if err := test.checkout(); err != nil {
+		return cause.Wrap(err, "Failed to checkout '%s'", headHash)
 	}
 
-	if _, err := t.run(); err != nil {
-		return cause.Wrap(err, "Failed to test changelist '%s'", headHash)
+	// Load the test lists.
+	testLists, err := test.loadTestLists(fullTestListRelPath)
+	if err != nil {
+		return cause.Wrap(err, "Failed to load full test lists for '%s'", headHash)
+	}
+
+	// Build the change.
+	if err := test.build(); err != nil {
+		return cause.Wrap(err, "Failed to build '%s'", headHash)
+	}
+
+	// Run the tests on the change.
+	results, err := test.run(testLists)
+	if err != nil {
+		return cause.Wrap(err, "Failed to test '%s'", headHash)
+	}
+
+	// Write out the test list status files.
+	filePaths, err := test.writeTestListsByStatus(testLists, results)
+	if err != nil {
+		return cause.Wrap(err, "Failed to write test lists by status")
 	}
 
 	// Stage all the updated test files.
-	for _, path := range t.writtenTestLists {
+	for _, path := range filePaths {
 		log.Println("Staging", path)
-		git.Add(t.srcDir, path)
+		git.Add(test.srcDir, path)
 	}
 
 	log.Println("Checking for existing test list")
-	results, _, err := client.Changes.QueryChanges(&gerrit.QueryChangeOptions{
-		QueryOptions: gerrit.QueryOptions{
-			Query: []string{fmt.Sprintf(`status:open+owner:"%v"`, r.gerritEmail)},
-			Limit: 1,
-		},
-	})
+	existingChange, err := r.findTestListChange(client)
 	if err != nil {
-		return cause.Wrap(err, "Failed to checking for existing test list")
+		return err
 	}
 
 	commitMsg := strings.Builder{}
-	commitMsg.WriteString("Regres: Update test lists @ " + headHash.String()[:8])
-	if results != nil && len(*results) > 0 {
+	commitMsg.WriteString(consts.TestListUpdateCommitSubjectPrefix + headHash.String()[:8])
+	if existingChange != nil {
 		// Reuse gerrit change ID if there's already a change up for review.
-		id := (*results)[0].ChangeID
 		commitMsg.WriteString("\n\n")
-		commitMsg.WriteString("Change-Id: " + id)
+		commitMsg.WriteString("Change-Id: " + existingChange.ChangeID + "\n")
 	}
 
-	if err := git.Commit(t.srcDir, commitMsg.String(), git.CommitFlags{
+	if err := git.Commit(test.srcDir, commitMsg.String(), git.CommitFlags{
 		Name:  "SwiftShader Regression Bot",
 		Email: r.gerritEmail,
 	}); err != nil {
@@ -332,7 +447,7 @@ func (r *regres) updateTestLists(client *gerrit.Client) error {
 		log.Printf("DRY RUN: post results for review")
 	} else {
 		log.Println("Pushing test results for review")
-		if err := git.Push(t.srcDir, gitURL, "HEAD", "refs/for/master", git.PushFlags{
+		if err := git.Push(test.srcDir, gitURL, "HEAD", "refs/for/master", git.PushFlags{
 			Username: r.gerritUser,
 			Password: r.gerritPass,
 		}); err != nil {
@@ -341,18 +456,98 @@ func (r *regres) updateTestLists(client *gerrit.Client) error {
 		log.Println("Test results posted for review")
 	}
 
+	change, err := r.findTestListChange(client)
+	if err != nil {
+		return err
+	}
+
+	if err := r.postMostCommonFailures(client, change, results); err != nil {
+		return err
+	}
+
 	return nil
+}
+
+// postMostCommonFailures posts the most common failure cases as a review
+// comment on the given change.
+func (r *regres) postMostCommonFailures(client *gerrit.Client, change *gerrit.ChangeInfo, results *CommitTestResults) error {
+	const limit = 25
+
+	failures := results.commonFailures()
+	if len(failures) > limit {
+		failures = failures[:limit]
+	}
+	sb := strings.Builder{}
+	sb.WriteString(fmt.Sprintf("Top %v most common failures:\n", len(failures)))
+	for _, f := range failures {
+		lines := strings.Split(f.error, "\n")
+		if len(lines) == 1 {
+			line := lines[0]
+			if line != "" {
+				sb.WriteString(fmt.Sprintf(" • %d occurrences: %v: %v\n", f.count, f.status, line))
+			} else {
+				sb.WriteString(fmt.Sprintf(" • %d occurrences: %v\n", f.count, f.status))
+			}
+		} else {
+			sb.WriteString(fmt.Sprintf(" • %d occurrences: %v:\n", f.count, f.status))
+			for _, l := range lines {
+				sb.WriteString("    > ")
+				sb.WriteString(l)
+				sb.WriteString("\n")
+			}
+		}
+		sb.WriteString(fmt.Sprintf("    Example test: %v\n", f.exampleTest))
+
+	}
+	msg := sb.String()
+
+	if r.dryRun {
+		log.Printf("DRY RUN: add most common failures to '%v':\n%v\n", change.ChangeID, msg)
+	} else {
+		log.Printf("Posting most common failures to '%s'\n", change.ChangeID)
+		_, _, err := client.Changes.SetReview(change.ChangeID, change.CurrentRevision, &gerrit.ReviewInput{
+			Message: msg,
+			Tag:     "autogenerated:regress",
+		})
+		if err != nil {
+			return cause.Wrap(err, "Failed to post comments on change '%s'", change.ChangeID)
+		}
+	}
+	return nil
+}
+
+func (r *regres) findTestListChange(client *gerrit.Client) (*gerrit.ChangeInfo, error) {
+	log.Println("Checking for existing test list change")
+	changes, _, err := client.Changes.QueryChanges(&gerrit.QueryChangeOptions{
+		QueryOptions: gerrit.QueryOptions{
+			Query: []string{fmt.Sprintf(`status:open+owner:"%v"`, r.gerritEmail)},
+			Limit: 1,
+		},
+		ChangeOptions: gerrit.ChangeOptions{
+			AdditionalFields: []string{"CURRENT_REVISION"},
+		},
+	})
+	if err != nil {
+		return nil, cause.Wrap(err, "Failed to checking for existing test list")
+	}
+	if len(*changes) > 0 {
+		// TODO: This currently assumes that only change changes from
+		// gerritEmail are test lists updates. This may not always be true.
+		return &(*changes)[0], nil
+	}
+	return nil, nil
 }
 
 // changeInfo holds the important information about a single, open change in
 // gerrit.
 type changeInfo struct {
-	id          string    // Gerrit change ID.
-	pending     bool      // Is this change waiting a test for the latest patchset?
-	priority    int       // Calculated priority based on Gerrit labels.
-	latest      git.Hash  // Git hash of the latest patchset in the change.
-	parent      git.Hash  // Git hash of the changelist this change is based on.
-	lastUpdated time.Time // Time the change was last fetched.
+	id            string    // Gerrit change ID.
+	pending       bool      // Is this change waiting a test for the latest patchset?
+	priority      int       // Calculated priority based on Gerrit labels.
+	latest        git.Hash  // Git hash of the latest patchset in the change.
+	parent        git.Hash  // Git hash of the changelist this change is based on.
+	lastUpdated   time.Time // Time the change was last fetched.
+	commitMessage string
 }
 
 // queryChanges updates the changes map by querying gerrit for the latest open
@@ -413,6 +608,7 @@ func (c *changeInfo) update(client *gerrit.Client) error {
 
 	kokoroPresubmit := change.Labels["Kokoro-Presubmit"].Approved.AccountID != 0
 	codeReviewScore := change.Labels["Code-Review"].Value
+	codeReviewApproved := change.Labels["Code-Review"].Approved.AccountID != 0
 	presubmitReady := change.Labels["Presubmit-Ready"].Approved.AccountID != 0
 
 	c.priority = 0
@@ -420,6 +616,9 @@ func (c *changeInfo) update(client *gerrit.Client) error {
 		c.priority += 10
 	}
 	c.priority += codeReviewScore
+	if codeReviewApproved {
+		c.priority += 2
+	}
 	if kokoroPresubmit {
 		c.priority++
 	}
@@ -441,21 +640,20 @@ func (c *changeInfo) update(client *gerrit.Client) error {
 	c.pending = canTest
 	c.latest = git.ParseHash(change.CurrentRevision)
 	c.parent = git.ParseHash(current.Commit.Parents[0].Commit)
+	c.commitMessage = current.Commit.Message
 
 	return nil
 }
 
-func (r *regres) newTest(testListPath string, commit git.Hash) *test {
+func (r *regres) newTest(commit git.Hash) *test {
 	srcDir := filepath.Join(r.cacheRoot, "src", commit.String())
 	resDir := filepath.Join(r.cacheRoot, "res", commit.String())
 	return &test{
-		r:            r,
-		commit:       commit,
-		srcDir:       srcDir,
-		resDir:       resDir,
-		outDir:       filepath.Join(srcDir, "out"),
-		buildDir:     filepath.Join(srcDir, "build"),
-		testListPath: testListPath,
+		r:        r,
+		commit:   commit,
+		srcDir:   srcDir,
+		resDir:   resDir,
+		buildDir: filepath.Join(srcDir, "build"),
 	}
 }
 
@@ -464,132 +662,51 @@ type test struct {
 	commit        git.Hash // hash of the commit to test
 	srcDir        string   // directory for the SwiftShader checkout
 	resDir        string   // directory for the test results
-	outDir        string   // directory for SwiftShader output
 	buildDir      string   // directory for SwiftShader build
 	keepCheckouts bool     // don't delete source & build checkouts after testing
-	testListPath  string   // relative path to the test list .json file
-
-	writtenTestLists []string // paths to test updated lists that have been written
 }
 
-// lazyRun lazily runs the test t.
-// If the test results are not already cached, then test will setup the test
-// environment, and call t.run().
-// The results of the test will be cached into r.cacheRoot.
-func (t *test) lazyRun() (*CommitTestResults, error) {
-	load := func(data []byte) (interface{}, error) {
-		var res CommitTestResults
-		if err := json.NewDecoder(bytes.NewReader(data)).Decode(&res); err != nil {
-			return nil, err
-		}
-		if res.Version != dataVersion {
-			return nil, errors.New("Data is from an old version")
-		}
-		return &res, nil
+// cleanup removes any temporary files used by the test.
+func (t *test) cleanup() {
+	if t.srcDir != "" && !t.keepCheckouts {
+		os.RemoveAll(t.srcDir)
 	}
-
-	build := func() ([]byte, interface{}, error) {
-		res, err := t.run()
-
-		if err != nil {
-			return nil, nil, err
-		}
-
-		b := bytes.Buffer{}
-		enc := json.NewEncoder(&b)
-		enc.SetIndent("", "  ")
-		if err := enc.Encode(res); err != nil {
-			return nil, nil, err
-		}
-
-		return b.Bytes(), res, nil
-	}
-
-	res, err := loadOrBuild(filepath.Join(t.resDir, "results.json"), load, build)
-	if err != nil {
-		return nil, err
-	}
-
-	return res.(*CommitTestResults), nil
 }
 
-// run executes the tests for the test environment t.
-// If the source is not cached, run will fetch the commit to be tested,
-// before building it, and then run the required tests.
-func (t *test) run() (*CommitTestResults, error) {
+// checkout clones the test's source commit into t.src.
+func (t *test) checkout() error {
 	if isDir(t.srcDir) && t.keepCheckouts {
 		log.Printf("Reusing source cache for commit '%s'\n", t.commit)
-	} else {
-		log.Printf("Checking out '%s'\n", t.commit)
-		os.RemoveAll(t.srcDir)
-		if err := git.Checkout(t.srcDir, gitURL, t.commit); err != nil {
-			return nil, cause.Wrap(err, "Checking out commit '%s'", t.commit)
-		}
-		log.Printf("Checked out commit '%s'\n", t.commit)
-		if !t.keepCheckouts {
-			defer os.RemoveAll(t.srcDir)
-		}
+		return nil
 	}
-
-	if err := t.build(); err != nil {
-		log.Printf("Warning: Commit '%s' failed to build. %v", t.commit, err)
-		return &CommitTestResults{Version: dataVersion, Built: false}, nil
+	log.Printf("Checking out '%s'\n", t.commit)
+	os.RemoveAll(t.srcDir)
+	if err := git.Checkout(t.srcDir, gitURL, t.commit); err != nil {
+		return cause.Wrap(err, "Checking out commit '%s'", t.commit)
 	}
-	log.Printf("Built '%s'\n", t.commit)
-
-	// Load the list of tests that need executing.
-	// Note: this list may vary by each commit.
-	testLists, err := t.loadTestList()
-	if err != nil {
-		return nil, cause.Wrap(err, "Loading test lists")
-	}
-
-	results, err := t.runTests(testLists)
-	if err != nil {
-		return nil, cause.Wrap(err, "Running tests")
-	}
-	log.Printf("Ran tests for '%s'\n", t.commit)
-
-	if t.keepCheckouts {
-		if err := t.writeTestListsByStatus(testLists, results); err != nil {
-			return nil, cause.Wrap(err, "Writing test lists by status")
-		}
-	}
-
-	return results, nil
+	log.Printf("Checked out commit '%s'\n", t.commit)
+	return nil
 }
 
-// loadOrBuild is a helper for building a lazy resolved cache.
-// loadOrBuild attempts to load the file at path. If the file exists and loaded
-// successfully, then load() is called with the file data, and the the result
-// object from load() is returned.
-// If the file does not exist, the file cannot be loaded, or load() returns an
-// error, then build() is called and the byte slice is saved to path, and the
-// object is returned.
-func loadOrBuild(path string,
-	load func([]byte) (interface{}, error),
-	build func() ([]byte, interface{}, error)) (interface{}, error) {
-
-	if data, err := ioutil.ReadFile(path); err == nil {
-		out, err := load(data)
-		if err == nil {
-			return out, nil
-		}
-		log.Printf("Warning: Failed to load '%s': %v", path, err)
-		os.Remove(path) // Delete and rebuild.
+// buildAndRun calls t.build() followed by t.run(). Errors are logged and
+// reported in the returned CommitTestResults.Error field.
+func (t *test) buildAndRun(testLists testlist.Lists) *CommitTestResults {
+	// Build the parent change.
+	if err := t.build(); err != nil {
+		msg := fmt.Sprintf("Failed to build '%s'", t.commit)
+		log.Println(cause.Wrap(err, msg))
+		return &CommitTestResults{Error: msg}
 	}
 
-	data, obj, err := build()
+	// Run the tests on the parent change.
+	results, err := t.run(testLists)
 	if err != nil {
-		return nil, err
+		msg := fmt.Sprintf("Failed to test change '%s'", t.commit)
+		log.Println(cause.Wrap(err, msg))
+		return &CommitTestResults{Error: msg}
 	}
 
-	os.MkdirAll(filepath.Dir(path), 0777)
-
-	if err := ioutil.WriteFile(path, data, 0777); err != nil {
-		log.Printf("Warning: Failed to write to '%s': %v", path, err)
-	}
-	return obj, nil
+	return results
 }
 
 // build builds the SwiftShader source into t.buildDir.
@@ -614,9 +731,19 @@ func (t *test) build() error {
 	return nil
 }
 
-// runTests runs all the tests.
-func (t *test) runTests(testLists []TestList) (*CommitTestResults, error) {
+// run runs all the tests.
+func (t *test) run(testLists testlist.Lists) (*CommitTestResults, error) {
 	log.Printf("Running tests for '%s'\n", t.commit)
+
+	outDir := filepath.Join(t.srcDir, "out")
+	if !isDir(outDir) { // https://swiftshader-review.googlesource.com/c/SwiftShader/+/27188
+		outDir = t.buildDir
+	}
+	if !isDir(outDir) {
+		return nil, fmt.Errorf("Couldn't find output directory")
+	}
+	log.Println("outDir:", outDir)
+
 	start := time.Now()
 
 	// Wait group that completes once all the tests have finished.
@@ -630,13 +757,13 @@ func (t *test) runTests(testLists []TestList) (*CommitTestResults, error) {
 		// Resolve the test runner
 		var exe string
 		switch list.API {
-		case egl:
+		case testlist.EGL:
 			exe = filepath.Join(t.r.deqpBuild, "modules", "egl", "deqp-egl")
-		case gles2:
+		case testlist.GLES2:
 			exe = filepath.Join(t.r.deqpBuild, "modules", "gles2", "deqp-gles2")
-		case gles3:
+		case testlist.GLES3:
 			exe = filepath.Join(t.r.deqpBuild, "modules", "gles3", "deqp-gles3")
-		case vulkan:
+		case testlist.Vulkan:
 			exe = filepath.Join(t.r.deqpBuild, "external", "vulkancts", "modules", "vulkan", "deqp-vk")
 		default:
 			return nil, fmt.Errorf("Unknown API '%v'", list.API)
@@ -652,13 +779,20 @@ func (t *test) runTests(testLists []TestList) (*CommitTestResults, error) {
 		wg.Add(numParallelTests)
 		for i := 0; i < numParallelTests; i++ {
 			go func() {
-				t.deqpTestRoutine(exe, tests, results)
+				t.deqpTestRoutine(exe, outDir, tests, results)
 				wg.Done()
 			}()
 		}
 
+		// Shuffle the test list.
+		// This attempts to mix heavy-load tests with lighter ones.
+		shuffled := make([]string, len(list.Tests))
+		for i, j := range rand.New(rand.NewSource(42)).Perm(len(list.Tests)) {
+			shuffled[i] = list.Tests[j]
+		}
+
 		// Hand the tests to the deqpTestRoutines.
-		for _, t := range list.Tests {
+		for _, t := range shuffled {
 			tests <- t
 		}
 
@@ -672,7 +806,6 @@ func (t *test) runTests(testLists []TestList) (*CommitTestResults, error) {
 
 	out := CommitTestResults{
 		Version: dataVersion,
-		Built:   true,
 		Tests:   map[string]TestResult{},
 	}
 
@@ -704,23 +837,23 @@ func (t *test) runTests(testLists []TestList) (*CommitTestResults, error) {
 	return &out, nil
 }
 
-func (t *test) writeTestListsByStatus(testLists []TestList, results *CommitTestResults) error {
+func (t *test) writeTestListsByStatus(testLists testlist.Lists, results *CommitTestResults) ([]string, error) {
+	out := []string{}
+
 	for _, list := range testLists {
-		files := map[Status]*os.File{}
-		ext := filepath.Ext(list.File)
-		name := list.File[:len(list.File)-len(ext)]
-		for _, status := range Statuses {
-			path := filepath.Join(t.srcDir, name+"-"+string(status)+ext)
+		files := map[testlist.Status]*os.File{}
+		for _, status := range testlist.Statuses {
+			path := testlist.FilePathWithStatus(filepath.Join(t.srcDir, list.File), status)
 			dir := filepath.Dir(path)
 			os.MkdirAll(dir, 0777)
 			f, err := os.Create(path)
 			if err != nil {
-				return cause.Wrap(err, "Couldn't create file '%v'", path)
+				return nil, cause.Wrap(err, "Couldn't create file '%v'", path)
 			}
 			defer f.Close()
 			files[status] = f
 
-			t.writtenTestLists = append(t.writtenTestLists, path)
+			out = append(out, path)
 		}
 
 		for _, testName := range list.Tests {
@@ -730,41 +863,13 @@ func (t *test) writeTestListsByStatus(testLists []TestList, results *CommitTestR
 		}
 	}
 
-	return nil
+	return out, nil
 }
 
-// Status is an enumerator of test results.
-type Status string
-
-const (
-	// Pass is the status of a successful test.
-	Pass = Status("PASS")
-	// Fail is the status of a failed test.
-	Fail = Status("FAIL")
-	// Timeout is the status of a test that failed to complete in the alloted
-	// time.
-	Timeout = Status("TIMEOUT")
-	// Crash is the status of a test that crashed.
-	Crash = Status("CRASH")
-	// NotSupported is the status of a test feature not supported by the driver.
-	NotSupported = Status("NOT_SUPPORTED")
-	// CompatibilityWarning is the status passing test with a warning.
-	CompatibilityWarning = Status("COMPATIBILITY_WARNING")
-	// QualityWarning is the status passing test with a warning.
-	QualityWarning = Status("QUALITY_WARNING")
-)
-
-// Statuses is the full list of status types
-var Statuses = []Status{Pass, Fail, Timeout, Crash, NotSupported, CompatibilityWarning, QualityWarning}
-
-// Failing returns true if the task status requires fixing.
-func (s Status) Failing() bool {
-	switch s {
-	case Fail, Timeout, Crash:
-		return true
-	default:
-		return false
-	}
+// resultsCachePath returns the path to the cache results file for the given
+// test and testlists.
+func (t *test) resultsCachePath(testLists testlist.Lists) string {
+	return filepath.Join(t.resDir, testLists.Hash())
 }
 
 // CommitTestResults holds the results the tests across all APIs for a given
@@ -772,39 +877,110 @@ func (s Status) Failing() bool {
 // results.
 type CommitTestResults struct {
 	Version  int
-	Built    bool
+	Error    string
 	Tests    map[string]TestResult
 	Duration time.Duration
+}
+
+func loadCommitTestResults(path string) (*CommitTestResults, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, cause.Wrap(err, "Couldn't open '%s' for loading test results", path)
+	}
+	defer f.Close()
+
+	var out CommitTestResults
+	if err := json.NewDecoder(f).Decode(&out); err != nil {
+		return nil, err
+	}
+	if out.Version != dataVersion {
+		return nil, errors.New("Data is from an old version")
+	}
+	return &out, nil
+}
+
+func (r *CommitTestResults) save(path string) error {
+	os.MkdirAll(filepath.Dir(path), 0777)
+
+	f, err := os.Create(path)
+	if err != nil {
+		return cause.Wrap(err, "Couldn't open '%s' for saving test results", path)
+	}
+	defer f.Close()
+
+	enc := json.NewEncoder(f)
+	enc.SetIndent("", "  ")
+	if err := enc.Encode(r); err != nil {
+		return cause.Wrap(err, "Couldn't encode test results")
+	}
+
+	return nil
+}
+
+type testStatusAndError struct {
+	status testlist.Status
+	error  string
+}
+
+type commonFailure struct {
+	count int
+	testStatusAndError
+	exampleTest string
+}
+
+func (r *CommitTestResults) commonFailures() []commonFailure {
+	failures := map[testStatusAndError]int{}
+	examples := map[testStatusAndError]string{}
+	for name, test := range r.Tests {
+		if !test.Status.Failing() {
+			continue
+		}
+		key := testStatusAndError{test.Status, test.Err}
+		if count, ok := failures[key]; ok {
+			failures[key] = count + 1
+		} else {
+			failures[key] = 1
+			examples[key] = name
+		}
+	}
+	out := make([]commonFailure, 0, len(failures))
+	for failure, count := range failures {
+		out = append(out, commonFailure{count, failure, examples[failure]})
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].count > out[j].count })
+	return out
 }
 
 // compare returns a string describing all differences between two
 // CommitTestResults. This string is used as the report message posted to the
 // gerrit code review.
 func compare(old, new *CommitTestResults) string {
-	switch {
-	case !old.Built && !new.Built:
-		return "Build continues to be broken."
-	case old.Built && !new.Built:
-		return "Build broken."
-	case !old.Built && !new.Built:
-		return "Build now fixed. Cannot compare against broken parent."
+	if old.Error != "" {
+		return old.Error
+	}
+	if new.Error != "" {
+		return new.Error
 	}
 
-	oldStatusCounts, newStatusCounts := map[Status]int{}, map[Status]int{}
+	oldStatusCounts, newStatusCounts := map[testlist.Status]int{}, map[testlist.Status]int{}
 	totalTests := 0
 
 	broken, fixed, failing, removed, changed := []string{}, []string{}, []string{}, []string{}, []string{}
 
 	for test, new := range new.Tests {
 		old, found := old.Tests[test]
+		if !found {
+			log.Printf("Test result for '%s' not found on old change\n", test)
+			continue
+		}
 		switch {
-		case (!found || old.Status == Pass) && new.Status.Failing():
+		case old.Status.Passing() && new.Status.Failing():
 			broken = append(broken, test)
-		case (found && old.Status.Failing()) && new.Status == Pass:
+		case old.Status.Failing() && new.Status.Passing():
 			fixed = append(fixed, test)
-		case found && old.Status != new.Status:
+		case old.Status != new.Status:
 			changed = append(changed, test)
-		case found && old.Status.Failing() && new.Status.Failing():
+		case old.Status.Failing() && new.Status.Failing():
 			failing = append(failing, test) // Still broken
 		}
 		totalTests++
@@ -838,23 +1014,34 @@ func compare(old, new *CommitTestResults) string {
 				} else {
 					sb.WriteString(fmt.Sprintf(" - [%s]", n.Status))
 				}
+				sb.WriteString("\n")
+				for _, line := range strings.Split(n.Err, "\n") {
+					if line != "" {
+						sb.WriteString(fmt.Sprintf("     %v\n", line))
+					}
+				}
+			} else {
+				sb.WriteString("\n")
 			}
-			sb.WriteString("\n")
 		}
 	}
 
 	sb.WriteString(fmt.Sprintf("          Total tests: %d\n", totalTests))
 	for _, s := range []struct {
 		label  string
-		status Status
+		status testlist.Status
 	}{
-		{"                 Pass", Pass},
-		{"                 Fail", Fail},
-		{"              Timeout", Timeout},
-		{"                Crash", Crash},
-		{"        Not Supported", NotSupported},
-		{"Compatibility Warning", CompatibilityWarning},
-		{"      Quality Warning", QualityWarning},
+		{"                 Pass", testlist.Pass},
+		{"                 Fail", testlist.Fail},
+		{"              Timeout", testlist.Timeout},
+		{"      UNIMPLEMENTED()", testlist.Unimplemented},
+		{"        UNREACHABLE()", testlist.Unreachable},
+		{"             ASSERT()", testlist.Assert},
+		{"              ABORT()", testlist.Abort},
+		{"                Crash", testlist.Crash},
+		{"        Not Supported", testlist.NotSupported},
+		{"Compatibility Warning", testlist.CompatibilityWarning},
+		{"      Quality Warning", testlist.QualityWarning},
 	} {
 		old, new := oldStatusCounts[s.status], newStatusCounts[s.status]
 		if old == 0 && new == 0 {
@@ -865,9 +1052,9 @@ func compare(old, new *CommitTestResults) string {
 		case old == new:
 			sb.WriteString(fmt.Sprintf("%s: %v\n", s.label, new))
 		case change == 0:
-			sb.WriteString(fmt.Sprintf("%s: %v -> %v\n", s.label, old, new))
+			sb.WriteString(fmt.Sprintf("%s: %v -> %v (%+d)\n", s.label, old, new, new-old))
 		default:
-			sb.WriteString(fmt.Sprintf("%s: %v -> %v (%+d%%)\n", s.label, old, new, change))
+			sb.WriteString(fmt.Sprintf("%s: %v -> %v (%+d %+d%%)\n", s.label, old, new, new-old, change))
 		}
 	}
 
@@ -915,7 +1102,7 @@ func compare(old, new *CommitTestResults) string {
 // TestResult holds the results of a single API test.
 type TestResult struct {
 	Test   string
-	Status Status
+	Status testlist.Status
 	Err    string `json:",omitempty"`
 }
 
@@ -926,153 +1113,130 @@ func (r TestResult) String() string {
 	return fmt.Sprintf("%s: %s", r.Test, r.Status)
 }
 
-// Regular expression to parse the output of a dEQP test.
-var parseRE = regexp.MustCompile(`(Fail|Pass|NotSupported|CompatibilityWarning|QualityWarning) \(([\s\S]*)\)`)
+var (
+	// Regular expression to parse the output of a dEQP test.
+	deqpRE = regexp.MustCompile(`(Fail|Pass|NotSupported|CompatibilityWarning|QualityWarning) \(([^\)]*)\)`)
+	// Regular expression to parse a test that failed due to UNIMPLEMENTED()
+	unimplementedRE = regexp.MustCompile(`[^\n]*UNIMPLEMENTED:[^\n]*`)
+	// Regular expression to parse a test that failed due to UNREACHABLE()
+	unreachableRE = regexp.MustCompile(`[^\n]*UNREACHABLE:[^\n]*`)
+	// Regular expression to parse a test that failed due to ASSERT()
+	assertRE = regexp.MustCompile(`[^\n]*ASSERT\([^\)]*\)[^\n]*`)
+	// Regular expression to parse a test that failed due to ABORT()
+	abortRE = regexp.MustCompile(`[^\n]*ABORT:[^\n]*`)
+)
 
 // deqpTestRoutine repeatedly runs the dEQP test executable exe with the tests
 // taken from tests. The output of the dEQP test is parsed, and the test result
 // is written to results.
 // deqpTestRoutine only returns once the tests chan has been closed.
 // deqpTestRoutine does not close the results chan.
-func (t *test) deqpTestRoutine(exe string, tests <-chan string, results chan<- TestResult) {
+func (t *test) deqpTestRoutine(exe, outDir string, tests <-chan string, results chan<- TestResult) {
+nextTest:
 	for name := range tests {
 		// log.Printf("Running test '%s'\n", name)
 		env := []string{
 			"LD_LIBRARY_PATH=" + t.buildDir + ":" + os.Getenv("LD_LIBRARY_PATH"),
-			"VK_ICD_FILENAMES=" + filepath.Join(t.outDir, "Linux", "vk_swiftshader_icd.json"),
+			"VK_ICD_FILENAMES=" + filepath.Join(outDir, "Linux", "vk_swiftshader_icd.json"),
 			"DISPLAY=" + os.Getenv("DISPLAY"),
 			"LIBC_FATAL_STDERR_=1", // Put libc explosions into logs.
 		}
 
-		out, err := shell.Exec(testTimeout, exe, filepath.Dir(exe), env, "--deqp-surface-type=pbuffer", "-n="+name)
+		outRaw, err := shell.Exec(testTimeout, exe, filepath.Dir(exe), env,
+			"--deqp-surface-type=pbuffer",
+			"--deqp-shadercache=disable",
+			"--deqp-log-images=disable",
+			"--deqp-log-shader-sources=disable",
+			"--deqp-log-flush=disable",
+			"-n="+name)
+		out := string(outRaw)
+		out = strings.ReplaceAll(out, t.srcDir, "<SwiftShader>")
+		out = strings.ReplaceAll(out, exe, "<dEQP>")
 		switch err.(type) {
 		default:
+			for _, test := range []struct {
+				re *regexp.Regexp
+				s  testlist.Status
+			}{
+				{unimplementedRE, testlist.Unimplemented},
+				{unreachableRE, testlist.Unreachable},
+				{assertRE, testlist.Assert},
+				{abortRE, testlist.Abort},
+			} {
+				if s := test.re.FindString(out); s != "" {
+					results <- TestResult{
+						Test:   name,
+						Status: test.s,
+						Err:    s,
+					}
+					continue nextTest
+				}
+			}
 			results <- TestResult{
 				Test:   name,
-				Status: Crash,
-				Err:    cause.Wrap(err, string(out)).Error(),
+				Status: testlist.Crash,
 			}
 		case shell.ErrTimeout:
 			results <- TestResult{
 				Test:   name,
-				Status: Timeout,
-				Err:    cause.Wrap(err, string(out)).Error(),
+				Status: testlist.Timeout,
 			}
 		case nil:
-			toks := parseRE.FindStringSubmatch(string(out))
+			toks := deqpRE.FindStringSubmatch(out)
 			if len(toks) < 3 {
-				err := fmt.Sprintf("Couldn't parse test '%v' output:\n%s", name, string(out))
+				err := fmt.Sprintf("Couldn't parse test '%v' output:\n%s", name, out)
 				log.Println("Warning: ", err)
-				results <- TestResult{Test: name, Status: Fail, Err: err}
+				results <- TestResult{Test: name, Status: testlist.Fail, Err: err}
 				continue
 			}
 			switch toks[1] {
 			case "Pass":
-				results <- TestResult{Test: name, Status: Pass}
+				results <- TestResult{Test: name, Status: testlist.Pass}
 			case "NotSupported":
-				results <- TestResult{Test: name, Status: NotSupported}
+				results <- TestResult{Test: name, Status: testlist.NotSupported}
 			case "CompatibilityWarning":
-				results <- TestResult{Test: name, Status: CompatibilityWarning}
+				results <- TestResult{Test: name, Status: testlist.CompatibilityWarning}
 			case "QualityWarning":
-				results <- TestResult{Test: name, Status: CompatibilityWarning}
+				results <- TestResult{Test: name, Status: testlist.QualityWarning}
 			case "Fail":
 				var err string
 				if toks[2] != "Fail" {
 					err = toks[2]
 				}
-				results <- TestResult{Test: name, Status: Fail, Err: err}
+				results <- TestResult{Test: name, Status: testlist.Fail, Err: err}
 			default:
-				err := fmt.Sprintf("Couldn't parse test output:\n%s", string(out))
+				err := fmt.Sprintf("Couldn't parse test output:\n%s", out)
 				log.Println("Warning: ", err)
-				results <- TestResult{Test: name, Status: Fail, Err: err}
+				results <- TestResult{Test: name, Status: testlist.Fail, Err: err}
 			}
 		}
 	}
 }
 
-// API is an enumerator of graphics APIs.
-type API string
-
-const (
-	egl    = API("egl")
-	gles2  = API("gles2")
-	gles3  = API("gles3")
-	vulkan = API("vulkan")
-)
-
-// TestList is a list of tests to be run for a given API.
-type TestList struct {
-	Name  string
-	File  string
-	API   API
-	Tests []string
-}
-
-// loadTestList loads the test list json file.
-// The file is first searched at {Commit}/{t.testListPath}
+// loadTestLists loads the full test lists from the json file.
+// The file is first searched at {t.srcDir}/{relPath}
 // If this cannot be found, then the file is searched at the fallback path
-// {CWD}/{t.testListPath}
+// {CWD}/{relPath}
 // This allows CLs to alter the list of tests to be run, as well as providing
 // a default set.
-func (t *test) loadTestList() ([]TestList, error) {
-	// find the test.json file in {SwiftShader}/tests/regres
-	root := t.srcDir
-	if isFile(filepath.Join(root, t.testListPath)) {
-		log.Println("Using test list from commit")
-	} else {
-		// Not found there. Search locally.
-		root, _ = os.Getwd()
-		if isFile(filepath.Join(root, t.testListPath)) {
-			log.Println("Using test list from regres")
-		} else {
-			return nil, fmt.Errorf("Could not find test list file '%v'", t.testListPath)
-		}
+func (t *test) loadTestLists(relPath string) (testlist.Lists, error) {
+	// Seach for the test.json file in the checked out source directory.
+	if path := filepath.Join(t.srcDir, relPath); isFile(path) {
+		log.Printf("Loading test list '%v' from commit\n", relPath)
+		return testlist.Load(t.srcDir, path)
 	}
 
-	jsonPath := filepath.Join(root, t.testListPath)
-	i, err := ioutil.ReadFile(jsonPath)
+	// Not found there. Search locally.
+	wd, err := os.Getwd()
 	if err != nil {
-		return nil, cause.Wrap(err, "Couldn't read test list from '%s'", jsonPath)
+		return testlist.Lists{}, cause.Wrap(err, "Couldn't get current working directory")
+	}
+	if path := filepath.Join(wd, relPath); isFile(path) {
+		log.Printf("Loading test list '%v' from regres\n", relPath)
+		return testlist.Load(wd, relPath)
 	}
 
-	var groups []struct {
-		Name     string
-		API      string
-		TestFile string `json:"tests"`
-	}
-	if err := json.NewDecoder(bytes.NewReader(i)).Decode(&groups); err != nil {
-		return nil, cause.Wrap(err, "Couldn't parse '%s'", jsonPath)
-	}
-
-	dir := filepath.Dir(jsonPath)
-
-	out := make([]TestList, len(groups))
-	for i, group := range groups {
-		path := filepath.Join(dir, group.TestFile)
-		tests, err := ioutil.ReadFile(path)
-		if err != nil {
-			return nil, cause.Wrap(err, "Couldn't read '%s'", tests)
-		}
-		relPath, err := filepath.Rel(root, path)
-		if err != nil {
-			return nil, cause.Wrap(err, "Couldn't get relative path for '%s'", path)
-		}
-		list := TestList{
-			Name: group.Name,
-			File: relPath,
-			API:  API(group.API),
-		}
-		for _, line := range strings.Split(string(tests), "\n") {
-			line = strings.TrimSpace(line)
-			if line != "" && !strings.HasPrefix(line, "#") {
-				list.Tests = append(list.Tests, line)
-			}
-		}
-		sort.Strings(list.Tests)
-		out[i] = list
-	}
-
-	return out, nil
+	return nil, errors.New("Couldn't find a test list file")
 }
 
 // isDir returns true if path is a file.

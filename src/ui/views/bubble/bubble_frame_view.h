@@ -13,13 +13,13 @@
 #include "base/time/time.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace views {
 
-class BubbleBorder;
 class FootnoteContainerView;
 class ImageView;
 
@@ -27,6 +27,8 @@ class ImageView;
 class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
                                      public ButtonListener {
  public:
+  enum class PreferredArrowAdjustment { kMirror, kOffset };
+
   // Internal class name.
   static const char kViewClassName[];
 
@@ -92,12 +94,18 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
     footnote_margins_ = footnote_margins;
   }
 
+  void set_preferred_arrow_adjustment(PreferredArrowAdjustment adjustment) {
+    preferred_arrow_adjustment_ = adjustment;
+  }
+
   // Given the size of the contents and the rect to point at, returns the bounds
   // of the bubble window. The bubble's arrow location may change if the bubble
-  // does not fit on the monitor and |adjust_if_offscreen| is true.
+  // does not fit on the monitor or anchor window (if one exists) and
+  // |adjust_to_fit_available_bounds| is true.
   gfx::Rect GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
+                                   const BubbleBorder::Arrow arrow,
                                    const gfx::Size& client_size,
-                                   bool adjust_if_offscreen);
+                                   bool adjust_to_fit_available_bounds);
 
   Button* GetCloseButtonForTest() { return close_; }
 
@@ -109,6 +117,9 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
  protected:
   // Returns the available screen bounds if the frame were to show in |rect|.
   virtual gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) const;
+
+  // Returns the available anchor window bounds in the screen.
+  virtual gfx::Rect GetAvailableAnchorWindowBounds() const;
 
   // Override and return true to allow client view to overlap into the title
   // area when HasTitle() returns false and/or ShouldShowCloseButton() returns
@@ -127,15 +138,17 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateViewTest, CloseMethods);
 
   // Mirrors the bubble's arrow location on the |vertical| or horizontal axis,
-  // if the generated window bounds don't fit in the monitor bounds.
-  void MirrorArrowIfOffScreen(bool vertical,
-                              const gfx::Rect& anchor_rect,
-                              const gfx::Size& client_size);
+  // if the generated window bounds don't fit in the given available bounds.
+  void MirrorArrowIfOutOfBounds(bool vertical,
+                                const gfx::Rect& anchor_rect,
+                                const gfx::Size& client_size,
+                                const gfx::Rect& available_bounds);
 
   // Adjust the bubble's arrow offsets if the generated window bounds don't fit
-  // in the monitor bounds.
-  void OffsetArrowIfOffScreen(const gfx::Rect& anchor_rect,
-                              const gfx::Size& client_size);
+  // in the given available bounds.
+  void OffsetArrowIfOutOfBounds(const gfx::Rect& anchor_rect,
+                                const gfx::Size& client_size,
+                                const gfx::Rect& available_bounds);
 
   // The width of the frame for the given |client_width|. The result accounts
   // for the minimum title bar width and includes all insets and possible
@@ -187,6 +200,11 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
 
   // Time when view has been shown.
   base::TimeTicks view_shown_time_stamp_;
+
+  // Set preference for how the arrow will be adjusted if the window is outside
+  // the available bounds.
+  PreferredArrowAdjustment preferred_arrow_adjustment_ =
+      PreferredArrowAdjustment::kMirror;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleFrameView);
 };

@@ -214,6 +214,11 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // count.
   void ReturnEntryToCaller(Entry** out_entry);
 
+  // Like above, but also invokes the result callback (with net::OK), making
+  // sure to handle the backend being deleted in the interim.
+  void ReturnEntryToCallerAndPostCallback(Entry** out_entry,
+                                          CompletionOnceCallback callback);
+
   // Remove |this| from the Backend and the index, either because
   // SimpleSynchronousEntry has detected an error or because we are about to
   // be dooming it ourselves and want it to be tracked in
@@ -226,13 +231,9 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // the last reference.
   void RunNextOperationIfNeeded();
 
-  void OpenEntryInternal(bool have_index,
-                         CompletionOnceCallback callback,
-                         Entry** out_entry);
+  void OpenEntryInternal(CompletionOnceCallback callback, Entry** out_entry);
 
-  void CreateEntryInternal(bool have_index,
-                           CompletionOnceCallback callback,
-                           Entry** out_entry);
+  void CreateEntryInternal(CompletionOnceCallback callback, Entry** out_entry);
 
   void OpenOrCreateEntryInternal(OpenEntryIndexEnum index_state,
                                  CompletionOnceCallback callback,

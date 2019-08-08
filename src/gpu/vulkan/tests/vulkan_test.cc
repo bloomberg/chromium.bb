@@ -18,6 +18,7 @@ TEST_F(BasicVulkanTest, BasicVulkanSurface) {
   EXPECT_TRUE(surface);
   EXPECT_TRUE(surface->Initialize(GetDeviceQueue(),
                                   VulkanSurface::DEFAULT_SURFACE_FORMAT));
+  EXPECT_TRUE(surface->SetSize(gfx::Size(100, 100)));
   surface->Destroy();
 }
 
@@ -26,6 +27,7 @@ TEST_F(BasicVulkanTest, EmptyVulkanSwaps) {
   ASSERT_TRUE(surface);
   ASSERT_TRUE(surface->Initialize(GetDeviceQueue(),
                                   VulkanSurface::DEFAULT_SURFACE_FORMAT));
+  ASSERT_TRUE(surface->SetSize(gfx::Size(100, 100)));
 
   // First swap is a special case, call it first to get better errors.
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers());

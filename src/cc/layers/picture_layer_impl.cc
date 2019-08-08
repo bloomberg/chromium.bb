@@ -1309,7 +1309,7 @@ void PictureLayerImpl::RecalculateRasterScales() {
             transform_tree_index(), layer_tree_impl());
     float maximum_scale = animation_scales.maximum_animation_scale;
     float starting_scale = animation_scales.starting_animation_scale;
-    if (maximum_scale) {
+    if (maximum_scale != kNotScaled) {
       gfx::Size bounds_at_maximum_scale =
           gfx::ScaleToCeiledSize(raster_source_->GetSize(), maximum_scale);
       int64_t maximum_area =
@@ -1328,7 +1328,7 @@ void PictureLayerImpl::RecalculateRasterScales() {
       if (maximum_area <= squared_viewport_area)
         can_raster_at_maximum_scale = true;
     }
-    if (starting_scale && starting_scale > maximum_scale) {
+    if (starting_scale != kNotScaled && starting_scale > maximum_scale) {
       gfx::Size bounds_at_starting_scale =
           gfx::ScaleToCeiledSize(raster_source_->GetSize(), starting_scale);
       int64_t start_area =

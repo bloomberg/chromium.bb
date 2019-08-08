@@ -69,6 +69,8 @@ cr.define('print_preview', function() {
     /** @param {!KeyEvent} e Keyboard event to forward to the plugin. */
     sendKeyEvent(e) {}
 
+    hideToolbars() {}
+
     /**
      * @param {boolean} eventsOn Whether pointer events should be captured by
      *     the plugin.
@@ -87,6 +89,8 @@ cr.define('print_preview', function() {
         this.loadCallback_(true);
       }
     }
+
+    darkModeChanged(darkMode) {}
   }
 
   return {PDFPluginStub: PDFPluginStub};

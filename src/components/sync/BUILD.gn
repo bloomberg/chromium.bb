@@ -13,7 +13,7 @@ declare_args() {
   sync_user_agent_product = "Chrome"
 }
 
-jumbo_static_library("sync") {
+jumbo_static_library("base") {
   sources = [
     "base/bind_to_task_runner.h",
     "base/cancelation_observer.cc",
@@ -26,7 +26,6 @@ jumbo_static_library("sync") {
     "base/data_type_histogram.h",
     "base/encryptor.h",
     "base/enum_set.h",
-    "base/experiments.h",
     "base/extensions_activity.cc",
     "base/extensions_activity.h",
     "base/get_session_name.cc",
@@ -50,6 +49,7 @@ jumbo_static_library("sync") {
     "base/invalidation_interface.h",
     "base/logging.cc",
     "base/logging.h",
+    "base/model_type.cc",
     "base/model_type.h",
     "base/nigori.cc",
     "base/nigori.h",
@@ -84,97 +84,48 @@ jumbo_static_library("sync") {
     "base/unrecoverable_error_handler.h",
     "base/unrecoverable_error_info.cc",
     "base/unrecoverable_error_info.h",
+    "base/user_selectable_type.cc",
+    "base/user_selectable_type.h",
     "base/weak_handle.cc",
     "base/weak_handle.h",
-    "device_info/device_count_metrics_provider.cc",
-    "device_info/device_count_metrics_provider.h",
-    "device_info/device_info.cc",
-    "device_info/device_info.h",
-    "device_info/device_info_sync_bridge.cc",
-    "device_info/device_info_sync_bridge.h",
-    "device_info/device_info_sync_service.cc",
-    "device_info/device_info_sync_service.h",
-    "device_info/device_info_sync_service_impl.cc",
-    "device_info/device_info_sync_service_impl.h",
-    "device_info/device_info_tracker.h",
-    "device_info/device_info_util.cc",
-    "device_info/device_info_util.h",
-    "device_info/local_device_info_provider.h",
-    "device_info/local_device_info_provider_impl.cc",
-    "device_info/local_device_info_provider_impl.h",
-    "driver/about_sync_util.cc",
-    "driver/about_sync_util.h",
-    "driver/async_directory_type_controller.cc",
-    "driver/async_directory_type_controller.h",
-    "driver/backend_migrator.cc",
-    "driver/backend_migrator.h",
-    "driver/configure_context.h",
-    "driver/data_type_controller.cc",
-    "driver/data_type_controller.h",
-    "driver/data_type_encryption_handler.cc",
-    "driver/data_type_encryption_handler.h",
-    "driver/data_type_manager.cc",
-    "driver/data_type_manager.h",
-    "driver/data_type_manager_impl.cc",
-    "driver/data_type_manager_impl.h",
-    "driver/data_type_manager_observer.h",
-    "driver/data_type_status_table.cc",
-    "driver/data_type_status_table.h",
-    "driver/directory_data_type_controller.cc",
-    "driver/directory_data_type_controller.h",
-    "driver/frontend_data_type_controller.cc",
-    "driver/frontend_data_type_controller.h",
-    "driver/generic_change_processor.cc",
-    "driver/generic_change_processor.h",
-    "driver/generic_change_processor_factory.cc",
-    "driver/generic_change_processor_factory.h",
-    "driver/glue/sync_backend_host_core.cc",
-    "driver/glue/sync_backend_host_core.h",
-    "driver/glue/sync_engine_impl.cc",
-    "driver/glue/sync_engine_impl.h",
-    "driver/model_association_manager.cc",
-    "driver/model_association_manager.h",
-    "driver/model_associator.h",
-    "driver/model_type_controller.cc",
-    "driver/model_type_controller.h",
-    "driver/non_ui_syncable_service_based_model_type_controller.cc",
-    "driver/non_ui_syncable_service_based_model_type_controller.h",
-    "driver/shared_change_processor.cc",
-    "driver/shared_change_processor.h",
-    "driver/shared_change_processor_ref.cc",
-    "driver/shared_change_processor_ref.h",
-    "driver/startup_controller.cc",
-    "driver/startup_controller.h",
-    "driver/sync_api_component_factory.cc",
-    "driver/sync_api_component_factory.h",
-    "driver/sync_auth_util.cc",
-    "driver/sync_auth_util.h",
-    "driver/sync_client.cc",
-    "driver/sync_client.h",
-    "driver/sync_driver_switches.cc",
-    "driver/sync_driver_switches.h",
-    "driver/sync_service.cc",
-    "driver/sync_service.h",
-    "driver/sync_service_crypto.cc",
-    "driver/sync_service_crypto.h",
-    "driver/sync_service_observer.cc",
-    "driver/sync_service_observer.h",
-    "driver/sync_service_utils.cc",
-    "driver/sync_service_utils.h",
-    "driver/sync_session_durations_metrics_recorder.cc",
-    "driver/sync_session_durations_metrics_recorder.h",
-    "driver/sync_stopped_reporter.cc",
-    "driver/sync_stopped_reporter.h",
-    "driver/sync_token_status.cc",
-    "driver/sync_token_status.h",
-    "driver/sync_type_preference_provider.h",
-    "driver/sync_user_settings.h",
-    "driver/sync_user_settings_impl.cc",
-    "driver/sync_user_settings_impl.h",
-    "driver/sync_util.cc",
-    "driver/sync_util.h",
-    "driver/syncable_service_based_model_type_controller.cc",
-    "driver/syncable_service_based_model_type_controller.h",
+  ]
+
+  configs += [ "//build/config:precompiled_headers" ]
+
+  public_deps = [
+    "//base",
+    "//components/invalidation/public",
+    "//components/sync/protocol",
+  ]
+  deps = [
+    "//base:i18n",
+    "//components/os_crypt",
+    "//components/pref_registry",
+    "//components/prefs",
+    "//components/reading_list/features:reading_list_buildflags",
+    "//components/version_info",
+    "//crypto",
+    "//net",
+    "//third_party/zlib",
+  ]
+
+  if (is_mac) {
+    libs = [
+      "CoreFoundation.framework",
+      "SystemConfiguration.framework",  # Required by get_session_name_mac.mm.
+    ]
+  }
+
+  if (is_chromeos) {
+    # Required by get_session_name.cc on Chrome OS.
+    deps += [ "//chromeos/constants" ]
+  }
+}
+
+# TODO(crbug.com/947443): This target should be split up into "engine", "model",
+# "syncable" etc, but currently they all depend on each other.
+jumbo_static_library("rest_of_sync") {
+  sources = [
     "engine/commit_queue.cc",
     "engine/commit_queue.h",
     "engine/configure_reason.h",
@@ -387,13 +338,6 @@ jumbo_static_library("sync") {
     "engine_impl/update_handler.h",
     "engine_impl/uss_migrator.cc",
     "engine_impl/uss_migrator.h",
-    "js/js_backend.h",
-    "js/js_controller.h",
-    "js/js_event_details.cc",
-    "js/js_event_details.h",
-    "js/js_event_handler.h",
-    "js/sync_js_controller.cc",
-    "js/sync_js_controller.h",
     "model/blocking_model_type_store.h",
     "model/change_processor.cc",
     "model/change_processor.h",
@@ -439,7 +383,6 @@ jumbo_static_library("sync") {
     "model/sync_merge_result.cc",
     "model/sync_merge_result.h",
     "model/sync_metadata_store.h",
-    "model/syncable_service.cc",
     "model/syncable_service.h",
     "model/time.h",
     "model_impl/blocking_model_type_store_impl.cc",
@@ -456,23 +399,22 @@ jumbo_static_library("sync") {
     "model_impl/model_type_store_impl.h",
     "model_impl/model_type_store_service_impl.cc",
     "model_impl/model_type_store_service_impl.h",
-    "model_impl/processor_entity_tracker.cc",
-    "model_impl/processor_entity_tracker.h",
+    "model_impl/processor_entity.cc",
+    "model_impl/processor_entity.h",
     "model_impl/proxy_model_type_controller_delegate.cc",
     "model_impl/proxy_model_type_controller_delegate.h",
     "model_impl/sync_metadata_store_change_list.cc",
     "model_impl/sync_metadata_store_change_list.h",
     "model_impl/syncable_service_based_bridge.cc",
     "model_impl/syncable_service_based_bridge.h",
-    "protocol/proto_enum_conversions.cc",
-    "protocol/proto_enum_conversions.h",
-    "protocol/proto_memory_estimations.cc",
-    "protocol/proto_memory_estimations.h",
-    "protocol/proto_value_conversions.cc",
-    "protocol/proto_value_conversions.h",
-    "protocol/proto_visitors.h",
-    "protocol/sync_protocol_error.cc",
-    "protocol/sync_protocol_error.h",
+    "nigori/keystore_keys_handler.h",
+    "nigori/nigori_local_change_processor.cc",
+    "nigori/nigori_local_change_processor.h",
+    "nigori/nigori_model_type_processor.cc",
+    "nigori/nigori_model_type_processor.h",
+    "nigori/nigori_sync_bridge.h",
+    "nigori/nigori_sync_bridge_impl.cc",
+    "nigori/nigori_sync_bridge_impl.h",
     "syncable/base_node.cc",
     "syncable/base_node.h",
     "syncable/base_transaction.cc",
@@ -500,7 +442,6 @@ jumbo_static_library("sync") {
     "syncable/metahandle_set.h",
     "syncable/model_neutral_mutable_entry.cc",
     "syncable/model_neutral_mutable_entry.h",
-    "syncable/model_type.cc",
     "syncable/mutable_entry.cc",
     "syncable/mutable_entry.h",
     "syncable/nigori_handler.cc",
@@ -550,50 +491,27 @@ jumbo_static_library("sync") {
     "syncable/write_transaction.h",
     "syncable/write_transaction_info.cc",
     "syncable/write_transaction_info.h",
-    "user_events/fake_user_event_service.cc",
-    "user_events/fake_user_event_service.h",
-    "user_events/no_op_user_event_service.cc",
-    "user_events/no_op_user_event_service.h",
-    "user_events/trial_recorder.cc",
-    "user_events/trial_recorder.h",
-    "user_events/user_event_service.h",
-    "user_events/user_event_service_impl.cc",
-    "user_events/user_event_service_impl.h",
-    "user_events/user_event_sync_bridge.cc",
-    "user_events/user_event_sync_bridge.h",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
 
   public_deps = [
+    ":base",
+    ":js",
     "//base",
     "//components/sync/protocol",
+    "//components/sync/protocol:util",
     "//net",
     "//third_party/leveldatabase",
     "//url",
   ]
   deps = [
     "//base:i18n",
-    "//components/data_use_measurement/core",
-    "//components/invalidation/impl:feature_list",
-    "//components/invalidation/public",
     "//components/keyed_service/core",
-    "//components/metrics",
-    "//components/os_crypt",
-    "//components/pref_registry",
-    "//components/prefs",
-    "//components/reading_list/features:reading_list_buildflags",
-    "//components/signin/core/browser",
-    "//components/variations",
-    "//components/version_info",
-    "//crypto",
-    "//google_apis",
-    "//services/identity/public/cpp",
     "//services/network/public/cpp",
     "//sql",
     "//third_party/cacheinvalidation",
     "//third_party/crc32c",
-    "//third_party/zlib",
     "//third_party/zlib/google:compression_utils",
     "//ui/base",
   ]
@@ -603,17 +521,116 @@ jumbo_static_library("sync") {
     sources += [ "android/model_type_helper.cc" ]
   }
 
-  if (is_chromeos) {
-    # Required by get_session_name.cc on Chrome OS.
-    deps += [ "//chromeos/constants" ]
-  }
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+}
 
-  if (is_mac) {
-    libs = [
-      "CoreFoundation.framework",
-      "SystemConfiguration.framework",  # Required by get_session_name_mac.mm.
-    ]
-  }
+jumbo_static_library("driver") {
+  sources = [
+    "driver/about_sync_util.cc",
+    "driver/about_sync_util.h",
+    "driver/async_directory_type_controller.cc",
+    "driver/async_directory_type_controller.h",
+    "driver/backend_migrator.cc",
+    "driver/backend_migrator.h",
+    "driver/configure_context.h",
+    "driver/data_type_controller.cc",
+    "driver/data_type_controller.h",
+    "driver/data_type_encryption_handler.cc",
+    "driver/data_type_encryption_handler.h",
+    "driver/data_type_manager.cc",
+    "driver/data_type_manager.h",
+    "driver/data_type_manager_impl.cc",
+    "driver/data_type_manager_impl.h",
+    "driver/data_type_manager_observer.h",
+    "driver/data_type_status_table.cc",
+    "driver/data_type_status_table.h",
+    "driver/directory_data_type_controller.cc",
+    "driver/directory_data_type_controller.h",
+    "driver/frontend_data_type_controller.cc",
+    "driver/frontend_data_type_controller.h",
+    "driver/generic_change_processor.cc",
+    "driver/generic_change_processor.h",
+    "driver/generic_change_processor_factory.cc",
+    "driver/generic_change_processor_factory.h",
+    "driver/glue/sync_engine_backend.cc",
+    "driver/glue/sync_engine_backend.h",
+    "driver/glue/sync_engine_impl.cc",
+    "driver/glue/sync_engine_impl.h",
+    "driver/model_association_manager.cc",
+    "driver/model_association_manager.h",
+    "driver/model_associator.h",
+    "driver/model_type_controller.cc",
+    "driver/model_type_controller.h",
+    "driver/non_ui_syncable_service_based_model_type_controller.cc",
+    "driver/non_ui_syncable_service_based_model_type_controller.h",
+    "driver/profile_sync_service.cc",
+    "driver/profile_sync_service.h",
+    "driver/shared_change_processor.cc",
+    "driver/shared_change_processor.h",
+    "driver/shared_change_processor_ref.cc",
+    "driver/shared_change_processor_ref.h",
+    "driver/startup_controller.cc",
+    "driver/startup_controller.h",
+    "driver/sync_api_component_factory.cc",
+    "driver/sync_api_component_factory.h",
+    "driver/sync_auth_manager.cc",
+    "driver/sync_auth_manager.h",
+    "driver/sync_auth_util.cc",
+    "driver/sync_auth_util.h",
+    "driver/sync_client.cc",
+    "driver/sync_client.h",
+    "driver/sync_driver_switches.cc",
+    "driver/sync_driver_switches.h",
+    "driver/sync_service.cc",
+    "driver/sync_service.h",
+    "driver/sync_service_crypto.cc",
+    "driver/sync_service_crypto.h",
+    "driver/sync_service_observer.cc",
+    "driver/sync_service_observer.h",
+    "driver/sync_service_utils.cc",
+    "driver/sync_service_utils.h",
+    "driver/sync_session_durations_metrics_recorder.cc",
+    "driver/sync_session_durations_metrics_recorder.h",
+    "driver/sync_stopped_reporter.cc",
+    "driver/sync_stopped_reporter.h",
+    "driver/sync_token_status.cc",
+    "driver/sync_token_status.h",
+    "driver/sync_type_preference_provider.h",
+    "driver/sync_user_settings.h",
+    "driver/sync_user_settings_impl.cc",
+    "driver/sync_user_settings_impl.h",
+    "driver/sync_util.cc",
+    "driver/sync_util.h",
+    "driver/syncable_service_based_model_type_controller.cc",
+    "driver/syncable_service_based_model_type_controller.h",
+  ]
+
+  configs += [ "//build/config:precompiled_headers" ]
+
+  public_deps = [
+    ":base",
+    ":js",
+    ":rest_of_sync",
+    "//base",
+    "//components/invalidation/public",
+    "//components/sync/protocol",
+    "//components/sync/protocol:util",
+    "//net",
+    "//url",
+  ]
+  deps = [
+    "//base:i18n",
+    "//components/data_use_measurement/core",
+    "//components/invalidation/impl:feature_list",
+    "//components/keyed_service/core",
+    "//components/prefs",
+    "//components/signin/core/browser",
+    "//components/version_info",
+    "//components/version_info:generate_version_info",
+    "//services/identity/public/cpp",
+    "//services/network/public/cpp",
+    "//ui/base",
+  ]
 
   if (!is_ios) {
     sources += [
@@ -629,6 +646,110 @@ jumbo_static_library("sync") {
   defines = [ "SYNC_USER_AGENT_PRODUCT=$sync_user_agent_product" ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
+}
+
+group("sync") {
+  public_deps = [
+    ":driver",
+    ":rest_of_sync",
+  ]
+}
+
+jumbo_static_library("device_info") {
+  sources = [
+    "device_info/device_count_metrics_provider.cc",
+    "device_info/device_count_metrics_provider.h",
+    "device_info/device_info.cc",
+    "device_info/device_info.h",
+    "device_info/device_info_sync_bridge.cc",
+    "device_info/device_info_sync_bridge.h",
+    "device_info/device_info_sync_service.cc",
+    "device_info/device_info_sync_service.h",
+    "device_info/device_info_sync_service_impl.cc",
+    "device_info/device_info_sync_service_impl.h",
+    "device_info/device_info_tracker.h",
+    "device_info/device_info_util.cc",
+    "device_info/device_info_util.h",
+    "device_info/local_device_info_provider.h",
+    "device_info/local_device_info_provider_impl.cc",
+    "device_info/local_device_info_provider_impl.h",
+    "device_info/local_device_info_util.cc",
+    "device_info/local_device_info_util.h",
+  ]
+
+  configs += [ "//build/config:precompiled_headers" ]
+
+  public_deps = [
+    ":sync",
+    "//base",
+    "//components/sync/protocol",
+  ]
+  deps = [
+    "//components/keyed_service/core",
+    "//components/metrics",
+    "//components/version_info",
+    "//ui/base",
+  ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+}
+
+jumbo_static_library("js") {
+  sources = [
+    "js/js_backend.h",
+    "js/js_controller.h",
+    "js/js_event_details.cc",
+    "js/js_event_details.h",
+    "js/js_event_handler.h",
+    "js/sync_js_controller.cc",
+    "js/sync_js_controller.h",
+  ]
+
+  public_deps = [
+    ":base",
+  ]
+}
+
+jumbo_static_library("user_events") {
+  sources = [
+    "user_events/no_op_user_event_service.cc",
+    "user_events/no_op_user_event_service.h",
+    "user_events/user_event_model_type_controller.cc",
+    "user_events/user_event_model_type_controller.h",
+    "user_events/user_event_service.h",
+    "user_events/user_event_service_impl.cc",
+    "user_events/user_event_service_impl.h",
+    "user_events/user_event_sync_bridge.cc",
+    "user_events/user_event_sync_bridge.h",
+  ]
+
+  public_deps = [
+    ":sync",
+    "//base",
+    "//components/keyed_service/core",
+    "//components/sync/protocol",
+  ]
+  deps = [
+    "//components/signin/core/browser:shared",
+  ]
+}
+
+static_library("test_support_user_events") {
+  testonly = true
+  sources = [
+    "user_events/fake_user_event_service.cc",
+    "user_events/fake_user_event_service.h",
+  ]
+
+  public_deps = [
+    ":test_support_base",
+  ]
+
+  deps = [
+    ":sync",
+    ":test_support_model",
+    ":user_events",
+  ]
 }
 
 static_library("test_support_base") {
@@ -664,7 +785,6 @@ static_library("test_support_base") {
     ":sync",
   ]
 
-  defines = [ "SYNC_TEST" ]
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
@@ -735,7 +855,6 @@ static_library("test_support_engine") {
     "//services/network:test_support",
   ]
 
-  defines = [ "SYNC_TEST" ]
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
@@ -770,8 +889,6 @@ static_library("test_support_model") {
     "model/test_model_type_store_service.h",
   ]
 
-  defines = [ "SYNC_TEST" ]
-
   public_deps = [
     ":test_support_base",
   ]
@@ -784,8 +901,6 @@ static_library("test_support_model") {
 static_library("test_support_driver") {
   testonly = true
   sources = [
-    "device_info/local_device_info_provider_mock.cc",
-    "device_info/local_device_info_provider_mock.h",
     "driver/async_directory_type_controller_mock.cc",
     "driver/async_directory_type_controller_mock.h",
     "driver/data_type_controller_mock.cc",
@@ -800,14 +915,20 @@ static_library("test_support_driver") {
     "driver/fake_sync_service.h",
     "driver/frontend_data_type_controller_mock.cc",
     "driver/frontend_data_type_controller_mock.h",
+    "driver/mock_sync_service.cc",
+    "driver/mock_sync_service.h",
     "driver/model_associator_mock.cc",
     "driver/model_associator_mock.h",
+    "driver/profile_sync_service_bundle.cc",
+    "driver/profile_sync_service_bundle.h",
     "driver/sync_api_component_factory_mock.cc",
     "driver/sync_api_component_factory_mock.h",
     "driver/sync_client_mock.cc",
     "driver/sync_client_mock.h",
     "driver/sync_user_settings_mock.cc",
     "driver/sync_user_settings_mock.h",
+    "driver/test_profile_sync_service.cc",
+    "driver/test_profile_sync_service.h",
     "driver/test_sync_service.cc",
     "driver/test_sync_service.h",
     "driver/test_sync_user_settings.cc",
@@ -825,12 +946,18 @@ static_library("test_support_driver") {
   ]
 
   deps = [
+    ":driver",
     ":sync",
     ":test_support_engine",
+    ":test_support_model",
+    "//components/invalidation/impl:test_support",
+    "//components/pref_registry",
     "//components/signin/core/browser:shared",
     "//components/sync_preferences:test_support",
     "//components/version_info",
+    "//components/version_info:generate_version_info",
     "//google_apis",
+    "//services/identity/public/cpp:test_support",
   ]
 }
 
@@ -845,6 +972,7 @@ source_set("unit_tests") {
     "base/get_session_name_unittest.cc",
     "base/hash_util_unittest.cc",
     "base/immutable_unittest.cc",
+    "base/model_type_unittest.cc",
     "base/nigori_unittest.cc",
     "base/node_ordinal_unittest.cc",
     "base/ordinal_unittest.cc",
@@ -867,11 +995,15 @@ source_set("unit_tests") {
     "driver/glue/sync_engine_impl_unittest.cc",
     "driver/model_association_manager_unittest.cc",
     "driver/model_type_controller_unittest.cc",
+    "driver/profile_sync_service_startup_unittest.cc",
+    "driver/profile_sync_service_unittest.cc",
     "driver/shared_change_processor_unittest.cc",
     "driver/startup_controller_unittest.cc",
+    "driver/sync_auth_manager_unittest.cc",
     "driver/sync_service_utils_unittest.cc",
     "driver/sync_session_durations_metrics_recorder_unittest.cc",
     "driver/sync_stopped_reporter_unittest.cc",
+    "driver/sync_user_settings_unittest.cc",
     "driver/sync_util_unittest.cc",
     "engine/cycle/sync_cycle_snapshot_unittest.cc",
     "engine/model_safe_worker_unittest.cc",
@@ -921,8 +1053,9 @@ source_set("unit_tests") {
     "model_impl/in_memory_metadata_change_list_unittest.cc",
     "model_impl/model_type_store_backend_unittest.cc",
     "model_impl/model_type_store_impl_unittest.cc",
-    "model_impl/processor_entity_tracker_unittest.cc",
+    "model_impl/processor_entity_unittest.cc",
     "model_impl/syncable_service_based_bridge_unittest.cc",
+    "nigori/nigori_model_type_processor_unittest.cc",
     "protocol/proto_enum_conversions_unittest.cc",
     "protocol/proto_value_conversions_unittest.cc",
     "syncable/change_record_unittest.cc",
@@ -930,14 +1063,12 @@ source_set("unit_tests") {
     "syncable/directory_unittest.cc",
     "syncable/directory_unittest.h",
     "syncable/entry_kernel_unittest.cc",
-    "syncable/model_type_unittest.cc",
     "syncable/nigori_util_unittest.cc",
     "syncable/parent_child_index_unittest.cc",
     "syncable/syncable_delete_journal_unittest.cc",
     "syncable/syncable_enum_conversions_unittest.cc",
     "syncable/syncable_id_unittest.cc",
     "syncable/syncable_unittest.cc",
-    "user_events/trial_recorder_unittest.cc",
     "user_events/user_event_service_impl_unittest.cc",
     "user_events/user_event_sync_bridge_unittest.cc",
   ]
@@ -953,11 +1084,15 @@ source_set("unit_tests") {
   ]
 
   deps = [
+    ":device_info",
+    ":driver",
     ":sync",
     ":test_support_base",
     ":test_support_driver",
     ":test_support_engine",
     ":test_support_model",
+    ":test_support_user_events",
+    ":user_events",
     "//base",
     "//base/test:test_support",
     "//components/invalidation/impl",
@@ -966,8 +1101,8 @@ source_set("unit_tests") {
     "//components/signin/core/browser:internals_test_support",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
-    "//components/variations",
     "//components/version_info",
+    "//components/version_info:generate_version_info",
     "//components/version_info:version_string",
     "//google_apis",
     "//google_apis:test_support",
@@ -1003,8 +1138,6 @@ source_set("unit_tests") {
       "//components/policy/core/browser",
     ]
   }
-
-  defines = [ "SYNC_TEST" ]
 }
 
 static_library("test_support_fake_server") {
@@ -1040,45 +1173,6 @@ static_library("test_support_fake_server") {
   ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
-}
-
-if (!is_ios && !is_android && !is_fuchsia) {
-  static_library("test_support_testserver") {
-    testonly = true
-    sources = [
-      "test/local_sync_test_server.cc",
-      "test/local_sync_test_server.h",
-    ]
-
-    configs += [ "//build/config/compiler:wexit_time_destructors" ]
-
-    public_deps = [
-      "//base",
-      "//net:test_support",
-    ]
-    deps = [
-      ":sync",
-
-      # The sync test server uses Python modules generated by the sync protos.
-      "//third_party/protobuf:py_proto",
-    ]
-  }
-
-  executable("run_sync_testserver") {
-    testonly = true
-    sources = [
-      "tools/testserver/run_sync_testserver.cc",
-    ]
-
-    deps = [
-      ":test_support_testserver",
-      "//base",
-      "//base/test:test_support",
-      "//build/win:default_exe_manifest",
-      "//net:test_support",
-      "//testing/gtest",
-    ]
-  }
 }
 
 if (is_android) {

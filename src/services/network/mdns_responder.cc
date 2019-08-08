@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <numeric>
+#include <queue>
 #include <utility>
 
 #include "services/network/mdns_responder.h"
@@ -11,6 +12,7 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -18,6 +20,7 @@
 #include "base/sys_byteorder.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
+#include "base/timer/timer.h"
 #include "net/base/address_family.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
@@ -44,7 +47,11 @@
 //
 // 3) Support parsing the authority section of a query in the wire format to
 // correctly implement the detection of probe queries.
+namespace network {
+
 namespace {
+
+using MdnsResponderServiceError = MdnsResponderManager::ServiceError;
 
 // RFC 6762, Section 6.
 //
@@ -71,6 +78,8 @@ const uint16_t kFlagCacheFlush = 0x8000;
 
 // Maximum number of retries for the same response due to send failure.
 const uint8_t kMaxMdnsResponseRetries = 2;
+// The capacity of the send queue for packets blocked by an incomplete send.
+const uint8_t kSendQueueCapacity = 100;
 // Maximum delay allowed for per-response rate-limited responses.
 const base::TimeDelta kMaxScheduledDelay = base::TimeDelta::FromSeconds(10);
 
@@ -191,9 +200,29 @@ bool IsProbeQuery(const net::DnsQuery& query) {
   return query.qtype() == net::dns_protocol::kTypeANY;
 }
 
+void ReportServiceError(MdnsResponderServiceError error) {
+  UMA_HISTOGRAM_ENUMERATION("NetworkService.MdnsResponder.ServiceError", error);
+}
+
+struct PendingPacket {
+  PendingPacket(scoped_refptr<net::IOBufferWithSize> buf,
+                scoped_refptr<MdnsResponseSendOption> option,
+                const base::TimeTicks& send_ready_time)
+      : buf(std::move(buf)),
+        option(std::move(option)),
+        send_ready_time(send_ready_time) {}
+
+  bool operator<(const PendingPacket& other) const {
+    return send_ready_time > other.send_ready_time;
+  }
+
+  scoped_refptr<net::IOBufferWithSize> buf;
+  scoped_refptr<MdnsResponseSendOption> option;
+  base::TimeTicks send_ready_time;
+};
+
 }  // namespace
 
-namespace network {
 
 namespace mdns_helper {
 
@@ -286,8 +315,8 @@ class MdnsResponderManager::SocketHandler {
   bool Send(scoped_refptr<net::IOBufferWithSize> buf,
             scoped_refptr<MdnsResponseSendOption> option);
 
-  void DoSend(scoped_refptr<net::IOBufferWithSize> buf,
-              scoped_refptr<MdnsResponseSendOption> option);
+  // Returns a net error code, or ERR_IO_PENDING if the IO is in progress.
+  int DoSend(PendingPacket pending_packet);
 
   uint16_t id() const { return id_; }
 
@@ -385,11 +414,11 @@ class MdnsResponderManager::SocketHandler::ResponseScheduler {
 
   explicit ResponseScheduler(MdnsResponderManager::SocketHandler* handler)
       : handler_(handler),
-        task_runner_(base::SequencedTaskRunnerHandle::Get()),
         tick_clock_(base::DefaultTickClock::GetInstance()),
+        dispatch_timer_(std::make_unique<base::OneShotTimer>(tick_clock_)),
         next_available_time_per_resp_sched_(tick_clock_->NowTicks()),
         weak_factory_(this) {}
-  ~ResponseScheduler() = default;
+  ~ResponseScheduler() { dispatch_timer_->Stop(); }
 
   // Implements the rate limit scheme on the underlying interface managed by
   // |handler_|. Returns true if the send is scheduled on this interface.
@@ -397,25 +426,28 @@ class MdnsResponderManager::SocketHandler::ResponseScheduler {
   // Pending sends scheduled are cancelled after |handler_| becomes invalid;
   bool ScheduleNextSend(scoped_refptr<net::IOBufferWithSize> buf,
                         scoped_refptr<MdnsResponseSendOption> option);
-  void OnResponseSent(scoped_refptr<net::IOBufferWithSize> buf,
-                      scoped_refptr<MdnsResponseSendOption> option,
-                      int result) {
+  void OnResponseSent(PendingPacket pending_packet, int result) {
+    DCHECK(send_pending_);
+    send_pending_ = false;
+    scoped_refptr<MdnsResponseSendOption>& option = pending_packet.option;
     if (result < 0) {
       VLOG(1) << "Socket send error, socket=" << handler_->id()
               << ", error=" << result;
       if (CanBeRetriedAfterSendFailure(*option)) {
         ++option->num_send_retries_done;
-        handler_->DoSend(std::move(buf), std::move(option));
+        send_queue_.push(std::move(pending_packet));
       } else {
         VLOG(1) << "Response cannot be sent after " << kMaxMdnsResponseRetries
                 << " retries.";
       }
     }
+    DispatchPendingPackets();
   }
 
   // Also resets the scheduler.
   void SetTickClockForTesting(const base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;
+    dispatch_timer_ = std::make_unique<base::OneShotTimer>(tick_clock_);
     next_available_time_per_resp_sched_ = tick_clock_->NowTicks();
     next_available_time_for_name_.clear();
   }
@@ -447,6 +479,10 @@ class MdnsResponderManager::SocketHandler::ResponseScheduler {
   ComputeResponseDelayAndUpdateNextAvailableTime(
       RateLimitScheme rate_limit_scheme,
       const MdnsResponseSendOption& option);
+
+  // Dispatches packets in the send queue serially with retries.
+  void DispatchPendingPackets();
+
   // Determines if a response can be retried after send failure.
   bool CanBeRetriedAfterSendFailure(const MdnsResponseSendOption& option) {
     if (option.num_send_retries_done >= kMaxMdnsResponseRetries)
@@ -465,10 +501,13 @@ class MdnsResponderManager::SocketHandler::ResponseScheduler {
   // reference should be used to access the handler when there is no such
   // guarantee in an operation.
   MdnsResponderManager::SocketHandler* const handler_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   const base::TickClock* tick_clock_;
+  std::unique_ptr<base::OneShotTimer> dispatch_timer_;
   std::map<std::string, base::TimeTicks> next_available_time_for_name_;
   base::TimeTicks next_available_time_per_resp_sched_;
+  bool send_pending_ = false;
+  // Packets with earlier ready time have higher priorities.
+  std::priority_queue<PendingPacket> send_queue_;
 
   base::WeakPtrFactory<ResponseScheduler> weak_factory_;
 
@@ -481,15 +520,13 @@ bool MdnsResponderManager::SocketHandler::Send(
   return scheduler_->ScheduleNextSend(std::move(buf), std::move(option));
 }
 
-void MdnsResponderManager::SocketHandler::DoSend(
-    scoped_refptr<net::IOBufferWithSize> buf,
-    scoped_refptr<MdnsResponseSendOption> option) {
-  auto* buf_data = buf.get();
-  size_t buf_size = buf->size();
-  socket_->SendTo(buf_data, buf_size, multicast_addr_,
-                  base::BindOnce(&ResponseScheduler::OnResponseSent,
-                                 scheduler_->GetWeakPtr(), std::move(buf),
-                                 std::move(option)));
+int MdnsResponderManager::SocketHandler::DoSend(PendingPacket pending_packet) {
+  auto* buf_data = pending_packet.buf.get();
+  size_t buf_size = pending_packet.buf->size();
+  return socket_->SendTo(
+      buf_data, buf_size, multicast_addr_,
+      base::BindOnce(&ResponseScheduler::OnResponseSent,
+                     scheduler_->GetWeakPtr(), std::move(pending_packet)));
 }
 
 void MdnsResponderManager::SocketHandler::SetTickClockForTesting(
@@ -500,31 +537,35 @@ void MdnsResponderManager::SocketHandler::SetTickClockForTesting(
 bool MdnsResponderManager::SocketHandler::ResponseScheduler::ScheduleNextSend(
     scoped_refptr<net::IOBufferWithSize> buf,
     scoped_refptr<MdnsResponseSendOption> option) {
+  if (send_queue_.size() >= kSendQueueCapacity) {
+    VLOG(1)
+        << "mDNS packet discarded after reaching the capacity of send queue.";
+    return false;
+  }
+
   auto rate_limit_scheme = GetRateLimitSchemeForClass(option->klass);
+  base::Optional<base::TimeDelta> delay;
   if (rate_limit_scheme == RateLimitScheme::NO_LIMIT) {
     // Skip the scheduling for this response. Currently the zero delay is only
     // used for negative responses generated by the responder itself. Responses
     // with positive name resolution generated by the responder and also those
     // triggered via the Mojo connection (i.e. announcements and goodbye
     // packets) are rate limited via the scheduled delay below.
-    handler_->DoSend(std::move(buf), std::move(option));
-    return true;
+    delay = base::TimeDelta();
+  } else {
+    // TODO(qingsi): The computation of the delay is done statically below at
+    // schedule-time. Change it to computing dynamically so that the delay is
+    // based on the time of the last send completion.
+    delay = ComputeResponseDelayAndUpdateNextAvailableTime(rate_limit_scheme,
+                                                           *option);
   }
-  const base::Optional<base::TimeDelta> delay =
-      ComputeResponseDelayAndUpdateNextAvailableTime(rate_limit_scheme,
-                                                     *option);
   if (!delay)
     return false;
 
-  // Note that the owning handler of this scheduler may be removed if it
-  // encounters read error as we process in OnSocketHandlerReadError. We should
-  // guarantee any posted task can be cancelled if the handler goes away, which
-  // we do via the weak pointer.
-  task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&MdnsResponderManager::SocketHandler::DoSend,
-                     handler_->GetWeakPtr(), std::move(buf), std::move(option)),
-      delay.value());
+  PendingPacket pending_packet(std::move(buf), std::move(option),
+                               tick_clock_->NowTicks() + delay.value());
+  send_queue_.push(std::move(pending_packet));
+  DispatchPendingPackets();
   return true;
 }
 
@@ -591,6 +632,39 @@ base::Optional<base::TimeDelta> MdnsResponderManager::SocketHandler::
   return delay;
 }
 
+void MdnsResponderManager::SocketHandler::ResponseScheduler::
+    DispatchPendingPackets() {
+  while (!send_pending_ && !send_queue_.empty()) {
+    const auto now = tick_clock_->NowTicks();
+    const auto next_send_ready_time = send_queue_.top().send_ready_time;
+    if (now >= next_send_ready_time) {
+      auto pending_packet = std::move(send_queue_.top());
+      send_queue_.pop();
+      int rv = handler_->DoSend(std::move(pending_packet));
+      if (rv == net::ERR_IO_PENDING) {
+        send_pending_ = true;
+      } else if (rv < net::OK) {
+        VLOG(1) << "mDNS packet discarded due to socket send error, socket="
+                << handler_->id() << ", error=" << rv;
+      }
+    } else {
+      // We have no packet due; post a task to flush the send queue later.
+      //
+      // Note that the owning handler of this scheduler may be removed if it
+      // encounters read error as we process in OnSocketHandlerReadError. We
+      // should guarantee any posted task can be cancelled if the scheduler goes
+      // away, which we do via the weak pointer.
+      const base::TimeDelta time_to_next_packet = next_send_ready_time - now;
+      dispatch_timer_->Start(
+          FROM_HERE, time_to_next_packet,
+          base::BindOnce(&MdnsResponderManager::SocketHandler::
+                             ResponseScheduler::DispatchPendingPackets,
+                         GetWeakPtr()));
+      return;
+    }
+  }
+}
+
 MdnsResponseSendOption::MdnsResponseSendOption() = default;
 MdnsResponseSendOption::~MdnsResponseSendOption() = default;
 
@@ -646,7 +720,8 @@ void MdnsResponderManager::Start() {
   size_t num_started_socket_handlers = socket_handler_by_id_.size();
   if (socket_handler_by_id_.empty()) {
     start_result_ = SocketHandlerStartResult::ALL_FAILURE;
-    LOG(ERROR) << "mDNS responder manager failed to started.";
+    LOG(ERROR) << "mDNS responder manager failed to start.";
+    ReportServiceError(MdnsResponderServiceError::kFailToStartManager);
     return;
   }
 
@@ -663,6 +738,7 @@ void MdnsResponderManager::CreateMdnsResponder(
   if (start_result_ == SocketHandlerStartResult::UNSPECIFIED ||
       start_result_ == SocketHandlerStartResult::ALL_FAILURE) {
     LOG(ERROR) << "The mDNS responder manager is not started yet.";
+    ReportServiceError(MdnsResponderServiceError::kFailToCreateResponder);
     request = nullptr;
     return;
   }
@@ -735,20 +811,32 @@ void MdnsResponderManager::OnMdnsQueryReceived(
 
 void MdnsResponderManager::OnSocketHandlerReadError(uint16_t socket_handler_id,
                                                     int result) {
+  VLOG(1) << "Socket read error, socket=" << socket_handler_id
+          << ", error=" << result;
+  if (IsNonFatalError(result))
+    return;
+
   auto it = socket_handler_by_id_.find(socket_handler_id);
   DCHECK(it != socket_handler_by_id_.end());
   // It is safe to remove the handler in error since this error handler is
   // invoked by the callback after the asynchronous return of RecvFrom, when the
   // handler has exited the read loop.
   socket_handler_by_id_.erase(it);
-  VLOG(1) << "Socket read error, socket=" << socket_handler_id
-          << ", error=" << result;
   if (socket_handler_by_id_.empty()) {
     LOG(ERROR)
         << "All socket handlers failed. Restarting the mDNS responder manager.";
+    ReportServiceError(MdnsResponderServiceError::kFatalSocketHandlerError);
     start_result_ = MdnsResponderManager::SocketHandlerStartResult::UNSPECIFIED;
     Start();
   }
+}
+
+bool MdnsResponderManager::IsNonFatalError(int result) {
+  DCHECK(result < net::OK);
+  if (result == net::ERR_MSG_TOO_BIG)
+    return true;
+
+  return false;
 }
 
 void MdnsResponderManager::SocketHandler::HandlePacket(int result) {
@@ -810,6 +898,7 @@ void MdnsResponder::CreateNameForAddress(
   DCHECK(address.IsValid() || address.empty());
   if (!address.IsValid()) {
     LOG(ERROR) << "Invalid IP address to create a name for";
+    ReportServiceError(MdnsResponderServiceError::kInvalidIpToRegisterName);
     binding_.Close();
     manager_->OnMojoConnectionError(this);
     return;
@@ -932,6 +1021,7 @@ bool MdnsResponder::HasConflictWithExternalResolution(
   }
 
   LOG(ERROR) << "Received conflicting resolution for name: " << name;
+  ReportServiceError(MdnsResponderServiceError::kConflictingNameResolution);
   return true;
 }
 

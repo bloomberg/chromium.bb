@@ -35,6 +35,7 @@
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 
 class PrefRegistrySimple;
@@ -87,6 +88,8 @@ class ASH_EXPORT AssistantController
   void SendAssistantFeedback(bool assistant_debug_info_allowed,
                              const std::string& feedback_description,
                              const std::string& screenshot_png) override;
+  void SetDeviceActions(
+      chromeos::assistant::mojom::DeviceActionsPtr device_actions) override;
 
   // AssistantControllerObserver:
   void OnDeepLinkReceived(
@@ -99,7 +102,7 @@ class ASH_EXPORT AssistantController
   void AddVolumeObserver(mojom::VolumeObserverPtr observer) override;
 
   // chromeos::CrasAudioHandler::AudioObserver:
-  void OnOutputMuteChanged(bool mute_on, bool system_adjust) override;
+  void OnOutputMuteChanged(bool mute_on) override;
   void OnOutputNodeVolumeChanged(uint64_t node, int volume) override;
 
   // AccessibilityObserver:
@@ -112,7 +115,7 @@ class ASH_EXPORT AssistantController
   // Acquires a NavigableContentsFactory from the Content Service to allow
   // Assistant to display embedded web contents.
   void GetNavigableContentsFactory(
-      content::mojom::NavigableContentsFactoryRequest request);
+      mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver);
 
   AssistantAlarmTimerController* alarm_timer_controller() {
     return &assistant_alarm_timer_controller_;
@@ -169,6 +172,7 @@ class ASH_EXPORT AssistantController
   chromeos::assistant::mojom::AssistantPtr assistant_;
 
   mojom::AssistantImageDownloaderPtr assistant_image_downloader_;
+  chromeos::assistant::mojom::DeviceActionsPtr device_actions_;
 
   // Assistant sub-controllers.
   AssistantAlarmTimerController assistant_alarm_timer_controller_;

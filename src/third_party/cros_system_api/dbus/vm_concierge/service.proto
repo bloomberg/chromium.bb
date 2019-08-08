@@ -107,6 +107,13 @@ message StartVmRequest {
 
   // Enable GPU in the started Vm.
   bool enable_gpu = 8;
+
+  // Provide a software-based virtual Trusted Platform Module to the VM. The TPM
+  // is backed by libtpm2's TPM simulator and does not interact with any
+  // physical TPM on the host device. TPM state does not persist across VM
+  // launches. In order for the VM to see the virtual TPM, the guest kernel must
+  // contain a virtio TPM driver.
+  bool software_tpm = 9;
 }
 
 // Information that must be included with every StartPluginVm request.
@@ -251,6 +258,7 @@ message CreateDiskImageRequest {
   string disk_path = 2;
 
   // The logical size of the new disk image, in bytes.
+  // If unspecified or 0, a size will be chosen automatically.
   uint64 disk_size = 3;
 
   // The type of disk image to be created.

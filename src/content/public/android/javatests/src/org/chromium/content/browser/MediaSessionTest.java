@@ -16,7 +16,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -28,6 +27,7 @@ import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.media.MediaSwitches;
 
@@ -146,19 +146,14 @@ public class MediaSessionTest {
         }
 
         mAudioFocusChangeListener = new MockAudioFocusChangeListener();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mObserver =
-                        new MediaSessionObserver(
-                                MediaSession.fromWebContents(mActivityTestRule.getWebContents())) {
-                            @Override
-                            public void mediaSessionStateChanged(
-                                    boolean isControllable, boolean isSuspended) {
-                                mStateRecords.add(new StateRecord(isControllable, isSuspended));
-                            }
-                        };
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mObserver = new MediaSessionObserver(
+                    MediaSession.fromWebContents(mActivityTestRule.getWebContents())) {
+                @Override
+                public void mediaSessionStateChanged(boolean isControllable, boolean isSuspended) {
+                    mStateRecords.add(new StateRecord(isControllable, isSuspended));
+                }
+            };
         });
     }
 

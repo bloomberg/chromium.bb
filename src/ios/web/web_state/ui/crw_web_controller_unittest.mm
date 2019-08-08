@@ -16,6 +16,9 @@
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
+#import "ios/web/common/crw_content_view.h"
+#import "ios/web/common/crw_web_view_content_view.h"
+#include "ios/web/common/features.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
@@ -23,7 +26,6 @@
 #import "ios/web/public/crw_session_storage.h"
 #import "ios/web/public/download/download_controller.h"
 #import "ios/web/public/download/download_task.h"
-#include "ios/web/public/features.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/test/fakes/fake_download_controller_delegate.h"
 #import "ios/web/public/test/fakes/fake_web_state_policy_decider.h"
@@ -35,10 +37,8 @@
 #include "ios/web/public/test/fakes/test_web_state_observer.h"
 #import "ios/web/public/test/fakes/test_web_view_content_view.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
-#import "ios/web/public/web_state/ui/crw_content_view.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
-#import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/test/fakes/crw_fake_back_forward_list.h"
@@ -224,6 +224,7 @@ class CRWWebControllerTest : public WebTestWithWebController,
     OCMStub([result removeObserver:web_controller() forKeyPath:OCMOCK_ANY]);
     OCMStub([result evaluateJavaScript:OCMOCK_ANY
                      completionHandler:OCMOCK_ANY]);
+    OCMStub([result allowsBackForwardNavigationGestures]);
     OCMStub([result setAllowsBackForwardNavigationGestures:NO]);
     OCMStub([result setAllowsBackForwardNavigationGestures:YES]);
     OCMStub([result isLoading]);
@@ -323,6 +324,30 @@ TEST_P(CRWWebControllerTest, AbortNativeUrlNavigation) {
 
   EXPECT_FALSE(observer.did_start_navigation_info());
   EXPECT_FALSE(observer.did_finish_navigation_info());
+}
+
+// Tests returning pending item stored in navigation context.
+TEST_P(CRWWebControllerTest, TestPendingItem) {
+  if (!web::features::StorePendingItemInContext())
+    return;
+
+  ASSERT_FALSE([web_controller() pendingItemForSessionController:nil]);
+  ASSERT_FALSE([web_controller() lastPendingItemForNewNavigation]);
+  ASSERT_FALSE(web_controller().webStateImpl->GetPendingItem());
+
+  // Create pending item by simulating a renderer-initiated navigation.
+  [navigation_delegate_ webView:mock_web_view_
+      didStartProvisionalNavigation:nil];
+
+  NavigationItemImpl* item = [web_controller() lastPendingItemForNewNavigation];
+
+  // Verify that the same item is returned by NavigationManagerDelegate,
+  // CRWSessionControllerDelegate and CRWWebController.
+  ASSERT_TRUE(item);
+  EXPECT_EQ(item, [web_controller() pendingItemForSessionController:nil]);
+  EXPECT_EQ(item, web_controller().webStateImpl->GetPendingItem());
+
+  EXPECT_EQ(kTestURLString, item->GetURL());
 }
 
 // Tests allowsBackForwardNavigationGestures default value and negating this
@@ -598,9 +623,9 @@ TEST_P(CRWWebControllerResponseTest,
 
 // Tests that webView:decidePolicyForNavigationResponse:decisionHandler: blocks
 // rendering data URLs for renderer-initiated navigations in main frame to
-// prevent abusive behavior (crbug.com/890558).
+// prevent abusive behavior (crbug.com/890558) and presents the download option.
 TEST_P(CRWWebControllerResponseTest,
-       BlockRendererInitiatedDataUrlResponseInMainFrame) {
+       DownloadRendererInitiatedDataUrlResponseInMainFrame) {
   // Simulate data:// url response with text/html MIME type.
   SetWebViewURL(@(kTestDataURL));
   NSURLResponse* response = [[NSHTTPURLResponse alloc]
@@ -613,8 +638,19 @@ TEST_P(CRWWebControllerResponseTest,
       response, /*for_main_frame=*/YES, /*can_show_mime_type=*/YES, &policy));
   EXPECT_EQ(WKNavigationResponsePolicyCancel, policy);
 
-  // Verify that download task was not created for html response.
-  ASSERT_TRUE(download_delegate_.alive_download_tasks().empty());
+  // Verify that download task was created (see crbug.com/949114).
+  ASSERT_EQ(1U, download_delegate_.alive_download_tasks().size());
+  DownloadTask* task =
+      download_delegate_.alive_download_tasks()[0].second.get();
+  ASSERT_TRUE(task);
+  EXPECT_TRUE(task->GetIndentifier());
+  EXPECT_EQ(kTestDataURL, task->GetOriginalUrl());
+  EXPECT_EQ(-1, task->GetTotalBytes());
+  EXPECT_TRUE(task->GetContentDisposition().empty());
+  EXPECT_TRUE(task->GetMimeType().empty());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      task->GetTransitionType(),
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT));
 }
 
 // Tests that webView:decidePolicyForNavigationResponse:decisionHandler: allows
@@ -700,6 +736,28 @@ TEST_P(CRWWebControllerResponseTest, DownloadWithNSHTTPURLResponse) {
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
       task->GetTransitionType(),
       ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT));
+}
+
+// Tests that webView:decidePolicyForNavigationResponse:decisionHandler:
+// discards pending URL.
+TEST_P(CRWWebControllerResponseTest, DownloadDiscardsPendingUrl) {
+  GURL url(kTestURLString);
+  AddPendingItem(url, ui::PAGE_TRANSITION_TYPED);
+
+  // Simulate download response.
+  NSURLResponse* response =
+      [[NSURLResponse alloc] initWithURL:[NSURL URLWithString:@(kTestURLString)]
+                                MIMEType:@(kTestMimeType)
+                   expectedContentLength:10
+                        textEncodingName:nil];
+  WKNavigationResponsePolicy policy = WKNavigationResponsePolicyAllow;
+  ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(
+      response, /*for_main_frame=*/YES, /*can_show_mime_type=*/NO, &policy));
+  EXPECT_EQ(WKNavigationResponsePolicyCancel, policy);
+
+  // Verify that download task was created and pending URL discarded.
+  ASSERT_EQ(1U, download_delegate_.alive_download_tasks().size());
+  EXPECT_EQ("", web_state()->GetVisibleURL());
 }
 
 // Tests that webView:decidePolicyForNavigationResponse:decisionHandler: creates

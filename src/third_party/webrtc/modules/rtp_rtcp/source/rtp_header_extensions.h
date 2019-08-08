@@ -21,7 +21,6 @@
 #include "api/video/video_frame_marking.h"
 #include "api/video/video_rotation.h"
 #include "api/video/video_timing.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 
 namespace webrtc {
@@ -258,14 +257,6 @@ class BaseRtpStringExtension {
   // String RTP header extensions are limited to 16 bytes because it is the
   // maximum length that can be encoded with one-byte header extensions.
   static constexpr uint8_t kMaxValueSizeBytes = 16;
-
-  static bool Parse(rtc::ArrayView<const uint8_t> data,
-                    StringRtpHeaderExtension* str);
-  static size_t ValueSize(const StringRtpHeaderExtension& str) {
-    return str.size();
-  }
-  static bool Write(rtc::ArrayView<uint8_t> data,
-                    const StringRtpHeaderExtension& str);
 
   static bool Parse(rtc::ArrayView<const uint8_t> data, std::string* str);
   static size_t ValueSize(const std::string& str) { return str.size(); }

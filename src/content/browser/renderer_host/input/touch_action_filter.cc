@@ -104,7 +104,7 @@ TouchActionFilter::~TouchActionFilter() {}
 
 FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
     WebGestureEvent* gesture_event) {
-  if (gesture_event->SourceDevice() != blink::kWebGestureDeviceTouchscreen)
+  if (gesture_event->SourceDevice() != blink::WebGestureDevice::kTouchscreen)
     return FilterGestureEventResult::kFilterGestureEventAllowed;
 
   if (compositor_touch_action_enabled_ && has_deferred_events_) {

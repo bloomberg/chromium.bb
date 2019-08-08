@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
@@ -103,7 +104,7 @@ void AppListMainView::ShowAppListWhenReady() {
 }
 
 void AppListMainView::ResetForShow() {
-  contents_view_->SetActiveState(ash::AppListState::kStateStart);
+  contents_view_->SetActiveState(ash::AppListState::kStateApps);
   contents_view_->GetAppsContainerView()->ResetForShowApps();
   // We clear the search when hiding so when app list appears it is not showing
   // search results.
@@ -163,9 +164,8 @@ void AppListMainView::ActivateApp(AppListItem* item, int event_flags) {
                               kFullscreenAppListFolders, kMaxFolderOpened);
   } else {
     base::RecordAction(base::UserMetricsAction("AppList_ClickOnApp"));
-    delegate_->ActivateItem(item->id(), event_flags);
-    UMA_HISTOGRAM_BOOLEAN(kAppListAppLaunchedFullscreen,
-                          false /*not a suggested app*/);
+    delegate_->ActivateItem(item->id(), event_flags,
+                            ash::mojom::AppListLaunchedFrom::kLaunchedFromGrid);
   }
 }
 

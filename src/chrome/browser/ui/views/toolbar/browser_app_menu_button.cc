@@ -13,8 +13,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "cc/paint/paint_flags.h"
-#include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -30,7 +28,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/theme_provider.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -38,7 +35,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_mask.h"
@@ -218,7 +214,7 @@ void BrowserAppMenuButton::SetPromoFeature(
 }
 #endif
 
-void BrowserAppMenuButton::ShowMenu(bool for_drop) {
+void BrowserAppMenuButton::ShowMenu(int run_types) {
   if (IsMenuShowing())
     return;
 
@@ -234,13 +230,13 @@ void BrowserAppMenuButton::ShowMenu(bool for_drop) {
   alert_reopen_tab_items = promo_feature_ == InProductHelpFeature::kReopenTab;
 #endif
   base::TimeTicks menu_open_time = base::TimeTicks::Now();
+
   RunMenu(
       std::make_unique<AppMenuModel>(toolbar_view_, browser,
                                      toolbar_view_->app_menu_icon_controller()),
-      browser, for_drop ? AppMenu::FOR_DROP : AppMenu::NO_FLAGS,
-      alert_reopen_tab_items);
+      browser, run_types, alert_reopen_tab_items);
 
-  if (!for_drop) {
+  if (!(run_types & views::MenuRunner::FOR_DROP)) {
     // Record the time-to-action for the menu. We don't record in the case of a
     // drag-and-drop command because menus opened for drag-and-drop don't block
     // the message loop.
@@ -254,52 +250,10 @@ void BrowserAppMenuButton::OnThemeChanged() {
 }
 
 void BrowserAppMenuButton::UpdateIcon() {
-  SkColor severity_color = gfx::kPlaceholderColor;
-
-  const ui::NativeTheme* native_theme = GetNativeTheme();
-  switch (type_and_severity_.severity) {
-    case AppMenuIconController::Severity::NONE:
-      severity_color = GetThemeProvider()->GetColor(
-          ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-      if (promo_feature_)
-        severity_color = GetPromoHighlightColor();
-#endif
-      break;
-    case AppMenuIconController::Severity::LOW:
-      severity_color = native_theme->GetSystemColor(
-          ui::NativeTheme::kColorId_AlertSeverityLow);
-      break;
-    case AppMenuIconController::Severity::MEDIUM:
-      severity_color = native_theme->GetSystemColor(
-          ui::NativeTheme::kColorId_AlertSeverityMedium);
-      break;
-    case AppMenuIconController::Severity::HIGH:
-      severity_color = native_theme->GetSystemColor(
-          ui::NativeTheme::kColorId_AlertSeverityHigh);
-      break;
-  }
-
-  const bool touch_ui = ui::MaterialDesignController::touch_ui();
-  const gfx::VectorIcon* icon_id = nullptr;
-  switch (type_and_severity_.type) {
-    case AppMenuIconController::IconType::NONE:
-      icon_id = touch_ui ? &kBrowserToolsTouchIcon : &kBrowserToolsIcon;
-      DCHECK_EQ(AppMenuIconController::Severity::NONE,
-                type_and_severity_.severity);
-      break;
-    case AppMenuIconController::IconType::UPGRADE_NOTIFICATION:
-      icon_id =
-          touch_ui ? &kBrowserToolsUpdateTouchIcon : &kBrowserToolsUpdateIcon;
-      break;
-    case AppMenuIconController::IconType::GLOBAL_ERROR:
-      icon_id =
-          touch_ui ? &kBrowserToolsErrorTouchIcon : &kBrowserToolsErrorIcon;
-      break;
-  }
-
-  SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(*icon_id, severity_color));
+  SetImage(
+      views::Button::STATE_NORMAL,
+      toolbar_view_->app_menu_icon_controller()->GetIconImage(
+          ui::MaterialDesignController::touch_ui(), GetPromoHighlightColor()));
 }
 
 void BrowserAppMenuButton::SetTrailingMargin(int margin) {
@@ -328,14 +282,18 @@ void BrowserAppMenuButton::UpdateBorder() {
     SetBorder(views::CreateEmptyBorder(new_insets));
 }
 
+base::Optional<SkColor> BrowserAppMenuButton::GetPromoHighlightColor() const {
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-SkColor BrowserAppMenuButton::GetPromoHighlightColor() const {
-  return ToolbarButton::AdjustHighlightColorForContrast(
-      GetThemeProvider(), kFeaturePromoHighlightDarkColor,
-      kFeaturePromoHighlightLightColor, kFeaturePromoHighlightDarkExtremeColor,
-      kFeaturePromoHighlightLightExtremeColor);
-}
+  if (promo_feature_) {
+    return ToolbarButton::AdjustHighlightColorForContrast(
+        GetThemeProvider(), kFeaturePromoHighlightDarkColor,
+        kFeaturePromoHighlightLightColor,
+        kFeaturePromoHighlightDarkExtremeColor,
+        kFeaturePromoHighlightLightExtremeColor);
+  }
 #endif
+  return base::nullopt;
+}
 
 gfx::Rect BrowserAppMenuButton::GetAnchorBoundsInScreen() const {
   gfx::Rect bounds = GetBoundsInScreen();
@@ -370,14 +328,18 @@ bool BrowserAppMenuButton::CanDrop(const ui::OSExchangeData& data) {
 
 void BrowserAppMenuButton::OnDragEntered(const ui::DropTargetEvent& event) {
   DCHECK(!weak_factory_.HasWeakPtrs());
+  int run_types = views::MenuRunner::FOR_DROP;
+  if (event.IsKeyEvent())
+    run_types |= views::MenuRunner::SHOULD_SHOW_MNEMONICS;
+
   if (!g_open_app_immediately_for_testing) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&BrowserAppMenuButton::ShowMenu,
-                       weak_factory_.GetWeakPtr(), true),
+                       weak_factory_.GetWeakPtr(), run_types),
         base::TimeDelta::FromMilliseconds(views::GetMenuShowDelay()));
   } else {
-    ShowMenu(true);
+    ShowMenu(run_types);
   }
 }
 
@@ -419,9 +381,17 @@ std::unique_ptr<views::InkDropMask> BrowserAppMenuButton::CreateInkDropMask()
 }
 
 SkColor BrowserAppMenuButton::GetInkDropBaseColor() const {
+  auto promo_highlight_color = GetPromoHighlightColor();
+  return promo_highlight_color ? promo_highlight_color.value()
+                               : AppMenuButton::GetInkDropBaseColor();
+}
+
+base::string16 BrowserAppMenuButton::GetTooltipText(const gfx::Point& p) const {
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+  // Suppress tooltip when IPH is showing.
   if (promo_feature_)
-    return GetPromoHighlightColor();
-#endif
-  return AppMenuButton::GetInkDropBaseColor();
+    return base::string16();
+#endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+
+  return AppMenuButton::GetTooltipText(p);
 }

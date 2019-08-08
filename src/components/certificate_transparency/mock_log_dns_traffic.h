@@ -46,7 +46,7 @@ namespace certificate_transparency {
 //     "123456");
 //
 // LogDnsClient log_client(mock_dns.CreateDnsClient(), ...);
-// log_client.QueryAuditProof("ct.test", ..., base::Bind(...));
+// log_client.QueryAuditProof("ct.test", ..., base::BindOnce(...));
 class MockLogDnsTraffic {
  public:
   MockLogDnsTraffic();

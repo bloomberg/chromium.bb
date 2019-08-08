@@ -39,8 +39,10 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_metadata.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_transaction.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -67,36 +69,31 @@ class MODULES_EXPORT IDBTransaction final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IDBTransaction* CreateObserver(ExecutionContext*,
-                                        int64_t,
-                                        const HashSet<String>& scope,
-                                        IDBDatabase*);
-
-  static IDBTransaction* CreateNonVersionChange(ScriptState*,
-                                                int64_t,
-                                                const HashSet<String>& scope,
-                                                mojom::IDBTransactionMode,
-                                                IDBDatabase*);
+  static IDBTransaction* CreateNonVersionChange(
+      ScriptState* script_state,
+      std::unique_ptr<WebIDBTransaction> transaction_backend,
+      int64_t transaction_id,
+      const HashSet<String>& scope,
+      mojom::IDBTransactionMode,
+      IDBDatabase* database);
   static IDBTransaction* CreateVersionChange(
       ExecutionContext*,
-      int64_t,
+      std::unique_ptr<WebIDBTransaction> transaction_backend,
+      int64_t transaction_id,
       IDBDatabase*,
       IDBOpenDBRequest*,
       const IDBDatabaseMetadata& old_metadata);
 
-  // For observer transactions.
-  IDBTransaction(ExecutionContext*,
-                 int64_t,
-                 const HashSet<String>& scope,
-                 IDBDatabase*);
   // For non-upgrade transactions.
   IDBTransaction(ScriptState*,
+                 std::unique_ptr<WebIDBTransaction> transaction_backend,
                  int64_t,
                  const HashSet<String>& scope,
                  mojom::IDBTransactionMode,
                  IDBDatabase*);
   // For upgrade transactions.
   IDBTransaction(ExecutionContext*,
+                 std::unique_ptr<WebIDBTransaction> transaction_backend,
                  int64_t,
                  IDBDatabase*,
                  IDBOpenDBRequest*,
@@ -184,6 +181,10 @@ class MODULES_EXPORT IDBTransaction final
   // depending on whether the transaction is just inactive or has finished.
   const char* InactiveErrorMessage() const;
 
+  WebIDBTransaction* transaction_backend() {
+    return transaction_backend_.get();
+  }
+
  protected:
   // EventTarget
   DispatchEventResult DispatchEventInternal(Event&) override;
@@ -207,6 +208,7 @@ class MODULES_EXPORT IDBTransaction final
     kFinished,   // No more events will fire and no new requests may be filed.
   };
 
+  std::unique_ptr<WebIDBTransaction> transaction_backend_;
   const int64_t id_;
   Member<IDBDatabase> database_;
   Member<IDBOpenDBRequest> open_db_request_;
@@ -289,6 +291,9 @@ class MODULES_EXPORT IDBTransaction final
   IDBDatabaseMetadata old_database_metadata_;
 
   Member<EventQueue> event_queue_;
+
+  FrameScheduler::SchedulingAffectingFeatureHandle
+      feature_handle_for_scheduler_;
 };
 
 }  // namespace blink

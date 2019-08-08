@@ -34,7 +34,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.MemoryPressureListener;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.memory.MemoryPressureCallback;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterProvider;
@@ -83,6 +82,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.KeyUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -237,6 +237,7 @@ public class NewTabPageTest {
         mRenderTestRule.render(mNtp.getSignInPromoViewForTesting(), "sign_in_promo");
     }
 
+    @DisabledTest(message = "https://crbug.com/945293")
     @Test
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage", "RenderTest"})
@@ -308,6 +309,9 @@ public class NewTabPageTest {
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testFocusFakebox(boolean interestFeedEnabled) {
+        // TODO(https://crbug.com/944061): Re-enable tablet test on interest feed enabled.
+        if (interestFeedEnabled && mActivityTestRule.getActivity().isTablet()) return;
+
         int initialFakeboxTop = getFakeboxTop(mNtp);
 
         TouchCommon.singleClickView(mFakebox);
@@ -332,6 +336,9 @@ public class NewTabPageTest {
     @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/593007")
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testSearchFromFakebox(boolean interestFeedEnabled) throws InterruptedException {
+        // TODO(https://crbug.com/944061): Re-enable tablet test on interest feed enabled.
+        if (interestFeedEnabled && mActivityTestRule.getActivity().isTablet()) return;
+
         TouchCommon.singleClickView(mFakebox);
         waitForFakeboxFocusAnimationComplete(mNtp);
         final UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
@@ -393,6 +400,9 @@ public class NewTabPageTest {
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testOpenMostVisitedItemInIncognitoTab(boolean interestFeedEnabled)
             throws InterruptedException, ExecutionException {
+        // TODO(https://crbug.com/944061): Re-enable tablet test on interest feed enabled.
+        if (interestFeedEnabled && mActivityTestRule.getActivity().isTablet()) return;
+
         ChromeTabUtils.invokeContextMenuAndOpenInANewTab(mActivityTestRule,
                 mTileGridLayout.getChildAt(0),
                 ContextMenuManager.ContextMenuItemId.OPEN_IN_INCOGNITO_TAB, true,
@@ -407,6 +417,9 @@ public class NewTabPageTest {
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testRemoveMostVisitedItem(boolean interestFeedEnabled) throws ExecutionException {
+        // TODO(https://crbug.com/944061): Re-enable tablet test on interest feed enabled.
+        if (interestFeedEnabled && mActivityTestRule.getActivity().isTablet()) return;
+
         SiteSuggestion testSite = mSiteSuggestions.get(0);
         View mostVisitedItem = mTileGridLayout.getChildAt(0);
         ArrayList<View> views = new ArrayList<>();
@@ -427,20 +440,18 @@ public class NewTabPageTest {
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testUrlFocusAnimationsDisabledOnLoad(boolean interestFeedEnabled)
             throws InterruptedException {
+        // TODO(https://crbug.com/944061): Re-enable tablet test on interest feed enabled.
+        if (interestFeedEnabled && mActivityTestRule.getActivity().isTablet()) return;
+
         Assert.assertFalse(getUrlFocusAnimationsDisabled());
         ChromeTabUtils.waitForTabPageLoaded(mTab, mTestServer.getURL(TEST_PAGE), new Runnable() {
             @Override
             public void run() {
-                ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                    @Override
-                    public void run() {
-                        int pageTransition =
-                                PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR;
-                        mTab.loadUrl(new LoadUrlParams(mTestServer.getURL(TEST_PAGE),
-                                pageTransition));
-                        // It should be disabled as soon as a load URL is triggered.
-                        Assert.assertTrue(getUrlFocusAnimationsDisabled());
-                    }
+                TestThreadUtils.runOnUiThreadBlocking(() -> {
+                    int pageTransition = PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR;
+                    mTab.loadUrl(new LoadUrlParams(mTestServer.getURL(TEST_PAGE), pageTransition));
+                    // It should be disabled as soon as a load URL is triggered.
+                    Assert.assertTrue(getUrlFocusAnimationsDisabled());
                 });
             }
         });
@@ -454,6 +465,9 @@ public class NewTabPageTest {
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testUrlFocusAnimationsEnabledOnFailedLoad(boolean interestFeedEnabled)
             throws Exception {
+        // TODO(https://crbug.com/944061): Re-enable tablet test on interest feed enabled.
+        if (interestFeedEnabled && mActivityTestRule.getActivity().isTablet()) return;
+
         // TODO(jbudorick): switch this to EmbeddedTestServer.
         TestWebServer webServer = TestWebServer.start();
         try {
@@ -499,12 +513,7 @@ public class NewTabPageTest {
             waitForUrlFocusAnimationsDisabledState(true);
             waitForTabLoading();
 
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    mTab.stopLoading();
-                }
-            });
+            TestThreadUtils.runOnUiThreadBlocking(() -> { mTab.stopLoading(); });
             waitForUrlFocusAnimationsDisabledState(false);
             delaySemaphore.release();
             loadedCallback.waitForCallback(0);
@@ -522,6 +531,9 @@ public class NewTabPageTest {
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testSetSearchProviderInfo(boolean interestFeedEnabled) throws Throwable {
+        // TODO(https://crbug.com/944061): Re-enable tablet test on interest feed enabled.
+        if (interestFeedEnabled && mActivityTestRule.getActivity().isTablet()) return;
+
         mActivityTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -558,17 +570,14 @@ public class NewTabPageTest {
 
         // When the search provider has no logo and there are no tile suggestions, the placeholder
         // is shown.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ntpLayout.setSearchProviderInfo(/* hasLogo = */ false, /* isGoogle */ true);
-                Assert.assertEquals(View.GONE, logoView.getVisibility());
-                Assert.assertEquals(View.GONE, searchBoxView.getVisibility());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ntpLayout.setSearchProviderInfo(/* hasLogo = */ false, /* isGoogle */ true);
+            Assert.assertEquals(View.GONE, logoView.getVisibility());
+            Assert.assertEquals(View.GONE, searchBoxView.getVisibility());
 
-                mMostVisitedSites.setTileSuggestions(new String[] {});
+            mMostVisitedSites.setTileSuggestions(new String[] {});
 
-                ntpLayout.getTileGroup().onSwitchToForeground(false); // Force tile refresh.
-            }
+            ntpLayout.getTileGroup().onSwitchToForeground(false); // Force tile refresh.
         });
         CriteriaHelper.pollUiThread(new Criteria("The tile grid was not updated.") {
             @Override
@@ -581,14 +590,11 @@ public class NewTabPageTest {
 
         // Once the search provider has a logo again, the logo and search box are shown again and
         // the placeholder is hidden.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ntpLayout.setSearchProviderInfo(/* hasLogo = */ true, /* isGoogle */ true);
-                Assert.assertEquals(View.VISIBLE, logoView.getVisibility());
-                Assert.assertEquals(View.VISIBLE, searchBoxView.getVisibility());
-                Assert.assertEquals(View.GONE, ntpLayout.getPlaceholder().getVisibility());
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ntpLayout.setSearchProviderInfo(/* hasLogo = */ true, /* isGoogle */ true);
+            Assert.assertEquals(View.VISIBLE, logoView.getVisibility());
+            Assert.assertEquals(View.VISIBLE, searchBoxView.getVisibility());
+            Assert.assertEquals(View.GONE, ntpLayout.getPlaceholder().getVisibility());
         });
     }
 
@@ -673,19 +679,22 @@ public class NewTabPageTest {
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testMemoryPressure(boolean interestFeedEnabled) throws Exception {
+        // TODO(https://crbug.com/944061): Re-enable tablet test on interest feed enabled.
+        if (interestFeedEnabled && mActivityTestRule.getActivity().isTablet()) return;
+
         // TODO(twellington): This test currently just checks that sending a memory pressure
         // signal doesn't crash. Enhance the test to also check whether certain behaviors are
         // performed.
         CallbackHelper callback = new CallbackHelper();
         MemoryPressureCallback pressureCallback = pressure -> callback.notifyCalled();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             MemoryPressureListener.addCallback(pressureCallback);
             mActivityTestRule.getActivity().getApplication().onTrimMemory(
                     ComponentCallbacks2.TRIM_MEMORY_MODERATE);
         });
 
         callback.waitForCallback(0);
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> MemoryPressureListener.removeCallback(pressureCallback));
     }
 
@@ -701,7 +710,7 @@ public class NewTabPageTest {
     }
 
     private boolean getUrlFocusAnimationsDisabled() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return mNtp.getNewTabPageLayout().urlFocusAnimationsDisabled();
@@ -749,7 +758,7 @@ public class NewTabPageTest {
      * @return The position of the top of the fakebox relative to the window.
      */
     private int getFakeboxTop(final NewTabPage ntp) {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
             @Override
             public Integer call() {
                 final View fakebox = ntp.getView().findViewById(R.id.search_box);
@@ -781,7 +790,7 @@ public class NewTabPageTest {
     }
 
     private boolean getPreferenceForExpandableHeader() throws Exception {
-        return ThreadUtils.runOnUiThreadBlocking(
+        return TestThreadUtils.runOnUiThreadBlocking(
                 () -> PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE));
     }
 }

@@ -94,14 +94,15 @@ CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
 
 #if defined(OS_CHROMEOS)
   // ChromeOS has no real notion of signin, so just plumb the information
-  // through (note: supply an empty string as the refresh token so that no
-  // refresh token is set).
-  identity_manager->SetPrimaryAccountSynchronously(gaia_id, email,
-                                                   /*refresh_token=*/"");
+  // through. TODO(https://crbug.com/814787): What is the right long-term
+  // solution here? Tests shouldn't need to call legacy APIs, so either the
+  // need for this test flow should be eliminated or there should be a
+  // test-only API.
+  identity_manager->LegacySetPrimaryAccount(gaia_id, email);
 #else
   SigninManager* real_signin_manager =
       SigninManager::FromSigninManagerBase(signin_manager);
-  real_signin_manager->OnExternalSigninCompleted(email);
+  real_signin_manager->SignIn(email);
 #endif
 
   DCHECK(signin_manager->IsAuthenticated());
@@ -324,6 +325,29 @@ void DisableInteractionWithSystemAccounts() {
 
 void CancelAllOngoingGaiaCookieOperations(IdentityManager* identity_manager) {
   identity_manager->GetGaiaCookieManagerService()->CancelAll();
+}
+
+void SimulateSuccessfulFetchOfAccountInfo(IdentityManager* identity_manager,
+                                          const std::string& account_id,
+                                          const std::string& email,
+                                          const std::string& gaia,
+                                          const std::string& hosted_domain,
+                                          const std::string& full_name,
+                                          const std::string& given_name,
+                                          const std::string& locale,
+                                          const std::string& picture_url) {
+  base::DictionaryValue user_info;
+  user_info.SetString("id", gaia);
+  user_info.SetString("email", email);
+  user_info.SetString("hd", hosted_domain);
+  user_info.SetString("name", full_name);
+  user_info.SetString("given_name", given_name);
+  user_info.SetString("locale", locale);
+  user_info.SetString("picture", picture_url);
+
+  AccountTrackerService* account_tracker_service =
+      identity_manager->GetAccountTrackerService();
+  account_tracker_service->SetAccountInfoFromUserInfo(account_id, &user_info);
 }
 
 }  // namespace identity

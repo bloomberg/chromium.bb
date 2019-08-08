@@ -14,7 +14,6 @@ import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 
 import org.chromium.base.ActivityState;
@@ -25,6 +24,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
 import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -44,7 +44,7 @@ public class RecentTabsPage
     private final ChromeFullscreenManager mFullscreenManager;
     private final ExpandableListView mListView;
     private final String mTitle;
-    private final ViewGroup mView;
+    private final HistoryNavigationLayout mView;
 
     private RecentTabsManager mRecentTabsManager;
     private RecentTabsRowAdapter mAdapter;
@@ -86,7 +86,7 @@ public class RecentTabsPage
         mTitle = resources.getString(R.string.recent_tabs);
         mRecentTabsManager.setUpdatedCallback(this);
         LayoutInflater inflater = LayoutInflater.from(activity);
-        mView = (ViewGroup) inflater.inflate(R.layout.recent_tabs_page, null);
+        mView = (HistoryNavigationLayout) inflater.inflate(R.layout.recent_tabs_page, null);
         mListView = (ExpandableListView) mView.findViewById(R.id.odp_listview);
         mAdapter = new RecentTabsRowAdapter(activity, recentTabsManager);
         mListView.setAdapter(mAdapter);
@@ -108,6 +108,7 @@ public class RecentTabsPage
             mFullscreenManager = null;
         }
 
+        mView.setTab(recentTabsManager.activeTab());
         onUpdated();
     }
 

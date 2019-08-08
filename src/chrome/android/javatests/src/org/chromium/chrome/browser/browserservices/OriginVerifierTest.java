@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -30,6 +29,7 @@ import org.chromium.chrome.browser.preferences.privacy.BrowsingDataBridge;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -115,8 +115,7 @@ public class OriginVerifierTest {
                 mVerificationResultSemaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         Assert.assertFalse(mLastVerified);
         PostTask.postTask(UiThreadTaskTraits.DEFAULT,
-                ()
-                        -> mHandleAllUrlsVerifier.start(
+                () -> mHandleAllUrlsVerifier.start(
                                 new TestOriginVerificationListener(), mHttpOrigin));
         Assert.assertTrue(
                 mVerificationResultSemaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -127,22 +126,20 @@ public class OriginVerifierTest {
     @SmallTest
     public void testMultipleRelationships() throws Exception {
         PostTask.postTask(UiThreadTaskTraits.DEFAULT,
-                ()
-                        -> OriginVerifier.addVerificationOverride(PACKAGE_NAME, mHttpsOrigin,
+                () -> OriginVerifier.addVerificationOverride(PACKAGE_NAME, mHttpsOrigin,
                                 CustomTabsService.RELATION_USE_AS_ORIGIN));
         PostTask.postTask(UiThreadTaskTraits.DEFAULT,
-                ()
-                        -> mUseAsOriginVerifier.start(
+                () -> mUseAsOriginVerifier.start(
                                 new TestOriginVerificationListener(), mHttpsOrigin));
         Assert.assertTrue(
                 mVerificationResultSemaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         Assert.assertTrue(mLastVerified);
-        Assert.assertTrue(ThreadUtils.runOnUiThreadBlocking(
+        Assert.assertTrue(TestThreadUtils.runOnUiThreadBlocking(
                 () -> OriginVerifier.wasPreviouslyVerified(PACKAGE_NAME, mHttpsOrigin,
-                        CustomTabsService.RELATION_USE_AS_ORIGIN)));
-        Assert.assertFalse(ThreadUtils.runOnUiThreadBlocking(
+                                CustomTabsService.RELATION_USE_AS_ORIGIN)));
+        Assert.assertFalse(TestThreadUtils.runOnUiThreadBlocking(
                 () -> OriginVerifier.wasPreviouslyVerified(PACKAGE_NAME, mHttpsOrigin,
-                        CustomTabsService.RELATION_HANDLE_ALL_URLS)));
+                                CustomTabsService.RELATION_HANDLE_ALL_URLS)));
         Assert.assertEquals(mLastPackageName, PACKAGE_NAME);
         Assert.assertEquals(mLastOrigin, mHttpsOrigin);
     }
@@ -161,7 +158,7 @@ public class OriginVerifierTest {
         preferences.setVerifiedDigitalAssetLinks(savedLinks);
         Assert.assertTrue(preferences.getVerifiedDigitalAssetLinks().contains(relationship));
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             BrowsingDataBridge.getInstance().clearBrowsingData(callbackHelper::notifyCalled,
                     new int[] {BrowsingDataType.HISTORY}, TimePeriod.ALL_TIME);
         });

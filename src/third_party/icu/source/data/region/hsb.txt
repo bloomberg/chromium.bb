@@ -181,7 +181,7 @@ hsb{
         MF{"St. Martin"}
         MG{"Madagaskar"}
         MH{"Marshallowe kupy"}
-        MK{"Makedonska (FYROM)"}
+        MK{"Makedonska"}
         ML{"Mali"}
         MM{"Myanmar"}
         MN{"Mongolska"}
@@ -300,7 +300,8 @@ hsb{
         CD{"Kongo (Demokratiska republika)"}
         CG{"Kongo (Republika)"}
         CI{"Słonowinowy pobrjóh"}
+        MK{"Makedonska (FYROM)"}
         TL{"Wuchodny Timor"}
     }
-    Version{"2.1.41.34"}
+    Version{"2.1.47.82"}
 }

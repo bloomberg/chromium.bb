@@ -31,8 +31,7 @@
 class ReferrerPolicyTest : public InProcessBrowserTest {
  public:
   ReferrerPolicyTest() : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    https_server_.AddDefaultHandlers(
-        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+    https_server_.AddDefaultHandlers(GetChromeTestDataDir());
     EXPECT_TRUE(embedded_test_server()->Start());
     EXPECT_TRUE(https_server_.Start());
   }

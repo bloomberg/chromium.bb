@@ -8,6 +8,7 @@
 <translation id="1664224225747386870">Нічого не записано</translation>
 <translation id="1862930711583847113">Не вдається експортувати файл "<ph name="FILE" />"</translation>
 <translation id="2036868001356139588">Тривалість таймера</translation>
+<translation id="2050339315714019657">Портретна</translation>
 <translation id="2064538373111010176">Опція "<ph name="CAMERA" />" активна</translation>
 <translation id="229579744168541441">Експортувати на диск</translation>
 <translation id="2501278716633472235">Назад</translation>
@@ -20,14 +21,19 @@
 <translation id="3081586908890909590">Перейти в режим запису відео</translation>
 <translation id="3183731565330012717">Тип сітки</translation>
 <translation id="3227137524299004712">Мікрофон</translation>
+<translation id="3517926952904427380">Не вдалося зробити портретне фото</translation>
 <translation id="3569311554794739032">Видалити файл "<ph name="FILE" />"?</translation>
+<translation id="3810838688059735925">Відео</translation>
 <translation id="4279490309300973883">Дзеркальне відображення</translation>
+<translation id="4329152592498422850">Перейти в режим квадратного фото</translation>
 <translation id="4445542136948522167">Припинити фотографувати</translation>
+<translation id="4628948037717959914">Фотографія</translation>
 <translation id="4649291346448517080">Не вдається зберегти файл</translation>
 <translation id="4890010094662541459">3 x 3</translation>
 <translation id="5057360777601936059">Камера зараз недоступна.
         Перевірте, чи правильно її під’єднано.</translation>
 <translation id="5152121255775685072">Перейти в галерею</translation>
+<translation id="5671277269877808209">Квадрат</translation>
 <translation id="5869546221129391014">Сітка</translation>
 <translation id="6073451960410192870">Припинити запис</translation>
 <translation id="6233780560267770709">3 на 3</translation>
@@ -46,6 +52,7 @@
 <translation id="8145038249676204903">Перейти в режим фотозйомки</translation>
 <translation id="8261506727792406068">Видалити</translation>
 <translation id="8428213095426709021">Налаштування</translation>
+<translation id="8815966864175525708">Перейти в режим портретного фото</translation>
 <translation id="8870695351537079478">Не вдалося почати запис</translation>
 <translation id="9045155556724273246">10 секунд</translation>
 <translation id="945522503751344254">Надіслати відгук</translation>

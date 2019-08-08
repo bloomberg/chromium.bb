@@ -23,7 +23,7 @@ class TestCookieManager : public network::mojom::CookieManager {
 
   void SetCanonicalCookie(const net::CanonicalCookie& cookie,
                           const std::string& source_scheme,
-                          bool modify_http_only,
+                          const net::CookieOptions& cookie_options,
                           SetCanonicalCookieCallback callback) override;
   void GetAllCookies(GetAllCookiesCallback callback) override {}
   void GetCookieList(const GURL& url,
@@ -42,6 +42,9 @@ class TestCookieManager : public network::mojom::CookieManager {
   void CloneInterface(
       network::mojom::CookieManagerRequest new_interface) override {}
   void FlushCookieStore(FlushCookieStoreCallback callback) override {}
+  void AllowFileSchemeCookies(
+      bool allow,
+      AllowFileSchemeCookiesCallback callback) override {}
   void SetContentSettings(
       const std::vector<::ContentSettingPatternSource>& settings) override {}
   void SetForceKeepSessionState() override {}

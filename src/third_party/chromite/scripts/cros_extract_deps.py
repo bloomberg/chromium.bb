@@ -243,8 +243,46 @@ def ParseArgs(argv):
   return opts
 
 
+def FilterObsoleteDeps(package_deps):
+  """Remove all the packages that are to be uninstalled from |package_deps|.
+
+  Returns:
+    None since this method mutates |package_deps| directly.
+  """
+  obsolete_package_deps = []
+  for k, v in package_deps.iteritems():
+    if v['action'] in ('merge', 'nomerge'):
+      continue
+    elif v['action'] == 'uninstall':
+      obsolete_package_deps.append(k)
+    else:
+      assert False, (
+          'Unrecognized action. Package dep data: %s' % v)
+  for p in obsolete_package_deps:
+    del package_deps[p]
+
+
 def ExtractDeps(sysroot, package_list, formatting='deps'):
-  """Returns the set of dependencies for the packages in package_list"""
+  """Returns the set of dependencies for the packages in package_list.
+
+  For calculating dependencies graph, this should only consider packages
+  that are DEPENDS or RDEPENDS. Essentially, this should answer the question
+  "which are all the packages which changing them may change the execution
+  of any binaries produced by packages in |package_list|."
+
+  Args:
+    sysroot: the path (string) to the root directory into which the package is
+      pretend to be merged. This value is also used for setting
+      PORTAGE_CONFIGROOT.
+    package_list: the list of packages (CP string) to extract their dependencies
+      from.
+    formatting: can either be 'deps' or 'cpe'. For 'deps', see the return
+      format in docstring of FlattenDepTree, for 'cpe', see the return format in
+      docstring of GenerateCPEList.
+
+  Returns:
+    A JSON-izable object that either follows 'deps' or 'cpe' format.
+  """
   lib_argv = ['--quiet', '--pretend', '--emptytree']
   lib_argv += ['--sysroot=%s' % sysroot]
   lib_argv.extend(package_list)
@@ -253,6 +291,14 @@ def ExtractDeps(sysroot, package_list, formatting='deps'):
   deps.Initialize(lib_argv)
   deps_tree, _deps_info = deps.GenDependencyTree()
   flattened_deps = FlattenDepTree(deps_tree, get_cpe=(formatting == 'cpe'))
+
+  # Workaround: since emerge doesn't honor the --emptytree flag, for now we need
+  # to manually filter out packages that are obsolete (meant to be
+  # uninstalled by emerge)
+  # TODO(crbug.com/938605): remove this work around once
+  # https://bugs.gentoo.org/681308 is addressed.
+  FilterObsoleteDeps(flattened_deps)
+
   if formatting == 'cpe':
     flattened_deps = GenerateCPEList(flattened_deps, sysroot)
   return flattened_deps

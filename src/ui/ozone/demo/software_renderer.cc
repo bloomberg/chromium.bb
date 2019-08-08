@@ -4,12 +4,16 @@
 
 #include "ui/ozone/demo/software_renderer.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/platform_window_surface.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
@@ -20,12 +24,14 @@ const int kFrameDelayMilliseconds = 16;
 
 }  // namespace
 
-SoftwareRenderer::SoftwareRenderer(gfx::AcceleratedWidget widget,
-                                   const gfx::Size& size)
+SoftwareRenderer::SoftwareRenderer(
+    gfx::AcceleratedWidget widget,
+    std::unique_ptr<PlatformWindowSurface> window_surface,
+    const gfx::Size& size)
     : RendererBase(widget, size),
+      window_surface_(std::move(window_surface)),
       vsync_period_(base::TimeDelta::FromMilliseconds(kFrameDelayMilliseconds)),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 SoftwareRenderer::~SoftwareRenderer() {
 }

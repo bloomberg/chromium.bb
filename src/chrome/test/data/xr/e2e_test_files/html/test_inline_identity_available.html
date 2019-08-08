@@ -33,7 +33,7 @@ identity reference space
       navigator.xr.supportsSessionMode('inline')
       .then(()=> {
         step = "requestSession";
-        return navigator.xr.requestSession();
+        return navigator.xr.requestSession('inline');
       })
       .then((xrSession) => {
         session = xrSession;

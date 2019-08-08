@@ -22,7 +22,6 @@
 #include "api/video/video_frame.h"
 #include "api/video_codecs/video_codec.h"
 #include "api/video_codecs/video_encoder.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "modules/video_coding/include/video_codec_interface.h"
 
 namespace webrtc {
@@ -38,16 +37,14 @@ class ConfigurableFrameSizeEncoder : public VideoEncoder {
                      size_t max_payload_size) override;
 
   int32_t Encode(const VideoFrame& input_image,
-                 const CodecSpecificInfo* codec_specific_info,
-                 const std::vector<FrameType>* frame_types) override;
+                 const std::vector<VideoFrameType>* frame_types) override;
 
   int32_t RegisterEncodeCompleteCallback(
       EncodedImageCallback* callback) override;
 
   int32_t Release() override;
 
-  int32_t SetRateAllocation(const VideoBitrateAllocation& allocation,
-                            uint32_t framerate) override;
+  void SetRates(const RateControlParameters& parameters) override;
 
   int32_t SetFrameSize(size_t size);
 

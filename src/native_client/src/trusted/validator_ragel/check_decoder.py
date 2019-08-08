@@ -8,6 +8,8 @@ Generate all acceptable sequences from acyclic DFA, run objdump and
 decoder on them and compare results.
 """
 
+from __future__ import print_function
+
 import itertools
 import multiprocessing
 import optparse
@@ -108,8 +110,8 @@ class WorkerState(object):
           fillvalue=None):
 
         if not LineRoughlyEqual(line1, line2):
-          print 'objdump: %r' % line1
-          print 'decoder: %r' % line2
+          print('objdump: %r' % line1)
+          print('decoder: %r' % line2)
           raise AssertionError('%r != %r' % (line1, line2))
 
       return_code = objdump_proc.wait()
@@ -187,10 +189,10 @@ def main():
   total_instructions = sum(
       num_suffixes[t.to_state]
       for t in dfa.initial_state.forward_transitions.values())
-  print total_instructions, 'instructions total'
+  print(total_instructions, 'instructions total')
 
   tasks = dfa_traversal.CreateTraversalTasks(dfa.states, dfa.initial_state)
-  print len(tasks), 'tasks'
+  print(len(tasks), 'tasks')
 
   pool = multiprocessing.Pool()
 
@@ -198,10 +200,10 @@ def main():
 
   total = 0
   for prefix, count in results:
-    print ', '.join(map(hex, prefix))
+    print(', '.join(map(hex, prefix)))
     total += count
 
-  print total, 'instructions were processed'
+  print(total, 'instructions were processed')
 
 
 if __name__ == '__main__':

@@ -30,9 +30,8 @@
 // https://html.spec.whatwg.org/C/#globaleventhandlers
 
 [
-    LegacyTreatAsPartialInterface,
-    NoInterfaceObject // Always used on target of 'implements'
-] interface GlobalEventHandlers {
+    LegacyTreatAsPartialInterface
+] interface mixin GlobalEventHandlers {
     attribute EventHandler onabort;
     [RuntimeEnabled=InvisibleDOM] attribute EventHandler onactivateinvisible;
     [RuntimeEnabled=DisplayLocking] attribute EventHandler onbeforeactivate;
@@ -121,10 +120,10 @@
 
     // Touch Events
     // https://w3c.github.io/touch-events/#extensions-to-the-globaleventhandlers-interface
-    [OriginTrialEnabled=TouchEventFeatureDetection] attribute EventHandler ontouchcancel;
-    [OriginTrialEnabled=TouchEventFeatureDetection] attribute EventHandler ontouchend;
-    [OriginTrialEnabled=TouchEventFeatureDetection] attribute EventHandler ontouchmove;
-    [OriginTrialEnabled=TouchEventFeatureDetection] attribute EventHandler ontouchstart;
+    [RuntimeEnabled=TouchEventFeatureDetection] attribute EventHandler ontouchcancel;
+    [RuntimeEnabled=TouchEventFeatureDetection] attribute EventHandler ontouchend;
+    [RuntimeEnabled=TouchEventFeatureDetection] attribute EventHandler ontouchmove;
+    [RuntimeEnabled=TouchEventFeatureDetection] attribute EventHandler ontouchstart;
 
     // Selection API
     // https://w3c.github.io/selection-api/#extensions-to-globaleventhandlers

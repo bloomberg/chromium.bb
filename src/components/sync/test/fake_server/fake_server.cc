@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/guid.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -456,6 +456,11 @@ void FakeServer::SetMaxGetUpdatesBatchSize(int batch_size) {
 void FakeServer::SetBagOfChips(const sync_pb::ChipBag& bag_of_chips) {
   DCHECK(thread_checker_.CalledOnValidThread());
   loopback_server_->SetBagOfChipsForTesting(bag_of_chips);
+}
+
+void FakeServer::TriggerMigrationDoneError(syncer::ModelTypeSet types) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  loopback_server_->TriggerMigrationForTesting(types);
 }
 
 const std::set<std::string>& FakeServer::GetCommittedHistoryURLs() const {

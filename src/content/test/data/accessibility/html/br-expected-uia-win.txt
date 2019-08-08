@@ -1,5 +1,5 @@
 region
-++document IsKeyboardFocusable=true
+++document
 ++++separator Name='<newline>'
 ++++description Name='Text line 1'
 ++++group

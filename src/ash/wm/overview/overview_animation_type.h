@@ -39,8 +39,9 @@ enum OverviewAnimationType {
   // Used to fade in the drop target when dragging an application to enter
   // overview mode.
   OVERVIEW_ANIMATION_DROP_TARGET_FADE_IN,
-  // Used to fade in the shield which covers the work area in and out.
-  OVERVIEW_ANIMATION_SHIELD_FADE,
+  // Used to fade in the label which tells users they are in overview mode with
+  // no window in and out.
+  OVERVIEW_ANIMATION_NO_RECENTS_FADE,
   // Used to animate the selection window which is activated by using tab or the
   // arrow keys.
   OVERVIEW_ANIMATION_SELECTION_WINDOW_SHADOW,

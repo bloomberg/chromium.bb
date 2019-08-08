@@ -48,18 +48,22 @@ void MockProducer::Connect(TracingService* svc,
                            uid_t uid,
                            size_t shared_memory_size_hint_bytes) {
   producer_name_ = producer_name;
-  service_endpoint_ = svc->ConnectProducer(this, uid, producer_name,
-                                           shared_memory_size_hint_bytes);
+  service_endpoint_ =
+      svc->ConnectProducer(this, uid, producer_name,
+                           shared_memory_size_hint_bytes, /*in_process=*/true);
   auto checkpoint_name = "on_producer_connect_" + producer_name;
   auto on_connect = task_runner_->CreateCheckpoint(checkpoint_name);
   EXPECT_CALL(*this, OnConnect()).WillOnce(Invoke(on_connect));
   task_runner_->RunUntilCheckpoint(checkpoint_name);
 }
 
-void MockProducer::RegisterDataSource(const std::string& name, bool ack_stop) {
+void MockProducer::RegisterDataSource(const std::string& name,
+                                      bool ack_stop,
+                                      bool ack_start) {
   DataSourceDescriptor ds_desc;
   ds_desc.set_name(name);
   ds_desc.set_will_notify_on_stop(ack_stop);
+  ds_desc.set_will_notify_on_start(ack_start);
   service_endpoint_->RegisterDataSource(ds_desc);
 }
 

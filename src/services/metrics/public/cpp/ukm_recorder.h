@@ -18,6 +18,7 @@
 #include "url/gurl.h"
 
 class BackgroundFetchDelegateImpl;
+class BackgroundSyncMetrics;
 class IOSChromePasswordManagerClient;
 class MediaEngagementSession;
 class PlatformNotificationServiceImpl;
@@ -29,7 +30,6 @@ class TestAutofillClient;
 
 namespace blink {
 class Document;
-class NavigatorVR;
 }  // namespace blink
 
 namespace cc {
@@ -104,6 +104,7 @@ class METRICS_EXPORT UkmRecorder {
 
  private:
   friend BackgroundFetchDelegateImpl;
+  friend BackgroundSyncMetrics;
   friend DelegatingUkmRecorder;
   friend IOSChromePasswordManagerClient;
   friend MediaEngagementSession;
@@ -112,7 +113,6 @@ class METRICS_EXPORT UkmRecorder {
   friend TestRecordingHelper;
   friend autofill::TestAutofillClient;
   friend blink::Document;
-  friend blink::NavigatorVR;
   friend cc::UkmManager;
   friend content::CrossSiteDocumentResourceHandler;
   friend content::PluginServiceImpl;

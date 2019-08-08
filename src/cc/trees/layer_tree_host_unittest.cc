@@ -147,8 +147,8 @@ class LayerTreeHostTestFrameOrdering : public LayerTreeHostTest {
   enum MainOrder : int {
     MAIN_START = 1,
     MAIN_LAYOUT,
-    MAIN_DID_BEGIN_FRAME,
     MAIN_COMMIT_COMPLETE,
+    MAIN_DID_BEGIN_FRAME,
     MAIN_END,
   };
 
@@ -1174,6 +1174,9 @@ class LayerTreeHostTestLayerListSurfaceDamage : public LayerTreeHostTest {
     child_c_->SetForceRenderSurfaceForTesting(true);
     child_c_->SetIsDrawable(true);
 
+    // TODO(pdr): Do not use the property tree builder for testing in layer list
+    // mode. This will require rewriting this test to manually build property
+    // trees.
     layer_tree_host()->BuildPropertyTreesForTesting();
 
     LayerTreeHostTest::SetupTree();
@@ -8401,6 +8404,9 @@ class LayerTreeHostTestHudLayerWithLayerLists : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
 
     // Build the property trees for the root layer.
+    // TODO(pdr): Do not use the property tree builder for testing in layer list
+    // mode. This will require rewriting this test to manually build property
+    // trees.
     layer_tree_host()->BuildPropertyTreesForTesting();
 
     // The HUD layer should not have been setup by the property tree building.
@@ -8596,9 +8602,8 @@ class LayerTreeHostTestImageAnimationDrawImageShader
     : public LayerTreeHostTestImageAnimation {
   void AddImageOp(const PaintImage& image) override {
     PaintFlags flags;
-    flags.setShader(
-        PaintShader::MakeImage(image, SkShader::TileMode::kRepeat_TileMode,
-                               SkShader::TileMode::kRepeat_TileMode, nullptr));
+    flags.setShader(PaintShader::MakeImage(image, SkTileMode::kRepeat,
+                                           SkTileMode::kRepeat, nullptr));
     content_layer_client_.add_draw_rect(gfx::Rect(500, 500), flags);
   }
 };
@@ -8612,8 +8617,8 @@ class LayerTreeHostTestImageAnimationDrawRecordShader
     record->push<DrawImageOp>(image, 0.f, 0.f, nullptr);
     PaintFlags flags;
     flags.setShader(PaintShader::MakePaintRecord(
-        record, SkRect::MakeWH(500, 500), SkShader::TileMode::kClamp_TileMode,
-        SkShader::TileMode::kClamp_TileMode, nullptr));
+        record, SkRect::MakeWH(500, 500), SkTileMode::kClamp,
+        SkTileMode::kClamp, nullptr));
     content_layer_client_.add_draw_rect(gfx::Rect(500, 500), flags);
   }
 };

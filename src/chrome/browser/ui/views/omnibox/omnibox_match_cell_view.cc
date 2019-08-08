@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/optional.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
@@ -21,7 +22,6 @@
 #include "extensions/common/image_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/canvas_image_source.h"
@@ -70,14 +70,16 @@ gfx::Insets GetMarginInsets(int text_height, bool is_two_line) {
   int vertical_margin =
       is_two_line ? kTwoLineRowMarginHeight : kOneLineRowMarginHeight;
 
-  if (base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalMargin)) {
+  base::Optional<int> vertical_margin_override =
+      OmniboxFieldTrial::GetSuggestionVerticalMarginFieldTrialOverride();
+  if (vertical_margin_override) {
     // If the vertical margin experiment is on, we purposely set both the
     // one-line and two-line suggestions to have the same vertical margin.
     //
     // There is no vertical margin value we could set to make the new answer
     // style look anything similar to the pre-Refresh style, but setting them to
     // be the same looks reasonable, and is a sane place to start experimenting.
-    vertical_margin = OmniboxFieldTrial::GetSuggestionVerticalMargin();
+    vertical_margin = vertical_margin_override.value();
   }
 
   return gfx::Insets(vertical_margin, kMarginLeft, vertical_margin,
@@ -203,8 +205,11 @@ OmniboxMatchCellView::OmniboxMatchCellView(OmniboxResultView* result_view) {
   answer_image_view_->SetHorizontalAlignment(views::ImageView::CENTER);
   answer_image_view_->SetVerticalAlignment(views::ImageView::CENTER);
 
-  const base::string16& separator =
-      l10n_util::GetStringUTF16(IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
+  const base::string16 separator = l10n_util::GetStringUTF16(
+      base::FeatureList::IsEnabled(
+          omnibox::kOmniboxAlternateMatchDescriptionSeparator)
+          ? IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR_ALTERNATE
+          : IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
   separator_view_->SetText(separator);
 }
 
@@ -279,12 +284,14 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
     icon_view_->SetSize(icon_view_->CalculatePreferredSize());
   }
 
-  if (match.type == AutocompleteMatchType::CALCULATOR) {
+  const auto apply_vector_icon = [=](const gfx::VectorIcon& vector_icon) {
+    const auto& icon = gfx::CreateVectorIcon(vector_icon, SK_ColorWHITE);
     answer_image_view_->SetImage(
-        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_OMNIBOX_CALCULATOR_ROUND));
-    answer_image_view_->SetImageSize(
-        gfx::Size(kNewAnswerImageSize, kNewAnswerImageSize));
+        gfx::CanvasImageSource::MakeImageSkia<EncircledImageSource>(
+            kNewAnswerImageSize / 2, gfx::kGoogleBlue600, icon));
+  };
+  if (match.type == AutocompleteMatchType::CALCULATOR) {
+    apply_vector_icon(omnibox::kAnswerCalculatorIcon);
   } else if (!is_rich_suggestion_) {
     // An old style answer entry may use the answer_image_view_. But
     // it's set when the image arrives (later).
@@ -292,44 +299,32 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
     answer_image_view_->SetSize(gfx::Size());
   } else {
     // Determine if we have a local icon (or else it will be downloaded).
-    const gfx::VectorIcon* vector_icon = nullptr;
-    int idr_image = 0;
     if (match.answer) {
       switch (match.answer->type()) {
         case SuggestionAnswer::ANSWER_TYPE_CURRENCY:
-          vector_icon = &omnibox::kAnswerCurrencyIcon;
+          apply_vector_icon(omnibox::kAnswerCurrencyIcon);
           break;
         case SuggestionAnswer::ANSWER_TYPE_DICTIONARY:
-          vector_icon = &omnibox::kAnswerDictionaryIcon;
+          apply_vector_icon(omnibox::kAnswerDictionaryIcon);
           break;
         case SuggestionAnswer::ANSWER_TYPE_FINANCE:
-          vector_icon = &omnibox::kAnswerFinanceIcon;
+          apply_vector_icon(omnibox::kAnswerFinanceIcon);
           break;
         case SuggestionAnswer::ANSWER_TYPE_SUNRISE:
-          vector_icon = &omnibox::kAnswerSunriseIcon;
+          apply_vector_icon(omnibox::kAnswerSunriseIcon);
           break;
         case SuggestionAnswer::ANSWER_TYPE_TRANSLATION:
-          idr_image = IDR_OMNIBOX_TRANSLATION_ROUND;
+          apply_vector_icon(omnibox::kAnswerTranslationIcon);
           break;
         case SuggestionAnswer::ANSWER_TYPE_WEATHER:
           // Weather icons are downloaded. Do nothing.
           break;
         case SuggestionAnswer::ANSWER_TYPE_WHEN_IS:
-          vector_icon = &omnibox::kAnswerWhenIsIcon;
+          apply_vector_icon(omnibox::kAnswerWhenIsIcon);
           break;
         default:
-          vector_icon = &omnibox::kAnswerDefaultIcon;
+          apply_vector_icon(omnibox::kAnswerDefaultIcon);
           break;
-      }
-      if (vector_icon) {
-        const auto& icon = gfx::CreateVectorIcon(*vector_icon, SK_ColorWHITE);
-        answer_image_view_->SetImage(
-            gfx::CanvasImageSource::MakeImageSkia<EncircledImageSource>(
-                kNewAnswerImageSize / 2, gfx::kGoogleBlue600, icon));
-      } else if (idr_image) {
-        answer_image_view_->SetImage(
-            ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                idr_image));
       }
       // Always set the image size so that downloaded images get the correct
       // size (such as Weather answers).
@@ -352,6 +347,22 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
     SetTailSuggestCommonPrefixWidth(match.tail_suggest_common_prefix);
   else
     SetTailSuggestCommonPrefixWidth(base::string16());
+}
+
+void OmniboxMatchCellView::SetImage(const gfx::ImageSkia& image) {
+  answer_image_view_->SetImage(image);
+
+  // Usually, answer images are square. But if that's not the case, setting
+  // answer_image_view_ size proportional to the image size preserves
+  // the aspect ratio.
+  int width = image.width();
+  int height = image.height();
+  if (width == height)
+    return;
+  int max = std::max(width, height);
+  width = kEntityImageSize * width / max;
+  height = kEntityImageSize * height / max;
+  answer_image_view_->SetImageSize(gfx::Size(width, height));
 }
 
 const char* OmniboxMatchCellView::GetClassName() const {

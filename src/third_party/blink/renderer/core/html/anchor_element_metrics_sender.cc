@@ -9,6 +9,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/anchor_element_metrics.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 
 namespace blink {
@@ -117,6 +118,23 @@ bool AnchorElementMetricsSender::AssociateInterface() {
 AnchorElementMetricsSender::AnchorElementMetricsSender(Document& document)
     : Supplement<Document>(document) {
   DCHECK(!document.ParentDocument());
+}
+
+void AnchorElementMetricsSender::DidFinishLifecycleUpdate(
+    const LocalFrameView& local_frame_view) {
+  // Check that layout is stable. If it is, we can perform the onload update and
+  // stop observing future events.
+  Document* document = local_frame_view.GetFrame().GetDocument();
+  if (document->Lifecycle().GetState() <
+      DocumentLifecycle::kAfterPerformLayout) {
+    return;
+  }
+
+  // Stop listening to updates, as the onload report can be sent now.
+  document->View()->UnregisterFromLifecycleNotifications(this);
+
+  // Send onload report.
+  AnchorElementMetrics::MaybeReportViewportMetricsOnLoad(*document);
 }
 
 }  // namespace blink

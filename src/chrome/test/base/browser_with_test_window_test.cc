@@ -83,9 +83,9 @@ void BrowserWithTestWindowTest::SetUp() {
   // Subclasses can provide their own Profile.
   profile_ = CreateProfile();
   // Subclasses can provide their own test BrowserWindow. If they return NULL
-  // then Browser will create the a production BrowserWindow and the subclass
-  // is responsible for cleaning it up (usually by NativeWidget destruction).
-  window_.reset(CreateBrowserWindow());
+  // then Browser will create a production BrowserWindow and the subclass is
+  // responsible for cleaning it up (usually by NativeWidget destruction).
+  window_ = CreateBrowserWindow();
 
   browser_.reset(
       CreateBrowser(profile(), browser_type_, hosted_app_, window_.get()));
@@ -126,10 +126,7 @@ void BrowserWithTestWindowTest::TearDown() {
   testing::Test::TearDown();
 
   // A Task is leaked if we don't destroy everything, then run the message loop.
-  base::RunLoop loop;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                loop.QuitWhenIdleClosure());
-  loop.Run();
+  base::RunLoop().RunUntilIdle();
 }
 
 gfx::NativeWindow BrowserWithTestWindowTest::GetContext() {
@@ -193,8 +190,9 @@ BrowserWithTestWindowTest::GetTestingFactories() {
   return {};
 }
 
-BrowserWindow* BrowserWithTestWindowTest::CreateBrowserWindow() {
-  return new TestBrowserWindow();
+std::unique_ptr<BrowserWindow>
+BrowserWithTestWindowTest::CreateBrowserWindow() {
+  return std::make_unique<TestBrowserWindow>();
 }
 
 Browser* BrowserWithTestWindowTest::CreateBrowser(

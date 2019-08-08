@@ -18,26 +18,12 @@
 
 #include "Vulkan/VkObject.hpp"
 #include "Vulkan/VkImage.hpp"
+#include "VkSurfaceKHR.hpp"
 
 #include <vector>
 
 namespace vk
 {
-
-enum PresentImageStatus
-{
-	NONEXISTENT, //  Image wasn't made
-	AVAILABLE,
-	DRAWING,
-	PRESENTING,
-};
-
-struct PresentImage
-{
-	VkImage image;
-	VkDeviceMemory imageMemory;
-	PresentImageStatus imageStatus;
-};
 
 class SwapchainKHR : public Object<SwapchainKHR, VkSwapchainKHR>
 {
@@ -49,14 +35,21 @@ public:
 
 	static size_t ComputeRequiredAllocationSize(const VkSwapchainCreateInfoKHR* pCreateInfo);
 
+	void retire();
+
 	VkResult createImages(VkDevice device);
 
 	uint32_t getImageCount() const;
 	VkResult getImages(uint32_t *pSwapchainImageCount, VkImage *pSwapchainImages) const;
 
+	VkResult getNextImage(uint64_t timeout, VkSemaphore semaphore, VkFence fence, uint32_t* pImageIndex);
+
+	void present(uint32_t index);
+
 private:
 	VkSwapchainCreateInfoKHR createInfo;
 	std::vector<PresentImage> images;
+	bool retired;
 
 	void resetImages();
 };

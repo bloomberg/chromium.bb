@@ -24,6 +24,11 @@ bool IsValidDeviceId(device::mojom::XRDeviceId id) {
     return true;
 #endif
 
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+  if (id == device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID)
+    return true;
+#endif
+
   return false;
 }
 
@@ -38,6 +43,11 @@ GamepadSource GamepadSourceFromDeviceId(device::mojom::XRDeviceId id) {
 #if BUILDFLAG(ENABLE_OCULUS_VR)
   if (id == device::mojom::XRDeviceId::OCULUS_DEVICE_ID)
     return GAMEPAD_SOURCE_OCULUS;
+#endif
+
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+  if (id == device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID)
+    return GAMEPAD_SOURCE_WIN_MR;
 #endif
 
   NOTREACHED();
@@ -206,13 +216,23 @@ void IsolatedGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
     // could be confusing here.
     if (this->source() == GAMEPAD_SOURCE_OPENVR) {
       swprintf(dest.id, Gamepad::kIdLengthCap, L"OpenVR Gamepad");
-    } else {
+    } else if (this->source() == GAMEPAD_SOURCE_OCULUS) {
       if (dest.hand == GamepadHand::kLeft) {
         swprintf(dest.id, Gamepad::kIdLengthCap, L"Oculus Touch (Left)");
       } else if (dest.hand == GamepadHand::kRight) {
         swprintf(dest.id, Gamepad::kIdLengthCap, L"Oculus Touch (Right)");
       } else {
         swprintf(dest.id, Gamepad::kIdLengthCap, L"Oculus Remote");
+      }
+    } else if (this->source() == GAMEPAD_SOURCE_WIN_MR) {
+      if (dest.hand == GamepadHand::kLeft) {
+        swprintf(dest.id, Gamepad::kIdLengthCap,
+                 L"Windows Mixed Reality (Left)");
+      } else if (dest.hand == GamepadHand::kRight) {
+        swprintf(dest.id, Gamepad::kIdLengthCap,
+                 L"Windows Mixed Reality (Right)");
+      } else {
+        swprintf(dest.id, Gamepad::kIdLengthCap, L"Windows Mixed Reality");
       }
     }
 

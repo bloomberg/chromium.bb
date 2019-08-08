@@ -8,6 +8,7 @@ import "ash/public/interfaces/assistant_image_downloader.mojom";
 import "ash/public/interfaces/assistant_setup.mojom";
 import "chromeos/services/assistant/public/mojom/assistant.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
+import "mojo/public/mojom/base/time.mojom";
 
 // Interface to AssistantController which is owned by Shell in Ash. This is
 // typically used by the Assistant service to provide the controller with an
@@ -35,6 +36,50 @@ interface AssistantController {
     bool pii_allowed,
     string feedback_description,
     string screenshot_png);
+
+  // Provides a reference to DeviceActions service.
+  SetDeviceActions(chromeos.assistant.mojom.DeviceActions device_actions);
+};
+
+enum AssistantTimerState {
+  kUnknown,
+  // The timer is scheduled to fire at some future date.
+  kScheduled,
+  // The timer will not fire but is kept in the queue of scheduled events;
+  // it can be resumed after which it will fire in |remaining_duration_ms|.
+  kPaused,
+  // The timer has fired. In the simplest case this means the timer has
+  // begun ringing.
+  kFired,
+};
+
+struct AssistantTimer {
+  string timer_id;
+
+  // The current state of this timer.
+  AssistantTimerState state;
+
+  // TODO(llin): Add more timer data.
+};
+
+// Assistant alarm/timer event type.
+// Currently, the AlarmTimerManager maintains only one firing alarm/timer,
+// the previous one will be dismissed if the second one firing.
+enum AssistantAlarmTimerEventType {
+  kTimer
+  // TODO(llin): Add alarm event type.
+};
+
+union AlarmTimerData {
+  AssistantTimer timer_data;
+  // TODO(llin): Add alarm data.
+};
+
+// A composite struct that will hold exactly one alarm or timer.
+struct AssistantAlarmTimerEvent {
+  AssistantAlarmTimerEventType type;
+
+  AlarmTimerData? data;
 };
 
 // Interface to the AssistantAlarmTimerController which is owned by the
@@ -46,6 +91,10 @@ interface AssistantAlarmTimerController {
 
   // Invoked when a timer has finished sounding.
   OnTimerSoundingFinished();
+
+  // Invoked when an alarm/timer state changed. No alarm/timer is ringing if
+  // |event| is nullptr.
+  OnAlarmTimerStateChanged(AssistantAlarmTimerEvent? event);
 };
 
 // Interface to the AssistantNotificationController which is owned by the

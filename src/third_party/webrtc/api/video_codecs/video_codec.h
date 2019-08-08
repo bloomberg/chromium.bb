@@ -47,13 +47,10 @@ struct VideoCodecVP8 {
   int keyFrameInterval;
 };
 
-enum class InterLayerPredMode {
-  kOn,       // Allow inter-layer prediction for all frames.
-             // Frame of low spatial layer can be used for
-             // prediction of next spatial layer frame.
-  kOff,      // Encoder produces independent spatial layers.
-  kOnKeyPic  // Allow inter-layer prediction only for frames
-             // within key picture.
+enum class InterLayerPredMode : int {
+  kOff = 0,      // Inter-layer prediction is disabled.
+  kOn = 1,       // Inter-layer prediction is enabled.
+  kOnKeyPic = 2  // Inter-layer prediction is enabled but limited to key frames.
 };
 
 // VP9 specific.
@@ -83,12 +80,6 @@ struct VideoCodecH264 {
   bool frameDroppingOn;
   int keyFrameInterval;
   uint8_t numberOfTemporalLayers;
-  // These are NULL/0 if not externally negotiated.
-  const uint8_t* spsData;
-  size_t spsLen;
-  const uint8_t* ppsData;
-  size_t ppsLen;
-  H264::Profile profile;
 };
 
 // Translates from name of codec to codec type and vice versa.

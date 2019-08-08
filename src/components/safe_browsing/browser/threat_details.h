@@ -25,7 +25,6 @@
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "net/base/completion_callback.h"
 
 namespace history {
 class HistoryService;

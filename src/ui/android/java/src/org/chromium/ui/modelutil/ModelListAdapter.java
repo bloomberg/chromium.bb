@@ -77,7 +77,7 @@ public class ModelListAdapter extends BaseAdapter {
      */
     public <T extends View> void registerType(int typeId, ViewBuilder<T> builder,
             PropertyModelChangeProcessor.ViewBinder<PropertyModel, T, PropertyKey> binder) {
-        assert mViewBuilderMap.valueAt(typeId) == null;
+        assert mViewBuilderMap.get(typeId) == null;
         mViewBuilderMap.put(typeId, new Pair<>(builder, binder));
     }
 

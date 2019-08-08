@@ -40,6 +40,11 @@ class StructTraits<tracing::mojom::DataSourceDataView,
     return src.config();
   }
 
+  static const std::vector<std::string>& producer_name_filter(
+      const perfetto::TraceConfig::DataSource& src) {
+    return src.producer_name_filter();
+  }
+
   static bool Read(tracing::mojom::DataSourceDataView data,
                    perfetto::TraceConfig::DataSource* out);
 };

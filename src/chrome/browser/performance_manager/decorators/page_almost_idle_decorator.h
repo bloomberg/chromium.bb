@@ -5,20 +5,15 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_DECORATORS_PAGE_ALMOST_IDLE_DECORATOR_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_DECORATORS_PAGE_ALMOST_IDLE_DECORATOR_H_
 
-#include "chrome/browser/performance_manager/common/page_almost_idle_data.h"
-
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
+#include "chrome/browser/performance_manager/observers/graph_observer.h"
 
 namespace performance_manager {
-
-namespace testing {
-class PageAlmostIdleDecoratorTestUtils;
-}  // namespace testing
 
 // The PageAlmostIdle decorator is responsible for determining when a page has
 // reached an "almost idle" state after initial load, based on CPU and network
@@ -26,28 +21,21 @@ class PageAlmostIdleDecoratorTestUtils;
 // PageNodes in a graph.
 class PageAlmostIdleDecorator : public GraphObserver {
  public:
+  class Data;
+
   PageAlmostIdleDecorator();
   ~PageAlmostIdleDecorator() override;
 
   // GraphObserver implementation:
-  bool ShouldObserve(const NodeBase* coordination_unit) override;
-  void OnFramePropertyChanged(
-      FrameNodeImpl* frame_node,
-      resource_coordinator::mojom::PropertyType property_type,
-      int64_t value) override;
-  void OnProcessPropertyChanged(
-      ProcessNodeImpl* process_node,
-      resource_coordinator::mojom::PropertyType property_type,
-      int64_t value) override;
-  void OnPageEventReceived(PageNodeImpl* page_node,
-                           resource_coordinator::mojom::Event event) override;
+  void OnRegistered() override;
+  bool ShouldObserve(const NodeBase* node) override;
+  void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) override;
   void OnIsLoadingChanged(PageNodeImpl* page_node) override;
+  void OnMainFrameNavigationCommitted(PageNodeImpl* page_node) override;
+  void OnMainThreadTaskLoadIsLow(ProcessNodeImpl* process_node) override;
 
  protected:
-  using LoadIdleState = PageAlmostIdleData::LoadIdleState;
-
-  friend class PageAlmostIdleDecoratorTestHelper;
-  friend class testing::PageAlmostIdleDecoratorTestUtils;
+  friend class PageAlmostIdleDecoratorTest;
 
   // The amount of time a page has to be idle post-loading in order for it to be
   // considered loaded and idle. This is used in UpdateLoadIdleState
@@ -78,13 +66,56 @@ class PageAlmostIdleDecorator : public GraphObserver {
   // Helper function for transitioning to the final state.
   void TransitionToLoadedAndIdle(PageNodeImpl* page_node);
 
-  // Convenience accessors for state associated with a |page_node|.
-  static PageAlmostIdleData* GetOrCreateData(PageNodeImpl* page_node);
-  static PageAlmostIdleData* GetData(PageNodeImpl* page_node);
   static bool IsIdling(const PageNodeImpl* page_node);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PageAlmostIdleDecorator);
+};
+
+class PageAlmostIdleDecorator::Data {
+ public:
+  // The state transitions for the PageAlmostIdle signal. In general a page
+  // transitions through these states from top to bottom.
+  enum class LoadIdleState {
+    // The initial state. Can only transition to kLoading from here.
+    kLoadingNotStarted,
+    // Loading has started. Almost idle signals are ignored in this state.
+    // Can transition to kLoadedNotIdling and kLoadedAndIdling from here.
+    kLoading,
+    // Loading has completed, but the page has not started idling. Can only
+    // transition to kLoadedAndIdling from here.
+    kLoadedNotIdling,
+    // Loading has completed, and the page is idling. Can transition to
+    // kLoadedNotIdling or kLoadedAndIdle from here.
+    kLoadedAndIdling,
+    // Loading has completed and the page has been idling for sufficiently long.
+    // This is the final state. Once this state has been reached a signal will
+    // be emitted and no further state transitions will be tracked. Committing a
+    // new non-same document navigation can start the cycle over again.
+    kLoadedAndIdle
+  };
+
+  static Data* GetOrCreateForTesting(PageNodeImpl* page_node);
+  static Data* GetForTesting(PageNodeImpl* page_node);
+  static bool DestroyForTesting(PageNodeImpl* page_node);
+
+  // Marks the point in time when the DidStopLoading signal was received,
+  // transitioning to kLoadedAndNotIdling or kLoadedAndIdling. This is used as
+  // the basis for the kWaitingForIdleTimeout.
+  base::TimeTicks loading_stopped_;
+
+  // Marks the point in time when the last transition to kLoadedAndIdling
+  // occurred. Used for gating the transition to kLoadedAndIdle.
+  base::TimeTicks idling_started_;
+
+  // A one-shot timer used for transitioning between kLoadedAndIdling and
+  // kLoadedAndIdle.
+  base::OneShotTimer idling_timer_;
+
+  // Initially at kLoadingNotStarted. Transitions through the states via calls
+  // to UpdateLoadIdleState. Is reset to kLoadingNotStarted when a non-same
+  // document navigation is committed.
+  LoadIdleState load_idle_state_ = LoadIdleState::kLoadingNotStarted;
 };
 
 }  // namespace performance_manager

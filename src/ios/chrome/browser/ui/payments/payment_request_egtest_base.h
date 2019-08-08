@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+@class NSError;
+
 namespace autofill {
 class AutofillProfile;
 class CreditCard;
@@ -25,12 +27,13 @@ class WebState;
 @interface PaymentRequestEGTestBase : ChromeTestCase
 
 // Adds |profile| to the PersonalDataManager. If the profile is not added within
-// a timeout, a GREYAssert is induced.
-- (void)addAutofillProfile:(const autofill::AutofillProfile&)profile;
+// a timeout, returns not nil NSError.
+- (NSError*)addAutofillProfile:(const autofill::AutofillProfile&)profile
+    WARN_UNUSED_RESULT;
 
 // Adds |card| to the PersonalDataManager. If the credit card is not added
-// within a timeout, a GREYAssert is induced.
-- (void)addCreditCard:(const autofill::CreditCard&)card;
+// within a timeout, returns not nil NSError.
+- (NSError*)addCreditCard:(const autofill::CreditCard&)card WARN_UNUSED_RESULT;
 
 // Adds |card| as a server card to the PersonalDataManager.
 - (void)addServerCreditCard:(const autofill::CreditCard&)card;

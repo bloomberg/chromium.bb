@@ -31,6 +31,7 @@ class CommitContributor;
 class DataTypeDebugInfoEmitter;
 class DirectoryCommitContributor;
 class DirectoryUpdateHandler;
+class KeystoreKeysHandler;
 class ModelTypeWorker;
 class UpdateHandler;
 
@@ -45,7 +46,8 @@ class ModelTypeRegistry : public ModelTypeConnector,
                     UserShare* user_share,
                     NudgeHandler* nudge_handler,
                     const UssMigrator& uss_migrator,
-                    CancelationSignal* cancelation_signal);
+                    CancelationSignal* cancelation_signal,
+                    KeystoreKeysHandler* keystore_keys_handler);
   ~ModelTypeRegistry() override;
 
   // Enables an off-thread type for syncing.  Connects the given proxy
@@ -101,6 +103,7 @@ class ModelTypeRegistry : public ModelTypeConnector,
   // Simple getters.
   UpdateHandlerMap* update_handler_map();
   CommitContributorMap* commit_contributor_map();
+  KeystoreKeysHandler* keystore_keys_handler();
 
   void RegisterDirectoryTypeDebugInfoObserver(TypeDebugInfoObserver* observer);
   void UnregisterDirectoryTypeDebugInfoObserver(
@@ -149,8 +152,7 @@ class ModelTypeRegistry : public ModelTypeConnector,
   // The known ModelSafeWorkers.
   std::map<ModelSafeGroup, scoped_refptr<ModelSafeWorker>> workers_map_;
 
-  // The user share. Not owned.
-  UserShare* user_share_;
+  UserShare* const user_share_;
 
   // A copy of the directory's most recent cryptographer.
   std::unique_ptr<Cryptographer> cryptographer_;
@@ -162,15 +164,16 @@ class ModelTypeRegistry : public ModelTypeConnector,
   // The set of encrypted types.
   ModelTypeSet encrypted_types_;
 
-  // The NudgeHandler.  Not owned.
-  NudgeHandler* nudge_handler_;
+  NudgeHandler* const nudge_handler_;
 
   // Function to call to migrate data from the directory to USS.
   UssMigrator uss_migrator_;
 
   // CancelationSignal is signalled on engine shutdown. It is passed to
   // ModelTypeWorker to cancel blocking operation.
-  CancelationSignal* cancelation_signal_;
+  CancelationSignal* const cancelation_signal_;
+
+  KeystoreKeysHandler* const keystore_keys_handler_;
 
   // The set of observers of per-type debug info.
   //

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1943 tests; 1941 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1959 tests; 1957 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Selectors-API Test Suite: HTML
 PASS Document supports querySelector
 PASS Document supports querySelectorAll
@@ -811,6 +811,10 @@ PASS Document.querySelector: Syntax, group of selectors separator, whitespace be
 ,#group strong
 PASS Document.querySelectorAll: Syntax, group of selectors separator, no whitespace: #group em,#group strong
 PASS Document.querySelector: Syntax, group of selectors separator, no whitespace: #group em,#group strong
+PASS Document.querySelectorAll: Slotted selector: ::slotted(foo)
+PASS Document.querySelector: Slotted selector: ::slotted(foo)
+PASS Document.querySelectorAll: Slotted selector (no matching closing paren): ::slotted(foo
+PASS Document.querySelector: Slotted selector (no matching closing paren): ::slotted(foo
 PASS Detached Element.querySelectorAll: Type selector, matching html element: html
 PASS Detached Element.querySelector: Type selector, matching html element: html
 PASS Detached Element.querySelectorAll: Type selector, matching body element: body
@@ -1233,6 +1237,10 @@ PASS Detached Element.querySelector: Syntax, group of selectors separator, white
 ,#group strong
 PASS Detached Element.querySelectorAll: Syntax, group of selectors separator, no whitespace: #group em,#group strong
 PASS Detached Element.querySelector: Syntax, group of selectors separator, no whitespace: #group em,#group strong
+PASS Detached Element.querySelectorAll: Slotted selector: ::slotted(foo)
+PASS Detached Element.querySelector: Slotted selector: ::slotted(foo)
+PASS Detached Element.querySelectorAll: Slotted selector (no matching closing paren): ::slotted(foo
+PASS Detached Element.querySelector: Slotted selector (no matching closing paren): ::slotted(foo
 PASS Fragment.querySelectorAll: Type selector, matching html element: html
 PASS Fragment.querySelector: Type selector, matching html element: html
 PASS Fragment.querySelectorAll: Type selector, matching body element: body
@@ -1655,6 +1663,10 @@ PASS Fragment.querySelector: Syntax, group of selectors separator, whitespace be
 ,#group strong
 PASS Fragment.querySelectorAll: Syntax, group of selectors separator, no whitespace: #group em,#group strong
 PASS Fragment.querySelector: Syntax, group of selectors separator, no whitespace: #group em,#group strong
+PASS Fragment.querySelectorAll: Slotted selector: ::slotted(foo)
+PASS Fragment.querySelector: Slotted selector: ::slotted(foo)
+PASS Fragment.querySelectorAll: Slotted selector (no matching closing paren): ::slotted(foo
+PASS Fragment.querySelector: Slotted selector (no matching closing paren): ::slotted(foo
 PASS In-document Element.querySelectorAll: Type selector, matching html element: html
 PASS In-document Element.querySelector: Type selector, matching html element: html
 PASS In-document Element.querySelectorAll: Type selector, matching body element: body
@@ -2079,5 +2091,9 @@ PASS In-document Element.querySelector: Syntax, group of selectors separator, wh
 ,#group strong
 PASS In-document Element.querySelectorAll: Syntax, group of selectors separator, no whitespace: #group em,#group strong
 PASS In-document Element.querySelector: Syntax, group of selectors separator, no whitespace: #group em,#group strong
+PASS In-document Element.querySelectorAll: Slotted selector: ::slotted(foo)
+PASS In-document Element.querySelector: Slotted selector: ::slotted(foo)
+PASS In-document Element.querySelectorAll: Slotted selector (no matching closing paren): ::slotted(foo
+PASS In-document Element.querySelector: Slotted selector (no matching closing paren): ::slotted(foo
 Harness: the test ran to completion.
 

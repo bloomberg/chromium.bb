@@ -26,7 +26,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringize_macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "components/policy/policy_constants.h"
 #include "ipc/ipc_channel.h"
@@ -1757,7 +1757,7 @@ int HostProcessMain() {
   base::GetLinuxDistro();
 #endif
 
-  base::TaskScheduler::CreateAndStartWithDefaultParams("Me2Me");
+  base::ThreadPool::CreateAndStartWithDefaultParams("Me2Me");
 
   // Create the main message loop and start helper threads.
   base::MessageLoopForUI message_loop;
@@ -1784,7 +1784,7 @@ int HostProcessMain() {
   run_loop.Run();
 
   // Block until tasks blocking shutdown have completed their execution.
-  base::TaskScheduler::GetInstance()->Shutdown();
+  base::ThreadPool::GetInstance()->Shutdown();
 
   return exit_code;
 }

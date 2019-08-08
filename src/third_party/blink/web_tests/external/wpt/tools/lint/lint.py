@@ -134,6 +134,28 @@ def check_worker_collision(repo_root, path):
     return []
 
 
+def check_gitignore_file(repo_root, path):
+    if not path.endswith(".gitignore"):
+        return []
+
+    path_parts = path.split(os.path.sep)
+    if len(path_parts) == 1:
+        return []
+
+    if path_parts[-1] != ".gitignore":
+        return []
+
+    if (path_parts[0] in ["tools", "docs"] or
+        path_parts[:2] == ["resources", "webidl2"] or
+        path_parts[:3] == ["css", "tools", "apiclient"]):
+        return []
+
+    return [("GITIGNORE",
+             ".gitignore found outside the root",
+             path,
+             None)]
+
+
 def check_ahem_copy(repo_root, path):
     lpath = path.lower()
     if "ahem" in lpath and lpath.endswith(".ttf"):
@@ -351,46 +373,46 @@ class CRRegexp(Regexp):
     description = "CR character in line separator"
 
 class SetTimeoutRegexp(Regexp):
-    pattern = b"setTimeout\s*\("
+    pattern = br"setTimeout\s*\("
     error = "SET TIMEOUT"
     file_extensions = [".html", ".htm", ".js", ".xht", ".xhtml", ".svg"]
     description = "setTimeout used; step_timeout should typically be used instead"
 
 class W3CTestOrgRegexp(Regexp):
-    pattern = b"w3c\-test\.org"
+    pattern = br"w3c\-test\.org"
     error = "W3C-TEST.ORG"
     description = "External w3c-test.org domain used"
 
 class WebPlatformTestRegexp(Regexp):
-    pattern = b"web\-platform\.test"
+    pattern = br"web\-platform\.test"
     error = "WEB-PLATFORM.TEST"
     description = "Internal web-platform.test domain used"
 
 class Webidl2Regexp(Regexp):
-    pattern = b"webidl2\.js"
+    pattern = br"webidl2\.js"
     error = "WEBIDL2.JS"
     description = "Legacy webidl2.js script used"
 
 class ConsoleRegexp(Regexp):
-    pattern = b"console\.[a-zA-Z]+\s*\("
+    pattern = br"console\.[a-zA-Z]+\s*\("
     error = "CONSOLE"
     file_extensions = [".html", ".htm", ".js", ".xht", ".xhtml", ".svg"]
     description = "Console logging API used"
 
 class GenerateTestsRegexp(Regexp):
-    pattern = b"generate_tests\s*\("
+    pattern = br"generate_tests\s*\("
     error = "GENERATE_TESTS"
     file_extensions = [".html", ".htm", ".js", ".xht", ".xhtml", ".svg"]
     description = "generate_tests used"
 
 class PrintRegexp(Regexp):
-    pattern = b"print(?:\s|\s*\()"
+    pattern = br"print(?:\s|\s*\()"
     error = "PRINT STATEMENT"
     file_extensions = [".py"]
     description = "Print function used"
 
 class LayoutTestsRegexp(Regexp):
-    pattern = b"eventSender|testRunner|window\.internals"
+    pattern = br"eventSender|testRunner|window\.internals"
     error = "LAYOUTTESTS APIS"
     file_extensions = [".html", ".htm", ".js", ".xht", ".xhtml", ".svg"]
     description = "eventSender/testRunner/window.internals used; these are LayoutTests-specific APIs (WebKit/Blink)"
@@ -618,8 +640,8 @@ def check_python_ast(repo_root, path, f):
     return errors
 
 
-broken_js_metadata = re.compile(b"//\s*META:")
-broken_python_metadata = re.compile(b"#\s*META:")
+broken_js_metadata = re.compile(br"//\s*META:")
+broken_python_metadata = re.compile(br"#\s*META:")
 
 
 def check_global_metadata(value):
@@ -908,7 +930,7 @@ def lint(repo_root, paths, output_format):
                 logger.info(line)
     return sum(itervalues(error_count))
 
-path_lints = [check_path_length, check_worker_collision, check_ahem_copy]
+path_lints = [check_path_length, check_worker_collision, check_ahem_copy, check_gitignore_file]
 all_paths_lints = [check_css_globally_unique]
 file_lints = [check_regexp_line, check_parsed, check_python_ast, check_script_metadata]
 

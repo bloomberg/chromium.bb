@@ -18,7 +18,7 @@
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -90,7 +90,7 @@ class WebRequestProxyingURLLoaderFactory
     void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
     void HandleAuthRequest(
-        net::AuthChallengeInfo* auth_info,
+        const net::AuthChallengeInfo& auth_info,
         scoped_refptr<net::HttpResponseHeaders> response_headers,
         WebRequestAPI::AuthRequestCallback callback);
 
@@ -114,7 +114,7 @@ class WebRequestProxyingURLLoaderFactory
     void ContinueToStartRequest(int error_code);
     void ContinueToHandleOverrideHeaders(int error_code);
     void ContinueToResponseStarted(int error_code);
-    void ContinueAuthRequest(net::AuthChallengeInfo* auth_info,
+    void ContinueAuthRequest(const net::AuthChallengeInfo& auth_info,
                              WebRequestAPI::AuthRequestCallback callback,
                              int error_code);
     void OnAuthRequestHandled(
@@ -123,7 +123,7 @@ class WebRequestProxyingURLLoaderFactory
     void ContinueToBeforeRedirect(const net::RedirectInfo& redirect_info,
                                   int error_code);
     void HandleResponseOrRedirectHeaders(
-        const net::CompletionCallback& continuation);
+        net::CompletionOnceCallback continuation);
     void OnRequestError(const network::URLLoaderCompletionStatus& status);
     bool IsRedirectSafe(const GURL& from_url, const GURL& to_url);
     void HandleBeforeRequestRedirect();
@@ -159,10 +159,6 @@ class WebRequestProxyingURLLoaderFactory
     // Holds any provided auth credentials through the extent of the request's
     // lifetime.
     base::Optional<net::AuthCredentials> auth_credentials_;
-
-    // TODO(https://crbug.com/882661): Remove this once the bug is fixed.
-    bool on_receive_response_received_ = false;
-    bool on_receive_response_sent_ = false;
 
     bool request_completed_ = false;
 
@@ -244,7 +240,7 @@ class WebRequestProxyingURLLoaderFactory
 
   // WebRequestAPI::Proxy:
   void HandleAuthRequest(
-      net::AuthChallengeInfo* auth_info,
+      const net::AuthChallengeInfo& auth_info,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       int32_t request_id,
       WebRequestAPI::AuthRequestCallback callback) override;

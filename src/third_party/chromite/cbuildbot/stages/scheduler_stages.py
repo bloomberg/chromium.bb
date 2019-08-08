@@ -67,6 +67,9 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
                    build_config.name, requested_bot)
 
     cbb_extra_args = ['--buildbot']
+    if master_buildbucket_id is not None:
+      cbb_extra_args.append('--master-buildbucket-id')
+      cbb_extra_args.append(master_buildbucket_id)
     # Adding cbb_snapshot_revision to child builders to force child builders
     # to sync to annealing snapshot revision.
     if self._run.options.cbb_snapshot_revision:

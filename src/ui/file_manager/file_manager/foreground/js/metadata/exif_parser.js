@@ -29,7 +29,9 @@ function ExifParser(parent) {
   ImageParser.call(this, parent, 'jpeg', /\.jpe?g$/i);
 }
 
-ExifParser.prototype = {__proto__: ImageParser.prototype};
+ExifParser.prototype = {
+  __proto__: ImageParser.prototype
+};
 
 /**
  * @param {File} file File object to parse.
@@ -98,7 +100,8 @@ ExifParser.prototype.parseSlice = function(
      * @param {number=} opt_bytes
      */
     const reread = (opt_offset, opt_bytes) => {
-      self.requestSlice(file, callback, errorCallback, metadata,
+      self.requestSlice(
+          file, callback, errorCallback, metadata,
           filePos + br.tell() + (opt_offset || 0), opt_bytes);
     };
 
@@ -131,7 +134,7 @@ ExifParser.prototype.parseSlice = function(
         this.parseExifSection(metadata, buf, br);
       } else if (ExifParser.isSOF_(mark)) {
         // The most reliable size information is encoded in the SOF section.
-        br.seek(1, ByteReader.SEEK_CUR); // Skip the precision byte.
+        br.seek(1, ByteReader.SEEK_CUR);  // Skip the precision byte.
         const height = br.readScalar(2);
         const width = br.readScalar(2);
         ExifParser.setImageSize(metadata, width, height);
@@ -154,7 +157,9 @@ ExifParser.prototype.parseSlice = function(
 ExifParser.isSOF_ = mark => {
   // There are 13 variants of SOF fragment format distinguished by the last
   // hex digit of the mark, but the part we want is always the same.
-  if ((mark & ~0xF) !== Exif.Mark.SOF) return false;
+  if ((mark & ~0xF) !== Exif.Mark.SOF) {
+    return false;
+  }
 
   // If the last digit is 4, 8 or 12 it is not really a SOF.
   const type = mark & 0xF;
@@ -197,7 +202,7 @@ ExifParser.prototype.parseExifSection = function(metadata, buf, br) {
   metadata.littleEndian = (order === Exif.Align.LITTLE);
   metadata.ifd = {
     image: {},
-    thumbnail: {}
+    thumbnail: {},
   };
   let directoryOffset = br.readScalar(4);
 
@@ -242,8 +247,8 @@ ExifParser.prototype.parseExifSection = function(metadata, buf, br) {
       Exif.Tag.JPG_THUMB_LENGTH in metadata.ifd.thumbnail) {
     this.vlog('Read thumbnail image.');
     br.seek(metadata.ifd.thumbnail[Exif.Tag.JPG_THUMB_OFFSET].value);
-    metadata.thumbnailURL = br.readImage(
-        metadata.ifd.thumbnail[Exif.Tag.JPG_THUMB_LENGTH].value);
+    metadata.thumbnailURL =
+        br.readImage(metadata.ifd.thumbnail[Exif.Tag.JPG_THUMB_LENGTH].value);
   } else {
     this.vlog('Image has EXIF data, but no JPG thumbnail.');
   }
@@ -315,9 +320,10 @@ ExifParser.prototype.readTagValue = function(br, tag) {
     try {
       unsafeRead(size, opt_readFunction, opt_signed);
     } catch (ex) {
-      self.log('error reading tag 0x' + tag.id.toString(16) + '/' +
-               tag.format + ', size ' + tag.componentCount + '*' + size + ' ' +
-               (ex.stack || '<no stack>') + ': ' + ex);
+      self.log(
+          'error reading tag 0x' + tag.id.toString(16) + '/' + tag.format +
+          ', size ' + tag.componentCount + '*' + size + ' ' +
+          (ex.stack || '<no stack>') + ': ' + ex);
       tag.value = null;
     }
   }
@@ -329,8 +335,8 @@ ExifParser.prototype.readTagValue = function(br, tag) {
    */
   function unsafeRead(size, opt_readFunction, opt_signed) {
     const readFunction = opt_readFunction || (size => {
-      return br.readScalar(size, opt_signed);
-    });
+                           return br.readScalar(size, opt_signed);
+                         });
 
     const totalSize = tag.componentCount * size;
     if (totalSize < 1) {
@@ -367,12 +373,12 @@ ExifParser.prototype.readTagValue = function(br, tag) {
   }
 
   switch (tag.format) {
-    case 1: // Byte
-    case 7: // Undefined
+    case 1:  // Byte
+    case 7:  // Undefined
       safeRead(1);
       break;
 
-    case 2: // String
+    case 2:  // String
       safeRead(1);
       if (tag.componentCount === 0) {
         tag.value = '';
@@ -385,39 +391,41 @@ ExifParser.prototype.readTagValue = function(br, tag) {
       this.validateAndFixStringTag_(tag);
       break;
 
-    case 3: // Short
+    case 3:  // Short
       safeRead(2);
       break;
 
-    case 4: // Long
+    case 4:  // Long
       safeRead(4);
       break;
 
-    case 9: // Signed Long
+    case 9:  // Signed Long
       safeRead(4, undefined, true);
       break;
 
-    case 5: // Rational
+    case 5:  // Rational
       safeRead(8, () => {
         return [br.readScalar(4), br.readScalar(4)];
       });
       break;
 
-    case 10: // Signed Rational
+    case 10:  // Signed Rational
       safeRead(8, () => {
         return [br.readScalar(4, true), br.readScalar(4, true)];
       });
       break;
 
-    default: // ???
-      this.vlog('Unknown tag format 0x' + Number(tag.id).toString(16) +
-                ': ' + tag.format);
+    default:  // ???
+      this.vlog(
+          'Unknown tag format 0x' + Number(tag.id).toString(16) + ': ' +
+          tag.format);
       safeRead(4);
       break;
   }
 
-  this.vlog('Read tag: 0x' + tag.id.toString(16) + '/' + tag.format + ': ' +
-            tag.value);
+  this.vlog(
+      'Read tag: 0x' + tag.id.toString(16) + '/' + tag.format + ': ' +
+      tag.value);
 };
 
 /**
@@ -426,12 +434,13 @@ ExifParser.prototype.readTagValue = function(br, tag) {
  * @private
  */
 ExifParser.prototype.validateAndFixStringTag_ = function(tag) {
-  if (tag.format === 2) { // string
+  if (tag.format === 2) {  // string
     // String should end with null character.
     if (tag.value.charAt(tag.value.length - 1) !== '\0') {
       tag.value += '\0';
       tag.componentCount = tag.value.length;
-      this.vlog('Invalid format: 0x' + tag.id.toString(16) + '/' + tag.format +
+      this.vlog(
+          'Invalid format: 0x' + tag.id.toString(16) + '/' + tag.format +
           ': Did not end with null character. Null character is appended.');
     }
   }

@@ -13,7 +13,6 @@
 
 #include "api/video/i420_buffer.h"
 #include "api/video/video_frame_buffer.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "common_video/libyuv/include/webrtc_libyuv.h"
 #include "modules/video_capture/video_capture_config.h"
 #include "modules/video_capture/video_capture_impl.h"
@@ -25,13 +24,6 @@
 
 namespace webrtc {
 namespace videocapturemodule {
-rtc::scoped_refptr<VideoCaptureModule> VideoCaptureImpl::Create(
-    VideoCaptureExternal*& externalCapture) {
-  rtc::scoped_refptr<VideoCaptureImpl> implementation(
-      new rtc::RefCountedObject<VideoCaptureImpl>());
-  externalCapture = implementation.get();
-  return implementation;
-}
 
 const char* VideoCaptureImpl::CurrentDeviceName() const {
   return _deviceUniqueId;

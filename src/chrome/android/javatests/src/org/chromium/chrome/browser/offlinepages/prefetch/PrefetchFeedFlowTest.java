@@ -19,10 +19,11 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -39,6 +40,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 import org.chromium.components.download.NetworkStatusListenerAndroid;
@@ -47,9 +49,12 @@ import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_pages.core.prefetch.proto.StatusOuterClass;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.net.NetworkChangeNotifierAutoDetect;
 import org.chromium.net.test.util.WebServer;
+import org.chromium.ui.test.util.UiDisableIf;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -58,12 +63,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Instrumentation tests for Prefetch, using the Feed as the suggestion provider.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@Restriction({ChromeRestriction.RESTRICTION_TYPE_REQUIRES_TOUCH})
 @RetryOnFailure
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
@@ -95,6 +102,7 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
             "https://www.nytimes.com/2017/11/10/world/asia/trump-apec-asia-trade.html";
     private static final String THUMBNAIL_URL2 =
             "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRh1tEaJT-br6mBxM89U3vgjDldwb9L_baZszhstAGMQh3_fuG13ax3C9ewR2tq45tbZj74CHl3KNU";
+    private static final String GCM_TOKEN = "dummy_gcm_token";
 
     // Returns a small PNG image data.
     private static byte[] testImageData() {
@@ -116,6 +124,20 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
         public NetworkState getCurrentNetworkState() {
             return new NetworkState(true, ConnectivityManager.TYPE_WIFI, 0, null, false);
         }
+    }
+
+    // Helper for checking isPrefetchingEnabledByServer().
+    private boolean isEnabledByServer() {
+        final AtomicBoolean isEnabled = new AtomicBoolean();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { isEnabled.set(PrefetchConfiguration.isPrefetchingEnabledByServer()); });
+        return isEnabled.get();
+    }
+
+    private void waitForServerEnabledValue(boolean wanted) {
+        CriteriaHelper.pollUiThread(() -> {
+            return PrefetchConfiguration.isPrefetchingEnabledByServer() == wanted;
+        }, "never got wanted value", 5000, 200);
     }
 
     @Rule
@@ -163,7 +185,7 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
         mActivityTestRule.startMainActivityOnBlankPage();
 
         // Register Offline Page observer and enable limitless prefetching.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mProfile = mActivityTestRule.getActivity().getActivityTab().getProfile();
             OfflinePageBridge.getForProfile(mProfile).addObserver(
                     new OfflinePageBridge.OfflinePageModelObserver() {
@@ -176,6 +198,8 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
             PrefetchTestBridge.enableLimitlessPrefetching(true);
             PrefetchTestBridge.skipNTPSuggestionsAPIKeyCheck();
         });
+
+        OfflineTestUtil.setPrefetchingEnabledByServer(true);
     }
 
     @After
@@ -214,7 +238,7 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
     private Bitmap findVisuals(ContentId id) throws InterruptedException, TimeoutException {
         final CallbackHelper finished = new CallbackHelper();
         final AtomicReference<Bitmap> result = new AtomicReference<Bitmap>();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             offlineContentProvider().getVisualsForItem(id, (resultId, visuals) -> {
                 if (visuals != null) {
                     result.set(visuals.icon);
@@ -229,9 +253,11 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
     private void runAndWaitForBackgroundTask() throws Throwable {
         final CallbackHelper finished = new CallbackHelper();
         PrefetchBackgroundTask task = new PrefetchBackgroundTask();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             TaskParameters.Builder builder =
-                    TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
+                    TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID)
+                            .addExtras(PrefetchBackgroundTaskScheduler.createGCMTokenBundle(
+                                    GCM_TOKEN));
             PrefetchBackgroundTask.skipConditionCheckingForTesting();
             task.onStartTask(ContextUtils.getApplicationContext(), builder.build(),
                     (boolean needsReschedule) -> { finished.notifyCalled(); });
@@ -268,7 +294,7 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
     /** Trigger conditions required to load NTP snippets. */
     private void forceLoadSnippets() throws Throwable {
         // NTP suggestions require a connection and an accepted EULA.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             NetworkChangeNotifier.forceConnectivityState(true);
             PrefServiceBridge.getInstance().setEulaAccepted();
         });
@@ -287,7 +313,7 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
     public void testPrefetchSinglePageSuccess() throws Throwable {
         // TODO(crbug.com/845310): Expand this test. There's some important flows missing and
         // systems missing.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefetchTestBridge.insertIntoCachedImageFetcher(THUMBNAIL_URL1, testImageData());
         });
 
@@ -319,7 +345,11 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
         Assert.assertEquals(THUMBNAIL_HEIGHT, visuals.getHeight());
     }
 
-    /** Request two pages. One is ready later, and one fails immediately. */
+    /**
+     *  Request two pages. One is ready later, and one fails immediately.
+     *
+     *  WARNING: this test might be flakey, sometimes waiting for the callback times out regardless.
+     */
     @Test
     @MediumTest
     @Feature({"OfflinePrefetchFeed"})
@@ -350,5 +380,59 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
         Assert.assertEquals(URL2, mAddedPages.get(0).getUrl());
         Assert.assertEquals(readyLater.body.length, mAddedPages.get(0).getFileSize());
         Assert.assertNotEquals("", mAddedPages.get(0).getFilePath());
+    }
+
+    /** Request a page and get a Forbidden response. The enabled-by-server state should change. */
+    @Test
+    @MediumTest
+    @Feature({"OfflinePrefetchFeed"})
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/950749
+    public void testPrefetchForbiddenByServer() throws Throwable {
+        mOPS.setForbidGeneratePageBundle(true);
+
+        Assert.assertTrue(isEnabledByServer());
+
+        forceLoadSnippets();
+        runBackgroundTaskUntilCallCountReached(mOPS.GeneratePageBundleCalled, 0, 1);
+        waitForServerEnabledValue(false);
+
+        Assert.assertFalse(isEnabledByServer());
+    }
+
+    /**
+     * Check that a server-enabled check can enable prefetching.
+     */
+    @Test
+    @MediumTest
+    @Feature({"OfflinePrefetchFeed"})
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/950749
+    public void testPrefetchBecomesEnabledByServer() throws Throwable {
+        OfflineTestUtil.setPrefetchingEnabledByServer(false);
+
+        Assert.assertFalse(isEnabledByServer());
+
+        forceLoadSnippets();
+        waitForServerEnabledValue(true);
+
+        Assert.assertTrue(isEnabledByServer());
+    }
+
+    /**
+     * Check that prefetching remains disabled by the server after receiving a forbidden
+     * response.
+     */
+    @Test
+    @MediumTest
+    @Feature({"OfflinePrefetchFeed"})
+    public void testPrefetchRemainsDisabledByServer() throws Throwable {
+        OfflineTestUtil.setPrefetchingEnabledByServer(false);
+        mOPS.setForbidGeneratePageBundle(true);
+
+        Assert.assertFalse(isEnabledByServer());
+
+        forceLoadSnippets();
+        waitForServerEnabledValue(false);
+
+        Assert.assertFalse(isEnabledByServer());
     }
 }

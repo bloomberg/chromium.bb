@@ -32,7 +32,6 @@ include_rules = [
   "+services/network/public",
   "+services/network/test",
   "+sql",
-  "+third_party/fips181",
   "+third_party/libaddressinput", # For address i18n.
   "+third_party/libphonenumber",  # For phone number i18n.
   "+third_party/re2",

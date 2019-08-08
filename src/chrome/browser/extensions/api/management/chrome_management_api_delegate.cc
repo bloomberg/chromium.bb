@@ -10,19 +10,30 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/bookmark_app_helper.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/installable/installable_manager.h"
+#include "chrome/browser/installable/installable_metrics.h"
+#include "chrome/browser/installable/installable_params.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
+#include "chrome/browser/web_applications/components/install_manager.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/web_application_info.h"
@@ -44,6 +55,11 @@
 #endif
 
 namespace {
+
+using InstallWebAppCallback =
+    extensions::ManagementAPIDelegate::InstallWebAppCallback;
+using InstallWebAppResult =
+    extensions::ManagementAPIDelegate::InstallWebAppResult;
 
 class ManagementSetEnabledFunctionInstallPromptDelegate
     : public extensions::InstallPromptDelegate {
@@ -141,6 +157,14 @@ class ManagementUninstallFunctionUninstallDialogDelegate
   DISALLOW_COPY_AND_ASSIGN(ManagementUninstallFunctionUninstallDialogDelegate);
 };
 
+void OnGenerateAppForLinkCompleted(
+    extensions::ManagementGenerateAppForLinkFunction* function,
+    const web_app::AppId& app_id,
+    web_app::InstallResultCode code) {
+  const bool install_success = code == web_app::InstallResultCode::kSuccess;
+  function->FinishCreateWebApp(app_id, install_success);
+}
+
 class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
  public:
   ChromeAppForLinkDelegate() {}
@@ -152,32 +176,71 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
       const std::string& title,
       const GURL& launch_url,
       const favicon_base::FaviconImageResult& image_result) {
-    WebApplicationInfo web_app;
-    web_app.title = base::UTF8ToUTF16(title);
-    web_app.app_url = launch_url;
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    web_app_info->title = base::UTF8ToUTF16(title);
+    web_app_info->app_url = launch_url;
 
     if (!image_result.image.IsEmpty()) {
       WebApplicationInfo::IconInfo icon;
       icon.data = image_result.image.AsBitmap();
       icon.width = icon.data.width();
       icon.height = icon.data.height();
-      web_app.icons.push_back(icon);
+      web_app_info->icons.push_back(icon);
     }
 
-    bookmark_app_helper_.reset(new extensions::BookmarkAppHelper(
-        Profile::FromBrowserContext(context), web_app, nullptr,
-        WebappInstallSource::MANAGEMENT_API));
-    bookmark_app_helper_->Create(
-        base::Bind(&extensions::ManagementGenerateAppForLinkFunction::
-                       FinishCreateBookmarkApp,
-                   function));
-  }
+    auto* provider = web_app::WebAppProviderBase::GetProviderBase(
+        Profile::FromBrowserContext(context));
+    DCHECK(provider);
 
-  std::unique_ptr<extensions::BookmarkAppHelper> bookmark_app_helper_;
+    provider->install_manager().InstallWebAppFromInfo(
+        std::move(web_app_info), /*no_network_install=*/false,
+        WebappInstallSource::MANAGEMENT_API,
+        base::BindOnce(OnGenerateAppForLinkCompleted,
+                       base::RetainedRef(function)));
+  }
 
   // Used for favicon loading tasks.
   base::CancelableTaskTracker cancelable_task_tracker_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromeAppForLinkDelegate);
 };
+
+void OnWebAppInstallCompleted(InstallWebAppCallback callback,
+                              const web_app::AppId& app_id,
+                              web_app::InstallResultCode code) {
+  InstallWebAppResult result;
+  // TODO(loyso): Update this when more of the web_app::InstallResultCodes are
+  // actually set.
+  switch (code) {
+    case web_app::InstallResultCode::kSuccess:
+      result = InstallWebAppResult::kSuccess;
+      break;
+    default:
+      result = InstallWebAppResult::kUnknownError;
+  }
+  std::move(callback).Run(result);
+}
+
+void OnDidInstallWebAppInstallableCheck(
+    Profile* profile,
+    InstallWebAppCallback callback,
+    std::unique_ptr<content::WebContents> web_contents,
+    bool is_installable) {
+  if (!is_installable) {
+    std::move(callback).Run(InstallWebAppResult::kInvalidWebApp);
+    return;
+  }
+
+  content::WebContents* containing_contents = web_contents.get();
+  chrome::ScopedTabbedBrowserDisplayer displayer(profile);
+  chrome::AddWebContents(displayer.browser(), nullptr, std::move(web_contents),
+                         WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                         gfx::Rect());
+  web_app::CreateWebAppFromManifest(
+      containing_contents, WebappInstallSource::MANAGEMENT_API,
+      base::BindOnce(&OnWebAppInstallCompleted, std::move(callback)));
+}
 
 }  // namespace
 
@@ -302,12 +365,29 @@ ChromeManagementAPIDelegate::GenerateAppForLinkFunctionDelegate(
   return std::unique_ptr<extensions::AppForLinkDelegate>(delegate);
 }
 
-bool ChromeManagementAPIDelegate::CanHostedAppsOpenInWindows() const {
-  return extensions::util::CanHostedAppsOpenInWindows();
+bool ChromeManagementAPIDelegate::IsWebAppInstalled(
+    content::BrowserContext* context,
+    const GURL& web_app_url) const {
+  return extensions::BookmarkOrHostedAppInstalled(context, web_app_url);
 }
 
-bool ChromeManagementAPIDelegate::IsNewBookmarkAppsEnabled() const {
-  return extensions::util::IsNewBookmarkAppsEnabled();
+bool ChromeManagementAPIDelegate::CanContextInstallWebApps(
+    content::BrowserContext* context) const {
+  return web_app::AreWebAppsUserInstallable(
+      Profile::FromBrowserContext(context));
+}
+
+void ChromeManagementAPIDelegate::InstallReplacementWebApp(
+    content::BrowserContext* context,
+    const GURL& web_app_url,
+    InstallWebAppCallback callback) const {
+  Profile* profile = Profile::FromBrowserContext(context);
+  auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile);
+  DCHECK(provider);
+
+  provider->install_manager().LoadWebAppAndCheckInstallability(
+      web_app_url, base::BindOnce(&OnDidInstallWebAppInstallableCheck, profile,
+                                  std::move(callback)));
 }
 
 void ChromeManagementAPIDelegate::EnableExtension(

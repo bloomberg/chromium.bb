@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
+#include "build/build_config.h"
 #include "chrome/browser/vr/elements/button.h"
 #include "chrome/browser/vr/elements/content_element.h"
 #include "chrome/browser/vr/elements/disc_button.h"
@@ -140,7 +141,8 @@ TEST_F(UiTest, WebVrToastTransience) {
   browser_ui->SetCapturingState(CapturingStateModel(), CapturingStateModel(),
                                 CapturingStateModel());
   EXPECT_TRUE(IsVisible(kWebVrExclusiveScreenToast));
-  EXPECT_TRUE(RunForSeconds(kToastTimeoutSeconds + kSmallDelaySeconds));
+  EXPECT_TRUE(
+      RunForSeconds(kWmrInitialIndicatorsTimeoutSeconds + kSmallDelaySeconds));
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 
   browser_ui->SetWebVrMode(false);
@@ -180,6 +182,10 @@ TEST_F(UiTest, CaptureToasts) {
 
   for (auto& spec : GetIndicatorSpecs()) {
     for (int i = 0; i < 3; ++i) {
+#if !defined(OS_ANDROID)
+      if (i == 1)  // Skip background tabs for non-Android platforms.
+        continue;
+#endif
       browser_ui->SetWebVrMode(true);
       ui_->GetSchedulerUiPtr()->OnWebXrFrameAvailable();
 
@@ -188,15 +194,36 @@ TEST_F(UiTest, CaptureToasts) {
       CapturingStateModel potential_capturing;
       active_capturing.*spec.signal = i == 0;
       // High accuracy location cannot be used in a background tab.
+      // Also, capturing USB and Midi cannot be done in background tab.
       background_capturing.*spec.signal =
-          i == 1 && spec.name != kLocationAccessIndicator;
-      potential_capturing.*spec.signal = true;
+          i == 1 && spec.name != kLocationAccessIndicator &&
+          spec.name != kUsbConnectedIndicator &&
+          spec.name != kMidiConnectedIndicator;
+      potential_capturing.*spec.signal =
+          i == 2 && spec.name != kUsbConnectedIndicator;
+
+      int string_id = 0;
+      switch (i) {
+        case 0:
+          string_id = spec.resource_string;
+          break;
+        case 1:
+          string_id = spec.background_resource_string;
+          break;
+        case 2:
+          string_id = spec.potential_resource_string;
+          break;
+        default:
+          NOTREACHED();
+          break;
+      }
 
       browser_ui->SetCapturingState(active_capturing, background_capturing,
                                     potential_capturing);
       EXPECT_TRUE(IsVisible(kWebVrExclusiveScreenToast));
-      EXPECT_TRUE(IsVisible(spec.webvr_name));
-      EXPECT_TRUE(RunForSeconds(kToastTimeoutSeconds + kSmallDelaySeconds));
+      EXPECT_TRUE(IsVisible(spec.webvr_name) == (string_id != 0));
+      EXPECT_TRUE(RunForSeconds(kWmrInitialIndicatorsTimeoutSeconds +
+                                kSmallDelaySeconds));
       EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 
       browser_ui->SetWebVrMode(false);
@@ -623,6 +650,8 @@ TEST_F(UiTest, UiUpdatesForWebVR) {
   model_->active_capturing.screen_capture_enabled = true;
   model_->active_capturing.location_access_enabled = true;
   model_->active_capturing.bluetooth_connected = true;
+  model_->active_capturing.usb_connected = true;
+  model_->active_capturing.midi_connected = true;
 
   VerifyOnlyElementsVisible("Elements hidden",
                             std::set<UiElementName>{kWebVrBackground});
@@ -652,6 +681,8 @@ TEST_F(UiTest, UiUpdateTransitionToWebVR) {
   model_->active_capturing.screen_capture_enabled = true;
   model_->active_capturing.location_access_enabled = true;
   model_->active_capturing.bluetooth_connected = true;
+  model_->active_capturing.usb_connected = true;
+  model_->active_capturing.midi_connected = true;
 
   // Transition to WebVR mode
   ui_->GetBrowserUiWeakPtr()->SetWebVrMode(true);
@@ -679,6 +710,8 @@ TEST_F(UiTest, CaptureIndicatorsVisibility) {
   model_->active_capturing.screen_capture_enabled = true;
   model_->active_capturing.location_access_enabled = true;
   model_->active_capturing.bluetooth_connected = true;
+  model_->active_capturing.usb_connected = true;
+  model_->active_capturing.midi_connected = true;
   EXPECT_TRUE(VerifyVisibility(indicators, true));
   EXPECT_TRUE(VerifyRequiresLayout(indicators, true));
 
@@ -700,6 +733,8 @@ TEST_F(UiTest, CaptureIndicatorsVisibility) {
   model_->active_capturing.screen_capture_enabled = false;
   model_->active_capturing.location_access_enabled = false;
   model_->active_capturing.bluetooth_connected = false;
+  model_->active_capturing.usb_connected = false;
+  model_->active_capturing.midi_connected = false;
   EXPECT_TRUE(VerifyRequiresLayout(indicators, false));
 }
 
@@ -785,14 +820,19 @@ TEST_F(UiTest, WebVrTimeout) {
   model_->web_vr.state = kWebVrAwaitingFirstFrame;
 
   RunForMs(500);
+  // On Windows, the timeout message button is not shown.
+#if !defined(OS_WIN)
   VerifyVisibility(
-      {
-          kWebVrTimeoutSpinner, kWebVrTimeoutMessage,
-          kWebVrTimeoutMessageLayout, kWebVrTimeoutMessageIcon,
-          kWebVrTimeoutMessageText, kWebVrTimeoutMessageButton,
-          kWebVrTimeoutMessageButtonText,
-      },
+      {kWebVrTimeoutSpinner, kWebVrTimeoutMessage, kWebVrTimeoutMessageLayout,
+       kWebVrTimeoutMessageIcon, kWebVrTimeoutMessageText,
+       kWebVrTimeoutMessageButton, kWebVrTimeoutMessageButtonText},
       false);
+#else
+  VerifyVisibility(
+      {kWebVrTimeoutSpinner, kWebVrTimeoutMessage, kWebVrTimeoutMessageLayout,
+       kWebVrTimeoutMessageIcon, kWebVrTimeoutMessageText},
+      false);
+#endif  // OS_WIN
   VerifyVisibility(
       {
           kWebVrBackground,
@@ -801,13 +841,17 @@ TEST_F(UiTest, WebVrTimeout) {
 
   model_->web_vr.state = kWebVrTimeoutImminent;
   RunForMs(500);
-  VerifyVisibility(
-      {
-          kWebVrTimeoutMessage, kWebVrTimeoutMessageLayout,
-          kWebVrTimeoutMessageIcon, kWebVrTimeoutMessageText,
-          kWebVrTimeoutMessageButton, kWebVrTimeoutMessageButtonText,
-      },
-      false);
+  // On Windows, the timeout message button is not shown.
+#if !defined(OS_WIN)
+  VerifyVisibility({kWebVrTimeoutMessage, kWebVrTimeoutMessageLayout,
+                    kWebVrTimeoutMessageIcon, kWebVrTimeoutMessageText,
+                    kWebVrTimeoutMessageButton, kWebVrTimeoutMessageButtonText},
+                   false);
+#else
+  VerifyVisibility({kWebVrTimeoutMessage, kWebVrTimeoutMessageLayout,
+                    kWebVrTimeoutMessageIcon, kWebVrTimeoutMessageText},
+                   false);
+#endif  // OS_WIN
   VerifyVisibility(
       {
           kWebVrTimeoutSpinner, kWebVrBackground,
@@ -821,13 +865,19 @@ TEST_F(UiTest, WebVrTimeout) {
           kWebVrTimeoutSpinner,
       },
       false);
+// On Windows, the timeout message button is not shown.
+#if !defined(OS_WIN)
   VerifyVisibility(
-      {
-          kWebVrBackground, kWebVrTimeoutMessage, kWebVrTimeoutMessageLayout,
-          kWebVrTimeoutMessageIcon, kWebVrTimeoutMessageText,
-          kWebVrTimeoutMessageButton, kWebVrTimeoutMessageButtonText,
-      },
+      {kWebVrBackground, kWebVrTimeoutMessage, kWebVrTimeoutMessageLayout,
+       kWebVrTimeoutMessageIcon, kWebVrTimeoutMessageText,
+       kWebVrTimeoutMessageButton, kWebVrTimeoutMessageButtonText},
       true);
+#else
+  VerifyVisibility(
+      {kWebVrBackground, kWebVrTimeoutMessage, kWebVrTimeoutMessageLayout,
+       kWebVrTimeoutMessageIcon, kWebVrTimeoutMessageText},
+      true);
+#endif  // OS_WIN
 }
 
 TEST_F(UiTest, SpeechRecognitionUiVisibility) {
@@ -1291,6 +1341,7 @@ TEST_F(UiTest, RepositionHostedUi) {
 
 // Ensures that permissions do not appear after showing hosted UI.
 TEST_F(UiTest, DoNotShowIndicatorsAfterHostedUi) {
+#if !defined(OS_WIN)
   CreateScene(kInWebVr);
   auto browser_ui = ui_->GetBrowserUiWeakPtr();
   browser_ui->SetWebVrMode(true);
@@ -1307,12 +1358,14 @@ TEST_F(UiTest, DoNotShowIndicatorsAfterHostedUi) {
   model_->web_vr.showing_hosted_ui = false;
   OnBeginFrame();
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
+#endif
 }
 
 // Ensures that permissions appear on long press, and that when the menu button
 // is released that we do not show the exclusive screen toast. Distinguishing
 // these cases requires knowledge of the previous state.
 TEST_F(UiTest, LongPressMenuButtonInWebVrMode) {
+#if !defined(OS_WIN)
   CreateScene(kInWebVr);
   auto browser_ui = ui_->GetBrowserUiWeakPtr();
   browser_ui->SetWebVrMode(true);
@@ -1344,6 +1397,7 @@ TEST_F(UiTest, LongPressMenuButtonInWebVrMode) {
       std::make_unique<InputEvent>(InputEvent::kMenuButtonLongPressEnd));
   ui_->HandleMenuButtonEvents(&events);
   EXPECT_FALSE(model_->menu_button_long_pressed);
+#endif
 }
 
 TEST_F(UiTest, MenuItems) {

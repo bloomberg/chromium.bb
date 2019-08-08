@@ -159,6 +159,17 @@ void DisableInteractionWithSystemAccounts();
 // Cancels all ongoing operations related to the accounts in the Gaia cookie.
 void CancelAllOngoingGaiaCookieOperations(IdentityManager* identity_manager);
 
+// Simulate account fetching using AccountTrackerService without sending
+// network requests.
+void SimulateSuccessfulFetchOfAccountInfo(IdentityManager* identity_manager,
+                                          const std::string& account_id,
+                                          const std::string& email,
+                                          const std::string& gaia,
+                                          const std::string& hosted_domain,
+                                          const std::string& full_name,
+                                          const std::string& given_name,
+                                          const std::string& locale,
+                                          const std::string& picture_url);
 }  // namespace identity
 
 #endif  // SERVICES_IDENTITY_PUBLIC_CPP_IDENTITY_TEST_UTILS_H_

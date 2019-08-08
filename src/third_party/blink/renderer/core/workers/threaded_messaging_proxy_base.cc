@@ -35,6 +35,10 @@ ThreadedMessagingProxyBase::ThreadedMessagingProxyBase(
       terminate_sync_load_event_(
           base::WaitableEvent::ResetPolicy::MANUAL,
           base::WaitableEvent::InitialState::NOT_SIGNALED),
+      feature_handle_for_scheduler_(
+          execution_context->GetScheduler()->RegisterFeature(
+              SchedulingPolicy::Feature::kDedicatedWorkerOrWorklet,
+              {SchedulingPolicy::RecordMetricsForBackForwardCache()})),
       keep_alive_(this) {
   DCHECK(IsParentContextThread());
   g_live_messaging_proxy_count++;
@@ -91,7 +95,7 @@ void ThreadedMessagingProxyBase::CountDeprecation(WebFeature feature) {
 }
 
 void ThreadedMessagingProxyBase::ReportConsoleMessage(
-    MessageSource source,
+    mojom::ConsoleMessageSource source,
     mojom::ConsoleMessageLevel level,
     const String& message,
     std::unique_ptr<SourceLocation> location) {
@@ -144,6 +148,8 @@ void ThreadedMessagingProxyBase::TerminateGlobalScope() {
   if (asked_to_terminate_)
     return;
   asked_to_terminate_ = true;
+
+  feature_handle_for_scheduler_.reset();
 
   terminate_sync_load_event_.Signal();
 

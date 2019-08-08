@@ -69,7 +69,7 @@ void FeedbackService::AttachedFileCallback(
     int64_t /* total_blob_length */) {
   feedback_data->set_attached_file_uuid(std::string());
   if (data)
-    feedback_data->AttachAndCompressFileData(std::move(data));
+    feedback_data->AttachAndCompressFileData(std::move(*data));
 
   CompleteSendFeedback(feedback_data, callback);
 }
@@ -81,7 +81,7 @@ void FeedbackService::ScreenshotCallback(
     int64_t /* total_blob_length */) {
   feedback_data->set_screenshot_uuid(std::string());
   if (data)
-    feedback_data->set_image(std::move(data));
+    feedback_data->set_image(std::move(*data));
 
   CompleteSendFeedback(feedback_data, callback);
 }
@@ -110,9 +110,7 @@ void FeedbackService::CompleteSendFeedback(
           ->BindInterface(ash::mojom::kServiceName, &assistant_controller);
       assistant_controller->SendAssistantFeedback(
           feedback_data->assistant_debug_info_allowed(),
-          feedback_data->description(),
-          (feedback_data->image() != nullptr) ? *(feedback_data->image())
-                                              : std::string());
+          feedback_data->description(), feedback_data->image());
     }
 #endif
 

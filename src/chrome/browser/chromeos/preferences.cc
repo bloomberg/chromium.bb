@@ -199,6 +199,10 @@ void Preferences::RegisterProfilePrefs(
     hardware_keyboard_id = "xkb:us::eng";  // only for testing.
   }
 
+  registry->RegisterBooleanPref(ash::prefs::kKioskNextShellEnabled,
+                                false /* default_value */,
+                                PrefRegistry::PUBLIC);
+
   registry->RegisterBooleanPref(prefs::kPerformanceTracingEnabled, false);
 
   // This pref is device specific and must not be synced.
@@ -292,9 +296,16 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       ash::prefs::kAccessibilityAutoclickRevertToLeftClick, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(
+      ash::prefs::kAccessibilityAutoclickStabilizePosition, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterIntegerPref(
       ash::prefs::kAccessibilityAutoclickMovementThreshold,
       ash::kDefaultAutoclickMovementThreshold,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterIntegerPref(
+      ash::prefs::kAccessibilityAutoclickMenuPosition,
+      static_cast<int>(ash::kDefaultAutoclickMenuPosition),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(
       ash::prefs::kAccessibilityVirtualKeyboardEnabled, false,
@@ -587,6 +598,7 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
   pref_change_registrar_.Add(prefs::kResolveTimezoneByGeolocationMethod,
                              callback);
   pref_change_registrar_.Add(prefs::kUse24HourClock, callback);
+  pref_change_registrar_.Add(prefs::kParentAccessCodeConfig, callback);
   for (auto* remap_pref : kLanguageRemapPrefs)
     pref_change_registrar_.Add(remap_pref, callback);
 }
@@ -940,6 +952,20 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     const bool value = prefs_->GetBoolean(prefs::kUse24HourClock);
     user_manager::known_user::SetBooleanPref(user_->GetAccountId(),
                                              prefs::kUse24HourClock, value);
+  }
+
+  if (pref_name == prefs::kParentAccessCodeConfig ||
+      reason != REASON_PREF_CHANGED) {
+    const base::Value* value =
+        prefs_->GetDictionary(prefs::kParentAccessCodeConfig);
+    if (value && prefs_->IsManagedPreference(prefs::kParentAccessCodeConfig)) {
+      user_manager::known_user::SetPref(user_->GetAccountId(),
+                                        prefs::kKnownUserParentAccessCodeConfig,
+                                        value->Clone());
+    } else {
+      user_manager::known_user::RemovePref(
+          user_->GetAccountId(), prefs::kKnownUserParentAccessCodeConfig);
+    }
   }
 
   for (auto* remap_pref : kLanguageRemapPrefs) {

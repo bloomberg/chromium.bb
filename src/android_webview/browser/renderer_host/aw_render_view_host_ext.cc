@@ -135,10 +135,10 @@ void AwRenderViewHostExt::SetJsOnlineProperty(bool network_up) {
 
 void AwRenderViewHostExt::SmoothScroll(int target_x,
                                        int target_y,
-                                       long duration_ms) {
-  web_contents()->GetMainFrame()->Send(new AwViewMsg_SmoothScroll(
-      web_contents()->GetMainFrame()->GetRoutingID(), target_x, target_y,
-      static_cast<int>(duration_ms)));
+                                       uint64_t duration_ms) {
+  web_contents()->GetMainFrame()->Send(
+      new AwViewMsg_SmoothScroll(web_contents()->GetMainFrame()->GetRoutingID(),
+                                 target_x, target_y, duration_ms));
 }
 
 void AwRenderViewHostExt::RenderViewHostChanged(
@@ -205,7 +205,7 @@ bool AwRenderViewHostExt::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  return handled ? true : WebContentsObserver::OnMessageReceived(message);
+  return handled;
 }
 
 void AwRenderViewHostExt::OnInterfaceRequestFromFrame(

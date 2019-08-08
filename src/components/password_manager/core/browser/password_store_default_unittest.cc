@@ -276,7 +276,7 @@ TEST(PasswordStoreDefaultTest, OperationsOnABadDatabaseSilentlyFail) {
   delegate.FinishAsyncProcessing();
   testing::Mock::VerifyAndClearExpectations(&mock_consumer);
   EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
-  bad_store->GetBlacklistLogins(&mock_consumer);
+  bad_store->GetAllLogins(&mock_consumer);
   delegate.FinishAsyncProcessing();
   testing::Mock::VerifyAndClearExpectations(&mock_consumer);
 

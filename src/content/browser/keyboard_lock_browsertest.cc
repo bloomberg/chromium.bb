@@ -132,7 +132,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewAura {
                                  false /* is_mus_browser_plugin_guest */) {}
   ~TestRenderWidgetHostView() override {}
 
-  bool HasFocus() const override { return g_window_has_focus; }
+  bool HasFocus() override { return g_window_has_focus; }
 
   void OnWindowFocused(aura::Window* gained_focus,
                        aura::Window* lost_focus) override {
@@ -294,8 +294,7 @@ void KeyboardLockBrowserTest::SetUpOnMainThread() {
   web_contents()->SetDelegate(&web_contents_delegate_);
 
   // KeyboardLock requires a secure context (HTTPS).
-  https_test_server()->AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+  https_test_server()->AddDefaultHandlers(GetTestDataFilePath());
   host_resolver()->AddRule("*", "127.0.0.1");
   SetupCrossSiteRedirector(https_test_server());
   ASSERT_TRUE(https_test_server()->Start());
@@ -817,15 +816,15 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
   ASSERT_TRUE(web_contents()->GetKeyboardLockWidget());
   ASSERT_FALSE(web_contents()->GetRenderWidgetHostView()->IsKeyboardLocked());
 
-  RenderFrameHost* main_frame = web_contents()->GetMainFrame();
-  RenderFrameHost* child = ChildFrameAt(main_frame, 2);
-  ASSERT_TRUE(child);
-
   // The third child is cross-domain and has the allowfullscreen attribute set.
   ASSERT_TRUE(
       NavigateIframeToURL(web_contents(), kChildIframeName_2,
                           https_test_server()->GetURL(kCrossSiteChildDomain2,
                                                       kFullscreenFramePath)));
+  RenderFrameHost* main_frame = web_contents()->GetMainFrame();
+  RenderFrameHost* child = ChildFrameAt(main_frame, 2);
+  ASSERT_TRUE(child);
+
   ASSERT_TRUE(ExecuteScript(child, "activateFullscreen()"));
 
   ASSERT_EQ(main_frame->GetView()->GetRenderWidgetHost(),
@@ -840,15 +839,15 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
   // frame activates fullscreen.
   NavigateToTestURL(https_cross_site_frame());
 
-  RenderFrameHost* main_frame = web_contents()->GetMainFrame();
-  RenderFrameHost* child = ChildFrameAt(main_frame, 2);
-  ASSERT_TRUE(child);
-
   // The third child is cross-domain and has the allowfullscreen attribute set.
   ASSERT_TRUE(
       NavigateIframeToURL(web_contents(), kChildIframeName_2,
                           https_test_server()->GetURL(kCrossSiteChildDomain2,
                                                       kFullscreenFramePath)));
+  RenderFrameHost* main_frame = web_contents()->GetMainFrame();
+  RenderFrameHost* child = ChildFrameAt(main_frame, 2);
+  ASSERT_TRUE(child);
+
   ASSERT_TRUE(ExecuteScript(child, "activateFullscreen()"));
 
   RequestKeyboardLock(FROM_HERE);

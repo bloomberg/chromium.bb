@@ -14,6 +14,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnCreateContextMenuListener;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -44,6 +46,12 @@ public class HomeButton extends ChromeImageButton
     /** The {@link ActivityTabProvider} used to know if the active tab is on the NTP. */
     private ActivityTabProvider mActivityTabProvider;
 
+    /** The home button text label. */
+    private TextView mLabel;
+
+    /** The wrapper View that contains the home button and the label. */
+    private View mWrapper;
+
     public HomeButton(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -57,6 +65,24 @@ public class HomeButton extends ChromeImageButton
         }
 
         HomepageManager.getInstance().addListener(this);
+    }
+
+    /**
+     * @param wrapper The wrapping View of this button.
+     */
+    public void setWrapperView(ViewGroup wrapper) {
+        mWrapper = wrapper;
+        mLabel = mWrapper.findViewById(R.id.home_button_label);
+        if (FeatureUtilities.isLabeledBottomToolbarEnabled()) mLabel.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void setOnClickListener(OnClickListener listener) {
+        if (mWrapper != null) {
+            mWrapper.setOnClickListener(listener);
+        } else {
+            super.setOnClickListener(listener);
+        }
     }
 
     public void destroy() {
@@ -81,6 +107,7 @@ public class HomeButton extends ChromeImageButton
     @Override
     public void onTintChanged(ColorStateList tint, boolean useLight) {
         ApiCompatibilityUtils.setImageTintList(this, tint);
+        if (mLabel != null) mLabel.setTextColor(tint);
     }
 
     @Override
@@ -115,18 +142,25 @@ public class HomeButton extends ChromeImageButton
         };
     }
 
+    /**
+     * Menu button is enabled when not in NTP or if in NTP and homepage is enabled and set to
+     * somewhere other than the NTP.
+     */
     private void updateButtonEnabledState() {
-        if (FeatureUtilities.isNewTabPageButtonEnabled() || !HomepageManager.isHomepageEnabled()) {
-            setEnabled(!isActiveTabNTP());
-        } else {
-            setEnabled(true);
-        }
+        // New tab page button takes precedence over homepage.
+        final boolean isHomepageEnabled = !FeatureUtilities.isNewTabPageButtonEnabled()
+                && HomepageManager.isHomepageEnabled();
+        final boolean isEnabled = !isActiveTabNTP()
+                || (isHomepageEnabled && !NewTabPage.isNTPUrl(HomepageManager.getHomepageUri()));
+        setEnabled(isEnabled);
+        if (mWrapper != null) mWrapper.setEnabled(isEnabled);
+        if (mLabel != null) mLabel.setEnabled(isEnabled);
     }
 
     private boolean isActiveTabNTP() {
         if (mActivityTabProvider == null) return false;
 
-        final Tab tab = mActivityTabProvider.getActivityTab();
+        final Tab tab = mActivityTabProvider.get();
         if (tab == null) return false;
 
         return NewTabPage.isNTPUrl(tab.getUrl());

@@ -21,15 +21,18 @@ namespace safe_browsing {
 // Features list
 extern const base::Feature kAdSamplerTriggerFeature;
 
+// Controls whether we try to get the SafetyNet ID of the device for use when
+// a SBER user downloads an APK file.
+extern const base::Feature kCaptureSafetyNetId;
+
 extern const base::Feature kCheckByURLLoaderThrottle;
 
 // Controls if safe browsing interstitials are implemented as committed
 // navigations instead of overlays.
 extern const base::Feature kCommittedSBInterstitials;
 
-// Forces the chrome://reset-password page to be shown for review or testing
-// purpose.
-extern const base::Feature kForceEnableResetPasswordWebUI;
+// Enable GAIA password protection for signed-in users.
+extern const base::Feature kPasswordProtectionForSignedInUsers;
 
 // Controls the daily quota for the suspicious site trigger.
 extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
@@ -65,6 +68,9 @@ extern const base::Feature kInspectRarContentFeature;
 
 // Controls whether we use AP download protection.
 extern const base::Feature kUseAPDownloadProtection;
+
+// Controls whether the user has forcible enabled AP download protection.
+extern const base::Feature kForceUseAPDownloadProtection;
 
 base::ListValue GetFeatureStatusList();
 

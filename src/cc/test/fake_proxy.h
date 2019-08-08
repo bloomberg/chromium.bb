@@ -31,7 +31,6 @@ class FakeProxy : public Proxy {
   void SetNeedsRedraw(const gfx::Rect& damage_rect) override {}
   void SetNextCommitWaitsForActivation() override {}
   bool RequestedAnimatePending() override;
-  void NotifyInputThrottledUntilCommit() override {}
   void SetDeferMainFrameUpdate(bool defer_main_frame_update) override {}
   void StartDeferringCommits(base::TimeDelta timeout) override {}
   void StopDeferringCommits() override {}

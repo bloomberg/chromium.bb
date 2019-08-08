@@ -82,7 +82,7 @@ TEST(WebRequestConditionTest, CreateCondition) {
   std::unique_ptr<net::URLRequest> match_request(context.CreateRequest(
       http_url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
   content::ResourceRequestInfo::AllocateForTesting(
-      match_request.get(), content::RESOURCE_TYPE_MAIN_FRAME,
+      match_request.get(), content::ResourceType::kMainFrame,
       NULL,  // context
       -1,    // render_process_id
       -1,    // render_view_id
@@ -103,7 +103,7 @@ TEST(WebRequestConditionTest, CreateCondition) {
   std::unique_ptr<net::URLRequest> wrong_resource_type(context.CreateRequest(
       https_url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
   content::ResourceRequestInfo::AllocateForTesting(
-      wrong_resource_type.get(), content::RESOURCE_TYPE_SUB_FRAME,
+      wrong_resource_type.get(), content::ResourceType::kSubFrame,
       NULL,   // context
       -1,     // render_process_id
       -1,     // render_view_id
@@ -157,7 +157,7 @@ TEST(WebRequestConditionTest, CreateConditionFirstPartyForCookies) {
   request_data.first_party_url_match_ids = matcher.MatchURL(first_party_url);
   EXPECT_EQ(1u, request_data.first_party_url_match_ids.size());
   content::ResourceRequestInfo::AllocateForTesting(
-      match_request.get(), content::RESOURCE_TYPE_MAIN_FRAME,
+      match_request.get(), content::ResourceType::kMainFrame,
       NULL,  // context
       -1,    // render_process_id
       -1,    // render_view_id

@@ -12,7 +12,8 @@ namespace blink {
 
 class LayoutViewTest : public RenderingTest {
  public:
-  LayoutViewTest() : RenderingTest(SingleChildLocalFrameClient::Create()) {}
+  LayoutViewTest()
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 };
 
 TEST_F(LayoutViewTest, UpdateCountersLayout) {

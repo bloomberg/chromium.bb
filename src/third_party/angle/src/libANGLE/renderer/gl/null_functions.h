@@ -569,6 +569,12 @@ void INTERNAL_GL_APIENTRY glFramebufferTextureLayerNULL(GLenum target,
                                                         GLuint texture,
                                                         GLint level,
                                                         GLint layer);
+void INTERNAL_GL_APIENTRY glFramebufferTextureMultiviewOVRNULL(GLenum target,
+                                                               GLenum attachment,
+                                                               GLuint texture,
+                                                               GLint level,
+                                                               GLint baseViewIndex,
+                                                               GLsizei numViews);
 void INTERNAL_GL_APIENTRY glFrontFaceNULL(GLenum mode);
 void INTERNAL_GL_APIENTRY glGenBuffersNULL(GLsizei n, GLuint *buffers);
 void INTERNAL_GL_APIENTRY glGenFencesNVNULL(GLsizei n, GLuint *fences);
@@ -1036,6 +1042,8 @@ void *INTERNAL_GL_APIENTRY glMapNamedBufferRangeNULL(GLuint buffer,
                                                      GLsizeiptr length,
                                                      GLbitfield access);
 void INTERNAL_GL_APIENTRY glMatrixLoadfEXTNULL(GLenum mode, const GLfloat *m);
+void INTERNAL_GL_APIENTRY glMaxShaderCompilerThreadsARBNULL(GLuint count);
+void INTERNAL_GL_APIENTRY glMaxShaderCompilerThreadsKHRNULL(GLuint count);
 void INTERNAL_GL_APIENTRY glMemoryBarrierNULL(GLbitfield barriers);
 void INTERNAL_GL_APIENTRY glMemoryBarrierByRegionNULL(GLbitfield barriers);
 void INTERNAL_GL_APIENTRY glMinSampleShadingNULL(GLfloat value);

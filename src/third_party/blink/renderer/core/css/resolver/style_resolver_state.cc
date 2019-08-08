@@ -133,7 +133,7 @@ void StyleResolverState::CacheUserAgentBorderAndBackground() {
   if (!Style()->HasAppearance())
     return;
 
-  cached_ua_style_ = CachedUAStyle::Create(Style());
+  cached_ua_style_ = std::make_unique<CachedUAStyle>(Style());
 }
 
 void StyleResolverState::LoadPendingResources() {
@@ -177,7 +177,7 @@ void StyleResolverState::SetTextOrientation(ETextOrientation text_orientation) {
 
 HeapHashMap<CSSPropertyID, Member<const CSSValue>>&
 StyleResolverState::ParsedPropertiesForPendingSubstitutionCache(
-    const CSSPendingSubstitutionValue& value) const {
+    const cssvalue::CSSPendingSubstitutionValue& value) const {
   HeapHashMap<CSSPropertyID, Member<const CSSValue>>* map =
       parsed_properties_for_pending_substitution_cache_.at(&value);
   if (!map) {

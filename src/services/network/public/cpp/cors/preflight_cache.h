@@ -47,13 +47,23 @@ class COMPONENT_EXPORT(NETWORK_CPP) PreflightCache final {
       const net::HttpRequestHeaders& headers,
       bool is_revalidating);
 
+  // Reports and gather CORS preflight cache size metric.
+  size_t ReportAndGatherSizeMetric();
+
   // Counts cached origins for testing.
   size_t CountOriginsForTesting() const;
 
   // Counts cached entries for testing.
   size_t CountEntriesForTesting() const;
 
+  // Purges one cache entry if number of entries is larger than |max_entries|
+  // for testing.
+  void MayPurgeForTesting(size_t max_entries);
+
  private:
+  size_t CountEntries() const;
+  void MayPurge(size_t max_entries);
+
   // A map for caching. The outer map takes an origin to find a per-origin
   // cache map, and the inner map takes an URL to find a cached entry.
   std::map<std::string /* origin */,

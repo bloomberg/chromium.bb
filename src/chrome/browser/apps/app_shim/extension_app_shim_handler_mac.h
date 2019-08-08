@@ -172,7 +172,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
  protected:
   typedef std::map<std::pair<Profile*, std::string>, AppShimHost*> HostMap;
   typedef std::set<Browser*> BrowserSet;
-  typedef std::map<std::string, BrowserSet> AppBrowserMap;
+  typedef std::map<std::pair<Profile*, std::string>, BrowserSet> AppBrowserMap;
 
   // Virtual for tests.
   virtual bool IsAcceptablyCodeSigned(pid_t pid) const;
@@ -192,7 +192,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
                                                             Profile** profile);
 
   // Closes all browsers associated with an app.
-  void CloseBrowsersForApp(const std::string& app_id);
+  void CloseBrowsersForApp(Profile* profile, const std::string& app_id);
 
   // This is passed to Delegate::LoadProfileAsync for shim-initiated launches
   // where the profile was not yet loaded.

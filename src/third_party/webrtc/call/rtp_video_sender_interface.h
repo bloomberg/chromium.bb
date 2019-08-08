@@ -14,8 +14,11 @@
 #include <map>
 #include <vector>
 
+#include "absl/types/optional.h"
+#include "api/array_view.h"
 #include "call/rtp_config.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
+#include "modules/rtp_rtcp/source/rtp_sequence_number_map.h"
 #include "modules/utility/include/process_thread.h"
 #include "modules/video_coding/include/video_codec_interface.h"
 
@@ -55,6 +58,9 @@ class RtpVideoSenderInterface : public EncodedImageCallback {
   virtual void SetEncodingData(size_t width,
                                size_t height,
                                size_t num_temporal_layers) = 0;
+  virtual std::vector<RtpSequenceNumberMap::Info> GetSentRtpPacketInfos(
+      uint32_t ssrc,
+      rtc::ArrayView<const uint16_t> sequence_numbers) const = 0;
 };
 }  // namespace webrtc
 #endif  // CALL_RTP_VIDEO_SENDER_INTERFACE_H_

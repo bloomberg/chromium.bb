@@ -190,6 +190,17 @@ NSString* GetDeviceBySDKAndName(NSDictionary* simctl_list,
                                 NSString* sdk_version) {
   NSString* sdk = [@"iOS " stringByAppendingString:sdk_version];
   NSArray* devices = [simctl_list[@"devices"] objectForKey:sdk];
+  // Pre-Xcode 10.2's simulator, xcrun simctl -j returned "devices" that looked
+  // like "iOS 12.1".  Now they look like
+  // com.apple.CoreSimulator.SimRuntime.iOS-12-1. Only use this block when all
+  // bots move to Xcode 10.2+
+  if (devices == nil || [devices count] == 0) {
+    sdk_version = [sdk_version stringByReplacingOccurrencesOfString:@"."
+                                                         withString:@"-"];
+    NSString* sdk = [@"com.apple.CoreSimulator.SimRuntime.iOS-"
+        stringByAppendingString:sdk_version];
+    devices = [simctl_list[@"devices"] objectForKey:sdk];
+  }
   for (NSDictionary* device in devices) {
     if ([device[@"name"] isEqualToString:device_name]) {
       return device[@"udid"];

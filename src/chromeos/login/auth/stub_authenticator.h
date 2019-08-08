@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
@@ -22,10 +23,20 @@ class BrowserContext;
 namespace chromeos {
 
 class AuthStatusConsumer;
+class StubAuthenticatorBuilder;
 
 class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) StubAuthenticator
     : public Authenticator {
  public:
+  enum class DataRecoveryStatus {
+    kNone,
+    kRecovered,
+    kRecoveryFailed,
+    kResynced
+  };
+  using DataRecoveryNotifier =
+      base::RepeatingCallback<void(DataRecoveryStatus status)>;
+
   StubAuthenticator(AuthStatusConsumer* consumer,
                     const UserContext& expected_user_context);
 
@@ -46,14 +57,30 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) StubAuthenticator
   void RecoverEncryptedData(const std::string& old_password) override;
   void ResyncEncryptedData() override;
 
-  virtual void SetExpectedCredentials(const UserContext& user_context);
+  void SetExpectedCredentials(const UserContext& user_context);
 
  protected:
   ~StubAuthenticator() override;
 
  private:
+  friend class StubAuthenticatorBuilder;
+
+  enum class AuthAction { kAuthSuccess, kPasswordChange };
+
+  void OnPasswordChangeDetected();
+
   UserContext expected_user_context_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  // The action taken for login requests that match the expected context.
+  AuthAction auth_action_ = AuthAction::kAuthSuccess;
+
+  // For password change requests - the old user password.
+  std::string old_password_;
+
+  // If set, the callback that will be called as authenticator handles user
+  // encrypted data recovery during password change flow.
+  DataRecoveryNotifier data_recovery_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(StubAuthenticator);
 };

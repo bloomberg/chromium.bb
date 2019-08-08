@@ -72,7 +72,7 @@ bool DOMWindow::IsWindowOrWorkerGlobalScope() const {
 
 Location* DOMWindow::location() const {
   if (!location_)
-    location_ = Location::Create(const_cast<DOMWindow*>(this));
+    location_ = MakeGarbageCollected<Location>(const_cast<DOMWindow*>(this));
   return location_.Get();
 }
 
@@ -251,18 +251,19 @@ String DOMWindow::CrossDomainAccessErrorMessage(
   KURL target_url = local_dom_window
                         ? local_dom_window->document()->Url()
                         : KURL(NullURL(), target_origin->ToString());
-  if (GetFrame()->GetSecurityContext()->IsSandboxed(kSandboxOrigin) ||
-      accessing_window->document()->IsSandboxed(kSandboxOrigin)) {
+  if (GetFrame()->GetSecurityContext()->IsSandboxed(WebSandboxFlags::kOrigin) ||
+      accessing_window->document()->IsSandboxed(WebSandboxFlags::kOrigin)) {
     message = "Blocked a frame at \"" +
               SecurityOrigin::Create(active_url)->ToString() +
               "\" from accessing a frame at \"" +
               SecurityOrigin::Create(target_url)->ToString() + "\". ";
-    if (GetFrame()->GetSecurityContext()->IsSandboxed(kSandboxOrigin) &&
-        accessing_window->document()->IsSandboxed(kSandboxOrigin))
+    if (GetFrame()->GetSecurityContext()->IsSandboxed(
+            WebSandboxFlags::kOrigin) &&
+        accessing_window->document()->IsSandboxed(WebSandboxFlags::kOrigin))
       return "Sandbox access violation: " + message +
              " Both frames are sandboxed and lack the \"allow-same-origin\" "
              "flag.";
-    if (GetFrame()->GetSecurityContext()->IsSandboxed(kSandboxOrigin))
+    if (GetFrame()->GetSecurityContext()->IsSandboxed(WebSandboxFlags::kOrigin))
       return "Sandbox access violation: " + message +
              " The frame being accessed is sandboxed and lacks the "
              "\"allow-same-origin\" flag.";
@@ -333,7 +334,8 @@ void DOMWindow::Close(LocalDOMWindow* incumbent_window) {
       !allow_scripts_to_close_windows) {
     active_document->domWindow()->GetFrameConsole()->AddMessage(
         ConsoleMessage::Create(
-            kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning,
             "Scripts may close only the windows that were opened by it."));
     return;
   }
@@ -375,6 +377,8 @@ void DOMWindow::focus(v8::Isolate* isolate) {
   ExecutionContext* incumbent_execution_context =
       incumbent_window->GetExecutionContext();
 
+  // TODO(mustaq): Use of |allow_focus| and consuming the activation here seems
+  // suspicious (https://crbug.com/959815).
   bool allow_focus = incumbent_execution_context->IsWindowInteractionAllowed();
   if (allow_focus) {
     incumbent_execution_context->ConsumeWindowInteraction();
@@ -386,8 +390,17 @@ void DOMWindow::focus(v8::Isolate* isolate) {
   }
 
   // If we're a top level window, bring the window to the front.
-  if (GetFrame()->IsMainFrame() && allow_focus)
+  if (GetFrame()->IsMainFrame() && allow_focus) {
     page->GetChromeClient().Focus(incumbent_window->GetFrame());
+  } else if (auto* local_frame = DynamicTo<LocalFrame>(GetFrame())) {
+    // We are depending on user activation twice since IsFocusAllowed() will
+    // check for activation. This should be addressed in
+    // https://crbug.com/959815.
+    if (local_frame->GetDocument() &&
+        !local_frame->GetDocument()->IsFocusAllowed()) {
+      return;
+    }
+  }
 
   page->GetFocusController().FocusDocumentView(GetFrame(),
                                                true /* notifyEmbedder */);
@@ -493,9 +506,18 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
   if (options->includeUserActivation())
     user_activation = UserActivation::CreateSnapshot(source);
 
-  MessageEvent* event =
-      MessageEvent::Create(std::move(channels), std::move(message),
-                           source_origin, String(), source, user_activation);
+  MessageEvent* event = MessageEvent::Create(
+      std::move(channels), std::move(message), source_origin, String(), source,
+      user_activation, options->transferUserActivation());
+
+  // Transfer user activation state in the source's renderer when
+  // |transferUserActivation| is true.
+  LocalFrame* source_frame = source->GetFrame();
+  if (RuntimeEnabledFeatures::UserActivationPostMessageTransferEnabled() &&
+      options->transferUserActivation() &&
+      LocalFrame::HasTransientUserActivation(source_frame)) {
+    GetFrame()->TransferUserActivationFrom(source_frame);
+  }
 
   SchedulePostMessage(event, std::move(target), source_document);
 }

@@ -13,6 +13,17 @@
 
 namespace extensions {
 
+namespace api {
+namespace declarative_net_request {
+struct Rule;
+}  // namespace declarative_net_request
+}  // namespace api
+
+namespace declarative_net_request {
+enum class DynamicRuleUpdateAction;
+struct ReadJSONRulesResult;
+}  // namespace declarative_net_request
+
 // Helper base class to update the set of allowed pages.
 class DeclarativeNetRequestUpdateAllowedPagesFunction
     : public UIThreadExtensionFunction {
@@ -96,8 +107,27 @@ class DeclarativeNetRequestGetAllowedPagesFunction
   DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestGetAllowedPagesFunction);
 };
 
-class DeclarativeNetRequestAddDynamicRulesFunction
+class DeclarativeNetRequestUpdateDynamicRulesFunction
     : public UIThreadExtensionFunction {
+ protected:
+  DeclarativeNetRequestUpdateDynamicRulesFunction();
+  ~DeclarativeNetRequestUpdateDynamicRulesFunction() override;
+
+  ExtensionFunction::ResponseAction UpdateDynamicRules(
+      std::vector<api::declarative_net_request::Rule> rules,
+      declarative_net_request::DynamicRuleUpdateAction action);
+
+ private:
+  // ExtensionFunction override:
+  bool PreRunValidation(std::string* error) override;
+
+  void OnDynamicRulesUpdated(base::Optional<std::string> error);
+
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestUpdateDynamicRulesFunction);
+};
+
+class DeclarativeNetRequestAddDynamicRulesFunction
+    : public DeclarativeNetRequestUpdateDynamicRulesFunction {
  public:
   DeclarativeNetRequestAddDynamicRulesFunction();
   DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.addDynamicRules",
@@ -106,8 +136,6 @@ class DeclarativeNetRequestAddDynamicRulesFunction
  protected:
   ~DeclarativeNetRequestAddDynamicRulesFunction() override;
 
-  // ExtensionFunction override:
-  bool PreRunValidation(std::string* error) override;
   ExtensionFunction::ResponseAction Run() override;
 
  private:
@@ -115,7 +143,7 @@ class DeclarativeNetRequestAddDynamicRulesFunction
 };
 
 class DeclarativeNetRequestRemoveDynamicRulesFunction
-    : public UIThreadExtensionFunction {
+    : public DeclarativeNetRequestUpdateDynamicRulesFunction {
  public:
   DeclarativeNetRequestRemoveDynamicRulesFunction();
   DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.removeDynamicRules",
@@ -125,7 +153,6 @@ class DeclarativeNetRequestRemoveDynamicRulesFunction
   ~DeclarativeNetRequestRemoveDynamicRulesFunction() override;
 
   // ExtensionFunction override:
-  bool PreRunValidation(std::string* error) override;
   ExtensionFunction::ResponseAction Run() override;
 
  private:
@@ -147,6 +174,9 @@ class DeclarativeNetRequestGetDynamicRulesFunction
   ExtensionFunction::ResponseAction Run() override;
 
  private:
+  void OnDynamicRulesFetched(
+      declarative_net_request::ReadJSONRulesResult read_json_result);
+
   DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestGetDynamicRulesFunction);
 };
 

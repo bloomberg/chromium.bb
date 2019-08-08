@@ -1523,13 +1523,13 @@ void FeatureInfo::InitializeFeatures() {
     AddExtensionString("GL_MESA_framebuffer_flip_y");
   }
 
-  // Only supporting ANGLE_multiview in passthrough mode - not implemented in
+  // Only supporting OVR_multiview in passthrough mode - not implemented in
   // validating command decoder. The extension is only available in ANGLE and in
   // that case Chromium should be using passthrough by default.
   if (is_passthrough_cmd_decoder_ &&
-      gfx::HasExtension(extensions, "GL_ANGLE_multiview")) {
-    AddExtensionString("GL_ANGLE_multiview");
-    feature_flags_.angle_multiview = true;
+      gfx::HasExtension(extensions, "GL_OVR_multiview2")) {
+    AddExtensionString("GL_OVR_multiview2");
+    feature_flags_.ovr_multiview2 = true;
   }
 
   if (is_passthrough_cmd_decoder_ &&

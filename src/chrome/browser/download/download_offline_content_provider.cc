@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/image_thumbnail_request.h"
@@ -139,7 +140,6 @@ void DownloadOfflineContentProvider::GetAllItems(
   for (auto* item : all_items) {
     if (!ShouldShowDownloadItem(item))
       continue;
-
     items.push_back(OfflineItemUtils::CreateOfflineItem(name_space_, item));
   }
 
@@ -188,6 +188,34 @@ void DownloadOfflineContentProvider::OnThumbnailRetrieved(
       FROM_HERE, base::BindOnce(std::move(callback), id, std::move(visuals)));
 }
 
+void DownloadOfflineContentProvider::RenameItem(const ContentId& id,
+                                                const std::string& name,
+                                                RenameCallback callback) {
+  DownloadItem* item = GetDownload(id.id);
+  if (!item) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), RenameResult::FAILURE_UNAVAILABLE));
+    return;
+  }
+  download::DownloadItem::RenameDownloadCallback download_callback =
+      base::BindOnce(
+          [](RenameCallback callback,
+             download::DownloadItem::DownloadRenameResult result) {
+            std::move(callback).Run(
+                OfflineItemUtils::ConvertDownloadRenameResultToRenameResult(
+                    result));
+          },
+          std::move(callback));
+  base::FilePath::StringType filename;
+#if defined(OS_WIN)
+  filename = base::UTF8ToWide(name);
+#else
+  filename = name;
+#endif
+  item->Rename(base::FilePath(filename), std::move(download_callback));
+}
+
 void DownloadOfflineContentProvider::AddObserver(
     OfflineContentProvider::Observer* observer) {
   if (observers_.HasObserver(observer))
@@ -205,6 +233,16 @@ void DownloadOfflineContentProvider::RemoveObserver(
 
 void DownloadOfflineContentProvider::ManagerGoingDown(
     DownloadManager* manager) {
+  DownloadManager::DownloadVector all_items;
+  GetAllDownloads(&all_items);
+
+  for (auto* item : all_items) {
+    if (!ShouldShowDownloadItem(item))
+      continue;
+    for (auto& observer : observers_)
+      observer.OnItemRemoved(ContentId(name_space_, item->GetGuid()));
+  }
+
   manager_ = nullptr;
 }
 
@@ -226,6 +264,13 @@ void DownloadOfflineContentProvider::OnDownloadUpdated(DownloadItem* item) {
 
   if (item->GetState() == DownloadItem::COMPLETE) {
     // TODO(crbug.com/938152): May be move this to DownloadItem.
+    if (completed_downloads_.find(item->GetGuid()) !=
+        completed_downloads_.end()) {
+      return;
+    }
+
+    completed_downloads_.insert(item->GetGuid());
+
     AddCompletedDownload(item);
   }
 
@@ -245,12 +290,12 @@ void DownloadOfflineContentProvider::OnDownloadRemoved(DownloadItem* item) {
     observer.OnItemRemoved(contentId);
 }
 
+void DownloadOfflineContentProvider::OnDownloadDestroyed(DownloadItem* item) {
+  completed_downloads_.erase(item->GetGuid());
+}
+
 void DownloadOfflineContentProvider::AddCompletedDownload(DownloadItem* item) {
 #if defined(OS_ANDROID)
-  if (completed_downloads_.find(item->GetGuid()) != completed_downloads_.end())
-    return;
-  completed_downloads_.insert(item->GetGuid());
-
   DownloadManagerBridge::AddCompletedDownload(
       item,
       base::BindOnce(&DownloadOfflineContentProvider::AddCompletedDownloadDone,

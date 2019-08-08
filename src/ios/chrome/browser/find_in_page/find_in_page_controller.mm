@@ -11,10 +11,14 @@
 
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
+#import "ios/chrome/browser/find_in_page/features.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
+#import "ios/chrome/browser/find_in_page/find_in_page_response_delegate.h"
 #import "ios/chrome/browser/find_in_page/js_findinpage_manager.h"
 #include "ios/chrome/browser/metrics/ukm_url_recorder.h"
 #import "ios/chrome/browser/web/dom_altering_lock.h"
+#import "ios/web/public/find_in_page/find_in_page_manager.h"
+#import "ios/web/public/find_in_page/find_in_page_manager_delegate_bridge.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
@@ -40,7 +44,9 @@ const NSTimeInterval kRecurringPumpDelay = .01;
 static NSString* gSearchTerm;
 }
 
-@interface FindInPageController () <DOMAltering, CRWWebStateObserver>
+@interface FindInPageController () <DOMAltering,
+                                    CRWWebStateObserver,
+                                    CRWFindInPageManagerDelegate>
 
 // The web view's scroll view.
 - (CRWWebViewScrollViewProxy*)webViewScrollView;
@@ -73,8 +79,13 @@ static NSString* gSearchTerm;
 @end
 
 @implementation FindInPageController {
-  // Object that manages find_in_page.js injection into the web view.
+  // Object that manages find_in_page.js injection into the web view when
+  // kFindInPageiFrame flag is disabled.
   __weak JsFindinpageManager* _findInPageJsManager;
+
+  // Object that manages searches and match traversals when kFindInPageiFrame
+  // flag is enabled.
+  web::FindInPageManager* _findInPageManager;
 
   // Access to the web view from the web state.
   id<CRWWebViewProxy> _webViewProxy;
@@ -89,6 +100,10 @@ static NSString* gSearchTerm;
 
   // Bridge to observe the web state from Objective-C.
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
+
+  // Bridge to observe FindInPageManager from Objective-C.
+  std::unique_ptr<web::FindInPageManagerDelegateBridge>
+      _findInPageDelegateBridge;
 }
 
 @synthesize findInPageModel = _findInPageModel;
@@ -107,10 +122,18 @@ static NSString* gSearchTerm;
     DCHECK(webState);
     _webState = webState;
     _findInPageModel = [[FindInPageModel alloc] init];
-    _findInPageJsManager = base::mac::ObjCCastStrict<JsFindinpageManager>(
-        [_webState->GetJSInjectionReceiver()
-            instanceOfClass:[JsFindinpageManager class]]);
-    _findInPageJsManager.findInPageModel = _findInPageModel;
+    if (base::FeatureList::IsEnabled(kFindInPageiFrame)) {
+      _findInPageDelegateBridge =
+          std::make_unique<web::FindInPageManagerDelegateBridge>(self);
+      _findInPageManager = web::FindInPageManager::FromWebState(_webState);
+      _findInPageManager->SetDelegate(_findInPageDelegateBridge.get());
+    } else {
+      _findInPageJsManager = base::mac::ObjCCastStrict<JsFindinpageManager>(
+          [_webState->GetJSInjectionReceiver()
+              instanceOfClass:[JsFindinpageManager class]]);
+      _findInPageJsManager.findInPageModel = _findInPageModel;
+    }
+
     _webStateObserverBridge =
         std::make_unique<web::WebStateObserverBridge>(self);
     _webState->AddObserver(_webStateObserverBridge.get());
@@ -201,22 +224,28 @@ static NSString* gSearchTerm;
     }
     // Cancel any previous pumping.
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
-    [self initFindInPage];
     // Keep track of whether a find is in progress so to avoid running
     // JavaScript during disable if unnecessary.
     _findStringStarted = YES;
-    __weak FindInPageController* weakSelf = self;
-    [_findInPageJsManager findString:query
-                   completionHandler:^(BOOL finished, CGPoint point) {
-                     FindInPageController* strongSelf = weakSelf;
-                     if (!strongSelf) {
-                       return;
-                     }
-                     [strongSelf logFindInPageSearchUKM];
-                     [strongSelf processPumpResult:finished
-                                       scrollPoint:point
-                                 completionHandler:completionHandler];
-                   }];
+
+    if (base::FeatureList::IsEnabled(kFindInPageiFrame)) {
+      _findInPageManager->Find(query, web::FindInPageOptions::FindInPageSearch);
+    } else {
+      [self initFindInPage];
+      __weak FindInPageController* weakSelf = self;
+      [_findInPageJsManager findString:query
+                     completionHandler:^(BOOL finished, CGPoint point) {
+                       FindInPageController* strongSelf = weakSelf;
+                       if (!strongSelf) {
+                         return;
+                       }
+                       [strongSelf logFindInPageSearchUKM];
+                       [strongSelf processPumpResult:finished
+                                         scrollPoint:point
+                                   completionHandler:completionHandler];
+                     }];
+    }
+
   };
   DOMAlteringLock::FromWebState(_webState)->Acquire(self, lockAction);
 }
@@ -255,31 +284,39 @@ static NSString* gSearchTerm;
 
 - (void)findNextStringInPageWithCompletionHandler:
     (ProceduralBlock)completionHandler {
-  [self initFindInPage];
-  __weak FindInPageController* weakSelf = self;
-  [_findInPageJsManager nextMatchWithCompletionHandler:^(CGPoint point) {
-    FindInPageController* strongSelf = weakSelf;
-    point = [strongSelf limitOverscroll:[strongSelf webViewScrollView]
-                                atPoint:point];
-    [[strongSelf webViewScrollView] setContentOffset:point animated:YES];
-    if (completionHandler)
-      completionHandler();
-  }];
+  if (base::FeatureList::IsEnabled(kFindInPageiFrame)) {
+    _findInPageManager->Find(nil, web::FindInPageOptions::FindInPageNext);
+  } else {
+    [self initFindInPage];
+    __weak FindInPageController* weakSelf = self;
+    [_findInPageJsManager nextMatchWithCompletionHandler:^(CGPoint point) {
+      FindInPageController* strongSelf = weakSelf;
+      point = [strongSelf limitOverscroll:[strongSelf webViewScrollView]
+                                  atPoint:point];
+      [[strongSelf webViewScrollView] setContentOffset:point animated:YES];
+      if (completionHandler)
+        completionHandler();
+    }];
+  }
 }
 
 // Highlight the previous search match, update model and scroll to match.
 - (void)findPreviousStringInPageWithCompletionHandler:
     (ProceduralBlock)completionHandler {
-  [self initFindInPage];
-  __weak FindInPageController* weakSelf = self;
-  [_findInPageJsManager previousMatchWithCompletionHandler:^(CGPoint point) {
-    FindInPageController* strongSelf = weakSelf;
-    point = [strongSelf limitOverscroll:[strongSelf webViewScrollView]
-                                atPoint:point];
-    [[strongSelf webViewScrollView] setContentOffset:point animated:YES];
-    if (completionHandler)
-      completionHandler();
-  }];
+  if (base::FeatureList::IsEnabled(kFindInPageiFrame)) {
+    _findInPageManager->Find(nil, web::FindInPageOptions::FindInPagePrevious);
+  } else {
+    [self initFindInPage];
+    __weak FindInPageController* weakSelf = self;
+    [_findInPageJsManager previousMatchWithCompletionHandler:^(CGPoint point) {
+      FindInPageController* strongSelf = weakSelf;
+      point = [strongSelf limitOverscroll:[strongSelf webViewScrollView]
+                                  atPoint:point];
+      [[strongSelf webViewScrollView] setContentOffset:point animated:YES];
+      if (completionHandler)
+        completionHandler();
+    }];
+  }
 }
 
 // Remove highlights from the page and disable the model.
@@ -325,6 +362,27 @@ static NSString* gSearchTerm;
 
   NSString* term = [[self class] searchTerm];
   [[self findInPageModel] updateQuery:(term ? term : @"") matches:0];
+}
+
+#pragma mark - CRWFindInPageManagerDelegate
+
+- (void)findInPageManager:(web::FindInPageManager*)manager
+    didHighlightMatchesOfQuery:(NSString*)query
+                withMatchCount:(NSInteger)matchCount
+                   forWebState:(web::WebState*)webState {
+  [self.findInPageModel updateQuery:query matches:matchCount];
+  [self logFindInPageSearchUKM];
+  [self.responseDelegate findDidFinishWithUpdatedModel:self.findInPageModel];
+}
+
+- (void)findInPageManager:(web::FindInPageManager*)manager
+    didSelectMatchAtIndex:(NSInteger)index
+              forWebState:(web::WebState*)webState {
+  // Increment index so that match number show in FindBar ranges from 1...N as
+  // opposed to 0...N-1.
+  index++;
+  [self.findInPageModel updateIndex:index atPoint:CGPointZero];
+  [self.responseDelegate findDidFinishWithUpdatedModel:self.findInPageModel];
 }
 
 #pragma mark - Notification listeners

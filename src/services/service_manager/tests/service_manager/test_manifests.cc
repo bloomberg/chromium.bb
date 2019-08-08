@@ -7,7 +7,6 @@
 #include "base/no_destructor.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/service_manager/tests/service_manager/service_manager.test-mojom.h"
 
 namespace service_manager {
@@ -30,8 +29,6 @@ const std::vector<Manifest>& GetTestManifests() {
                             .WithInstanceSharingPolicy(
                                 Manifest::InstanceSharingPolicy::kSingleton)
                             .Build())
-           .ExposeCapability("service_manager:service_factory",
-                             Manifest::InterfaceList<mojom::ServiceFactory>())
            .RequireCapability(kTestTargetName, "")
            .PackageService(ManifestBuilder()
                                .WithServiceName(kTestRegularServiceName)

@@ -46,9 +46,6 @@ const char kEnableOverrideBookmarksUI[] = "enable-override-bookmarks-ui";
 const char kDisableExtensionsHttpThrottling[] =
     "disable-extensions-http-throttling";
 
-// Enables tab for desktop sharing.
-const char kDisableTabForDesktopShare[] = "disable-tab-for-desktop-share";
-
 // Allows the ErrorConsole to collect runtime and manifest errors, and display
 // them in the chrome:extensions page.
 const char kErrorConsole[] = "error-console";

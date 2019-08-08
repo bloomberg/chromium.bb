@@ -1851,12 +1851,26 @@ typedef void(INTERNAL_GL_APIENTRY *PFNGLGETINTERNALFORMATSAMPLEIVNVPROC)(GLenum 
                                                                          GLsizei bufSize,
                                                                          GLint *params);
 
+// GL_OVR_multiview2
+typedef void(INTERNAL_GL_APIENTRY *PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC)(GLenum target,
+                                                                            GLenum attachment,
+                                                                            GLuint texture,
+                                                                            GLint level,
+                                                                            GLint baseViewIndex,
+                                                                            GLsizei numViews);
 // EXT_debug_marker
 typedef void(INTERNAL_GL_APIENTRY *PFNGLINSERTEVENTMARKEREXTPROC)(GLsizei length,
                                                                   const GLchar *marker);
 typedef void(INTERNAL_GL_APIENTRY *PFNGLPUSHGROUPMARKEREXTPROC)(GLsizei length,
                                                                 const GLchar *marker);
 typedef void(INTERNAL_GL_APIENTRY *PFNGLPOPGROUPMARKEREXTPROC)(void);
+
+// KHR_parallel_shader_compile
+typedef void(INTERNAL_GL_APIENTRY *PFNGLMAXSHADERCOMPILERTHREADSKHRPROC)(GLuint count);
+
+// ARB_parallel_shader_compile
+typedef void(INTERNAL_GL_APIENTRY *PFNGLMAXSHADERCOMPILERTHREADSARBPROC)(GLuint count);
+
 }  // namespace rx
 
 #endif  // LIBANGLE_RENDERER_GL_FUNCTIONSGLTYPEDEFS_H_

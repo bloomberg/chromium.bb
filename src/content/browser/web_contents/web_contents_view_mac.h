@@ -116,6 +116,9 @@ class WebContentsViewMac : public WebContentsView,
   void ViewsHostableSetBounds(const gfx::Rect& bounds_in_window) override;
   void ViewsHostableSetVisible(bool visible) override;
   void ViewsHostableMakeFirstResponder() override;
+  void ViewsHostableSetParentAccessible(
+      gfx::NativeViewAccessible parent_accessibility_element) override;
+  gfx::NativeViewAccessible ViewsHostableGetAccessibilityElement() override;
 
   // A helper method for closing the tab in the
   // CloseTabAfterEventTracking() implementation.
@@ -192,6 +195,9 @@ class WebContentsViewMac : public WebContentsView,
 
   // Interface to the views::View host of this view.
   ViewsHostableView::Host* views_host_ = nullptr;
+
+  // The accessibility element specified via ViewsHostableSetParentAccessible.
+  gfx::NativeViewAccessible views_host_accessibility_element_ = nil;
 
   std::unique_ptr<PopupMenuHelper> popup_menu_helper_;
 

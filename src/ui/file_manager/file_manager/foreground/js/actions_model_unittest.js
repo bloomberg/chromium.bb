@@ -24,31 +24,38 @@ let providedFileSystem;
  */
 let driveSyncHandler;
 
+
 /**
- * MockFolderShortcutsModel
- * @extends {FolderShortcutsDataModel}
- * @constructor
+ * @returns {!FolderShortcutsDataModel}
  */
-function MockFolderShortcutsModel() {
-  this.has = false;
+function createFakeFolderShortcutsDataModel() {
+  class FakeFolderShortcutsModel extends cr.EventTarget {
+    constructor() {
+      super();
+      this.has = false;
+    }
+
+    exists() {
+      return this.has;
+    }
+
+    add(entry) {
+      this.has = true;
+      return 0;
+    }
+
+    remove(entry) {
+      this.has = false;
+      return 0;
+    }
+  }
+
+  const model = /** @type {!Object} */ (new FakeFolderShortcutsModel());
+  return /** @type {!FolderShortcutsDataModel} */ (model);
 }
 
-MockFolderShortcutsModel.prototype.exists = function() {
-  return this.has;
-};
-
-MockFolderShortcutsModel.prototype.add = function(entry) {
-  this.has = true;
-  return 0;
-};
-
-MockFolderShortcutsModel.prototype.remove = function(entry) {
-  this.has = false;
-  return 0;
-};
-
 /**
- * @type {!MockFolderShortcutsModel}
+ * @type {!FolderShortcutsDataModel}
  */
 let shortcutsModel;
 
@@ -111,7 +118,7 @@ function setUp() {
       assert(volumeManager.getCurrentProfileVolumeInfo(type).fileSystem);
 
   // Create mock action model components.
-  shortcutsModel = new MockFolderShortcutsModel();
+  shortcutsModel = createFakeFolderShortcutsDataModel();
   driveSyncHandler = new MockDriveSyncHandler();
   ui = new MockUI();
 }
@@ -127,63 +134,72 @@ function testDriveDirectoryEntry(callback) {
     canShare: true,
   });
 
-  let model = new ActionsModel(volumeManager, metadataModel, shortcutsModel,
-      driveSyncHandler, ui, [driveFileSystem.entries['/test']]);
+  let model = new ActionsModel(
+      volumeManager, metadataModel, shortcutsModel, driveSyncHandler, ui,
+      [driveFileSystem.entries['/test']]);
 
   let invalidated = 0;
   model.addEventListener('invalidated', () => {
     invalidated++;
   });
 
-  return reportPromise(model.initialize().then(() => {
-    const actions = model.getActions();
-    assertEquals(3, Object.keys(actions).length);
+  return reportPromise(
+      model.initialize()
+          .then(() => {
+            const actions = model.getActions();
+            assertEquals(3, Object.keys(actions).length);
 
-    // 'Share' should be disabled in offline mode.
-    const shareAction = actions[ActionsModel.CommonActionId.SHARE];
-    assertTrue(!!shareAction);
-    volumeManager.driveConnectionState = {
-      type: VolumeManagerCommon.DriveConnectionType.OFFLINE
-    };
-    assertFalse(shareAction.canExecute());
+            // 'Share' should be disabled in offline mode.
+            const shareAction = actions[ActionsModel.CommonActionId.SHARE];
+            assertTrue(!!shareAction);
+            volumeManager.driveConnectionState = {
+              type: VolumeManagerCommon.DriveConnectionType.OFFLINE
+            };
+            assertFalse(shareAction.canExecute());
 
-    // 'Manage in Drive' should be disabled in offline mode.
-    const manageInDriveAction =
-        actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE];
-    assertTrue(!!manageInDriveAction);
-    assertFalse(manageInDriveAction.canExecute());
+            // 'Manage in Drive' should be disabled in offline mode.
+            const manageInDriveAction =
+                actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE];
+            assertTrue(!!manageInDriveAction);
+            assertFalse(manageInDriveAction.canExecute());
 
-    // 'Create Shortcut' should be enabled, until it's executed, then disabled.
-    const createFolderShortcutAction =
-        actions[ActionsModel.InternalActionId.CREATE_FOLDER_SHORTCUT];
-    assertTrue(!!createFolderShortcutAction);
-    assertTrue(createFolderShortcutAction.canExecute());
-    createFolderShortcutAction.execute();
-    assertFalse(createFolderShortcutAction.canExecute());
-    assertEquals(1, invalidated);
+            // 'Create Shortcut' should be enabled, until it's executed, then
+            // disabled.
+            const createFolderShortcutAction =
+                actions[ActionsModel.InternalActionId.CREATE_FOLDER_SHORTCUT];
+            assertTrue(!!createFolderShortcutAction);
+            assertTrue(createFolderShortcutAction.canExecute());
+            createFolderShortcutAction.execute();
+            assertFalse(createFolderShortcutAction.canExecute());
+            assertEquals(1, invalidated);
 
-    // The model is invalidated, as list of actions have changed. Recreated
-    // the model and check that the actions are updated.
-    model = new ActionsModel(volumeManager, metadataModel, shortcutsModel,
-        driveSyncHandler, ui, [driveFileSystem.entries['/test']]);
-    model.addEventListener('invalidated', () => {
-      invalidated++;
-    });
-    return model.initialize();
-  }).then(() => {
-    const actions = model.getActions();
-    assertEquals(4, Object.keys(actions).length);
-    assertTrue(!!actions[ActionsModel.CommonActionId.SHARE]);
-    assertTrue(!!actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE]);
-    assertTrue(!!actions[ActionsModel.InternalActionId.REMOVE_FOLDER_SHORTCUT]);
+            // The model is invalidated, as list of actions have changed.
+            // Recreated the model and check that the actions are updated.
+            model = new ActionsModel(
+                volumeManager, metadataModel, shortcutsModel, driveSyncHandler,
+                ui, [driveFileSystem.entries['/test']]);
+            model.addEventListener('invalidated', () => {
+              invalidated++;
+            });
+            return model.initialize();
+          })
+          .then(() => {
+            const actions = model.getActions();
+            assertEquals(4, Object.keys(actions).length);
+            assertTrue(!!actions[ActionsModel.CommonActionId.SHARE]);
+            assertTrue(
+                !!actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE]);
+            assertTrue(!!actions[ActionsModel.InternalActionId
+                                     .REMOVE_FOLDER_SHORTCUT]);
 
-    // 'Create shortcut' should be disabled.
-    const createFolderShortcutAction =
-        actions[ActionsModel.InternalActionId.CREATE_FOLDER_SHORTCUT];
-    assertTrue(!!createFolderShortcutAction);
-    assertFalse(createFolderShortcutAction.canExecute());
-    assertEquals(1, invalidated);
-  }), callback);
+            // 'Create shortcut' should be disabled.
+            const createFolderShortcutAction =
+                actions[ActionsModel.InternalActionId.CREATE_FOLDER_SHORTCUT];
+            assertTrue(!!createFolderShortcutAction);
+            assertFalse(createFolderShortcutAction.canExecute());
+            assertEquals(1, invalidated);
+          }),
+      callback);
 }
 
 /**
@@ -198,87 +214,95 @@ function testDriveFileEntry(callback) {
     pinned: false,
   });
 
-  let model = new ActionsModel(volumeManager, metadataModel, shortcutsModel,
-      driveSyncHandler, ui, [driveFileSystem.entries['/test.txt']]);
+  let model = new ActionsModel(
+      volumeManager, metadataModel, shortcutsModel, driveSyncHandler, ui,
+      [driveFileSystem.entries['/test.txt']]);
   let invalidated = 0;
 
-  return reportPromise(model.initialize().then(() => {
-    const actions = model.getActions();
-    assertEquals(3, Object.keys(actions).length);
-    assertTrue(!!actions[ActionsModel.CommonActionId.SHARE]);
+  return reportPromise(
+      model.initialize()
+          .then(() => {
+            const actions = model.getActions();
+            assertEquals(3, Object.keys(actions).length);
+            assertTrue(!!actions[ActionsModel.CommonActionId.SHARE]);
 
-    // 'Save for Offline' should be enabled.
-    const saveForOfflineAction =
-        actions[ActionsModel.CommonActionId.SAVE_FOR_OFFLINE];
-    assertTrue(!!saveForOfflineAction);
-    assertTrue(saveForOfflineAction.canExecute());
+            // 'Save for Offline' should be enabled.
+            const saveForOfflineAction =
+                actions[ActionsModel.CommonActionId.SAVE_FOR_OFFLINE];
+            assertTrue(!!saveForOfflineAction);
+            assertTrue(saveForOfflineAction.canExecute());
 
-    // 'Manage in Drive' should be enabled.
-    const manageInDriveAction =
-        actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE];
-    assertTrue(!!manageInDriveAction);
-    assertTrue(manageInDriveAction.canExecute());
+            // 'Manage in Drive' should be enabled.
+            const manageInDriveAction =
+                actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE];
+            assertTrue(!!manageInDriveAction);
+            assertTrue(manageInDriveAction.canExecute());
 
-    chrome.fileManagerPrivate.pinDriveFile = (entry, pin, callback) => {
-      metadataModel.properties.pinned = true;
-      assertEquals(driveFileSystem.entries['/test.txt'], entry);
-      assertTrue(pin);
-      callback();
-    };
+            chrome.fileManagerPrivate.pinDriveFile = (entry, pin, callback) => {
+              metadataModel.properties.pinned = true;
+              assertEquals(driveFileSystem.entries['/test.txt'], entry);
+              assertTrue(pin);
+              callback();
+            };
 
-    // For pinning, invalidating is done asynchronously, so we need to wait
-    // for it with a promise.
-    return new Promise((fulfill, reject) => {
-      model.addEventListener('invalidated', () => {
-        invalidated++;
-        fulfill();
-      });
-      saveForOfflineAction.execute();
-    });
-  }).then(() => {
-    assertTrue(metadataModel.properties.pinned);
-    assertEquals(1, invalidated);
+            // For pinning, invalidating is done asynchronously, so we need to
+            // wait for it with a promise.
+            return new Promise((fulfill, reject) => {
+              model.addEventListener('invalidated', () => {
+                invalidated++;
+                fulfill();
+              });
+              saveForOfflineAction.execute();
+            });
+          })
+          .then(() => {
+            assertTrue(metadataModel.properties.pinned);
+            assertEquals(1, invalidated);
 
-    // The model is invalidated, as list of actions have changed. Recreated
-    // the model and check that the actions are updated.
-    model = new ActionsModel(volumeManager, metadataModel, shortcutsModel,
-        driveSyncHandler, ui, [driveFileSystem.entries['/test.txt']]);
-    return model.initialize();
-  }).then(() => {
-    const actions = model.getActions();
-    assertEquals(3, Object.keys(actions).length);
-    assertTrue(!!actions[ActionsModel.CommonActionId.SHARE]);
+            // The model is invalidated, as list of actions have changed.
+            // Recreated the model and check that the actions are updated.
+            model = new ActionsModel(
+                volumeManager, metadataModel, shortcutsModel, driveSyncHandler,
+                ui, [driveFileSystem.entries['/test.txt']]);
+            return model.initialize();
+          })
+          .then(() => {
+            const actions = model.getActions();
+            assertEquals(3, Object.keys(actions).length);
+            assertTrue(!!actions[ActionsModel.CommonActionId.SHARE]);
 
-    // 'Offline not Necessary' should be enabled.
-    const offlineNotNecessaryAction =
-        actions[ActionsModel.CommonActionId.OFFLINE_NOT_NECESSARY];
-    assertTrue(!!offlineNotNecessaryAction);
-    assertTrue(offlineNotNecessaryAction.canExecute());
+            // 'Offline not Necessary' should be enabled.
+            const offlineNotNecessaryAction =
+                actions[ActionsModel.CommonActionId.OFFLINE_NOT_NECESSARY];
+            assertTrue(!!offlineNotNecessaryAction);
+            assertTrue(offlineNotNecessaryAction.canExecute());
 
-    // 'Manage in Drive' should be enabled.
-    const manageInDriveAction =
-        actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE];
-    assertTrue(!!manageInDriveAction);
-    assertTrue(manageInDriveAction.canExecute());
+            // 'Manage in Drive' should be enabled.
+            const manageInDriveAction =
+                actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE];
+            assertTrue(!!manageInDriveAction);
+            assertTrue(manageInDriveAction.canExecute());
 
-    chrome.fileManagerPrivate.pinDriveFile = (entry, pin, callback) => {
-      metadataModel.properties.pinned = false;
-      assertEquals(driveFileSystem.entries['/test.txt'], entry);
-      assertFalse(pin);
-      callback();
-    };
+            chrome.fileManagerPrivate.pinDriveFile = (entry, pin, callback) => {
+              metadataModel.properties.pinned = false;
+              assertEquals(driveFileSystem.entries['/test.txt'], entry);
+              assertFalse(pin);
+              callback();
+            };
 
-    return new Promise((fulfill, reject) => {
-      model.addEventListener('invalidated', () => {
-        invalidated++;
-        fulfill();
-      });
-      offlineNotNecessaryAction.execute();
-    });
-  }).then(() => {
-    assertFalse(metadataModel.properties.pinned);
-    assertEquals(2, invalidated);
-  }), callback);
+            return new Promise((fulfill, reject) => {
+              model.addEventListener('invalidated', () => {
+                invalidated++;
+                fulfill();
+              });
+              offlineNotNecessaryAction.execute();
+            });
+          })
+          .then(() => {
+            assertFalse(metadataModel.properties.pinned);
+            assertEquals(2, invalidated);
+          }),
+      callback);
 }
 
 /**
@@ -411,63 +435,68 @@ function testProvidedEntry(callback) {
     callback([
       {
         id: ActionsModel.CommonActionId.SHARE,
-        title: 'Share it!'
+        title: 'Share it!',
       },
       {
         id: 'some-custom-id',
-        title: 'Turn into chocolate!'
-      }
+        title: 'Turn into chocolate!',
+      },
     ]);
   };
 
   const metadataModel = new MockMetadataModel(null);
 
-  const model = new ActionsModel(volumeManager, metadataModel, shortcutsModel,
-      driveSyncHandler, ui, [providedFileSystem.entries['/test']]);
+  const model = new ActionsModel(
+      volumeManager, metadataModel, shortcutsModel, driveSyncHandler, ui,
+      [providedFileSystem.entries['/test']]);
 
   let invalidated = 0;
   model.addEventListener('invalidated', () => {
     invalidated++;
   });
 
-  return reportPromise(model.initialize().then(() => {
-    const actions = model.getActions();
-    assertEquals(2, Object.keys(actions).length);
+  return reportPromise(
+      model.initialize().then(() => {
+        const actions = model.getActions();
+        assertEquals(2, Object.keys(actions).length);
 
-    const shareAction = actions[ActionsModel.CommonActionId.SHARE];
-    assertTrue(!!shareAction);
-    // Sharing on FSP is possible even if Drive is offline. Custom actions are
-    // always executable, as we don't know the actions implementation.
-    volumeManager.driveConnectionState = {
-      type: VolumeManagerCommon.DriveConnectionType.OFFLINE
-    };
-    assertTrue(shareAction.canExecute());
-    assertEquals('Share it!', shareAction.getTitle());
+        const shareAction = actions[ActionsModel.CommonActionId.SHARE];
+        assertTrue(!!shareAction);
+        // Sharing on FSP is possible even if Drive is offline. Custom actions
+        // are always executable, as we don't know the actions implementation.
+        volumeManager.driveConnectionState = {
+          type: VolumeManagerCommon.DriveConnectionType.OFFLINE
+        };
+        assertTrue(shareAction.canExecute());
+        assertEquals('Share it!', shareAction.getTitle());
 
-    chrome.fileManagerPrivate.executeCustomAction = (entries, actionId, callback) => {
-      assertEquals(1, entries.length);
-      assertEquals(providedFileSystem.entries['/test'], entries[0]);
-      assertEquals(ActionsModel.CommonActionId.SHARE, actionId);
-      callback();
-    };
-    shareAction.execute();
-    assertEquals(1, invalidated);
+        chrome.fileManagerPrivate.executeCustomAction =
+            (entries, actionId, callback) => {
+              assertEquals(1, entries.length);
+              assertEquals(providedFileSystem.entries['/test'], entries[0]);
+              assertEquals(ActionsModel.CommonActionId.SHARE, actionId);
+              callback();
+            };
+        shareAction.execute();
+        assertEquals(1, invalidated);
 
-    assertTrue(!!actions['some-custom-id']);
-    assertTrue(actions['some-custom-id'].canExecute());
-    assertEquals('Turn into chocolate!',
-        actions['some-custom-id'].getTitle());
+        assertTrue(!!actions['some-custom-id']);
+        assertTrue(actions['some-custom-id'].canExecute());
+        assertEquals(
+            'Turn into chocolate!', actions['some-custom-id'].getTitle());
 
-    chrome.fileManagerPrivate.executeCustomAction = (entries, actionId, callback) => {
-      assertEquals(1, entries.length);
-      assertEquals(providedFileSystem.entries['/test'], entries[0]);
-      assertEquals('some-custom-id', actionId);
-      callback();
-    };
+        chrome.fileManagerPrivate.executeCustomAction =
+            (entries, actionId, callback) => {
+              assertEquals(1, entries.length);
+              assertEquals(providedFileSystem.entries['/test'], entries[0]);
+              assertEquals('some-custom-id', actionId);
+              callback();
+            };
 
-    actions['some-custom-id'].execute();
-    assertEquals(2, invalidated);
-  }), callback);
+        actions['some-custom-id'].execute();
+        assertEquals(2, invalidated);
+      }),
+      callback);
 }
 
 /**
@@ -479,18 +508,21 @@ function testProvidedEntryWithError(callback) {
 
   chrome.fileManagerPrivate.getCustomActions = (entries, callback) => {
     chrome.runtime.lastError = {
-      message: 'Failed to fetch custom actions.'
+      message: 'Failed to fetch custom actions.',
     };
     callback(['error']);
   };
 
   const metadataModel = new MockMetadataModel(null);
 
-  const model = new ActionsModel(volumeManager, metadataModel, shortcutsModel,
-      driveSyncHandler, ui, [providedFileSystem.entries['/test']]);
+  const model = new ActionsModel(
+      volumeManager, metadataModel, shortcutsModel, driveSyncHandler, ui,
+      [providedFileSystem.entries['/test']]);
 
-  return reportPromise(model.initialize().then(() => {
-    const actions = model.getActions();
-    assertEquals(0, Object.keys(actions).length);
-  }), callback);
+  return reportPromise(
+      model.initialize().then(() => {
+        const actions = model.getActions();
+        assertEquals(0, Object.keys(actions).length);
+      }),
+      callback);
 }

@@ -65,10 +65,10 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
       std::unique_ptr<base::CommandLine> cmd_line,
       bool terminate_on_shutdown) = 0;
 
-  virtual const ChildProcessData& GetData() const = 0;
+  virtual const ChildProcessData& GetData() = 0;
 
   // Returns the ChildProcessHost object used by this object.
-  virtual ChildProcessHost* GetHost() const = 0;
+  virtual ChildProcessHost* GetHost() = 0;
 
   // Returns the termination info of a child.
   // |known_dead| indicates that the child is already dead. On Linux, this

@@ -619,12 +619,14 @@ class FileURLLoader : public network::mojom::URLLoader {
     }
 
     if (!net::GetMimeTypeFromFile(path, &head.mime_type)) {
+      std::string new_type;
       net::SniffMimeType(
           initial_read_buffer, initial_read_result, request.url, head.mime_type,
           GetContentClient()->browser()->ForceSniffingFileUrlsForHtml()
               ? net::ForceSniffFileUrlsForHtml::kEnabled
               : net::ForceSniffFileUrlsForHtml::kDisabled,
-          &head.mime_type);
+          &new_type);
+      head.mime_type.assign(new_type);
       head.did_mime_sniff = true;
     }
     if (head.headers) {

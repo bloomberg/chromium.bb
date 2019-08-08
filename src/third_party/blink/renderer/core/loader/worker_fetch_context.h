@@ -16,7 +16,6 @@
 namespace blink {
 
 class CoreProbeSink;
-class Resource;
 class SubresourceFilter;
 class WebWorkerFetchContext;
 class WorkerContentSettingsClient;
@@ -60,7 +59,6 @@ class WorkerFetchContext final : public BaseFetchContext {
       override;
   bool ShouldBlockFetchByMixedContentCheck(
       mojom::RequestContextType,
-      network::mojom::RequestContextFrameType,
       ResourceRequest::RedirectStatus,
       const KURL&,
       SecurityViolationReportingPolicy) const override;
@@ -75,35 +73,8 @@ class WorkerFetchContext final : public BaseFetchContext {
   void PrepareRequest(ResourceRequest&,
                       const FetchInitiatorInfo&,
                       WebScopedVirtualTimePauser&,
-                      RedirectType,
                       ResourceType) override;
   void AddAdditionalRequestHeaders(ResourceRequest&) override;
-  void DispatchWillSendRequest(unsigned long,
-                               const ResourceRequest&,
-                               const ResourceResponse&,
-                               ResourceType,
-                               const FetchInitiatorInfo&) override;
-  void DispatchDidReceiveResponse(unsigned long identifier,
-                                  const ResourceRequest&,
-                                  const ResourceResponse&,
-                                  Resource*,
-                                  ResourceResponseType) override;
-  void DispatchDidReceiveData(unsigned long identifier,
-                              const char* data,
-                              uint64_t data_length) override;
-  void DispatchDidReceiveEncodedData(unsigned long identifier,
-                                     size_t encoded_data_length) override;
-  void DispatchDidFinishLoading(unsigned long identifier,
-                                TimeTicks finish_time,
-                                int64_t encoded_data_length,
-                                int64_t decoded_body_length,
-                                bool should_report_corb_blocking,
-                                ResourceResponseType) override;
-  void DispatchDidFail(const KURL&,
-                       unsigned long identifier,
-                       const ResourceError&,
-                       int64_t encoded_data_length,
-                       bool isInternalRequest) override;
   void AddResourceTiming(const ResourceTimingInfo&) override;
   void PopulateResourceRequest(ResourceType,
                                const ClientHintsPreferences&,

@@ -321,10 +321,12 @@ TEST_F(LockActionHandlerLayoutManagerTest, KeyboardBounds) {
       GetPrimaryShelf()->shelf_layout_manager();
   ASSERT_TRUE(shelf_layout_manager);
 
-  const int accessibility_panel_height = 45;
-  shelf_layout_manager->SetAccessibilityPanelHeight(accessibility_panel_height);
+  const int kAccessibilityPanelHeight = 45;
+  std::unique_ptr<views::Widget> widget =
+      CreateTestWidget(nullptr, kShellWindowId_AccessibilityPanelContainer);
+  SetAccessibilityPanelHeight(kAccessibilityPanelHeight);
 
-  target_bounds.Inset(0 /* left */, accessibility_panel_height /* top */,
+  target_bounds.Inset(0 /* left */, kAccessibilityPanelHeight /* top */,
                       0 /* right */, 0 /* bottom */);
   EXPECT_EQ(target_bounds.ToString(), window->GetBoundsInScreen().ToString());
 

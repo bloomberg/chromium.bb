@@ -17,12 +17,6 @@ import common_merge_script_tests
 
 THIS_DIR = os.path.dirname(__file__)
 
-sys.path.insert(
-    0, os.path.abspath(os.path.join(THIS_DIR, '..', '..', '..', 'unittests')))
-import test_env
-
-sys.path.insert(
-    0, os.path.abspath(os.path.join(THIS_DIR, '..', 'resources')))
 import standard_isolated_script_merge
 
 

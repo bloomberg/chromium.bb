@@ -46,6 +46,7 @@ class BrowserViewLayout : public views::LayoutManager {
             Browser* browser,
             views::ClientView* browser_view,
             views::View* top_container,
+            views::View* tab_strip_region_view,
             TabStrip* tab_strip,
             views::View* toolbar,
             InfoBarContainerView* infobar_container,
@@ -130,6 +131,7 @@ class BrowserViewLayout : public views::LayoutManager {
   // NOTE: If you add a view, try to add it as a views::View, which makes
   // testing much easier.
   views::View* top_container_;
+  views::View* tab_strip_region_view_;
   TabStrip* tab_strip_;
   views::View* toolbar_;
   BookmarkBarView* bookmark_bar_;

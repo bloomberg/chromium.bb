@@ -87,6 +87,7 @@
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
@@ -100,6 +101,8 @@ namespace {
 // via hasPendingActivity method which returns true if
 // m_eventDispatchRecursionLevel is positive.
 class ScopedEventDispatchProtect final {
+  STACK_ALLOCATED();
+
  public:
   explicit ScopedEventDispatchProtect(int* level) : level_(level) { ++*level_; }
   ~ScopedEventDispatchProtect() {
@@ -193,8 +196,9 @@ void LogConsoleError(ExecutionContext* context, const String& message) {
   // FIXME: It's not good to report the bad usage without indicating what source
   // line it came from.  We should pass additional parameters so we can tell the
   // console where the mistake occurred.
-  ConsoleMessage* console_message = ConsoleMessage::Create(
-      kJSMessageSource, mojom::ConsoleMessageLevel::kError, message);
+  ConsoleMessage* console_message =
+      ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                             mojom::ConsoleMessageLevel::kError, message);
   context->AddConsoleMessage(console_message);
 }
 
@@ -229,11 +233,6 @@ class XMLHttpRequest::BlobLoader final
     : public GarbageCollectedFinalized<XMLHttpRequest::BlobLoader>,
       public FileReaderLoaderClient {
  public:
-  static BlobLoader* Create(XMLHttpRequest* xhr,
-                            scoped_refptr<BlobDataHandle> handle) {
-    return MakeGarbageCollected<BlobLoader>(xhr, std::move(handle));
-  }
-
   BlobLoader(XMLHttpRequest* xhr, scoped_refptr<BlobDataHandle> handle)
       : xhr_(xhr),
         loader_(std::make_unique<FileReaderLoader>(
@@ -288,7 +287,7 @@ XMLHttpRequest::XMLHttpRequest(
     scoped_refptr<SecurityOrigin> isolated_world_security_origin)
     : ContextLifecycleObserver(context),
       progress_event_throttle_(
-          XMLHttpRequestProgressEventThrottle::Create(this)),
+          MakeGarbageCollected<XMLHttpRequestProgressEventThrottle>(this)),
       isolate_(isolate),
       is_isolated_world_(is_isolated_world),
       isolated_world_security_origin_(
@@ -411,7 +410,7 @@ Blob* XMLHttpRequest::ResponseBlob() {
     return nullptr;
 
   if (!response_blob_) {
-    std::unique_ptr<BlobData> blob_data = BlobData::Create();
+    auto blob_data = std::make_unique<BlobData>();
     blob_data->SetContentType(FinalResponseMIMETypeWithFallback().LowerASCII());
     size_t size = 0;
     if (binary_response_builder_ && binary_response_builder_->size()) {
@@ -551,11 +550,11 @@ String XMLHttpRequest::responseURL() {
 
 XMLHttpRequestUpload* XMLHttpRequest::upload() {
   if (!upload_)
-    upload_ = XMLHttpRequestUpload::Create(this);
+    upload_ = MakeGarbageCollected<XMLHttpRequestUpload>(this);
   return upload_;
 }
 
-void XMLHttpRequest::TrackProgress(long long length) {
+void XMLHttpRequest::TrackProgress(uint64_t length) {
   received_length_ += length;
 
   ChangeState(kLoading);
@@ -979,15 +978,18 @@ void XMLHttpRequest::ThrowForLoadFailureIfNeeded(
   if (exception_code_ == DOMExceptionCode::kNoError)
     return;
 
-  String message = "Failed to load '" + url_.ElidedString() + "'";
+  StringBuilder message;
+  message.Append("Failed to load '");
+  message.Append(url_.ElidedString());
+  message.Append('\'');
   if (reason.IsNull()) {
-    message.append('.');
+    message.Append('.');
   } else {
-    message.append(": ");
-    message.append(reason);
+    message.Append(": ");
+    message.Append(reason);
   }
 
-  exception_state.ThrowDOMException(exception_code_, message);
+  exception_state.ThrowDOMException(exception_code_, message.ToString());
 }
 
 void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
@@ -1033,17 +1035,17 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
       return;
     if (http_body && upload_) {
       upload_events = upload_->HasEventListeners();
-      upload_->DispatchEvent(
-          *ProgressEvent::Create(event_type_names::kLoadstart, false, 0, 0));
+      upload_->DispatchEvent(*ProgressEvent::Create(
+          event_type_names::kLoadstart, true, 0, http_body->SizeInBytes()));
       // See above.
       if (!send_flag_ || loader_)
         return;
     }
   }
 
-  same_origin_request_ = GetSecurityOrigin()->CanRequest(url_);
+  const bool same_origin_request = GetSecurityOrigin()->CanRequest(url_);
 
-  if (!same_origin_request_ && with_credentials_) {
+  if (!same_origin_request && with_credentials_) {
     UseCounter::Count(&execution_context,
                       WebFeature::kXMLHttpRequestCrossOriginWithCredentials);
   }
@@ -1051,13 +1053,13 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   // We also remember whether upload events should be allowed for this request
   // in case the upload listeners are added after the request is started.
   upload_events_allowed_ =
-      same_origin_request_ || upload_events ||
+      same_origin_request || upload_events ||
       !cors::IsCorsSafelistedMethod(method_) ||
       !cors::ContainsOnlyCorsSafelistedHeaders(request_headers_);
 
   ResourceRequest request(url_);
   request.SetRequestorOrigin(GetSecurityOrigin());
-  request.SetHTTPMethod(method_);
+  request.SetHttpMethod(method_);
   request.SetRequestContext(mojom::RequestContextType::XML_HTTP_REQUEST);
   request.SetFetchRequestMode(
       upload_events ? network::mojom::FetchRequestMode::kCorsWithForcedPreflight
@@ -1075,7 +1077,7 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   if (http_body) {
     DCHECK_NE(method_, http_names::kGET);
     DCHECK_NE(method_, http_names::kHEAD);
-    request.SetHTTPBody(std::move(http_body));
+    request.SetHttpBody(std::move(http_body));
   }
 
   if (request_headers_.size() > 0)
@@ -1173,8 +1175,8 @@ void XMLHttpRequest::abort() {
 
   // internalAbort() clears the response. Save the data needed for
   // dispatching ProgressEvents.
-  long long expected_length = response_.ExpectedContentLength();
-  long long received_length = received_length_;
+  int64_t expected_length = response_.ExpectedContentLength();
+  int64_t received_length = received_length_;
 
   if (!InternalAbort())
     return;
@@ -1298,8 +1300,8 @@ void XMLHttpRequest::ClearRequest() {
 }
 
 void XMLHttpRequest::DispatchProgressEvent(const AtomicString& type,
-                                           long long received_length,
-                                           long long expected_length) {
+                                           int64_t received_length,
+                                           int64_t expected_length) {
   bool length_computable =
       expected_length > 0 && received_length <= expected_length;
   uint64_t loaded =
@@ -1325,8 +1327,8 @@ void XMLHttpRequest::HandleNetworkError() {
   NETWORK_DVLOG(1) << this << " handleNetworkError()";
 
   // Response is cleared next, save needed progress event data.
-  long long expected_length = response_.ExpectedContentLength();
-  long long received_length = received_length_;
+  int64_t expected_length = response_.ExpectedContentLength();
+  int64_t received_length = received_length_;
 
   if (!InternalAbort())
     return;
@@ -1339,8 +1341,8 @@ void XMLHttpRequest::HandleDidCancel() {
   NETWORK_DVLOG(1) << this << " handleDidCancel()";
 
   // Response is cleared next, save needed progress event data.
-  long long expected_length = response_.ExpectedContentLength();
-  long long received_length = received_length_;
+  int64_t expected_length = response_.ExpectedContentLength();
+  int64_t received_length = received_length_;
 
   if (!InternalAbort())
     return;
@@ -1354,8 +1356,8 @@ void XMLHttpRequest::HandleDidCancel() {
 
 void XMLHttpRequest::HandleRequestError(DOMExceptionCode exception_code,
                                         const AtomicString& type,
-                                        long long received_length,
-                                        long long expected_length) {
+                                        int64_t received_length,
+                                        int64_t expected_length) {
   NETWORK_DVLOG(1) << this << " handleRequestError()";
 
   probe::DidFinishXHR(GetExecutionContext(), this);
@@ -1487,11 +1489,12 @@ String XMLHttpRequest::getAllResponseHeaders() const {
         !GetSecurityOrigin()->CanLoadLocalResources())
       continue;
 
-    if (!same_origin_request_ &&
-        !cors::IsOnAccessControlResponseHeaderWhitelist(it->key) &&
+    if (response_.GetType() == network::mojom::FetchResponseType::kCors &&
+        !cors::IsCorsSafelistedResponseHeader(it->key) &&
         access_control_expose_header_set.find(it->key.Ascii().data()) ==
-            access_control_expose_header_set.end())
+            access_control_expose_header_set.end()) {
       continue;
+    }
 
     string_builder.Append(it->key.LowerASCII());
     string_builder.Append(':');
@@ -1523,8 +1526,8 @@ const AtomicString& XMLHttpRequest::getResponseHeader(
                             : network::mojom::FetchCredentialsMode::kSameOrigin,
           response_);
 
-  if (!same_origin_request_ &&
-      !cors::IsOnAccessControlResponseHeaderWhitelist(name) &&
+  if (response_.GetType() == network::mojom::FetchResponseType::kCors &&
+      !cors::IsCorsSafelistedResponseHeader(name) &&
       access_control_expose_header_set.find(name.Ascii().data()) ==
           access_control_expose_header_set.end()) {
     LogConsoleError(GetExecutionContext(),
@@ -1670,7 +1673,7 @@ void XMLHttpRequest::DidFailRedirectCheck() {
   HandleNetworkError();
 }
 
-void XMLHttpRequest::DidFinishLoading(unsigned long identifier) {
+void XMLHttpRequest::DidFinishLoading(uint64_t identifier) {
   NETWORK_DVLOG(1) << this << " didFinishLoading(" << identifier << ")";
   ScopedEventDispatchProtect protect(&event_dispatch_recursion_level_);
 
@@ -1685,8 +1688,8 @@ void XMLHttpRequest::DidFinishLoading(unsigned long identifier) {
     // In this case, we have sent the request with DownloadToBlob true,
     // but the user changed the response type after that. Hence we need to
     // read the response data and provide it to this object.
-    blob_loader_ =
-        BlobLoader::Create(this, response_blob_->GetBlobDataHandle());
+    blob_loader_ = MakeGarbageCollected<BlobLoader>(
+        this, response_blob_->GetBlobDataHandle());
   } else {
     DidFinishLoadingInternal();
   }
@@ -1796,7 +1799,7 @@ void XMLHttpRequest::DidSendData(uint64_t bytes_sent,
   }
 }
 
-void XMLHttpRequest::DidReceiveResponse(unsigned long identifier,
+void XMLHttpRequest::DidReceiveResponse(uint64_t identifier,
                                         const ResourceResponse& response) {
   // TODO(yhirano): Remove this CHECK: see https://crbug.com/570946.
   CHECK(&response);
@@ -1829,14 +1832,16 @@ void XMLHttpRequest::ParseDocumentChunk(const char* data, unsigned len) {
 std::unique_ptr<TextResourceDecoder> XMLHttpRequest::CreateDecoder() const {
   const TextResourceDecoderOptions decoder_options_for_utf8_plain_text(
       TextResourceDecoderOptions::kPlainTextContent, UTF8Encoding());
-  if (response_type_code_ == kResponseTypeJSON)
-    return TextResourceDecoder::Create(decoder_options_for_utf8_plain_text);
+  if (response_type_code_ == kResponseTypeJSON) {
+    return std::make_unique<TextResourceDecoder>(
+        decoder_options_for_utf8_plain_text);
+  }
 
   WTF::TextEncoding final_response_charset = FinalResponseCharset();
   if (final_response_charset.IsValid()) {
     // If the final charset is given and valid, use the charset without
     // sniffing the content.
-    return TextResourceDecoder::Create(TextResourceDecoderOptions(
+    return std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
         TextResourceDecoderOptions::kPlainTextContent, final_response_charset));
   }
 
@@ -1850,16 +1855,17 @@ std::unique_ptr<TextResourceDecoder> XMLHttpRequest::CreateDecoder() const {
   switch (response_type_code_) {
     case kResponseTypeDefault:
       if (ResponseIsXML())
-        return TextResourceDecoder::Create(decoder_options_for_xml);
+        return std::make_unique<TextResourceDecoder>(decoder_options_for_xml);
       FALLTHROUGH;
     case kResponseTypeText:
-      return TextResourceDecoder::Create(decoder_options_for_utf8_plain_text);
+      return std::make_unique<TextResourceDecoder>(
+          decoder_options_for_utf8_plain_text);
     case kResponseTypeDocument:
       if (ResponseIsHTML()) {
-        return TextResourceDecoder::Create(TextResourceDecoderOptions(
+        return std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
             TextResourceDecoderOptions::kHTMLContent, UTF8Encoding()));
       }
-      return TextResourceDecoder::Create(decoder_options_for_xml);
+      return std::make_unique<TextResourceDecoder>(decoder_options_for_xml);
     case kResponseTypeJSON:
     case kResponseTypeBlob:
     case kResponseTypeArrayBuffer:
@@ -1965,7 +1971,7 @@ void XMLHttpRequest::DidDownloadToBlob(scoped_refptr<BlobDataHandle> blob) {
     String mime_type = FinalResponseMIMETypeWithFallback().LowerASCII();
     if (blob->GetType() != mime_type) {
       auto blob_size = blob->size();
-      auto blob_data = BlobData::Create();
+      auto blob_data = std::make_unique<BlobData>();
       blob_data->SetContentType(mime_type);
       blob_data->AppendBlob(std::move(blob), 0, blob_size);
       response_blob_ =
@@ -1980,8 +1986,8 @@ void XMLHttpRequest::HandleDidTimeout() {
   NETWORK_DVLOG(1) << this << " handleDidTimeout()";
 
   // Response is cleared next, save needed progress event data.
-  long long expected_length = response_.ExpectedContentLength();
-  long long received_length = received_length_;
+  int64_t expected_length = response_.ExpectedContentLength();
+  int64_t received_length = received_length_;
 
   if (!InternalAbort())
     return;

@@ -25,7 +25,6 @@
 
 namespace sw
 {
-	extern bool complementaryDepthBuffer;
 	extern bool fullPixelPositionRegister;
 
 	bool precacheSetup = false;
@@ -121,6 +120,6 @@ namespace sw
 	void SetupProcessor::setRoutineCacheSize(int cacheSize)
 	{
 		delete routineCache;
-		routineCache = new RoutineCache<State>(clamp(cacheSize, 1, 65536), precacheSetup ? "sw-setup" : 0);
+		routineCache = new RoutineCache<State>(clamp(cacheSize, 1, 65536));
 	}
 }

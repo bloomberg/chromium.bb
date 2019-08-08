@@ -44,6 +44,20 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
     return style;
   }
 
+  void AppendText(const String& text, NGInlineItemsBuilder* builder) {
+    LayoutText* layout_text = LayoutText::CreateEmptyAnonymous(
+        GetDocument(), style_.get(), LegacyLayout::kAuto);
+    anonymous_objects_.push_back(layout_text);
+    builder->AppendText(text, layout_text);
+  }
+
+  void AppendAtomicInline(NGInlineItemsBuilder* builder) {
+    LayoutBlockFlow* layout_block_flow = LayoutBlockFlow::CreateAnonymous(
+        &GetDocument(), style_, LegacyLayout::kAuto);
+    anonymous_objects_.push_back(layout_block_flow);
+    builder->AppendAtomicInline(layout_block_flow);
+  }
+
   struct Input {
     const String text;
     EWhiteSpace whitespace = EWhiteSpace::kNormal;
@@ -57,10 +71,10 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
     for (Input& input : inputs) {
       if (!input.layout_text) {
         input.layout_text = LayoutText::CreateEmptyAnonymous(
-            GetDocument(), GetStyle(input.whitespace));
+            GetDocument(), GetStyle(input.whitespace), LegacyLayout::kAuto);
         anonymous_objects.push_back(input.layout_text);
       }
-      builder.Append(input.text, input.layout_text->Style(), input.layout_text);
+      builder.AppendText(input.text, input.layout_text);
     }
     builder.ExitBlock();
     text_ = builder.ToString();
@@ -91,7 +105,7 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
     for (unsigned i = 0; i < items_.size(); i++) {
       const NGInlineItem& item = items_[i];
       EXPECT_EQ(current_offset, item.StartOffset());
-      EXPECT_LT(item.StartOffset(), item.EndOffset());
+      EXPECT_LE(item.StartOffset(), item.EndOffset());
       current_offset = item.EndOffset();
     }
     EXPECT_EQ(current_offset, text_.length());
@@ -118,10 +132,9 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
 
       // Try to re-use previous items, or Append if it was not re-usable.
       bool reused = input.layout_text->HasValidInlineItems() &&
-                    reuse_builder.Append(text_, input.layout_text);
+                    reuse_builder.AppendTextReusing(text_, input.layout_text);
       if (!reused) {
-        reuse_builder.Append(input.text, input.layout_text->Style(),
-                             input.layout_text);
+        reuse_builder.AppendText(input.text, input.layout_text);
       }
     }
 
@@ -133,6 +146,7 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
   Vector<NGInlineItem> items_;
   String text_;
   scoped_refptr<ComputedStyle> style_;
+  Vector<LayoutObject*> anonymous_objects_;
 };
 
 #define TestWhitespaceValue(expected_text, input, whitespace) \
@@ -294,39 +308,40 @@ TEST_F(NGInlineItemsBuilderTest, CollapseEastAsianWidth) {
 
 TEST_F(NGInlineItemsBuilderTest, OpaqueToSpaceCollapsing) {
   NGInlineItemsBuilder builder(&items_);
-  builder.Append("Hello ", style_.get());
+  AppendText("Hello ", &builder);
   builder.AppendOpaque(NGInlineItem::kBidiControl,
                        kFirstStrongIsolateCharacter);
-  builder.Append(" ", style_.get());
+  AppendText(" ", &builder);
   builder.AppendOpaque(NGInlineItem::kBidiControl,
                        kFirstStrongIsolateCharacter);
-  builder.Append(" World", style_.get());
+  AppendText(" World", &builder);
   EXPECT_EQ(String(u"Hello \u2068\u2068World"), builder.ToString());
 }
 
 TEST_F(NGInlineItemsBuilderTest, CollapseAroundReplacedElement) {
   NGInlineItemsBuilder builder(&items_);
-  builder.Append("Hello ", style_.get());
-  builder.AppendAtomicInline();
-  builder.Append(" World", style_.get());
+  AppendText("Hello ", &builder);
+  AppendAtomicInline(&builder);
+  AppendText(" World", &builder);
   EXPECT_EQ(String(u"Hello \uFFFC World"), builder.ToString());
 }
 
 TEST_F(NGInlineItemsBuilderTest, CollapseNewlineAfterObject) {
   NGInlineItemsBuilder builder(&items_);
-  builder.AppendAtomicInline();
-  builder.Append("\n", style_.get());
-  builder.AppendAtomicInline();
+  AppendAtomicInline(&builder);
+  AppendText("\n", &builder);
+  AppendAtomicInline(&builder);
   EXPECT_EQ(String(u"\uFFFC \uFFFC"), builder.ToString());
   EXPECT_EQ(3u, items_.size());
-  EXPECT_EQ(nullptr, items_[0].Style());
-  EXPECT_EQ(style_.get(), items_[1].Style());
-  EXPECT_EQ(nullptr, items_[2].Style());
+  EXPECT_ITEM_OFFSET(items_[0], NGInlineItem::kAtomicInline, 0u, 1u);
+  EXPECT_ITEM_OFFSET(items_[1], NGInlineItem::kText, 1u, 2u);
+  EXPECT_ITEM_OFFSET(items_[2], NGInlineItem::kAtomicInline, 2u, 3u);
 }
 
 TEST_F(NGInlineItemsBuilderTest, AppendEmptyString) {
   EXPECT_EQ("", TestAppend(""));
-  EXPECT_EQ(0u, items_.size());
+  EXPECT_EQ(1u, items_.size());
+  EXPECT_ITEM_OFFSET(items_[0], NGInlineItem::kText, 0u, 0u);
 }
 
 TEST_F(NGInlineItemsBuilderTest, NewLines) {
@@ -408,7 +423,7 @@ TEST_F(NGInlineItemsBuilderTest, BidiBlockOverride) {
   block_style->SetUnicodeBidi(UnicodeBidi::kBidiOverride);
   block_style->SetDirection(TextDirection::kRtl);
   builder.EnterBlock(block_style.get());
-  builder.Append("Hello", style_.get());
+  AppendText("Hello", &builder);
   builder.ExitBlock();
 
   // Expected control characters as defined in:
@@ -433,16 +448,16 @@ static std::unique_ptr<LayoutInline> CreateLayoutInline(
 TEST_F(NGInlineItemsBuilderTest, BidiIsolate) {
   Vector<NGInlineItem> items;
   NGInlineItemsBuilder builder(&items);
-  builder.Append("Hello ", style_.get());
+  AppendText("Hello ", &builder);
   std::unique_ptr<LayoutInline> isolate_rtl(
       CreateLayoutInline([](ComputedStyle* style) {
         style->SetUnicodeBidi(UnicodeBidi::kIsolate);
         style->SetDirection(TextDirection::kRtl);
       }));
   builder.EnterInline(isolate_rtl.get());
-  builder.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA", style_.get());
+  AppendText(u"\u05E2\u05D1\u05E8\u05D9\u05EA", &builder);
   builder.ExitInline(isolate_rtl.get());
-  builder.Append(" World", style_.get());
+  AppendText(" World", &builder);
 
   // Expected control characters as defined in:
   // https://drafts.csswg.org/css-writing-modes-3/#bidi-control-codes-injection-table
@@ -457,16 +472,16 @@ TEST_F(NGInlineItemsBuilderTest, BidiIsolate) {
 TEST_F(NGInlineItemsBuilderTest, BidiIsolateOverride) {
   Vector<NGInlineItem> items;
   NGInlineItemsBuilder builder(&items);
-  builder.Append("Hello ", style_.get());
+  AppendText("Hello ", &builder);
   std::unique_ptr<LayoutInline> isolate_override_rtl(
       CreateLayoutInline([](ComputedStyle* style) {
         style->SetUnicodeBidi(UnicodeBidi::kIsolateOverride);
         style->SetDirection(TextDirection::kRtl);
       }));
   builder.EnterInline(isolate_override_rtl.get());
-  builder.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA", style_.get());
+  AppendText(u"\u05E2\u05D1\u05E8\u05D9\u05EA", &builder);
   builder.ExitInline(isolate_override_rtl.get());
-  builder.Append(" World", style_.get());
+  AppendText(" World", &builder);
 
   // Expected control characters as defined in:
   // https://drafts.csswg.org/css-writing-modes-3/#bidi-control-codes-injection-table

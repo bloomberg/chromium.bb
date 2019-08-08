@@ -72,6 +72,22 @@ bool WordMatchesURLContent(
 
 }  // namespace
 
+// static
+const char* const AutocompleteMatch::kDocumentTypeStrings[]{
+    "none",        "drive_docs", "drive_forms", "drive_sheets", "drive_slides",
+    "drive_image", "drive_pdf",  "drive_video", "drive_other"};
+
+static_assert(
+    base::size(AutocompleteMatch::kDocumentTypeStrings) ==
+        static_cast<int>(AutocompleteMatch::DocumentType::DOCUMENT_TYPE_SIZE),
+    "Sizes of AutocompleteMatch::kDocumentTypeStrings and "
+    "AutocompleteMatch::DocumentType don't match.");
+
+// static
+const char* AutocompleteMatch::DocumentTypeString(DocumentType type) {
+  return kDocumentTypeStrings[static_cast<int>(type)];
+}
+
 // AutocompleteMatch ----------------------------------------------------------
 
 // static
@@ -85,18 +101,7 @@ const base::char16 AutocompleteMatch::kInvalidChars[] = {
 const char AutocompleteMatch::kEllipsis[] = "... ";
 
 AutocompleteMatch::AutocompleteMatch()
-    : provider(nullptr),
-      relevance(0),
-      typed_count(-1),
-      deletable(false),
-      allowed_to_be_default_match(false),
-      document_type(DocumentType::NONE),
-      swap_contents_and_description(false),
-      transition(ui::PAGE_TRANSITION_GENERATED),
-      type(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED),
-      has_tab_match(false),
-      subtype_identifier(0),
-      from_previous(false) {}
+    : transition(ui::PAGE_TRANSITION_GENERATED) {}
 
 AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
                                      int relevance,
@@ -104,16 +109,9 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
                                      Type type)
     : provider(provider),
       relevance(relevance),
-      typed_count(-1),
       deletable(deletable),
-      allowed_to_be_default_match(false),
-      document_type(DocumentType::NONE),
-      swap_contents_and_description(false),
       transition(ui::PAGE_TRANSITION_TYPED),
-      type(type),
-      has_tab_match(false),
-      subtype_identifier(0),
-      from_previous(false) {}
+      type(type) {}
 
 AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
     : provider(match.provider),
@@ -143,6 +141,7 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
                              ? new AutocompleteMatch(*match.associated_keyword)
                              : nullptr),
       keyword(match.keyword),
+      from_keyword(match.from_keyword),
       pedal(match.pedal),
       from_previous(match.from_previous),
       search_terms_args(
@@ -154,6 +153,9 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
                        : nullptr),
       additional_info(match.additional_info),
       duplicate_matches(match.duplicate_matches) {}
+
+AutocompleteMatch::AutocompleteMatch(AutocompleteMatch&& match) noexcept =
+    default;
 
 AutocompleteMatch::~AutocompleteMatch() {
 }
@@ -191,6 +193,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
           ? new AutocompleteMatch(*match.associated_keyword)
           : nullptr);
   keyword = match.keyword;
+  from_keyword = match.from_keyword;
   pedal = match.pedal;
   from_previous = match.from_previous;
   search_terms_args.reset(
@@ -226,7 +229,6 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
       return omnibox::kPageIcon;
 
     case Type::SEARCH_WHAT_YOU_TYPED:
-    case Type::SEARCH_HISTORY:
     case Type::SEARCH_SUGGEST:
     case Type::SEARCH_SUGGEST_ENTITY:
     case Type::SEARCH_SUGGEST_PERSONALIZED:
@@ -237,6 +239,16 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
     case Type::CLIPBOARD_TEXT:
     case Type::CLIPBOARD_IMAGE:
       return vector_icons::kSearchIcon;
+
+    case Type::SEARCH_HISTORY: {
+      if (base::FeatureList::IsEnabled(
+              omnibox::kOmniboxSuggestionTransparencyOptions) ||
+          base::FeatureList::IsEnabled(
+              omnibox::kOmniboxUICuesForSearchHistoryMatches)) {
+        return omnibox::kClockIcon;
+      }
+      return vector_icons::kSearchIcon;
+    }
 
     case Type::EXTENSION_APP_DEPRECATED:
       return omnibox::kExtensionAppIcon;
@@ -785,11 +797,11 @@ size_t AutocompleteMatch::EstimateMemoryUsage() const {
   res += base::trace_event::EstimateMemoryUsage(stripped_destination_url);
   res += base::trace_event::EstimateMemoryUsage(image_dominant_color);
   res += base::trace_event::EstimateMemoryUsage(image_url);
+  res += base::trace_event::EstimateMemoryUsage(tail_suggest_common_prefix);
   res += base::trace_event::EstimateMemoryUsage(contents);
   res += base::trace_event::EstimateMemoryUsage(contents_class);
   res += base::trace_event::EstimateMemoryUsage(description);
   res += base::trace_event::EstimateMemoryUsage(description_class);
-  res += sizeof(int);
   if (answer)
     res += base::trace_event::EstimateMemoryUsage(answer.value());
   else
@@ -797,6 +809,7 @@ size_t AutocompleteMatch::EstimateMemoryUsage() const {
   res += base::trace_event::EstimateMemoryUsage(associated_keyword);
   res += base::trace_event::EstimateMemoryUsage(keyword);
   res += base::trace_event::EstimateMemoryUsage(search_terms_args);
+  res += base::trace_event::EstimateMemoryUsage(post_content);
   res += base::trace_event::EstimateMemoryUsage(additional_info);
   res += base::trace_event::EstimateMemoryUsage(duplicate_matches);
 

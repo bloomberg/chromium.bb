@@ -121,9 +121,9 @@ bool AXTreeSourceChecker<AXSourceNode, AXNodeData, AXTreeData>::Check(
 
     int32_t child_id = tree_->GetId(child);
     if (i == 0)
-      *output += " child_ids=" + base::IntToString(child_id);
+      *output += " child_ids=" + base::NumberToString(child_id);
     else
-      *output += "," + base::IntToString(child_id);
+      *output += "," + base::NumberToString(child_id);
 
     if (node_id_to_parent_id_map_.find(child_id) !=
         node_id_to_parent_id_map_.end()) {

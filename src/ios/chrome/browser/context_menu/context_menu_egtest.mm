@@ -42,7 +42,6 @@ using chrome_test_util::OmniboxText;
 using chrome_test_util::OpenLinkInNewTabButton;
 using chrome_test_util::SystemSelectionCallout;
 using chrome_test_util::SystemSelectionCalloutCopyButton;
-using web::test::ElementSelector;
 
 namespace {
 // Directory containing the |kLogoPagePath| and |kLogoPageImageSourcePath|
@@ -132,7 +131,7 @@ void LongPressElement(const char* element_id) {
       web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
   [[EarlGrey selectElementWithMatcher:web_view_matcher]
       performAction:chrome_test_util::LongPressElementForContextMenu(
-                        ElementSelector::ElementSelectorId(element_id),
+                        [ElementSelector selectorWithElementID:element_id],
                         true /* menu should appear */)];
 }
 

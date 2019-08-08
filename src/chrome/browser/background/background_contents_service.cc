@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/one_shot_event.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -49,7 +50,6 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
-#include "extensions/common/one_shot_event.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "ipc/ipc_message.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -164,7 +164,7 @@ void NotificationImageReady(const std::string extension_name,
       {}, delegate);
 
   NotificationDisplayService::GetForProfile(profile)->Display(
-      NotificationHandler::Type::TRANSIENT, notification);
+      NotificationHandler::Type::TRANSIENT, notification, /*metadata=*/nullptr);
 }
 
 // Show a popup notification balloon with a crash message for a given app/
@@ -304,8 +304,9 @@ BackgroundContentsService::GetBackgroundContents() const {
 void BackgroundContentsService::StartObserving(Profile* profile) {
   // On startup, load our background pages after extension-apps have loaded.
   extensions::ExtensionSystem::Get(profile)->ready().Post(
-      FROM_HERE, base::Bind(&BackgroundContentsService::OnExtensionSystemReady,
-                            weak_ptr_factory_.GetWeakPtr(), profile));
+      FROM_HERE,
+      base::BindOnce(&BackgroundContentsService::OnExtensionSystemReady,
+                     weak_ptr_factory_.GetWeakPtr(), profile));
 
   // Track the lifecycle of all BackgroundContents in the system to allow us
   // to store an up-to-date list of the urls. Start tracking contents when they

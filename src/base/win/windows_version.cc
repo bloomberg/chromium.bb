@@ -7,6 +7,8 @@
 #include <windows.h>
 
 #include <memory>
+#include <tuple>
+#include <utility>
 
 #include "base/file_version_info_win.h"
 #include "base/files/file_path.h"
@@ -27,7 +29,7 @@
 #endif
 
 namespace {
-typedef BOOL (WINAPI *GetProductInfoPtr)(DWORD, DWORD, DWORD, DWORD, PDWORD);
+typedef BOOL(WINAPI* GetProductInfoPtr)(DWORD, DWORD, DWORD, DWORD, PDWORD);
 }  // namespace
 
 namespace base {
@@ -35,31 +37,36 @@ namespace win {
 
 namespace {
 
-// Returns the the "UBR" value from the registry. Introduced in Windows 10,
-// this undocumented value appears to be similar to a patch number.
-// Returns 0 if the value does not exist or it could not be read.
-int GetUBR() {
-  // The values under the CurrentVersion registry hive are mirrored under
-  // the corresponding Wow6432 hive.
-  static constexpr char16 kRegKeyWindowsNTCurrentVersion[] =
-      STRING16_LITERAL("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
+// The values under the CurrentVersion registry hive are mirrored under
+// the corresponding Wow6432 hive.
+constexpr char16 kRegKeyWindowsNTCurrentVersion[] =
+    STRING16_LITERAL("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
 
+// Returns the "UBR" (Windows 10 patch number) and "ReleaseId" (Windows 10
+// release number) from the registry. "UBR" is an undocumented value and will be
+// 0 if the value was not found. "ReleaseId" will be an empty string if the
+// value is not found.
+std::pair<int, std::string> GetVersionData() {
+  DWORD ubr = 0;
+  string16 release_id;
   RegKey key;
+
   if (key.Open(HKEY_LOCAL_MACHINE, kRegKeyWindowsNTCurrentVersion,
-               KEY_QUERY_VALUE) != ERROR_SUCCESS) {
-    return 0;
+               KEY_QUERY_VALUE) == ERROR_SUCCESS) {
+    key.ReadValueDW(STRING16_LITERAL("UBR"), &ubr);
+    key.ReadValue(STRING16_LITERAL("ReleaseId"), &release_id);
   }
 
-  DWORD ubr = 0;
-  key.ReadValueDW(STRING16_LITERAL("UBR"), &ubr);
-
-  return static_cast<int>(ubr);
+  return std::make_pair(static_cast<int>(ubr), UTF16ToUTF8(release_id));
 }
 
 const _SYSTEM_INFO& GetSystemInfoStorage() {
-  static _SYSTEM_INFO system_info = {};
-  ::GetNativeSystemInfo(&system_info);
-  return system_info;
+  static const NoDestructor<_SYSTEM_INFO> system_info([] {
+    _SYSTEM_INFO info = {};
+    ::GetNativeSystemInfo(&info);
+    return info;
+  }());
+  return *system_info;
 }
 
 }  // namespace
@@ -117,7 +124,7 @@ OSInfo::OSInfo(const _OSVERSIONINFOEXW& version_info,
   version_number_.major = version_info.dwMajorVersion;
   version_number_.minor = version_info.dwMinorVersion;
   version_number_.build = version_info.dwBuildNumber;
-  version_number_.patch = GetUBR();
+  std::tie(version_number_.patch, release_id_) = GetVersionData();
   version_ = MajorMinorBuildToVersion(
       version_number_.major, version_number_.minor, version_number_.build);
   service_pack_.major = version_info.wServicePackMajor;
@@ -193,8 +200,7 @@ OSInfo::OSInfo(const _OSVERSIONINFOEXW& version_info,
   }
 }
 
-OSInfo::~OSInfo() {
-}
+OSInfo::~OSInfo() {}
 
 Version OSInfo::Kernel32Version() const {
   static const Version kernel32_version =
@@ -247,7 +253,7 @@ std::string OSInfo::processor_model_name() {
 
 // static
 OSInfo::WOW64Status OSInfo::GetWOW64StatusForProcess(HANDLE process_handle) {
-  typedef BOOL (WINAPI* IsWow64ProcessFunc)(HANDLE, PBOOL);
+  typedef BOOL(WINAPI * IsWow64ProcessFunc)(HANDLE, PBOOL);
   IsWow64ProcessFunc is_wow64_process = reinterpret_cast<IsWow64ProcessFunc>(
       GetProcAddress(GetModuleHandle(L"kernel32.dll"), "IsWow64Process"));
   if (!is_wow64_process)

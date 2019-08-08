@@ -140,7 +140,7 @@ class AppCacheServiceImplTest : public testing::Test {
     cache->AddEntry(
         kManifestUrl,
         AppCacheEntry(AppCacheEntry::MANIFEST, kMockResponseId,
-                      kMockInfoSize + kMockBodySize));
+                      kMockInfoSize + kMockBodySize, /*padding_size=*/0));
     cache->set_complete(true);
     group->AddCache(cache.get());
     mock_storage()->AddStoredGroup(group.get());

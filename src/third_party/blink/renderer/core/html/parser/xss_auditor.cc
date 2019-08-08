@@ -46,7 +46,7 @@
 #include "third_party/blink/renderer/core/xlink_names.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/text/decode_escape_sequences.h"
-#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 
 namespace {
 
@@ -438,7 +438,8 @@ void XSSAuditor::Init(Document* document,
     }
     if (xss_protection_header == kReflectedXSSInvalid) {
       document->AddConsoleMessage(ConsoleMessage::Create(
-          kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
+          mojom::ConsoleMessageSource::kSecurity,
+          mojom::ConsoleMessageLevel::kError,
           "Error parsing header X-XSS-Protection: " + header_value + ": " +
               error_details + " at character position " +
               String::Format("%u", error_position) +
@@ -511,8 +512,8 @@ std::unique_ptr<XSSInfo> XSSAuditor::FilterToken(
   if (did_block_script) {
     bool did_block_entire_page = (xss_protection_ == kBlockReflectedXSS);
     std::unique_ptr<XSSInfo> xss_info =
-        XSSInfo::Create(document_url_, did_block_entire_page,
-                        did_send_valid_xss_protection_header_);
+        std::make_unique<XSSInfo>(document_url_, did_block_entire_page,
+                                  did_send_valid_xss_protection_header_);
     return xss_info;
   }
   return nullptr;

@@ -37,7 +37,6 @@
 namespace webrtc {
 namespace {
 
-const char kPacerPushbackExperiment[] = "WebRTC-PacerPushbackExperiment";
 static const int64_t kRetransmitWindowSizeMs = 500;
 
 // Makes sure that the bitrate and the min, max values are in valid range.
@@ -74,12 +73,6 @@ void SortPacketFeedbackVector(
   std::sort(input->begin(), input->end(), PacketFeedbackComparator());
 }
 
-bool IsPacerPushbackExperimentEnabled(
-    const WebRtcKeyValueConfig* const key_value_config) {
-  return key_value_config->Lookup(kPacerPushbackExperiment).find("Enabled") ==
-         0;
-}
-
 }  // namespace
 
 DEPRECATED_SendSideCongestionController::
@@ -111,14 +104,13 @@ DEPRECATED_SendSideCongestionController::
       pacer_paused_(false),
       min_bitrate_bps_(congestion_controller::GetMinBitrateBps()),
       probe_bitrate_estimator_(new ProbeBitrateEstimator(event_log_)),
-      delay_based_bwe_(new DelayBasedBwe(key_value_config_, event_log_)),
+      delay_based_bwe_(
+          new DelayBasedBwe(key_value_config_, event_log_, nullptr)),
       was_in_alr_(false),
       send_side_bwe_with_overhead_(
           key_value_config_->Lookup("WebRTC-SendSideBwe-WithOverhead")
               .find("Enabled") == 0),
-      transport_overhead_bytes_per_packet_(0),
-      pacer_pushback_experiment_(
-          IsPacerPushbackExperimentEnabled(key_value_config_)) {
+      transport_overhead_bytes_per_packet_(0) {
   RateControlSettings experiment_params =
       RateControlSettings::ParseFromKeyValueConfig(key_value_config);
   if (experiment_params.UseCongestionWindow()) {
@@ -244,7 +236,8 @@ void DEPRECATED_SendSideCongestionController::OnNetworkRouteChanged(
     transport_overhead_bytes_per_packet_ = network_route.packet_overhead;
     min_bitrate_bps_ = min_bitrate_bps;
     probe_bitrate_estimator_.reset(new ProbeBitrateEstimator(event_log_));
-    delay_based_bwe_.reset(new DelayBasedBwe(key_value_config_, event_log_));
+    delay_based_bwe_.reset(
+        new DelayBasedBwe(key_value_config_, event_log_, nullptr));
     acknowledged_bitrate_estimator_.reset(
         new AcknowledgedBitrateEstimator(key_value_config_));
     if (bitrate_bps > 0) {
@@ -417,7 +410,8 @@ void DEPRECATED_SendSideCongestionController::OnTransportFeedback(
     result = delay_based_bwe_->IncomingPacketFeedbackVector(
         feedback_vector, acknowledged_bitrate_estimator_->bitrate(),
         probe_bitrate_estimator_->FetchAndResetLastEstimatedBitrate(),
-        currently_in_alr, Timestamp::ms(clock_->TimeInMilliseconds()));
+        absl::nullopt, currently_in_alr,
+        Timestamp::ms(clock_->TimeInMilliseconds()));
   }
   if (result.updated) {
     bitrate_controller_->OnDelayBasedBweResult(result);
@@ -500,21 +494,8 @@ void DEPRECATED_SendSideCongestionController::MaybeTriggerOnNetworkChanged() {
     rtc::CritScope lock(&network_state_lock_);
     bitrate_bps = congestion_window_pushback_controller_->UpdateTargetBitrate(
         bitrate_bps);
-  } else if (!pacer_pushback_experiment_) {
-    bitrate_bps = IsSendQueueFull() ? 0 : bitrate_bps;
   } else {
-    int64_t queue_length_ms = pacer_->ExpectedQueueTimeMs();
-
-    if (queue_length_ms == 0) {
-      encoding_rate_ = 1.0;
-    } else if (queue_length_ms > 50) {
-      float encoding_rate = 1.0 - queue_length_ms / 1000.0;
-      encoding_rate_ = std::min(encoding_rate_, encoding_rate);
-      encoding_rate_ = std::max(encoding_rate_, 0.0f);
-    }
-
-    bitrate_bps *= encoding_rate_;
-    bitrate_bps = bitrate_bps < 50000 ? 0 : bitrate_bps;
+    bitrate_bps = IsSendQueueFull() ? 0 : bitrate_bps;
   }
 
   if (HasNetworkParametersToReportChanged(bitrate_bps, fraction_loss, rtt)) {

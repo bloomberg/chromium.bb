@@ -129,7 +129,7 @@ class DownloadItemNotificationTest : public testing::Test {
         download_notification_manager_->items_.at(id).get();
     NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
         NotificationHandler::Type::TRANSIENT,
-        *download_item_notification_->notification_);
+        *download_item_notification_->notification_, /*metadata=*/nullptr);
   }
 
   content::TestBrowserThreadBundle test_browser_thread_bundle_;

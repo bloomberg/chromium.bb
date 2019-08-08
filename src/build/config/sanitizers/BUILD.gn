@@ -593,6 +593,10 @@ all_sanitizer_configs = [
 # Keep this list in sync with default_sanitizer_flags_but_ubsan_vptr.
 config("default_sanitizer_flags") {
   configs = all_sanitizer_configs
+
+  if (use_sanitizer_configs_without_instrumentation) {
+    configs = []
+  }
 }
 
 # This config is equivalent to default_sanitizer_flags, but excludes ubsan_vptr.
@@ -601,10 +605,18 @@ config("default_sanitizer_flags") {
 # is a requirement for ubsan_vptr.
 config("default_sanitizer_flags_but_ubsan_vptr") {
   configs = all_sanitizer_configs - [ ":ubsan_vptr_flags" ]
+
+  if (use_sanitizer_configs_without_instrumentation) {
+    configs = []
+  }
 }
 
 config("default_sanitizer_flags_but_coverage") {
   configs = all_sanitizer_configs - [ ":coverage_flags" ]
+
+  if (use_sanitizer_configs_without_instrumentation) {
+    configs = []
+  }
 }
 
 # This config is used by parts of code that aren't targeted in fuzzers and

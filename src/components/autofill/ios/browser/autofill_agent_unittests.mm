@@ -17,7 +17,6 @@
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #include "components/prefs/pref_service.h"
-#include "ios/web/public/features.h"
 #include "ios/web/public/test/fakes/fake_web_frame.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -105,95 +104,14 @@ class AutofillAgentTests : public PlatformTest {
 // Tests that form's name and fields' identifiers, values, and whether they are
 // autofilled are sent to the JS. Fields with empty values and those that are
 // not autofilled are skipped.
-// Test with "IsAutofillIFrameMessagingEnabled" disabled.
-TEST_F(AutofillAgentTests, OnFormDataFilledTest) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  std::vector<base::Feature> enabled_features;
-  std::vector<base::Feature> disabled_features;
-  disabled_features.push_back(
-      autofill::features::kAutofillEnableIFrameSupportOniOS);
-  disabled_features.push_back(web::features::kWebFrameMessaging);
-  scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
-
-  std::string locale("en");
-  autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
-      &test_web_state_, &client_, nil, locale,
-      autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
-
-  autofill::FormData form;
-  form.origin = GURL("https://myform.com");
-  form.action = GURL("https://myform.com/submit");
-  form.name = base::ASCIIToUTF16("CC form");
-
-  autofill::FormFieldData field;
-  field.form_control_type = "text";
-  field.label = base::ASCIIToUTF16("Card number");
-  field.name = base::ASCIIToUTF16("number");
-  field.name_attribute = field.name;
-  field.id_attribute = base::ASCIIToUTF16("number");
-  field.unique_id = field.id_attribute;
-  field.value = base::ASCIIToUTF16("number_value");
-  field.is_autofilled = true;
-  form.fields.push_back(field);
-  field.label = base::ASCIIToUTF16("Name on Card");
-  field.name = base::ASCIIToUTF16("name");
-  field.name_attribute = field.name;
-  field.id_attribute = base::ASCIIToUTF16("name");
-  field.unique_id = field.id_attribute;
-  field.value = base::ASCIIToUTF16("name_value");
-  field.is_autofilled = true;
-  form.fields.push_back(field);
-  field.label = base::ASCIIToUTF16("Expiry Month");
-  field.name = base::ASCIIToUTF16("expiry_month");
-  field.name_attribute = field.name;
-  field.id_attribute = base::ASCIIToUTF16("expiry_month");
-  field.unique_id = field.id_attribute;
-  field.value = base::ASCIIToUTF16("01");
-  field.is_autofilled = false;
-  form.fields.push_back(field);
-  field.label = base::ASCIIToUTF16("Unknown field");
-  field.name = base::ASCIIToUTF16("unknown");
-  field.name_attribute = field.name;
-  field.id_attribute = base::ASCIIToUTF16("unknown");
-  field.unique_id = field.id_attribute;
-  field.value = base::ASCIIToUTF16("");
-  field.is_autofilled = true;
-  form.fields.push_back(field);
-  // Fields are in alphabetical order.
-  [[mock_js_injection_receiver_ expect]
-      executeJavaScript:
-          @"__gCrWeb.autofill.fillForm({\"fields\":{\"name\":{\"section\":\"\","
-          @"\"value\":\"name_value\"},"
-          @"\"number\":{\"section\":\"\",\"value\":\"number_value\"}},"
-          @"\"formName\":\"CC form\"}, \"\");"
-      completionHandler:[OCMArg any]];
-  [autofill_agent_ fillFormData:form
-                        inFrame:web::GetMainWebFrame(&test_web_state_)];
-  test_web_state_.WasShown();
-
-  EXPECT_OCMOCK_VERIFY(mock_js_injection_receiver_);
-}
-
-// Tests that form's name and fields' identifiers, values, and whether they are
-// autofilled are sent to the JS. Fields with empty values and those that are
-// not autofilled are skipped.
-// Test with "IsAutofillIFrameMessagingEnabled" enabled.
 TEST_F(AutofillAgentTests, OnFormDataFilledTestWithFrameMessaging) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  std::vector<base::Feature> enabled_features;
-  std::vector<base::Feature> disabled_features;
-  enabled_features.push_back(
-      autofill::features::kAutofillEnableIFrameSupportOniOS);
-  enabled_features.push_back(web::features::kWebFrameMessaging);
-  scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
-
   std::string locale("en");
   autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
       &test_web_state_, &client_, nil, locale,
       autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
 
   autofill::FormData form;
-  form.origin = GURL("https://myform.com");
+  form.url = GURL("https://myform.com");
   form.action = GURL("https://myform.com/submit");
   form.name = base::ASCIIToUTF16("CC form");
 
@@ -239,91 +157,20 @@ TEST_F(AutofillAgentTests, OnFormDataFilledTestWithFrameMessaging) {
       "\"value\":\"name_value\"},"
       "\"number\":{\"section\":\"\",\"value\":\"number_value\"}},"
       "\"formName\":\"CC form\"}, \"\");",
-      fake_main_frame_->last_javascript_call());
+      fake_main_frame_->GetLastJavaScriptCall());
 }
 
 // Tests that in the case of conflict in fields' identifiers, the last seen
 // value of a given field is used.
-// Test with "IsAutofillIFrameMessagingEnabled" disabled.
-TEST_F(AutofillAgentTests, OnFormDataFilledWithNameCollisionTest) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  std::vector<base::Feature> enabled_features;
-  std::vector<base::Feature> disabled_features;
-  disabled_features.push_back(
-      autofill::features::kAutofillEnableIFrameSupportOniOS);
-  disabled_features.push_back(web::features::kWebFrameMessaging);
-  scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
-
-  std::string locale("en");
-  autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
-      &test_web_state_, &client_, nil, locale,
-      autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
-
-  autofill::FormData form;
-  form.origin = GURL("https://myform.com");
-  form.action = GURL("https://myform.com/submit");
-
-  autofill::FormFieldData field;
-  field.form_control_type = "text";
-  field.label = base::ASCIIToUTF16("State");
-  field.name = base::ASCIIToUTF16("region");
-  field.name_attribute = field.name;
-  field.id_attribute = base::ASCIIToUTF16("region");
-  field.unique_id = field.id_attribute;
-  field.value = base::ASCIIToUTF16("California");
-  field.is_autofilled = true;
-  form.fields.push_back(field);
-  field.label = base::ASCIIToUTF16("Other field");
-  field.name = base::ASCIIToUTF16("field1");
-  field.name_attribute = field.name;
-  field.id_attribute = base::ASCIIToUTF16("field1");
-  field.unique_id = field.id_attribute;
-  field.value = base::ASCIIToUTF16("value 1");
-  field.is_autofilled = true;
-  form.fields.push_back(field);
-  field.label = base::ASCIIToUTF16("Other field");
-  field.name = base::ASCIIToUTF16("field1");
-  field.name_attribute = field.name;
-  field.id_attribute = base::ASCIIToUTF16("field1");
-  field.unique_id = field.id_attribute;
-  field.value = base::ASCIIToUTF16("value 2");
-  field.is_autofilled = true;
-  form.fields.push_back(field);
-  // Fields are in alphabetical order.
-  [[mock_js_injection_receiver_ expect]
-      executeJavaScript:
-          @"__gCrWeb.autofill.fillForm({\"fields\":{\"field1\":{\"section\":"
-          @"\"\",\"value\":\"value "
-          @"2\"},\"region\":{\"section\":\"\",\"value\":\"California\"}},"
-          @"\"formName\":\"\"}, \"\");"
-      completionHandler:[OCMArg any]];
-  [autofill_agent_ fillFormData:form
-                        inFrame:web::GetMainWebFrame(&test_web_state_)];
-  test_web_state_.WasShown();
-
-  EXPECT_OCMOCK_VERIFY(mock_js_injection_receiver_);
-}
-
-// Tests that in the case of conflict in fields' identifiers, the last seen
-// value of a given field is used.
-// Test with "IsAutofillIFrameMessagingEnabled" enabled.
 TEST_F(AutofillAgentTests,
        OnFormDataFilledWithNameCollisionTestFrameMessaging) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  std::vector<base::Feature> enabled_features;
-  std::vector<base::Feature> disabled_features;
-  enabled_features.push_back(
-      autofill::features::kAutofillEnableIFrameSupportOniOS);
-  enabled_features.push_back(web::features::kWebFrameMessaging);
-  scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
-
   std::string locale("en");
   autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
       &test_web_state_, &client_, nil, locale,
       autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
 
   autofill::FormData form;
-  form.origin = GURL("https://myform.com");
+  form.url = GURL("https://myform.com");
   form.action = GURL("https://myform.com/submit");
 
   autofill::FormFieldData field;
@@ -356,57 +203,20 @@ TEST_F(AutofillAgentTests,
   [autofill_agent_ fillFormData:form
                         inFrame:web::GetMainWebFrame(&test_web_state_)];
   test_web_state_.WasShown();
-  EXPECT_EQ(
-      "__gCrWeb.autofill.fillForm({\"fields\":{\"field1\":{\"section\":"
-      "\"\",\"value\":\"value "
-      "2\"},\"region\":{\"section\":\"\",\"value\":\"California\"}},"
-      "\"formName\":\"\"}, \"\");",
-      fake_main_frame_->last_javascript_call());
+  EXPECT_EQ("__gCrWeb.autofill.fillForm({\"fields\":{\"field1\":{\"section\":"
+            "\"\",\"value\":\"value "
+            "2\"},\"region\":{\"section\":\"\",\"value\":\"California\"}},"
+            "\"formName\":\"\"}, \"\");",
+            fake_main_frame_->GetLastJavaScriptCall());
 }
 
 // Tests that when a user initiated form activity is registered the script to
 // extract forms is executed.
-// Test with "IsAutofillIFrameMessagingEnabled" disabled.
-TEST_F(AutofillAgentTests, CheckIfSuggestionsAvailable_UserInitiatedActivity1) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  std::vector<base::Feature> enabled_features;
-  std::vector<base::Feature> disabled_features;
-  disabled_features.push_back(
-      autofill::features::kAutofillEnableIFrameSupportOniOS);
-  disabled_features.push_back(web::features::kWebFrameMessaging);
-  enabled_features.push_back(
-      autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
-  scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
-  // TODO(crbug.com/881364): Fix for WebFrameMessaging.
-  [[mock_js_injection_receiver_ expect]
-      executeJavaScript:@"__gCrWeb.autofill.extractForms(1, true);"
-      completionHandler:[OCMArg any]];
-  [autofill_agent_ checkIfSuggestionsAvailableForForm:@"form"
-                                      fieldIdentifier:@"address"
-                                            fieldType:@"text"
-                                                 type:@"focus"
-                                           typedValue:@""
-                                              frameID:@"frameID"
-                                          isMainFrame:YES
-                                       hasUserGesture:YES
-                                             webState:&test_web_state_
-                                    completionHandler:nil];
-  test_web_state_.WasShown();
-
-  EXPECT_OCMOCK_VERIFY(mock_js_injection_receiver_);
-}
-
-// Tests that when a user initiated form activity is registered the script to
-// extract forms is executed.
-// Test with "IsAutofillIFrameMessagingEnabled" enabled.
 TEST_F(AutofillAgentTests,
        CheckIfSuggestionsAvailable_UserInitiatedActivity1FrameMessaging) {
   base::test::ScopedFeatureList scoped_feature_list;
   std::vector<base::Feature> enabled_features;
   std::vector<base::Feature> disabled_features;
-  enabled_features.push_back(
-      autofill::features::kAutofillEnableIFrameSupportOniOS);
-  enabled_features.push_back(web::features::kWebFrameMessaging);
   enabled_features.push_back(
       autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
   scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
@@ -422,74 +232,7 @@ TEST_F(AutofillAgentTests,
                                     completionHandler:nil];
   test_web_state_.WasShown();
   EXPECT_EQ("__gCrWeb.autofill.extractForms(1, true);",
-            fake_main_frame_->last_javascript_call());
-}
-
-// Tests that when a user initiated form activity is registered the script to
-// extract forms is executed.
-// Test with "IsAutofillIFrameMessagingEnabled" disabled.
-TEST_F(AutofillAgentTests, CheckIfSuggestionsAvailable_UserInitiatedActivity2) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  std::vector<base::Feature> enabled_features;
-  std::vector<base::Feature> disabled_features;
-  disabled_features.push_back(
-      autofill::features::kAutofillEnableIFrameSupportOniOS);
-  disabled_features.push_back(web::features::kWebFrameMessaging);
-  disabled_features.push_back(
-      autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
-  scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
-
-  // TODO(crbug.com/881364): Fix for WebFrameMessaging.
-  [[mock_js_injection_receiver_ expect]
-      executeJavaScript:@"__gCrWeb.autofill.extractForms(1, false);"
-      completionHandler:[OCMArg any]];
-  [autofill_agent_ checkIfSuggestionsAvailableForForm:@"form"
-                                      fieldIdentifier:@"address"
-                                            fieldType:@"text"
-                                                 type:@"focus"
-                                           typedValue:@""
-                                              frameID:@"frameID"
-                                          isMainFrame:YES
-                                       hasUserGesture:YES
-                                             webState:&test_web_state_
-                                    completionHandler:nil];
-  test_web_state_.WasShown();
-
-  EXPECT_OCMOCK_VERIFY(mock_js_injection_receiver_);
-}
-
-// Tests that when a user initiated form activity is registered the script to
-// extract forms is executed.
-// Test with "IsAutofillIFrameMessagingEnabled" disabled.
-TEST_F(AutofillAgentTests,
-       CheckIfSuggestionsAvailable_UserInitiatedActivity2FrameMessaging) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  std::vector<base::Feature> enabled_features;
-  std::vector<base::Feature> disabled_features;
-  disabled_features.push_back(
-      autofill::features::kAutofillEnableIFrameSupportOniOS);
-  disabled_features.push_back(web::features::kWebFrameMessaging);
-  disabled_features.push_back(
-      autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
-  scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
-
-  // TODO(crbug.com/881364): Fix for WebFrameMessaging.
-  [[mock_js_injection_receiver_ expect]
-      executeJavaScript:@"__gCrWeb.autofill.extractForms(1, false);"
-      completionHandler:[OCMArg any]];
-  [autofill_agent_ checkIfSuggestionsAvailableForForm:@"form"
-                                      fieldIdentifier:@"address"
-                                            fieldType:@"text"
-                                                 type:@"focus"
-                                           typedValue:@""
-                                              frameID:@"frameID"
-                                          isMainFrame:YES
-                                       hasUserGesture:YES
-                                             webState:&test_web_state_
-                                    completionHandler:nil];
-  test_web_state_.WasShown();
-
-  EXPECT_OCMOCK_VERIFY(mock_js_injection_receiver_);
+            fake_main_frame_->GetLastJavaScriptCall());
 }
 
 // Tests that when a non user initiated form activity is registered the
@@ -619,91 +362,9 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ClearFormWithGPay) {
   EXPECT_EQ(321, completion_handler_suggestions[3].identifier);
 }
 
-// Test that main frame is processed whatever is the order of pageloading
-// callbacks.
-TEST_F(AutofillAgentTests, FrameInitializationOrder) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  std::vector<base::Feature> enabled_features;
-  std::vector<base::Feature> disabled_features;
-  disabled_features.push_back(
-      autofill::features::kAutofillEnableIFrameSupportOniOS);
-  disabled_features.push_back(web::features::kWebFrameMessaging);
-  scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
-
-  std::string locale("en");
-  autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
-      &test_web_state_, &client_, nil, locale,
-      autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
-
-  // Remove the current main frame.
-  test_web_state_.RemoveWebFrame(fake_main_frame_->GetFrameId());
-
-  // Add frame when page is loading.
-  auto main_frame_unique =
-      std::make_unique<web::FakeWebFrame>("main", true, GURL());
-  web::FakeWebFrame* main_frame = main_frame_unique.get();
-  autofill::AutofillDriverIOS* main_frame_driver =
-      autofill::AutofillDriverIOS::FromWebStateAndWebFrame(&test_web_state_,
-                                                           main_frame);
-  // autofill::AutofillDriver is created with a null web::WebFrame instance when
-  // frame messaging is disabled. IsInMainFrame() is expected to return true.
-  EXPECT_TRUE(main_frame_driver->IsInMainFrame());
-  test_web_state_.SetLoading(true);
-  test_web_state_.AddWebFrame(std::move(main_frame_unique));
-  EXPECT_FALSE(main_frame_driver->is_processed());
-  test_web_state_.SetLoading(false);
-  // Toggle mutations.
-  [[mock_js_injection_receiver_ expect] executeJavaScript:[OCMArg any]
-                                        completionHandler:[OCMArg any]];
-  // Toggle user edited field.
-  [[mock_js_injection_receiver_ expect] executeJavaScript:[OCMArg any]
-                                        completionHandler:[OCMArg any]];
-  // Extract Forms
-  [[mock_js_injection_receiver_ expect] executeJavaScript:[OCMArg any]
-                                        completionHandler:[OCMArg any]];
-
-  test_web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
-  EXPECT_TRUE(main_frame_driver->is_processed());
-  test_web_state_.RemoveWebFrame(main_frame->GetFrameId());
-  // Driver is in the WebState, so reset it manually.
-  main_frame_driver->set_processed(false);
-
-  // Add frame when page is loaded.
-  main_frame_unique = std::make_unique<web::FakeWebFrame>("main", true, GURL());
-  main_frame = main_frame_unique.get();
-  main_frame_driver = autofill::AutofillDriverIOS::FromWebStateAndWebFrame(
-      &test_web_state_, main_frame);
-  // autofill::AutofillDriver is created with a null web::WebFrame instance when
-  // frame messaging is disabled. IsInMainFrame() is expected to return true.
-  EXPECT_TRUE(main_frame_driver->IsInMainFrame());
-  test_web_state_.SetLoading(false);
-  test_web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
-  EXPECT_FALSE(main_frame_driver->is_processed());
-  // Toggle mutations.
-  [[mock_js_injection_receiver_ expect] executeJavaScript:[OCMArg any]
-                                        completionHandler:[OCMArg any]];
-  // Toggle user edited field.
-  [[mock_js_injection_receiver_ expect] executeJavaScript:[OCMArg any]
-                                        completionHandler:[OCMArg any]];
-  // Extract Forms
-  [[mock_js_injection_receiver_ expect] executeJavaScript:[OCMArg any]
-                                        completionHandler:[OCMArg any]];
-  test_web_state_.AddWebFrame(std::move(main_frame_unique));
-  EXPECT_TRUE(main_frame_driver->is_processed());
-  test_web_state_.RemoveWebFrame(main_frame->GetFrameId());
-}
-
 // Test that every frames are processed whatever is the order of pageloading
 // callbacks. The main frame should always be processed first.
 TEST_F(AutofillAgentTests, FrameInitializationOrderFrames) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  std::vector<base::Feature> enabled_features;
-  std::vector<base::Feature> disabled_features;
-  enabled_features.push_back(
-      autofill::features::kAutofillEnableIFrameSupportOniOS);
-  enabled_features.push_back(web::features::kWebFrameMessaging);
-  scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
-
   std::string locale("en");
   autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
       &test_web_state_, &client_, nil, locale,

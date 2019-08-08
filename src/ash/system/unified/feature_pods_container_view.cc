@@ -20,39 +20,33 @@ void FeaturePodsContainerView::SetExpandedAmount(double expanded_amount) {
     return;
   expanded_amount_ = expanded_amount;
 
-  for (int i = 0; i < child_count(); ++i) {
-    auto* child = static_cast<FeaturePodButton*>(child_at(i));
-    child->SetExpandedAmount(expanded_amount_);
-  }
+  for (auto* view : children())
+    static_cast<FeaturePodButton*>(view)->SetExpandedAmount(expanded_amount_);
   UpdateChildVisibility();
   // We have to call Layout() explicitly here.
   Layout();
 }
 
 int FeaturePodsContainerView::GetExpandedHeight() const {
-  int visible_count = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    if (static_cast<const FeaturePodButton*>(child_at(i))->visible_preferred())
-      ++visible_count;
-  }
+  const int visible_count = GetVisibleCount();
 
   // floor(visible_count / kUnifiedFeaturePodItemsInRow)
   int number_of_lines = (visible_count + kUnifiedFeaturePodItemsInRow - 1) /
                         kUnifiedFeaturePodItemsInRow;
-  return kUnifiedFeaturePodVerticalPadding +
+  return kUnifiedFeaturePodBottomPadding +
          (kUnifiedFeaturePodVerticalPadding + kUnifiedFeaturePodSize.height()) *
              number_of_lines;
 }
 
+int FeaturePodsContainerView::GetCollapsedHeight() const {
+  return 2 * kUnifiedFeaturePodCollapsedVerticalPadding +
+         kUnifiedFeaturePodCollapsedSize.height();
+}
+
 void FeaturePodsContainerView::SaveFocus() {
-  focused_button_ = nullptr;
-  for (int i = 0; i < child_count(); ++i) {
-    auto* child = child_at(i);
-    if (child->HasFocus()) {
-      focused_button_ = child;
-      break;
-    }
-  }
+  const auto i = std::find_if(children().cbegin(), children().cend(),
+                              [](const auto* v) { return v->HasFocus(); });
+  focused_button_ = (i == children().cend()) ? nullptr : *i;
 }
 
 void FeaturePodsContainerView::RestoreFocus() {
@@ -61,11 +55,9 @@ void FeaturePodsContainerView::RestoreFocus() {
 }
 
 gfx::Size FeaturePodsContainerView::CalculatePreferredSize() const {
-  const int collapsed_height = 2 * kUnifiedFeaturePodCollapsedVerticalPadding +
-                               kUnifiedFeaturePodCollapsedSize.height();
   return gfx::Size(
       kTrayMenuWidth,
-      static_cast<int>(collapsed_height * (1.0 - expanded_amount_) +
+      static_cast<int>(GetCollapsedHeight() * (1.0 - expanded_amount_) +
                        GetExpandedHeight() * expanded_amount_));
 }
 
@@ -85,7 +77,7 @@ void FeaturePodsContainerView::ChildVisibilityChanged(View* child) {
 }
 
 void FeaturePodsContainerView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   UpdateChildVisibility();
 }
 
@@ -93,8 +85,7 @@ void FeaturePodsContainerView::Layout() {
   UpdateCollapsedSidePadding();
 
   int visible_count = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    views::View* child = child_at(i);
+  for (auto* child : children()) {
     if (!child->visible())
       continue;
 
@@ -121,8 +112,8 @@ void FeaturePodsContainerView::UpdateChildVisibility() {
   changing_visibility_ = true;
 
   int visible_count = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    auto* child = static_cast<FeaturePodButton*>(child_at(i));
+  for (auto* view : children()) {
+    auto* child = static_cast<FeaturePodButton*>(view);
     bool visible = child->visible_preferred() &&
                    (expanded_amount_ > 0.0 ||
                     visible_count < kUnifiedFeaturePodMaxItemsInCollapsed);
@@ -134,6 +125,13 @@ void FeaturePodsContainerView::UpdateChildVisibility() {
   changing_visibility_ = false;
 }
 
+int FeaturePodsContainerView::GetVisibleCount() const {
+  return std::count_if(
+      children().cbegin(), children().cend(), [](const auto* v) {
+        return static_cast<const FeaturePodButton*>(v)->visible_preferred();
+      });
+}
+
 gfx::Point FeaturePodsContainerView::GetButtonPosition(
     int visible_index) const {
   int row = visible_index / kUnifiedFeaturePodItemsInRow;
@@ -142,10 +140,9 @@ gfx::Point FeaturePodsContainerView::GetButtonPosition(
           (kUnifiedFeaturePodSize.width() +
            kUnifiedFeaturePodHorizontalMiddlePadding) *
               column;
-  int y =
-      kUnifiedFeaturePodVerticalPadding +
-      (kUnifiedFeaturePodSize.height() + kUnifiedFeaturePodVerticalPadding) *
-          row;
+  int y = kUnifiedFeaturePodTopPadding + (kUnifiedFeaturePodSize.height() +
+                                          kUnifiedFeaturePodVerticalPadding) *
+                                             row;
 
   // When fully expanded, or below the second row, always return the same
   // position.
@@ -174,14 +171,8 @@ gfx::Point FeaturePodsContainerView::GetButtonPosition(
 }
 
 void FeaturePodsContainerView::UpdateCollapsedSidePadding() {
-  int visible_count = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    if (static_cast<const FeaturePodButton*>(child_at(i))->visible_preferred())
-      ++visible_count;
-  }
-
-  visible_count =
-      std::min(visible_count, kUnifiedFeaturePodMaxItemsInCollapsed);
+  const int visible_count =
+      std::min(GetVisibleCount(), kUnifiedFeaturePodMaxItemsInCollapsed);
 
   int contents_width =
       visible_count * kUnifiedFeaturePodCollapsedSize.width() +

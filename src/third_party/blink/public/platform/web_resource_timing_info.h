@@ -13,9 +13,14 @@
 #include "third_party/blink/public/platform/web_url_load_timing.h"
 #include "third_party/blink/public/platform/web_vector.h"
 
+#if INSIDE_BLINK
+#include "third_party/blink/renderer/platform/cross_thread_copier.h"  // nogncheck
+#endif
+
 namespace blink {
 
 // The browser-side equivalent to this struct is content::ServerTimingInfo.
+// Note: Please update operator==() whenever a new field is added.
 // TODO(dcheng): Migrate this struct over to Mojo so it doesn't need to be
 // duplicated in //content and //third_party/blink.
 struct WebServerTimingInfo {
@@ -23,6 +28,11 @@ struct WebServerTimingInfo {
                       double duration,
                       const WebString& description)
       : name(name), duration(duration), description(description) {}
+
+#if INSIDE_BLINK
+  bool operator==(const WebServerTimingInfo&) const;
+  bool operator!=(const WebServerTimingInfo&) const;
+#endif
 
   WebString name;
   double duration;
@@ -33,9 +43,15 @@ struct WebServerTimingInfo {
 // to be passed between processes. This is currently used to send timing
 // information about cross-process iframes for window.performance. The
 // browser-side equivalent to this struct is content::ResourceTimingInfo.
+// Note: Please update operator==() and CrossThreadCopier whenever a new field
+// is added.
 // TODO(dcheng): Migrate this struct over to Mojo so it doesn't need to be
 // duplicated in //content and //third_party/blink.
 struct WebResourceTimingInfo {
+#if INSIDE_BLINK
+  PLATFORM_EXPORT bool operator==(const WebResourceTimingInfo&) const;
+#endif
+
   // The name to associate with the performance entry. For iframes, this is
   // typically the initial URL of the iframe resource.
   WebString name;
@@ -75,6 +91,15 @@ struct WebResourceTimingInfo {
 
   WebVector<WebServerTimingInfo> server_timing;
 };
+
+#if INSIDE_BLINK
+template <>
+struct CrossThreadCopier<WebResourceTimingInfo> {
+  STATIC_ONLY(CrossThreadCopier);
+  typedef WebResourceTimingInfo Type;
+  PLATFORM_EXPORT static Type Copy(const WebResourceTimingInfo&);
+};
+#endif
 
 }  // namespace blink
 

@@ -93,10 +93,11 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/login/auth/mock_auth_status_consumer.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/network/policy_certificate_provider.h"
+#include "components/crx_file/crx_verifier.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -130,6 +131,7 @@
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -449,7 +451,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
       : public_session_input_method_id_(
             base::StringPrintf(kPublicSessionInputMethodIDTemplate,
                                chromeos::extension_ime_util::kXkbExtensionId)),
-        contents_(NULL) {
+        contents_(NULL),
+        verifier_format_override_(crx_file::VerifierFormat::CRX3) {
     set_exit_when_last_browser_closes(false);
   }
 
@@ -478,9 +481,6 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     argv.erase(argv.begin() + argv.size() - command_line->GetArgs().size(),
                argv.end());
     command_line->InitFromArgv(argv);
-
-    InstallOwnerKey();
-    MarkAsEnterpriseOwned();
 
     InitializePolicy();
   }
@@ -795,6 +795,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
   base::ScopedTempDir cache_dir_;
 
  private:
+  extensions::SandboxedUnpacker::ScopedVerifierFormatOverrideForTest
+      verifier_format_override_;
   DISALLOW_COPY_AND_ASSIGN(DeviceLocalAccountTest);
 };
 
@@ -2601,49 +2603,11 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, AllowCrossOriginAuthPrompt) {
           broker));
 }
 
-IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, PacHttpsUrlStrippingEnabled) {
-  SetManagedSessionsEnabled(/* managed_sessions_enabled */ true);
-
-  device_local_account_policy_.payload()
-      .mutable_pachttpsurlstrippingenabled()
-      ->set_value(false);
-
-  // Install and refresh the device policy now. This will also fetch the initial
-  // user policy for the device-local account now.
-  UploadAndInstallDeviceLocalAccountPolicy();
-  AddPublicSessionToDevicePolicy(kAccountId1);
-  AddNetworkCertificateToDevicePolicy();
-  WaitForPolicy();
-
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(account_id_1_);
-  ASSERT_TRUE(user);
-  auto* broker = GetDeviceLocalAccountPolicyBroker();
-  ASSERT_TRUE(broker);
-
-  // Check that 'DeviceLocalAccountManagedSessionEnabled' policy was applied
-  // correctly.
-  ASSERT_TRUE(
-      chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
-          *user));
-
-  // Check that disabling 'PacHttpsUrlStrippingEnabled' activates managed
-  // sessions mode.
-  ASSERT_TRUE(
-      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
-          broker));
-}
-
 class TermsOfServiceDownloadTest : public DeviceLocalAccountTest,
                                    public testing::WithParamInterface<bool> {
 };
 
 IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
-  // TODO(crbug.com/898701): Running test with existant TOS path flakes, so this
-  // has been disabled.
-  if (GetParam())
-    return;
-
   // Specify Terms of Service URL.
   ASSERT_TRUE(embedded_test_server()->Start());
   device_local_account_policy_.payload().mutable_termsofserviceurl()->set_value(

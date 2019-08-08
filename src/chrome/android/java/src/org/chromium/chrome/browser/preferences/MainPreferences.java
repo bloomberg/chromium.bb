@@ -18,6 +18,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsEnabledStateUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.preferences.autofill_assistant.AutofillAssistantPreferences;
@@ -45,7 +46,7 @@ public class MainPreferences extends PreferenceFragment
     public static final String PREF_SAVED_PASSWORDS = "saved_passwords";
     public static final String PREF_CONTEXTUAL_SUGGESTIONS = "contextual_suggestions";
     public static final String PREF_HOMEPAGE = "homepage";
-    public static final String PREF_NIGHT_MODE = "night_mode";
+    public static final String PREF_UI_THEME = "ui_theme";
     public static final String PREF_DATA_REDUCTION = "data_reduction";
     public static final String PREF_NOTIFICATIONS = "notifications";
     public static final String PREF_LANGUAGES = "languages";
@@ -227,10 +228,10 @@ public class MainPreferences extends PreferenceFragment
             removePreferenceIfPresent(PREF_CONTEXTUAL_SUGGESTIONS);
         }
 
-        if (FeatureUtilities.isNightModeAvailable()) {
-            addPreferenceIfAbsent(PREF_NIGHT_MODE);
+        if (NightModeUtils.isNightModeSupported() && FeatureUtilities.isNightModeAvailable()) {
+            addPreferenceIfAbsent(PREF_UI_THEME);
         } else {
-            removePreferenceIfPresent(PREF_NIGHT_MODE);
+            removePreferenceIfPresent(PREF_UI_THEME);
         }
 
         if (DeveloperPreferences.shouldShowDeveloperPreferences()) {

@@ -20,11 +20,13 @@ from chromite.lib.paygen import paygen_payload_lib
 def ParseArguments(argv):
   """Returns a namespace for the CLI arguments."""
   parser = commandline.ArgumentParser(description=__doc__)
-  parser.add_argument('--image', type='path',
-                      help='The image that should be sent to clients.')
-  parser.add_argument('--src_image', type='path',
-                      help='A source image. If specified, this makes a delta '
-                           'update.')
+  parser.add_argument('--image',
+                      help='The path (to local disk or Google Storage Bucket)'
+                      ' of the target image to build the payload for.')
+  parser.add_argument('--src_image',
+                      help='The path (to local disk or Google Storage Bucket)'
+                      ' of the source image. If specified, this makes a delta'
+                      ' update payload.')
   parser.add_argument('--output', type='path', help='Output file.')
   parser.add_argument('--private_key', type='path',
                       help='Path to private key in .pem format.')

@@ -44,8 +44,8 @@ cast_source_set("browser") {
   sources = [
     "application_media_capabilities.cc",
     "application_media_capabilities.h",
-    "application_session_id_manager.cc",
-    "application_session_id_manager.h",
+    "application_media_info_manager.cc",
+    "application_media_info_manager.h",
     "bluetooth/cast_bluetooth_chooser.cc",
     "bluetooth/cast_bluetooth_chooser.h",
     "cast_browser_context.cc",
@@ -100,18 +100,16 @@ cast_source_set("browser") {
     "devtools/cast_devtools_manager_delegate.h",
     "devtools/remote_debugging_server.cc",
     "devtools/remote_debugging_server.h",
+    "general_audience_browsing_navigation_throttle.cc",
+    "general_audience_browsing_navigation_throttle.h",
+    "general_audience_browsing_service.cc",
+    "general_audience_browsing_service.h",
     "lru_renderer_cache.cc",
     "lru_renderer_cache.h",
     "media/media_caps_impl.cc",
     "media/media_caps_impl.h",
     "media/supported_codec_finder.cc",
     "media/supported_codec_finder.h",
-    "metrics/cast_metrics_prefs.cc",
-    "metrics/cast_metrics_prefs.h",
-    "metrics/cast_metrics_service_client.cc",
-    "metrics/cast_metrics_service_client.h",
-    "metrics/cast_stability_metrics_provider.cc",
-    "metrics/cast_stability_metrics_provider.h",
     "renderer_prelauncher.cc",
     "renderer_prelauncher.h",
     "service/cast_service_simple.cc",
@@ -138,6 +136,7 @@ cast_source_set("browser") {
   public_deps = [
     ":prefs",
     ":public",
+    "//chromecast/browser/metrics",
   ]
 
   deps = [
@@ -153,6 +152,7 @@ cast_source_set("browser") {
     "//chromecast/base:cast_sys_info",
     "//chromecast/base:cast_version",
     "//chromecast/browser/bluetooth/public/mojom",
+    "//chromecast/browser/general_audience_browsing/mojom",
     "//chromecast/common",
     "//chromecast/common/media",
     "//chromecast/common/mojom",
@@ -167,14 +167,18 @@ cast_source_set("browser") {
     "//components/metrics",
     "//components/metrics:gpu",
     "//components/metrics:net",
+    "//components/variations/net",
 
     # TODO(gfhuang): Eliminate this dependency if ScreenInfoMetricsProvider
     # isn't needed. crbug.com/541577
     "//components/metrics:ui",
     "//components/network_hints/browser",
     "//components/network_session_configurator/common",
+    "//components/policy/core/browser",
     "//components/prefs",
     "//components/proxy_config",
+    "//components/safe_search_api",
+    "//components/safe_search_api:safe_search_client",
     "//components/viz/service",
     "//content/public/browser",
     "//content/public/common",
@@ -226,14 +230,9 @@ cast_source_set("browser") {
       "cast_memory_pressure_monitor.h",
       "memory_pressure_controller_impl.cc",
       "memory_pressure_controller_impl.h",
-      "metrics/external_metrics.cc",
-      "metrics/external_metrics.h",
     ]
 
-    deps += [
-      "//components/metrics:serialization",
-      "//third_party/fontconfig",
-    ]
+    deps += [ "//third_party/fontconfig" ]
   }
 
   if (use_aura) {
@@ -248,6 +247,15 @@ cast_source_set("browser") {
     deps += [
       "//components/crash/content/app",
       "//components/crash/content/browser",
+    ]
+
+    # TODO(crbug.com/933142): Fuchsia needs its own methods to bridge with heap
+    # profiling service
+    deps += [
+      "//components/heap_profiling",
+      "//components/services/heap_profiling",
+      "//components/services/heap_profiling/public/cpp",
+      "//components/services/heap_profiling/public/mojom",
     ]
   }
 
@@ -274,8 +282,8 @@ cast_source_set("browser") {
       "cast_extension_message_filter.h",
       "cast_extension_url_loader_factory.cc",
       "cast_extension_url_loader_factory.h",
-      "cast_web_view_extension.cc",
-      "cast_web_view_extension.h",
+      "extension_page.cc",
+      "extension_page.h",
       "extension_request_protocol_handler.cc",
       "extension_request_protocol_handler.h",
       "extensions/api/accessibility_private/accessibility_extension_api.cc",
@@ -338,8 +346,6 @@ cast_source_set("browser") {
         "accessibility/touch_exploration_controller.h",
         "accessibility/touch_exploration_manager.cc",
         "accessibility/touch_exploration_manager.h",
-        "cast_web_view_extension.h",
-        "cast_web_view_extension.h",
         "ui/aura/accessibility/automation_manager_aura.cc",
         "ui/aura/accessibility/automation_manager_aura.h",
         "ui/aura/accessibility/ax_tree_source_aura.cc",
@@ -402,6 +408,7 @@ cast_source_set("network_context_manager") {
 
   deps = [
     "//base",
+    "//components/variations/net",
     "//content/public/browser",
     "//net",
     "//services/network:network_service",
@@ -462,6 +469,7 @@ cast_source_set("browsertests") {
   sources = [
     "cast_content_gesture_handler_test.cc",
     "cast_media_blocker_browsertest.cc",
+    "cast_web_contents_browsertest.cc",
     "renderer_prelauncher_test.cc",
     "test/cast_features_browsertest.cc",
     "test/cast_navigation_browsertest.cc",
@@ -471,15 +479,20 @@ cast_source_set("browsertests") {
 
   deps = [
     ":test_support",
+    "//base",
     "//chromecast:chromecast_buildflags",
     "//chromecast/base",
     "//chromecast/base:chromecast_switches",
     "//chromecast/base/metrics",
     "//components/prefs",
+    "//content/public/browser",
+    "//content/test:test_support",
     "//media:test_support",
+    "//net:test_support",
   ]
 
   data = [
+    "//chromecast/browser/test/data/",
     "//media/test/data/",
   ]
 }

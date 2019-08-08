@@ -103,10 +103,10 @@ class ChannelReceive : public ChannelReceiveInterface,
   void StopPlayout() override;
 
   // Codecs
-  absl::optional<std::pair<int, SdpAudioFormat>>
-      GetReceiveCodec() const override;
+  absl::optional<std::pair<int, SdpAudioFormat>> GetReceiveCodec()
+      const override;
 
-  bool ReceivedRTCPPacket(const uint8_t* data, size_t length) override;
+  void ReceivedRTCPPacket(const uint8_t* data, size_t length) override;
 
   // RtpPacketSinkInterface.
   void OnRtpPacket(const RtpPacketReceived& packet) override;
@@ -462,7 +462,7 @@ ChannelReceive::ChannelReceive(
       frame_decryptor_(frame_decryptor),
       crypto_options_(crypto_options) {
   // TODO(nisse): Use _moduleProcessThreadPtr instead?
-  module_process_thread_checker_.DetachFromThread();
+  module_process_thread_checker_.Detach();
 
   RTC_DCHECK(module_process_thread);
   RTC_DCHECK(audio_device_module);
@@ -489,7 +489,7 @@ ChannelReceive::ChannelReceive(
 
   configuration.event_log = event_log_;
 
-  _rtpRtcpModule.reset(RtpRtcp::CreateRtpRtcp(configuration));
+  _rtpRtcpModule = RtpRtcp::Create(configuration);
   _rtpRtcpModule->SetSendingMediaStatus(false);
   _rtpRtcpModule->SetRemoteSSRC(remote_ssrc_);
 
@@ -509,7 +509,7 @@ ChannelReceive::ChannelReceive(
 }
 
 ChannelReceive::~ChannelReceive() {
-  RTC_DCHECK(construction_thread_.CalledOnValidThread());
+  RTC_DCHECK(construction_thread_.IsCurrent());
 
   if (media_transport_) {
     media_transport_->SetReceiveAudioSink(nullptr);
@@ -525,19 +525,19 @@ ChannelReceive::~ChannelReceive() {
 }
 
 void ChannelReceive::SetSink(AudioSinkInterface* sink) {
-  RTC_DCHECK(worker_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(worker_thread_checker_.IsCurrent());
   rtc::CritScope cs(&_callbackCritSect);
   audio_sink_ = sink;
 }
 
 void ChannelReceive::StartPlayout() {
-  RTC_DCHECK(worker_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(worker_thread_checker_.IsCurrent());
   rtc::CritScope lock(&playing_lock_);
   playing_ = true;
 }
 
 void ChannelReceive::StopPlayout() {
-  RTC_DCHECK(worker_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(worker_thread_checker_.IsCurrent());
   rtc::CritScope lock(&playing_lock_);
   playing_ = false;
   _outputAudioLevel.Clear();
@@ -545,12 +545,12 @@ void ChannelReceive::StopPlayout() {
 
 absl::optional<std::pair<int, SdpAudioFormat>>
     ChannelReceive::GetReceiveCodec() const {
-  RTC_DCHECK(worker_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(worker_thread_checker_.IsCurrent());
   return audio_coding_->ReceiveCodec();
 }
 
 std::vector<webrtc::RtpSource> ChannelReceive::GetSources() const {
-  RTC_DCHECK(worker_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(worker_thread_checker_.IsCurrent());
   int64_t now_ms = rtc::TimeMillis();
   std::vector<RtpSource> sources;
   {
@@ -568,7 +568,7 @@ std::vector<webrtc::RtpSource> ChannelReceive::GetSources() const {
 
 void ChannelReceive::SetReceiveCodecs(
     const std::map<int, SdpAudioFormat>& codecs) {
-  RTC_DCHECK(worker_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(worker_thread_checker_.IsCurrent());
   for (const auto& kv : codecs) {
     RTC_DCHECK_GE(kv.second.clockrate_hz, 1000);
     payload_type_frequencies_[kv.first] = kv.second.clockrate_hz;
@@ -627,28 +627,26 @@ bool ChannelReceive::ReceivePacket(const uint8_t* packet,
   // Keep this buffer around for the lifetime of the OnReceivedPayloadData call.
   rtc::Buffer decrypted_audio_payload;
   if (frame_decryptor_ != nullptr) {
-    size_t max_plaintext_size = frame_decryptor_->GetMaxPlaintextByteSize(
+    const size_t max_plaintext_size = frame_decryptor_->GetMaxPlaintextByteSize(
         cricket::MEDIA_TYPE_AUDIO, payload_length);
     decrypted_audio_payload.SetSize(max_plaintext_size);
 
-    size_t bytes_written = 0;
-    std::vector<uint32_t> csrcs(header.arrOfCSRCs,
-                                header.arrOfCSRCs + header.numCSRCs);
-    int decrypt_status = frame_decryptor_->Decrypt(
-        cricket::MEDIA_TYPE_AUDIO, csrcs,
-        /*additional_data=*/nullptr,
-        rtc::ArrayView<const uint8_t>(payload, payload_data_length),
-        decrypted_audio_payload, &bytes_written);
+    const std::vector<uint32_t> csrcs(header.arrOfCSRCs,
+                                      header.arrOfCSRCs + header.numCSRCs);
+    const FrameDecryptorInterface::Result decrypt_result =
+        frame_decryptor_->Decrypt(
+            cricket::MEDIA_TYPE_AUDIO, csrcs,
+            /*additional_data=*/nullptr,
+            rtc::ArrayView<const uint8_t>(payload, payload_data_length),
+            decrypted_audio_payload);
 
-    // In this case just interpret the failure as a silent frame.
-    if (decrypt_status != 0) {
-      bytes_written = 0;
+    if (decrypt_result.IsOk()) {
+      decrypted_audio_payload.SetSize(decrypt_result.bytes_written);
+    } else {
+      // Interpret failures as a silent frame.
+      decrypted_audio_payload.SetSize(0);
     }
 
-    // Resize the decrypted audio payload to the number of bytes actually
-    // written.
-    decrypted_audio_payload.SetSize(bytes_written);
-    // Update the final payload.
     payload = decrypted_audio_payload.data();
     payload_data_length = decrypted_audio_payload.size();
   } else if (crypto_options_.sframe.require_frame_encryption) {
@@ -664,8 +662,7 @@ bool ChannelReceive::ReceivePacket(const uint8_t* packet,
 }
 
 // May be called on either worker thread or network thread.
-// TODO(nisse): Drop always-true return value.
-bool ChannelReceive::ReceivedRTCPPacket(const uint8_t* data, size_t length) {
+void ChannelReceive::ReceivedRTCPPacket(const uint8_t* data, size_t length) {
   // Store playout timestamp for the received RTCP packet
   UpdatePlayoutTimestamp(true);
 
@@ -675,7 +672,7 @@ bool ChannelReceive::ReceivedRTCPPacket(const uint8_t* data, size_t length) {
   int64_t rtt = GetRTT();
   if (rtt == 0) {
     // Waiting for valid RTT.
-    return true;
+    return;
   }
 
   uint32_t ntp_secs = 0;
@@ -684,45 +681,44 @@ bool ChannelReceive::ReceivedRTCPPacket(const uint8_t* data, size_t length) {
   if (0 != _rtpRtcpModule->RemoteNTP(&ntp_secs, &ntp_frac, NULL, NULL,
                                      &rtp_timestamp)) {
     // Waiting for RTCP.
-    return true;
+    return;
   }
 
   {
     rtc::CritScope lock(&ts_stats_lock_);
     ntp_estimator_.UpdateRtcpTimestamp(rtt, ntp_secs, ntp_frac, rtp_timestamp);
   }
-  return true;
 }
 
 int ChannelReceive::GetSpeechOutputLevelFullRange() const {
-  RTC_DCHECK(worker_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(worker_thread_checker_.IsCurrent());
   return _outputAudioLevel.LevelFullRange();
 }
 
 double ChannelReceive::GetTotalOutputEnergy() const {
-  RTC_DCHECK(worker_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(worker_thread_checker_.IsCurrent());
   return _outputAudioLevel.TotalEnergy();
 }
 
 double ChannelReceive::GetTotalOutputDuration() const {
-  RTC_DCHECK(worker_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(worker_thread_checker_.IsCurrent());
   return _outputAudioLevel.TotalDuration();
 }
 
 void ChannelReceive::SetChannelOutputVolumeScaling(float scaling) {
-  RTC_DCHECK(worker_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(worker_thread_checker_.IsCurrent());
   rtc::CritScope cs(&volume_settings_critsect_);
   _outputGain = scaling;
 }
 
 void ChannelReceive::SetLocalSSRC(uint32_t ssrc) {
-  RTC_DCHECK(worker_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(worker_thread_checker_.IsCurrent());
   _rtpRtcpModule->SetSSRC(ssrc);
 }
 
 void ChannelReceive::RegisterReceiverCongestionControlObjects(
     PacketRouter* packet_router) {
-  RTC_DCHECK(worker_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(worker_thread_checker_.IsCurrent());
   RTC_DCHECK(packet_router);
   RTC_DCHECK(!packet_router_);
   constexpr bool remb_candidate = false;
@@ -731,14 +727,14 @@ void ChannelReceive::RegisterReceiverCongestionControlObjects(
 }
 
 void ChannelReceive::ResetReceiverCongestionControlObjects() {
-  RTC_DCHECK(worker_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(worker_thread_checker_.IsCurrent());
   RTC_DCHECK(packet_router_);
   packet_router_->RemoveReceiveRtpModule(_rtpRtcpModule.get());
   packet_router_ = nullptr;
 }
 
 CallReceiveStatistics ChannelReceive::GetRTCPStatistics() const {
-  RTC_DCHECK(worker_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(worker_thread_checker_.IsCurrent());
   // --- RtcpStatistics
   CallReceiveStatistics stats;
 
@@ -761,16 +757,22 @@ CallReceiveStatistics ChannelReceive::GetRTCPStatistics() const {
   stats.rttMs = GetRTT();
 
   // --- Data counters
-
-  size_t bytesReceived(0);
-  uint32_t packetsReceived(0);
-
   if (statistician) {
-    statistician->GetDataCounters(&bytesReceived, &packetsReceived);
+    StreamDataCounters data_counters;
+    statistician->GetReceiveStreamDataCounters(&data_counters);
+    // TODO(http://crbug.com/webrtc/10525): Bytes received should only include
+    // payload bytes, not header and padding bytes.
+    stats.bytesReceived = data_counters.transmitted.payload_bytes +
+                          data_counters.transmitted.header_bytes +
+                          data_counters.transmitted.padding_bytes;
+    stats.packetsReceived = data_counters.transmitted.packets;
+    stats.last_packet_received_timestamp_ms =
+        data_counters.last_packet_received_timestamp_ms;
+  } else {
+    stats.bytesReceived = 0;
+    stats.packetsReceived = 0;
+    stats.last_packet_received_timestamp_ms = absl::nullopt;
   }
-
-  stats.bytesReceived = bytesReceived;
-  stats.packetsReceived = packetsReceived;
 
   // --- Timestamps
   {
@@ -781,7 +783,7 @@ CallReceiveStatistics ChannelReceive::GetRTCPStatistics() const {
 }
 
 void ChannelReceive::SetNACKStatus(bool enable, int max_packets) {
-  RTC_DCHECK(worker_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(worker_thread_checker_.IsCurrent());
   // None of these functions can fail.
   if (enable) {
     rtp_receive_statistics_->SetMaxReorderingThreshold(max_packets);
@@ -801,13 +803,13 @@ int ChannelReceive::ResendPackets(const uint16_t* sequence_numbers,
 
 void ChannelReceive::SetAssociatedSendChannel(
     const ChannelSendInterface* channel) {
-  RTC_DCHECK(worker_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(worker_thread_checker_.IsCurrent());
   rtc::CritScope lock(&assoc_send_channel_lock_);
   associated_send_channel_ = channel;
 }
 
 NetworkStatistics ChannelReceive::GetNetworkStatistics() const {
-  RTC_DCHECK(worker_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(worker_thread_checker_.IsCurrent());
   NetworkStatistics stats;
   int error = audio_coding_->GetNetworkStatistics(&stats);
   RTC_DCHECK_EQ(0, error);
@@ -815,21 +817,21 @@ NetworkStatistics ChannelReceive::GetNetworkStatistics() const {
 }
 
 AudioDecodingCallStats ChannelReceive::GetDecodingCallStatistics() const {
-  RTC_DCHECK(worker_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(worker_thread_checker_.IsCurrent());
   AudioDecodingCallStats stats;
   audio_coding_->GetDecodingCallStatistics(&stats);
   return stats;
 }
 
 uint32_t ChannelReceive::GetDelayEstimate() const {
-  RTC_DCHECK(worker_thread_checker_.CalledOnValidThread() ||
-             module_process_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(worker_thread_checker_.IsCurrent() ||
+             module_process_thread_checker_.IsCurrent());
   rtc::CritScope lock(&video_sync_lock_);
   return audio_coding_->FilteredCurrentDelayMs() + playout_delay_ms_;
 }
 
 void ChannelReceive::SetMinimumPlayoutDelay(int delay_ms) {
-  RTC_DCHECK(module_process_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(module_process_thread_checker_.IsCurrent());
   // Limit to range accepted by both VoE and ACM, so we're at least getting as
   // close as possible, instead of failing.
   delay_ms = rtc::SafeClamp(delay_ms, kVoiceEngineMinMinPlayoutDelayMs,
@@ -857,7 +859,7 @@ int ChannelReceive::GetBaseMinimumPlayoutDelayMs() const {
 }
 
 absl::optional<Syncable::Info> ChannelReceive::GetSyncInfo() const {
-  RTC_DCHECK(module_process_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(module_process_thread_checker_.IsCurrent());
   Syncable::Info info;
   if (_rtpRtcpModule->RemoteNTP(&info.capture_time_ntp_secs,
                                 &info.capture_time_ntp_frac, nullptr, nullptr,

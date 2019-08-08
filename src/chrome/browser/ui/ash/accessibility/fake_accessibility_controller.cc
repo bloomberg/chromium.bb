@@ -75,6 +75,8 @@ void FakeAccessibilityController::ForwardKeyEventsToSwitchAccess(
 void FakeAccessibilityController::GetBatteryDescription(
     GetBatteryDescriptionCallback callback) {}
 
+void FakeAccessibilityController::SetVirtualKeyboardVisible(bool is_visible) {}
+
 void FakeAccessibilityController::Bind(mojo::ScopedMessagePipeHandle handle) {
   binding_.Bind(ash::mojom::AccessibilityControllerRequest(std::move(handle)));
 }

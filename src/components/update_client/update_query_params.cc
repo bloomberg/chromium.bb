@@ -55,6 +55,8 @@ const char kArch[] =
     "mips64el";
 #elif defined(__mips__)
     "mipsel";
+#elif defined(__powerpc64__)
+    "ppc64";
 #else
 #error "unknown arch"
 #endif
@@ -127,6 +129,8 @@ const char* UpdateQueryParams::GetNaclArch() {
   return "mips32";
 #elif defined(ARCH_CPU_MIPS64EL)
   return "mips64";
+#elif defined(ARCH_CPU_PPC64)
+  return "ppc64";
 #else
 // NOTE: when adding new values here, please remember to update the
 // comment in the .h file about possible return values from this function.

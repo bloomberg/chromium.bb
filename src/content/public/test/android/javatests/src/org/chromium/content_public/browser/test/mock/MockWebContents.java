@@ -76,6 +76,11 @@ public class MockWebContents implements WebContents {
     }
 
     @Override
+    public RenderFrameHost getFocusedFrame() {
+        return null;
+    }
+
+    @Override
     public String getTitle() {
         return null;
     }
@@ -214,6 +219,9 @@ public class MockWebContents implements WebContents {
 
     @Override
     public void setOverscrollRefreshHandler(OverscrollRefreshHandler handler) {}
+
+    @Override
+    public void setSpatialNavigationDisabled(boolean disabled) {}
 
     @Override
     public void writeContentBitmapToDiskAsync(

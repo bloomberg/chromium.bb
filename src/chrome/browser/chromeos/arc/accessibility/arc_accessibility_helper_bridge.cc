@@ -16,9 +16,10 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/common/extensions/api/accessibility_private.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_util.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/exo/input_method_surface.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/shell_surface_util.h"
@@ -36,8 +37,6 @@ using ash::ArcNotificationSurfaceManager;
 
 namespace {
 
-constexpr int32_t kNoTaskId = -1;
-
 exo::Surface* GetArcSurface(const aura::Window* window) {
   if (!window)
     return nullptr;
@@ -46,18 +45,6 @@ exo::Surface* GetArcSurface(const aura::Window* window) {
   if (!arc_surface)
     arc_surface = exo::GetShellMainSurface(window);
   return arc_surface;
-}
-
-int32_t GetTaskId(aura::Window* window) {
-  const std::string* arc_app_id = exo::GetShellApplicationId(window);
-  if (!arc_app_id)
-    return kNoTaskId;
-
-  int32_t task_id = kNoTaskId;
-  if (sscanf(arc_app_id->c_str(), "org.chromium.arc.%d", &task_id) != 1)
-    return kNoTaskId;
-
-  return task_id;
 }
 
 void DispatchFocusChange(arc::mojom::AccessibilityNodeInfoData* node_data,
@@ -168,7 +155,7 @@ void ArcAccessibilityHelperBridge::SetNativeChromeVoxArcSupport(bool enabled) {
   aura::Window* window = GetActiveWindow();
   if (!window)
     return;
-  int32_t task_id = GetTaskId(window);
+  int32_t task_id = arc::GetWindowTaskId(window);
   if (task_id == kNoTaskId)
     return;
 
@@ -194,7 +181,7 @@ void ArcAccessibilityHelperBridge::OnSetNativeChromeVoxArcSupportProcessed(
     return;
 
   aura::Window* window = window_tracker->Pop();
-  int32_t task_id = GetTaskId(window);
+  int32_t task_id = arc::GetWindowTaskId(window);
   DCHECK_NE(task_id, kNoTaskId);
 
   if (!enabled) {
@@ -315,7 +302,7 @@ void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
       if (!active_window)
         return;
 
-      int32_t task_id = GetTaskId(active_window);
+      int32_t task_id = arc::GetWindowTaskId(active_window);
       if (task_id != event_data->task_id)
         return;
 
@@ -547,6 +534,19 @@ void ArcAccessibilityHelperBridge::OnAction(
               base::Unretained(this), data));
       return;
     }
+    case ax::mojom::Action::kShowTooltip: {
+      action_data->action_type =
+          arc::mojom::AccessibilityActionType::SHOW_TOOLTIP;
+      break;
+    }
+    case ax::mojom::Action::kHideTooltip: {
+      action_data->action_type =
+          arc::mojom::AccessibilityActionType::HIDE_TOOLTIP;
+      break;
+    }
+    case ax::mojom::Action::kInternalInvalidateTree:
+      tree_source->InvalidateTree();
+      break;
     default:
       return;
   }
@@ -668,7 +668,7 @@ void ArcAccessibilityHelperBridge::UpdateWindowProperties(
 
   // First, do a lookup for the task id associated with this app. There should
   // always be a valid entry.
-  int32_t task_id = GetTaskId(window);
+  int32_t task_id = arc::GetWindowTaskId(window);
 
   // Do a lookup for the tree source. A tree source may not exist because the
   // app isn't whitelisted Android side or no data has been received for the

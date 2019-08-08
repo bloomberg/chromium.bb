@@ -72,7 +72,6 @@ class Supervisor {
   void Start(content::ServiceManagerConnection* connection,
              Mode mode,
              mojom::StackMode stack_mode,
-             bool stream_samples,
              uint32_t sampling_rate,
              base::OnceClosure callback);
 
@@ -80,10 +79,6 @@ class Supervisor {
 
   // Starts profiling the process with the given id.
   void StartManualProfiling(base::ProcessId pid);
-
-  // Public for testing. Controls whether the profiling service keeps small
-  // allocations in heap dumps.
-  void SetKeepSmallAllocations(bool keep_small_allocations);
 
   // Returns the pids of all profiled processes. The callback is posted on the
   // UI thread.
@@ -117,7 +112,6 @@ class Supervisor {
       std::unique_ptr<service_manager::Connector> connector,
       Mode mode,
       mojom::StackMode stack_mode,
-      bool stream_samples,
       uint32_t sampling_rate,
       base::OnceClosure callback);
 
@@ -128,8 +122,6 @@ class Supervisor {
       base::WeakPtr<Controller> controller_weak_ptr);
 
   void GetProfiledPidsOnIOThread(GetProfiledPidsCallback callback);
-
-  void SetKeepSmallAllocationsOnIOThread(bool keep_small_allocations);
 
   // Bound to the IO thread.
   std::unique_ptr<Controller> controller_;

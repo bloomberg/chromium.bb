@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/graphics/compositing/content_layer_client_impl.h"
 
 #include <memory>
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/paint/paint_flags.h"
@@ -24,9 +25,9 @@ namespace blink {
 
 ContentLayerClientImpl::ContentLayerClientImpl()
     : cc_picture_layer_(cc::PictureLayer::Create(this)),
-      raster_invalidator_([this](const IntRect& rect) {
-        cc_picture_layer_->SetNeedsDisplayRect(rect);
-      }),
+      raster_invalidator_(
+          base::BindRepeating(&ContentLayerClientImpl::InvalidateRect,
+                              base::Unretained(this))),
       layer_state_(PropertyTreeState::Uninitialized()),
       weak_ptr_factory_(this) {
   cc_picture_layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
@@ -46,7 +47,7 @@ static int GetTransformId(const TransformPaintPropertyNode* transform,
     return transform_lookup_result->value;
 
   int parent_id = GetTransformId(transform->Parent(), context);
-  if (transform->Matrix().IsIdentity() && !transform->RenderingContextId()) {
+  if (transform->IsIdentity() && !transform->RenderingContextId()) {
     context.transform_id_map.Set(transform, parent_id);
     return parent_id;
   }
@@ -54,15 +55,16 @@ static int GetTransformId(const TransformPaintPropertyNode* transform,
   int transform_id = context.next_transform_id++;
   context.transform_id_map.Set(transform, transform_id);
 
-  auto json = JSONObject::Create();
+  auto json = std::make_unique<JSONObject>();
   json->SetInteger("id", transform_id);
   if (parent_id)
     json->SetInteger("parent", parent_id);
 
-  if (!transform->Matrix().IsIdentity())
-    json->SetArray("transform", TransformAsJSONArray(transform->Matrix()));
+  if (!transform->IsIdentity())
+    json->SetArray("transform", TransformAsJSONArray(transform->SlowMatrix()));
 
-  if (!transform->Matrix().IsIdentityOrTranslation())
+  if (!transform->IsIdentityOr2DTranslation() &&
+      !transform->Matrix().IsIdentityOrTranslation())
     json->SetArray("origin", PointAsJSONArray(transform->Origin()));
 
   if (!transform->FlattensInheritedTransform())
@@ -81,7 +83,7 @@ static int GetTransformId(const TransformPaintPropertyNode* transform,
   }
 
   if (!context.transforms_json)
-    context.transforms_json = JSONArray::Create();
+    context.transforms_json = std::make_unique<JSONArray>();
   context.transforms_json->PushObject(std::move(json));
 
   return transform_id;
@@ -90,7 +92,7 @@ static int GetTransformId(const TransformPaintPropertyNode* transform,
 // This is the CAP version of GraphicsLayer::LayerAsJSONInternal().
 std::unique_ptr<JSONObject> ContentLayerClientImpl::LayerAsJSON(
     LayerAsJSONContext& context) const {
-  std::unique_ptr<JSONObject> json = JSONObject::Create();
+  auto json = std::make_unique<JSONObject>();
   json->SetString("name", debug_name_);
 
   if (context.flags & kLayerTreeIncludesDebugInfo)
@@ -174,9 +176,9 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   const auto& display_item_list = paint_artifact->GetDisplayItemList();
 
 #if DCHECK_IS_ON()
-  paint_chunk_debug_data_ = JSONArray::Create();
+  paint_chunk_debug_data_ = std::make_unique<JSONArray>();
   for (const auto& chunk : paint_chunks) {
-    auto json = JSONObject::Create();
+    auto json = std::make_unique<JSONObject>();
     json->SetString("data", chunk.ToString());
     json->SetArray("displayItems",
                    paint_artifact->GetDisplayItemList().SubsequenceAsJSON(
@@ -199,6 +201,7 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
       layer_bounds.OffsetFromOrigin());
   cc_picture_layer_->SetBounds(layer_bounds.size());
   cc_picture_layer_->SetIsDrawable(true);
+  cc_picture_layer_->SetHitTestable(true);
 
   base::Optional<RasterUnderInvalidationCheckingParams> params;
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {

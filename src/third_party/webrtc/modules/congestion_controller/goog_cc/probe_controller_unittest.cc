@@ -15,16 +15,18 @@
 #include "api/units/timestamp.h"
 #include "logging/rtc_event_log/mock/mock_rtc_event_log.h"
 #include "modules/congestion_controller/goog_cc/probe_controller.h"
+#include "rtc_base/logging.h"
 #include "system_wrappers/include/clock.h"
+#include "test/field_trial.h"
 #include "test/gmock.h"
 #include "test/gtest.h"
 
-using testing::_;
-using testing::AtLeast;
-using testing::Field;
-using testing::Matcher;
-using testing::NiceMock;
-using testing::Return;
+using ::testing::_;
+using ::testing::AtLeast;
+using ::testing::Field;
+using ::testing::Matcher;
+using ::testing::NiceMock;
+using ::testing::Return;
 
 namespace webrtc {
 namespace test {
@@ -61,7 +63,7 @@ class ProbeControllerTest : public ::testing::Test {
 
   FieldTrialBasedConfig field_trial_config_;
   SimulatedClock clock_;
-  MockRtcEventLog mock_rtc_event_log;
+  NiceMock<MockRtcEventLog> mock_rtc_event_log;
   std::unique_ptr<ProbeController> probe_controller_;
 };
 
@@ -89,7 +91,34 @@ TEST_F(ProbeControllerTest, InitiatesProbingOnMaxBitrateIncrease) {
   probes = probe_controller_->Process(NowMs());
   probes = probe_controller_->SetBitrates(kMinBitrateBps, kStartBitrateBps,
                                           kMaxBitrateBps + 100, NowMs());
+  EXPECT_EQ(probes.size(), 1u);
   EXPECT_EQ(probes[0].target_data_rate.bps(), kMaxBitrateBps + 100);
+}
+
+TEST_F(ProbeControllerTest, ProbesOnMaxBitrateIncreaseOnlyWhenInAlr) {
+  test::ScopedFieldTrials trials("WebRTC-BweAllocProbingOnlyInAlr/Enabled/");
+  probe_controller_.reset(
+      new ProbeController(&field_trial_config_, &mock_rtc_event_log));
+  auto probes = probe_controller_->SetBitrates(kMinBitrateBps, kStartBitrateBps,
+                                               kMaxBitrateBps, NowMs());
+  probes = probe_controller_->SetEstimatedBitrate(kMaxBitrateBps - 1, NowMs());
+
+  // Wait long enough to time out exponential probing.
+  clock_.AdvanceTimeMilliseconds(kExponentialProbingTimeoutMs);
+  probes = probe_controller_->Process(NowMs());
+  EXPECT_EQ(probes.size(), 0u);
+
+  // Probe when in alr.
+  probe_controller_->SetAlrStartTimeMs(clock_.TimeInMilliseconds());
+  probes = probe_controller_->OnMaxTotalAllocatedBitrate(kMaxBitrateBps + 1,
+                                                         NowMs());
+  EXPECT_EQ(probes.size(), 2u);
+
+  // Do not probe when not in alr.
+  probe_controller_->SetAlrStartTimeMs(absl::nullopt);
+  probes = probe_controller_->OnMaxTotalAllocatedBitrate(kMaxBitrateBps + 2,
+                                                         NowMs());
+  EXPECT_TRUE(probes.empty());
 }
 
 TEST_F(ProbeControllerTest, InitiatesProbingOnMaxBitrateIncreaseAtMaxBitrate) {
@@ -102,6 +131,7 @@ TEST_F(ProbeControllerTest, InitiatesProbingOnMaxBitrateIncreaseAtMaxBitrate) {
   probes = probe_controller_->SetEstimatedBitrate(kMaxBitrateBps, NowMs());
   probes = probe_controller_->SetBitrates(kMinBitrateBps, kStartBitrateBps,
                                           kMaxBitrateBps + 100, NowMs());
+  EXPECT_EQ(probes.size(), 1u);
   EXPECT_EQ(probes[0].target_data_rate.bps(), kMaxBitrateBps + 100);
 }
 
@@ -115,6 +145,7 @@ TEST_F(ProbeControllerTest, TestExponentialProbing) {
   EXPECT_EQ(probes.size(), 0u);
 
   probes = probe_controller_->SetEstimatedBitrate(1800, NowMs());
+  EXPECT_EQ(probes.size(), 1u);
   EXPECT_EQ(probes[0].target_data_rate.bps(), 2 * 1800);
 }
 
@@ -252,6 +283,7 @@ TEST_F(ProbeControllerTest, PeriodicProbingAfterReset) {
   // until SetEstimatedBitrate is called with an updated estimate.
   clock_.AdvanceTimeMilliseconds(10000);
   probes = probe_controller_->Process(NowMs());
+  EXPECT_EQ(probes.size(), 1u);
   EXPECT_EQ(probes[0].target_data_rate.bps(), kStartBitrateBps * 2);
 }
 
@@ -262,6 +294,7 @@ TEST_F(ProbeControllerTest, TestExponentialProbingOverflow) {
   // Verify that probe bitrate is capped at the specified max bitrate.
   probes =
       probe_controller_->SetEstimatedBitrate(60 * kMbpsMultiplier, NowMs());
+  EXPECT_EQ(probes.size(), 1u);
   EXPECT_EQ(probes[0].target_data_rate.bps(), 100 * kMbpsMultiplier);
   // Verify that repeated probes aren't sent.
   probes =
@@ -293,6 +326,7 @@ TEST_F(ProbeControllerTest, TestAllocatedBitrateCap) {
   // Probes such as ALR capped at 2x the max allocation limit.
   clock_.AdvanceTimeMilliseconds(5000);
   probes = probe_controller_->Process(NowMs());
+  EXPECT_EQ(probes.size(), 1u);
   EXPECT_EQ(probes[0].target_data_rate.bps(), 2 * max_allocated_bps);
 
   // Remove allocation limit.
@@ -300,7 +334,38 @@ TEST_F(ProbeControllerTest, TestAllocatedBitrateCap) {
       probe_controller_->OnMaxTotalAllocatedBitrate(0, NowMs()).empty());
   clock_.AdvanceTimeMilliseconds(5000);
   probes = probe_controller_->Process(NowMs());
+  EXPECT_EQ(probes.size(), 1u);
   EXPECT_EQ(probes[0].target_data_rate.bps(), estimated_bitrate_bps * 2);
+}
+
+TEST_F(ProbeControllerTest, ConfigurableProbingFieldTrial) {
+  test::ScopedFieldTrials trials(
+      "WebRTC-Bwe-ProbingConfiguration/"
+      "p1:2,p2:5,step_size:3,further_probe_threshold:0.8,"
+      "alloc_p1:2,alloc_p2/");
+  probe_controller_.reset(
+      new ProbeController(&field_trial_config_, &mock_rtc_event_log));
+  auto probes = probe_controller_->SetBitrates(kMinBitrateBps, kStartBitrateBps,
+                                               5000000, NowMs());
+  EXPECT_EQ(probes.size(), 2u);
+  EXPECT_EQ(probes[0].target_data_rate.bps(), 600);
+  EXPECT_EQ(probes[1].target_data_rate.bps(), 1500);
+
+  // Repeated probe should only be sent when estimated bitrate climbs above
+  // 0.8 * 5 * kStartBitrateBps = 1200.
+  probes = probe_controller_->SetEstimatedBitrate(1100, NowMs());
+  EXPECT_EQ(probes.size(), 0u);
+
+  probes = probe_controller_->SetEstimatedBitrate(1250, NowMs());
+  EXPECT_EQ(probes.size(), 1u);
+  EXPECT_EQ(probes[0].target_data_rate.bps(), 3 * 1250);
+
+  clock_.AdvanceTimeMilliseconds(5000);
+  probes = probe_controller_->Process(NowMs());
+
+  probes = probe_controller_->OnMaxTotalAllocatedBitrate(200000, NowMs());
+  EXPECT_EQ(probes.size(), 1u);
+  EXPECT_EQ(probes[0].target_data_rate.bps(), 400000);
 }
 
 }  // namespace test

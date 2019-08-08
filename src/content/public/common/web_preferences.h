@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "net/nqe/effective_connection_type.h"
+#include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/mojom/v8_cache_options.mojom.h"
 #include "ui/base/pointer/pointer_device.h"
 #include "url/gurl.h"
@@ -160,6 +161,7 @@ struct CONTENT_EXPORT WebPreferences {
   ui::PointerType primary_pointer_type;
   int available_hover_types;
   ui::HoverType primary_hover_type;
+  bool dont_send_key_events_to_javascript;
   bool barrel_button_for_drag_enabled = false;
   bool sync_xhr_in_documents_enabled;
   bool should_respect_image_orientation;
@@ -268,11 +270,12 @@ struct CONTENT_EXPORT WebPreferences {
   // WebView sets this to false to retain old documentElement behaviour
   // (http://crbug.com/761016).
   bool scroll_top_left_interop_enabled;
-  // Enable forcibly modifying content rendering to result in a light on dark
-  // colour scheme.
-  bool force_dark_mode_enabled = false;
 #else  // defined(OS_ANDROID)
 #endif  // defined(OS_ANDROID)
+
+  // Enable forcibly modifying content rendering to result in a light on dark
+  // color scheme.
+  bool force_dark_mode_enabled = false;
 
   // Default (used if the page or UA doesn't override these) values for page
   // scale limits. These are set directly on the WebView so there's no analogue
@@ -297,6 +300,12 @@ struct CONTENT_EXPORT WebPreferences {
 
   // Defines the current autoplay policy.
   AutoplayPolicy autoplay_policy;
+
+  // The preferred color scheme for the web content. The scheme is used to
+  // evaluate the prefers-color-scheme media query and resolve UA color scheme
+  // to be used based on the supported-color-schemes META tag and CSS property.
+  blink::PreferredColorScheme preferred_color_scheme =
+      blink::PreferredColorScheme::kNoPreference;
 
   // Network quality threshold below which resources from iframes are assigned
   // either kVeryLow or kVeryLow Blink priority.

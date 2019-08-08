@@ -91,7 +91,7 @@ struct SearchResultMetadata {
 enum AppListState {
   kStateApps = 0,
   kStateSearchResults,
-  kStateStart,
+  kStateStart_DEPRECATED,
   kStateEmbeddedAssistant,
 };
 
@@ -103,11 +103,14 @@ enum AppListModelStatus {
 
 // The UI component the user launched the search result from. Must match
 // chrome/browser/ui/app_list/app_launch_event_logger.proto.
+// This enum is used in a histogram, do not remove/renumber entries. If you're
+// adding to this enum with the intention that it will be logged, update the
+// AppListLaunchedFrom enum listing in tools/metrics/histograms/enums.xml.
 enum AppListLaunchedFrom {
   kLaunchedFromGrid = 1,
-  kLaunchedFromSuggestionChip,
-  kLaunchedFromShelf,
-  kLaunchedFromSearchBox,
+  kLaunchedFromSuggestionChip = 2,
+  kLaunchedFromShelf = 3,
+  kLaunchedFromSearchBox = 4,
 };
 
 // The UI representation of the search result. Currently all search results
@@ -409,5 +412,6 @@ interface AppListClient {
   // Acquires a NavigableContentsFactory (indirectly) from the Content Service
   // to allow the app list to display embedded web contents. Currently used only
   // for answer card search results.
-  GetNavigableContentsFactory(content.mojom.NavigableContentsFactory& request);
+  GetNavigableContentsFactory(
+      pending_receiver<content.mojom.NavigableContentsFactory> receiver);
 };

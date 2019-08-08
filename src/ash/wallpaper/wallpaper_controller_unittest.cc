@@ -27,7 +27,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time_override.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -211,7 +211,7 @@ void RunAllTasksUntilIdle() {
     TaskObserver task_observer;
     base::MessageLoopCurrent::Get()->AddTaskObserver(&task_observer);
     // May spin message loop.
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
 
     base::RunLoop().RunUntilIdle();
     base::MessageLoopCurrent::Get()->RemoveTaskObserver(&task_observer);

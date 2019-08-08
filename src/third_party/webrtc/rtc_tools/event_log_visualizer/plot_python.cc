@@ -158,17 +158,27 @@ void PythonPlot::Draw() {
   }
 }
 
-PythonPlotCollection::PythonPlotCollection() {}
+PythonPlotCollection::PythonPlotCollection(bool shared_xaxis)
+    : shared_xaxis_(shared_xaxis) {}
 
 PythonPlotCollection::~PythonPlotCollection() {}
 
 void PythonPlotCollection::Draw() {
   printf("import matplotlib.pyplot as plt\n");
+  printf("plt.rcParams.update({'figure.max_open_warning': 0})\n");
   printf("import matplotlib.patches as mpatches\n");
   printf("import matplotlib.patheffects as pe\n");
   printf("import colorsys\n");
   for (size_t i = 0; i < plots_.size(); i++) {
     printf("plt.figure(%zu)\n", i);
+    if (shared_xaxis_) {
+      // Link x-axes across all figures for synchronized zooming.
+      if (i == 0) {
+        printf("axis0 = plt.subplot(111)\n");
+      } else {
+        printf("plt.subplot(111, sharex=axis0)\n");
+      }
+    }
     plots_[i]->Draw();
   }
   printf("plt.show()\n");

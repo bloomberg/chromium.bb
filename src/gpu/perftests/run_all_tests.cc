@@ -11,10 +11,17 @@
 #include "build/build_config.h"
 #include "ui/gl/init/gl_factory.h"
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 static int RunHelper(base::TestSuite* test_suite) {
   base::FeatureList::InitializeInstance(std::string(), std::string());
 #if defined(USE_OZONE)
   base::MessageLoopForUI main_loop;
+  ui::OzonePlatform::InitParams params;
+  params.single_process = true;
+  ui::OzonePlatform::InitializeForGPU(params);
 #else
   base::MessageLoopForIO message_loop;
 #endif

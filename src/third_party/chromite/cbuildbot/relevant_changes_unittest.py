@@ -22,7 +22,7 @@ from chromite.lib import fake_cidb
 from chromite.lib import metadata_lib
 from chromite.lib import patch_unittest
 from chromite.lib import triage_lib
-from chromite.lib.buildstore import FakeBuildStore
+from chromite.lib.buildstore import FakeBuildStore, BuildIdentifier
 
 
 # pylint: disable=protected-access
@@ -37,7 +37,9 @@ class RelevantChangesTest(cros_test_lib.MockTestCase):
     self.buildstore = FakeBuildStore()
     self.fake_cidb = self.buildstore.GetCIDBHandle()
     self.master_build_id = self.fake_cidb.InsertBuild(
-        self._bot_id, '1', self._bot_id, 'bot_hostname')
+        self._bot_id, '1', self._bot_id, 'bot_hostname', buildbucket_id=1234)
+    self.master_build_identifier = BuildIdentifier(cidb_id=self.master_build_id,
+                                                   buildbucket_id=1234)
     self._patch_factory = patch_unittest.MockPatchFactory()
 
   def _InsertSlaveBuildAndCLActions(self, slave_config, changes=None,
@@ -80,7 +82,7 @@ class RelevantChangesTest(cros_test_lib.MockTestCase):
 
     config_map, action_history = (
         relevant_changes.RelevantChanges._GetSlaveMappingAndCLActions(
-            self.master_build_id, self.buildstore, self.build_config,
+            self.master_build_identifier, self.buildstore, self.build_config,
             changes, ['bb_id_1'], include_master=True))
     expected_config_map = {
         self.master_build_id: self._bot_id,
@@ -281,7 +283,9 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     self.buildbucket_ids = [bb_info.buildbucket_id
                             for bb_info in self.buildbucket_info_dict.values()]
     self.master_build_id = self.fake_cidb.InsertBuild(
-        self._bot_id, '1', self._bot_id, 'bot_hostname')
+        self._bot_id, '1', self._bot_id, 'bot_hostname', buildbucket_id=1234)
+    self.master_build_identifier = BuildIdentifier(cidb_id=self.master_build_id,
+                                                   buildbucket_id=1234)
     self.changes = self._patch_factory.GetPatches(how_many=4)
     self._InsertCLActionsForBuild(self.master_build_id, self.changes,
                                   constants.CL_ACTION_PICKED_UP)
@@ -332,7 +336,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
       dependency_map = {}
 
     return relevant_changes.TriageRelevantChanges(
-        self.master_build_id, self.buildstore, builders_array,
+        self.master_build_identifier, self.buildstore, builders_array,
         self.build_config, metadata, self.version, self.build_root, changes,
         buildbucket_info_dict, cidb_status_dict, completed_builds,
         dependency_map, self.buildbucket_client, dry_run)
@@ -364,7 +368,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     mock_get_changes.assert_called_once_with(
         mock_stage_dict)
     mock_get_passed_slaves.assert_called_once_with(
-        self.master_build_id, self.buildstore, self.changes, mock.ANY)
+        self.master_build_identifier, self.buildstore, self.changes, mock.ANY)
 
   def _BuildDependMap(self):
     """Helper method to build dependency_map for GetDependChanges tests."""

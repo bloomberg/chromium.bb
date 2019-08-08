@@ -75,7 +75,7 @@ class EventRouter
   // KeyedService overrides.
   void Shutdown() override;
 
-  typedef base::Callback<void(bool success)> BoolCallback;
+  using BoolCallback = base::OnceCallback<void(bool success)>;
 
   // Adds a file watch at |local_path|, associated with |virtual_path|, for
   // an extension with |extension_id|.
@@ -88,7 +88,7 @@ class EventRouter
   void AddFileWatch(const base::FilePath& local_path,
                     const base::FilePath& virtual_path,
                     const std::string& extension_id,
-                    const BoolCallback& callback);
+                    BoolCallback callback);
 
   // Removes a file watch at |local_path| for an extension with |extension_id|.
   //
@@ -152,7 +152,8 @@ class EventRouter
   void OnFileSystemMountFailed() override;
 
   // crostini::CrostiniSharePath::Observer overrides
-  void OnUnshare(const base::FilePath& path) override;
+  void OnUnshare(const std::string& vm_name,
+                 const base::FilePath& path) override;
 
   // Returns a weak pointer for the event router.
   base::WeakPtr<EventRouter> GetWeakPtr();
@@ -202,6 +203,7 @@ class EventRouter
   // Populate the path unshared event.
   static void PopulateCrostiniUnshareEvent(
       extensions::api::file_manager_private::CrostiniEvent& event,
+      const std::string& vm_name,
       const std::string& extension_id,
       const std::string& mount_name,
       const std::string& file_system_name,

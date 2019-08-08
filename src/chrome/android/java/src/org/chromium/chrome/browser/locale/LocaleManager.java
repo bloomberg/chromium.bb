@@ -15,6 +15,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -23,6 +24,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.SearchEnginePreference;
 import org.chromium.chrome.browser.search_engines.TemplateUrl;
@@ -499,4 +501,20 @@ public class LocaleManager {
      */
     public void recordLocaleBasedSearchMetrics(
             boolean isFromSearchWidget, String url, @PageTransition int transition) {}
+
+    /**
+     * @return Whether the user requires special handling.
+     */
+    public boolean isSpecialUser() {
+        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.FORCE_ENABLE_SPECIAL_USER)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Record metrics related to user type.
+     */
+    @CalledByNative
+    public void recordUserTypeMetrics() {}
 }

@@ -8,9 +8,9 @@
 
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_media_url_interceptor.h"
-#include "android_webview/browser/command_line_helper.h"
 #include "android_webview/browser/gfx/browser_view_renderer.h"
 #include "android_webview/browser/gfx/deferred_gpu_command_service.h"
+#include "android_webview/browser/scoped_add_feature_flags.h"
 #include "android_webview/browser/tracing/aw_trace_event_args_whitelist.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_paths.h"
@@ -163,44 +163,46 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     cl->AppendSwitch(switches::kInProcessGPU);
   }
 
+  {
+    ScopedAddFeatureFlags features(cl);
+
 #if BUILDFLAG(ENABLE_SPELLCHECK)
-  CommandLineHelper::AddEnabledFeature(
-      *cl, spellcheck::kAndroidSpellCheckerNonLowEnd.name);
+    features.EnableIfNotSet(spellcheck::kAndroidSpellCheckerNonLowEnd);
 #endif  // ENABLE_SPELLCHECK
 
-  CommandLineHelper::AddDisabledFeature(*cl, features::kWebPayments.name);
+    features.EnableIfNotSet(
+        autofill::features::kAutofillSkipComparingInferredLabels);
 
-  // WebView does not and should not support WebAuthN.
-  CommandLineHelper::AddDisabledFeature(*cl, features::kWebAuth.name);
+    if (cl->HasSwitch(switches::kWebViewLogJsConsoleMessages)) {
+      features.EnableIfNotSet(features::kLogJsConsoleMessages);
+    }
 
-  // WebView isn't compatible with OOP-D.
-  CommandLineHelper::AddDisabledFeature(*cl,
-                                        features::kVizDisplayCompositor.name);
+    features.DisableIfNotSet(features::kWebPayments);
 
-  // WebView does not support AndroidOverlay yet for video overlays.
-  CommandLineHelper::AddDisabledFeature(*cl, media::kUseAndroidOverlay.name);
+    // WebView does not and should not support WebAuthN.
+    features.DisableIfNotSet(features::kWebAuth);
 
-  // WebView doesn't support embedding CompositorFrameSinks which is needed for
-  // UseSurfaceLayerForVideo[PIP] feature. https://crbug.com/853832
-  CommandLineHelper::AddDisabledFeature(*cl,
-                                        media::kUseSurfaceLayerForVideo.name);
+    // WebView isn't compatible with OOP-D.
+    features.DisableIfNotSet(features::kVizDisplayCompositor);
 
-  // WebView does not support EME persistent license yet, because it's not
-  // clear on how user can remove persistent media licenses from UI.
-  CommandLineHelper::AddDisabledFeature(*cl,
-                                        media::kMediaDrmPersistentLicense.name);
+    // WebView does not support AndroidOverlay yet for video overlays.
+    features.DisableIfNotSet(media::kUseAndroidOverlay);
 
-  CommandLineHelper::AddEnabledFeature(
-      *cl, autofill::features::kAutofillSkipComparingInferredLabels.name);
+    // WebView doesn't support embedding CompositorFrameSinks which is needed
+    // for UseSurfaceLayerForVideo feature. https://crbug.com/853832
+    features.EnableIfNotSet(media::kDisableSurfaceLayerForVideo);
 
-  CommandLineHelper::AddDisabledFeature(
-      *cl, autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout
-               .name);
+    // WebView does not support EME persistent license yet, because it's not
+    // clear on how user can remove persistent media licenses from UI.
+    features.DisableIfNotSet(media::kMediaDrmPersistentLicense);
 
-  CommandLineHelper::AddDisabledFeature(*cl, features::kBackgroundFetch.name);
+    features.DisableIfNotSet(
+        autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
 
-  CommandLineHelper::AddDisabledFeature(*cl,
-                                        features::kAndroidSurfaceControl.name);
+    features.DisableIfNotSet(features::kBackgroundFetch);
+
+    features.DisableIfNotSet(features::kAndroidSurfaceControl);
+  }
 
   android_webview::RegisterPathProvider();
 

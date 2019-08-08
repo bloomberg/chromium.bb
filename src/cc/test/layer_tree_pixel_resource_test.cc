@@ -30,7 +30,16 @@ void LayerTreeHostPixelResourceTest::InitializeFromTestCase(
     PixelResourceTestCase test_case) {
   DCHECK(!initialized_);
   test_case_ = test_case;
-  test_type_ = (test_case == SOFTWARE) ? PIXEL_TEST_SOFTWARE : PIXEL_TEST_GL;
+  switch (test_case) {
+    case SOFTWARE:
+      SetPixelTestType(PIXEL_TEST_SOFTWARE);
+      break;
+    case SKIA_GL:
+      SetPixelTestType(PIXEL_TEST_SKIA_GL);
+      break;
+    default:
+      SetPixelTestType(PIXEL_TEST_GL);
+  }
   initialized_ = true;
 }
 
@@ -100,6 +109,14 @@ LayerTreeHostPixelResourceTest::CreateRasterBufferProvider(
           task_runner, compositor_context_provider, worker_context_provider,
           gpu_memory_buffer_manager, max_bytes_per_copy_operation, false, false,
           max_staging_buffer_usage_in_bytes, sw_raster_format);
+    case SKIA_GL:
+      EXPECT_TRUE(compositor_context_provider);
+      EXPECT_TRUE(worker_context_provider);
+      EXPECT_EQ(PIXEL_TEST_SKIA_GL, test_type_);
+
+      return std::make_unique<GpuRasterBufferProvider>(
+          compositor_context_provider, worker_context_provider, false, 0,
+          gpu_raster_format, gfx::Size(), true, false);
   }
   return {};
 }

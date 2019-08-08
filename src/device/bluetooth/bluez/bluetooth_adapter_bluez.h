@@ -287,22 +287,22 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   // bluez::BluetoothAgentServiceProvider::Delegate override.
   void Released() override;
   void RequestPinCode(const dbus::ObjectPath& device_path,
-                      const PinCodeCallback& callback) override;
+                      PinCodeCallback callback) override;
   void DisplayPinCode(const dbus::ObjectPath& device_path,
                       const std::string& pincode) override;
   void RequestPasskey(const dbus::ObjectPath& device_path,
-                      const PasskeyCallback& callback) override;
+                      PasskeyCallback callback) override;
   void DisplayPasskey(const dbus::ObjectPath& device_path,
                       uint32_t passkey,
                       uint16_t entered) override;
   void RequestConfirmation(const dbus::ObjectPath& device_path,
                            uint32_t passkey,
-                           const ConfirmationCallback& callback) override;
+                           ConfirmationCallback callback) override;
   void RequestAuthorization(const dbus::ObjectPath& device_path,
-                            const ConfirmationCallback& callback) override;
+                            ConfirmationCallback callback) override;
   void AuthorizeService(const dbus::ObjectPath& device_path,
                         const std::string& uuid,
-                        const ConfirmationCallback& callback) override;
+                        ConfirmationCallback callback) override;
   void Cancel() override;
 
   // Called by dbus:: on completion of the D-Bus method call to register the

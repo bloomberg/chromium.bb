@@ -200,7 +200,7 @@ class CrOSDataSource : public tracing::ProducerClient::DataSourceBase {
     session_started_ = false;
     producer_client_ = nullptr;
 
-    producer_client->GetTaskRunner()->PostTask(
+    producer_client->GetTaskRunner()->task_runner()->PostTask(
         FROM_HERE, std::move(stop_complete_callback));
   }
 

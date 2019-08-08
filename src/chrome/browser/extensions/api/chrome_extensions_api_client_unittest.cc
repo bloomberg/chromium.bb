@@ -44,15 +44,15 @@ TEST_F(ChromeExtensionsAPIClientTest, ShouldHideBrowserNetworkRequest) {
   request.url = GURL("https://example.com/script.js");
   request.initiator = url::Origin::Create(GURL(chrome::kChromeUINewTabURL));
   request.render_process_id = -1;
-  request.type = content::ResourceType::RESOURCE_TYPE_SCRIPT;
+  request.type = content::ResourceType::kScript;
   EXPECT_TRUE(client.ShouldHideBrowserNetworkRequest(request));
 
   // Main frame requests should always be visible to extensions.
-  request.type = content::ResourceType::RESOURCE_TYPE_MAIN_FRAME;
+  request.type = content::ResourceType::kMainFrame;
   EXPECT_FALSE(client.ShouldHideBrowserNetworkRequest(request));
 
   // Similar requests made by the renderer should be visible to extensions.
-  request.type = content::ResourceType::RESOURCE_TYPE_SCRIPT;
+  request.type = content::ResourceType::kScript;
   request.render_process_id = 2;
   EXPECT_FALSE(client.ShouldHideBrowserNetworkRequest(request));
 }

@@ -4,8 +4,8 @@
 
 package org.chromium.content_public.browser.test.util;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
-import org.chromium.content.browser.BrowserThreadUtilsImpl;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.concurrent.Callable;
@@ -23,7 +23,7 @@ public class TestThreadUtils {
      * @param r The Runnable to run.
      */
     public static void runOnUiThreadBlocking(final Runnable r) {
-        if (BrowserThreadUtilsImpl.runningOnUiThread()) {
+        if (ThreadUtils.runningOnUiThread()) {
             r.run();
         } else {
             FutureTask<Void> task = new FutureTask<Void>(r, null);
@@ -61,7 +61,7 @@ public class TestThreadUtils {
      */
     public static <T> T runOnUiThreadBlocking(Callable<T> c) throws ExecutionException {
         FutureTask<T> task = new FutureTask<T>(c);
-        BrowserThreadUtilsImpl.runOnUiThread(task);
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, task);
         try {
             return task.get();
         } catch (InterruptedException e) {
@@ -77,6 +77,6 @@ public class TestThreadUtils {
      * those tests).
      */
     public static void setThreadAssertsDisabled(boolean disabled) {
-        BrowserThreadUtilsImpl.setThreadAssertsDisabledForTesting(disabled);
+        ThreadUtils.setThreadAssertsDisabledForTesting(disabled);
     }
 }

@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/svg/properties/svg_animated_property.h"
 #include "third_party/blink/renderer/core/svg/svg_number_list_tear_off.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -53,9 +54,10 @@ class SVGAnimatedNumberList final : public ScriptWrappable,
 
   SVGAnimatedNumberList(SVGElement* context_element,
                         const QualifiedName& attribute_name)
-      : SVGAnimatedProperty<SVGNumberList>(context_element,
-                                           attribute_name,
-                                           SVGNumberList::Create()) {}
+      : SVGAnimatedProperty<SVGNumberList>(
+            context_element,
+            attribute_name,
+            MakeGarbageCollected<SVGNumberList>()) {}
 
   void Trace(blink::Visitor* visitor) override {
     SVGAnimatedProperty<SVGNumberList>::Trace(visitor);

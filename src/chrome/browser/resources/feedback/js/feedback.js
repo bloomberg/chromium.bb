@@ -2,12 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @type {string}
- * @const
- */
-const SRT_DOWNLOAD_PAGE = 'https://www.google.com/chrome/cleanup-tool/';
-
 /** @type {number}
  * @const
  */
@@ -46,16 +40,6 @@ const MAX_SCREENSHOT_WIDTH = 100;
  */
 const SYSINFO_WINDOW_ID = 'sysinfo_window';
 
-/**
- * SRT Prompt Result defined in feedback_private.idl.
- * @enum {string}
- */
-const SrtPromptResult = {
-  ACCEPTED: 'accepted',  // User accepted prompt.
-  DECLINED: 'declined',  // User declined prompt.
-  CLOSED: 'closed',      // User closed window without responding to prompt.
-};
-
 let attachedFileBlob = null;
 const lastReader = null;
 
@@ -67,18 +51,13 @@ const lastReader = null;
 let isSystemInfoReady = false;
 
 /**
- * Indicates whether the SRT Prompt is currently being displayed.
- * @type {boolean}
- */
-let isShowingSrtPrompt = false;
-
-/**
- * Regular expression to check for all variants of bluetooth, blutooth, with or
- * without space between the words and for BT when used as an individual word,
- * or as two individual characters. Case insensitive matching.
+ * Regular expression to check for all variants of blu[e]toot[h] with or without
+ * space between the words; for BT when used as an individual word, or as two
+ * individual characters, and for BLE when used as an individual word. Case
+ * insensitive matching.
  * @type {RegExp}
  */
-const btRegEx = new RegExp('[b]lu[e]?[ ]?tooth|\b[b][ ]?[t]\b', 'i');
+const btRegEx = new RegExp('blu[e]?[ ]?toot[h]?|\\bb[ ]?t\\b|\\bble\\b', 'i');
 
 /**
  * Regular expression to check for all strings indicating that a user can't
@@ -283,6 +262,9 @@ function sendReport() {
 function cancel(e) {
   e.preventDefault();
   scheduleWindowClose();
+  if (feedbackInfo.flow == chrome.feedbackPrivate.FeedbackFlow.LOGIN) {
+    chrome.feedbackPrivate.loginFeedbackComplete();
+  }
 }
 
 // <if expr="chromeos">
@@ -366,38 +348,12 @@ function initialize() {
         feedbackInfo.flow = chrome.feedbackPrivate.FeedbackFlow.REGULAR;
       }
 
-      if (feedbackInfo.flow ==
-          chrome.feedbackPrivate.FeedbackFlow.SHOW_SRT_PROMPT) {
-        isShowingSrtPrompt = true;
-        $('content-pane').hidden = true;
-
-        $('srt-decline-button').onclick = function() {
-          isShowingSrtPrompt = false;
-          chrome.feedbackPrivate.logSrtPromptResult(SrtPromptResult.DECLINED);
-          $('srt-prompt').hidden = true;
-          $('content-pane').hidden = false;
-        };
-
-        $('srt-accept-button').onclick = function() {
-          chrome.feedbackPrivate.logSrtPromptResult(SrtPromptResult.ACCEPTED);
-          window.open(SRT_DOWNLOAD_PAGE, '_blank');
-          scheduleWindowClose();
-        };
-
-        $('close-button').addEventListener('click', function() {
-          if (isShowingSrtPrompt) {
-            chrome.feedbackPrivate.logSrtPromptResult(SrtPromptResult.CLOSED);
-          }
-        });
-      } else if (feedbackInfo.includeBluetoothLogs) {
+      if (feedbackInfo.includeBluetoothLogs) {
         assert(
             feedbackInfo.flow ==
             chrome.feedbackPrivate.FeedbackFlow.GOOGLE_INTERNAL);
         $('description-text')
             .addEventListener('input', checkForBluetoothKeywords);
-        $('srt-prompt').hidden = true;
-      } else {
-        $('srt-prompt').hidden = true;
       }
 
       if ($('assistant-checkbox-container') != null &&
@@ -418,7 +374,7 @@ function initialize() {
       takeScreenshot(function(screenshotCanvas) {
         // We've taken our screenshot, show the feedback page without any
         // further delay.
-        window.webkitRequestAnimationFrame(function() {
+        window.requestAnimationFrame(function() {
           resizeAppWindow();
         });
         chrome.app.window.current().show();

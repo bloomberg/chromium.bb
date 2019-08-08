@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
-#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -50,7 +50,7 @@ class LocationBarViewBrowserTest : public InProcessBrowserTest {
   PageActionIconView* GetZoomView() {
     return BrowserView::GetBrowserViewForBrowser(browser())
         ->toolbar_button_provider()
-        ->GetPageActionIconContainerView()
+        ->GetOmniboxPageActionIconContainerView()
         ->GetPageActionIconView(PageActionIconType::kZoom);
   }
 
@@ -143,8 +143,7 @@ IN_PROC_BROWSER_TEST_F(TouchLocationBarViewBrowserTest, OmniboxViewViewsSize) {
   // (currently, the LocationIconView is *always* added as a leading decoration,
   // so it's not possible to test the leading side).
   views::View* omnibox_view_views = GetLocationBarView()->omnibox_view();
-  for (int i = 0; i < GetLocationBarView()->child_count(); ++i) {
-    views::View* child = GetLocationBarView()->child_at(i);
+  for (views::View* child : GetLocationBarView()->children()) {
     if (child != omnibox_view_views)
       child->SetVisible(false);
   }
@@ -169,8 +168,7 @@ IN_PROC_BROWSER_TEST_F(TouchLocationBarViewBrowserTest,
   OmniboxViewViews* omnibox_view_views = GetLocationBarView()->omnibox_view();
   views::Label* ime_inline_autocomplete_view =
       GetLocationBarView()->ime_inline_autocomplete_view_;
-  for (int i = 0; i < GetLocationBarView()->child_count(); ++i) {
-    views::View* child = GetLocationBarView()->child_at(i);
+  for (views::View* child : GetLocationBarView()->children()) {
     if (child != omnibox_view_views)
       child->SetVisible(false);
   }
@@ -300,7 +298,6 @@ IN_PROC_BROWSER_TEST_F(SecurityIndicatorTest, CheckIndicatorText) {
             {kBothToLockVariation, kMockNonsecureURL, 0, security_state::NONE,
              false, kEmptyString}};
 
-  security_state::SecurityInfo security_info;
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(tab);
@@ -321,8 +318,7 @@ IN_PROC_BROWSER_TEST_F(SecurityIndicatorTest, CheckIndicatorText) {
     }
     SetUpInterceptor(c.cert_status);
     ui_test_utils::NavigateToURL(browser(), c.url);
-    helper->GetSecurityInfo(&security_info);
-    EXPECT_EQ(c.security_level, security_info.security_level);
+    EXPECT_EQ(c.security_level, helper->GetSecurityLevel());
     EXPECT_EQ(c.should_show_text,
               location_bar_view->location_icon_view()->ShouldShowLabel());
     EXPECT_EQ(c.indicator_text,

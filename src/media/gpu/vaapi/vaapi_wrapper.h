@@ -14,6 +14,7 @@
 #include <stdint.h>
 
 #include <set>
+#include <string>
 #include <vector>
 
 #include <va/va.h>
@@ -27,7 +28,7 @@
 #include "media/base/video_frame.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/vaapi/va_surface.h"
-#include "media/video/jpeg_decode_accelerator.h"
+#include "media/video/mjpeg_decode_accelerator.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
@@ -64,6 +65,15 @@ class MEDIA_GPU_EXPORT VaapiWrapper
     kCodecModeMax,
   };
 
+  using InternalFormats = struct {
+    bool yuv420 : 1;
+    bool yuv422 : 1;
+    bool yuv444 : 1;
+  };
+
+  // Returns the VAAPI vendor string (obtained using vaQueryVendorString()).
+  static const std::string& GetVendorStringForTesting();
+
   // Return an instance of VaapiWrapper initialized for |va_profile| and
   // |mode|. |report_error_to_uma_cb| will be called independently from
   // reporting errors to clients via method return values.
@@ -90,11 +100,46 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Return true when JPEG decode is supported.
   static bool IsJpegDecodeSupported();
 
+  // Returns the supported internal formats for JPEG decoding. If JPEG decoding
+  // is not supported, returns InternalFormats{}.
+  static InternalFormats GetJpegDecodeSupportedInternalFormats();
+
+  // Returns true if |rt_format| is supported for JPEG decoding. If it's not or
+  // JPEG decoding is not supported, returns false.
+  static bool IsJpegDecodingSupportedForInternalFormat(unsigned int rt_format);
+
+  // Gets the minimum surface size allowed for JPEG decoding. Returns true if
+  // the size can be obtained, false otherwise. If a dimension is not reported
+  // by the driver, the dimension is returned as 0.
+  static bool GetJpegDecodeMinResolution(gfx::Size* min_size);
+
+  // Gets the maximum surface size allowed for JPEG decoding. Returns true if
+  // the size can be obtained, false otherwise. Because of the initialization in
+  // VASupportedProfiles::FillProfileInfo_Locked(), the size is guaranteed to
+  // not be empty (as long as this method returns true).
+  static bool GetJpegDecodeMaxResolution(gfx::Size* max_size);
+
+  // Obtains a suitable FOURCC that can be used in vaCreateImage() +
+  // vaGetImage(). |rt_format| corresponds to the JPEG's subsampling format.
+  // |preferred_fourcc| is the FOURCC of the format preferred by the caller. If
+  // it is determined that the VAAPI driver can do the conversion from the
+  // internal format (|rt_format|), *|suitable_fourcc| is set to
+  // |preferred_fourcc|. Otherwise, it is set to a supported format. Returns
+  // true if a suitable FOURCC could be determined, false otherwise (e.g., if
+  // the |rt_format| is unsupported by the driver). If |preferred_fourcc| is not
+  // a supported image format, *|suitable_fourcc| is set to VA_FOURCC_I420.
+  static bool GetJpegDecodeSuitableImageFourCC(unsigned int rt_format,
+                                               uint32_t preferred_fourcc,
+                                               uint32_t* suitable_fourcc);
+
   // Return true when JPEG encode is supported.
   static bool IsJpegEncodeSupported();
 
   // Return true when the specified image format is supported.
   static bool IsImageFormatSupported(const VAImageFormat& format);
+
+  // Returns the list of VAImageFormats supported by the driver.
+  static const std::vector<VAImageFormat>& GetSupportedImageFormatsForTesting();
 
   // Creates |num_surfaces| backing surfaces in driver for VASurfaces of
   // |va_format|, each of size |size| and initializes |va_context_id_| with
@@ -205,6 +250,14 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Destroy all previously-allocated (and not yet destroyed) buffers.
   void DestroyVABuffers();
 
+  // Get the max number of reference frames for encoding supported by the
+  // driver.
+  // For H.264 encoding, the value represents the maximum number of reference
+  // frames for both the reference picture list 0 (bottom 16 bits) and the
+  // reference picture list 1 (top 16 bits).
+  bool GetVAEncMaxNumOfRefFrames(VideoCodecProfile profile,
+                                 size_t* max_ref_frames);
+
   // Blits a VASurface |va_surface_src| into another VASurface
   // |va_surface_dest| applying pixel format conversion and scaling
   // if needed.
@@ -239,6 +292,9 @@ class MEDIA_GPU_EXPORT VaapiWrapper
 
   // Attempt to set render mode to "render to texture.". Failure is non-fatal.
   void TryToSetVADisplayAttributeToLocalGPU();
+
+  // Check low-power encode support for the given profile
+  bool IsLowPowerEncSupported(VAProfile va_profile) const;
 
   // Pointer to VADisplayState's member |va_lock_|. Guaranteed to be valid for
   // the lifetime of VaapiWrapper.

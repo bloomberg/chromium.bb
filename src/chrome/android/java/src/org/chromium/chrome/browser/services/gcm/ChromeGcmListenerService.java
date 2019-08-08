@@ -19,6 +19,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.CachedMetrics;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
@@ -27,6 +28,7 @@ import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.gcm_driver.GCMDriver;
 import org.chromium.components.gcm_driver.GCMMessage;
 import org.chromium.components.gcm_driver.LazySubscriptionsManager;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
  * Receives Downstream messages and status of upstream messages from GCM.
@@ -52,19 +54,16 @@ public class ChromeGcmListenerService extends GcmListenerService {
         }
 
         // Dispatch the message to the GCM Driver for native features.
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                GCMMessage message = null;
-                try {
-                    message = new GCMMessage(from, data);
-                } catch (IllegalArgumentException e) {
-                    Log.e(TAG, "Received an invalid GCM Message", e);
-                    return;
-                }
-
-                scheduleOrDispatchMessageToDriver(message);
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            GCMMessage message = null;
+            try {
+                message = new GCMMessage(from, data);
+            } catch (IllegalArgumentException e) {
+                Log.e(TAG, "Received an invalid GCM Message", e);
+                return;
             }
+
+            scheduleOrDispatchMessageToDriver(message);
         });
     }
 
@@ -106,7 +105,9 @@ public class ChromeGcmListenerService extends GcmListenerService {
         if (!ApplicationStatus.hasVisibleActivities()) {
             boolean isSubscriptionLazy = false;
             long time = SystemClock.elapsedRealtime();
-            if (LazySubscriptionsManager.isSubscriptionLazy(subscriptionId)) {
+            // TODO(crbug.com/945402): Add metrics for the new high priority message logic.
+            if (LazySubscriptionsManager.isSubscriptionLazy(subscriptionId)
+                    && message.getOriginalPriority() != GCMMessage.Priority.HIGH) {
                 isSubscriptionLazy = true;
                 LazySubscriptionsManager.persistMessage(subscriptionId, message);
             }

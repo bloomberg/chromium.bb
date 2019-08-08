@@ -5,14 +5,12 @@
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 
 #include "base/bind_helpers.h"
-#include "base/feature_list.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/common/webui_url_constants.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -96,11 +94,6 @@ void PartitionHostPermissions(
 // Returns true if the extension should even be considered for being affected
 // by the runtime host permissions experiment.
 bool ShouldConsiderExtension(const Extension& extension) {
-  // No extensions are affected if the experiment is disabled.
-  if (!base::FeatureList::IsEnabled(
-          extensions_features::kRuntimeHostPermissions))
-    return false;
-
   // Certain extensions are always exempt from having permissions withheld.
   if (!CanWithholdFromExtension(extension))
     return false;

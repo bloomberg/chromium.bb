@@ -61,6 +61,7 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
   void DestroySharedImage(const gpu::SyncToken& sync_token,
                           const gpu::Mailbox& mailbox) override;
 
+  gpu::SyncToken GenVerifiedSyncToken() override;
   gpu::SyncToken GenUnverifiedSyncToken() override;
 
   size_t shared_image_count() const { return shared_images_.size(); }

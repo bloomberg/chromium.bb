@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/string_conversions_util.h"
 #include "components/autofill_assistant/browser/web_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -12,8 +13,11 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
+
+using ::testing::IsEmpty;
 
 const char* kTargetWebsitePath = "/autofill_assistant_target_website.html";
 
@@ -66,7 +70,21 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     } while (page_is_loading || paint_occurred_during_last_loop_);
   }
 
-  void RunElementChecks(ElementCheckType check_type,
+  void RunStrictElementCheck(const Selector& selector, bool result) {
+    RunElementCheck(/* strict= */ true, selector, result);
+  }
+
+  void RunLaxElementCheck(const Selector& selector, bool result) {
+    RunElementCheck(/* strict= */ false, selector, result);
+  }
+
+  void RunElementCheck(bool strict, const Selector& selector, bool result) {
+    std::vector<Selector> selectors{selector};
+    std::vector<bool> results{result};
+    RunElementChecks(strict, selectors, results);
+  }
+
+  void RunElementChecks(bool strict,
                         const std::vector<Selector>& selectors,
                         const std::vector<bool> results) {
     base::RunLoop run_loop;
@@ -74,19 +92,20 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     size_t pending_number_of_checks = selectors.size();
     for (size_t i = 0; i < selectors.size(); i++) {
       web_controller_->ElementCheck(
-          check_type, selectors[i],
+          selectors[i], strict,
           base::BindOnce(&WebControllerBrowserTest::CheckElementVisibleCallback,
                          base::Unretained(this), run_loop.QuitClosure(),
-                         &pending_number_of_checks, results[i]));
+                         selectors[i], &pending_number_of_checks, results[i]));
     }
     run_loop.Run();
   }
 
   void CheckElementVisibleCallback(const base::Closure& done_callback,
+                                   const Selector& selector,
                                    size_t* pending_number_of_checks_output,
                                    bool expected_result,
                                    bool result) {
-    ASSERT_EQ(expected_result, result);
+    EXPECT_EQ(expected_result, result) << "selector: " << selector;
     *pending_number_of_checks_output -= 1;
     if (*pending_number_of_checks_output == 0) {
       done_callback.Run();
@@ -103,8 +122,8 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   void ClickElementCallback(const base::Closure& done_callback,
-                            bool result) {
-    ASSERT_TRUE(result);
+                            const ClientStatus& status) {
+    EXPECT_EQ(ACTION_APPLIED, status.proto_status());
     done_callback.Run();
   }
 
@@ -125,7 +144,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   void WaitForElementRemove(const Selector& selector) {
     base::RunLoop run_loop;
     web_controller_->ElementCheck(
-        kExistenceCheck, selector,
+        selector, /* strict= */ false,
         base::BindOnce(&WebControllerBrowserTest::OnWaitForElementRemove,
                        base::Unretained(this), run_loop.QuitClosure(),
                        selector));
@@ -150,14 +169,16 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     run_loop.Run();
   }
 
-  void OnFocusElement(base::Closure done_callback, bool result) {
-    ASSERT_TRUE(result);
+  void OnFocusElement(base::OnceClosure done_callback,
+                      const ClientStatus& status) {
+    EXPECT_EQ(ACTION_APPLIED, status.proto_status());
     std::move(done_callback).Run();
   }
 
-  bool SelectOption(const Selector& selector, const std::string& option) {
+  ClientStatus SelectOption(const Selector& selector,
+                            const std::string& option) {
     base::RunLoop run_loop;
-    bool result;
+    ClientStatus result;
     web_controller_->SelectOption(
         selector, option,
         base::BindOnce(&WebControllerBrowserTest::OnSelectOption,
@@ -168,15 +189,15 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   void OnSelectOption(base::Closure done_callback,
-                      bool* result_output,
-                      bool result) {
-    *result_output = result;
+                      ClientStatus* result_output,
+                      const ClientStatus& status) {
+    *result_output = status;
     std::move(done_callback).Run();
   }
 
-  bool HighlightElement(const Selector& selector) {
+  ClientStatus HighlightElement(const Selector& selector) {
     base::RunLoop run_loop;
-    bool result;
+    ClientStatus result;
     web_controller_->HighlightElement(
         selector, base::BindOnce(&WebControllerBrowserTest::OnHighlightElement,
                                  base::Unretained(this), run_loop.QuitClosure(),
@@ -186,15 +207,16 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   void OnHighlightElement(base::Closure done_callback,
-                          bool* result_output,
-                          bool result) {
-    *result_output = result;
+                          ClientStatus* result_output,
+                          const ClientStatus& status) {
+    *result_output = status;
     std::move(done_callback).Run();
   }
 
-  bool GetOuterHtml(const Selector& selector, std::string* html_output) {
+  ClientStatus GetOuterHtml(const Selector& selector,
+                            std::string* html_output) {
     base::RunLoop run_loop;
-    bool result;
+    ClientStatus result;
     web_controller_->GetOuterHtml(
         selector, base::BindOnce(&WebControllerBrowserTest::OnGetOuterHtml,
                                  base::Unretained(this), run_loop.QuitClosure(),
@@ -204,42 +226,75 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   void OnGetOuterHtml(const base::Closure& done_callback,
-                      bool* successful_output,
+                      ClientStatus* successful_output,
                       std::string* html_output,
-                      bool successful,
+                      const ClientStatus& status,
                       const std::string& html) {
-    *successful_output = successful;
+    EXPECT_EQ(ACTION_APPLIED, status.proto_status());
+    *successful_output = status;
     *html_output = html;
     done_callback.Run();
   }
 
   void FindElement(const Selector& selector,
-                   size_t expected_index,
-                   bool is_main_frame) {
+                   ClientStatus* status_out,
+                   WebController::FindElementResult* result_out) {
     base::RunLoop run_loop;
     web_controller_->FindElement(
-        selector,
-        /* strict_mode= */ true,
+        selector, /* strict_mode= */ true,
         base::BindOnce(&WebControllerBrowserTest::OnFindElement,
                        base::Unretained(this), run_loop.QuitClosure(),
-                       expected_index, is_main_frame));
+                       base::Unretained(status_out),
+                       base::Unretained(result_out)));
     run_loop.Run();
   }
 
   void OnFindElement(const base::Closure& done_callback,
-                     size_t expected_index,
-                     bool is_main_frame,
+                     ClientStatus* status_out,
+                     WebController::FindElementResult* result_out,
+                     const ClientStatus& status,
                      std::unique_ptr<WebController::FindElementResult> result) {
+    ASSERT_TRUE(result);
     done_callback.Run();
+    if (status_out)
+      *status_out = status;
+
+    if (result_out)
+      *result_out = *result;
+  }
+
+  void FindElementAndCheck(const Selector& selector,
+                           size_t expected_index,
+                           bool is_main_frame) {
+    SCOPED_TRACE(::testing::Message() << selector << " strict");
+    ClientStatus status;
+    WebController::FindElementResult result;
+    FindElement(selector, &status, &result);
+    EXPECT_EQ(ACTION_APPLIED, status.proto_status());
+    CheckFindElementResult(result, expected_index, is_main_frame);
+  }
+
+  void FindElementExpectEmptyResult(const Selector& selector) {
+    SCOPED_TRACE(::testing::Message() << selector << " strict");
+    ClientStatus status;
+    WebController::FindElementResult result;
+    FindElement(selector, &status, &result);
+    EXPECT_EQ(ELEMENT_RESOLUTION_FAILED, status.proto_status());
+    EXPECT_THAT(result.object_id, IsEmpty());
+  }
+
+  void CheckFindElementResult(const WebController::FindElementResult& result,
+                              size_t expected_index,
+                              bool is_main_frame) {
     if (is_main_frame) {
-      ASSERT_EQ(shell()->web_contents()->GetMainFrame(),
-                result->container_frame_host);
+      EXPECT_EQ(shell()->web_contents()->GetMainFrame(),
+                result.container_frame_host);
     } else {
-      ASSERT_NE(shell()->web_contents()->GetMainFrame(),
-                result->container_frame_host);
+      EXPECT_NE(shell()->web_contents()->GetMainFrame(),
+                result.container_frame_host);
     }
-    ASSERT_EQ(result->container_frame_selector_index, expected_index);
-    ASSERT_FALSE(result->object_id.empty());
+    EXPECT_EQ(result.container_frame_selector_index, expected_index);
+    EXPECT_FALSE(result.object_id.empty());
   }
 
   void GetFieldsValue(const std::vector<Selector>& selectors,
@@ -271,13 +326,13 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     }
   }
 
-  bool SetFieldValue(const Selector& selector,
-                     const std::string& value,
-                     bool simulate_key_presses) {
+  ClientStatus SetFieldValue(const Selector& selector,
+                             const std::string& value,
+                             bool simulate_key_presses) {
     base::RunLoop run_loop;
-    bool result;
+    ClientStatus result;
     web_controller_->SetFieldValue(
-        selector, value, simulate_key_presses,
+        selector, value, simulate_key_presses, 0,
         base::BindOnce(&WebControllerBrowserTest::OnSetFieldValue,
                        base::Unretained(this), run_loop.QuitClosure(),
                        &result));
@@ -286,18 +341,19 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   void OnSetFieldValue(const base::Closure& done_callback,
-                       bool* result_output,
-                       bool result) {
-    *result_output = result;
+                       ClientStatus* result_output,
+                       const ClientStatus& status) {
+    *result_output = status;
     std::move(done_callback).Run();
   }
 
-  bool SendKeyboardInput(const Selector& selector,
-                         const std::vector<std::string>& text_parts) {
+  ClientStatus SendKeyboardInput(const Selector& selector,
+                                 const std::vector<UChar32>& codepoints,
+                                 int delay_in_milli) {
     base::RunLoop run_loop;
-    bool result;
+    ClientStatus result;
     web_controller_->SendKeyboardInput(
-        selector, text_parts,
+        selector, codepoints, delay_in_milli,
         base::BindOnce(&WebControllerBrowserTest::OnSendKeyboardInput,
                        base::Unretained(this), run_loop.QuitClosure(),
                        &result));
@@ -305,18 +361,23 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     return result;
   }
 
+  ClientStatus SendKeyboardInput(const Selector& selector,
+                                 const std::vector<UChar32>& codepoints) {
+    return SendKeyboardInput(selector, codepoints, -1);
+  }
+
   void OnSendKeyboardInput(const base::Closure& done_callback,
-                           bool* result_output,
-                           bool result) {
-    *result_output = result;
+                           ClientStatus* result_output,
+                           const ClientStatus& status) {
+    *result_output = status;
     std::move(done_callback).Run();
   }
 
-  bool SetAttribute(const Selector& selector,
-                    const std::vector<std::string>& attribute,
-                    const std::string& value) {
+  ClientStatus SetAttribute(const Selector& selector,
+                            const std::vector<std::string>& attribute,
+                            const std::string& value) {
     base::RunLoop run_loop;
-    bool result;
+    ClientStatus result;
     web_controller_->SetAttribute(
         selector, attribute, value,
         base::BindOnce(&WebControllerBrowserTest::OnSetAttribute,
@@ -327,9 +388,9 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   void OnSetAttribute(const base::Closure& done_callback,
-                      bool* result_output,
-                      bool result) {
-    *result_output = result;
+                      ClientStatus* result_output,
+                      const ClientStatus& status) {
+    *result_output = status;
     std::move(done_callback).Run();
   }
 
@@ -372,11 +433,150 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(WebControllerBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ConcurrentElementsVisible) {
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ElementExistenceCheck) {
+  // A visible element
+  RunLaxElementCheck(Selector({"#button"}), true);
+
+  // A hidden element.
+  RunLaxElementCheck(Selector({"#hidden"}), true);
+
+  // A nonexistent element.
+  RunLaxElementCheck(Selector({"#doesnotexist"}), false);
+
+  // A pseudo-element
+  RunLaxElementCheck(Selector({"#terms-and-conditions"}, BEFORE), true);
+
+  // An invisible pseudo-element
+  //
+  // TODO(b/129461999): This is wrong; it should exist. Fix it.
+  RunLaxElementCheck(Selector({"#button"}, BEFORE), false);
+
+  // A non-existent pseudo-element
+  RunLaxElementCheck(Selector({"#button"}, AFTER), false);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, VisibilityRequirementCheck) {
+  // A visible element
+  RunLaxElementCheck(Selector({"#button"}).MustBeVisible(), true);
+
+  // A hidden element.
+  RunLaxElementCheck(Selector({"#hidden"}).MustBeVisible(), false);
+
+  // A non-existent element
+  RunLaxElementCheck(Selector({"#doesnotexist"}).MustBeVisible(), false);
+
+  // A pseudo-element
+  RunLaxElementCheck(
+      Selector({"#terms-and-conditions"}, BEFORE).MustBeVisible(), true);
+
+  // An invisible pseudo-element
+  RunLaxElementCheck(Selector({"#button"}, BEFORE).MustBeVisible(), false);
+
+  // A non-existent pseudo-element
+  RunLaxElementCheck(Selector({"#button"}, AFTER).MustBeVisible(), false);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, MultipleVisibleElementCheck) {
+  // both visible
+  RunLaxElementCheck(Selector({"#button,#select"}).MustBeVisible(), true);
+  RunStrictElementCheck(Selector({"#button,#select"}).MustBeVisible(), false);
+
+  // one visible (first non-visible)
+  RunLaxElementCheck(Selector({"#hidden,#select"}).MustBeVisible(), true);
+  RunStrictElementCheck(Selector({"#hidden,#select"}).MustBeVisible(), true);
+
+  // one visible (first visible)
+  RunLaxElementCheck(Selector({"#button,#hidden"}).MustBeVisible(), true);
+  RunStrictElementCheck(Selector({"#hidden,#select"}).MustBeVisible(), true);
+
+  // one invisible, one non-existent
+  RunLaxElementCheck(Selector({"#doesnotexist,#hidden"}).MustBeVisible(),
+                     false);
+  RunStrictElementCheck(Selector({"#doesnotexist,#hidden"}).MustBeVisible(),
+                        false);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, InnerTextCondition) {
+  Selector selector({"#with_inner_text span"});
+  selector.must_be_visible = true;
+  RunLaxElementCheck(selector, true);
+  RunStrictElementCheck(selector.MustBeVisible(), false);
+
+  // No matches
+  selector.inner_text_pattern = "no match";
+  selector.must_be_visible = false;
+  RunLaxElementCheck(selector, false);
+  selector.must_be_visible = true;
+  RunLaxElementCheck(selector, false);
+
+  // Matches exactly one visible element.
+  selector.inner_text_pattern = "hello, world";
+  selector.must_be_visible = false;
+  RunLaxElementCheck(selector, true);
+  RunStrictElementCheck(selector, true);
+  selector.must_be_visible = true;
+  RunLaxElementCheck(selector, true);
+  RunStrictElementCheck(selector, true);
+
+  // Matches two visible elements
+  selector.inner_text_pattern = "^hello";
+  selector.must_be_visible = false;
+  RunLaxElementCheck(selector, true);
+  RunStrictElementCheck(selector, false);
+  selector.must_be_visible = true;
+  RunLaxElementCheck(selector, true);
+  RunStrictElementCheck(selector, false);
+
+  // Matches one visible, one invisible element
+  selector.inner_text_pattern = "world$";
+  selector.must_be_visible = false;
+  RunLaxElementCheck(selector, true);
+  RunStrictElementCheck(selector, false);
+  selector.must_be_visible = true;
+  RunLaxElementCheck(selector, true);
+  RunStrictElementCheck(selector, true);
+
+  // Inner text conditions are applied before looking for the pseudo-type.
+  selector.pseudo_type = PseudoType::BEFORE;
+  selector.inner_text_pattern = "world";
+  selector.must_be_visible = false;
+  RunLaxElementCheck(selector, true);
+  selector.inner_text_pattern = "before";  // matches :before content
+  RunLaxElementCheck(selector, false);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ValueCondition) {
+  // One match
+  RunLaxElementCheck(Selector({"#input1"}).MatchingValue("helloworld1"), true);
+  RunStrictElementCheck(Selector({"#input1"}).MatchingValue("helloworld1"),
+                        true);
+
+  // No matches
+  RunLaxElementCheck(Selector({"#input2"}).MatchingValue("doesnotmatch"),
+                     false);
+  RunStrictElementCheck(Selector({"#input2"}).MatchingValue("doesnotmatch"),
+                        false);
+
+  // Multiple matches
+  RunLaxElementCheck(Selector({"#input1,#input2"}).MatchingValue("^hello"),
+                     true);
+  RunStrictElementCheck(Selector({"#input1,#input2"}).MatchingValue("^hello"),
+                        false);
+
+  // Multiple selector matches, one value match
+  RunLaxElementCheck(Selector({"#input1,#input2"}).MatchingValue("helloworld1"),
+                     true);
+  RunStrictElementCheck(
+      Selector({"#input1,#input2"}).MatchingValue("helloworld1"), true);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       ConcurrentElementsVisibilityCheck) {
   std::vector<Selector> selectors;
   std::vector<bool> results;
 
   Selector a_selector;
+  a_selector.must_be_visible = true;
   a_selector.selectors.emplace_back("#button");
   selectors.emplace_back(a_selector);
   results.emplace_back(true);
@@ -432,33 +632,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ConcurrentElementsVisible) {
   selectors.emplace_back(a_selector);
   results.emplace_back(false);
 
-  RunElementChecks(kVisibilityCheck, selectors, results);
-}
-
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ElementExists) {
-  std::vector<Selector> selectors;
-  std::vector<bool> results;
-
-  Selector a_selector;
-
-  // A visible element
-  a_selector.selectors.emplace_back("#button");
-  selectors.emplace_back(a_selector);
-  results.emplace_back(true);
-
-  // A hidden element.
-  a_selector.selectors.clear();
-  a_selector.selectors.emplace_back("#hidden");
-  selectors.emplace_back(a_selector);
-  results.emplace_back(true);
-
-  // A nonexistent element.
-  a_selector.selectors.clear();
-  a_selector.selectors.emplace_back("#doesnotexist");
-  selectors.emplace_back(a_selector);
-  results.emplace_back(false);
-
-  RunElementChecks(kExistenceCheck, selectors, results);
+  RunElementChecks(/* strict= */ false, selectors, results);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickElement) {
@@ -538,25 +712,62 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickPseudoElement) {
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FindElement) {
   Selector selector;
   selector.selectors.emplace_back("#button");
-  FindElement(selector, 0, true);
+  FindElementAndCheck(selector, 0, true);
+  selector.must_be_visible = true;
+  FindElementAndCheck(selector, 0, true);
 
   // IFrame.
   selector.selectors.clear();
   selector.selectors.emplace_back("#iframe");
   selector.selectors.emplace_back("#button");
-  FindElement(selector, 0, false);
+  selector.must_be_visible = false;
+  FindElementAndCheck(selector, 0, false);
+  selector.must_be_visible = true;
+  FindElementAndCheck(selector, 0, false);
 
   selector.selectors.clear();
   selector.selectors.emplace_back("#iframe");
   selector.selectors.emplace_back("[name=name]");
-  FindElement(selector, 0, false);
+  selector.must_be_visible = false;
+  FindElementAndCheck(selector, 0, false);
+  selector.must_be_visible = true;
+  FindElementAndCheck(selector, 0, false);
 
   // IFrame inside IFrame.
   selector.selectors.clear();
   selector.selectors.emplace_back("#iframe");
   selector.selectors.emplace_back("#iframe");
   selector.selectors.emplace_back("#button");
-  FindElement(selector, 1, false);
+  selector.must_be_visible = false;
+  FindElementAndCheck(selector, 1, false);
+  selector.must_be_visible = true;
+  FindElementAndCheck(selector, 1, false);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FindElementNotFound) {
+  FindElementExpectEmptyResult(Selector({"#notfound"}));
+  FindElementExpectEmptyResult(Selector({"#hidden"}).MustBeVisible());
+  FindElementExpectEmptyResult(Selector({"#iframe", "#iframe", "#notfound"}));
+  FindElementExpectEmptyResult(
+      Selector({"#iframe", "#iframe", "#hidden"}).MustBeVisible());
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FindElementErrorStatus) {
+  ClientStatus status;
+
+  FindElement(
+      Selector(ElementReferenceProto::default_instance()).MustBeVisible(),
+      &status, nullptr);
+  EXPECT_EQ(INVALID_SELECTOR, status.proto_status());
+
+  FindElement(Selector({"#doesnotexist"}).MustBeVisible(), &status, nullptr);
+  EXPECT_EQ(ELEMENT_RESOLUTION_FAILED, status.proto_status());
+
+  FindElement(Selector({"div"}), &status, nullptr);
+  EXPECT_EQ(TOO_MANY_ELEMENTS, status.proto_status());
+
+  FindElement(Selector({"div"}).MustBeVisible(), &status, nullptr);
+  EXPECT_EQ(TOO_MANY_ELEMENTS, status.proto_status());
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FocusElement) {
@@ -610,8 +821,9 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FocusElement) {
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOption) {
   Selector selector;
   selector.selectors.emplace_back("#select");
-  EXPECT_FALSE(SelectOption(selector, "incorrect_label"));
-  ASSERT_TRUE(SelectOption(selector, "two"));
+  EXPECT_EQ(OPTION_VALUE_NOT_FOUND,
+            SelectOption(selector, "incorrect_label").proto_status());
+  EXPECT_EQ(ACTION_APPLIED, SelectOption(selector, "two").proto_status());
 
   const std::string javascript = R"(
     let select = document.querySelector("#select");
@@ -619,19 +831,20 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOption) {
   )";
   EXPECT_EQ("Two", content::EvalJs(shell(), javascript));
 
-  ASSERT_TRUE(SelectOption(selector, "one"));
+  EXPECT_EQ(ACTION_APPLIED, SelectOption(selector, "one").proto_status());
   EXPECT_EQ("One", content::EvalJs(shell(), javascript));
 
   selector.selectors.clear();
   selector.selectors.emplace_back("#incorrect_selector");
-  EXPECT_FALSE(SelectOption(selector, "two"));
+  EXPECT_EQ(ELEMENT_RESOLUTION_FAILED,
+            SelectOption(selector, "two").proto_status());
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOptionInIframe) {
   Selector selector;
   selector.selectors.emplace_back("#iframe");
   selector.selectors.emplace_back("select[name=state]");
-  ASSERT_TRUE(SelectOption(selector, "NY"));
+  EXPECT_EQ(ACTION_APPLIED, SelectOption(selector, "NY").proto_status());
 
   const std::string javascript = R"(
     let iframe = document.querySelector("iframe").contentDocument;
@@ -645,7 +858,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetOuterHtml) {
   Selector selector;
   selector.selectors.emplace_back("#testOuterHtml");
   std::string html;
-  ASSERT_TRUE(GetOuterHtml(selector, &html));
+  ASSERT_EQ(ACTION_APPLIED, GetOuterHtml(selector, &html).proto_status());
   EXPECT_EQ(
       R"(<div id="testOuterHtml"><span>Span</span><p>Paragraph</p></div>)",
       html);
@@ -661,8 +874,9 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
   expected_values.emplace_back("helloworld1");
   GetFieldsValue(selectors, expected_values);
 
-  EXPECT_TRUE(
-      SetFieldValue(a_selector, "foo", /* simulate_key_presses= */ false));
+  EXPECT_EQ(ACTION_APPLIED,
+            SetFieldValue(a_selector, "foo", /* simulate_key_presses= */ false)
+                .proto_status());
   expected_values.clear();
   expected_values.emplace_back("foo");
   GetFieldsValue(selectors, expected_values);
@@ -671,8 +885,10 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
   a_selector.selectors.clear();
   a_selector.selectors.emplace_back("#uppercase_input");
   selectors.emplace_back(a_selector);
-  EXPECT_TRUE(SetFieldValue(a_selector, /* Zürich */ "Z\xc3\xbcrich",
-                            /* simulate_key_presses= */ true));
+  EXPECT_EQ(ACTION_APPLIED,
+            SetFieldValue(a_selector, /* Zürich */ "Z\xc3\xbcrich",
+                          /* simulate_key_presses= */ true)
+                .proto_status());
   expected_values.clear();
   expected_values.emplace_back(/* ZÜRICH */ "Z\xc3\x9cRICH");
   GetFieldsValue(selectors, expected_values);
@@ -685,21 +901,56 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
   expected_values.emplace_back("");
   GetFieldsValue(selectors, expected_values);
 
-  EXPECT_FALSE(
-      SetFieldValue(a_selector, "foobar", /* simulate_key_presses= */ false));
+  EXPECT_EQ(
+      ELEMENT_RESOLUTION_FAILED,
+      SetFieldValue(a_selector, "foobar", /* simulate_key_presses= */ false)
+          .proto_status());
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SendKeyboardInput) {
-  std::vector<std::string> text_parts = {
-      "Z", /* ü */ "\xc3\xbc", "r", "i", "c", "h", "\r"};
-  std::vector<std::string> expected_values = {"Z\xc3\xbcrich"};
+  auto input = UTF8ToUnicode("Zürich");
+  std::string expected_output = "Zürich";
 
   std::vector<Selector> selectors;
   Selector a_selector;
   a_selector.selectors.emplace_back("#input6");
   selectors.emplace_back(a_selector);
-  EXPECT_TRUE(SendKeyboardInput(a_selector, text_parts));
-  GetFieldsValue(selectors, expected_values);
+  EXPECT_EQ(ACTION_APPLIED,
+            SendKeyboardInput(a_selector, input).proto_status());
+  GetFieldsValue(selectors, {expected_output});
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       SendKeyboardInputSetsKeyProperty) {
+  auto input = UTF8ToUnicode("Zürich\r");
+  std::string expected_output = "ZürichEnter";
+
+  std::vector<Selector> selectors;
+  Selector a_selector;
+  a_selector.selectors.emplace_back("#input_js_event_listener");
+  selectors.emplace_back(a_selector);
+  EXPECT_EQ(ACTION_APPLIED,
+            SendKeyboardInput(a_selector, input).proto_status());
+  GetFieldsValue(selectors, {expected_output});
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       SendKeyboardInputSetsKeyPropertyWithTimeout) {
+  // Sends input keys to a field where JS will intercept KeyDown and
+  // at index 3 it will set a timeout whick inserts an space after the
+  // timeout. If key press delay is enabled, it should handle this
+  // correctly.
+  auto input = UTF8ToUnicode("012345");
+  std::string expected_output = "012 345";
+
+  std::vector<Selector> selectors;
+  Selector a_selector;
+  a_selector.selectors.emplace_back("#input_js_event_with_timeout");
+  selectors.emplace_back(a_selector);
+  EXPECT_EQ(ACTION_APPLIED,
+            SendKeyboardInput(a_selector, input, /*delay_in_milli*/ 100)
+                .proto_status());
+  GetFieldsValue(selectors, {expected_output});
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SetAttribute) {
@@ -711,7 +962,8 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SetAttribute) {
   attribute.emplace_back("backgroundColor");
   std::string value = "red";
 
-  EXPECT_TRUE(SetAttribute(selector, attribute, value));
+  EXPECT_EQ(ACTION_APPLIED,
+            SetAttribute(selector, attribute, value).proto_status());
   const std::string javascript = R"(
     document.querySelector("#full_height_section").style.backgroundColor;
   )";
@@ -768,7 +1020,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, HighlightElement) {
     select.style.boxShadow;
   )";
   EXPECT_EQ("", content::EvalJs(shell(), javascript));
-  ASSERT_TRUE(HighlightElement(selector));
+  EXPECT_EQ(ACTION_APPLIED, HighlightElement(selector).proto_status());
   // We only make sure that the element has a non-empty boxShadow style without
   // requiring an exact string match.
   EXPECT_NE("", content::EvalJs(shell(), javascript));

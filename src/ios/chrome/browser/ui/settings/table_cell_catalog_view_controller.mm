@@ -13,10 +13,10 @@
 #import "ios/chrome/browser/ui/settings/cells/account_sign_in_item.h"
 #import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
@@ -54,6 +54,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeURLNoMetadata,
   ItemTypeTextAccessoryImage,
   ItemTypeTextAccessoryNoImage,
+  ItemTypeTextEditItem,
   ItemTypeURLWithTimestamp,
   ItemTypeURLWithSize,
   ItemTypeURLWithSupplementalText,
@@ -66,7 +67,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeSettingsSwitch2,
   ItemTypeSyncSwitch,
   ItemTypeSettingsSyncError,
-  ItemTypeAutofillEditItem,
   ItemTypeAutofillData,
   ItemTypeAccount,
 };
@@ -174,26 +174,68 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:noDetailTextItem
       toSectionWithIdentifier:SectionIdentifierText];
 
+  TableViewDetailIconItem* detailIconItem =
+      [[TableViewDetailIconItem alloc] initWithType:ItemTypeTextSettingsDetail];
+  detailIconItem.text = @"Detail Icon Item Cell";
+  detailIconItem.iconImageName = @"settings_article_suggestions";
+  detailIconItem.detailText = @"Short";
+  [model addItem:detailIconItem toSectionWithIdentifier:SectionIdentifierText];
+
+  TableViewDetailIconItem* detailIconItemLeftLong =
+      [[TableViewDetailIconItem alloc] initWithType:ItemTypeTextSettingsDetail];
+  detailIconItemLeftLong.text =
+      @"Left label is very very very very very very very long";
+  detailIconItemLeftLong.detailText = @"R";
+  [model addItem:detailIconItemLeftLong
+      toSectionWithIdentifier:SectionIdentifierText];
+
+  TableViewDetailIconItem* detailIconItemRightLong =
+      [[TableViewDetailIconItem alloc] initWithType:ItemTypeTextSettingsDetail];
+  detailIconItemRightLong.text = @"L";
+  detailIconItemRightLong.detailText =
+      @"Right label is very very very very very very very long";
+  [model addItem:detailIconItemRightLong
+      toSectionWithIdentifier:SectionIdentifierText];
+
+  TableViewDetailIconItem* detailIconItemBothLong =
+      [[TableViewDetailIconItem alloc] initWithType:ItemTypeTextSettingsDetail];
+  detailIconItemBothLong.text = @"Left label occupy 75% of row space";
+  detailIconItemBothLong.detailText = @"Right label occupy 25% of row space";
+  [model addItem:detailIconItemBothLong
+      toSectionWithIdentifier:SectionIdentifierText];
+
+  TableViewTextEditItem* textEditItem =
+      [[TableViewTextEditItem alloc] initWithType:ItemTypeTextEditItem];
+  textEditItem.textFieldName = @"Edit Text Item";
+  textEditItem.textFieldValue = @" with no icons";
+  textEditItem.hideEditIcon = YES;
+  textEditItem.textFieldEnabled = YES;
+  [model addItem:textEditItem toSectionWithIdentifier:SectionIdentifierText];
+
+  TableViewTextEditItem* textEditItemEditIcon =
+      [[TableViewTextEditItem alloc] initWithType:ItemTypeTextEditItem];
+  textEditItemEditIcon.textFieldName = @"Edit Text Item";
+  textEditItemEditIcon.textFieldValue = @" with edit icon";
+  textEditItemEditIcon.textFieldEnabled = YES;
+  [model addItem:textEditItemEditIcon
+      toSectionWithIdentifier:SectionIdentifierText];
+
+  TableViewTextEditItem* textEditItemBothIcons =
+      [[TableViewTextEditItem alloc] initWithType:ItemTypeTextEditItem];
+  textEditItemBothIcons.textFieldName = @"Edit Text Item";
+  textEditItemBothIcons.textFieldValue = @" with edit and custom icons";
+  textEditItemBothIcons.identifyingIcon =
+      [UIImage imageNamed:@"table_view_cell_check_mark"];
+  textEditItemBothIcons.textFieldEnabled = YES;
+  [model addItem:textEditItemBothIcons
+      toSectionWithIdentifier:SectionIdentifierText];
+
   // SectionIdentifierSettings.
   TableViewTextHeaderFooterItem* settingsHeader =
       [[TableViewTextHeaderFooterItem alloc] initWithType:ItemTypeTextHeader];
   settingsHeader.text = @"Settings";
   [model setHeader:settingsHeader
       forSectionWithIdentifier:SectionIdentifierSettings];
-
-  SettingsDetailItem* settingsDetailItem =
-      [[SettingsDetailItem alloc] initWithType:ItemTypeTextSettingsDetail];
-  settingsDetailItem.text = @"Settings cells";
-  settingsDetailItem.detailText = @"Short";
-  [model addItem:settingsDetailItem
-      toSectionWithIdentifier:SectionIdentifierSettings];
-
-  SettingsDetailItem* settingsDetailItemLong =
-      [[SettingsDetailItem alloc] initWithType:ItemTypeTextSettingsDetail];
-  settingsDetailItemLong.text = @"Very long text eating the other detail label";
-  settingsDetailItemLong.detailText = @"A bit less short";
-  [model addItem:settingsDetailItemLong
-      toSectionWithIdentifier:SectionIdentifierSettings];
 
   AccountSignInItem* accountSignInItem =
       [[AccountSignInItem alloc] initWithType:ItemTypeAccountSignInItem];
@@ -248,15 +290,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   autofillHeader.text = @"Autofill";
   [model setHeader:autofillHeader
       forSectionWithIdentifier:SectionIdentifierAutofill];
-
-  AutofillEditItem* autofillEditItem =
-      [[AutofillEditItem alloc] initWithType:ItemTypeAutofillEditItem];
-  autofillEditItem.textFieldName = @"Autofill field";
-  autofillEditItem.textFieldValue = @" with a value";
-  autofillEditItem.identifyingIcon =
-      [UIImage imageNamed:@"table_view_cell_check_mark"];
-  [model addItem:autofillEditItem
-      toSectionWithIdentifier:SectionIdentifierAutofill];
 
   AutofillDataItem* autofillItemWithMainLeading =
       [[AutofillDataItem alloc] initWithType:ItemTypeAutofillData];

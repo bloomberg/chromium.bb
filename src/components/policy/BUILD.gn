@@ -178,7 +178,7 @@ action("policy_templates") {
   chrome_version_abspath = "//chrome/VERSION"
   chrome_version_path = rebase_path(chrome_version_abspath, root_build_dir)
   deps = [
-    ":translate_policy_templates",
+    ":translate_policy_templates_grit",
   ]
   inputs = [ chrome_version_abspath ] + policy_templates_translation_outputs
   outputs = []
@@ -335,6 +335,7 @@ static_library("generated") {
     ":cloud_policy_code_generate",
     ":cloud_policy_proto_generated_compile",
     "//base",
+    "//components/policy/core/common:common_constants",
     "//third_party/protobuf:protobuf_lite",
   ]
 }

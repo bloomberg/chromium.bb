@@ -21,6 +21,7 @@ typedef unsigned int VASurfaceID;
 
 namespace media {
 
+struct JpegFrameHeader;
 class ScopedVAImage;
 class VaapiWrapper;
 
@@ -41,6 +42,13 @@ enum class VaapiJpegDecodeStatus {
   kInvalidState,
 };
 
+constexpr unsigned int kInvalidVaRtFormat = 0u;
+
+// Returns the internal format required for a JPEG image given its parsed
+// |frame_header|. If the image's subsampling format is not one of 4:2:0, 4:2:2,
+// or 4:4:4, returns kInvalidVaRtFormat.
+unsigned int VaSurfaceFormatForJpeg(const JpegFrameHeader& frame_header);
+
 class VaapiJpegDecoder final {
  public:
   VaapiJpegDecoder();
@@ -52,8 +60,17 @@ class VaapiJpegDecoder final {
 
   // Decodes a JPEG picture. It will fill VA-API parameters and call the
   // corresponding VA-API methods according to the JPEG in |encoded_image|.
-  // Decoded data will be returned as a ScopedVAImage. Returns nullptr on
-  // failure and sets *|status| to the reason for failure.
+  // Decoded data will be returned as a ScopedVAImage. The VAImage's format will
+  // be either |preferred_image_fourcc| if the conversion from the internal
+  // format is supported or a fallback FOURCC (see
+  // VaapiWrapper::GetJpegDecodeSuitableImageFourCC() for details). Returns
+  // nullptr on failure and sets *|status| to the reason for failure.
+  std::unique_ptr<ScopedVAImage> DoDecode(
+      base::span<const uint8_t> encoded_image,
+      uint32_t preferred_image_fourcc,
+      VaapiJpegDecodeStatus* status);
+
+  // Calls DoDecode() above with |preferred_image_fourcc| = VA_FOURCC_I420.
   std::unique_ptr<ScopedVAImage> DoDecode(
       base::span<const uint8_t> encoded_image,
       VaapiJpegDecodeStatus* status);

@@ -19,6 +19,21 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/common_theme.h"
 
+namespace {
+
+bool IsDarkMode() {
+  if (@available(macOS 10.14, *)) {
+    NSAppearanceName appearance =
+        [[NSApp effectiveAppearance] bestMatchFromAppearancesWithNames:@[
+          NSAppearanceNameAqua, NSAppearanceNameDarkAqua
+        ]];
+    return [appearance isEqual:NSAppearanceNameDarkAqua];
+  }
+
+  return false;
+}
+}  // namespace
+
 @interface NSWorkspace (Redeclarations)
 
 @property(readonly) BOOL accessibilityDisplayShouldIncreaseContrast;
@@ -29,11 +44,14 @@
 @interface NativeThemeEffectiveAppearanceObserver : NSObject
 @end
 
-@implementation NativeThemeEffectiveAppearanceObserver
+@implementation NativeThemeEffectiveAppearanceObserver {
+  ui::NativeThemeMac* owner_;
+}
 
-- (instancetype)init {
+- (instancetype)initWithOwner:(ui::NativeThemeMac*)owner {
   self = [super init];
   if (self) {
+    owner_ = owner;
     if (@available(macOS 10.14, *)) {
       [NSApp addObserver:self
               forKeyPath:@"effectiveAppearance"
@@ -55,7 +73,7 @@
                       ofObject:(id)object
                         change:(NSDictionary*)change
                        context:(void*)context {
-  ui::NativeTheme::GetInstanceForNativeUi()->NotifyObservers();
+  owner_->UpdateDarkModeStatus();
 }
 
 @end
@@ -262,19 +280,18 @@ bool NativeThemeMac::UsesHighContrastColors() const {
 
 bool NativeThemeMac::SystemDarkModeEnabled() const {
   if (@available(macOS 10.14, *)) {
-    NSAppearanceName appearance =
-        [[NSApp effectiveAppearance] bestMatchFromAppearancesWithNames:@[
-          NSAppearanceNameAqua, NSAppearanceNameDarkAqua
-        ]];
-    return [appearance isEqual:NSAppearanceNameDarkAqua];
+    return is_dark_mode_;
+  } else {
+    // Support "--force-dark-mode" in macOS < 10.14.
+    return NativeThemeBase::SystemDarkModeEnabled();
   }
-  return NativeThemeBase::SystemDarkModeEnabled();
 }
 
 NativeThemeMac::NativeThemeMac() {
   if (base::FeatureList::IsEnabled(features::kDarkMode)) {
+    is_dark_mode_ = IsDarkMode();
     appearance_observer_.reset(
-        [[NativeThemeEffectiveAppearanceObserver alloc] init]);
+        [[NativeThemeEffectiveAppearanceObserver alloc] initWithOwner:this]);
   }
   if (@available(macOS 10.10, *)) {
     high_contrast_notification_token_ = [[[NSWorkspace sharedWorkspace]
@@ -300,6 +317,13 @@ void NativeThemeMac::PaintSelectedMenuItem(cc::PaintCanvas* canvas,
   cc::PaintFlags flags;
   flags.setColor(GetSystemColor(kColorId_FocusedMenuItemBackgroundColor));
   canvas->drawRect(gfx::RectToSkRect(rect), flags);
+}
+
+void NativeThemeMac::UpdateDarkModeStatus() {
+  bool was_dark_mode = is_dark_mode_;
+  is_dark_mode_ = IsDarkMode();
+  if (was_dark_mode != is_dark_mode_)
+    NotifyObservers();
 }
 
 }  // namespace ui

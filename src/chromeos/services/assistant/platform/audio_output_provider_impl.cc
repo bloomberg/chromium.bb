@@ -14,6 +14,7 @@
 #include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "libassistant/shared/public/platform_audio_buffer.h"
+#include "media/audio/audio_device_description.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
@@ -35,6 +36,7 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       mojom::AssistantAudioDecoderFactory* audio_decoder_factory,
+      AssistantMediaSession* media_session,
       assistant_client::OutputStreamType type,
       assistant_client::OutputStreamFormat format,
       const std::string& device_id)
@@ -42,6 +44,7 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
         main_task_runner_(task_runner),
         background_thread_task_runner_(background_task_runner),
         audio_decoder_factory_(audio_decoder_factory),
+        media_session_(media_session),
         stream_type_(type),
         format_(format),
         audio_stream_handler_(
@@ -68,6 +71,16 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
   assistant_client::OutputStreamType GetType() override { return stream_type_; }
 
   void Start(assistant_client::AudioOutput::Delegate* delegate) override {
+    // TODO(llin): Remove getting audio focus here after libassistant handles
+    // acquiring audio focus for the internal media player.
+    if (stream_type_ == assistant_client::OutputStreamType::STREAM_MEDIA) {
+      main_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&AssistantMediaSession::RequestAudioFocus,
+                         media_session_->GetWeakPtr(),
+                         media_session::mojom::AudioFocusType::kGain));
+    }
+
     if (IsEncodedFormat(format_)) {
       main_task_runner_->PostTask(
           FROM_HERE,
@@ -87,6 +100,15 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
   }
 
   void Stop() override {
+    // TODO(llin): Remove abandoning audio focus here after libassistant handles
+    // abandoning audio focus for the internal media player.
+    if (stream_type_ == assistant_client::OutputStreamType::STREAM_MEDIA) {
+      main_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&AssistantMediaSession::AbandonAudioFocusIfNeeded,
+                         media_session_->GetWeakPtr()));
+    }
+
     if (IsEncodedFormat(format_)) {
       device_owner_->SetDelegate(nullptr);
       main_task_runner_->PostTask(
@@ -105,6 +127,7 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> background_thread_task_runner_;
   mojom::AssistantAudioDecoderFactory* audio_decoder_factory_;
+  AssistantMediaSession* media_session_;
 
   const assistant_client::OutputStreamType stream_type_;
   assistant_client::OutputStreamFormat format_;
@@ -123,11 +146,15 @@ AudioOutputProviderImpl::AudioOutputProviderImpl(
     AssistantMediaSession* media_session,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     const std::string& device_id)
-    : volume_control_impl_(connector, media_session),
+    : loop_back_input_(connector,
+                       media::AudioDeviceDescription::kLoopbackInputDeviceId,
+                       /*hotword_device_id=*/std::string()),
+      volume_control_impl_(connector, media_session),
       connector_(connector),
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       background_task_runner_(background_task_runner),
-      device_id_(device_id) {
+      device_id_(device_id),
+      media_session_(media_session) {
   connector_->BindInterface(mojom::kAudioDecoderServiceName,
                             mojo::MakeRequest(&audio_decoder_factory_ptr_));
   audio_decoder_factory_ = audio_decoder_factory_ptr_.get();
@@ -142,7 +169,7 @@ assistant_client::AudioOutput* AudioOutputProviderImpl::CreateAudioOutput(
   // once assistant_client::AudioOutput::Delegate::OnStopped() is called.
   return new AudioOutputImpl(connector_, main_task_runner_,
                              background_task_runner_, audio_decoder_factory_,
-                             type, stream_format, device_id_);
+                             media_session_, type, stream_format, device_id_);
 }
 
 std::vector<assistant_client::OutputStreamEncoding>
@@ -157,8 +184,7 @@ AudioOutputProviderImpl::GetSupportedStreamEncodings() {
 }
 
 assistant_client::AudioInput* AudioOutputProviderImpl::GetReferenceInput() {
-  // TODO(muyuanli): implement.
-  return nullptr;
+  return &loop_back_input_;
 }
 
 bool AudioOutputProviderImpl::SupportsPlaybackTimestamp() const {

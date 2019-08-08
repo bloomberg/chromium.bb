@@ -224,10 +224,14 @@ class SearchSuggestionParser {
                      int relevance,
                      bool relevance_from_server,
                      const base::string16& input_text);
+    NavigationResult(const NavigationResult& other);
     ~NavigationResult() override;
 
     const GURL& url() const { return url_; }
     const base::string16& description() const { return description_; }
+    const ACMatchClassifications& description_class() const {
+      return description_class_;
+    }
     const base::string16& formatted_url() const { return formatted_url_; }
 
     // Fills in |match_contents_| and |match_contents_class_| to reflect how
@@ -242,6 +246,8 @@ class SearchSuggestionParser {
                            bool keyword_provider_requested) const override;
 
    private:
+    void ClassifyDescription(const base::string16& input_text);
+
     // The suggested url for navigation.
     GURL url_;
 
@@ -251,6 +257,7 @@ class SearchSuggestionParser {
 
     // The suggested navigational result description; generally the site name.
     base::string16 description_;
+    ACMatchClassifications description_class_;
   };
 
   typedef std::vector<SuggestResult> SuggestResults;
@@ -330,16 +337,6 @@ class SearchSuggestionParser {
       int default_result_relevance,
       bool is_keyword_result,
       Results* results);
-
-  // Creates or returns a WordMap for |input_text|. A WordMap is a mapping from
-  // characters to groups of words that start with those characters. See
-  // comments by AutocompleteProvider::CreateWordMapForString() for details.
-  static const AutocompleteProvider::WordMap& GetOrCreateWordMapForInputText(
-      const base::string16& input_text);
-
- private:
-  static std::pair<base::string16, AutocompleteProvider::WordMap>&
-  GetWordMapCache();
 
   DISALLOW_COPY_AND_ASSIGN(SearchSuggestionParser);
 };

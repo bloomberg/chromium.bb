@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/background_fetch/background_fetch_job_controller.h"
-#include "content/browser/background_fetch/background_fetch_cross_origin_filter.h"
-#include "content/browser/background_fetch/background_fetch_data_manager.h"
-#include "content/browser/background_fetch/background_fetch_request_match_params.h"
-#include "content/public/common/origin_util.h"
-#include "services/network/public/cpp/cors/cors.h"
-#include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
-
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "content/browser/background_fetch/background_fetch_cross_origin_filter.h"
+#include "content/browser/background_fetch/background_fetch_data_manager.h"
+#include "content/browser/background_fetch/background_fetch_job_controller.h"
+#include "content/browser/background_fetch/background_fetch_request_match_params.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/origin_util.h"
+#include "services/network/public/cpp/cors/cors.h"
+#include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 
 namespace content {
 
@@ -200,10 +199,10 @@ void BackgroundFetchJobController::DidUpdateRequest(const std::string& guid,
   in_progress_bytes.downloaded = bytes_downloaded;
   in_progress_bytes.uploaded = bytes_uploaded;
 
-  auto registration = NewRegistration();
-  registration->downloaded += GetInProgressDownloadedBytes();
-  registration->uploaded += GetInProgressUploadedBytes();
-  progress_callback_.Run(*registration);
+  auto registration_data = NewRegistrationData();
+  registration_data->downloaded += GetInProgressDownloadedBytes();
+  registration_data->uploaded += GetInProgressUploadedBytes();
+  progress_callback_.Run(registration_id_.unique_id(), *registration_data);
 }
 
 void BackgroundFetchJobController::DidCompleteRequest(
@@ -226,12 +225,12 @@ void BackgroundFetchJobController::DidCompleteRequest(
   active_request_map_.erase(guid);
 }
 
-blink::mojom::BackgroundFetchRegistrationPtr
-BackgroundFetchJobController::NewRegistration() const {
-  return blink::mojom::BackgroundFetchRegistration::New(
-      registration_id().developer_id(), registration_id().unique_id(),
-      upload_total_, complete_requests_uploaded_bytes_cache_,
-      options_->download_total, complete_requests_downloaded_bytes_cache_,
+blink::mojom::BackgroundFetchRegistrationDataPtr
+BackgroundFetchJobController::NewRegistrationData() const {
+  return blink::mojom::BackgroundFetchRegistrationData::New(
+      registration_id().developer_id(), upload_total_,
+      complete_requests_uploaded_bytes_cache_, options_->download_total,
+      complete_requests_downloaded_bytes_cache_,
       blink::mojom::BackgroundFetchResult::UNSET, failure_reason_);
 }
 
@@ -289,6 +288,7 @@ void BackgroundFetchJobController::Finish(
 }
 
 void BackgroundFetchJobController::PopNextRequest(
+    RequestStartedCallback request_started_callback,
     RequestFinishedCallback request_finished_callback) {
   DCHECK(HasMoreRequests());
 
@@ -297,10 +297,12 @@ void BackgroundFetchJobController::PopNextRequest(
       registration_id(),
       base::BindOnce(&BackgroundFetchJobController::DidPopNextRequest,
                      weak_ptr_factory_.GetWeakPtr(),
+                     std::move(request_started_callback),
                      std::move(request_finished_callback)));
 }
 
 void BackgroundFetchJobController::DidPopNextRequest(
+    RequestStartedCallback request_started_callback,
     RequestFinishedCallback request_finished_callback,
     BackgroundFetchError error,
     scoped_refptr<BackgroundFetchRequestInfo> request_info) {
@@ -310,6 +312,8 @@ void BackgroundFetchJobController::DidPopNextRequest(
     return;
   }
 
+  std::move(request_started_callback)
+      .Run(registration_id(), request_info.get());
   StartRequest(std::move(request_info), std::move(request_finished_callback));
 }
 

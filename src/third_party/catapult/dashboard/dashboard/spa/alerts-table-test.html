@@ -8,6 +8,7 @@ found in the LICENSE file.
 <script src="/bower_components/webcomponentsjs/webcomponents-loader.js"></script>
 <script src="/bower_components/web-component-tester/browser.js"></script>
 <link rel="import" href="/dashboard/spa/alerts-table.html">
+<script src="/dashboard/spa/import-module.js"></script>
 
 <test-fixture id="test">
   <template>
@@ -29,8 +30,8 @@ suite('alerts-table', function() {
     assert.strictEqual('rgb(128, 128, 128)', getComputedStyle(
         tr.ui.b.findDeepElementMatching(table, 'table')).color);
     const dashes = tr.ui.b.findDeepElementsMatchingPredicate(table, e =>
-      e.innerHTML.trim() === cp.AlertsTable.DASHES);
-    assert.lengthOf(dashes, 30);
+      e.innerText && e.innerText.trim() === cp.AlertsTable.DASHES);
+    assert.lengthOf(dashes, 35);
   });
 
   test('allTriaged newAlerts', async function() {
@@ -404,6 +405,7 @@ suite('alerts-table', function() {
   });
 
   test('selectAlert single', async function() {
+    await importModule('./cp-checkbox.js');
     const table = fixture('test');
     table.dispatch(Redux.UPDATE('test', cp.AlertsTable.buildState({
       alertGroups: [
@@ -437,6 +439,7 @@ suite('alerts-table', function() {
   });
 
   test('selectAlert toggleAll', async function() {
+    await importModule('./cp-checkbox.js');
     const table = fixture('test');
     table.dispatch(Redux.UPDATE('test', cp.AlertsTable.buildState({
       alertGroups: [
@@ -485,6 +488,7 @@ suite('alerts-table', function() {
   });
 
   test('selectAlert shiftKey', async function() {
+    await importModule('./cp-checkbox.js');
     const table = fixture('test');
     table.dispatch(Redux.UPDATE('test', cp.AlertsTable.buildState({
       alertGroups: [

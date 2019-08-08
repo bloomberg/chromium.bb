@@ -20,7 +20,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece_forward.h"
 #include "build/build_config.h"
-#include "device/fido/fido_device_authenticator.h"
 #include "device/fido/fido_discovery_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
@@ -75,10 +74,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
         const TransportAvailabilityInfo& other);
     ~TransportAvailabilityInfo();
 
-    // TODO(hongjunchoi): Factor |rp_id| and |request_type| from
-    // TransportAvailabilityInfo.
+    // TODO(hongjunchoi): Factor |request_type| from TransportAvailabilityInfo.
     // See: https://crbug.com/875011
-    std::string rp_id;
     RequestType request_type = RequestType::kMakeCredential;
 
     // The intersection of transports supported by the client and allowed by the
@@ -102,12 +99,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     // This allows the observer to distinguish it from other
     // authenticators.
     std::string win_native_api_authenticator_id;
-
-    // If true, dispatch of the request cannot be controlled by
-    // the embedder. The embedder must not display a UI for this
-    // request and must ignore all subsequent invocations of the
-    // Observer interface methods.
-    bool disable_embedder_ui = false;
   };
 
   class COMPONENT_EXPORT(DEVICE_FIDO) Observer {
@@ -141,6 +132,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
         base::StringPiece authenticator_id,
         bool is_in_pairing_mode) = 0;
 
+    // SupportsPIN returns true if this observer supports collecting a PIN from
+    // the user. If this function returns false, |CollectPIN| and
+    // |FinishCollectPIN| will not be called.
+    virtual bool SupportsPIN() const = 0;
+
     // CollectPIN is called when a PIN is needed to complete a request. The
     // |retries| parameter is either |nullopt| to indicate that the user needs
     // to set a PIN, or contains the number of PIN attempts remaining before a
@@ -151,6 +147,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
 
     // CollectClientPin is guaranteed to have been called previously.
     virtual void FinishCollectPIN() = 0;
+
+    // SetMightCreateResidentCredential indicates whether the activation of an
+    // authenticator may cause a resident credential to be created. A resident
+    // credential may be discovered by someone with physical access to the
+    // authenticator and thus has privacy implications. Initially, this is
+    // assumed to be false.
+    virtual void SetMightCreateResidentCredential(bool v) = 0;
   };
 
   // TODO(https://crbug.com/769631): Remove the dependency on Connector once

@@ -72,19 +72,6 @@ base::Value AvailableContentListToValue(
   return value;
 }
 
-base::Value AvailableContentSummaryToValue(
-    const chrome::mojom::AvailableOfflineContentSummaryPtr& summary) {
-  base::Value value(base::Value::Type::DICTIONARY);
-  value.SetKey("total_items",
-               base::Value(base::saturated_cast<int>(summary->total_items)));
-  value.SetKey("has_prefetched_page",
-               base::Value(summary->has_prefetched_page));
-  value.SetKey("has_offline_page", base::Value(summary->has_offline_page));
-  value.SetKey("has_video", base::Value(summary->has_video));
-  value.SetKey("has_audio", base::Value(summary->has_audio));
-  return value;
-}
-
 void RecordSuggestionPresented(
     const std::vector<AvailableOfflineContentPtr>& suggestions) {
   for (const AvailableOfflineContentPtr& item : suggestions) {
@@ -110,16 +97,6 @@ void AvailableOfflineContentHelper::FetchAvailableContent(
   }
   provider_->List(
       base::BindOnce(&AvailableOfflineContentHelper::AvailableContentReceived,
-                     base::Unretained(this), std::move(callback)));
-}
-
-void AvailableOfflineContentHelper::FetchSummary(SummaryCallback callback) {
-  if (!BindProvider()) {
-    std::move(callback).Run({});
-    return;
-  }
-  provider_->Summarize(
-      base::BindOnce(&AvailableOfflineContentHelper::SummaryReceived,
                      base::Unretained(this), std::move(callback)));
 }
 
@@ -191,18 +168,3 @@ void AvailableOfflineContentHelper::AvailableContentReceived(
   }
 }
 
-void AvailableOfflineContentHelper::SummaryReceived(
-    SummaryCallback callback,
-    chrome::mojom::AvailableOfflineContentSummaryPtr summary) {
-  has_prefetched_content_ = false;
-  if (summary->total_items == 0) {
-    std::move(callback).Run("");
-  } else {
-    has_prefetched_content_ = summary->has_prefetched_page;
-
-    std::string json;
-    base::JSONWriter::Write(AvailableContentSummaryToValue(summary), &json);
-    RecordEvent(error_page::NETWORK_ERROR_PAGE_OFFLINE_CONTENT_SUMMARY_SHOWN);
-    std::move(callback).Run(json);
-  }
-}

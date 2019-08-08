@@ -235,7 +235,7 @@ TEST(ModuleMetricsTest, RecordCodeMemoryFootprint) {
 
   memory_instrumentation::OSMetrics::SetProcSmapsForTesting(temp_file.get());
   customtabs::RecordCodeMemoryFootprint(
-      "com.google.android.googlequicksearchbox");
+      "com.google.android.googlequicksearchbox", "OnModuleLoad");
   histogram_tester.ExpectUniqueSample(
       "CustomTabs.DynamicModule.ProportionalSet.OnModuleLoad", 55712UL, 1);
   histogram_tester.ExpectUniqueSample(

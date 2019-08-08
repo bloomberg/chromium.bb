@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_text_track_manager.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
 namespace blink {
@@ -46,9 +47,11 @@ class MediaControlToggleClosedCaptionsButtonElementTest : public PageTestBase {
  protected:
   HTMLMediaElement* MediaElement() { return media_element_; }
   void SelectTextTrack(unsigned index) {
-    media_controls_->ShowTextTrackAtIndex(index);
+    media_controls_->GetTextTrackManager().ShowTextTrackAtIndex(index);
   }
-  void SelectOff() { media_controls_->DisableShowingTextTracks(); }
+  void SelectOff() {
+    media_controls_->GetTextTrackManager().DisableShowingTextTracks();
+  }
   String GetOverflowMenuSubtitleString() {
     return captions_overflow_button_->GetOverflowMenuSubtitleString();
   }

@@ -54,8 +54,7 @@ class WebIDBCallbacksImpl final : public WebIDBCallbacks {
   // cases.
   enum : int64_t { kNoTransaction = -1 };
 
-  static std::unique_ptr<WebIDBCallbacksImpl> Create(IDBRequest*);
-
+  explicit WebIDBCallbacksImpl(IDBRequest*);
   ~WebIDBCallbacksImpl() override;
 
   void SetState(base::WeakPtr<WebIDBCursorImpl> cursor,
@@ -94,8 +93,6 @@ class WebIDBCallbacksImpl final : public WebIDBCallbacks {
   void DetachRequestFromCallback() override;
 
  private:
-  explicit WebIDBCallbacksImpl(IDBRequest*);
-
   void Detach();
   void DetachCallbackFromRequest();
 

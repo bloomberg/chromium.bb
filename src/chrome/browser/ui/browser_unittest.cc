@@ -135,8 +135,8 @@ TEST_F(BrowserUnitTest, DisableZoomOnCrashedTab) {
   WebContentsTester::For(raw_contents)->NavigateAndCommit(GURL("about:blank"));
   zoom::ZoomController* zoom_controller =
       zoom::ZoomController::FromWebContents(raw_contents);
-  EXPECT_TRUE(zoom_controller->SetZoomLevel(zoom_controller->
-                                            GetDefaultZoomLevel()));
+  EXPECT_TRUE(
+      zoom_controller->SetZoomLevel(zoom_controller->GetDefaultZoomLevel()));
 
   CommandUpdater* command_updater = browser()->command_controller();
 
@@ -275,27 +275,26 @@ class BrowserBookmarkBarTest : public BrowserWithTestWindowTest {
 
  protected:
   BookmarkBar::State window_bookmark_bar_state() const {
-    return static_cast<BookmarkBarStateTestBrowserWindow*>(
-        browser()->window())->bookmark_bar_state();
+    return static_cast<BookmarkBarStateTestBrowserWindow*>(browser()->window())
+        ->bookmark_bar_state();
   }
 
   // BrowserWithTestWindowTest:
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
-    static_cast<BookmarkBarStateTestBrowserWindow*>(
-        browser()->window())->set_browser(browser());
+    static_cast<BookmarkBarStateTestBrowserWindow*>(browser()->window())
+        ->set_browser(browser());
   }
 
-  BrowserWindow* CreateBrowserWindow() override {
-    return new BookmarkBarStateTestBrowserWindow();
+  std::unique_ptr<BrowserWindow> CreateBrowserWindow() override {
+    return std::make_unique<BookmarkBarStateTestBrowserWindow>();
   }
 
  private:
   class BookmarkBarStateTestBrowserWindow : public TestBrowserWindow {
    public:
     BookmarkBarStateTestBrowserWindow()
-        : browser_(NULL),
-          bookmark_bar_state_(BookmarkBar::HIDDEN) {}
+        : browser_(NULL), bookmark_bar_state_(BookmarkBar::HIDDEN) {}
     ~BookmarkBarStateTestBrowserWindow() override {}
 
     void set_browser(Browser* browser) { browser_ = browser; }
@@ -341,8 +340,8 @@ TEST_F(BrowserBookmarkBarTest, StateOnActiveTabChanged) {
 
   // Open a tab to NTP.
   AddTab(browser(), ntp_url);
-  EXPECT_EQ(BookmarkBar::DETACHED, browser()->bookmark_bar_state());
-  EXPECT_EQ(BookmarkBar::DETACHED, window_bookmark_bar_state());
+  EXPECT_EQ(BookmarkBar::HIDDEN, browser()->bookmark_bar_state());
+  EXPECT_EQ(BookmarkBar::HIDDEN, window_bookmark_bar_state());
 
   // Navigate 1st tab to a non-NTP URL.
   NavigateAndCommitActiveTab(non_ntp_url);
@@ -351,8 +350,8 @@ TEST_F(BrowserBookmarkBarTest, StateOnActiveTabChanged) {
 
   // Open a tab to NTP at index 0.
   AddTab(browser(), ntp_url);
-  EXPECT_EQ(BookmarkBar::DETACHED, browser()->bookmark_bar_state());
-  EXPECT_EQ(BookmarkBar::DETACHED, window_bookmark_bar_state());
+  EXPECT_EQ(BookmarkBar::HIDDEN, browser()->bookmark_bar_state());
+  EXPECT_EQ(BookmarkBar::HIDDEN, window_bookmark_bar_state());
 
   // Activate the 2nd tab which is non-NTP.
   browser()->tab_strip_model()->ActivateTabAt(

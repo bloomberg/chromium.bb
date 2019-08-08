@@ -68,6 +68,8 @@ class PLATFORM_EXPORT OriginAccessEntry {
 
   bool HostIsIPAddress() const;
 
+  String registrable_domain() const;
+
  private:
   network::cors::OriginAccessEntry private_;
 

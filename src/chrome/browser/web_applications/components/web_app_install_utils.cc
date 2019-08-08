@@ -53,15 +53,8 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
   if (manifest.start_url.is_valid())
     web_app_info->app_url = manifest.start_url;
 
-  if (for_installable_site == ForInstallableSite::kYes) {
-    // If there is no scope present, use 'start_url' without the filename as the
-    // scope. This does not match the spec but it matches what we do on Android.
-    // See: https://github.com/w3c/manifest/issues/550
-    if (!manifest.scope.is_empty())
-      web_app_info->scope = manifest.scope;
-    else if (manifest.start_url.is_valid())
-      web_app_info->scope = manifest.start_url.Resolve(".");
-  }
+  if (for_installable_site == ForInstallableSite::kYes)
+    web_app_info->scope = manifest.scope;
 
   if (manifest.theme_color)
     web_app_info->theme_color = *manifest.theme_color;
@@ -90,6 +83,9 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
   // we picked up from the web_app stuff.
   if (!web_app_icons.empty())
     web_app_info->icons = std::move(web_app_icons);
+
+  // Copy across the file handler info.
+  web_app_info->file_handler = manifest.file_handler;
 }
 
 std::set<int> SizesToGenerate() {

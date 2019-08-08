@@ -9,9 +9,10 @@ import android.content.Context;
 import android.content.Intent;
 
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin.DocumentModeAssassinObserver;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -43,25 +44,22 @@ public class UpgradeIntentService extends IntentService {
         if (!assassin.isMigrationNecessary()) return;
 
         final CountDownLatch finishSignal = new CountDownLatch(1);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (assassin.isMigrationNecessary()) {
-                    // Kick off migration if it hasn't already started.
-                    DocumentModeAssassinObserver observer = new DocumentModeAssassinObserver() {
-                        @Override
-                        public void onStageChange(int newStage) {
-                            if (newStage != DocumentModeAssassin.STAGE_DONE) return;
-                            assassin.removeObserver(this);
-                            finishSignal.countDown();
-                        }
-                    };
-                    assassin.addObserver(observer);
-                    assassin.migrateFromDocumentToTabbedMode();
-                } else {
-                    // Migration finished in the background.
-                    finishSignal.countDown();
-                }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            if (assassin.isMigrationNecessary()) {
+                // Kick off migration if it hasn't already started.
+                DocumentModeAssassinObserver observer = new DocumentModeAssassinObserver() {
+                    @Override
+                    public void onStageChange(int newStage) {
+                        if (newStage != DocumentModeAssassin.STAGE_DONE) return;
+                        assassin.removeObserver(this);
+                        finishSignal.countDown();
+                    }
+                };
+                assassin.addObserver(observer);
+                assassin.migrateFromDocumentToTabbedMode();
+            } else {
+                // Migration finished in the background.
+                finishSignal.countDown();
             }
         });
 

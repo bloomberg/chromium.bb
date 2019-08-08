@@ -231,6 +231,12 @@ std::vector<PathImpl *> Context11::createPaths(GLsizei)
     return std::vector<PathImpl *>();
 }
 
+MemoryObjectImpl *Context11::createMemoryObject()
+{
+    UNREACHABLE();
+    return nullptr;
+}
+
 angle::Result Context11::flush(const gl::Context *context)
 {
     return mRenderer->flush(this);
@@ -384,7 +390,7 @@ angle::Result Context11::drawElementsIndirect(const gl::Context *context,
     }
 }
 
-GLenum Context11::getResetStatus()
+gl::GraphicsResetStatus Context11::getResetStatus()
 {
     return mRenderer->getResetStatus();
 }

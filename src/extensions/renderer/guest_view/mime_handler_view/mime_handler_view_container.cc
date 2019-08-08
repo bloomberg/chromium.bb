@@ -29,6 +29,8 @@ MimeHandlerViewContainer::MimeHandlerViewContainer(
     : GuestViewContainer(render_frame),
       MimeHandlerViewContainerBase(render_frame, info, mime_type, original_url),
       guest_proxy_routing_id_(-1) {
+  RecordInteraction(
+      MimeHandlerViewUMATypes::Type::kDidCreateMimeHandlerViewContainerBase);
   is_embedded_ = !render_frame->GetWebFrame()->GetDocument().IsPluginDocument();
 }
 
@@ -88,7 +90,7 @@ void MimeHandlerViewContainer::DidResizeElement(const gfx::Size& new_size) {
 
 v8::Local<v8::Object> MimeHandlerViewContainer::V8ScriptableObject(
     v8::Isolate* isolate) {
-  return GetScriptableObject(isolate);
+  return GetScriptableObjectInternal(isolate);
 }
 
 void MimeHandlerViewContainer::OnCreateMimeHandlerViewGuestACK(
@@ -134,18 +136,6 @@ int32_t MimeHandlerViewContainer::GetInstanceId() const {
 
 gfx::Size MimeHandlerViewContainer::GetElementSize() const {
   return *element_size_;
-}
-
-void MimeHandlerViewContainer::SetShowBeforeUnloadDialog(
-    bool show_dialog,
-    SetShowBeforeUnloadDialogCallback callback) {
-  DCHECK(!is_embedded_);
-  render_frame()
-      ->GetWebFrame()
-      ->GetDocument()
-      .To<blink::WebPluginDocument>()
-      .SetShowBeforeUnloadDialog(show_dialog);
-  std::move(callback).Run();
 }
 
 }  // namespace extensions

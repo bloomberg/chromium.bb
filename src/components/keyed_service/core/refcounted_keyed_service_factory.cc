@@ -11,9 +11,9 @@
 
 RefcountedKeyedServiceFactory::RefcountedKeyedServiceFactory(
     const char* name,
-    DependencyManager* manager)
-    : KeyedServiceBaseFactory(name, manager) {
-}
+    DependencyManager* manager,
+    Type type)
+    : KeyedServiceBaseFactory(name, manager, type) {}
 
 RefcountedKeyedServiceFactory::~RefcountedKeyedServiceFactory() {
   DCHECK(mapping_.empty());
@@ -40,16 +40,14 @@ void RefcountedKeyedServiceFactory::SetTestingFactory(
 scoped_refptr<RefcountedKeyedService>
 RefcountedKeyedServiceFactory::SetTestingFactoryAndUse(
     void* context,
-    void* side_parameter,
     TestingFactory testing_factory) {
   DCHECK(testing_factory);
   SetTestingFactory(context, std::move(testing_factory));
-  return GetServiceForContext(context, side_parameter, true);
+  return GetServiceForContext(context, true);
 }
 
 scoped_refptr<RefcountedKeyedService>
 RefcountedKeyedServiceFactory::GetServiceForContext(void* context,
-                                                    void* side_parameter,
                                                     bool create) {
   context = GetContextToUse(context);
   if (!context)
@@ -75,7 +73,7 @@ RefcountedKeyedServiceFactory::GetServiceForContext(void* context,
       service = factory_iterator->second.Run(context);
     }
   } else {
-    service = BuildServiceInstanceFor(context, side_parameter);
+    service = BuildServiceInstanceFor(context);
   }
 
   return Associate(context, std::move(service));
@@ -124,5 +122,5 @@ bool RefcountedKeyedServiceFactory::HasTestingFactory(void* context) {
 }
 
 void RefcountedKeyedServiceFactory::CreateServiceNow(void* context) {
-  GetServiceForContext(context, nullptr /* side_parameter */, true);
+  GetServiceForContext(context, true);
 }

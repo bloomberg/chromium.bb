@@ -18,10 +18,9 @@
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/dispatcher.h"
-#include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/extensions_renderer_client.h"
-#include "extensions/renderer/js_extension_bindings_system.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
+#include "extensions/renderer/native_renderer_messaging_service.h"
 #include "extensions/renderer/service_worker_data.h"
 #include "extensions/renderer/worker_script_context_set.h"
 
@@ -58,7 +57,7 @@ void WorkerThreadDispatcher::Init(content::RenderThread* render_thread) {
 }
 
 // static
-ExtensionBindingsSystem* WorkerThreadDispatcher::GetBindingsSystem() {
+NativeExtensionBindingsSystem* WorkerThreadDispatcher::GetBindingsSystem() {
   return GetServiceWorkerData()->bindings_system();
 }
 
@@ -167,7 +166,7 @@ void WorkerThreadDispatcher::OnDispatchOnConnect(
     const ExtensionMsg_ExternalConnectionInfo& info) {
   DCHECK_EQ(worker_thread_id, content::WorkerThread::GetCurrentId());
   WorkerThreadDispatcher::GetBindingsSystem()
-      ->GetMessagingService()
+      ->messaging_service()
       ->DispatchOnConnect(Dispatcher::GetWorkerScriptContextSet(),
                           target_port_id, channel_name, source, info,
                           // Render frames do not matter.
@@ -178,7 +177,7 @@ void WorkerThreadDispatcher::OnValidateMessagePort(int worker_thread_id,
                                                    const PortId& id) {
   DCHECK_EQ(content::WorkerThread::GetCurrentId(), worker_thread_id);
   WorkerThreadDispatcher::GetBindingsSystem()
-      ->GetMessagingService()
+      ->messaging_service()
       ->ValidateMessagePort(Dispatcher::GetWorkerScriptContextSet(), id,
                             // Render frames do not matter.
                             nullptr);
@@ -188,7 +187,7 @@ void WorkerThreadDispatcher::OnDeliverMessage(int worker_thread_id,
                                               const PortId& target_port_id,
                                               const Message& message) {
   WorkerThreadDispatcher::GetBindingsSystem()
-      ->GetMessagingService()
+      ->messaging_service()
       ->DeliverMessage(Dispatcher::GetWorkerScriptContextSet(), target_port_id,
                        message,
                        // Render frames do not matter.
@@ -200,7 +199,7 @@ void WorkerThreadDispatcher::OnDispatchOnDisconnect(
     const PortId& port_id,
     const std::string& error_message) {
   WorkerThreadDispatcher::GetBindingsSystem()
-      ->GetMessagingService()
+      ->messaging_service()
       ->DispatchOnDisconnect(Dispatcher::GetWorkerScriptContextSet(), port_id,
                              error_message,
                              // Render frames do not matter.
@@ -210,7 +209,7 @@ void WorkerThreadDispatcher::OnDispatchOnDisconnect(
 void WorkerThreadDispatcher::AddWorkerData(
     int64_t service_worker_version_id,
     ScriptContext* context,
-    std::unique_ptr<ExtensionBindingsSystem> bindings_system) {
+    std::unique_ptr<NativeExtensionBindingsSystem> bindings_system) {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
   if (!data) {
     ServiceWorkerData* new_data = new ServiceWorkerData(

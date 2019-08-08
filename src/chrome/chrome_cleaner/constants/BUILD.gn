@@ -35,6 +35,30 @@ process_version("software_reporter_tool_branding_header") {
   output = "$target_gen_dir/software_reporter_tool_branding.h"
 }
 
+process_version("chrome_cleaner_version_resource") {
+  template_file = "chrome_cleaner.rc.version"
+
+  sources = [
+    "chrome_cleanup_tool_exe.ver",
+    cleaner_branding_path,
+    version_path,
+  ]
+
+  output = "$target_gen_dir/chrome_cleaner.rc"
+}
+
+process_version("reporter_version_resource") {
+  template_file = "chrome_cleaner.rc.version"
+
+  sources = [
+    "software_reporter_tool_exe.ver",
+    reporter_branding_path,
+    version_path,
+  ]
+
+  output = "$target_gen_dir/chrome_reporter.rc"
+}
+
 source_set("common_strings") {
   sources = [
     "chrome_cleaner_switches.cc",

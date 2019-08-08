@@ -40,15 +40,12 @@ ScopedAllowGL::ScopedAllowGL() {
 
   DeferredGpuCommandService* service = DeferredGpuCommandService::GetInstance();
   DCHECK(service);
-  DCHECK(!service->HasMoreTasks());
 }
 
 ScopedAllowGL::~ScopedAllowGL() {
   DeferredGpuCommandService* service = DeferredGpuCommandService::GetInstance();
   DCHECK(service);
-  service->RunTasks();
-  service->PerformAllIdleWork();
-  DCHECK(!service->HasMoreTasks());
+  service->RunAllTasks();
   allow_gl.Get().Set(false);
 }
 
@@ -148,9 +145,8 @@ DeferredGpuCommandService::CreateDeferredGpuCommandService() {
 
 // static
 DeferredGpuCommandService* DeferredGpuCommandService::GetInstance() {
-  static base::NoDestructor<scoped_refptr<DeferredGpuCommandService>> service(
-      CreateDeferredGpuCommandService());
-  return service->get();
+  static DeferredGpuCommandService* service = CreateDeferredGpuCommandService();
+  return service;
 }
 
 DeferredGpuCommandService::DeferredGpuCommandService(
@@ -209,6 +205,12 @@ void DeferredGpuCommandService::ScheduleDelayedWork(
   idle_tasks_.push(std::make_pair(base::Time::Now(), std::move(callback)));
 }
 
+void DeferredGpuCommandService::PostNonNestableToClient(
+    base::OnceClosure callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(task_queue_thread_checker_);
+  client_tasks_.emplace(std::move(callback));
+}
+
 void DeferredGpuCommandService::PerformAllIdleWork() {
   TRACE_EVENT0("android_webview",
                "DeferredGpuCommandService::PerformAllIdleWork");
@@ -243,9 +245,28 @@ void DeferredGpuCommandService::RunTasks() {
   }
 }
 
-bool DeferredGpuCommandService::HasMoreTasks() {
+void DeferredGpuCommandService::RunAllTasks() {
   DCHECK_CALLED_ON_VALID_THREAD(task_queue_thread_checker_);
-  return tasks_.size() || idle_tasks_.size();
+  RunTasks();
+  PerformAllIdleWork();
+  DCHECK(tasks_.empty());
+  DCHECK(idle_tasks_.empty());
+
+  // Client tasks may generate more service tasks, so run this
+  // in a loop.
+  while (!client_tasks_.empty()) {
+    base::queue<base::OnceClosure> local_client_tasks;
+    local_client_tasks.swap(client_tasks_);
+    while (!local_client_tasks.empty()) {
+      std::move(local_client_tasks.front()).Run();
+      local_client_tasks.pop();
+    }
+
+    RunTasks();
+    PerformAllIdleWork();
+    DCHECK(tasks_.empty());
+    DCHECK(idle_tasks_.empty());
+  }
 }
 
 bool DeferredGpuCommandService::CanSupportThreadedTextureMailbox() const {

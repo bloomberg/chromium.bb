@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
 #include "net/log/net_log_with_source.h"
@@ -103,13 +103,13 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
                              bool lookup_securely,
                              uint64_t tree_size,
                              std::unique_ptr<AuditProofQuery>* out_query,
-                             const net::CompletionCallback& callback);
+                             net::CompletionOnceCallback callback);
 
  private:
   // Invoked when an audit proof query completes.
   // |callback| is the user-provided callback that should be notified.
   // |net_error| is a net::Error indicating success or failure.
-  void QueryAuditProofComplete(const net::CompletionCallback& callback,
+  void QueryAuditProofComplete(net::CompletionOnceCallback callback,
                                int net_error);
 
   // Invoked when an audit proof query is cancelled.

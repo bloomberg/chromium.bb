@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/html_dialog_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
@@ -60,9 +61,9 @@
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
-#include "third_party/blink/renderer/platform/wtf/not_found.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 using blink::WebLocalizedString;
 
@@ -105,6 +106,7 @@ const RoleEntry kRoles[] = {
     {"complementary", ax::mojom::Role::kComplementary},
     {"contentinfo", ax::mojom::Role::kContentInfo},
     {"definition", ax::mojom::Role::kDefinition},
+    {"deletion", ax::mojom::Role::kContentDeletion},
     {"dialog", ax::mojom::Role::kDialog},
     {"directory", ax::mojom::Role::kDirectory},
     // -------------------------------------------------
@@ -168,6 +170,7 @@ const RoleEntry kRoles[] = {
     {"group", ax::mojom::Role::kGroup},
     {"heading", ax::mojom::Role::kHeading},
     {"img", ax::mojom::Role::kImage},
+    {"insertion", ax::mojom::Role::kContentInsertion},
     {"link", ax::mojom::Role::kLink},
     {"list", ax::mojom::Role::kList},
     {"listbox", ax::mojom::Role::kListBox},
@@ -181,6 +184,7 @@ const RoleEntry kRoles[] = {
     {"menuitem", ax::mojom::Role::kMenuItem},
     {"menuitemcheckbox", ax::mojom::Role::kMenuItemCheckBox},
     {"menuitemradio", ax::mojom::Role::kMenuItemRadio},
+    {"meter", ax::mojom::Role::kMeter},
     {"navigation", ax::mojom::Role::kNavigation},
     {"none", ax::mojom::Role::kNone},
     {"note", ax::mojom::Role::kNote},
@@ -1642,6 +1646,7 @@ String AXObject::TextFromElements(
 
       String result = RecursiveTextAlternative(
           *ax_element, in_aria_labelledby_traversal, visited);
+      visited.insert(ax_element);
       local_related_objects.push_back(
           MakeGarbageCollected<NameSourceRelatedObject>(ax_element, result));
       if (!result.IsEmpty()) {
@@ -3043,35 +3048,6 @@ void AXObject::SelectionChanged() {
     parent->SelectionChanged();
 }
 
-int AXObject::LineForPosition(const VisiblePosition& position) const {
-  if (position.IsNull() || !GetNode())
-    return -1;
-
-  // If the position is not in the same editable region as this AX object,
-  // return -1.
-  Node* container_node = position.DeepEquivalent().ComputeContainerNode();
-  if (!container_node->IsShadowIncludingInclusiveAncestorOf(GetNode()) &&
-      !GetNode()->IsShadowIncludingInclusiveAncestorOf(container_node))
-    return -1;
-
-  int line_count = -1;
-  VisiblePosition current_position = position;
-  VisiblePosition previous_position;
-
-  // Move up until we get to the top.
-  // FIXME: This only takes us to the top of the rootEditableElement, not the
-  // top of the top document.
-  do {
-    previous_position = current_position;
-    current_position = PreviousLinePosition(current_position, LayoutUnit(),
-                                            kHasEditableAXRole);
-    ++line_count;
-  } while (current_position.IsNotNull() &&
-           !InSameLine(current_position, previous_position));
-
-  return line_count;
-}
-
 // static
 bool AXObject::IsARIAControl(ax::mojom::Role aria_role) {
   return IsARIAInput(aria_role) || aria_role == ax::mojom::Role::kButton ||
@@ -3112,8 +3088,11 @@ bool AXObject::NameFromSelectedOption(bool recursive) const {
     case ax::mojom::Role::kComboBoxGrouping:
     case ax::mojom::Role::kComboBoxMenuButton:
     case ax::mojom::Role::kListBox:
-    case ax::mojom::Role::kPopUpButton:
       return recursive;
+    // This can be either a button widget with a non-false value of
+    // aria-haspopup or a select element with size of 1.
+    case ax::mojom::Role::kPopUpButton:
+      return ToHTMLSelectElementOrNull(*GetNode()) ? recursive : false;
     default:
       return false;
   }

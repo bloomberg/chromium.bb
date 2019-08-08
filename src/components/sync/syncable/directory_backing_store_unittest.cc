@@ -3596,7 +3596,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion80To81) {
       "SELECT metahandle, server_position_in_parent "
       "FROM metas WHERE unique_server_tag = 'google_chrome'"));
   ASSERT_TRUE(s.Step());
-  ASSERT_EQ(sql::COLUMN_TYPE_INTEGER, s.ColumnType(1));
+  ASSERT_EQ(sql::ColumnType::kInteger, s.GetColumnType(1));
 
   TestDirectoryBackingStore dbs(GetUsername(), &connection);
   EXPECT_TRUE(dbs.MigrateVersion80To81());
@@ -3607,7 +3607,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion80To81) {
       "SELECT metahandle, server_ordinal_in_parent "
       "FROM metas WHERE unique_server_tag = 'google_chrome'"));
   ASSERT_TRUE(new_s.Step());
-  EXPECT_EQ(sql::COLUMN_TYPE_BLOB, new_s.ColumnType(1));
+  EXPECT_EQ(sql::ColumnType::kBlob, new_s.GetColumnType(1));
 
   std::string expected_ordinal = Int64ToNodeOrdinal(1048576).ToInternalValue();
   std::string actual_ordinal;

@@ -4,18 +4,17 @@
      found in the LICENSE file. -->
 
 <!-- RadioButtonWithDescription extends RelativeLayout -->
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
-    android:paddingTop="10dp" >
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
 
     <RadioButton
         android:id="@+id/radio_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
+        android:layout_marginEnd="16dp"
         android:clickable="false"
         android:focusable="false"
-        android:background="@null"
-        android:paddingEnd="16dp" />
+        android:background="@null" />
 
     <TextView
         android:id="@+id/title"
@@ -32,5 +31,5 @@
         android:layout_alignStart="@id/title"
         android:layout_below="@id/title"
         android:textAppearance="@style/TextAppearance.BlackHint2"
-        android:visibility="gone"/>
+        android:visibility="gone" />
 </merge>

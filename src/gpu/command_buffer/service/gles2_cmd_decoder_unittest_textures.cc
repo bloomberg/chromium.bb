@@ -3222,7 +3222,8 @@ class TestSharedImageBacking : public SharedImageBacking {
                            size,
                            color_space,
                            usage,
-                           0 /* estimated_size */) {
+                           0 /* estimated_size */,
+                           false /* is_thread_safe */) {
     texture_ = new gles2::Texture(texture_id);
     texture_->SetLightweightRef();
   }
@@ -3271,9 +3272,8 @@ TEST_P(GLES2DecoderTest, CreateAndTexStorage2DSharedImageCHROMIUM) {
 
   CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
       *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
-  cmd.Init(kNewClientId, mailbox.name, GL_NONE);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(mailbox.name) + sizeof(GLenum)));
+  cmd.Init(kNewClientId, GL_NONE, mailbox.name);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   // Make sure the new client ID is associated with the produced service ID.
@@ -3302,9 +3302,8 @@ TEST_P(GLES2DecoderTest,
 
   CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
       *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
-  cmd.Init(kNewClientId, mailbox.name, GL_NONE);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(mailbox.name) + sizeof(GLenum)));
+  cmd.Init(kNewClientId, GL_NONE, mailbox.name);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
 
   // CreateAndTexStorage2DSharedImage should fail if the mailbox is invalid.
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
@@ -3334,9 +3333,8 @@ TEST_P(GLES2DecoderTest,
 
   CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
       *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
-  cmd.Init(client_texture_id_, mailbox.name, GL_NONE);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(mailbox.name) + sizeof(GLenum)));
+  cmd.Init(client_texture_id_, GL_NONE, mailbox.name);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
 
   // CreateAndTexStorage2DSharedImage should fail.
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
@@ -3358,9 +3356,8 @@ TEST_P(GLES2DecoderTest, BeginEndSharedImageAccessCRHOMIUM) {
 
   CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
       *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
-  cmd.Init(kNewClientId, mailbox.name, GL_NONE);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(mailbox.name) + sizeof(GLenum)));
+  cmd.Init(kNewClientId, GL_NONE, mailbox.name);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   // Begin/end read access for the created image.
@@ -3419,9 +3416,8 @@ TEST_P(GLES2DecoderTest, BeginSharedImageAccessDirectCHROMIUMCantBeginAccess) {
 
   CreateAndTexStorage2DSharedImageINTERNALImmediate& cmd =
       *GetImmediateAs<CreateAndTexStorage2DSharedImageINTERNALImmediate>();
-  cmd.Init(kNewClientId, mailbox.name, GL_NONE);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(mailbox.name) + sizeof(GLenum)));
+  cmd.Init(kNewClientId, GL_NONE, mailbox.name);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   // Try to begin access with a shared image representation that fails

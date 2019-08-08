@@ -253,7 +253,8 @@ void RangeInputType::CreateShadowSubtree() {
   GetElement().UserAgentShadowRoot()->AppendChild(container);
 }
 
-LayoutObject* RangeInputType::CreateLayoutObject(const ComputedStyle&) const {
+LayoutObject* RangeInputType::CreateLayoutObject(const ComputedStyle&,
+                                                 LegacyLayout) const {
   return new LayoutSlider(&GetElement());
 }
 

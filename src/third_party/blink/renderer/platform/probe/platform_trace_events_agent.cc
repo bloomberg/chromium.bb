@@ -14,7 +14,7 @@ namespace {
 
 std::unique_ptr<TracedValue> BuildData(
     const probe::PlatformSendRequest& probe) {
-  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  auto value = std::make_unique<TracedValue>();
   value->SetString("id", String::Number(probe.identifier));
   return value;
 }

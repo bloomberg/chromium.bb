@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_load_metrics/observers/largest_contentful_paint_handler.h"
@@ -16,6 +17,7 @@
 #include "content/public/common/process_type.h"
 #include "net/http/http_response_headers.h"
 #include "ui/base/page_transition_types.h"
+#include "ui/events/blink/blink_features.h"
 
 namespace {
 // TODO(bmcquade): If other observers want to log histograms based on load type,
@@ -87,12 +89,8 @@ const char kHistogramFirstMeaningfulPaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint";
 const char kHistogramLargestImagePaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToLargestImagePaint";
-const char kHistogramLastImagePaint[] =
-    "PageLoad.Experimental.PaintTiming.NavigationToLastImagePaint";
 const char kHistogramLargestTextPaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToLargestTextPaint";
-const char kHistogramLastTextPaint[] =
-    "PageLoad.Experimental.PaintTiming.NavigationToLastTextPaint";
 const char kHistogramLargestContentPaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToLargestContentPaint";
 const char kHistogramLargestContentPaintContentType[] =
@@ -111,6 +109,14 @@ const char kHistogramFirstInputDelay[] =
     "PageLoad.InteractiveTiming.FirstInputDelay3";
 const char kHistogramFirstInputTimestamp[] =
     "PageLoad.InteractiveTiming.FirstInputTimestamp3";
+const char kHistogramFirstInputDelay4[] =
+    "PageLoad.InteractiveTiming.FirstInputDelay4";
+const char kHistogramFirstInputTimestamp4[] =
+    "PageLoad.InteractiveTiming.FirstInputTimestamp4";
+const char kHistogramFirstInputDelaySkipFilteringComparison[] =
+    "PageLoad.InteractiveTiming.FirstInputDelay.SkipFilteringComparison";
+const char kHistogramFirstInputTimestampSkipFilteringComparison[] =
+    "PageLoad.InteractiveTiming.FirstInputTimestamp.SkipFilteringComparison";
 const char kHistogramLongestInputDelay[] =
     "PageLoad.InteractiveTiming.LongestInputDelay3";
 const char kHistogramLongestInputTimestamp[] =
@@ -220,6 +226,8 @@ const char kHistogramPageLoadNetworkBytes[] =
 const char kHistogramPageLoadCacheBytes[] = "PageLoad.Experimental.Bytes.Cache";
 const char kHistogramPageLoadNetworkBytesIncludingHeaders[] =
     "PageLoad.Experimental.Bytes.NetworkIncludingHeaders";
+const char kHistogramPageLoadUnfinishedBytes[] =
+    "PageLoad.Experimental.Bytes.Unfinished";
 
 const char kHistogramLoadTypeTotalBytesForwardBack[] =
     "PageLoad.Experimental.Bytes.Total.LoadType.ForwardBackNavigation";
@@ -568,13 +576,42 @@ void CorePageLoadMetricsObserver::OnFirstInputInPage(
 
   // Input delay will often be ~0, and will only be > 10 seconds very
   // rarely. Capture the range from 1ms to 60s.
+  // While the SkipTouchEventFilter experiment is running, always record
+  // first input metrics with the name "SkipFilteringComparison" so that
+  // we can compare with it on/off.
   UMA_HISTOGRAM_CUSTOM_TIMES(
-      internal::kHistogramFirstInputDelay,
+      internal::kHistogramFirstInputDelaySkipFilteringComparison,
       timing.interactive_timing->first_input_delay.value(),
       base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
       50);
-  PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstInputTimestamp,
-                      timing.interactive_timing->first_input_timestamp.value());
+  PAGE_LOAD_HISTOGRAM(
+      internal::kHistogramFirstInputTimestampSkipFilteringComparison,
+      timing.interactive_timing->first_input_timestamp.value());
+  if (base::FeatureList::IsEnabled(features::kSkipTouchEventFilter)) {
+    // This experiment will change the FID and first input metric by
+    // changing the timestamp on pointerdown events on mobile pages with no
+    // pointer event handlers. If it is ramped up to 100% to launch, we need
+    // to update the metric name (v3->v4).
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        internal::kHistogramFirstInputDelay4,
+        timing.interactive_timing->first_input_delay.value(),
+        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
+        50);
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramFirstInputTimestamp4,
+        timing.interactive_timing->first_input_timestamp.value());
+  } else {
+    // If the SkipTouchEventFilter experiment does not launch, we want to
+    // continue reporting first input events under the current name.
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        internal::kHistogramFirstInputDelay,
+        timing.interactive_timing->first_input_delay.value(),
+        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
+        50);
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramFirstInputTimestamp,
+        timing.interactive_timing->first_input_timestamp.value());
+  }
 }
 
 void CorePageLoadMetricsObserver::OnParseStart(
@@ -727,7 +764,7 @@ void CorePageLoadMetricsObserver::OnUserInput(
 }
 
 void CorePageLoadMetricsObserver::OnResourceDataUseObserved(
-    FrameTreeNodeId frame_tree_node_id,
+    content::RenderFrameHost* rfh,
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
         resources) {
   for (auto const& resource : resources) {
@@ -764,19 +801,9 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
                         timing.paint_timing->largest_image_paint.value());
   }
   if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->last_image_paint, info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramLastImagePaint,
-                        timing.paint_timing->last_image_paint.value());
-  }
-  if (WasStartedInForegroundOptionalEventInForeground(
           timing.paint_timing->largest_text_paint, info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestTextPaint,
                         timing.paint_timing->largest_text_paint.value());
-  }
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->last_text_paint, info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramLastTextPaint,
-                        timing.paint_timing->last_text_paint.value());
   }
   base::Optional<base::TimeDelta> largest_content_paint_time;
   uint64_t largest_content_paint_size;
@@ -889,6 +916,13 @@ void CorePageLoadMetricsObserver::RecordByteAndResourceHistograms(
   PAGE_BYTES_HISTOGRAM(internal::kHistogramPageLoadTotalBytes, total_bytes);
   PAGE_BYTES_HISTOGRAM(internal::kHistogramPageLoadNetworkBytesIncludingHeaders,
                        network_bytes_including_headers_);
+
+  size_t unfinished_bytes = 0;
+  for (auto const& kv :
+       GetDelegate()->GetResourceTracker().unfinished_resources())
+    unfinished_bytes += kv.second->received_data_length;
+  PAGE_BYTES_HISTOGRAM(internal::kHistogramPageLoadUnfinishedBytes,
+                       unfinished_bytes);
 
   switch (GetPageLoadType(transition_)) {
     case LOAD_TYPE_RELOAD:

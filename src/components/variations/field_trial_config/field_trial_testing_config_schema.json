@@ -27,6 +27,18 @@
                 "contents": {"type": "enum", "ctype": "Study::Platform"}
               },
               {
+                "field": "form_factors",
+                "type": "array",
+                "contents": {"type": "enum", "ctype": "Study::FormFactor"}
+              },
+              {
+                "field": "is_low_end_device",
+                "type": "enum",
+                "ctype": "Study::OptionalBool",
+                "default": "Study::OPTIONAL_BOOL_MISSING",
+                "optional": "True"
+              },
+              {
                 "field": "params",
                 "type": "array",
                 "contents": {

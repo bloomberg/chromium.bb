@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <EarlGrey/EarlGrey.h>
+
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -78,13 +80,16 @@ id<GREYMatcher> PaymentMethodCellMatcher(
 
 - (void)addProfile {
   _profile = autofill::test::GetFullProfile();
-  [self addAutofillProfile:_profile];
+  NSError* autofillProfileError = [self addAutofillProfile:_profile];
+  GREYAssertNil(autofillProfileError,
+                autofillProfileError.localizedDescription);
 }
 
 - (void)addLocalCard {
   _localCard = autofill::test::GetCreditCard();  // Visa.
   _localCard.set_billing_address_id(_profile.guid());
-  [self addCreditCard:_localCard];
+  NSError* creditCardError = [self addCreditCard:_localCard];
+  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
 }
 
 - (void)addServerCardWithType:(autofill::CreditCard::CardType)cardType {

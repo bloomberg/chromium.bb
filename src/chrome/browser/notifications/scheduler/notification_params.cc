@@ -6,15 +6,17 @@
 
 #include <utility>
 
+#include "base/guid.h"
 #include "chrome/browser/notifications/scheduler/schedule_params.h"
 
 namespace notifications {
 
-NotificationParams::NotificationParams(Type type,
-                                       NotificationData notification,
+NotificationParams::NotificationParams(SchedulerClientType type,
+                                       NotificationData notification_data,
                                        ScheduleParams schedule_params)
     : type(type),
-      notification(std::move(notification)),
+      guid(base::GenerateGUID()),
+      notification_data(std::move(notification_data)),
       schedule_params(std::move(schedule_params)) {}
 
 NotificationParams::~NotificationParams() = default;

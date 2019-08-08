@@ -896,7 +896,7 @@ Polymer({
 
   /** @private */
   onCloseOverscanDialog_: function() {
-    cr.ui.focusWithoutInk(assert(this.$$('#overscan button')));
+    cr.ui.focusWithoutInk(assert(this.$$('#overscan')));
   },
 
   /** @private */

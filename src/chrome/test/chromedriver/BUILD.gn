@@ -15,6 +15,7 @@ action("embed_js_in_cpp") {
     "js/dispatch_touch_event.js",
     "js/execute_async_script.js",
     "js/focus.js",
+    "js/get_element_location.js",
     "js/get_element_region.js",
     "js/is_option_element_toggleable.js",
   ]
@@ -191,6 +192,7 @@ source_set("automation_client_lib") {
     ":embed_user_data_dir_in_cpp",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//chrome/common:version_header",
     "//net",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
@@ -428,38 +430,6 @@ test("chromedriver_unittests") {
     "//ui/events:test_support",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//url",
-  ]
-}
-
-# ChromeDriver tests that aren't run on the main buildbot. Available as an
-# optional test type on trybots.
-test("chromedriver_tests") {
-  sources = [
-    "key_converter_unittest.cc",
-    "keycode_text_conversion_unittest.cc",
-    "net/net_util_unittest.cc",
-    "net/sync_websocket_impl_unittest.cc",
-    "net/test_http_server.cc",
-    "net/test_http_server.h",
-    "net/websocket_unittest.cc",
-  ]
-
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
-  deps = [
-    ":lib",
-    "//base",
-    "//base/test:run_all_unittests",
-    "//mojo/core/embedder",
-    "//net",
-    "//net:test_support",
-    "//net/server:http_server",
-    "//services/network/public/cpp",
-    "//services/network/public/mojom",
-    "//testing/gtest",
-    "//ui/events:test_support",
     "//url",
   ]
 }

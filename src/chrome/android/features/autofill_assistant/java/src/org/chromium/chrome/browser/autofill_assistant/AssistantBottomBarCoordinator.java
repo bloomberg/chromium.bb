@@ -5,85 +5,92 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import android.content.Context;
-import android.support.design.widget.BottomSheetBehavior;
-import android.support.design.widget.CoordinatorLayout;
-import android.util.DisplayMetrics;
-import android.util.TypedValue;
+import android.support.annotation.Nullable;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 
+import org.chromium.base.Callback;
+import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantActionsCarouselCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
+import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantSuggestionsCarouselCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
 import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayModel;
+import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayState;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator;
+import org.chromium.chrome.browser.compositor.CompositorViewResizer;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.ui.modelutil.ListModel;
 
 /**
- * Coordinator responsible for the Autofill Assistant bottom bar. This coordinator allows to enable
- * or disable the swipeable behavior of the bottom bar and ensures that the bottom bar height is
- * constant during the script execution (if possible) by adapting the spacing between its child
- * views (details, infobox, payment request and carousel).
+ * Coordinator responsible for the Autofill Assistant bottom bar.
  */
-class AssistantBottomBarCoordinator {
-    // The top padding that should be applied to the bottom bar when the swiping indicator is
-    // hidden.
-    private static final int BOTTOM_BAR_WITHOUT_INDICATOR_PADDING_TOP_DP = 16;
-
-    private final ViewGroup mBottomBarView;
-    private final ViewGroup mBottomBarContainerView;
-    private final View mSwipeIndicatorView;
-    private final BottomSheetBehavior mBottomBarBehavior;
-
-    // Dimensions in device pixels.
-    private final int mBottomBarWithoutIndicatorPaddingTop;
+class AssistantBottomBarCoordinator
+        implements CompositorViewResizer, AssistantPeekHeightCoordinator.Delegate {
+    private final AssistantModel mModel;
+    private final BottomSheetController mBottomSheetController;
+    private final AssistantBottomSheetContent mContent;
 
     // Child coordinators.
+    private AssistantInfoBoxCoordinator mInfoBoxCoordinator;
     private final AssistantHeaderCoordinator mHeaderCoordinator;
-    private final AssistantInfoBoxCoordinator mInfoBoxCoordinator;
     private final AssistantDetailsCoordinator mDetailsCoordinator;
     private final AssistantPaymentRequestCoordinator mPaymentRequestCoordinator;
     private final AssistantCarouselCoordinator mSuggestionsCoordinator;
     private final AssistantCarouselCoordinator mActionsCoordinator;
+    private final AssistantPeekHeightCoordinator mPeekHeightCoordinator;
 
-    AssistantBottomBarCoordinator(Context context, View assistantView, AssistantModel model) {
-        mBottomBarView = assistantView.findViewById(R.id.autofill_assistant_bottombar);
-        mBottomBarContainerView =
-                mBottomBarView.findViewById(R.id.autofill_assistant_bottombar_container);
-        mSwipeIndicatorView = mBottomBarView.findViewById(R.id.swipe_indicator);
-        mBottomBarBehavior = BottomSheetBehavior.from(mBottomBarView);
+    private final ObserverList<CompositorViewResizer.Observer> mSizeObservers =
+            new ObserverList<>();
+    private boolean mResizeViewport;
 
-        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
-        mBottomBarWithoutIndicatorPaddingTop =
-                (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                        BOTTOM_BAR_WITHOUT_INDICATOR_PADDING_TOP_DP, displayMetrics);
+    @Nullable
+    private ScrollView mOnboardingScrollView;
+
+    AssistantBottomBarCoordinator(
+            Context context, AssistantModel model, BottomSheetController controller) {
+        mModel = model;
+        mBottomSheetController = controller;
+        mContent = new AssistantBottomSheetContent(context);
 
         // Instantiate child components.
-        mHeaderCoordinator =
-                new AssistantHeaderCoordinator(context, mBottomBarView, model.getHeaderModel());
+        mHeaderCoordinator = new AssistantHeaderCoordinator(
+                context, mContent.mBottomBarView, model.getHeaderModel());
         mInfoBoxCoordinator = new AssistantInfoBoxCoordinator(context, model.getInfoBoxModel());
         mDetailsCoordinator = new AssistantDetailsCoordinator(context, model.getDetailsModel());
         mPaymentRequestCoordinator =
                 new AssistantPaymentRequestCoordinator(context, model.getPaymentRequestModel());
         mSuggestionsCoordinator =
-                new AssistantCarouselCoordinator(context, model.getSuggestionsModel());
-        mActionsCoordinator = new AssistantCarouselCoordinator(context, model.getActionsModel());
+                new AssistantSuggestionsCarouselCoordinator(context, model.getSuggestionsModel());
+        mActionsCoordinator =
+                new AssistantActionsCarouselCoordinator(context, model.getActionsModel());
+        BottomSheet bottomSheet = controller.getBottomSheet();
+        mPeekHeightCoordinator = new AssistantPeekHeightCoordinator(context, this, bottomSheet,
+                mContent.mToolbarView, mContent.mBottomBarView, mSuggestionsCoordinator.getView(),
+                mActionsCoordinator.getView(), AssistantPeekHeightCoordinator.PeekMode.HANDLE);
 
         // Add child views to bottom bar container.
-        mBottomBarContainerView.addView(mInfoBoxCoordinator.getView());
-        mBottomBarContainerView.addView(mDetailsCoordinator.getView());
-        mBottomBarContainerView.addView(mPaymentRequestCoordinator.getView());
-        mBottomBarContainerView.addView(mSuggestionsCoordinator.getView());
-        mBottomBarContainerView.addView(mActionsCoordinator.getView());
+        mContent.mBottomBarView.addView(mInfoBoxCoordinator.getView());
+        mContent.mBottomBarView.addView(mDetailsCoordinator.getView());
+        mContent.mBottomBarView.addView(mPaymentRequestCoordinator.getView());
+        mContent.mBottomBarView.addView(mSuggestionsCoordinator.getView());
+        mContent.mBottomBarView.addView(mActionsCoordinator.getView());
 
         // Set children top margins to have a spacing between them. For the carousels, we set their
         // margin only when they are not empty given that they are always shown, even if empty. We
         // do not hide them because there is an incompatibility bug between the animateLayoutChanges
-        // attribute set on mBottomBarContainerView and the animations ran by the carousels
+        // attribute set on mBottomBarView and the animations ran by the carousels
         // RecyclerView.
         int childSpacing = context.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_bottombar_vertical_spacing);
@@ -100,45 +107,124 @@ class AssistantBottomBarCoordinator {
         setHorizontalMargins(mInfoBoxCoordinator.getView());
         setHorizontalMargins(mDetailsCoordinator.getView());
         setHorizontalMargins(mPaymentRequestCoordinator.getView());
+
+        View bottomSheetContainer =
+                bottomSheet.findViewById(org.chromium.chrome.R.id.bottom_sheet_content);
+        bottomSheet.addObserver(new EmptyBottomSheetObserver() {
+            @Override
+            public void onSheetClosed(int reason) {
+                // When scrolling with y < peekHeight, the BottomSheet will make the content
+                // invisible. This is a workaround to prevent that as our toolbar is transparent and
+                // we want to sheet content to stay visible.
+                if ((bottomSheet.getSheetState() == BottomSheet.SheetState.SCROLLING
+                            || bottomSheet.getSheetState() == BottomSheet.SheetState.PEEK)
+                        && bottomSheet.getCurrentSheetContent() == mContent
+                        && model.get(AssistantModel.VISIBLE)) {
+                    bottomSheetContainer.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onSheetStateChanged(int newState) {
+                if (newState == BottomSheet.SheetState.PEEK
+                        && bottomSheet.getCurrentSheetContent() == mContent) {
+                    // When in the peek state, the BottomSheet hides the content view. We override
+                    // that because we artificially increase the height of the transparent toolbar
+                    // to show parts of the content view.
+                    bottomSheetContainer.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onSheetContentChanged(@Nullable BottomSheet.BottomSheetContent newContent) {
+                // TODO(crbug.com/806868): Make sure this works and does not interfere with Duet
+                // once we are in ChromeTabbedActivity.
+                notifyAutofillAssistantSizeChanged();
+            }
+        });
+
+        // Show or hide the bottom sheet content when the Autofill Assistant visibility is changed.
+        model.addObserver((source, propertyKey) -> {
+            if (AssistantModel.VISIBLE == propertyKey) {
+                if (model.get(AssistantModel.VISIBLE)) {
+                    showAndExpand();
+                } else {
+                    hide();
+                }
+            }
+        });
     }
 
     /**
-     * Return the container view representing the bottom bar. Adding child views to this view should
-     * add them below the header.
+     * Cleanup resources when this goes out of scope.
      */
-    public ViewGroup getView() {
-        return mBottomBarView;
+    public void destroy() {
+        mInfoBoxCoordinator.destroy();
+        mInfoBoxCoordinator = null;
     }
 
     /**
-     * Returns the view container inside the bottom bar view.
+     * Show the onboarding screen and call {@code callback} with {@code true} if the user agreed to
+     * proceed, false otherwise.
      */
-    public ViewGroup getContainerView() {
-        return mBottomBarContainerView;
+    public void showOnboarding(String experimentIds, Callback<Boolean> callback) {
+        mModel.getHeaderModel().set(AssistantHeaderModel.VISIBLE, false);
+
+        // Show overlay to prevent user from interacting with the page during onboarding.
+        mModel.getOverlayModel().set(AssistantOverlayModel.STATE, AssistantOverlayState.FULL);
+
+        View onboardingView = AssistantOnboardingCoordinator.show(experimentIds,
+                mContent.mBottomBarView.getContext(), mContent.mBottomBarView, accepted -> {
+                    mOnboardingScrollView = null;
+                    if (!accepted) {
+                        callback.onResult(false);
+                        return;
+                    }
+
+                    mModel.getHeaderModel().set(AssistantHeaderModel.VISIBLE, true);
+
+                    // Hide overlay.
+                    mModel.getOverlayModel().set(
+                            AssistantOverlayModel.STATE, AssistantOverlayState.HIDDEN);
+
+                    callback.onResult(true);
+                });
+        mOnboardingScrollView = onboardingView.findViewById(R.id.onboarding_scroll_view);
     }
 
-    /**
-     * Make sure the bottom bar is expanded and text is visible.
-     */
-    public void expand() {
-        mBottomBarBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-    }
-
-    /**
-     * Enable or disable to swipeable behavior of the bottom bar.
-     */
-    public void allowSwipingBottomSheet(boolean allowed) {
-        CoordinatorLayout.LayoutParams params =
-                (CoordinatorLayout.LayoutParams) mBottomBarView.getLayoutParams();
-        if (allowed) {
-            params.setBehavior(mBottomBarBehavior);
-            mSwipeIndicatorView.setVisibility(View.VISIBLE);
-            setBottomBarPaddingTop(0);
-        } else {
-            params.setBehavior(null);
-            mSwipeIndicatorView.setVisibility(View.GONE);
-            setBottomBarPaddingTop(mBottomBarWithoutIndicatorPaddingTop);
+    /** Request showing the Assistant bottom bar view and expand the sheet. */
+    public void showAndExpand() {
+        if (mBottomSheetController.requestShowContent(mContent, /* animate= */ true)) {
+            mBottomSheetController.expandSheet();
         }
+    }
+
+    /** Hide the Assistant bottom bar view. */
+    public void hide() {
+        mBottomSheetController.hideContent(mContent, /* animate= */ true);
+    }
+
+    void setResizeViewport(boolean resizeViewport) {
+        if (resizeViewport == mResizeViewport) return;
+
+        mResizeViewport = resizeViewport;
+        notifyAutofillAssistantSizeChanged();
+    }
+
+    /** Set the peek mode. */
+    void setPeekMode(@AssistantPeekHeightCoordinator.PeekMode int peekMode) {
+        mPeekHeightCoordinator.setPeekMode(peekMode);
+    }
+
+    @Override
+    public void setShowOnlyCarousels(boolean showOnlyCarousels) {
+        mDetailsCoordinator.setForceInvisible(showOnlyCarousels);
+        mPaymentRequestCoordinator.setForceInvisible(showOnlyCarousels);
+    }
+
+    @Override
+    public void onPeekHeightChanged() {
+        notifyAutofillAssistantSizeChanged();
     }
 
     private void setChildMarginTop(View child, int marginTop) {
@@ -171,10 +257,6 @@ class AssistantBottomBarCoordinator {
         return mActionsCoordinator;
     }
 
-    private void setBottomBarPaddingTop(int paddingPx) {
-        mBottomBarView.setPadding(0, paddingPx, 0, 0);
-    }
-
     private void setHorizontalMargins(View view) {
         LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) view.getLayoutParams();
         int horizontalMargin = view.getContext().getResources().getDimensionPixelSize(
@@ -182,5 +264,136 @@ class AssistantBottomBarCoordinator {
         layoutParams.setMarginStart(horizontalMargin);
         layoutParams.setMarginEnd(horizontalMargin);
         view.setLayoutParams(layoutParams);
+    }
+
+    private void notifyAutofillAssistantSizeChanged() {
+        int height = getHeight();
+        for (Observer observer : mSizeObservers) {
+            observer.onHeightChanged(height);
+        }
+    }
+
+    // Implementation of methods from AutofillAssistantSizeManager.
+
+    @Override
+    public int getHeight() {
+        if (mResizeViewport
+                && mBottomSheetController.getBottomSheet().getCurrentSheetContent() == mContent)
+            return mPeekHeightCoordinator.getPeekHeight();
+
+        return 0;
+    }
+
+    @Override
+    public void addObserver(Observer observer) {
+        mSizeObservers.addObserver(observer);
+    }
+
+    @Override
+    public void removeObserver(Observer observer) {
+        mSizeObservers.removeObserver(observer);
+    }
+
+    // TODO(crbug.com/806868): Move this class at the top of the file once it is a static class.
+    private class AssistantBottomSheetContent implements BottomSheet.BottomSheetContent {
+        private final ViewGroup mToolbarView;
+        private final SizeListenableLinearLayout mBottomBarView;
+
+        public AssistantBottomSheetContent(Context context) {
+            mToolbarView = (ViewGroup) LayoutInflater.from(context).inflate(
+                    R.layout.autofill_assistant_bottom_sheet_toolbar, /* root= */ null);
+            mBottomBarView = (SizeListenableLinearLayout) LayoutInflater.from(context).inflate(
+                    R.layout.autofill_assistant_bottom_sheet_content, /* root= */ null);
+        }
+
+        @Override
+        public View getContentView() {
+            return mBottomBarView;
+        }
+
+        @Nullable
+        @Override
+        public View getToolbarView() {
+            return mToolbarView;
+        }
+
+        @Override
+        public int getVerticalScrollOffset() {
+            // TODO(crbug.com/806868): Have a single ScrollView container that contains all child
+            // views (except carousels) instead.
+            if (mOnboardingScrollView != null && mOnboardingScrollView.isShown()) {
+                return mOnboardingScrollView.getScrollY();
+            }
+
+            if (mPaymentRequestCoordinator.getScrollView().isShown()) {
+                return mPaymentRequestCoordinator.getScrollView().getScrollY();
+            }
+
+            return 0;
+        }
+
+        @Override
+        public void destroy() {}
+
+        @Override
+        public int getPriority() {
+            return BottomSheet.ContentPriority.HIGH;
+        }
+
+        @Override
+        public boolean swipeToDismissEnabled() {
+            return false;
+        }
+
+        @Override
+        public boolean isPeekStateEnabled() {
+            return true;
+        }
+
+        @Override
+        public boolean wrapContentEnabled() {
+            return true;
+        }
+
+        @Override
+        public boolean hasCustomLifecycle() {
+            return true;
+        }
+
+        @Override
+        public boolean hasCustomScrimLifecycle() {
+            return true;
+        }
+
+        @Override
+        public boolean setContentSizeListener(@Nullable BottomSheet.ContentSizeListener listener) {
+            mBottomBarView.setContentSizeListener(listener);
+            return true;
+        }
+
+        @Override
+        public boolean hideOnScroll() {
+            return false;
+        }
+
+        @Override
+        public int getSheetContentDescriptionStringId() {
+            return R.string.autofill_assistant_sheet_content_description;
+        }
+
+        @Override
+        public int getSheetHalfHeightAccessibilityStringId() {
+            return R.string.autofill_assistant_sheet_half_height;
+        }
+
+        @Override
+        public int getSheetFullHeightAccessibilityStringId() {
+            return R.string.autofill_assistant_sheet_full_height;
+        }
+
+        @Override
+        public int getSheetClosedAccessibilityStringId() {
+            return R.string.autofill_assistant_sheet_closed;
+        }
     }
 }

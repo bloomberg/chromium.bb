@@ -195,8 +195,8 @@ public class LocaleUtils {
     }
 
     /**
-     * @return a comma separated language tags string that represents a default locale.
-     *         Each language tag is well-formed IETF BCP 47 language tag with language and country
+     * @return a language tag string that represents the default locale.
+     *         The language tag is well-formed IETF BCP 47 language tag with language and country
      *         code.
      */
     @CalledByNative

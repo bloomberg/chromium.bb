@@ -404,7 +404,7 @@ bool TestResultsTracker::SaveSummaryAsJSON(
 
         std::unique_ptr<DictionaryValue> test_result_value(new DictionaryValue);
 
-        test_result_value->SetString("status", test_result.StatusAsString());
+        test_result_value->SetStringKey("status", test_result.StatusAsString());
         test_result_value->SetInteger(
             "elapsed_time_ms",
             static_cast<int>(test_result.elapsed_time.InMilliseconds()));
@@ -422,7 +422,7 @@ bool TestResultsTracker::SaveSummaryAsJSON(
 
         // TODO(phajdan.jr): Fix typo in JSON key (losless -> lossless)
         // making sure not to break any consumers of this data.
-        test_result_value->SetBoolean("losless_snippet", lossless_snippet);
+        test_result_value->SetBoolKey("losless_snippet", lossless_snippet);
 
         // Also include the raw version (base64-encoded so that it can be safely
         // JSON-serialized - there are no guarantees about character encoding
@@ -430,43 +430,43 @@ bool TestResultsTracker::SaveSummaryAsJSON(
         // debugging a test failure related to character encoding.
         std::string base64_output_snippet;
         Base64Encode(test_result.output_snippet, &base64_output_snippet);
-        test_result_value->SetString("output_snippet_base64",
-                                     base64_output_snippet);
+        test_result_value->SetStringKey("output_snippet_base64",
+                                        base64_output_snippet);
 
         std::unique_ptr<ListValue> test_result_parts(new ListValue);
         for (const TestResultPart& result_part :
              test_result.test_result_parts) {
           std::unique_ptr<DictionaryValue> result_part_value(
               new DictionaryValue);
-          result_part_value->SetString("type", result_part.TypeAsString());
-          result_part_value->SetString("file", result_part.file_name);
-          result_part_value->SetInteger("line", result_part.line_number);
+          result_part_value->SetStringKey("type", result_part.TypeAsString());
+          result_part_value->SetStringKey("file", result_part.file_name);
+          result_part_value->SetIntKey("line", result_part.line_number);
 
           bool lossless_summary = IsStringUTF8(result_part.summary);
           if (lossless_summary) {
-            result_part_value->SetString("summary", result_part.summary);
+            result_part_value->SetStringKey("summary", result_part.summary);
           } else {
             result_part_value->SetString(
                 "summary", "<non-UTF-8 snippet, see summary_base64>");
           }
-          result_part_value->SetBoolean("lossless_summary", lossless_summary);
+          result_part_value->SetBoolKey("lossless_summary", lossless_summary);
 
           std::string encoded_summary;
           Base64Encode(result_part.summary, &encoded_summary);
-          result_part_value->SetString("summary_base64", encoded_summary);
+          result_part_value->SetStringKey("summary_base64", encoded_summary);
 
           bool lossless_message = IsStringUTF8(result_part.message);
           if (lossless_message) {
-            result_part_value->SetString("message", result_part.message);
+            result_part_value->SetStringKey("message", result_part.message);
           } else {
             result_part_value->SetString(
                 "message", "<non-UTF-8 snippet, see message_base64>");
           }
-          result_part_value->SetBoolean("lossless_message", lossless_message);
+          result_part_value->SetBoolKey("lossless_message", lossless_message);
 
           std::string encoded_message;
           Base64Encode(result_part.message, &encoded_message);
-          result_part_value->SetString("message_base64", encoded_message);
+          result_part_value->SetStringKey("message_base64", encoded_message);
 
           test_result_parts->Append(std::move(result_part_value));
         }
@@ -487,8 +487,8 @@ bool TestResultsTracker::SaveSummaryAsJSON(
     std::string test_name = item.first;
     CodeLocation location = item.second;
     std::unique_ptr<DictionaryValue> location_value(new DictionaryValue);
-    location_value->SetString("file", location.file);
-    location_value->SetInteger("line", location.line);
+    location_value->SetStringKey("file", location.file);
+    location_value->SetIntKey("line", location.line);
     test_locations->SetWithoutPathExpansion(test_name,
                                             std::move(location_value));
   }

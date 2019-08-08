@@ -6,6 +6,7 @@
 
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/notifications/notification_constants.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/modules/notifications/notification.h"
 #include "third_party/blink/renderer/modules/notifications/notification_options.h"
@@ -32,7 +33,7 @@ const char kNotificationIcon[] = "/icon.png";
 const char kNotificationIconInvalid[] = "https://invalid:icon:url";
 const char kNotificationBadge[] = "badge.png";
 const unsigned kNotificationVibration[] = {42, 10, 20, 30, 40};
-const unsigned long long kNotificationTimestamp = 621046800ull;
+const uint64_t kNotificationTimestamp = 621046800ull;
 const bool kNotificationRenotify = true;
 const bool kNotificationSilent = false;
 const bool kNotificationRequireInteraction = true;
@@ -336,6 +337,25 @@ TEST_F(NotificationDataTest, MaximumActionCount) {
     String expected_action = String::Number(i);
     EXPECT_EQ(expected_action, notification_data->actions.value()[i]->action);
   }
+}
+
+TEST_F(NotificationDataTest, RejectsTriggerTimestampOverAYear) {
+  base::Time show_timestamp = base::Time::Now() +
+                              kMaxNotificationShowTriggerDelay +
+                              base::TimeDelta::FromDays(1);
+  TimestampTrigger* show_trigger =
+      TimestampTrigger::Create(show_timestamp.ToJsTime());
+
+  NotificationOptions* options = NotificationOptions::Create();
+  options->setShowTrigger(show_trigger);
+
+  DummyExceptionStateForTesting exception_state;
+  mojom::blink::NotificationDataPtr notification_data = CreateNotificationData(
+      GetExecutionContext(), kNotificationTitle, options, exception_state);
+  ASSERT_TRUE(exception_state.HadException());
+
+  EXPECT_EQ("Notification trigger timestamp too far ahead in the future.",
+            exception_state.Message());
 }
 
 }  // namespace

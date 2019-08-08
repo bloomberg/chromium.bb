@@ -10,7 +10,7 @@
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
-#include "ash/assistant/ui/logo_view/base_logo_view.h"
+#include "ash/assistant/ui/logo_view/logo_view.h"
 #include "ash/assistant/util/animation_util.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "base/time/time.h"
@@ -80,9 +80,9 @@ void AssistantHeaderView::InitLayout() {
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
   // Molecule icon.
-  molecule_icon_ = BaseLogoView::Create();
+  molecule_icon_ = LogoView::Create();
   molecule_icon_->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
-  molecule_icon_->SetState(BaseLogoView::State::kMoleculeWavy,
+  molecule_icon_->SetState(LogoView::State::kMoleculeWavy,
                            /*animate=*/false);
 
   // The molecule icon will be animated on its own layer.

@@ -59,7 +59,7 @@ void GetDebugInfoForModule(HMODULE module_handle,
   if (result != kGUIDSize)
     return;
   RemoveChars(buffer, STRING16_LITERAL("{}-"), &buffer);
-  buffer.append(IntToString16(age));
+  buffer.append(NumberToString16(age));
   *build_id = UTF16ToUTF8(buffer);
 }
 
@@ -103,6 +103,7 @@ class WindowsModule : public ModuleCache::Module {
   std::string GetId() const override { return id_; }
   FilePath GetDebugBasename() const override { return debug_basename_; }
   size_t GetSize() const override { return module_info_.SizeOfImage; }
+  bool IsNative() const override { return true; }
 
  private:
   ScopedModuleHandle module_handle_;

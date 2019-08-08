@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/download/download_controller_base.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/image_fetcher/image_decoder_impl.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/offline_pages/android/downloads/offline_page_infobar_delegate.h"
 #include "chrome/browser/offline_pages/android/downloads/offline_page_share_helper.h"
@@ -27,7 +28,6 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
@@ -175,28 +175,25 @@ void SavePageIfNotNavigatedAway(const GURL& url,
   client_id.id = base::GenerateGUID();
   int64_t request_id = OfflinePageModel::kInvalidOfflineId;
 
-  if (offline_pages::IsBackgroundLoaderForDownloadsEnabled()) {
-    // Post disabled request before passing the download task to the tab helper.
-    // This will keep the request persisted in case Chrome is evicted from RAM
-    // or closed by the user.
-    // Note: the 'disabled' status is not persisted (stored in memory) so it
-    // automatically resets if Chrome is re-started.
-    offline_pages::RequestCoordinator* request_coordinator =
-        offline_pages::RequestCoordinatorFactory::GetForBrowserContext(
-            web_contents->GetBrowserContext());
-    if (request_coordinator) {
-      offline_pages::RequestCoordinator::SavePageLaterParams params;
-      params.url = current_url;
-      params.client_id = client_id;
-      params.availability =
-          RequestCoordinator::RequestAvailability::DISABLED_FOR_OFFLINER;
-      params.original_url = original_url;
-      params.request_origin = origin;
-      request_id =
-          request_coordinator->SavePageLater(params, base::DoNothing());
-    } else {
-      DVLOG(1) << "SavePageIfNotNavigatedAway has no valid coordinator.";
-    }
+  // Post disabled request before passing the download task to the tab helper.
+  // This will keep the request persisted in case Chrome is evicted from RAM
+  // or closed by the user.
+  // Note: the 'disabled' status is not persisted (stored in memory) so it
+  // automatically resets if Chrome is re-started.
+  offline_pages::RequestCoordinator* request_coordinator =
+      offline_pages::RequestCoordinatorFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext());
+  if (request_coordinator) {
+    offline_pages::RequestCoordinator::SavePageLaterParams params;
+    params.url = current_url;
+    params.client_id = client_id;
+    params.availability =
+        RequestCoordinator::RequestAvailability::DISABLED_FOR_OFFLINER;
+    params.original_url = original_url;
+    params.request_origin = origin;
+    request_id = request_coordinator->SavePageLater(params, base::DoNothing());
+  } else {
+    DVLOG(1) << "SavePageIfNotNavigatedAway has no valid coordinator.";
   }
 
   // Pass request_id to the current tab's helper to attempt download right from
@@ -390,7 +387,7 @@ static jlong JNI_OfflinePageDownloadBridge_Init(
     adapter = new DownloadUIAdapter(
         aggregator, offline_page_model, request_coordinator,
         std::make_unique<ThumbnailDecoderImpl>(
-            std::make_unique<suggestions::ImageDecoderImpl>()),
+            std::make_unique<ImageDecoderImpl>()),
         std::make_unique<DownloadUIAdapterDelegate>(offline_page_model));
     DownloadUIAdapter::AttachToOfflinePageModel(base::WrapUnique(adapter),
                                                 offline_page_model);

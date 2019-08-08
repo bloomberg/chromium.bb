@@ -13,8 +13,9 @@
  * @param {number=} opt_priority Priority.
  * @constructor
  */
-function MockThumbnailLoader(entry, opt_loaderType, opt_metadata, opt_mediaType,
-    opt_loadTargets, opt_priority) {
+function MockThumbnailLoader(
+    entry, opt_loaderType, opt_metadata, opt_mediaType, opt_loadTargets,
+    opt_priority) {
   this.entry_ = entry;
 }
 

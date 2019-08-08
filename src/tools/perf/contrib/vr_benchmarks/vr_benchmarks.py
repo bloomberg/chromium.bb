@@ -11,6 +11,7 @@ from telemetry import story
 from telemetry.timeline import chrome_trace_category_filter
 from telemetry.timeline import chrome_trace_config
 from telemetry.web_perf import timeline_based_measurement
+from contrib.vr_benchmarks import shared_vr_page_state as vr_state
 from contrib.vr_benchmarks import vr_browsing_mode_pages
 from contrib.vr_benchmarks import webvr_sample_pages
 from contrib.vr_benchmarks import webvr_wpr_pages
@@ -18,6 +19,16 @@ from contrib.vr_benchmarks import webxr_sample_pages
 
 
 class _BaseVRBenchmark(perf_benchmark.PerfBenchmark):
+
+  # Trace categories that should be enabled for all VR benchmarks.
+  COMMON_TRACE_CATEGORIES = [
+      '-*', # Remove all default categories.
+      'blink.console', # Necessary for memory measurements.
+      'disabled-by-default-memory-infra', # Necessary for memory measurements.
+      'gpu', # Necessary for various VR metrics.
+      'toplevel', # Debug category.
+      'viz', # Debug category.
+    ]
 
   @classmethod
   def AddBenchmarkCommandLineArgs(cls, parser):
@@ -59,24 +70,42 @@ class _BaseVRBenchmark(perf_benchmark.PerfBenchmark):
              'for it. This largely boils down to adding waits/sleeps in order '
              'to ensure that enough streaming data is recorded for the '
              'benchmark to run without issues.')
+    parser.add_option(
+        '--desktop-runtime',
+        default='openvr',
+        choices=vr_state.WindowsSharedVrPageState.DESKTOP_RUNTIMES.keys(),
+        help='Which VR runtime to use on Windows. Defaults to %default')
+    parser.add_option(
+        '--use-real-runtime',
+        action='store_true',
+        default=False,
+        help='Use the real runtime instead of a mock implementation. This '
+             'requires the runtime to be installed on the system.')
+    parser.add_option(
+        '--mock-runtime-directory',
+        help='The directory containing the mock runtime implementation to be '
+             'used. Defaults to the "mock_vr_clients" subdirectory of the '
+             'output directory.')
 
 
 class _BaseWebVRWebXRBenchmark(_BaseVRBenchmark):
 
-  SUPPORTED_PLATFORMS = [story.expectations.ALL_ANDROID]
+  SUPPORTED_PLATFORMS = [
+      story.expectations.ALL_ANDROID,
+      story.expectations.WIN_10
+  ]
 
   def CreateCoreTimelineBasedMeasurementOptions(self):
-    memory_categories = ['blink.console', 'disabled-by-default-memory-infra']
-    gpu_categories = ['gpu']
-    debug_categories = ['toplevel', 'viz']
-    category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
-        ','.join(['-*'] + memory_categories + gpu_categories
-            + debug_categories))
+    category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter()
+    for category in self.COMMON_TRACE_CATEGORIES:
+      category_filter.AddFilter(category)
+
     options = timeline_based_measurement.Options(category_filter)
     options.config.enable_android_graphics_memtrack = True
     options.config.enable_platform_display_trace = True
 
-    options.SetTimelineBasedMetrics(['memoryMetric', 'webvrMetric'])
+    options.SetTimelineBasedMetrics(
+        ['memoryMetric', 'webvrMetric', 'webxrMetric'])
     options.config.chrome_trace_config.SetMemoryDumpConfig(
         chrome_trace_config.MemoryDumpConfig())
     return options
@@ -111,6 +140,7 @@ class XrWebVrStatic(_BaseWebVRBenchmark):
   """Measures WebVR performance with synthetic sample pages."""
 
   def CreateStorySet(self, options):
+    del options
     return webvr_sample_pages.WebVrSamplePageSet()
 
   @classmethod
@@ -124,6 +154,7 @@ class XrWebXrStatic(_BaseWebXRBenchmark):
   """Measures WebXR performance with synthetic sample pages."""
 
   def CreateStorySet(self, options):
+    del options
     return webxr_sample_pages.WebXrSamplePageSet()
 
   @classmethod
@@ -137,6 +168,7 @@ class XrWebVrWprStatic(_BaseWebVRBenchmark):
   """Measures WebVR performance with WPR copies of live websites."""
 
   def CreateStorySet(self, options):
+    del options
     return webvr_wpr_pages.WebVrWprPageSet()
 
   @classmethod
@@ -172,12 +204,10 @@ class _BaseBrowsingBenchmark(_BaseVRBenchmark):
   SUPPORTED_PLATFORMS = [story.expectations.ALL_ANDROID]
 
   def CreateTimelineBasedMeasurementOptions(self):
-    memory_categories = ['blink.console', 'disabled-by-default-memory-infra']
-    gpu_categories = ['gpu']
-    debug_categories = ['toplevel', 'viz']
-    category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
-        ','.join(['-*'] + memory_categories + gpu_categories
-            + debug_categories))
+    category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter()
+    for category in self.COMMON_TRACE_CATEGORIES:
+      category_filter.AddFilter(category)
+
     options = timeline_based_measurement.Options(category_filter)
     options.config.enable_android_graphics_memtrack = True
     options.config.enable_platform_display_trace = True
@@ -201,6 +231,7 @@ class XrBrowsingStatic(_BaseBrowsingBenchmark):
   """Benchmark for testing the VR Browsing Mode performance on sample pages."""
 
   def CreateStorySet(self, options):
+    del options
     return vr_browsing_mode_pages.VrBrowsingModePageSet()
 
   @classmethod
@@ -213,6 +244,7 @@ class XrBrowsingWprStatic(_BaseBrowsingBenchmark):
   """Benchmark for testing the VR Browsing Mode performance on WPR pages."""
 
   def CreateStorySet(self, options):
+    del options
     return vr_browsing_mode_pages.VrBrowsingModeWprPageSet()
 
   @classmethod
@@ -227,10 +259,14 @@ class XrBrowsingWprSmoothness(_BaseBrowsingBenchmark):
   def CreateCoreTimelineBasedMeasurementOptions(self):
     category_filter = chrome_trace_category_filter.CreateLowOverheadFilter()
     options = timeline_based_measurement.Options(category_filter)
-    options.SetTimelineBasedMetrics(['renderingMetric'])
+    options.config.chrome_trace_config.EnableUMAHistograms(
+        'Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin4',
+        'Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin4')
+    options.SetTimelineBasedMetrics(['renderingMetric', 'umaMetric'])
     return options
 
   def CreateStorySet(self, options):
+    del options
     return vr_browsing_mode_pages.VrBrowsingModeWprSmoothnessPageSet()
 
   @classmethod

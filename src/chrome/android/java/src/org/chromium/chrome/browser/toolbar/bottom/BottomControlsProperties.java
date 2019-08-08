@@ -14,6 +14,13 @@ import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 import org.chromium.ui.resources.ResourceManager;
 
 class BottomControlsProperties {
+    /** The height of the bottom control container (view which includes the top shadow) in px. */
+    static final WritableIntPropertyKey BOTTOM_CONTROLS_CONTAINER_HEIGHT_PX =
+            new WritableIntPropertyKey();
+
+    /** The height of the bottom toolbar view in px. */
+    static final WritableIntPropertyKey BOTTOM_CONTROLS_HEIGHT_PX = new WritableIntPropertyKey();
+
     /** The Y offset of the view in px. */
     static final WritableIntPropertyKey Y_OFFSET = new WritableIntPropertyKey();
 
@@ -40,7 +47,7 @@ class BottomControlsProperties {
     static final WritableObjectPropertyKey<EdgeSwipeHandler> TOOLBAR_SWIPE_HANDLER =
             new WritableObjectPropertyKey<>();
 
-    static final PropertyKey[] ALL_KEYS =
-            new PropertyKey[] {Y_OFFSET, ANDROID_VIEW_VISIBLE, COMPOSITED_VIEW_VISIBLE,
-                    LAYOUT_MANAGER, TOOLBAR_SWIPE_LAYOUT, RESOURCE_MANAGER, TOOLBAR_SWIPE_HANDLER};
+    static final PropertyKey[] ALL_KEYS = new PropertyKey[] {BOTTOM_CONTROLS_CONTAINER_HEIGHT_PX,
+            BOTTOM_CONTROLS_HEIGHT_PX, Y_OFFSET, ANDROID_VIEW_VISIBLE, COMPOSITED_VIEW_VISIBLE,
+            LAYOUT_MANAGER, TOOLBAR_SWIPE_LAYOUT, RESOURCE_MANAGER, TOOLBAR_SWIPE_HANDLER};
 }

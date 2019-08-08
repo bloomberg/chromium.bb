@@ -7,7 +7,7 @@
 #include <inttypes.h>
 #include <string>
 
-#include "base/md5.h"
+#include "base/hash/md5.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_thread_impl.h"
 #include "content/public/common/service_names.mojom.h"

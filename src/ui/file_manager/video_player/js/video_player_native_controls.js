@@ -38,6 +38,7 @@ class NativeControlsVideoPlayer {
     // we are confident to remove the feature flag
     this.videoElement_ =
         assertInstanceof(document.createElement('video'), HTMLVideoElement);
+    this.videoElement_.autoPictureInPicture = true;
     this.videoElement_.controls = true;
     this.videoElement_.controlsList = 'nodownload';
     this.videoElement_.style.pointerEvents = 'auto';

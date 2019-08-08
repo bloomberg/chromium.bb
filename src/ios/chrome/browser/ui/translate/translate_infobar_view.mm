@@ -18,7 +18,6 @@
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -29,6 +28,8 @@
 #endif
 
 const CGFloat kInfobarHeight = 54;
+
+NSString* const kTranslateInfobarViewId = @"kTranslateInfobarViewId";
 
 namespace {
 
@@ -200,6 +201,7 @@ const CGFloat kIconTrailingMargin = 12;
 #pragma mark - Private
 
 - (void)setupSubviews {
+  self.accessibilityIdentifier = kTranslateInfobarViewId;
   [self setAccessibilityViewIsModal:YES];
   NSString* a11yAnnoucement =
       [self a11yAnnouncementFromTranslateInfobarViewState:self.state
@@ -211,11 +213,7 @@ const CGFloat kIconTrailingMargin = 12;
                                     a11yAnnoucement);
   }
 
-  if (IsUIRefreshPhase1Enabled()) {
-    self.backgroundColor = UIColorFromRGB(kInfobarBackgroundColor);
-  } else {
-    self.backgroundColor = [UIColor whiteColor];
-  }
+  self.backgroundColor = UIColorFromRGB(kInfobarBackgroundColor);
   id<LayoutGuideProvider> safeAreaLayoutGuide = self.safeAreaLayoutGuide;
 
   // The Content view. Holds all the other subviews.

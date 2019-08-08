@@ -99,12 +99,12 @@ class TestGpuService : public mojom::GpuService {
 
   void CreateArcProtectedBufferManager(
       arc::mojom::ProtectedBufferManagerRequest pbm_request) override {}
-#endif  // defined(OS_CHROMEOS)
-  void CreateJpegDecodeAccelerator(
-      media::mojom::JpegDecodeAcceleratorRequest jda_request) override {}
 
   void CreateJpegEncodeAccelerator(
       media::mojom::JpegEncodeAcceleratorRequest jea_request) override {}
+#endif  // defined(OS_CHROMEOS)
+  void CreateJpegDecodeAccelerator(
+      media::mojom::MjpegDecodeAcceleratorRequest jda_request) override {}
 
   void CreateVideoEncodeAcceleratorProvider(
       media::mojom::VideoEncodeAcceleratorProviderRequest request) override {}

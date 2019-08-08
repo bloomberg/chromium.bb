@@ -81,8 +81,7 @@ class TouchPointView : public views::View, public gfx::AnimationDelegate {
     stroke_flags_.setAlpha(alpha);
     fill_flags_.setShader(cc::PaintShader::MakeRadialGradient(
         gradient_center_, SkIntToScalar(kPointRadius), gradient_colors_,
-        gradient_pos_, base::size(gradient_colors_),
-        SkShader::kMirror_TileMode));
+        gradient_pos_, base::size(gradient_colors_), SkTileMode::kMirror));
     canvas->DrawCircle(circle_center_, SkIntToScalar(kPointRadius),
                        fill_flags_);
     canvas->DrawCircle(circle_center_, SkIntToScalar(kPointRadius),

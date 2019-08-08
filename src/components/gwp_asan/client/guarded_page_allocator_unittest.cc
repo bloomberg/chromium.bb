@@ -13,17 +13,19 @@
 #include "base/process/process_metrics.h"
 #include "base/test/gtest_util.h"
 #include "base/threading/simple_thread.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gwp_asan {
 namespace internal {
 
-static constexpr size_t kGpaMaxPages = AllocatorState::kGpaMaxPages;
+static constexpr size_t kMaxMetadata = AllocatorState::kMaxMetadata;
+static constexpr size_t kMaxSlots = AllocatorState::kMaxSlots;
 
 class GuardedPageAllocatorTest : public testing::Test {
  protected:
-  explicit GuardedPageAllocatorTest(size_t max_allocated_pages = kGpaMaxPages) {
-    gpa_.Init(max_allocated_pages, kGpaMaxPages);
+  explicit GuardedPageAllocatorTest(size_t max_allocated_pages = kMaxMetadata) {
+    gpa_.Init(max_allocated_pages, kMaxMetadata, kMaxSlots);
   }
 
   // Get a left- or right- aligned allocation (or nullptr on error.)
@@ -89,6 +91,16 @@ TEST_F(GuardedPageAllocatorTest, PointerIsMine) {
   EXPECT_FALSE(gpa_.PointerIsMine(malloc_ptr.get()));
 }
 
+TEST_F(GuardedPageAllocatorTest, GetRequestedSize) {
+  void* buf = gpa_.Allocate(100);
+  EXPECT_EQ(gpa_.GetRequestedSize(buf), 100U);
+#if !defined(OS_MACOSX)
+  EXPECT_DEATH({ gpa_.GetRequestedSize((char*)buf + 1); }, "");
+#else
+  EXPECT_EQ(gpa_.GetRequestedSize((char*)buf + 1), 0U);
+#endif
+}
+
 TEST_F(GuardedPageAllocatorTest, LeftAlignedAllocation) {
   char* buf = GetAlignedAllocation(true, 16);
   ASSERT_NE(buf, nullptr);
@@ -137,7 +149,7 @@ class GuardedPageAllocatorParamTest
 
 TEST_P(GuardedPageAllocatorParamTest, AllocDeallocAllPages) {
   size_t num_allocations = GetParam();
-  char* bufs[kGpaMaxPages];
+  char* bufs[kMaxMetadata];
   for (size_t i = 0; i < num_allocations; i++) {
     bufs[i] = reinterpret_cast<char*>(gpa_.Allocate(1));
     EXPECT_NE(bufs[i], nullptr);
@@ -165,24 +177,24 @@ TEST_P(GuardedPageAllocatorParamTest, AllocDeallocAllPages) {
 }
 INSTANTIATE_TEST_SUITE_P(VaryNumPages,
                          GuardedPageAllocatorParamTest,
-                         testing::Values(1, kGpaMaxPages / 2, kGpaMaxPages));
+                         testing::Values(1, kMaxMetadata / 2, kMaxMetadata));
 
 class ThreadedAllocCountDelegate : public base::DelegateSimpleThread::Delegate {
  public:
   explicit ThreadedAllocCountDelegate(
       GuardedPageAllocator* gpa,
-      std::array<void*, kGpaMaxPages>* allocations)
+      std::array<void*, kMaxMetadata>* allocations)
       : gpa_(gpa), allocations_(allocations) {}
 
   void Run() override {
-    for (size_t i = 0; i < kGpaMaxPages; i++) {
+    for (size_t i = 0; i < kMaxMetadata; i++) {
       (*allocations_)[i] = gpa_->Allocate(1);
     }
   }
 
  private:
   GuardedPageAllocator* gpa_;
-  std::array<void*, kGpaMaxPages>* allocations_;
+  std::array<void*, kMaxMetadata>* allocations_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadedAllocCountDelegate);
 };
@@ -191,7 +203,7 @@ class ThreadedAllocCountDelegate : public base::DelegateSimpleThread::Delegate {
 // extra pages are allocated when there's concurrent calls to Allocate().
 TEST_F(GuardedPageAllocatorTest, ThreadedAllocCount) {
   constexpr size_t num_threads = 2;
-  std::array<void*, kGpaMaxPages> allocations[num_threads];
+  std::array<void*, kMaxMetadata> allocations[num_threads];
   {
     base::DelegateSimpleThreadPool threads("alloc_threads", num_threads);
     threads.Start();
@@ -208,12 +220,12 @@ TEST_F(GuardedPageAllocatorTest, ThreadedAllocCount) {
   }
   std::set<void*> allocations_set;
   for (size_t i = 0; i < num_threads; i++) {
-    for (size_t j = 0; j < kGpaMaxPages; j++) {
+    for (size_t j = 0; j < kMaxMetadata; j++) {
       allocations_set.insert(allocations[i][j]);
     }
   }
   allocations_set.erase(nullptr);
-  EXPECT_EQ(allocations_set.size(), kGpaMaxPages);
+  EXPECT_EQ(allocations_set.size(), kMaxMetadata);
 }
 
 class ThreadedHighContentionDelegate
@@ -267,7 +279,7 @@ TEST_F(GuardedPageAllocatorTest, ThreadedHighContention) {
   }
 
   // Verify all pages have been deallocated now that all threads are done.
-  for (size_t i = 0; i < kGpaMaxPages; i++)
+  for (size_t i = 0; i < kMaxMetadata; i++)
     EXPECT_NE(gpa_.Allocate(1), nullptr);
 }
 

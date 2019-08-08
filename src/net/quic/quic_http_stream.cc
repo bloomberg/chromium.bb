@@ -23,11 +23,11 @@
 #include "net/quic/quic_http_utils.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/ssl/ssl_info.h"
-#include "net/third_party/quic/core/http/quic_client_promised_info.h"
-#include "net/third_party/quic/core/http/spdy_utils.h"
-#include "net/third_party/quic/core/quic_stream_sequencer.h"
-#include "net/third_party/quic/core/quic_utils.h"
-#include "net/third_party/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/quic/core/http/quic_client_promised_info.h"
+#include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
+#include "net/third_party/quiche/src/quic/core/quic_stream_sequencer.h"
+#include "net/third_party/quiche/src/quic/core/quic_utils.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_frame_builder.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
 
@@ -199,17 +199,6 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   CHECK(!callback.is_null());
   CHECK(response);
 
-  // TODO(rch): remove this once we figure out why channel ID is not being
-  // sent when it should be.
-  HostPortPair origin = HostPortPair::FromURL(request_info_->url);
-  if (origin.Equals(HostPortPair("accounts.google.com", 443)) &&
-      request_headers.HasHeader(HttpRequestHeaders::kCookie)) {
-    SSLInfo ssl_info;
-    GetSSLInfo(&ssl_info);
-    UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.CookieSentToAccountsOverChannelId",
-                          ssl_info.channel_id_sent);
-  }
-
   // In order to rendezvous with a push stream, the session still needs to be
   // available. Otherwise the stream needs to be available.
   if ((!found_promise_ && !stream_) || !quic_session()->IsConnected())
@@ -240,12 +229,14 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
     //   && (request_body_stream_->size() ||
     //       request_body_stream_->is_chunked()))
     // Set the body buffer size to be the size of the body clamped
-    // into the range [10 * quic::kMaxPacketSize, 256 * quic::kMaxPacketSize].
-    // With larger bodies, larger buffers reduce CPU usage.
+    // into the range [10 * quic::kMaxOutgoingPacketSize, 256 *
+    // quic::kMaxOutgoingPacketSize]. With larger bodies, larger buffers reduce
+    // CPU usage.
     raw_request_body_buf_ =
-        base::MakeRefCounted<IOBufferWithSize>(static_cast<size_t>(std::max(
-            10 * quic::kMaxPacketSize, std::min(request_body_stream_->size(),
-                                                256 * quic::kMaxPacketSize))));
+        base::MakeRefCounted<IOBufferWithSize>(static_cast<size_t>(
+            std::max(10 * quic::kMaxOutgoingPacketSize,
+                     std::min(request_body_stream_->size(),
+                              256 * quic::kMaxOutgoingPacketSize))));
     // The request body buffer is empty at first.
     request_body_buf_ =
         base::MakeRefCounted<DrainableIOBuffer>(raw_request_body_buf_, 0);

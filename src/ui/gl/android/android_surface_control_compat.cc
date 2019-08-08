@@ -104,12 +104,18 @@ namespace {
 
 base::AtomicSequenceNumber g_next_transaction_id;
 
+// Helper function to log errors from dlsym. Calling LOG(ERROR) inside a macro
+// crashes clang code coverage. https://crbug.com/843356
+void LogDlsymError(const char* func) {
+  LOG(ERROR) << "Unable to load function " << func;
+}
+
 #define LOAD_FUNCTION(lib, func)                             \
   do {                                                       \
     func##Fn = reinterpret_cast<p##func>(dlsym(lib, #func)); \
     if (!func##Fn) {                                         \
       supported = false;                                     \
-      LOG(ERROR) << "Unable to load function " << #func;     \
+      LogDlsymError(#func);                                  \
     }                                                        \
   } while (0)
 
@@ -266,6 +272,8 @@ void OnTransactionCompletedOnAnyThread(void* context,
                                        ASurfaceTransactionStats* stats) {
   auto* ack_ctx = static_cast<TransactionAckCtx*>(context);
   auto transaction_stats = ToTransactionStats(stats);
+  TRACE_EVENT_ASYNC_END0("gpu,benchmark", "SurfaceControlTransaction",
+                         ack_ctx->id);
 
   if (ack_ctx->task_runner) {
     ack_ctx->task_runner->PostTask(
@@ -275,7 +283,6 @@ void OnTransactionCompletedOnAnyThread(void* context,
     std::move(ack_ctx->callback).Run(std::move(transaction_stats));
   }
 
-  TRACE_EVENT_ASYNC_END0("gpu", "SurfaceControlTransaction", ack_ctx->id);
   delete ack_ctx;
 }
 }  // namespace
@@ -424,7 +431,7 @@ void SurfaceControl::Transaction::SetOnCompleteCb(
 }
 
 void SurfaceControl::Transaction::Apply() {
-  TRACE_EVENT_ASYNC_BEGIN0("gpu", "SurfaceControlTransaction", id_);
+  TRACE_EVENT_ASYNC_BEGIN0("gpu,benchmark", "SurfaceControlTransaction", id_);
   SurfaceControlMethods::Get().ASurfaceTransaction_applyFn(transaction_);
 }
 

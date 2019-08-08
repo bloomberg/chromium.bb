@@ -193,8 +193,12 @@ StackingNotificationCounterView::StackingNotificationCounterView(
 
 StackingNotificationCounterView::~StackingNotificationCounterView() = default;
 
-void StackingNotificationCounterView::SetCount(int total_notification_count,
+bool StackingNotificationCounterView::SetCount(int total_notification_count,
                                                int stacked_notification_count) {
+  if (total_notification_count == total_notification_count_ &&
+      stacked_notification_count == stacked_notification_count_)
+    return false;
+
   total_notification_count_ = total_notification_count;
   stacked_notification_count_ = stacked_notification_count;
 
@@ -213,6 +217,7 @@ void StackingNotificationCounterView::SetCount(int total_notification_count,
   }
 
   SchedulePaint();
+  return true;
 }
 
 void StackingNotificationCounterView::OnPaint(gfx::Canvas* canvas) {
@@ -232,9 +237,10 @@ void StackingNotificationCounterView::OnPaint(gfx::Canvas* canvas) {
 
   // We draw a border here than use a views::Border so the ink drop highlight
   // of the clear all button overlays the border.
-  canvas->Draw1pxLine(gfx::PointF(bounds.bottom_left() - gfx::Vector2d(0, 1)),
-                      gfx::PointF(bounds.bottom_right() - gfx::Vector2d(0, 1)),
-                      kStackingNotificationCounterBorderColor);
+  canvas->DrawSharpLine(
+      gfx::PointF(bounds.bottom_left() - gfx::Vector2d(0, 1)),
+      gfx::PointF(bounds.bottom_right() - gfx::Vector2d(0, 1)),
+      kStackingNotificationCounterBorderColor);
 
   if (features::IsNotificationStackingBarRedesignEnabled())
     return;
@@ -270,13 +276,12 @@ UnifiedMessageCenterView::UnifiedMessageCenterView(
 
   // Need to set the transparent background explicitly, since ScrollView has
   // set the default opaque background color.
-  scroller_->SetContents(new ScrollerContentsView(message_list_view_, this));
+  scroller_->SetContents(
+      std::make_unique<ScrollerContentsView>(message_list_view_, this));
   scroller_->SetBackgroundColor(SK_ColorTRANSPARENT);
   scroller_->SetVerticalScrollBar(scroll_bar_);
   scroller_->set_draw_overflow_indicator(false);
   AddChildView(scroller_);
-
-  UpdateVisibility();
 }
 
 UnifiedMessageCenterView::~UnifiedMessageCenterView() {
@@ -288,6 +293,11 @@ UnifiedMessageCenterView::~UnifiedMessageCenterView() {
 
 void UnifiedMessageCenterView::SetMaxHeight(int max_height) {
   scroller_->ClipHeightTo(0, max_height);
+}
+
+void UnifiedMessageCenterView::SetAvailableHeight(int available_height) {
+  available_height_ = available_height;
+  UpdateVisibility();
 }
 
 void UnifiedMessageCenterView::ListPreferredSizeChanged() {
@@ -352,10 +362,10 @@ void UnifiedMessageCenterView::OnMessageCenterScrolled() {
   model_->set_notification_target_mode(
       UnifiedSystemTrayModel::NotificationTargetMode::LAST_POSITION);
 
-  const bool was_visible = stacking_counter_->visible();
-  stacking_counter_->SetCount(message_list_view_->GetTotalNotificationCount(),
-                              GetStackedNotificationCount());
-  if (was_visible != stacking_counter_->visible()) {
+  bool was_count_updated = stacking_counter_->SetCount(
+      message_list_view_->GetTotalNotificationCount(),
+      GetStackedNotificationCount());
+  if (was_count_updated) {
     const int previous_y = scroller_->y();
     Layout();
     // Adjust scroll position when counter visibility is changed so that
@@ -402,15 +412,18 @@ void UnifiedMessageCenterView::SetNotificationRectBelowScroll(
 
 void UnifiedMessageCenterView::UpdateVisibility() {
   SessionController* session_controller = Shell::Get()->session_controller();
-  SetVisible(message_list_view_->GetPreferredSize().height() > 0 &&
+  SetVisible(available_height_ >= kUnifiedNotificationMinimumHeight &&
+             message_list_view_->GetPreferredSize().height() > 0 &&
              session_controller->ShouldShowNotificationTray() &&
              (!session_controller->IsScreenLocked() ||
               AshMessageCenterLockScreenController::IsEnabled()));
+
   // When notification list went invisible, the last notification should be
   // targeted next time.
   if (!visible()) {
     model_->set_notification_target_mode(
         UnifiedSystemTrayModel::NotificationTargetMode::LAST_NOTIFICATION);
+    NotifyRectBelowScroll();
   }
 }
 
@@ -475,8 +488,11 @@ int UnifiedMessageCenterView::GetStackedNotificationCount() const {
 }
 
 void UnifiedMessageCenterView::NotifyRectBelowScroll() {
-  if (!visible())
+  // If the message center is hidden, make sure rounded corners are not drawn.
+  if (!visible()) {
+    SetNotificationRectBelowScroll(gfx::Rect());
     return;
+  }
 
   gfx::Rect rect_below_scroll;
   rect_below_scroll.set_height(

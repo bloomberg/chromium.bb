@@ -16,6 +16,7 @@
 #include <utility>
 #include <vector>
 
+#include "api/test/video_quality_analyzer_interface.h"
 #include "api/video/video_frame.h"
 #include "api/video_codecs/sdp_video_format.h"
 #include "api/video_codecs/video_codec.h"
@@ -24,10 +25,9 @@
 #include "rtc_base/critical_section.h"
 #include "test/pc/e2e/analyzer/video/encoded_image_data_injector.h"
 #include "test/pc/e2e/analyzer/video/id_generator.h"
-#include "test/pc/e2e/api/video_quality_analyzer_interface.h"
 
 namespace webrtc {
-namespace test {
+namespace webrtc_pc_e2e {
 
 // QualityAnalyzingVideoEncoder is used to wrap origin video encoder and inject
 // VideoQualityAnalyzerInterface before and after encoder.
@@ -55,6 +55,7 @@ class QualityAnalyzingVideoEncoder : public VideoEncoder,
   QualityAnalyzingVideoEncoder(
       int id,
       std::unique_ptr<VideoEncoder> delegate,
+      double bitrate_multiplier,
       std::map<std::string, absl::optional<int>> stream_required_spatial_index,
       EncodedImageDataInjector* injector,
       VideoQualityAnalyzerInterface* analyzer);
@@ -68,11 +69,8 @@ class QualityAnalyzingVideoEncoder : public VideoEncoder,
       EncodedImageCallback* callback) override;
   int32_t Release() override;
   int32_t Encode(const VideoFrame& frame,
-                 const CodecSpecificInfo* codec_specific_info,
-                 const std::vector<FrameType>* frame_types) override;
-  int32_t SetRates(uint32_t bitrate, uint32_t framerate) override;
-  int32_t SetRateAllocation(const VideoBitrateAllocation& allocation,
-                            uint32_t framerate) override;
+                 const std::vector<VideoFrameType>* frame_types) override;
+  void SetRates(const VideoEncoder::RateControlParameters& parameters) override;
   EncoderInfo GetEncoderInfo() const override;
 
   // Methods of EncodedImageCallback interface.
@@ -136,6 +134,7 @@ class QualityAnalyzingVideoEncoder : public VideoEncoder,
 
   const int id_;
   std::unique_ptr<VideoEncoder> delegate_;
+  const double bitrate_multiplier_;
   std::map<std::string, absl::optional<int>> stream_required_spatial_index_;
   EncodedImageDataInjector* const injector_;
   VideoQualityAnalyzerInterface* const analyzer_;
@@ -145,6 +144,7 @@ class QualityAnalyzingVideoEncoder : public VideoEncoder,
   // from received VideoFrame to resulted EncodedImage.
   rtc::CriticalSection lock_;
 
+  VideoCodec codec_settings_;
   SimulcastMode mode_ RTC_GUARDED_BY(lock_);
   EncodedImageCallback* delegate_callback_ RTC_GUARDED_BY(lock_);
   std::list<std::pair<uint32_t, uint16_t>> timestamp_to_frame_id_list_
@@ -158,6 +158,7 @@ class QualityAnalyzingVideoEncoderFactory : public VideoEncoderFactory {
  public:
   QualityAnalyzingVideoEncoderFactory(
       std::unique_ptr<VideoEncoderFactory> delegate,
+      double bitrate_multiplier,
       std::map<std::string, absl::optional<int>> stream_required_spatial_index,
       IdGenerator<int>* id_generator,
       EncodedImageDataInjector* injector,
@@ -173,13 +174,14 @@ class QualityAnalyzingVideoEncoderFactory : public VideoEncoderFactory {
 
  private:
   std::unique_ptr<VideoEncoderFactory> delegate_;
+  const double bitrate_multiplier_;
   std::map<std::string, absl::optional<int>> stream_required_spatial_index_;
   IdGenerator<int>* const id_generator_;
   EncodedImageDataInjector* const injector_;
   VideoQualityAnalyzerInterface* const analyzer_;
 };
 
-}  // namespace test
+}  // namespace webrtc_pc_e2e
 }  // namespace webrtc
 
 #endif  // TEST_PC_E2E_ANALYZER_VIDEO_QUALITY_ANALYZING_VIDEO_ENCODER_H_

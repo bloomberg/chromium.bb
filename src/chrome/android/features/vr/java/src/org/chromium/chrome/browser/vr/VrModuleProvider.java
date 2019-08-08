@@ -4,13 +4,12 @@
 
 package org.chromium.chrome.browser.vr;
 
-import org.chromium.base.VisibleForTesting;
+import org.chromium.base.BundleUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modules.ModuleInstallUi;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.components.module_installer.ModuleInstaller;
 import org.chromium.components.module_installer.OnModuleInstallFinishedListener;
 
 import java.util.ArrayList;
@@ -46,11 +45,12 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
      */
     public static void maybeRequestModuleIfDaydreamReady() {
         if (!VrBuildConfig.IS_VR_ENABLED) return;
-        if (isModuleInstalled()) return;
+        if (!BundleUtils.isBundle()) return;
+        if (VrModule.isInstalled()) return;
         if (!getDelegate().isDaydreamReadyDevice()) return;
 
         // Installs module when on unmetered network connection and device is charging.
-        ModuleInstaller.installDeferred("vr");
+        VrModule.installDeferred();
     }
 
     public static VrDelegate getDelegate() {
@@ -87,19 +87,8 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
         for (VrModeObserver observer : sVrModeObservers) observer.onExitVr();
     }
 
-    @VisibleForTesting
-    public static void setAlwaysUseFallbackDelegate(boolean useFallbackDelegate) {
-        // TODO(bsheedy): Change this to an "assert sDelegateProvider == null" once we change the
-        // restriction checking code to use the Daydream API directly so that a delegate provider
-        // doesn't get created during pre-test setup.
-        sDelegateProvider = null;
-        sAlwaysUseFallbackDelegate = useFallbackDelegate;
-    }
-
     /* package */ static void installModule(OnModuleInstallFinishedListener onFinishedListener) {
-        assert !isModuleInstalled();
-
-        ModuleInstaller.install("vr", (success) -> {
+        VrModule.install((success) -> {
             if (success) {
                 // Re-create delegate provider.
                 sDelegateProvider = null;
@@ -119,20 +108,10 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
 
     private static VrDelegateProvider getDelegateProvider() {
         if (sDelegateProvider == null) {
-            if (sAlwaysUseFallbackDelegate) {
+            if (!VrModule.isInstalled()) {
                 sDelegateProvider = new VrDelegateProviderFallback();
-                return sDelegateProvider;
-            }
-            // Need to be called before trying to access the VR module.
-            ModuleInstaller.init();
-            try {
-                sDelegateProvider =
-                        (VrDelegateProvider) Class
-                                .forName("org.chromium.chrome.browser.vr.VrDelegateProviderImpl")
-                                .newInstance();
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-                    | IllegalArgumentException e) {
-                sDelegateProvider = new VrDelegateProviderFallback();
+            } else {
+                sDelegateProvider = VrModule.getImpl();
             }
         }
         return sDelegateProvider;
@@ -144,8 +123,8 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
     }
 
     @CalledByNative
-    /* package */ static boolean isModuleInstalled() {
-        return !(getDelegateProvider() instanceof VrDelegateProviderFallback);
+    private static boolean isModuleInstalled() {
+        return VrModule.isInstalled();
     }
 
     @Override

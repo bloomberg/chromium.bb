@@ -74,10 +74,6 @@ class MockChromeClient : public EmptyChromeClient {
 
 class StubLocalFrameClient : public EmptyLocalFrameClient {
  public:
-  static StubLocalFrameClient* Create() {
-    return MakeGarbageCollected<StubLocalFrameClient>();
-  }
-
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
@@ -109,7 +105,8 @@ class MediaControlsRotateToFullscreenDelegateTest
     FillWithEmptyClients(clients);
     clients.chrome_client = chrome_client_.Get();
 
-    SetupPageWithClients(&clients, StubLocalFrameClient::Create());
+    SetupPageWithClients(&clients,
+                         MakeGarbageCollected<StubLocalFrameClient>());
     video_ = HTMLVideoElement::Create(GetDocument());
     GetVideo().setAttribute(kControlsAttr, g_empty_atom);
     // Most tests should call GetDocument().body()->AppendChild(&GetVideo());

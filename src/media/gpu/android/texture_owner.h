@@ -24,7 +24,8 @@ class ScopedHardwareBufferFenceSync;
 }  // namespace base
 
 namespace gpu {
-class DecoderContext;
+class SharedContextState;
+class TextureBase;
 namespace gles2 {
 class AbstractTexture;
 }  // namespace gles2
@@ -58,7 +59,7 @@ class MEDIA_GPU_EXPORT TextureOwner
 
   // Create a texture that's appropriate for a TextureOwner.
   static std::unique_ptr<gpu::gles2::AbstractTexture> CreateTexture(
-      gpu::DecoderContext* decoder);
+      gpu::SharedContextState* context_state);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
     return task_runner_;
@@ -66,6 +67,7 @@ class MEDIA_GPU_EXPORT TextureOwner
 
   // Returns the GL texture id that the TextureOwner is attached to.
   GLuint GetTextureId() const;
+  gpu::TextureBase* GetTextureBase() const;
   virtual gl::GLContext* GetContext() const = 0;
   virtual gl::GLSurface* GetSurface() const = 0;
 

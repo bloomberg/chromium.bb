@@ -27,20 +27,21 @@ class SyncUserSettingsMock : public SyncUserSettings {
   MOCK_METHOD0(SetFirstSetupComplete, void());
 
   MOCK_CONST_METHOD0(IsSyncEverythingEnabled, bool());
-  MOCK_CONST_METHOD0(GetChosenDataTypes, syncer::ModelTypeSet());
-  MOCK_METHOD2(SetChosenDataTypes, void(bool, syncer::ModelTypeSet));
+  MOCK_CONST_METHOD0(GetSelectedTypes, UserSelectableTypeSet());
+  MOCK_METHOD2(SetSelectedTypes, void(bool, UserSelectableTypeSet));
+  MOCK_CONST_METHOD0(GetRegisteredSelectableTypes, UserSelectableTypeSet());
+  MOCK_CONST_METHOD0(GetForcedTypes, UserSelectableTypeSet());
 
   MOCK_CONST_METHOD0(IsEncryptEverythingAllowed, bool());
-  MOCK_METHOD1(SetEncryptEverythingAllowed, void(bool));
   MOCK_CONST_METHOD0(IsEncryptEverythingEnabled, bool());
   MOCK_METHOD0(EnableEncryptEverything, void());
 
-  MOCK_CONST_METHOD0(GetEncryptedDataTypes, syncer::ModelTypeSet());
+  MOCK_CONST_METHOD0(GetEncryptedDataTypes, ModelTypeSet());
   MOCK_CONST_METHOD0(IsPassphraseRequired, bool());
   MOCK_CONST_METHOD0(IsPassphraseRequiredForDecryption, bool());
   MOCK_CONST_METHOD0(IsUsingSecondaryPassphrase, bool());
   MOCK_CONST_METHOD0(GetExplicitPassphraseTime, base::Time());
-  MOCK_CONST_METHOD0(GetPassphraseType, syncer::PassphraseType());
+  MOCK_CONST_METHOD0(GetPassphraseType, PassphraseType());
 
   MOCK_METHOD1(SetEncryptionPassphrase, void(const std::string&));
   MOCK_METHOD1(SetDecryptionPassphrase, bool(const std::string&));

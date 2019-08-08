@@ -11,8 +11,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/signin/core/browser/signin_buildflags.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/scoped_unified_consent.h"
@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataCounterUtilsBrowserTest,
                        ShouldShowCookieException) {
   Profile* profile = browser()->profile();
 
-  browser_sync::ProfileSyncService* sync_service =
+  syncer::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(profile);
 
   sync_service->OverrideNetworkResourcesForTest(

@@ -1040,6 +1040,38 @@ TEST_F(VariationsServiceTest, NullResponseReceivedWithHTTPOk) {
                                       net::ERR_FAILED, 1);
 }
 
+TEST_F(VariationsServiceTest,
+       VariationsServiceStartsRequestOnNetworkChange) {
+  // Verifies VariationsService does a request when network status changes from
+  // none to connected. This is a regression test for https://crbug.com/826930.
+  VariationsService::EnableFetchForTesting();
+  network_tracker_->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_NONE);
+  TestVariationsService service(
+      std::make_unique<web_resource::TestRequestAllowedNotifier>(
+          &prefs_, network_tracker_),
+      &prefs_, GetMetricsStateManager(), true);
+  service.set_intercepts_fetch(false);
+  service.CancelCurrentRequestForTesting();
+  base::RunLoop().RunUntilIdle();
+  // Simulate starting Chrome browser.
+  service.StartRepeatedVariationsSeedFetchForTesting();
+  const int initial_request_count = service.request_count();
+  // The variations seed can not be fetched if disconnected. So even we start
+  // repeated variations seed fetch (on Chrome start), no requests will be made.
+  EXPECT_EQ(0, initial_request_count);
+
+  service.GetResourceRequestAllowedNotifierForTesting()
+      ->SetObserverRequestedForTesting(true);
+  network_tracker_->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_WIFI);
+  base::RunLoop().RunUntilIdle();
+
+  const int final_request_count = service.request_count();
+  // The request will be made once Chrome gets online.
+  EXPECT_EQ(initial_request_count + 1, final_request_count);
+}
+
 // TODO(isherman): Add an integration test for saving and loading a safe seed,
 // once the loading functionality is implemented on the seed store.
 

@@ -56,3 +56,24 @@ source_set("eg_tests") {
   ]
   libs = [ "XCTest.framework" ]
 }
+
+source_set("unity_eg_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "signin_interaction_controller_unity_egtest.mm",
+  ]
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//components/unified_consent",
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser/ui/authentication:eg_test_support",
+    "//ios/chrome/browser/ui/authentication/unified_consent/identity_chooser:identity_chooser_ui",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/public/provider/chrome/browser/signin:test_support",
+    "//ios/testing/earl_grey:earl_grey_support",
+    "//ui/base",
+  ]
+  libs = [ "XCTest.framework" ]
+}

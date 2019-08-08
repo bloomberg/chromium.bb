@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/trace_event/trace_event.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "services/ws/client_change.h"
@@ -17,6 +18,7 @@
 #include "services/ws/top_level_proxy_window.h"
 #include "services/ws/window_service.h"
 #include "services/ws/window_tree.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/client_surface_embedder.h"
 #include "ui/aura/mus/property_converter.h"
@@ -67,6 +69,15 @@ gfx::Rect GetBoundsToSend(aura::Window* window) {
   // Typically root window bounds should be (0, 0), but it's not on some tests.
   bounds += (root->GetBoundsInScreen().origin() - root->bounds().origin());
   return bounds;
+}
+
+// Converts the size of the window to pixels. This function must match that used
+// by WindowTreeHostMus (otherwise this code may not generate a new
+// LocalSurfaceId when the client believes one should be generated). See
+// https://crbug.com/952095 for more details.
+gfx::Size ConvertWindowSizeToPixels(aura::Window* window) {
+  return gfx::ScaleToCeiledSize(window->bounds().size(),
+                                window->layer()->device_scale_factor());
 }
 
 }  // namespace
@@ -141,8 +152,7 @@ void ClientRoot::GenerateLocalSurfaceIdIfNecessary() {
   if (!ShouldAssignLocalSurfaceId())
     return;
 
-  gfx::Size size_in_pixels =
-      ui::ConvertSizeToPixel(window_->layer(), window_->bounds().size());
+  gfx::Size size_in_pixels = ConvertWindowSizeToPixels(window_);
   ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window_);
   // It's expected by cc code that any time the size changes a new
   // LocalSurfaceId is used.
@@ -157,9 +167,8 @@ void ClientRoot::GenerateLocalSurfaceIdIfNecessary() {
 void ClientRoot::UpdateSurfacePropertiesCache() {
   ProxyWindow::GetMayBeNull(window_)->set_local_surface_id_allocation(
       parent_local_surface_id_allocator_->GetCurrentLocalSurfaceIdAllocation());
-  last_surface_size_in_pixels_ =
-      ui::ConvertSizeToPixel(window_->layer(), window_->bounds().size());
   last_device_scale_factor_ = window_->layer()->device_scale_factor();
+  last_surface_size_in_pixels_ = ConvertWindowSizeToPixels(window_);
 }
 
 bool ClientRoot::SetBoundsInScreenFromClient(
@@ -331,8 +340,12 @@ void ClientRoot::HandleBoundsOrScaleFactorChange() {
 void ClientRoot::NotifyClientOfNewBounds() {
   last_bounds_ = GetBoundsToSend(window_);
   auto id = ProxyWindow::GetMayBeNull(window_)->local_surface_id_allocation();
+  TRACE_EVENT_WITH_FLOW0("ui", "ClientRoot::NotifyClientOfNewBounds",
+                         id->local_surface_id().hash(),
+                         TRACE_EVENT_FLAG_FLOW_OUT);
   window_tree_->window_tree_client_->OnWindowBoundsChanged(
       window_tree_->TransportIdForWindow(window_), last_bounds_,
+      window_->GetProperty(aura::client::kShowStateKey),
       ProxyWindow::GetMayBeNull(window_)->local_surface_id_allocation());
 }
 
@@ -398,14 +411,12 @@ void ClientRoot::OnWindowBoundsChanged(aura::Window* window,
                                        ui::PropertyChangeReason reason) {
   if (setting_bounds_from_client_)
     return;
-  if (!is_top_level_) {
-    HandleBoundsOrScaleFactorChange();
+
+  // Early out when a top level is in middle of moving to a new display.
+  // Bounds change will be sent after it is added to the new root window.
+  if (is_top_level_ && is_moving_across_displays_)
     return;
-  }
-  if (is_moving_across_displays_) {
-    display_move_changed_bounds_ = true;
-    return;
-  }
+
   HandleBoundsOrScaleFactorChange();
 }
 
@@ -413,12 +424,13 @@ void ClientRoot::OnWindowAddedToRootWindow(aura::Window* window) {
   DCHECK_EQ(window, window_);
   DCHECK(window->GetHost());
   window->GetHost()->AddObserver(this);
+
+  is_moving_across_displays_ = false;
   NotifyClientOfDisplayIdChange();
 
-  // When the addition to a new root window isn't the result of moving across
-  // displays (e.g. destruction of the current display), the window bounds in
-  // screen change even though its bounds in the root window remain the same.
-  if (is_top_level_ && !is_moving_across_displays_)
+  // When added to a new root window, the window bounds in screen may have
+  // changed even though its bounds in the root window remain the same.
+  if (is_top_level_)
     HandleBoundsOrScaleFactorChange();
   else
     CheckForScaleFactorChange();
@@ -431,22 +443,11 @@ void ClientRoot::OnWindowRemovingFromRootWindow(aura::Window* window,
   DCHECK_EQ(window, window_);
   DCHECK(window->GetHost());
   window->GetHost()->RemoveObserver(this);
-  if (!new_root)
+  if (new_root) {
+    DCHECK(!is_moving_across_displays_);
+    is_moving_across_displays_ = true;
+  } else {
     NotifyClientOfVisibilityChange(false);
-}
-
-void ClientRoot::OnWillMoveWindowToDisplay(aura::Window* window,
-                                           int64_t new_display_id) {
-  DCHECK(!is_moving_across_displays_);
-  is_moving_across_displays_ = true;
-}
-
-void ClientRoot::OnDidMoveWindowToDisplay(aura::Window* window) {
-  DCHECK(is_moving_across_displays_);
-  is_moving_across_displays_ = false;
-  if (display_move_changed_bounds_) {
-    HandleBoundsOrScaleFactorChange();
-    display_move_changed_bounds_ = false;
   }
 }
 

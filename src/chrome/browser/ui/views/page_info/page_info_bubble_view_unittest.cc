@@ -61,10 +61,10 @@ class PageInfoBubbleViewTestApi {
       view_->GetWidget()->CloseNow();
     }
 
-    security_state::SecurityInfo security_info;
     views::View* anchor_view = nullptr;
-    view_ = new PageInfoBubbleView(anchor_view, gfx::Rect(), parent_, profile_,
-                                   web_contents_, GURL(kUrl), security_info);
+    view_ = new PageInfoBubbleView(
+        anchor_view, gfx::Rect(), parent_, profile_, web_contents_, GURL(kUrl),
+        security_state::NONE, security_state::VisibleSecurityState());
   }
 
   PageInfoBubbleView* view() { return view_; }
@@ -217,7 +217,7 @@ class FlashContentSettingsChangeWaiter : public content_settings::Observer {
 }  // namespace
 
 // Each permission selector row is like this: [icon] [label] [selector]
-constexpr int kViewsPerPermissionRow = 3;
+constexpr size_t kViewsPerPermissionRow = 3;
 
 // Test UI construction and reconstruction via
 // PageInfoBubbleView::SetPermissionInfo().
@@ -235,13 +235,13 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfo) {
   list.back().setting = CONTENT_SETTING_BLOCK;
 
   // Initially, no permissions are shown because they are all set to default.
-  int num_expected_children = 0;
-  EXPECT_EQ(num_expected_children, api_->permissions_view()->child_count());
+  size_t num_expected_children = 0;
+  EXPECT_EQ(num_expected_children, api_->permissions_view()->children().size());
 
   num_expected_children += kViewsPerPermissionRow * list.size();
   list.back().setting = CONTENT_SETTING_ALLOW;
   api_->SetPermissionInfo(list);
-  EXPECT_EQ(num_expected_children, api_->permissions_view()->child_count());
+  EXPECT_EQ(num_expected_children, api_->permissions_view()->children().size());
 
   PermissionSelectorRow* selector = api_->GetPermissionSelectorAt(0);
   EXPECT_TRUE(selector);
@@ -258,14 +258,14 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfo) {
   // Simulate a user selection via the UI. Note this will also cover logic in
   // PageInfo to update the pref.
   api_->SimulateUserSelectingComboboxItemAt(0, 1);
-  EXPECT_EQ(num_expected_children, api_->permissions_view()->child_count());
+  EXPECT_EQ(num_expected_children, api_->permissions_view()->children().size());
   EXPECT_EQ(base::ASCIIToUTF16("Allow"), api_->GetPermissionComboboxTextAt(0));
 
   // Setting to the default via the UI should keep the button around.
   api_->SimulateUserSelectingComboboxItemAt(0, 0);
   EXPECT_EQ(base::ASCIIToUTF16("Ask (default)"),
             api_->GetPermissionComboboxTextAt(0));
-  EXPECT_EQ(num_expected_children, api_->permissions_view()->child_count());
+  EXPECT_EQ(num_expected_children, api_->permissions_view()->children().size());
 
   // However, since the setting is now default, recreating the dialog with those
   // settings should omit the permission from the UI.
@@ -274,13 +274,13 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfo) {
   // that |num_expected_children| is not, at this point, 0 and therefore the
   // permission is not being omitted from the UI.
   api_->SetPermissionInfo(list);
-  EXPECT_EQ(num_expected_children, api_->permissions_view()->child_count());
+  EXPECT_EQ(num_expected_children, api_->permissions_view()->children().size());
 }
 
 // Test UI construction and reconstruction with USB devices.
 TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUsbDevice) {
-  const int kExpectedChildren = 0;
-  EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
+  constexpr size_t kExpectedChildren = 0;
+  EXPECT_EQ(kExpectedChildren, api_->permissions_view()->children().size());
 
   const GURL origin = GURL(kUrl).GetOrigin();
 
@@ -298,18 +298,18 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUsbDevice) {
 
   PermissionInfoList list;
   api_->SetPermissionInfo(list);
-  EXPECT_EQ(kExpectedChildren + 1, api_->permissions_view()->child_count());
+  EXPECT_EQ(kExpectedChildren + 1, api_->permissions_view()->children().size());
 
   ChosenObjectView* object_view = static_cast<ChosenObjectView*>(
-      api_->permissions_view()->child_at(kExpectedChildren));
-  EXPECT_EQ(4, object_view->child_count());
+      api_->permissions_view()->children()[kExpectedChildren]);
+  EXPECT_EQ(4u, object_view->children().size());
 
-  const int kLabelIndex = 1;
+  constexpr int kLabelIndex = 1;
   views::Label* label =
       static_cast<views::Label*>(object_view->child_at(kLabelIndex));
   EXPECT_EQ(base::ASCIIToUTF16("Gizmo"), label->text());
 
-  const int kButtonIndex = 2;
+  constexpr int kButtonIndex = 2;
   views::Button* button =
       static_cast<views::Button*>(object_view->child_at(kButtonIndex));
 
@@ -319,7 +319,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUsbDevice) {
       static_cast<views::ButtonListener*>(object_view);
   button_listener->ButtonPressed(button, event);
   api_->SetPermissionInfo(list);
-  EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
+  EXPECT_EQ(kExpectedChildren, api_->permissions_view()->children().size());
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
 }
 
@@ -337,8 +337,8 @@ constexpr char kPolicySetting[] = R"(
 
 // Test UI construction and reconstruction with policy USB devices.
 TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithPolicyUsbDevices) {
-  const int kExpectedChildren = 0;
-  EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
+  constexpr size_t kExpectedChildren = 0;
+  EXPECT_EQ(kExpectedChildren, api_->permissions_view()->children().size());
 
   const GURL origin = GURL(kUrl).GetOrigin();
 
@@ -353,24 +353,24 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithPolicyUsbDevices) {
 
   PermissionInfoList list;
   api_->SetPermissionInfo(list);
-  EXPECT_EQ(kExpectedChildren + 1, api_->permissions_view()->child_count());
+  EXPECT_EQ(kExpectedChildren + 1, api_->permissions_view()->children().size());
 
   ChosenObjectView* object_view = static_cast<ChosenObjectView*>(
-      api_->permissions_view()->child_at(kExpectedChildren));
-  EXPECT_EQ(4, object_view->child_count());
+      api_->permissions_view()->children()[kExpectedChildren]);
+  EXPECT_EQ(4u, object_view->children().size());
 
-  const int kLabelIndex = 1;
+  constexpr int kLabelIndex = 1;
   views::Label* label =
       static_cast<views::Label*>(object_view->child_at(kLabelIndex));
   EXPECT_EQ(base::ASCIIToUTF16("Unknown product 0x162E from Google Inc."),
             label->text());
 
-  const int kButtonIndex = 2;
+  constexpr int kButtonIndex = 2;
   views::Button* button =
       static_cast<views::Button*>(object_view->child_at(kButtonIndex));
   EXPECT_EQ(button->state(), views::Button::STATE_DISABLED);
 
-  const int kDescIndex = 3;
+  constexpr int kDescIndex = 3;
   views::Label* desc_label =
       static_cast<views::Label*>(object_view->child_at(kDescIndex));
   EXPECT_EQ(base::ASCIIToUTF16("USB device allowed by your administrator"),
@@ -383,14 +383,14 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithPolicyUsbDevices) {
       static_cast<views::ButtonListener*>(object_view);
   button_listener->ButtonPressed(button, event);
   api_->SetPermissionInfo(list);
-  EXPECT_EQ(kExpectedChildren + 1, api_->permissions_view()->child_count());
+  EXPECT_EQ(kExpectedChildren + 1, api_->permissions_view()->children().size());
 }
 
 // Test UI construction and reconstruction with both user and policy USB
 // devices.
 TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUserAndPolicyUsbDevices) {
-  const int kExpectedChildren = 0;
-  EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
+  constexpr size_t kExpectedChildren = 0;
+  EXPECT_EQ(kExpectedChildren, api_->permissions_view()->children().size());
 
   const GURL origin = GURL(kUrl).GetOrigin();
 
@@ -415,24 +415,24 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUserAndPolicyUsbDevices) {
 
   PermissionInfoList list;
   api_->SetPermissionInfo(list);
-  EXPECT_EQ(kExpectedChildren + 2, api_->permissions_view()->child_count());
+  EXPECT_EQ(kExpectedChildren + 2, api_->permissions_view()->children().size());
 
   // The first object is the user granted permission for the "Gizmo" device.
   ChosenObjectView* object_view = static_cast<ChosenObjectView*>(
-      api_->permissions_view()->child_at(kExpectedChildren));
-  EXPECT_EQ(4, object_view->child_count());
+      api_->permissions_view()->children()[kExpectedChildren]);
+  EXPECT_EQ(4u, object_view->children().size());
 
-  const int kLabelIndex = 1;
+  constexpr int kLabelIndex = 1;
   views::Label* label =
       static_cast<views::Label*>(object_view->child_at(kLabelIndex));
   EXPECT_EQ(base::ASCIIToUTF16("Gizmo"), label->text());
 
-  const int kButtonIndex = 2;
+  constexpr int kButtonIndex = 2;
   views::Button* button =
       static_cast<views::Button*>(object_view->child_at(kButtonIndex));
   EXPECT_NE(button->state(), views::Button::STATE_DISABLED);
 
-  const int kDescIndex = 3;
+  constexpr int kDescIndex = 3;
   views::Label* desc_label =
       static_cast<views::Label*>(object_view->child_at(kDescIndex));
   EXPECT_EQ(base::ASCIIToUTF16("USB device"), desc_label->text());
@@ -443,14 +443,14 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUserAndPolicyUsbDevices) {
       static_cast<views::ButtonListener*>(object_view);
   button_listener->ButtonPressed(button, event);
   api_->SetPermissionInfo(list);
-  EXPECT_EQ(kExpectedChildren + 1, api_->permissions_view()->child_count());
+  EXPECT_EQ(kExpectedChildren + 1, api_->permissions_view()->children().size());
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
 
   // The policy granted permission should now be the first child, since the user
   // permission was deleted.
   object_view = static_cast<ChosenObjectView*>(
-      api_->permissions_view()->child_at(kExpectedChildren));
-  EXPECT_EQ(4, object_view->child_count());
+      api_->permissions_view()->children()[kExpectedChildren]);
+  EXPECT_EQ(4u, object_view->children().size());
 
   label = static_cast<views::Label*>(object_view->child_at(kLabelIndex));
   EXPECT_EQ(base::ASCIIToUTF16("Unknown product 0x162E from Google Inc."),
@@ -466,7 +466,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUserAndPolicyUsbDevices) {
   button_listener = static_cast<views::ButtonListener*>(object_view);
   button_listener->ButtonPressed(button, event);
   api_->SetPermissionInfo(list);
-  EXPECT_EQ(kExpectedChildren + 1, api_->permissions_view()->child_count());
+  EXPECT_EQ(kExpectedChildren + 1, api_->permissions_view()->children().size());
 }
 
 TEST_F(PageInfoBubbleViewTest, SetPermissionInfoForUsbGuard) {
@@ -482,8 +482,8 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoForUsbGuard) {
   list.back().setting = CONTENT_SETTING_ASK;
 
   // Initially, no permissions are shown because they are all set to default.
-  int num_expected_children = 0;
-  EXPECT_EQ(num_expected_children, api_->permissions_view()->child_count());
+  size_t num_expected_children = 0;
+  EXPECT_EQ(num_expected_children, api_->permissions_view()->children().size());
 
   // Verify calling SetPermissionInfo() directly updates the UI.
   num_expected_children += kViewsPerPermissionRow * list.size();
@@ -494,14 +494,14 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoForUsbGuard) {
   // Simulate a user selection via the UI. Note this will also cover logic in
   // PageInfo to update the pref.
   api_->SimulateUserSelectingComboboxItemAt(0, 2);
-  EXPECT_EQ(num_expected_children, api_->permissions_view()->child_count());
+  EXPECT_EQ(num_expected_children, api_->permissions_view()->children().size());
   EXPECT_EQ(base::ASCIIToUTF16("Ask"), api_->GetPermissionComboboxTextAt(0));
 
   // Setting to the default via the UI should keep the button around.
   api_->SimulateUserSelectingComboboxItemAt(0, 0);
   EXPECT_EQ(base::ASCIIToUTF16("Ask (default)"),
             api_->GetPermissionComboboxTextAt(0));
-  EXPECT_EQ(num_expected_children, api_->permissions_view()->child_count());
+  EXPECT_EQ(num_expected_children, api_->permissions_view()->children().size());
 
   // However, since the setting is now default, recreating the dialog with
   // those settings should omit the permission from the UI.
@@ -510,19 +510,19 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoForUsbGuard) {
   // that |num_expected_children| is not, at this point, 0 and therefore the
   // permission is not being omitted from the UI.
   api_->SetPermissionInfo(list);
-  EXPECT_EQ(num_expected_children, api_->permissions_view()->child_count());
+  EXPECT_EQ(num_expected_children, api_->permissions_view()->children().size());
 }
 
 // Test that updating the number of cookies used by the current page doesn't add
 // any extra views to Page Info.
 TEST_F(PageInfoBubbleViewTest, UpdatingSiteDataRetainsLayout) {
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_VR)
-  const int kExpectedChildren = 6;
+  constexpr size_t kExpectedChildren = 6;
 #else
-  const int kExpectedChildren = 5;
+  constexpr size_t kExpectedChildren = 5;
 #endif
 
-  EXPECT_EQ(kExpectedChildren, api_->view()->child_count());
+  EXPECT_EQ(kExpectedChildren, api_->view()->children().size());
 
   // Create a fake list of cookies.
   PageInfoUI::CookieInfo first_party_cookies;
@@ -539,7 +539,7 @@ TEST_F(PageInfoBubbleViewTest, UpdatingSiteDataRetainsLayout) {
 
   // Update the number of cookies.
   api_->SetCookieInfo(cookies);
-  EXPECT_EQ(kExpectedChildren, api_->view()->child_count());
+  EXPECT_EQ(kExpectedChildren, api_->view()->children().size());
 
   // Check the number of cookies shown is correct.
   base::string16 expected = l10n_util::GetPluralStringFUTF16(
@@ -563,7 +563,7 @@ TEST_F(PageInfoBubbleViewTest, ChangingFlashSettingForSiteIsRemembered) {
   EXPECT_EQ(nullptr,
             map->GetWebsiteSetting(url, url, CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
                                    std::string(), nullptr));
-  EXPECT_EQ(0, api_->permissions_view()->child_count());
+  EXPECT_EQ(0u, api_->permissions_view()->children().size());
 
   // Change the Flash setting.
   map->SetContentSettingDefaultScope(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
@@ -577,7 +577,7 @@ TEST_F(PageInfoBubbleViewTest, ChangingFlashSettingForSiteIsRemembered) {
 
   // Check the Flash permission is now showing since it's non-default.
   api_->CreateView();
-  const int kPermissionLabelIndex = 1;
+  constexpr int kPermissionLabelIndex = 1;
   views::Label* label = static_cast<views::Label*>(
       api_->permissions_view()->child_at(kPermissionLabelIndex));
   EXPECT_EQ(base::ASCIIToUTF16("Flash"), label->text());
@@ -585,7 +585,8 @@ TEST_F(PageInfoBubbleViewTest, ChangingFlashSettingForSiteIsRemembered) {
   // Change the Flash setting back to the default.
   map->SetContentSettingDefaultScope(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
                                      std::string(), CONTENT_SETTING_DEFAULT);
-  EXPECT_EQ(kViewsPerPermissionRow, api_->permissions_view()->child_count());
+  EXPECT_EQ(kViewsPerPermissionRow,
+            api_->permissions_view()->children().size());
 
   // Check the Flash permission is still showing since the user changed it
   // previously.

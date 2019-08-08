@@ -200,7 +200,7 @@ blink::WebGestureEvent MakeWebGestureEventFromUiEvent(
 
   blink::WebGestureEvent webkit_event(
       type, EventFlagsToWebEventModifiers(event.flags()), event.time_stamp(),
-      blink::kWebGestureDeviceTouchpad);
+      blink::WebGestureDevice::kTouchpad);
   if (event.type() == ET_SCROLL_FLING_START) {
     webkit_event.data.fling_start.velocity_x = event.x_offset();
     webkit_event.data.fling_start.velocity_y = event.y_offset();
@@ -256,7 +256,7 @@ blink::WebMouseEvent MakeWebMouseEvent(const MouseEvent& event) {
   webkit_event.SetPositionInWidget(event.x(), event.y());
 
 #if defined(OS_WIN)
-  if (event.native_event().message)
+  if (event.native_event().message && event.type() != ET_MOUSE_EXITED)
     return webkit_event;
 #endif
 
@@ -367,7 +367,7 @@ blink::WebGestureEvent MakeWebGestureEventFlingCancel(
   blink::WebGestureEvent gesture_event(
       blink::WebInputEvent::kGestureFlingCancel,
       blink::WebInputEvent::kNoModifiers, wheel_event.TimeStamp(),
-      blink::kWebGestureDeviceTouchpad);
+      blink::WebGestureDevice::kTouchpad);
   // Coordinates need to be transferred to the fling cancel gesture only
   // for Surface-targeting to ensure that it is targeted to the correct
   // RenderWidgetHost.

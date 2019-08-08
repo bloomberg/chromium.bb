@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/x11/x11_screen_ozone.h"
 
+#include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
 

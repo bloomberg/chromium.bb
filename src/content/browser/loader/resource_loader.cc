@@ -22,7 +22,6 @@
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
-#include "content/browser/service_worker/service_worker_response_info.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/public/browser/content_browser_client.h"
@@ -100,7 +99,7 @@ void PopulateResourceResponse(
   response->head.effective_connection_type =
       net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
-  if (info->GetResourceType() == RESOURCE_TYPE_MAIN_FRAME) {
+  if (info->GetResourceType() == ResourceType::kMainFrame) {
     DCHECK(info->IsMainFrame());
     net::NetworkQualityEstimator* estimator =
         request->context()->network_quality_estimator();
@@ -110,10 +109,6 @@ void PopulateResourceResponse(
     }
   }
 
-  const ServiceWorkerResponseInfo* service_worker_info =
-      ServiceWorkerResponseInfo::ForRequest(request);
-  if (service_worker_info)
-    service_worker_info->GetExtraResponseInfo(&response->head);
   response->head.appcache_id = blink::mojom::kAppCacheNoCacheId;
   AppCacheInterceptor::GetExtraResponseInfo(
       request, &response->head.appcache_id,
@@ -403,7 +398,7 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
 }
 
 void ResourceLoader::OnAuthRequired(net::URLRequest* unused,
-                                    net::AuthChallengeInfo* auth_info) {
+                                    const net::AuthChallengeInfo& auth_info) {
   DCHECK_EQ(request_.get(), unused);
 
   ResourceRequestInfoImpl* info = GetRequestInfo();

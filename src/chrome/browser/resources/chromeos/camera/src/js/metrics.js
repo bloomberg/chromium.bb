@@ -107,13 +107,14 @@ cca.metrics.captureType_ = function(facingMode, length) {
   };
 
   return cca.metrics.base_.category('capture')
-      .action(cca.state.get('record-mode') ? 'capture-video' : 'capture-photo')
+      .action(/^(\w*)/.exec(condState(
+          ['video-mode', 'photo-mode', 'square-mode', 'portrait-mode']))[0])
       .label(facingMode)
       .dimen(3, condState(['sound']))
       .dimen(4, condState(['mirror']))
       .dimen(5, condState(['_3x3', '_4x4', 'golden'], 'grid'))
       .dimen(6, condState(['_3sec', '_10sec'], 'timer'))
-      .dimen(7, condState(['mic'], 'record-mode'))
+      .dimen(7, condState(['mic'], 'video-mode'))
       .dimen(8, condState(['max-wnd']))
       .dimen(9, condState(['tall']))
       .value(length || 0);

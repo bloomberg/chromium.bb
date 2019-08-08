@@ -15,6 +15,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
@@ -80,7 +81,8 @@ class IncompatibleApplicationsBrowserTest : public InProcessBrowserTest {
   // The name of the application deemed incompatible.
   static constexpr wchar_t kApplicationName[] = L"FooBar123";
 
-  IncompatibleApplicationsBrowserTest() = default;
+  IncompatibleApplicationsBrowserTest() : scoped_domain_(true) {}
+
   ~IncompatibleApplicationsBrowserTest() override = default;
 
   void SetUp() override {
@@ -169,6 +171,9 @@ class IncompatibleApplicationsBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(base::CreateDirectory(dll_path.DirName()));
     ASSERT_TRUE(base::CopyFile(test_dll_path, dll_path));
   }
+
+  // The feature is always disabled on domain-joined machines.
+  base::win::ScopedDomainStateForTesting scoped_domain_;
 
   // Temp directory used to host the install directory and the module list.
   base::ScopedTempDir scoped_temp_dir_;

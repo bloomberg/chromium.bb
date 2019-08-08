@@ -105,17 +105,13 @@ class DCLayerOverlayProcessor {
   void ProcessForUnderlay(const gfx::RectF& display_rect,
                           RenderPass* render_pass,
                           const gfx::Rect& quad_rectangle,
-                          const gfx::RectF& occlusion_bounding_box,
                           const QuadList::Iterator& it,
                           bool is_root,
-                          bool has_occluding_surface_damage,
                           gfx::Rect* damage_rect,
                           gfx::Rect* this_frame_underlay_rect,
-                          gfx::Rect* this_frame_underlay_occlusion,
                           DCLayerOverlay* dc_layer);
 
   gfx::Rect previous_frame_underlay_rect_;
-  gfx::Rect previous_frame_underlay_occlusion_;
   gfx::RectF previous_display_rect_;
   // previous and current overlay_rect_union_ include both overlay and underlay
   gfx::Rect previous_frame_overlay_rect_union_;

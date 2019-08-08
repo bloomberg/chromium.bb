@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/app_window_base.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "components/arc/arc_util.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -172,7 +174,11 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
     return;
 
   // Transient windows are set up after window Init, so remove them here.
-  if (wm::GetTransientParent(window)) {
+  // TODO(timloh): ARC and Plugin VM are similar, but Crostini shouldn't need to
+  // know about them.
+  if (wm::GetTransientParent(window) ||
+      arc::GetWindowTaskId(window) != arc::kNoTaskId ||
+      plugin_vm::IsPluginVmWindow(window)) {
     DCHECK(aura_window_to_app_window_.find(window) ==
            aura_window_to_app_window_.end());
     auto it = observed_windows_.find(window);
@@ -199,15 +205,12 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
     return;
   }
 
-  // Handle genuine Crostini app windows.
-  const std::string* window_app_id = exo::GetShellApplicationId(window);
-
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(
           owner()->profile());
   const std::string& shelf_app_id = registry_service->GetCrostiniShelfAppId(
-      window_app_id, exo::GetShellStartupId(window));
-  // Non-crostini apps (i.e. arc++) are filtered out here.
+      exo::GetShellApplicationId(window), exo::GetShellStartupId(window));
+  // Windows without an application id set will get filtered out here.
   if (shelf_app_id.empty())
     return;
 

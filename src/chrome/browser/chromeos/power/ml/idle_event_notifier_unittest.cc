@@ -9,7 +9,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/clock.h"
 #include "chrome/browser/chromeos/power/ml/fake_boot_clock.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
@@ -86,7 +86,7 @@ class IdleEventNotifierTest : public testing::Test {
   ~IdleEventNotifierTest() override = default;
 
   void SetUp() override {
-    PowerManagerClient::Initialize();
+    PowerManagerClient::InitializeFake();
     viz::mojom::VideoDetectorObserverPtr observer;
     idle_event_notifier_ = std::make_unique<IdleEventNotifier>(
         PowerManagerClient::Get(), &user_activity_detector_,

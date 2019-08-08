@@ -225,12 +225,20 @@ Status ParseTimeouts(const base::Value& option, Capabilities* capabilities) {
     return Status(kInvalidArgument, "'timeouts' must be a JSON object");
   for (const auto& it : timeouts->DictItems()) {
     int64_t timeout_ms_int64 = -1;
-    if (!GetOptionalSafeInt(timeouts, it.first, &timeout_ms_int64)
-        || timeout_ms_int64 < 0)
-      return Status(kInvalidArgument, "value must be a non-negative integer");
-    base::TimeDelta timeout =
-                          base::TimeDelta::FromMilliseconds(timeout_ms_int64);
+    base::TimeDelta timeout;
     const std::string& type = it.first;
+    if (it.second.is_none()) {
+      if (type == "script")
+        timeout = base::TimeDelta::Max();
+      else
+        return Status(kInvalidArgument, "timeout can not be null");
+    } else {
+      if (!GetOptionalSafeInt(timeouts, it.first, &timeout_ms_int64) ||
+          timeout_ms_int64 < 0)
+        return Status(kInvalidArgument, "value must be a non-negative integer");
+      else
+        timeout = base::TimeDelta::FromMilliseconds(timeout_ms_int64);
+    }
     if (type == "script") {
       capabilities->script_timeout = timeout;
     } else if (type == "pageLoad") {
@@ -756,7 +764,14 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps,
   } else {
     parser_map["chromeOptions"] = base::BindRepeating(&ParseChromeOptions);
   }
-  parser_map["loggingPrefs"] = base::BindRepeating(&ParseLoggingPrefs);
+  // goog:loggingPrefs is spec-compliant name, but loggingPrefs is still
+  // supported in legacy mode.
+  if (w3c_compliant ||
+      desired_caps.GetDictionary("goog:loggingPrefs", nullptr)) {
+    parser_map["goog:loggingPrefs"] = base::BindRepeating(&ParseLoggingPrefs);
+  } else {
+    parser_map["loggingPrefs"] = base::BindRepeating(&ParseLoggingPrefs);
+  }
   // Network emulation requires device mode, which is only enabled when
   // mobile emulation is on.
   if (desired_caps.GetDictionary("goog:chromeOptions.mobileEmulation",

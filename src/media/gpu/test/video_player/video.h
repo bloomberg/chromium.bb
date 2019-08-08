@@ -22,7 +22,8 @@ namespace test {
 // * Use a file stream rather than loading potentially huge files into memory.
 class Video {
  public:
-  explicit Video(const base::FilePath& file_path);
+  Video(const base::FilePath& file_path,
+        const base::FilePath& metadata_file_path);
   ~Video();
 
   // Load the video file from disk.
@@ -39,6 +40,8 @@ class Video {
   VideoCodec Codec() const;
   // Get the video's codec profile.
   VideoCodecProfile Profile() const;
+  // Get the video frame rate.
+  uint32_t FrameRate() const;
   // Get the number of frames in the video.
   uint32_t NumFrames() const;
   // Get the number of fragments in the video.
@@ -67,11 +70,19 @@ class Video {
   // Return true if video metadata is already loaded.
   bool IsMetadataLoaded() const;
 
+  // Resolve the specified |file_path|. The path can be absolute, relative to
+  // the current directory, or relative to the test data path. Returns the
+  // resolved path if resolving to an existing file was successful.
+  base::Optional<base::FilePath> ResolveFilePath(
+      const base::FilePath& file_path);
+
   // The path where all test video files are stored.
   // TODO(dstaessens@) Avoid using a static data path here.
   static base::FilePath test_data_path_;
-  // The video file's path, can be absolute or relative to the above path.
+  // The video file path, can be relative to the test data path.
   base::FilePath file_path_;
+  // Video metadata file path, can be relative to the test data path.
+  base::FilePath metadata_file_path_;
 
   // The video's data stream.
   std::vector<uint8_t> data_;
@@ -83,6 +94,7 @@ class Video {
 
   VideoCodecProfile profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
   VideoCodec codec_ = kUnknownVideoCodec;
+  uint32_t frame_rate_ = 0;
   uint32_t num_frames_ = 0;
   uint32_t num_fragments_ = 0;
   gfx::Size resolution_;

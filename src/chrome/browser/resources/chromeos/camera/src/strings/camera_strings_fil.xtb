@@ -8,6 +8,7 @@
 <translation id="1664224225747386870">Walang na-record</translation>
 <translation id="1862930711583847113">Hindi ma-export ang <ph name="FILE" /></translation>
 <translation id="2036868001356139588">Tagal ng timer</translation>
+<translation id="2050339315714019657">Portrait</translation>
 <translation id="2064538373111010176">Aktibo ang <ph name="CAMERA" /></translation>
 <translation id="229579744168541441">I-export sa disk</translation>
 <translation id="2501278716633472235">Bumalik</translation>
@@ -20,14 +21,19 @@
 <translation id="3081586908890909590">Lumipat sa pag-record ng video</translation>
 <translation id="3183731565330012717">Uri ng grid</translation>
 <translation id="3227137524299004712">Mikropono</translation>
+<translation id="3517926952904427380">Hindi makakuha ng portrait na larawan</translation>
 <translation id="3569311554794739032">Gusto mo ba talagang alisin ang <ph name="FILE" />?</translation>
+<translation id="3810838688059735925">Video</translation>
 <translation id="4279490309300973883">Nagmi-mirror</translation>
+<translation id="4329152592498422850">Lumipat para kumuha ng parisukat na larawan</translation>
 <translation id="4445542136948522167">Ihinto ang pagkuha ng larawan</translation>
+<translation id="4628948037717959914">Larawan</translation>
 <translation id="4649291346448517080">Hindi ma-save ang file</translation>
 <translation id="4890010094662541459">3 x 3</translation>
 <translation id="5057360777601936059">Kasalukuyang hindi available ang iyong camera.
         Pakitingnan kung maayos na nakakonekta ang camera.</translation>
 <translation id="5152121255775685072">Pumunta sa gallery</translation>
+<translation id="5671277269877808209">Parisukat</translation>
 <translation id="5869546221129391014">Grid</translation>
 <translation id="6073451960410192870">Ihinto ang pag-record</translation>
 <translation id="6233780560267770709">3 by 3</translation>
@@ -46,6 +52,7 @@
 <translation id="8145038249676204903">Lumipat sa pagkuha ng larawan</translation>
 <translation id="8261506727792406068">I-delete</translation>
 <translation id="8428213095426709021">Mga Setting</translation>
+<translation id="8815966864175525708">Lumipat para kumuha ng portrait na larawan</translation>
 <translation id="8870695351537079478">Hindi masimulan ang pag-record</translation>
 <translation id="9045155556724273246">10 segundo</translation>
 <translation id="945522503751344254">Magpadala ng feedback...</translation>

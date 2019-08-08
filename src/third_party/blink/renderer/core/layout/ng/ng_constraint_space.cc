@@ -94,23 +94,10 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
       .SetIsFixedSizeBlock(fixed_block)
       .SetFixedSizeBlockIsDefinite(fixed_block_is_definite)
       .SetIsShrinkToFit(
+          style.LogicalWidth().IsAuto() &&
           block.SizesLogicalWidthToFitContent(style.LogicalWidth()))
       .SetTextDirection(style.Direction())
       .ToConstraintSpace();
-}
-
-bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
-  if (!AreSizesEqual(other))
-    return false;
-
-  if (!MaySkipLayout(other))
-    return false;
-
-  if (!HasRareData() && !other.HasRareData() &&
-      bfc_offset_.block_offset != other.bfc_offset_.block_offset)
-    return false;
-
-  return true;
 }
 
 String NGConstraintSpace::ToString() const {

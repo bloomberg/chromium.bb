@@ -10,9 +10,10 @@ module arc.mojom;
 // https://developer.android.com/reference/android/Manifest.permission
 [Extensible]
 enum AppPermission {
-  CAMERA,    // android.manifest.CAMERA
-  LOCATION,  // android.manifest.ACCESS_FINE_LOCATION
-  MICROPHONE // android.manifest.RECORD_AUDIO
+  CAMERA          = 0, // android.manifest.CAMERA
+  LOCATION        = 1, // android.manifest.ACCESS_FINE_LOCATION
+  MICROPHONE      = 2, // android.manifest.RECORD_AUDIO
+  NOTIFICATIONS   = 3, // Not a manifest permission
 };
 
 // An interface for Chrome to manipulate app permissions in ARC.

@@ -4,7 +4,10 @@
 
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 
+#include <utility>
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 
 namespace blink {
@@ -16,6 +19,38 @@ BlinkTransferableMessage::BlinkTransferableMessage(BlinkTransferableMessage&&) =
     default;
 BlinkTransferableMessage& BlinkTransferableMessage::operator=(
     BlinkTransferableMessage&&) = default;
+
+scoped_refptr<blink::StaticBitmapImage> ToStaticBitmapImage(
+    const SkBitmap& sk_bitmap) {
+  auto handle = WTF::ArrayBufferContents::CreateDataHandle(
+      sk_bitmap.computeByteSize(), WTF::ArrayBufferContents::kZeroInitialize);
+  if (!handle)
+    return nullptr;
+
+  WTF::ArrayBufferContents array_buffer_contents(
+      std::move(handle), WTF::ArrayBufferContents::kNotShared);
+  if (!array_buffer_contents.Data())
+    return nullptr;
+
+  SkImageInfo info = sk_bitmap.info();
+  if (!sk_bitmap.readPixels(info, array_buffer_contents.Data(),
+                            info.minRowBytes(), 0, 0))
+    return nullptr;
+
+  return blink::StaticBitmapImage::Create(array_buffer_contents, info);
+}
+
+base::Optional<SkBitmap> ToSkBitmap(
+    const scoped_refptr<blink::StaticBitmapImage>& static_bitmap_image) {
+  const sk_sp<SkImage> image =
+      static_bitmap_image->PaintImageForCurrentFrame().GetSkImage();
+  SkBitmap result;
+  if (image && image->asLegacyBitmap(
+                   &result, SkImage::LegacyBitmapMode::kRO_LegacyBitmapMode)) {
+    return result;
+  }
+  return base::nullopt;
+}
 
 BlinkTransferableMessage ToBlinkTransferableMessage(
     TransferableMessage message) {
@@ -46,6 +81,44 @@ BlinkTransferableMessage ToBlinkTransferableMessage(
         message.user_activation->has_been_active,
         message.user_activation->was_active);
   }
+  result.transfer_user_activation = message.transfer_user_activation;
+
+  if (!message.array_buffer_contents_array.empty()) {
+    SerializedScriptValue::ArrayBufferContentsArray array_buffer_contents_array;
+    array_buffer_contents_array.ReserveInitialCapacity(
+        base::checked_cast<wtf_size_t>(
+            message.array_buffer_contents_array.size()));
+
+    for (auto& item : message.array_buffer_contents_array) {
+      mojo_base::BigBuffer& big_buffer = item->contents;
+      auto handle = WTF::ArrayBufferContents::CreateDataHandle(
+          big_buffer.size(), WTF::ArrayBufferContents::kZeroInitialize);
+      WTF::ArrayBufferContents contents(std::move(handle),
+                                        WTF::ArrayBufferContents::kNotShared);
+      memcpy(contents.Data(), big_buffer.data(), big_buffer.size());
+      array_buffer_contents_array.push_back(std::move(contents));
+    }
+    result.message->SetArrayBufferContentsArray(
+        std::move(array_buffer_contents_array));
+  }
+
+  if (!message.image_bitmap_contents_array.empty()) {
+    SerializedScriptValue::ImageBitmapContentsArray image_bitmap_contents_array;
+    image_bitmap_contents_array.ReserveInitialCapacity(
+        base::checked_cast<wtf_size_t>(
+            message.image_bitmap_contents_array.size()));
+
+    for (auto& sk_bitmap : message.image_bitmap_contents_array) {
+      const scoped_refptr<StaticBitmapImage> bitmap_contents =
+          ToStaticBitmapImage(sk_bitmap);
+      if (!bitmap_contents)
+        continue;
+      image_bitmap_contents_array.push_back(bitmap_contents);
+    }
+    result.message->SetImageBitmapContentsArray(
+        std::move(image_bitmap_contents_array));
+  }
+
   return result;
 }
 
@@ -76,6 +149,31 @@ TransferableMessage ToTransferableMessage(BlinkTransferableMessage message) {
         message.user_activation->has_been_active,
         message.user_activation->was_active);
   }
+  result.transfer_user_activation = message.transfer_user_activation;
+
+  auto& array_buffer_contents_array =
+      message.message->GetArrayBufferContentsArray();
+  result.array_buffer_contents_array.reserve(
+      array_buffer_contents_array.size());
+  for (auto& contents : array_buffer_contents_array) {
+    uint8_t* allocation_start = static_cast<uint8_t*>(contents.Data());
+    mojo_base::BigBuffer buffer(
+        base::make_span(allocation_start, contents.DataLength()));
+    result.array_buffer_contents_array.push_back(
+        mojom::SerializedArrayBufferContents::New(std::move(buffer)));
+  }
+
+  auto& image_bitmap_contents_array =
+      message.message->GetImageBitmapContentsArray();
+  result.image_bitmap_contents_array.reserve(
+      image_bitmap_contents_array.size());
+  for (auto& contents : image_bitmap_contents_array) {
+    base::Optional<SkBitmap> bitmap = ToSkBitmap(contents);
+    if (!bitmap)
+      continue;
+    result.image_bitmap_contents_array.push_back(std::move(bitmap.value()));
+  }
+
   return result;
 }
 

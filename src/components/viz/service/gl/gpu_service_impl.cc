@@ -16,7 +16,6 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "components/crash/core/common/crash_key.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -44,8 +43,10 @@
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
-#include "media/mojo/services/mojo_jpeg_decode_accelerator_service.h"
-#include "media/mojo/services/mojo_jpeg_encode_accelerator_service.h"
+#if defined(OS_CHROMEOS)
+#include "media/mojo/services/cros_mojo_jpeg_encode_accelerator_service.h"
+#endif  // defined(OS_CHROMEOS)
+#include "media/mojo/services/mojo_mjpeg_decode_accelerator_service.h"
 #include "media/mojo/services/mojo_video_encode_accelerator_provider.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -213,7 +214,7 @@ void GpuServiceImpl::UpdateGPUInfo() {
           media::GpuVideoEncodeAcceleratorFactory::GetSupportedProfiles(
               gpu_preferences_));
   gpu_info_.jpeg_decode_accelerator_supported = media::
-      GpuJpegDecodeAcceleratorFactory::IsAcceleratedJpegDecodeSupported();
+      GpuMjpegDecodeAcceleratorFactory::IsAcceleratedJpegDecodeSupported();
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.
   gpu_info_.initialization_time = base::Time::Now() - start_time_;
@@ -300,23 +301,8 @@ void GpuServiceImpl::DisableGpuCompositing() {
   (*gpu_host_)->DisableGpuCompositing();
 }
 
-scoped_refptr<gpu::SharedContextState>
-GpuServiceImpl::GetContextStateForGLSurface(gl::GLSurface* surface) {
+scoped_refptr<gpu::SharedContextState> GpuServiceImpl::GetContextState() {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  DCHECK(!is_using_vulkan());
-  gpu::ContextResult result;
-  auto context_state = gpu_channel_manager_->GetSharedContextState(&result);
-  // TODO(penghuang): https://crbug.com/899740 Support GLSurface which is not
-  // compatible.
-  DCHECK_EQ(surface->GetCompatibilityKey(),
-            context_state->surface()->GetCompatibilityKey());
-  return context_state;
-}
-
-scoped_refptr<gpu::SharedContextState>
-GpuServiceImpl::GetContextStateForVulkan() {
-  DCHECK(main_runner_->BelongsToCurrentThread());
-  DCHECK(is_using_vulkan());
   gpu::ContextResult result;
   return gpu_channel_manager_->GetSharedContextState(&result);
 }
@@ -413,18 +399,18 @@ void GpuServiceImpl::CreateArcProtectedBufferManagerOnMainThread(
           protected_buffer_manager_),
       std::move(pbm_request));
 }
-#endif  // defined(OS_CHROMEOS)
-
-void GpuServiceImpl::CreateJpegDecodeAccelerator(
-    media::mojom::JpegDecodeAcceleratorRequest jda_request) {
-  DCHECK(io_runner_->BelongsToCurrentThread());
-  media::MojoJpegDecodeAcceleratorService::Create(std::move(jda_request));
-}
 
 void GpuServiceImpl::CreateJpegEncodeAccelerator(
     media::mojom::JpegEncodeAcceleratorRequest jea_request) {
   DCHECK(io_runner_->BelongsToCurrentThread());
-  media::MojoJpegEncodeAcceleratorService::Create(std::move(jea_request));
+  media::CrOSMojoJpegEncodeAcceleratorService::Create(std::move(jea_request));
+}
+#endif  // defined(OS_CHROMEOS)
+
+void GpuServiceImpl::CreateJpegDecodeAccelerator(
+    media::mojom::MjpegDecodeAcceleratorRequest jda_request) {
+  DCHECK(io_runner_->BelongsToCurrentThread());
+  media::MojoMjpegDecodeAcceleratorService::Create(std::move(jda_request));
 }
 
 void GpuServiceImpl::CreateVideoEncodeAcceleratorProvider(
@@ -631,20 +617,14 @@ void GpuServiceImpl::SendCreatedChildWindow(gpu::SurfaceHandle parent_window,
 }
 #endif
 
-void GpuServiceImpl::SetActiveURL(const GURL& url) {
-  DCHECK(main_runner_->BelongsToCurrentThread());
-  // Note that the url is intentionally excluded from webview crash dumps
-  // using a whitelist for privacy reasons. See kWebViewCrashKeyWhiteList.
-  static crash_reporter::CrashKeyString<1024> crash_key("url-chunk");
-  crash_key.Set(url.possibly_invalid_spec());
-}
-
 void GpuServiceImpl::EstablishGpuChannel(int32_t client_id,
                                          uint64_t client_tracing_id,
                                          bool is_gpu_host,
                                          bool cache_shaders_on_disk,
                                          EstablishGpuChannelCallback callback) {
   if (gpu::IsReservedClientId(client_id)) {
+    // This returns a null handle, which is treated by the client as a failure
+    // case.
     std::move(callback).Run(mojo::ScopedMessagePipeHandle());
     return;
   }
@@ -668,6 +648,12 @@ void GpuServiceImpl::EstablishGpuChannel(int32_t client_id,
   gpu::GpuChannel* gpu_channel = gpu_channel_manager_->EstablishChannel(
       client_id, client_tracing_id, is_gpu_host, cache_shaders_on_disk);
 
+  if (!gpu_channel) {
+    // This returns a null handle, which is treated by the client as a failure
+    // case.
+    std::move(callback).Run(mojo::ScopedMessagePipeHandle());
+    return;
+  }
   mojo::MessagePipe pipe;
   gpu_channel->Init(pipe.handle0.release(), shutdown_event_);
 

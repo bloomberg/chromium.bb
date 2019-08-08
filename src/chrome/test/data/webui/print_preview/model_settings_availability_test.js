@@ -436,6 +436,7 @@ cr.define('model_settings_availability_test', function() {
 
     test('duplex', function() {
       assertTrue(model.settings.duplex.available);
+      assertTrue(model.settings.duplexShortEdge.available);
 
       // Remove duplex capability.
       let capabilities =
@@ -444,6 +445,7 @@ cr.define('model_settings_availability_test', function() {
       delete capabilities.printer.duplex;
       model.set('destination.capabilities', capabilities);
       assertFalse(model.settings.duplex.available);
+      assertFalse(model.settings.duplexShortEdge.available);
 
       // Set a duplex capability with only 1 type, no duplex.
       capabilities =
@@ -456,6 +458,22 @@ cr.define('model_settings_availability_test', function() {
       };
       model.set('destination.capabilities', capabilities);
       assertFalse(model.settings.duplex.available);
+      assertFalse(model.settings.duplexShortEdge.available);
+
+      // Set a duplex capability with 2 types, long edge and no duplex.
+      capabilities =
+          print_preview_test_utils.getCddTemplate(model.destination.id)
+              .capabilities;
+      delete capabilities.printer.duplex;
+      capabilities.printer.duplex = {
+        option: [
+          {type: print_preview_new.DuplexType.NO_DUPLEX},
+          {type: print_preview_new.DuplexType.LONG_EDGE, is_default: true}
+        ]
+      };
+      model.set('destination.capabilities', capabilities);
+      assertTrue(model.settings.duplex.available);
+      assertFalse(model.settings.duplexShortEdge.available);
     });
 
     test('rasterize', function() {
@@ -478,5 +496,59 @@ cr.define('model_settings_availability_test', function() {
       model.set('documentSettings.isModifiable', false);
       assertFalse(model.settings.selectionOnly.available);
     });
+
+    if (cr.isChromeOS) {
+      test('pin', function() {
+        // Make device unmanaged.
+        loadTimeData.overrideValues({isEnterpriseManaged: false});
+        // Check that pin setting is unavailable on unmanaged devices.
+        assertFalse(model.settings.pin.available);
+
+        // Make device enterprise managed.
+        loadTimeData.overrideValues({isEnterpriseManaged: true});
+        // Set capabilities again to update pin availability.
+        model.set(
+            'destination.capabilities',
+            print_preview_test_utils.getCddTemplate(model.destination.id)
+                .capabilities);
+        assertTrue(model.settings.pin.available);
+
+        // Remove pin capability.
+        let capabilities =
+            print_preview_test_utils.getCddTemplate(model.destination.id)
+                .capabilities;
+        delete capabilities.printer.pin;
+        model.set('destination.capabilities', capabilities);
+        assertFalse(model.settings.pin.available);
+
+        // Set not supported pin capability.
+        capabilities =
+            print_preview_test_utils.getCddTemplate(model.destination.id)
+                .capabilities;
+        capabilities.printer.pin.supported = false;
+        model.set('destination.capabilities', capabilities);
+        assertFalse(model.settings.pin.available);
+      });
+
+      test('pinValue', function() {
+        assertTrue(model.settings.pinValue.available);
+
+        // Remove pin capability.
+        let capabilities =
+            print_preview_test_utils.getCddTemplate(model.destination.id)
+                .capabilities;
+        delete capabilities.printer.pin;
+        model.set('destination.capabilities', capabilities);
+        assertFalse(model.settings.pinValue.available);
+
+        // Set not supported pin capability.
+        capabilities =
+            print_preview_test_utils.getCddTemplate(model.destination.id)
+                .capabilities;
+        capabilities.printer.pin.supported = false;
+        model.set('destination.capabilities', capabilities);
+        assertFalse(model.settings.pinValue.available);
+      });
+    }
   });
 });

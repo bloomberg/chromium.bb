@@ -20,9 +20,30 @@ interface LoginScreenTestApi {
   // Returns true if Shutdown button is currently being shown.
   IsShutdownButtonShown() => (bool is_shown);
 
+  // Returns true if Auth Error Button is currently being shown.
+  IsAuthErrorBubbleShown() => (bool is_shown);
+
+  // Returns true if Guest button is currently being shown.
+  IsGuestButtonShown() => (bool is_shown);
+
+  // Returns true if Add User button is currently being shown.
+  IsAddUserButtonShown() => (bool is_shown);
+
   // Submit |password| for |account_id|.
   SubmitPassword(signin.mojom.AccountId account_id, string password) => ();
 
   // Fetches current UI update count.
   GetUiUpdateCount() => (int64 count);
+
+  // Simulates Kiosk App launch. Returns true if launch attempt was successful.
+  // (I.e. app was found, and launch event was generated.)
+  LaunchApp(string app_id) => (bool found);
+
+  // Simulate Click on AddUser button.
+  // Returns true if request was successful.
+  ClickAddUserButton() => (bool success);
+
+  // Blocks until UI update counter is greated than |previous_update_count|.
+  // Returns true on success, false on error.
+  WaitForUiUpdate(int64 previous_update_count) => (bool success);
 };

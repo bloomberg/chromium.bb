@@ -4,7 +4,7 @@
 
 #include "net/base/net_errors.h"
 
-#include "net/third_party/quic/core/quic_error_codes.h"
+#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
 
 namespace net {
 

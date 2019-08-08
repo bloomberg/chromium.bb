@@ -97,12 +97,12 @@ std::unique_ptr<AccessibilityEventRecorder> AccessibilityEventRecorder::Create(
       manager, pid, application_name_match_pattern);
 }
 
-std::vector<AccessibilityEventRecorder::EventRecorderFactory>
+std::vector<AccessibilityEventRecorder::TestPass>
 AccessibilityEventRecorder::GetTestPasses() {
   // Both the Blink pass and native pass use the same recorder
   return {
-      &AccessibilityEventRecorder::Create,
-      &AccessibilityEventRecorder::Create,
+      {"blink", &AccessibilityEventRecorder::Create},
+      {"linux", &AccessibilityEventRecorder::Create},
   };
 }
 
@@ -152,6 +152,8 @@ void AccessibilityEventRecorderAuraLinux::AddATKEventListeners() {
   AddATKEventListener("ATK:AtkObject:state-change");
   AddATKEventListener("ATK:AtkObject:focus-event");
   AddATKEventListener("ATK:AtkObject:property-change");
+  AddATKEventListener("ATK:AtkText:text-insert");
+  AddATKEventListener("ATK:AtkText:text-remove");
   AddATKEventListener("ATK:AtkSelection:selection-changed");
 }
 
@@ -190,23 +192,44 @@ void AccessibilityEventRecorderAuraLinux::ProcessATKEvent(
     return;
   }
 
+  std::string event_name(event);
   std::string log;
-  if (std::string(event).find("property-change") != std::string::npos) {
+  if (event_name.find("property-change") != std::string::npos) {
     DCHECK_GE(n_params, 2u);
     AtkPropertyValues* property_values =
         static_cast<AtkPropertyValues*>(g_value_get_pointer(&params[1]));
 
-    if (g_strcmp0(property_values->property_name, "accessible-value"))
+    if (g_strcmp0(property_values->property_name, "accessible-value") == 0) {
+      log += "VALUE-CHANGED:";
+      log +=
+          base::NumberToString(g_value_get_double(&property_values->new_value));
+    } else if (g_strcmp0(property_values->property_name, "accessible-name") ==
+               0) {
+      log += "NAME-CHANGED:";
+      log += g_value_get_string(&property_values->new_value);
+    } else if (g_strcmp0(property_values->property_name,
+                         "accessible-description") == 0) {
+      log += "DESCRIPTION-CHANGED:";
+      log += g_value_get_string(&property_values->new_value);
+    } else {
       return;
-
-    log += "VALUE-CHANGED:";
-    log +=
-        base::NumberToString(g_value_get_double(&property_values->new_value));
+    }
   } else {
     log += base::ToUpperASCII(event);
-    if (std::string(event).find("state-change") != std::string::npos) {
-      log += ":" + base::ToUpperASCII(g_value_get_string(&params[1]));
-      log += base::StringPrintf(":%s", g_strdup_value_contents(&params[2]));
+    if (event_name.find("state-change") != std::string::npos) {
+      std::string state_type = g_value_get_string(&params[1]);
+      log += ":" + base::ToUpperASCII(state_type);
+
+      gchar* parameter = g_strdup_value_contents(&params[2]);
+      log += base::StringPrintf(":%s", parameter);
+      g_free(parameter);
+
+    } else if (event_name.find("text-insert") != std::string::npos ||
+               event_name.find("text-remove") != std::string::npos) {
+      DCHECK_GE(n_params, 4u);
+      log += base::StringPrintf(
+          " (start=%i length=%i '%s')", g_value_get_int(&params[1]),
+          g_value_get_int(&params[2]), g_value_get_string(&params[3]));
     }
   }
 

@@ -40,10 +40,6 @@ struct AURA_EXPORT WindowTreeHostMusInitParams {
 
   // Id of the display the window should be created on.
   int64_t display_id = 0;
-
-  // Use classic IME (i.e. InputMethodChromeOS) instead of servicified IME
-  // (i.e. InputMethodMus).
-  bool use_classic_ime = false;
 };
 
 // Creates a WindowTreeHostMusInitParams that is used when creating a top-level

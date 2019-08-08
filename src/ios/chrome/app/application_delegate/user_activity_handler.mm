@@ -22,10 +22,10 @@
 #include "ios/chrome/browser/app_startup_parameters.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/metrics/first_user_action_recorder.h"
-#include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/u2f/u2f_tab_helper.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "net/base/mac/url_conversions.h"
@@ -173,11 +173,10 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
         [[startupInformation startupParameters] launchInIncognito]
             ? ApplicationMode::INCOGNITO
             : ApplicationMode::NORMAL;
+    UrlLoadParams params = UrlLoadParams::InNewTab(webpageGURL);
     [tabOpener dismissModalsAndOpenSelectedTabInMode:targetMode
-                                             withURL:webpageGURL
-                                          virtualURL:GURL::EmptyGURL()
+                                   withUrlLoadParams:params
                                       dismissOmnibox:YES
-                                          transition:ui::PAGE_TRANSITION_LINK
                                           completion:^{
                                             [startupInformation
                                                 setStartupParameters:nil];
@@ -267,9 +266,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     GURL URL;
     GURL virtualURL;
     GURL completeURL = startupInformation.startupParameters.completeURL;
-    if (completeURL.SchemeIsFile() &&
-        base::FeatureList::IsEnabled(
-            experimental_flags::kExternalFilesLoadedInWebState)) {
+    if (completeURL.SchemeIsFile()) {
       // External URL will be loaded by WebState, which expects |completeURL|.
       // Omnibox however suppose to display |externalURL|, which is used as
       // virtual URL.
@@ -278,14 +275,14 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     } else {
       URL = externalURL;
     }
+    UrlLoadParams params = UrlLoadParams::InNewTab(URL, virtualURL);
+
     [tabOpener dismissModalsAndOpenSelectedTabInMode:targetMode
-                                             withURL:URL
-                                          virtualURL:virtualURL
+                                   withUrlLoadParams:params
                                       dismissOmnibox:[[startupInformation
                                                          startupParameters]
                                                          postOpeningAction] !=
                                                      FOCUS_OMNIBOX
-                                          transition:ui::PAGE_TRANSITION_LINK
                                           completion:^{
                                             [startupInformation
                                                 setStartupParameters:nil];

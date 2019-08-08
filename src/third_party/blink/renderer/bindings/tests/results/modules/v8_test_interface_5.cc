@@ -10,6 +10,8 @@
 // clang-format off
 #include "third_party/blink/renderer/bindings/tests/results/modules/v8_test_interface_5.h"
 
+#include <algorithm>
+
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
@@ -23,6 +25,7 @@
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/wtf/get_ptr.h"
 
 namespace blink {
@@ -997,7 +1000,7 @@ static void InstallV8TestInterface5Template(
   // Initialize the interface object's template.
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInterface5::GetWrapperTypeInfo()->interface_name, V8TestInterfaceEmpty::DomTemplate(isolate, world), V8TestInterface5::kInternalFieldCount);
 
-  if (!RuntimeEnabledFeatures::FeatureNameEnabled()) {
+  if (!RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
     return;
   }
 
@@ -1064,7 +1067,7 @@ void V8TestInterface5::InstallRuntimeEnabledFeaturesOnTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interface_template) {
-  if (!RuntimeEnabledFeatures::FeatureNameEnabled()) {
+  if (!RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
     return;
   }
 

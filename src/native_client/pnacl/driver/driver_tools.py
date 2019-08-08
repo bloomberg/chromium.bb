@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import platform
 import os
 import random
@@ -673,7 +675,7 @@ def Run(args,
     result_stdout, result_stderr = p.communicate()
   except Exception, e:
     msg =  '%s\nCommand was: %s' % (str(e), StringifyCommand(args))
-    print msg
+    print(msg)
     DriverExit(1)
 
   Log.Info('Return Code: ' + str(p.returncode))
@@ -740,7 +742,7 @@ def DriverMain(module, argv):
     if not help_func:
       Log.Fatal(HelpNotAvailable())
     helpstr = help_func(argv)
-    print helpstr
+    print(helpstr)
     return 0
 
   return module.main(argv)

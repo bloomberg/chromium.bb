@@ -201,8 +201,8 @@ class SharedLibraryResolver : public ElfRelocations::SymbolResolver {
       return sym.address;
     }
 
-    if (lib->IsCrazy()) {
-      SharedLibrary* crazy = lib->GetCrazy();
+    const SharedLibrary* crazy = lib->GetCrazy();
+    if (crazy) {
       const ELF::Sym* entry = crazy->LookupSymbolEntry(symbol_name);
       if (entry)
         return reinterpret_cast<void*>(crazy->load_bias() + entry->st_value);
@@ -378,11 +378,12 @@ bool SharedLibrary::Relocate(LibraryList* lib_list,
   return true;
 }
 
-const ELF::Sym* SharedLibrary::LookupSymbolEntry(const char* symbol_name) {
+const ELF::Sym* SharedLibrary::LookupSymbolEntry(
+    const char* symbol_name) const {
   return symbols_.LookupByName(symbol_name);
 }
 
-void* SharedLibrary::FindAddressForSymbol(const char* symbol_name) {
+void* SharedLibrary::FindAddressForSymbol(const char* symbol_name) const {
   return symbols_.LookupAddressByName(symbol_name, view_.load_bias());
 }
 

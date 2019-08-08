@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/lock_screen_utils.h"
+#include "chrome/browser/chromeos/login/quick_unlock/fingerprint_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
@@ -41,7 +42,7 @@
 #include "chromeos/components/proximity_auth/smart_lock_metrics_recorder.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_util.h"
@@ -300,11 +301,9 @@ class UserSelectionScreen::DircryptoMigrationChecker {
       return;
     }
 
-    DBusThreadManager::Get()
-        ->GetCryptohomeClient()
-        ->WaitForServiceToBeAvailable(
-            base::Bind(&DircryptoMigrationChecker::RunCryptohomeCheck,
-                       weak_ptr_factory_.GetWeakPtr(), account_id));
+    CryptohomeClient::Get()->WaitForServiceToBeAvailable(
+        base::Bind(&DircryptoMigrationChecker::RunCryptohomeCheck,
+                   weak_ptr_factory_.GetWeakPtr(), account_id));
   }
 
  private:
@@ -316,7 +315,7 @@ class UserSelectionScreen::DircryptoMigrationChecker {
       return;
     }
 
-    DBusThreadManager::Get()->GetCryptohomeClient()->NeedsDircryptoMigration(
+    CryptohomeClient::Get()->NeedsDircryptoMigration(
         cryptohome::CreateAccountIdentifierFromAccountId(account_id),
         base::BindOnce(&DircryptoMigrationChecker::
                            OnCryptohomeNeedsDircryptoMigrationCallback,
@@ -366,7 +365,7 @@ class UserSelectionScreen::DircryptoMigrationChecker {
 };
 
 UserSelectionScreen::UserSelectionScreen(const std::string& display_type)
-    : BaseScreen(nullptr, OobeScreen::SCREEN_USER_SELECTION),
+    : BaseScreen(OobeScreen::SCREEN_USER_SELECTION),
       display_type_(display_type),
       weak_factory_(this) {}
 

@@ -18,6 +18,8 @@ component("x") {
   sources = [
     "vulkan_implementation_x11.cc",
     "vulkan_implementation_x11.h",
+    "vulkan_surface_x11.cc",
+    "vulkan_surface_x11.h",
   ]
 
   defines = [ "IS_VULKAN_X11_IMPL" ]
@@ -26,6 +28,7 @@ component("x") {
   configs += [ "//build/config/linux:x11" ]
 
   deps = [
+    "//ui/events/platform/x11",
     "//ui/gfx",
     "//ui/gfx/x",
   ]

@@ -206,6 +206,10 @@ interface SessionControllerClient {
 
   // Show the multi-profile login UI to add another user to this session.
   ShowMultiProfileLogin();
+
+  // Emits the ash-initialized upstart signal to start Chrome OS tasks that
+  // expect that Ash is listening to D-Bus signals they emit.
+  EmitAshInitialized();
 };
 
 // Interface for ash to notify client of sessions status for a specific

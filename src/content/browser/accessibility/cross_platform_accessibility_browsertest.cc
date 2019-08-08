@@ -12,10 +12,14 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "content/browser/accessibility/browser_accessibility.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -67,6 +71,32 @@ class CrossPlatformAccessibilityBrowserTest : public ContentBrowserTest {
   void TearDownOnMainThread() override;
 
  protected:
+  void LoadInitialAccessibilityTreeFromUrl(
+      const GURL& url,
+      ui::AXMode accessibility_mode = ui::kAXModeComplete) {
+    AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                           accessibility_mode,
+                                           ax::mojom::Event::kLoadComplete);
+    NavigateToURL(shell(), url);
+    waiter.WaitForNotification();
+  }
+
+  void LoadInitialAccessibilityTreeFromHtmlFilePath(
+      const std::string& html_file_path,
+      ui::AXMode accessibility_mode = ui::kAXModeComplete) {
+    if (!embedded_test_server()->Started())
+      ASSERT_TRUE(embedded_test_server()->Start());
+    ASSERT_TRUE(embedded_test_server()->Started());
+    LoadInitialAccessibilityTreeFromUrl(
+        embedded_test_server()->GetURL(html_file_path), accessibility_mode);
+  }
+
+  BrowserAccessibilityManager* GetManager() {
+    WebContentsImpl* web_contents =
+        static_cast<WebContentsImpl*>(shell()->web_contents());
+    return web_contents->GetRootBrowserAccessibilityManager();
+  }
+
   std::string GetAttr(const ui::AXNode* node,
                       const ax::mojom::StringAttribute attr);
   int GetIntAttr(const ui::AXNode* node, const ax::mojom::IntAttribute attr);
@@ -415,4 +445,342 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest, WritableElement) {
   EXPECT_TRUE(textbox->data().HasAction(ax::mojom::Action::kSetValue));
 }
 
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       AriaSortDirection) {
+  const char url_str[] =
+      "data:text/html,"
+      "<!doctype html>"
+      "<table><tr>"
+      "<th scope='row' aria-sort='ascending'>row header 1</th>"
+      "<th scope='row' aria-sort='descending'>row header 2</th>"
+      "<th scope='col' aria-sort='custom'>col header 1</th>"
+      "<th scope='col' aria-sort='none'>col header 2</th>"
+      "<th scope='col'>col header 3</th>"
+      "</tr></table>";
+  GURL url(url_str);
+  NavigateToURL(shell(), url);
+
+  const ui::AXTree& tree = GetAXTree();
+  const ui::AXNode* root = tree.root();
+  const ui::AXNode* table = root->ChildAtIndex(0);
+  EXPECT_EQ(ax::mojom::Role::kTable, table->data().role);
+  EXPECT_EQ(1, table->child_count());
+  const ui::AXNode* row = table->ChildAtIndex(0);
+  EXPECT_EQ(5, row->child_count());
+
+  const ui::AXNode* header1 = row->ChildAtIndex(0);
+  const ui::AXNode* header2 = row->ChildAtIndex(1);
+  const ui::AXNode* header3 = row->ChildAtIndex(2);
+  const ui::AXNode* header4 = row->ChildAtIndex(3);
+  const ui::AXNode* header5 = row->ChildAtIndex(4);
+
+  EXPECT_EQ(static_cast<int>(ax::mojom::SortDirection::kAscending),
+            GetIntAttr(header1, ax::mojom::IntAttribute::kSortDirection));
+
+  EXPECT_EQ(static_cast<int>(ax::mojom::SortDirection::kDescending),
+            GetIntAttr(header2, ax::mojom::IntAttribute::kSortDirection));
+
+  EXPECT_EQ(static_cast<int>(ax::mojom::SortDirection::kOther),
+            GetIntAttr(header3, ax::mojom::IntAttribute::kSortDirection));
+
+  EXPECT_EQ(-1, GetIntAttr(header4, ax::mojom::IntAttribute::kSortDirection));
+  EXPECT_EQ(-1, GetIntAttr(header5, ax::mojom::IntAttribute::kSortDirection));
+}
+
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       LocalizedLandmarkType) {
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+  GURL url(
+      "data:text/html,"
+      "<!doctype html>"
+      "<header aria-label='header'></header>"
+      "<aside aria-label='aside'></aside>"
+      "<footer aria-label='footer'></footer>"
+      "<form aria-label='form'></form>"
+      "<main aria-label='main'></main>"
+      "<nav aria-label='nav'></nav>"
+      "<section></section>"
+      "<section aria-label='section'></section>"
+      "<div role='banner' aria-label='banner'></div>"
+      "<div role='complementary' aria-label='complementary'></div>"
+      "<div role='contentinfo' aria-label='contentinfo'></div>"
+      "<div role='form' aria-label='role_form'></div>"
+      "<div role='main' aria-label='role_main'></div>"
+      "<div role='navigation' aria-label='role_nav'></div>"
+      "<div role='region'></div>"
+      "<div role='region' aria-label='region'></div>"
+      "<div role='search' aria-label='search'></div>");
+
+  NavigateToURL(shell(), url);
+  waiter.WaitForNotification();
+
+  BrowserAccessibility* root = GetManager()->GetRoot();
+  ASSERT_NE(nullptr, root);
+  ASSERT_EQ(17u, root->PlatformChildCount());
+
+  auto TestLocalizedLandmarkType =
+      [root](int child_index, ax::mojom::Role expected_role,
+             const std::string& expected_name,
+             const base::string16& expected_localized_landmark_type = {}) {
+        BrowserAccessibility* node = root->PlatformGetChild(child_index);
+        ASSERT_NE(nullptr, node);
+
+        EXPECT_EQ(expected_role, node->GetRole());
+        EXPECT_EQ(expected_name,
+                  node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+        EXPECT_EQ(expected_localized_landmark_type,
+                  node->GetLocalizedStringForLandmarkType());
+      };
+
+  // For testing purposes, assume we get en-US localized strings.
+  TestLocalizedLandmarkType(0, ax::mojom::Role::kBanner, "header",
+                            base::ASCIIToUTF16("banner"));
+  TestLocalizedLandmarkType(1, ax::mojom::Role::kComplementary, "aside",
+                            base::ASCIIToUTF16("complementary"));
+  TestLocalizedLandmarkType(2, ax::mojom::Role::kFooter, "footer",
+                            base::ASCIIToUTF16("content info"));
+  TestLocalizedLandmarkType(3, ax::mojom::Role::kForm, "form");
+  TestLocalizedLandmarkType(4, ax::mojom::Role::kMain, "main");
+  TestLocalizedLandmarkType(5, ax::mojom::Role::kNavigation, "nav");
+  TestLocalizedLandmarkType(6, ax::mojom::Role::kRegion, "");
+  TestLocalizedLandmarkType(7, ax::mojom::Role::kRegion, "section",
+                            base::ASCIIToUTF16("region"));
+
+  TestLocalizedLandmarkType(8, ax::mojom::Role::kBanner, "banner",
+                            base::ASCIIToUTF16("banner"));
+  TestLocalizedLandmarkType(9, ax::mojom::Role::kComplementary, "complementary",
+                            base::ASCIIToUTF16("complementary"));
+  TestLocalizedLandmarkType(10, ax::mojom::Role::kContentInfo, "contentinfo",
+                            base::ASCIIToUTF16("content info"));
+  TestLocalizedLandmarkType(11, ax::mojom::Role::kForm, "role_form");
+  TestLocalizedLandmarkType(12, ax::mojom::Role::kMain, "role_main");
+  TestLocalizedLandmarkType(13, ax::mojom::Role::kNavigation, "role_nav");
+  TestLocalizedLandmarkType(14, ax::mojom::Role::kRegion, "");
+  TestLocalizedLandmarkType(15, ax::mojom::Role::kRegion, "region",
+                            base::ASCIIToUTF16("region"));
+  TestLocalizedLandmarkType(16, ax::mojom::Role::kSearch, "search");
+}
+
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       GetStyleNameAttributeAsLocalizedString) {
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+  GURL url(
+      "data:text/html,"
+      "<!doctype html>"
+      "<p>text <mark>mark text</mark></p>");
+
+  NavigateToURL(shell(), url);
+  waiter.WaitForNotification();
+
+  BrowserAccessibility* root = GetManager()->GetRoot();
+  ASSERT_NE(nullptr, root);
+  ASSERT_EQ(1u, root->PlatformChildCount());
+
+  auto TestGetStyleNameAttributeAsLocalizedString =
+      [](BrowserAccessibility* node, ax::mojom::Role expected_role,
+         const base::string16& expected_localized_style_name_attribute = {}) {
+        ASSERT_NE(nullptr, node);
+
+        EXPECT_EQ(expected_role, node->GetRole());
+        EXPECT_EQ(expected_localized_style_name_attribute,
+                  node->GetStyleNameAttributeAsLocalizedString());
+      };
+
+  // For testing purposes, assume we get en-US localized strings.
+  BrowserAccessibility* para_node = root->PlatformGetChild(0);
+  ASSERT_EQ(2u, para_node->PlatformChildCount());
+  TestGetStyleNameAttributeAsLocalizedString(para_node,
+                                             ax::mojom::Role::kParagraph);
+
+  BrowserAccessibility* text_node = para_node->PlatformGetChild(0);
+  ASSERT_EQ(0u, text_node->PlatformChildCount());
+  TestGetStyleNameAttributeAsLocalizedString(text_node,
+                                             ax::mojom::Role::kStaticText);
+
+  BrowserAccessibility* mark_node = para_node->PlatformGetChild(1);
+  TestGetStyleNameAttributeAsLocalizedString(
+      mark_node, ax::mojom::Role::kMark,
+      base::ASCIIToUTF16("highlighted content"));
+
+  // Android doesn't always have a child in this case.
+  if (mark_node->PlatformChildCount() > 0) {
+    BrowserAccessibility* mark_text_node = mark_node->PlatformGetChild(0);
+    ASSERT_EQ(0u, mark_text_node->PlatformChildCount());
+    TestGetStyleNameAttributeAsLocalizedString(
+        mark_text_node, ax::mojom::Role::kStaticText,
+        base::ASCIIToUTF16("highlighted content"));
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       TooltipStringAttributeMutuallyExclusiveOfNameFromTitle) {
+  const char url_str[] =
+      "data:text/html,"
+      "<!doctype html>"
+      "<input type='text' title='title'>"
+      "<input type='text' title='title' aria-labelledby='inputlabel'>"
+      "<div id='inputlabel'>aria-labelledby</div>";
+  GURL url(url_str);
+  NavigateToURL(shell(), url);
+
+  const ui::AXTree& tree = GetAXTree();
+  const ui::AXNode* root = tree.root();
+  const ui::AXNode* input1 = root->ChildAtIndex(0);
+  const ui::AXNode* input2 = root->ChildAtIndex(1);
+
+  EXPECT_EQ(static_cast<int>(ax::mojom::NameFrom::kTitle),
+            GetIntAttr(input1, ax::mojom::IntAttribute::kNameFrom));
+  EXPECT_STREQ("title",
+               GetAttr(input1, ax::mojom::StringAttribute::kName).c_str());
+  EXPECT_STREQ("",
+               GetAttr(input1, ax::mojom::StringAttribute::kTooltip).c_str());
+
+  EXPECT_EQ(static_cast<int>(ax::mojom::NameFrom::kRelatedElement),
+            GetIntAttr(input2, ax::mojom::IntAttribute::kNameFrom));
+  EXPECT_STREQ("aria-labelledby",
+               GetAttr(input2, ax::mojom::StringAttribute::kName).c_str());
+  EXPECT_STREQ("title",
+               GetAttr(input2, ax::mojom::StringAttribute::kTooltip).c_str());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    CrossPlatformAccessibilityBrowserTest,
+    PlaceholderStringAttributeMutuallyExclusiveOfNameFromPlaceholder) {
+  const char url_str[] =
+      "data:text/html,"
+      "<!doctype html>"
+      "<input type='text' placeholder='placeholder'>"
+      "<input type='text' placeholder='placeholder' aria-label='label'>";
+  GURL url(url_str);
+  NavigateToURL(shell(), url);
+
+  const ui::AXTree& tree = GetAXTree();
+  const ui::AXNode* root = tree.root();
+  const ui::AXNode* group = root->ChildAtIndex(0);
+  const ui::AXNode* input1 = group->ChildAtIndex(0);
+  const ui::AXNode* input2 = group->ChildAtIndex(1);
+
+  using ax::mojom::StringAttribute;
+
+  EXPECT_EQ(static_cast<int>(ax::mojom::NameFrom::kPlaceholder),
+            GetIntAttr(input1, ax::mojom::IntAttribute::kNameFrom));
+  EXPECT_STREQ("placeholder", GetAttr(input1, StringAttribute::kName).c_str());
+  EXPECT_STREQ("", GetAttr(input1, StringAttribute::kPlaceholder).c_str());
+
+  EXPECT_EQ(static_cast<int>(ax::mojom::NameFrom::kAttribute),
+            GetIntAttr(input2, ax::mojom::IntAttribute::kNameFrom));
+  EXPECT_STREQ("label", GetAttr(input2, StringAttribute::kName).c_str());
+  EXPECT_STREQ("placeholder",
+               GetAttr(input2, StringAttribute::kPlaceholder).c_str());
+}
+
+// On Android root scroll offset is handled by the Java layer. The final rect
+// bounds is device specific.
+#ifndef OS_ANDROID
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       GetBoundsRectUnclippedRootFrameFromIFrame) {
+  // Start by loading a document with iframes.
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/html/iframe-padding.html");
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Second Button");
+
+  // Get the delegate for the iframe leaf of the top-level accessibility tree
+  // for the second iframe.
+  BrowserAccessibilityManager* browser_accessibility_manager = GetManager();
+  ASSERT_NE(nullptr, browser_accessibility_manager);
+  BrowserAccessibility* root_browser_accessibility =
+      browser_accessibility_manager->GetRoot();
+  ASSERT_NE(nullptr, root_browser_accessibility);
+  BrowserAccessibility* leaf_iframe_browser_accessibility =
+      root_browser_accessibility->InternalDeepestLastChild();
+  ASSERT_NE(nullptr, leaf_iframe_browser_accessibility);
+  ASSERT_EQ(ax::mojom::Role::kIframe,
+            leaf_iframe_browser_accessibility->GetRole());
+
+  // The frame coordinates of the iframe node within the top-level tree is
+  // relative to the top level frame. That is why the top-level default padding
+  // is included.
+  ASSERT_EQ(gfx::Rect(30, 230, 300, 100).ToString(),
+            leaf_iframe_browser_accessibility
+                ->GetBoundsRect(ui::AXCoordinateSystem::kRootFrame,
+                                ui::AXClippingBehavior::kUnclipped)
+                .ToString());
+
+  // Now get the root delegate of the iframe's accessibility tree.
+  AXTreeID iframe_tree_id = AXTreeID::FromString(
+      leaf_iframe_browser_accessibility->GetStringAttribute(
+          ax::mojom::StringAttribute::kChildTreeId));
+  BrowserAccessibilityManager* iframe_browser_accessibility_manager =
+      BrowserAccessibilityManager::FromID(iframe_tree_id);
+  ASSERT_NE(nullptr, iframe_browser_accessibility_manager);
+  BrowserAccessibility* root_iframe_browser_accessibility =
+      iframe_browser_accessibility_manager->GetRoot();
+  ASSERT_NE(nullptr, root_iframe_browser_accessibility);
+  ASSERT_EQ(ax::mojom::Role::kRootWebArea,
+            root_iframe_browser_accessibility->GetRole());
+
+  // The root frame bounds of the iframe are still relative to the top-level
+  // frame.
+  ASSERT_EQ(gfx::Rect(30, 230, 300, 100).ToString(),
+            root_iframe_browser_accessibility
+                ->GetBoundsRect(ui::AXCoordinateSystem::kRootFrame,
+                                ui::AXClippingBehavior::kUnclipped)
+                .ToString());
+}
+
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       GetBoundsRectUnclippedFrameFromIFrame) {
+  // Start by loading a document with iframes.
+  LoadInitialAccessibilityTreeFromHtmlFilePath(
+      "/accessibility/html/iframe-padding.html");
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Second Button");
+
+  // Get the delegate for the iframe leaf of the top-level accessibility tree
+  // for the second iframe.
+  BrowserAccessibilityManager* browser_accessibility_manager = GetManager();
+  ASSERT_NE(nullptr, browser_accessibility_manager);
+  BrowserAccessibility* root_browser_accessibility =
+      browser_accessibility_manager->GetRoot();
+  ASSERT_NE(nullptr, root_browser_accessibility);
+  BrowserAccessibility* leaf_iframe_browser_accessibility =
+      root_browser_accessibility->InternalDeepestLastChild();
+  ASSERT_NE(nullptr, leaf_iframe_browser_accessibility);
+  ASSERT_EQ(ax::mojom::Role::kIframe,
+            leaf_iframe_browser_accessibility->GetRole());
+
+  // The frame coordinates of the iframe node within the top-level tree is
+  // relative to the top level frame.
+  ASSERT_EQ(gfx::Rect(30, 230, 300, 100).ToString(),
+            leaf_iframe_browser_accessibility
+                ->GetBoundsRect(ui::AXCoordinateSystem::kFrame,
+                                ui::AXClippingBehavior::kUnclipped)
+                .ToString());
+
+  // Now get the root delegate of the iframe's accessibility tree.
+  AXTreeID iframe_tree_id = AXTreeID::FromString(
+      leaf_iframe_browser_accessibility->GetStringAttribute(
+          ax::mojom::StringAttribute::kChildTreeId));
+  BrowserAccessibilityManager* iframe_browser_accessibility_manager =
+      BrowserAccessibilityManager::FromID(iframe_tree_id);
+  ASSERT_NE(nullptr, iframe_browser_accessibility_manager);
+  BrowserAccessibility* root_iframe_browser_accessibility =
+      iframe_browser_accessibility_manager->GetRoot();
+  ASSERT_NE(nullptr, root_iframe_browser_accessibility);
+  ASSERT_EQ(ax::mojom::Role::kRootWebArea,
+            root_iframe_browser_accessibility->GetRole());
+
+  // The frame bounds of the iframe are now relative to itself.
+  ASSERT_EQ(gfx::Rect(0, 0, 300, 100).ToString(),
+            root_iframe_browser_accessibility
+                ->GetBoundsRect(ui::AXCoordinateSystem::kFrame,
+                                ui::AXClippingBehavior::kUnclipped)
+                .ToString());
+}
+#endif
 }  // namespace content

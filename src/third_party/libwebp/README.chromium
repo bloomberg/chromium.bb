@@ -24,3 +24,4 @@ Local changes:
  * Pulled in fuzzers from OSS-Fuzz
    https://github.com/google/oss-fuzz/tree/master/projects/libwebp
  * Revert 9cf9841b libwebp: Unicode command tools on Windows
+ * cherry-pick aa65f89a HistogramCombineStochastic: fix free of uninit value

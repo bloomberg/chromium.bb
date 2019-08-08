@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "chrome/common/chrome_switches.h"
@@ -88,12 +89,51 @@ std::string CalculateHWIDv3Checksum(const std::string& data) {
 bool IsCorrectHWIDv3(const std::string& hwid) {
   if (IsExceptionalHWID(hwid))
     return false;
-  std::string regex =
-      "([A-Z0-9]+ (?:[A-Z2-7][2-9][A-Z2-7]-)*[A-Z2-7])([2-9][A-Z2-7])";
+
+  // HWIDv3 format:
+  //   Regular: "<MODEL> <COMPONENT><CHECKSUM>"
+  //   Extended: "<MODEL>-<RLZ> <CONFIGLESS> <COMPONENT><CHECKSUM>"
+  std::vector<std::string> parts =
+      base::SplitString(hwid, " ", base::WhitespaceHandling::TRIM_WHITESPACE,
+                        base::SplitResult::SPLIT_WANT_ALL);
   std::string not_checksum, checksum;
-  if (!RE2::FullMatch(hwid, regex, &not_checksum, &checksum))
+
+  constexpr char model[] = "[-A-Z0-9]+";
+  constexpr char configless_field[] = "(?:[[:xdigit:]]+-){3}[[:xdigit:]]+";
+  constexpr char component_and_checksum[] =
+      "(?:[A-Z2-7][2-9][A-Z2-7]-)*[A-Z2-7][2-9][A-Z2-7]";
+
+  int component_field_index;
+
+  if (parts.size() == 2) {
+    //   Regular: "<MODEL> <COMPONENT><CHECKSUM>"
+    if (!RE2::FullMatch(parts[0], model) ||
+        !RE2::FullMatch(parts[1], component_and_checksum)) {
+      return false;
+    }
+    component_field_index = 1;
+  } else if (parts.size() == 3) {
+    //   Extended: "<MODEL>-<RLZ> <CONFIGLESS> <COMPONENT><CHECKSUM>"
+    if (!RE2::FullMatch(parts[0], model) ||
+        !RE2::FullMatch(parts[1], configless_field) ||
+        !RE2::FullMatch(parts[2], component_and_checksum)) {
+      return false;
+    }
+    component_field_index = 2;
+  } else {
     return false;
-  base::RemoveChars(not_checksum, "-", &not_checksum);
+  }
+
+  // Modify component_field before computing checksum.
+  std::string& component_field = parts[component_field_index];
+  // Last 2 characters are checksum.
+  checksum = component_field.substr(component_field.size() - 2);
+  component_field = component_field.substr(0, component_field.size() - 2);
+  // When computing checksum, "-" is removed from component field.
+  base::RemoveChars(component_field, "-", &component_field);
+
+  // Construct not_checksum to compute checksum.
+  not_checksum = base::JoinString(parts, " ");
   return CalculateHWIDv3Checksum(not_checksum) == checksum;
 }
 

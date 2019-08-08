@@ -130,9 +130,6 @@ available as command line flags, for automated test runs [e.g. telemetry].
   allocation. `native` stacks provide the most utility. The only time the other
   options should be considered is for Android official builds, most of which do
   not support `native` stacks.
-* `#memlog-keep-small-allocations` should be enabled, as it prevents the heap
-  dump exporter from pruning small allocations. Doing so yields smaller traces,
-  which is desirable when heap profiling is enabled in the wild.
 
 Once the flags have been set appropriately, restart Chrome and take a
 memory-infra trace. The results will have a heap dump.

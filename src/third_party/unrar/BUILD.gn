@@ -53,6 +53,7 @@ if (safe_browsing_mode == 1) {
       "src/ui.cpp",
       "src/unicode.cpp",
       "src/unpack.cpp",
+      "src/unrar_wrapper.cc",
       "src/volume.cpp",
     ]
     if (is_win) {

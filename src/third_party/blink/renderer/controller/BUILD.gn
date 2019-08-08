@@ -39,8 +39,6 @@ jumbo_component("controller") {
     "blink_initializer.h",
     "blink_leak_detector.cc",
     "blink_leak_detector.h",
-    "bloated_renderer_detector.cc",
-    "bloated_renderer_detector.h",
     "controller_export.h",
     "dev_tools_frontend_impl.cc",
     "dev_tools_frontend_impl.h",
@@ -56,6 +54,8 @@ jumbo_component("controller") {
       "memory_usage_monitor_android.h",
       "oom_intervention_impl.cc",
       "oom_intervention_impl.h",
+      "user_level_memory_pressure_signal_generator.cc",
+      "user_level_memory_pressure_signal_generator.h",
     ]
   }
   if (is_mac) {
@@ -100,7 +100,6 @@ test("blink_unittests") {
   ]
 
   if (is_android) {
-    enable_multidex = true
     deps += [
       "//base:base_java",
       "//content/public/android:content_java",
@@ -145,7 +144,6 @@ jumbo_source_set("blink_unittests_sources") {
   testonly = true
 
   sources = [
-    "bloated_renderer_detector_test.cc",
     "tests/run_all_tests.cc",
   ]
   sources += bindings_unittest_files
@@ -154,6 +152,7 @@ jumbo_source_set("blink_unittests_sources") {
       "memory_usage_monitor_android_test.cc",
       "memory_usage_monitor_test.cc",
       "oom_intervention_impl_test.cc",
+      "user_level_memory_pressure_signal_generator_test.cc",
     ]
   }
 

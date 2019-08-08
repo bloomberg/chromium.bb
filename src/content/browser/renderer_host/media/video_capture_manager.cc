@@ -141,10 +141,10 @@ void VideoCaptureManager::EnumerateDevices(
   EmitLogMessage("VideoCaptureManager::EnumerateDevices", 1);
 
   // Pass a timer for UMA histogram collection.
-  video_capture_provider_->GetDeviceInfosAsync(
-      media::BindToCurrentLoop(base::BindOnce(
-          &VideoCaptureManager::OnDeviceInfosReceived, this,
-          base::Owned(new base::ElapsedTimer()), std::move(client_callback))));
+  video_capture_provider_->GetDeviceInfosAsync(media::BindToCurrentLoop(
+      base::BindRepeating(&VideoCaptureManager::OnDeviceInfosReceived, this,
+                          base::Owned(new base::ElapsedTimer()),
+                          base::Passed(&client_callback))));
 }
 
 int VideoCaptureManager::Open(const blink::MediaStreamDevice& device) {
@@ -858,14 +858,6 @@ VideoCaptureController* VideoCaptureManager::GetOrCreateController(
       video_capture_provider_->CreateDeviceLauncher(), emit_log_message_cb_);
   controllers_.emplace_back(new_controller);
   return new_controller;
-}
-
-base::Optional<blink::CameraCalibration>
-VideoCaptureManager::GetCameraCalibration(const std::string& device_id) {
-  media::VideoCaptureDeviceInfo* info = GetDeviceInfoById(device_id);
-  if (!info)
-    return base::Optional<blink::CameraCalibration>();
-  return info->descriptor.camera_calibration;
 }
 
 #if defined(OS_ANDROID)

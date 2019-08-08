@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 
+namespace notifications {
+
 // Interface to schedule a background task on platform OS to run the
 // notification scheduler job.
 class NotificationBackgroundTaskScheduler {
@@ -36,12 +38,15 @@ class NotificationBackgroundTaskScheduler {
   virtual void Schedule(base::TimeDelta window_start,
                         base::TimeDelta window_end) = 0;
 
+  virtual ~NotificationBackgroundTaskScheduler() = default;
+
  protected:
   NotificationBackgroundTaskScheduler() = default;
-  virtual ~NotificationBackgroundTaskScheduler() = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationBackgroundTaskScheduler);
 };
+
+}  // namespace notifications
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_NOTIFICATION_BACKGROUND_TASK_SCHEDULER_H_

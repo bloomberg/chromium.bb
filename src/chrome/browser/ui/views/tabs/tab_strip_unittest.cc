@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
-#include "chrome/browser/ui/views/tabs/tab_style.h"
+#include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,16 +61,21 @@ class TestAXEventObserver : public views::AXEventObserver {
     if (event_type == ax::mojom::Event::kSelectionRemove) {
       remove_count_++;
     }
+    if (event_type == ax::mojom::Event::kSelection) {
+      change_count_++;
+    }
     if (event_type == ax::mojom::Event::kSelectionAdd) {
       add_count_++;
     }
   }
 
   int add_count() { return add_count_; }
+  int change_count() { return change_count_; }
   int remove_count() { return remove_count_; }
 
  private:
   int add_count_ = 0;
+  int change_count_ = 0;
   int remove_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestAXEventObserver);
@@ -236,6 +241,13 @@ class TabStripTest : public ChromeViewsTestBase,
     }
   }
 
+  std::vector<TabGroupHeader*> ListGroupHeaders() const {
+    std::vector<TabGroupHeader*> result;
+    for (auto const& header_pair : tab_strip_->group_headers_)
+      result.push_back(header_pair.second.get());
+    return result;
+  }
+
   // Owned by TabStrip.
   FakeBaseTabStripController* controller_ = nullptr;
   TabStrip* tab_strip_ = nullptr;
@@ -270,7 +282,8 @@ TEST_P(TabStripTest, AccessibilityEvents) {
   ui::ListSelectionModel selection;
   selection.SetSelectedIndex(1);
   tab_strip_->SetSelection(selection);
-  EXPECT_EQ(1, observer.add_count());
+  EXPECT_EQ(0, observer.add_count());
+  EXPECT_EQ(1, observer.change_count());
   EXPECT_EQ(0, observer.remove_count());
 
   // When removing tabs, SetSelection() is called before RemoveTabAt(), as
@@ -278,8 +291,15 @@ TEST_P(TabStripTest, AccessibilityEvents) {
   selection.SetSelectedIndex(0);
   tab_strip_->SetSelection(selection);
   tab_strip_->RemoveTabAt(nullptr, 1, true);
-  EXPECT_EQ(2, observer.add_count());
-  EXPECT_EQ(1, observer.remove_count());
+  EXPECT_EQ(0, observer.add_count());
+  EXPECT_EQ(2, observer.change_count());
+  EXPECT_EQ(0, observer.remove_count());
+
+  // When activating widget, refire selection event on tab.
+  widget_->OnNativeWidgetActivationChanged(true);
+  EXPECT_EQ(0, observer.add_count());
+  EXPECT_EQ(3, observer.change_count());
+  EXPECT_EQ(0, observer.remove_count());
 }
 
 TEST_P(TabStripTest, AccessibilityData) {
@@ -334,19 +354,19 @@ TEST_P(TabStripTest, RemoveTab) {
   TestTabStripObserver observer(tab_strip_);
   controller_->AddTab(0, false);
   controller_->AddTab(1, false);
-  const int child_view_count = tab_strip_->child_count();
+  const size_t num_children = tab_strip_->children().size();
   EXPECT_EQ(2, tab_strip_->tab_count());
   controller_->RemoveTab(0);
   EXPECT_EQ(0, observer.last_tab_removed());
   // When removing a tab the tabcount should immediately decrement.
   EXPECT_EQ(1, tab_strip_->tab_count());
   // But the number of views should remain the same (it's animatining closed).
-  EXPECT_EQ(child_view_count, tab_strip_->child_count());
+  EXPECT_EQ(num_children, tab_strip_->children().size());
   tab_strip_->SetBounds(0, 0, 200, 20);
   // Layout at a different size should force the animation to end and delete
   // the tab that was removed.
   tab_strip_->Layout();
-  EXPECT_EQ(child_view_count - 1, tab_strip_->child_count());
+  EXPECT_EQ(num_children - 1, tab_strip_->children().size());
 
   // Remove the last tab to make sure things are cleaned up correctly when
   // the TabStrip is destroyed and an animation is ongoing.
@@ -361,7 +381,7 @@ bool TabViewsInOrder(TabStrip* tab_strip) {
     Tab* left = tab_strip->tab_at(i - 1);
     Tab* right = tab_strip->tab_at(i);
 
-    if (tab_strip->GetIndexOf(right) < tab_strip->GetIndexOf(left)) {
+    if (tab_strip->FindChild(right) < tab_strip->FindChild(left)) {
       return false;
     }
   }
@@ -779,7 +799,7 @@ TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
   tab_strip_->SetBounds(0, 0, 200, 20);
 
   // Create a lot of tabs in order to make inactive tabs tiny.
-  const int min_inactive_width = TabStyle::GetMinimumInactiveWidth();
+  const int min_inactive_width = TabStyleViews::GetMinimumInactiveWidth();
   while (current_inactive_width() != min_inactive_width)
     controller_->CreateNewTab();
 
@@ -792,7 +812,7 @@ TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
   // During mouse-based tab closure, the active tab should remain at least as
   // wide as it's minium width.
   controller_->SelectTab(0, dummy_event_);
-  for (const int min_active_width = TabStyle::GetMinimumActiveWidth();
+  for (const int min_active_width = TabStyleViews::GetMinimumActiveWidth();
        tab_strip_->tab_count();) {
     const int active_index = controller_->GetActiveIndex();
     EXPECT_GE(tab_strip_->ideal_bounds(active_index).width(), min_active_width);
@@ -808,8 +828,8 @@ TEST_P(TabStripTest, InactiveTabWidthWhenTabsAreTiny) {
 
   // Create a lot of tabs in order to make inactive tabs smaller than active
   // tab but not the minimum.
-  const int min_inactive_width = TabStyle::GetMinimumInactiveWidth();
-  const int min_active_width = TabStyle::GetMinimumActiveWidth();
+  const int min_inactive_width = TabStyleViews::GetMinimumInactiveWidth();
+  const int min_active_width = TabStyleViews::GetMinimumActiveWidth();
   while (current_inactive_width() >=
          (min_inactive_width + min_active_width) / 2)
     controller_->CreateNewTab();
@@ -831,11 +851,11 @@ TEST_P(TabStripTest, ResetBoundsForDraggedTabs) {
   tab_strip_->SetBounds(0, 0, 200, 20);
 
   // Create a lot of tabs in order to make inactive tabs tiny.
-  const int min_inactive_width = TabStyle::GetMinimumInactiveWidth();
+  const int min_inactive_width = TabStyleViews::GetMinimumInactiveWidth();
   while (current_inactive_width() != min_inactive_width)
     controller_->CreateNewTab();
 
-  const int min_active_width = TabStyle::GetMinimumActiveWidth();
+  const int min_active_width = TabStyleViews::GetMinimumActiveWidth();
 
   int dragged_tab_index = controller_->GetActiveIndex();
   EXPECT_GE(tab_strip_->ideal_bounds(dragged_tab_index).width(),
@@ -978,6 +998,26 @@ TEST_P(TabStripTest, HorizontalScroll) {
                                   tab_center, ui::EventTimeForNow(), 0, 0);
   tab_strip_->OnMouseWheel(wheel_event);
   EXPECT_EQ(1, controller_->GetActiveIndex());
+}
+
+TEST_P(TabStripTest, CreateTabGroup) {
+  tab_strip_->AddTabAt(0, TabRendererData(), false);
+  base::Optional<int> group = controller_->CreateTabGroup();
+  controller_->MoveTabIntoGroup(0, group);
+  EXPECT_EQ(1u, ListGroupHeaders().size());
+}
+
+TEST_P(TabStripTest, DeleteTabGroupHeaderWhenEmpty) {
+  tab_strip_->AddTabAt(0, TabRendererData(), false);
+  tab_strip_->AddTabAt(1, TabRendererData(), false);
+  base::Optional<int> group = controller_->CreateTabGroup();
+  controller_->MoveTabIntoGroup(0, group);
+  controller_->MoveTabIntoGroup(1, group);
+  controller_->MoveTabIntoGroup(0, base::nullopt);
+
+  EXPECT_EQ(1u, ListGroupHeaders().size());
+  controller_->MoveTabIntoGroup(1, base::nullopt);
+  EXPECT_EQ(0u, ListGroupHeaders().size());
 }
 
 INSTANTIATE_TEST_SUITE_P(, TabStripTest, ::testing::Values(false, true));

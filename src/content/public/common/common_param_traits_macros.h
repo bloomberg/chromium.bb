@@ -10,7 +10,6 @@
 
 #include "build/build_config.h"
 #include "cc/input/touch_action.h"
-#include "content/public/common/console_message_level.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/web_preferences.h"
@@ -18,15 +17,16 @@
 #include "ipc/ipc_message_macros.h"
 #include "services/network/public/cpp/network_ipc_param_traits.h"
 #include "services/network/public/mojom/referrer_policy.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/mojom/window_features/window_features.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_history_scroll_restoration_type.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_security_style.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/public/web/window_features.mojom.h"
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_relative_bounds.h"
@@ -46,8 +46,8 @@ IPC_ENUM_TRAITS_VALIDATE(ui::PageTransition,
                          ((value &
                            ui::PageTransition::PAGE_TRANSITION_CORE_MASK) <=
                           ui::PageTransition::PAGE_TRANSITION_LAST_CORE))
-IPC_ENUM_TRAITS_MAX_VALUE(content::ConsoleMessageLevel,
-                          content::CONSOLE_MESSAGE_LEVEL_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ConsoleMessageLevel,
+                          blink::mojom::ConsoleMessageLevel::kError)
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::ReferrerPolicy,
                           network::mojom::ReferrerPolicy::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebHistoryScrollRestorationType,
@@ -78,6 +78,9 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(
     content::AutoplayPolicy,
     content::AutoplayPolicy::kNoUserGestureRequired,
     content::AutoplayPolicy::kDocumentUserActivationRequired)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::PreferredColorScheme,
+                              blink::PreferredColorScheme::kNoPreference,
+                              blink::PreferredColorScheme::kLight)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebPoint)
   IPC_STRUCT_TRAITS_MEMBER(x)
@@ -202,6 +205,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(text_track_font_variant)
   IPC_STRUCT_TRAITS_MEMBER(text_autosizing_enabled)
   IPC_STRUCT_TRAITS_MEMBER(double_tap_to_zoom_enabled)
+  IPC_STRUCT_TRAITS_MEMBER(dont_send_key_events_to_javascript)
   IPC_STRUCT_TRAITS_MEMBER(web_app_scope)
 #if defined(OS_ANDROID)
   IPC_STRUCT_TRAITS_MEMBER(font_scale_factor)
@@ -230,8 +234,8 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(immersive_mode_enabled)
   IPC_STRUCT_TRAITS_MEMBER(css_hex_alpha_color_enabled)
   IPC_STRUCT_TRAITS_MEMBER(scroll_top_left_interop_enabled)
-  IPC_STRUCT_TRAITS_MEMBER(force_dark_mode_enabled)
 #endif  // defined(OS_ANDROID)
+  IPC_STRUCT_TRAITS_MEMBER(force_dark_mode_enabled)
   IPC_STRUCT_TRAITS_MEMBER(default_minimum_page_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(default_maximum_page_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(hide_download_ui)
@@ -239,6 +243,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(media_controls_enabled)
   IPC_STRUCT_TRAITS_MEMBER(do_not_update_selection_on_mutating_selection_range)
   IPC_STRUCT_TRAITS_MEMBER(autoplay_policy)
+  IPC_STRUCT_TRAITS_MEMBER(preferred_color_scheme)
   IPC_STRUCT_TRAITS_MEMBER(low_priority_iframes_threshold)
   IPC_STRUCT_TRAITS_MEMBER(picture_in_picture_enabled)
   IPC_STRUCT_TRAITS_MEMBER(translate_service_available)
@@ -308,10 +313,6 @@ IPC_STRUCT_TRAITS_BEGIN(blink::mojom::RendererPreferences)
   IPC_STRUCT_TRAITS_MEMBER(subpixel_rendering)
   IPC_STRUCT_TRAITS_MEMBER(use_subpixel_positioning)
   IPC_STRUCT_TRAITS_MEMBER(focus_ring_color)
-#if defined(OS_ANDROID)
-  IPC_STRUCT_TRAITS_MEMBER(minimum_stroke_width_for_focus_ring)
-  IPC_STRUCT_TRAITS_MEMBER(is_focus_ring_outset)
-#endif
   IPC_STRUCT_TRAITS_MEMBER(active_selection_bg_color)
   IPC_STRUCT_TRAITS_MEMBER(active_selection_fg_color)
   IPC_STRUCT_TRAITS_MEMBER(inactive_selection_bg_color)

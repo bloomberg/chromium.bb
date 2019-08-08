@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -32,18 +33,20 @@ class ScriptedAnimationControllerTest : public testing::Test {
 };
 
 void ScriptedAnimationControllerTest::SetUp() {
-  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+  dummy_page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
 
   // Note: The document doesn't know about this ScriptedAnimationController
   // instance, and will create another if
   // Document::ensureScriptedAnimationController is called.
-  controller_ =
-      WrapPersistent(ScriptedAnimationController::Create(&GetDocument()));
+  controller_ = WrapPersistent(
+      MakeGarbageCollected<ScriptedAnimationController>(&GetDocument()));
 }
 
 namespace {
 
 class TaskOrderObserver {
+  STACK_ALLOCATED();
+
  public:
   base::RepeatingClosure CreateTask(int id) {
     return WTF::BindRepeating(&TaskOrderObserver::RunTask,

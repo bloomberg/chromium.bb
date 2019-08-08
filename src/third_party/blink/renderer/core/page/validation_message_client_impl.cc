@@ -45,10 +45,6 @@ namespace blink {
 ValidationMessageClientImpl::ValidationMessageClientImpl(Page& page)
     : page_(&page), current_anchor_(nullptr) {}
 
-ValidationMessageClientImpl* ValidationMessageClientImpl::Create(Page& page) {
-  return MakeGarbageCollected<ValidationMessageClientImpl>(page);
-}
-
 ValidationMessageClientImpl::~ValidationMessageClientImpl() = default;
 
 LocalFrameView* ValidationMessageClientImpl::CurrentView() {
@@ -85,10 +81,11 @@ void ValidationMessageClientImpl::ShowValidationMessage(
     target_frame = &anchor.GetDocument().GetFrame()->LocalFrameRoot();
 
   allow_initial_empty_anchor_ = !target_frame->IsMainFrame();
-  auto delegate = ValidationMessageOverlayDelegate::Create(
+  auto delegate = std::make_unique<ValidationMessageOverlayDelegate>(
       *page_, anchor, message_, message_dir, sub_message, sub_message_dir);
   overlay_delegate_ = delegate.get();
-  overlay_ = FrameOverlay::Create(target_frame, std::move(delegate));
+  overlay_ = std::make_unique<FrameOverlay>(target_frame, std::move(delegate));
+  overlay_delegate_->CreatePage(*overlay_);
   bool success =
       target_frame->View()->UpdateLifecycleToCompositingCleanPlusScrolling();
   ValidationMessageVisibilityChanged(anchor);
@@ -193,17 +190,13 @@ void ValidationMessageClientImpl::WillOpenPopup() {
 }
 
 void ValidationMessageClientImpl::LayoutOverlay() {
-  if (!overlay_)
-    return;
-  CheckAnchorStatus(nullptr);
   if (overlay_)
-    overlay_->Update();
+    CheckAnchorStatus(nullptr);
 }
 
-void ValidationMessageClientImpl::PaintOverlay() {
-  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  if (overlay_ && overlay_->GetGraphicsLayer())
-    overlay_->GetGraphicsLayer()->Paint();
+void ValidationMessageClientImpl::UpdatePrePaint() {
+  if (overlay_)
+    overlay_->UpdatePrePaint();
 }
 
 void ValidationMessageClientImpl::PaintOverlay(GraphicsContext& context) {

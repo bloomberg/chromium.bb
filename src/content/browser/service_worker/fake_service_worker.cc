@@ -36,7 +36,8 @@ void FakeServiceWorker::RunUntilInitializeGlobalScope() {
 
 void FakeServiceWorker::InitializeGlobalScope(
     blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
-    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info) {
+    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info,
+    blink::mojom::FetchHandlerExistence fetch_handler_existence) {
   host_.Bind(std::move(service_worker_host));
 
   // Enable callers to use these endpoints without us actually binding them
@@ -58,6 +59,8 @@ void FakeServiceWorker::InitializeGlobalScope(
   registration_info_ = std::move(registration_info);
   if (quit_closure_for_initialize_global_scope_)
     std::move(quit_closure_for_initialize_global_scope_).Run();
+
+  fetch_handler_existence_ = fetch_handler_existence;
 }
 
 void FakeServiceWorker::DispatchInstallEvent(

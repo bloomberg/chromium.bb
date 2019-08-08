@@ -409,14 +409,4 @@ Polymer({
     return openState != null ? openState :
                                depth <= FOLDER_OPEN_BY_DEFAULT_DEPTH;
   },
-
-  /**
-   * @private
-   * @return {string}
-   */
-  getButtonAriaLabel_: function() {
-    return loadTimeData.getStringF(
-        this.isOpen ? 'sidebarNodeCollapseAxLabel' : 'sidebarNodeExpandAxLabel',
-        this.item_.title);
-  },
 });

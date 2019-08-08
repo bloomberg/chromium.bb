@@ -21,7 +21,6 @@
 #include "api/video/video_frame.h"
 #include "api/video_codecs/video_decoder_factory.h"
 #include "api/video_codecs/video_encoder_factory.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "modules/video_coding/utility/simulcast_rate_allocator.h"
 
 namespace webrtc {
@@ -67,9 +66,9 @@ class SimulcastTestFixtureImpl final : public SimulcastTestFixture {
   void SetRates(uint32_t bitrate_kbps, uint32_t fps);
   void RunActiveStreamsTest(const std::vector<bool> active_streams);
   void UpdateActiveStreams(const std::vector<bool> active_streams);
-  void ExpectStreams(FrameType frame_type,
+  void ExpectStreams(VideoFrameType frame_type,
                      const std::vector<bool> expected_streams_active);
-  void ExpectStreams(FrameType frame_type, int expected_video_streams);
+  void ExpectStreams(VideoFrameType frame_type, int expected_video_streams);
   void VerifyTemporalIdxAndSyncForAllSpatialLayers(
       TestEncodedImageCallback* encoder_callback,
       const int* expected_temporal_idx,

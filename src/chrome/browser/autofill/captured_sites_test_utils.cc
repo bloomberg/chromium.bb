@@ -51,6 +51,19 @@ const base::TimeDelta kAutofillActionWaitForVisualUpdateTimeout =
 // Automation Framework will retry an autofill action a couple times before
 // concluding that Chrome Autofill does not work.
 const int kAutofillActionNumRetries = 5;
+
+// The public key hash for the certificate Web Page Replay (WPR) uses to serve
+// HTTPS content.
+// The Captured Sites Test Framework relies on WPR to serve captured site
+// traffic. If a machine does not have the WPR certificate installed, Chrome
+// will detect a server certificate validation failure when WPR serves Chrome
+// HTTPS content. In response Chrome will block the WPR HTTPS content.
+// The test framework avoids this problem by launching Chrome with the
+// ignore-certificate-errors-spki-list flag set to the WPR certificate's
+// public key hash. Doing so tells Chrome to ignore server certificate
+// validation errors from WPR.
+const char kWebPageReplayCertSPKI[] =
+    "PoNnQAwghMiLUPg1YNFtvTfGreNT8r9oeLEyzgNCJWc=";
 }  // namespace
 
 namespace captured_sites_test_utils {
@@ -264,12 +277,12 @@ void TestRecipeReplayer::SetUpCommandLine(base::CommandLine* command_line) {
           // "EXCLUDE clients1.google.com,"
           "EXCLUDE localhost",
           kHostHttpPort, kHostHttpsPort));
+  command_line->AppendSwitchASCII(
+      network::switches::kIgnoreCertificateErrorsSPKIList,
+      kWebPageReplayCertSPKI);
 }
 
 void TestRecipeReplayer::Setup() {
-  EXPECT_TRUE(InstallWebPageReplayServerRootCert())
-      << "Cannot install the root certificate "
-      << "for the local web page replay server.";
   CleanupSiteData();
 
   // Bypass permission dialogs.
@@ -283,9 +296,6 @@ void TestRecipeReplayer::Cleanup() {
   CleanupSiteData();
   EXPECT_TRUE(StopWebPageReplayServer())
       << "Cannot stop the local Web Page Replay server.";
-  EXPECT_TRUE(RemoveWebPageReplayServerRootCert())
-      << "Cannot remove the root certificate "
-      << "for the local Web Page Replay server.";
 }
 
 TestRecipeReplayChromeFeatureActionExecutor*
@@ -328,18 +338,21 @@ bool TestRecipeReplayer::StartWebPageReplayServer(
 
   args.push_back(base::StringPrintf("--http_port=%d", kHostHttpPort));
   args.push_back(base::StringPrintf("--https_port=%d", kHostHttpsPort));
+  args.push_back("--serve_response_in_chronological_sequence");
   args.push_back(base::StringPrintf(
       "--inject_scripts=%s,%s",
-      FilePathToUTF8(
-          src_dir.AppendASCII("third_party/catapult/web_page_replay_go")
-              .AppendASCII("deterministic.js")
-              .value())
+      FilePathToUTF8(src_dir.AppendASCII("third_party")
+                         .AppendASCII("catapult")
+                         .AppendASCII("web_page_replay_go")
+                         .AppendASCII("deterministic.js")
+                         .value())
           .c_str(),
-      FilePathToUTF8(
-          src_dir
-              .AppendASCII("chrome/test/data/web_page_replay_go_helper_scripts")
-              .AppendASCII("automation_helper.js")
-              .value())
+      FilePathToUTF8(src_dir.AppendASCII("chrome")
+                         .AppendASCII("test")
+                         .AppendASCII("data")
+                         .AppendASCII("web_page_replay_go_helper_scripts")
+                         .AppendASCII("automation_helper.js")
+                         .value())
           .c_str()));
 
   // Specify the capture file.
@@ -377,16 +390,6 @@ bool TestRecipeReplayer::StopWebPageReplayServer() {
   return true;
 }
 
-bool TestRecipeReplayer::InstallWebPageReplayServerRootCert() {
-  return RunWebPageReplayCmdAndWaitForExit("installroot",
-                                           std::vector<std::string>());
-}
-
-bool TestRecipeReplayer::RemoveWebPageReplayServerRootCert() {
-  return RunWebPageReplayCmdAndWaitForExit("removeroot",
-                                           std::vector<std::string>());
-}
-
 bool TestRecipeReplayer::RunWebPageReplayCmdAndWaitForExit(
     const std::string& cmd,
     const std::vector<std::string>& args,
@@ -407,6 +410,11 @@ bool TestRecipeReplayer::RunWebPageReplayCmd(
     const std::string& cmd,
     const std::vector<std::string>& args,
     base::Process* process) {
+  // Allow the function to block. Otherwise the subsequent call to
+  // base::PathExists will fail. base::PathExists must be called from
+  // a scope that allows blocking.
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
   base::LaunchOptions options = base::LaunchOptionsForTest();
   base::FilePath exe_dir;
   if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &exe_dir)) {
@@ -414,24 +422,37 @@ bool TestRecipeReplayer::RunWebPageReplayCmd(
     return false;
   }
 
-  base::FilePath web_page_replay_binary_dir = exe_dir.AppendASCII(
-      "third_party/catapult/telemetry/telemetry/internal/bin");
+  base::FilePath web_page_replay_binary_dir = exe_dir.AppendASCII("third_party")
+                                                  .AppendASCII("catapult")
+                                                  .AppendASCII("telemetry")
+                                                  .AppendASCII("telemetry")
+                                                  .AppendASCII("internal")
+                                                  .AppendASCII("bin");
   options.current_directory = web_page_replay_binary_dir;
 
 #if defined(OS_WIN)
-  std::string wpr_executable_binary = "win/x86_64/wpr";
+  base::FilePath wpr_executable_binary =
+      base::FilePath(FILE_PATH_LITERAL("win"))
+          .AppendASCII("AMD64")
+          .AppendASCII("wpr.exe");
 #elif defined(OS_MACOSX)
-  std::string wpr_executable_binary = "mac/x86_64/wpr";
+  base::FilePath wpr_executable_binary =
+      base::FilePath(FILE_PATH_LITERAL("mac"))
+          .AppendASCII("x86_64")
+          .AppendASCII("wpr");
 #elif defined(OS_POSIX)
-  std::string wpr_executable_binary = "linux/x86_64/wpr";
+  base::FilePath wpr_executable_binary =
+      base::FilePath(FILE_PATH_LITERAL("linux"))
+          .AppendASCII("x86_64")
+          .AppendASCII("wpr");
 #else
 #error Plaform is not supported.
 #endif
   base::CommandLine full_command(
-      web_page_replay_binary_dir.AppendASCII(wpr_executable_binary));
+      web_page_replay_binary_dir.Append(wpr_executable_binary));
   full_command.AppendArg(cmd);
 
-  // Ask web page replay to use the custom certifcate and key files used to
+  // Ask web page replay to use the custom certificate and key files used to
   // make the web page captures.
   // The capture files used in these browser tests are also used on iOS to
   // test autofill.
@@ -443,8 +464,12 @@ bool TestRecipeReplayer::RunWebPageReplayCmd(
     return false;
   }
 
-  base::FilePath web_page_replay_support_file_dir = src_dir.AppendASCII(
-      "components/test/data/autofill/web_page_replay_support_files");
+  base::FilePath web_page_replay_support_file_dir =
+      src_dir.AppendASCII("components")
+          .AppendASCII("test")
+          .AppendASCII("data")
+          .AppendASCII("autofill")
+          .AppendASCII("web_page_replay_support_files");
   full_command.AppendArg(base::StringPrintf(
       "--https_cert_file=%s",
       FilePathToUTF8(
@@ -458,6 +483,8 @@ bool TestRecipeReplayer::RunWebPageReplayCmd(
 
   for (const auto arg : args)
     full_command.AppendArg(arg);
+
+  LOG(INFO) << full_command.GetArgumentsString();
 
   *process = base::LaunchProcess(full_command, options);
   return true;

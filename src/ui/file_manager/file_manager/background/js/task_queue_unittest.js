@@ -102,9 +102,7 @@ function testRunsTasks(callback) {
   // Enqueue both tasks, and then verify that they were run.
   queue.queueTask(task0);
   queue.queueTask(task1);
-  reportPromise(
-      Promise.all([task0.whenRun(), task1.whenRun()]),
-      callback);
+  reportPromise(Promise.all([task0.whenRun(), task1.whenRun()]), callback);
 }
 
 // Verifies that the active callback triggers when the queue starts doing work
@@ -113,12 +111,11 @@ function testOnActiveCalled(callback) {
 
   // Make a promise that resolves when the active callback is triggered.
   const whenActive = new Promise(resolve => {
-    queue.setActiveCallback(
-        () => {
-          // Verify that the active callback is called before the task runs.
-          assertFalse(task.wasRun);
-          resolve();
-        });
+    queue.setActiveCallback(() => {
+      // Verify that the active callback is called before the task runs.
+      assertFalse(task.wasRun);
+      resolve();
+    });
   });
 
   // Queue a task, and then check that the active callback was triggered.
@@ -137,12 +134,11 @@ function testOnIdleCalled(callback) {
   // Make a promise that resolves when the idle callback is triggered
   // (i.e. after all queued tasks have finished running).
   const whenDone = new Promise(resolve => {
-    queue.setIdleCallback(
-        () => {
-          // Verify that the idle callback is called after the task runs.
-          assertTrue(task.wasRun);
-          resolve();
-        });
+    queue.setIdleCallback(() => {
+      // Verify that the idle callback is called after the task runs.
+      assertTrue(task.wasRun);
+      resolve();
+    });
   });
 
   // Queue a task, then check that the idle callback was triggered.
@@ -156,25 +152,22 @@ function testProgressUpdate(callback) {
 
   // Get the task to report some progress, then success, when it's run.
   task.whenRun()
-      .then(
-          task => {
-            task.notifyProgress();
-            return task;
-          })
-      .then(
-          task => {
-            task.notifyComplete();
-            return task;
-          });
+      .then(task => {
+        task.notifyProgress();
+        return task;
+      })
+      .then(task => {
+        task.notifyComplete();
+        return task;
+      });
 
   // Make a promise that resolves after the task runs.
   const whenDone = new Promise(resolve => {
-    queue.setIdleCallback(
-        () => {
-          // Verify that progress was recorded.
-          assertEquals(1, updates[importer.TaskQueue.UpdateType.PROGRESS]);
-          resolve();
-        });
+    queue.setIdleCallback(() => {
+      // Verify that progress was recorded.
+      assertEquals(1, updates[importer.TaskQueue.UpdateType.PROGRESS]);
+      resolve();
+    });
   });
 
   queue.queueTask(task);
@@ -194,12 +187,11 @@ function testSuccessUpdate(callback) {
   queue.queueTask(task);
 
   const whenDone = new Promise(resolve => {
-    queue.setIdleCallback(
-        () => {
-          // Verify that the done callback was called.
-          assertEquals(1, updates[importer.TaskQueue.UpdateType.COMPLETE]);
-          resolve();
-        });
+    queue.setIdleCallback(() => {
+      // Verify that the done callback was called.
+      assertEquals(1, updates[importer.TaskQueue.UpdateType.COMPLETE]);
+      resolve();
+    });
   });
 
   reportPromise(whenDone, callback);
@@ -210,23 +202,21 @@ function testErrorUpdate(callback) {
   const task = new TestTask('task0');
 
   // Get the task to report an error when it's run.
-  task.whenRun().then(
-      task => {
-        task.notifyError();
-        // Errors are not terminal; still need to signal task completion
-        // otherwise the test hangs.
-        task.notifyComplete();
-      });
+  task.whenRun().then(task => {
+    task.notifyError();
+    // Errors are not terminal; still need to signal task completion
+    // otherwise the test hangs.
+    task.notifyComplete();
+  });
 
   queue.queueTask(task);
 
   const whenDone = new Promise(resolve => {
-    queue.setIdleCallback(
-        () => {
-          // Verify that the done callback was called.
-          assertEquals(1, updates[importer.TaskQueue.UpdateType.ERROR]);
-          resolve();
-        });
+    queue.setIdleCallback(() => {
+      // Verify that the done callback was called.
+      assertEquals(1, updates[importer.TaskQueue.UpdateType.ERROR]);
+      resolve();
+    });
   });
 
   reportPromise(whenDone, callback);
@@ -247,7 +237,5 @@ function testOnTaskCancelled(callback) {
   // Enqueue both tasks, and then verify that they were run.
   queue.queueTask(task0);
   queue.queueTask(task1);
-  reportPromise(
-      Promise.all([task0.whenRun(), task1.whenRun()]),
-      callback);
+  reportPromise(Promise.all([task0.whenRun(), task1.whenRun()]), callback);
 }

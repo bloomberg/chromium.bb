@@ -219,8 +219,8 @@ ExtensionDisabledGlobalError::GetBubbleViewMessages() {
       messages.push_back(
           l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO));
   } else {
-    // TODO(treib): If NeedCustodianApprovalForPermissionIncrease, add an extra
-    // message for supervised users. crbug.com/461261
+    // TODO(crbug.com/461261): If NeedCustodianApprovalForPermissionIncrease,
+    // add an extra message for supervised users.
     messages.push_back(
         l10n_util::GetStringUTF16(IDS_EXTENSION_DISABLED_ERROR_LABEL));
   }
@@ -233,8 +233,8 @@ ExtensionDisabledGlobalError::GetBubbleViewMessages() {
 
 base::string16 ExtensionDisabledGlobalError::GetBubbleViewAcceptButtonLabel() {
   if (util::IsExtensionSupervised(extension_, service_->profile())) {
-    // TODO(treib): Probably use a new string here once we get UX design.
-    // For now, just use "OK". crbug.com/461261
+    // TODO(crbug.com/461261): Probably use a new string here once we get UX
+    // design. For now, just use "OK".
     return l10n_util::GetStringUTF16(IDS_OK);
   }
   if (is_remote_install_) {

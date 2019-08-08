@@ -188,6 +188,7 @@ component("vr_ui") {
     "//chrome/app:generated_resources",
     "//chrome/common:constants",
     "//components/url_formatter",
+    "//device/vr/buildflags:buildflags",
     "//media",
     "//net",
     "//skia",
@@ -274,6 +275,7 @@ component("vr_common") {
     "//device/vr/public/mojom",
     "//media",
     "//net",
+    "//services/audio/public/cpp",
     "//services/metrics/public/cpp:ukm_builders",
     "//skia",
     "//ui/base",
@@ -647,7 +649,24 @@ repack("vr_test_pak") {
 # the equivalent to Android's @Restriction annotation that allows you to
 # easily skip tests at runtime).
 if (!is_android) {
-  test("xr_browser_tests") {
+  group("xr_browser_tests") {
+    testonly = true
+    data_deps = [
+      ":xr_browser_tests_binary",
+      ":xr_browser_tests_runner",
+    ]
+
+    if (is_win) {
+      # The .exe is necessary even though the target isn't an actual executable
+      # since mb.py automatically appends .exe when looking for runtime deps
+      # on Windows.
+      write_runtime_deps = "$root_out_dir/$target_name.exe.runtime_deps"
+    } else {
+      write_runtime_deps = "$root_out_dir/$target_name.runtime_deps"
+    }
+  }
+
+  test("xr_browser_tests_binary") {
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
     # Common infrastructure.
@@ -678,9 +697,12 @@ if (!is_android) {
       "//chrome/test:browser_tests_runner",
       "//chrome/test:test_support",
       "//chrome/test:test_support_ui",
+      "//device/base",
       "//device/vr:vr",
+      "//device/vr/buildflags:buildflags",
       "//device/vr/public/mojom:mojom",
       "//device/vr/public/mojom:test_mojom",
+      "//services/service_manager/sandbox",
     ]
     data_deps = []
 
@@ -707,15 +729,32 @@ if (!is_android) {
       # Tests.
       sources += [
         "webxr_vr_frame_pose_browser_test.cc",
+        "webxr_vr_indicators_browser_test.cc",
         "webxr_vr_input_browser_test.cc",
+        "webxr_vr_isolated_device_service_test.cc",
         "webxr_vr_permission_request_browser_test.cc",
         "webxr_vr_pixel_browser_test.cc",
         "webxr_vr_tab_browser_test.cc",
       ]
 
-      deps += [ "//third_party/openvr:openvr" ]
+      deps += [
+        "//components/content_settings/core/browser:browser",
+        "//third_party/openvr:openvr",
+      ]
 
       data_deps += [ "//device/vr:openvr_mock" ]
     }
+  }
+
+  # TODO(https://crbug.com/816629): Migrate this to a generic wrapper script
+  # once the functionality is available on all platforms.
+  copy("xr_browser_tests_runner") {
+    testonly = true
+    sources = [
+      "test/run_xr_browser_tests.py",
+    ]
+    outputs = [
+      "$root_out_dir/run_xr_browser_tests.py",
+    ]
   }
 }

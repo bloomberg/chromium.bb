@@ -14,7 +14,7 @@ namespace views {
 DesktopFocusRules::DesktopFocusRules(aura::Window* content_window)
     : content_window_(content_window) {}
 
-DesktopFocusRules::~DesktopFocusRules() {}
+DesktopFocusRules::~DesktopFocusRules() = default;
 
 bool DesktopFocusRules::CanActivateWindow(const aura::Window* window) const {
   if (window && IsToplevelWindow(window) &&

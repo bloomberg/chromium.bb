@@ -6,9 +6,9 @@
 
 module cros.mojom;
 
+import "components/chromeos_camera/common/jpeg_encode_accelerator.mojom";
 import "media/capture/video/chromeos/mojo/camera_common.mojom";
-import "media/mojo/interfaces/jpeg_decode_accelerator.mojom";
-import "media/mojo/interfaces/jpeg_encode_accelerator.mojom";
+import "media/mojo/interfaces/mjpeg_decode_accelerator.mojom";
 
 // The CrOS camera HAL v3 Mojo dispatcher.  The dispatcher acts as a proxy and
 // waits for the server and the clients to register.  There can only be one
@@ -29,7 +29,7 @@ interface CameraHalDispatcher {
 
   // Get JpegDecodeAccelerator from dispatcher.
   [MinVersion=1] GetJpegDecodeAccelerator@2(
-    media.mojom.JpegDecodeAccelerator& jda_request);
+    media.mojom.MjpegDecodeAccelerator& jda_request);
 
   // Get JpegEncodeAccelerator from dispatcher.
   [MinVersion=2] GetJpegEncodeAccelerator@3(

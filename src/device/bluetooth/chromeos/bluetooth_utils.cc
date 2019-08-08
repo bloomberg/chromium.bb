@@ -64,6 +64,12 @@ BluetoothAdapter::DeviceList FilterUnknownDevices(
 
   BluetoothAdapter::DeviceList result;
   for (BluetoothDevice* device : devices) {
+    // Always allow paired devices to appear in the UI.
+    if (device->IsPaired()) {
+      result.push_back(device);
+      continue;
+    }
+
     switch (device->GetType()) {
       // Device with invalid bluetooth transport is filtered out.
       case BLUETOOTH_TRANSPORT_INVALID:

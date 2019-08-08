@@ -69,7 +69,7 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
       // TODO(kmackay) Should call OnInitialized(false) here, but that generally
       // causes the browsertests to crash since it happens during the render
       // pipeline initialization.
-      input_config.encryption_scheme = Unencrypted();
+      input_config.encryption_scheme = EncryptionScheme::kUnencrypted;
     }
     config_ = input_config;
 

@@ -24,6 +24,25 @@ using keyboard::mojom::KeyboardEnableFlag;
 
 namespace ash {
 
+namespace {
+
+class AshKeyboardUIFactory : public keyboard::KeyboardUIFactory {
+ public:
+  explicit AshKeyboardUIFactory(AshKeyboardController* controller)
+      : controller_(controller) {}
+
+  // keyboard::KeyboardUIFactory:
+  std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() override {
+    return std::make_unique<AshKeyboardUI>(controller_);
+  }
+
+ private:
+  AshKeyboardController* controller_;
+  DISALLOW_COPY_AND_ASSIGN(AshKeyboardUIFactory);
+};
+
+}  // namespace
+
 AshKeyboardController::AshKeyboardController(
     SessionController* session_controller)
     : session_controller_(session_controller),
@@ -44,29 +63,15 @@ void AshKeyboardController::BindRequest(
   bindings_.AddBinding(this, std::move(request));
 }
 
-void AshKeyboardController::EnableKeyboard() {
-  if (!keyboard_controller_->IsKeyboardEnableRequested())
-    return;
-
-  // KeyboardController::EnableKeyboard will reload the keyboard if it's already
-  // enabled. TODO(https://crbug.com/731537): Add a separate function for
-  // reloading the keyboard.
-  keyboard_controller_->EnableKeyboard(
-      keyboard_ui_factory_ ? keyboard_ui_factory_->CreateKeyboardUI()
-                           : std::make_unique<AshKeyboardUI>(this),
-      virtual_keyboard_controller_.get());
-}
-
-void AshKeyboardController::DisableKeyboard() {
-  keyboard_controller_->DisableKeyboard();
-}
-
 void AshKeyboardController::CreateVirtualKeyboard(
     std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory) {
   DCHECK(keyboard_ui_factory || features::IsUsingWindowService())
       << "keyboard_ui_factory can be null only when window service is used.";
-  keyboard_ui_factory_ = std::move(keyboard_ui_factory);
   virtual_keyboard_controller_ = std::make_unique<VirtualKeyboardController>();
+  keyboard_controller_->Initialize(
+      keyboard_ui_factory ? std::move(keyboard_ui_factory)
+                          : std::make_unique<AshKeyboardUIFactory>(this),
+      virtual_keyboard_controller_.get());
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           keyboard::switches::kEnableVirtualKeyboard)) {
@@ -77,6 +82,7 @@ void AshKeyboardController::CreateVirtualKeyboard(
 
 void AshKeyboardController::DestroyVirtualKeyboard() {
   virtual_keyboard_controller_.reset();
+  keyboard_controller_->Shutdown();
 }
 
 void AshKeyboardController::SendOnKeyboardVisibleBoundsChanged(
@@ -126,15 +132,11 @@ void AshKeyboardController::IsKeyboardEnabled(
 }
 
 void AshKeyboardController::SetEnableFlag(KeyboardEnableFlag flag) {
-  bool was_enabled = keyboard_controller_->IsEnabled();
   keyboard_controller_->SetEnableFlag(flag);
-  UpdateEnableFlag(was_enabled);
 }
 
 void AshKeyboardController::ClearEnableFlag(KeyboardEnableFlag flag) {
-  bool was_enabled = keyboard_controller_->IsEnabled();
   keyboard_controller_->ClearEnableFlag(flag);
-  UpdateEnableFlag(was_enabled);
 }
 
 void AshKeyboardController::GetEnableFlags(GetEnableFlagsCallback callback) {
@@ -153,8 +155,7 @@ void AshKeyboardController::RebuildKeyboardIfEnabled() {
   // Test IsKeyboardEnableRequested in case of an unlikely edge case where this
   // is called while after the enable state changed to disabled (in which case
   // we do not want to override the requested state).
-  if (keyboard_controller_->IsKeyboardEnableRequested())
-    EnableKeyboard();
+  keyboard_controller_->RebuildKeyboardIfEnabled();
 }
 
 void AshKeyboardController::IsKeyboardVisible(
@@ -219,7 +220,7 @@ void AshKeyboardController::AddObserver(
 // SessionObserver
 void AshKeyboardController::OnSessionStateChanged(
     session_manager::SessionState state) {
-  if (!keyboard_controller_->IsKeyboardEnableRequested())
+  if (!keyboard_controller_->IsEnabled())
     return;
 
   switch (state) {
@@ -230,7 +231,7 @@ void AshKeyboardController::OnSessionStateChanged(
       // proper IME. |LOGGED_IN_NOT_ACTIVE| is needed so that the virtual
       // keyboard works on supervised user creation, http://crbug.com/712873.
       // |ACTIVE| is also needed for guest user workflow.
-      EnableKeyboard();
+      RebuildKeyboardIfEnabled();
       break;
     default:
       break;
@@ -245,15 +246,6 @@ void AshKeyboardController::OnRootWindowClosing(aura::Window* root_window) {
         virtual_keyboard_controller_->GetContainerForDefaultDisplay();
     DCHECK_NE(root_window, new_parent);
     keyboard_controller_->MoveToParentContainer(new_parent);
-  }
-}
-
-void AshKeyboardController::UpdateEnableFlag(bool was_enabled) {
-  bool is_enabled = keyboard_controller_->IsKeyboardEnableRequested();
-  if (is_enabled && !was_enabled) {
-    EnableKeyboard();
-  } else if (!is_enabled && was_enabled) {
-    DisableKeyboard();
   }
 }
 

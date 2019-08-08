@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "cc/base/synced_property.h"
@@ -99,7 +98,10 @@ class CC_EXPORT LayerTreeImpl {
                 scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor,
                 scoped_refptr<SyncedBrowserControls> top_controls_shown_ratio,
                 scoped_refptr<SyncedElasticOverscroll> elastic_overscroll);
+  LayerTreeImpl(const LayerTreeImpl&) = delete;
   virtual ~LayerTreeImpl();
+
+  LayerTreeImpl& operator=(const LayerTreeImpl&) = delete;
 
   void Shutdown();
   void ReleaseResources();
@@ -455,7 +457,10 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* LayerById(int id) const;
   LayerImpl* ScrollableLayerByElementId(ElementId element_id) const;
 
-  bool IsElementInLayerList(ElementId element_id) const;
+  bool IsElementInPropertyTree(ElementId element_id) const;
+  void AddToElementPropertyTreeList(ElementId element_id);
+  void RemoveFromElementPropertyTreeList(ElementId element_id);
+
   void AddToElementLayerList(ElementId element_id, LayerImpl* layer);
   void RemoveFromElementLayerList(ElementId element_id);
 
@@ -485,10 +490,6 @@ class CC_EXPORT LayerTreeImpl {
 
   // Used for accessing the task runner and debug assertions.
   TaskRunnerProvider* task_runner_provider() const;
-
-  // Distribute the root scroll between outer and inner viewport scroll layer.
-  // The outer viewport scroll layer scrolls first.
-  bool DistributeRootScrollOffset(const gfx::ScrollOffset& root_offset);
 
   void ApplyScroll(ScrollNode* scroll_node, ScrollState* scroll_state) {
     host_impl_->ApplyScroll(scroll_node, scroll_state);
@@ -803,8 +804,6 @@ class CC_EXPORT LayerTreeImpl {
   LayerTreeLifecycle lifecycle_;
 
   std::vector<LayerTreeHost::PresentationTimeCallback> presentation_callbacks_;
-
-  DISALLOW_COPY_AND_ASSIGN(LayerTreeImpl);
 };
 
 }  // namespace cc

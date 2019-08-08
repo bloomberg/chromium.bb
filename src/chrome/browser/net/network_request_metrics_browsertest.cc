@@ -84,7 +84,7 @@ class WaitForMainFrameResourceObserver : public content::WebContentsObserver {
       RenderFrameHost* render_frame_host,
       const content::GlobalRequestID& request_id,
       const content::mojom::ResourceLoadInfo& resource_load_info) override {
-    EXPECT_EQ(RESOURCE_TYPE_MAIN_FRAME, resource_load_info.resource_type);
+    EXPECT_EQ(ResourceType::kMainFrame, resource_load_info.resource_type);
     EXPECT_EQ(net::OK, resource_load_info.net_error);
     run_loop_.Quit();
   }

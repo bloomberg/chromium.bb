@@ -8,7 +8,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 
 namespace resource_coordinator {
@@ -19,15 +18,8 @@ PageSignalReceiver::~PageSignalReceiver() = default;
 
 void PageSignalReceiver::NotifyPageAlmostIdle(
     const PageNavigationIdentity& page_navigation_id) {
-  DCHECK(IsPageAlmostIdleSignalEnabled());
   NotifyObserversIfKnownCu(page_navigation_id,
                            &PageSignalObserver::OnPageAlmostIdle);
-}
-
-void PageSignalReceiver::NotifyRendererIsBloated(
-    const PageNavigationIdentity& page_navigation_id) {
-  NotifyObserversIfKnownCu(page_navigation_id,
-                           &PageSignalObserver::OnRendererIsBloated);
 }
 
 void PageSignalReceiver::SetExpectedTaskQueueingDuration(

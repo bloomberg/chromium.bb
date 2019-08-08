@@ -169,6 +169,16 @@ gles2_implementation_source_files = [
   "vertex_array_object_manager.h",
 ]
 
+source_set("interface_base") {
+  sources = [
+    "interface_base.h",
+  ]
+  public_configs = [ "//third_party/khronos:khronos_headers" ]
+  deps = [
+    "//base",
+  ]
+}
+
 # Provides GLES2 interface, but does not cause any implementation to be linked
 # in. Useful when a target uses the interface, but permits its users to choose
 # an implementation.
@@ -178,6 +188,7 @@ source_set("gles2_interface") {
   ]
   public_configs = [ "//third_party/khronos:khronos_headers" ]
   deps = [
+    ":interface_base",
     "//base",
   ]
 }
@@ -189,6 +200,7 @@ source_set("raster_interface") {
   ]
   public_configs = [ "//third_party/khronos:khronos_headers" ]
   deps = [
+    ":interface_base",
     "//base",
     "//components/viz/common:resource_format",
     "//gpu/command_buffer/common",
@@ -201,7 +213,9 @@ source_set("webgpu_interface") {
     "webgpu_interface.h",
     "webgpu_interface_autogen.h",
   ]
+  public_configs = [ "//third_party/khronos:khronos_headers" ]
   deps = [
+    ":interface_base",
     "//base",
   ]
 }
@@ -283,6 +297,9 @@ source_set("webgpu_sources") {
     ":gles2_implementation",
     ":webgpu_interface",
     "//gpu/command_buffer/common:webgpu",
+  ]
+  public_deps = [
+    "//third_party/dawn/src/dawn:dawn_headers",
   ]
   sources = [
     "webgpu_cmd_helper.cc",

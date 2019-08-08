@@ -11,6 +11,7 @@
 <link rel="import" href="../settings_page/settings_section.html">
 <link rel="import" href="../settings_page_css.html">
 <link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/assert.html">
@@ -24,10 +25,6 @@
 <link rel="import" href="update_warning_dialog.html">
 <link rel="import" href="../settings_page/settings_subpage.html">
 <link rel="import" href="../reset_page/powerwash_dialog.html">
-</if>
-
-<if expr="_google_chrome and is_macosx">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 </if>
 
 <dom-module id="settings-about-page">
@@ -57,9 +54,10 @@
         margin-inline-end: var(--about-page-image-space);
       }
 
-      iron-icon {
+      .icon-container {
         margin-inline-end: var(--about-page-image-space);
         min-width: 32px;  /* The width of the product-logo img. */
+        text-align: center;
       }
 
       iron-icon[icon='settings:check-circle'] {
@@ -105,19 +103,21 @@
               src URL -->
             <!-- Set the icon from the iconset (when it's obsolete/EOL and
               when update is done) or set the src (when it's updating). -->
-            <iron-icon
-                hidden="[[!shouldShowIcons_(showUpdateStatus_)]]"
+            <div class="icon-container"
+                hidden="[[!shouldShowIcons_(showUpdateStatus_)]]">
+              <iron-icon
 <if expr="not chromeos">
-                icon$="[[getUpdateStatusIcon_(
-                    obsoleteSystemInfo_, currentUpdateStatusEvent_)]]"
-                src="[[getThrobberSrcIfUpdating_(obsoleteSystemInfo_, currentUpdateStatusEvent_)]]">
+                  icon$="[[getUpdateStatusIcon_(
+                      obsoleteSystemInfo_, currentUpdateStatusEvent_)]]"
+                  src="[[getThrobberSrcIfUpdating_(obsoleteSystemInfo_, currentUpdateStatusEvent_)]]">
 </if>
 <if expr="chromeos">
-                icon$="[[getUpdateStatusIcon_(
-                    hasEndOfLife_, currentUpdateStatusEvent_)]]"
-                src="[[getThrobberSrcIfUpdating_(hasEndOfLife_, currentUpdateStatusEvent_)]]">
+                  icon$="[[getUpdateStatusIcon_(
+                      hasEndOfLife_, currentUpdateStatusEvent_)]]"
+                  src="[[getThrobberSrcIfUpdating_(hasEndOfLife_, currentUpdateStatusEvent_)]]">
 </if>
-            </iron-icon>
+              </iron-icon>
+            </div>
             <div class="start padded">
               <div id="updateStatusMessage" hidden="[[!showUpdateStatus_]]">
                 <div
@@ -189,9 +189,8 @@
                 </a>
               </div>
             </div>
-            <paper-icon-button-light class="subpage-arrow">
-              <button aria-labelledby="aboutTPMFirmwareUpdate"></button>
-            </paper-icon-button-light>
+            <cr-icon-button class="subpage-arrow"
+                aria-labelledby="aboutTPMFirmwareUpdate"></cr-icon-button>
           </div>
 </if>
 <if expr="_google_chrome and is_macosx">
@@ -208,12 +207,10 @@
                   $i18n{learnMore}
                 </a>
               </div>
-              <paper-icon-button-light class="subpage-arrow"
-                  hidden="[[!promoteUpdaterStatus_.actionable]]">
-                <button disabled="[[promoteUpdaterStatus_.disabled]]"
-                    aria-label$="[[promoteUpdaterStatus_.text]]">
-                </button>
-              </paper-icon-button-light>
+              <cr-icon-button class="subpage-arrow"
+                  hidden$="[[!promoteUpdaterStatus_.actionable]]"
+                  disabled="[[promoteUpdaterStatus_.disabled]]"
+                  aria-label$="[[promoteUpdaterStatus_.text]]"></cr-icon-button>
             </div>
           </template>
 </if>
@@ -228,6 +225,9 @@
               on-click="onDetailedBuildInfoTap_"
               label="$i18n{aboutDetailedBuildInfo}"></cr-link-row>
 </if>
+          <cr-link-row class="hr" on-click="onManagementPageTap_"
+              start-icon="cr:domain" label="$i18n{managementPage}"
+              hidden$="[[!isManaged_]]"></cr-link-row>
         </div>
 <if expr="chromeos">
         <template is="dom-if" route-path="/help/details">

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
 #include <memory>
 
 #include "base/ios/ios_util.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -115,9 +115,6 @@ id<GREYMatcher> ShareMenuCollectionView() {
   GURL kURL("chrome://version");
   [ChromeEarlGrey loadURL:kURL];
   // Verify that the share button is disabled.
-  if (IsCompactWidth() && !IsUIRefreshPhase1Enabled()) {
-    [ChromeEarlGreyUI openToolsMenu];
-  }
   id<GREYMatcher> share_button = chrome_test_util::ShareButton();
   [[EarlGrey selectElementWithMatcher:share_button]
       assertWithMatcher:grey_accessibilityTrait(

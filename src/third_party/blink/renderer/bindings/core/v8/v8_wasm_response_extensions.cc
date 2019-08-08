@@ -18,7 +18,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -104,12 +103,31 @@ class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
     return AbortCompilation();
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(consumer_);
     visitor->Trace(client_);
     visitor->Trace(script_state_);
     FetchDataLoader::Trace(visitor);
     BytesConsumer::Client::Trace(visitor);
+  }
+
+  void AbortFromClient() {
+    auto* exception = DOMException::Create(DOMExceptionCode::kAbortError);
+    ScriptState::Scope scope(script_state_);
+
+    // Calling ToV8 in a ScriptForbiddenScope will trigger a CHECK and
+    // cause a crash. ToV8 just invokes a constructor for wrapper creation,
+    // which is safe (no author script can be run). Adding AllowUserAgentScript
+    // directly inside createWrapper could cause a perf impact (calling
+    // isMainThread() every time a wrapper is created is expensive). Ideally,
+    // resolveOrReject shouldn't be called inside a ScriptForbiddenScope.
+    {
+      ScriptForbiddenScope::AllowUserAgentScript allow_script;
+      v8::Local<v8::Value> v8_exception =
+          ToV8(exception, script_state_->GetContext()->Global(),
+               script_state_->GetIsolate());
+      streaming_->Abort(v8_exception);
+    }
   }
 
  private:
@@ -144,17 +162,19 @@ class WasmDataLoaderClient final
   USING_GARBAGE_COLLECTED_MIXIN(WasmDataLoaderClient);
 
  public:
-  WasmDataLoaderClient() = default;
+  explicit WasmDataLoaderClient(FetchDataLoaderForWasmStreaming* loader)
+      : loader_(loader) {}
   void DidFetchDataLoadedCustomFormat() override {}
   void DidFetchDataLoadFailed() override { NOTREACHED(); }
-  void Abort() override {
-    // TODO(ricea): This should probably cause the promise owned by
-    // v8::WasmModuleObjectBuilderStreaming to reject with an AbortError
-    // DOMException. As it is, the cancellation will cause it to reject with a
-    // TypeError later.
+  void Abort() override { loader_->AbortFromClient(); }
+
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(loader_);
+    FetchDataLoader::Client::Trace(visitor);
   }
 
  private:
+  Member<FetchDataLoaderForWasmStreaming> loader_;
   DISALLOW_COPY_AND_ASSIGN(WasmDataLoaderClient);
 };
 
@@ -187,8 +207,7 @@ class ExceptionToAbortStreamingScope {
   DISALLOW_COPY_AND_ASSIGN(ExceptionToAbortStreamingScope);
 };
 
-SingleCachedMetadataHandler* GetCachedMetadataHandler(ScriptState* script_state,
-                                                      const KURL& url) {
+RawResource* GetRawResource(ScriptState* script_state, const KURL& url) {
   if (!RuntimeEnabledFeatures::WasmCodeCacheEnabled())
     return nullptr;
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
@@ -205,8 +224,7 @@ SingleCachedMetadataHandler* GetCachedMetadataHandler(ScriptState* script_state,
 
   // Wasm modules should be fetched as raw resources.
   DCHECK_EQ(ResourceType::kRaw, resource->GetType());
-  RawResource* raw_resource = ToRawResource(resource);
-  return raw_resource->ScriptCacheHandler();
+  return ToRawResource(resource);
 }
 
 class WasmStreamingClient : public v8::WasmStreaming::Client {
@@ -217,7 +235,6 @@ class WasmStreamingClient : public v8::WasmStreaming::Client {
                       v8::Local<v8::Context> context)
       : response_url_(response_url),
         response_time_(response_time),
-        isolate_(isolate),
         context_(isolate, context) {
     context_.SetWeak();
   }
@@ -246,32 +263,26 @@ class WasmStreamingClient : public v8::WasmStreaming::Client {
                          "v8.wasm.cachedModule", TRACE_EVENT_SCOPE_THREAD,
                          "producedCacheSize", serialized_module.size);
 
-    v8::HandleScope handle_scope(isolate_);
-    auto context = context_.Get(isolate_);
-    ScriptState* script_state = ScriptState::From(context);
-    SingleCachedMetadataHandler* cache_handler =
-        GetCachedMetadataHandler(script_state, response_url_);
-    if (cache_handler) {
-      cache_handler->SetCachedMetadata(
-          kWasmModuleTag,
-          reinterpret_cast<const uint8_t*>(serialized_module.buffer.get()),
-          serialized_module.size);
-      return;
-    }
-
     // The resources needed for caching have been GC'ed, but we should still
     // save the compiled module. Use the platform API directly.
-    Platform::Current()->CacheMetadata(
-        blink::mojom::CodeCacheType::kWebAssembly, response_url_,
-        response_time_,
+    scoped_refptr<CachedMetadata> cached_metadata = CachedMetadata::Create(
+        kWasmModuleTag,
         reinterpret_cast<const uint8_t*>(serialized_module.buffer.get()),
         serialized_module.size);
+
+    const Vector<uint8_t>& serialized_data = cached_metadata->SerializedData();
+    // Make sure the data could be copied.
+    if (serialized_data.size() < serialized_module.size)
+      return;
+
+    Platform::Current()->CacheMetadata(
+        mojom::CodeCacheType::kWebAssembly, response_url_,
+        response_time_, serialized_data.data(), serialized_data.size());
   }
 
  private:
   KURL response_url_;
   base::Time response_time_;
-  v8::Isolate* isolate_;
   v8::Global<v8::Context> context_;
 
   DISALLOW_COPY_AND_ASSIGN(WasmStreamingClient);
@@ -338,28 +349,31 @@ void StreamFromResponseCallback(
   }
 
   KURL url(response->url());
-  SingleCachedMetadataHandler* cache_handler =
-      GetCachedMetadataHandler(script_state, url);
-  if (cache_handler) {
-    streaming->SetClient(std::make_shared<WasmStreamingClient>(
-        url, response->GetResponse()->ResponseTime(), args.GetIsolate(),
-        script_state->GetContext()));
-    scoped_refptr<CachedMetadata> cached_module =
-        cache_handler->GetCachedMetadata(kWasmModuleTag);
-    if (cached_module) {
-      TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                           "v8.wasm.moduleCacheHit", TRACE_EVENT_SCOPE_THREAD,
-                           "url", url.GetString().Utf8(), "consumedCacheSize",
-                           cached_module->size());
-      bool is_valid = streaming->SetCompiledModuleBytes(
-          reinterpret_cast<const uint8_t*>(cached_module->Data()),
-          cached_module->size());
-      if (!is_valid) {
-        TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                             "v8.wasm.moduleCacheInvalid",
-                             TRACE_EVENT_SCOPE_THREAD);
-        cache_handler->ClearCachedMetadata(
-            CachedMetadataHandler::kSendToPlatform);
+  RawResource* raw_resource = GetRawResource(script_state, url);
+  if (raw_resource) {
+    SingleCachedMetadataHandler* cache_handler =
+        raw_resource->ScriptCacheHandler();
+    if (cache_handler) {
+      streaming->SetClient(std::make_shared<WasmStreamingClient>(
+          url, raw_resource->GetResponse().ResponseTime(), args.GetIsolate(),
+          script_state->GetContext()));
+      scoped_refptr<CachedMetadata> cached_module =
+          cache_handler->GetCachedMetadata(kWasmModuleTag);
+      if (cached_module) {
+        TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                             "v8.wasm.moduleCacheHit", TRACE_EVENT_SCOPE_THREAD,
+                             "url", url.GetString().Utf8(), "consumedCacheSize",
+                             cached_module->size());
+        bool is_valid = streaming->SetCompiledModuleBytes(
+            reinterpret_cast<const uint8_t*>(cached_module->Data()),
+            cached_module->size());
+        if (!is_valid) {
+          TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                               "v8.wasm.moduleCacheInvalid",
+                               TRACE_EVENT_SCOPE_THREAD);
+          cache_handler->ClearCachedMetadata(
+              CachedMetadataHandler::kSendToPlatform);
+        }
       }
     }
   }
@@ -368,7 +382,8 @@ void StreamFromResponseCallback(
       MakeGarbageCollected<FetchDataLoaderForWasmStreaming>(streaming,
                                                             script_state);
   response->BodyBuffer()->StartLoading(
-      loader, MakeGarbageCollected<WasmDataLoaderClient>(), exception_state);
+      loader, MakeGarbageCollected<WasmDataLoaderClient>(loader),
+      exception_state);
 }
 
 }  // namespace

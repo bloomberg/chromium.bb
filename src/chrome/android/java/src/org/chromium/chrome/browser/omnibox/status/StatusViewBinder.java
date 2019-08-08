@@ -42,6 +42,8 @@ class StatusViewBinder implements ViewBinder<PropertyModel, StatusView, Property
                     model.get(StatusProperties.VERBOSE_STATUS_TEXT_VISIBLE));
         } else if (StatusProperties.VERBOSE_STATUS_TEXT_WIDTH.equals(propertyKey)) {
             view.setVerboseStatusTextWidth(model.get(StatusProperties.VERBOSE_STATUS_TEXT_WIDTH));
+        } else if (StatusProperties.INCOGNITO_BADGE_VISIBLE.equals(propertyKey)) {
+            view.setIncognitoBadgeVisibility(model.get(StatusProperties.INCOGNITO_BADGE_VISIBLE));
         } else {
             assert false : "Unhandled property update";
         }

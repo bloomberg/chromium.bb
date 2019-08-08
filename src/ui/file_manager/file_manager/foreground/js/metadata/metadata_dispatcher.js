@@ -173,7 +173,8 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
    * @param {string=} opt_stepName Step name.
    */
   function onError(err, opt_stepName) {
-    self.error(fileURL, opt_stepName || steps[currentStep].name, err.toString(),
+    self.error(
+        fileURL, opt_stepName || steps[currentStep].name, err.toString(),
         metadata);
   }
 

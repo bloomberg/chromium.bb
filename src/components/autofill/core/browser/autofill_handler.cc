@@ -7,6 +7,7 @@
 #include "base/containers/adapters.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -79,8 +80,29 @@ void AutofillHandler::OnFormsSeen(const std::vector<FormData>& forms,
   std::set<FormSignature> new_form_signatures;
   for (const FormData& form : forms) {
     const auto parse_form_start_time = TimeTicks::Now();
+    FormStructure* cached_form_structure = nullptr;
     FormStructure* form_structure = nullptr;
-    if (!ParseForm(form, /*cached_form=*/nullptr, &form_structure))
+    // Try to find the FormStructure that corresponds to |form| if the form
+    // contains credit card fields only.
+    // |cached_form_structure| may still be nullptr after this call.
+    if (base::FeatureList::IsEnabled(features::kAutofillImportDynamicForms)) {
+      ignore_result(FindCachedForm(form, &cached_form_structure));
+      bool only_contains_credit_card_fields = true;
+      if (cached_form_structure) {
+        for (const FormType& form_type :
+             cached_form_structure->GetFormTypes()) {
+          if (form_type != CREDIT_CARD_FORM) {
+            only_contains_credit_card_fields = false;
+            break;
+          }
+        }
+      }
+      if (!only_contains_credit_card_fields) {
+        cached_form_structure = nullptr;
+      }
+    }
+
+    if (!ParseForm(form, cached_form_structure, &form_structure))
       continue;
     DCHECK(form_structure);
     new_form_signatures.insert(form_structure->form_signature());
@@ -261,8 +283,14 @@ bool AutofillHandler::ParseForm(const FormData& form,
     // We need to keep the server data if available. We need to use them while
     // determining the heuristics.
     form_structure->RetrieveFromCache(*cached_form,
-                                      /*apply_is_autofilled=*/true,
+                                      /*should_keep_cached_value=*/true,
                                       /*only_server_and_autofill_state=*/true);
+    if (observer_for_testing_)
+      observer_for_testing_->OnFormParsed();
+
+    if (form_structure.get()->value_from_dynamic_change_form()) {
+      value_from_dynamic_change_form_ = true;
+    }
   }
 
   form_structure->DetermineHeuristicTypes();

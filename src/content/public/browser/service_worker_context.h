@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/service_worker_running_info.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-forward.h"
 #include "url/gurl.h"
 
@@ -72,6 +73,12 @@ class ServiceWorkerContext {
 
   using StartWorkerCallback = base::OnceCallback<
       void(int64_t version_id, int process_id, int thread_id)>;
+  using GetAllServiceWorkerRunningInfosCallback =
+      base::OnceCallback<void(ServiceWorkerContext*,
+                              const std::vector<ServiceWorkerRunningInfo>)>;
+  using GetServiceWorkerRunningInfoCallback =
+      base::OnceCallback<void(ServiceWorkerContext*,
+                              const ServiceWorkerRunningInfo&)>;
 
   // Returns true if |url| is within the service worker |scope|.
   CONTENT_EXPORT static bool ScopeMatches(const GURL& scope, const GURL& url);
@@ -224,6 +231,20 @@ class ServiceWorkerContext {
   // This function can be called from any thread.
   // The |callback| is called on the caller's thread.
   virtual void StopAllServiceWorkers(base::OnceClosure callback) = 0;
+
+  // Gets info about all running workers.
+  //
+  // Must be called on the UI thread. The callback is called on the UI thread.
+  virtual void GetAllServiceWorkerRunningInfos(
+      GetAllServiceWorkerRunningInfosCallback callback) = 0;
+
+  // Gets info of the running worker whose version id is
+  // |service_worker_version_id|.
+  //
+  // Must be called on the UI thread. The callback is called on the UI thread.
+  virtual void GetServiceWorkerRunningInfo(
+      int64_t service_worker_version_id,
+      GetServiceWorkerRunningInfoCallback callback) = 0;
 
  protected:
   ServiceWorkerContext() {}

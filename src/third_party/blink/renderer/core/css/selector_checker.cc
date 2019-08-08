@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -762,11 +763,11 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoNot:
       return CheckPseudoNot(context, result);
     case CSSSelector::kPseudoEmpty: {
-      bool result = true;
+      bool is_empty = true;
       bool has_whitespace = false;
       for (Node* n = element.firstChild(); n; n = n->nextSibling()) {
         if (n->IsElementNode()) {
-          result = false;
+          is_empty = false;
           break;
         }
         if (n->IsTextNode()) {
@@ -775,20 +776,20 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
             if (text_node->ContainsOnlyWhitespaceOrEmpty()) {
               has_whitespace = true;
             } else {
-              result = false;
+              is_empty = false;
               break;
             }
           }
         }
       }
-      if (result && has_whitespace) {
+      if (is_empty && has_whitespace) {
         UseCounter::Count(context.element->GetDocument(),
                           WebFeature::kCSSSelectorEmptyWhitespaceOnlyFail);
-        result = false;
+        is_empty = false;
       }
       if (mode_ == kResolvingStyle)
         element.SetStyleAffectedByEmpty();
-      return result;
+      return is_empty;
     }
     case CSSSelector::kPseudoFirstChild:
       if (mode_ == kResolvingStyle) {
@@ -1041,6 +1042,12 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return Fullscreen::IsFullscreenElement(element);
     case CSSSelector::kPseudoFullScreenAncestor:
       return element.ContainsFullScreenElement();
+    case CSSSelector::kPseudoPictureInPicture:
+      return PictureInPictureController::IsElementInPictureInPicture(
+                 &element) ||
+             (IsShadowHost(element) &&
+              PictureInPictureController::IsShadowHostInPictureInPicture(
+                  element));
     case CSSSelector::kPseudoVideoPersistent:
       DCHECK(is_ua_rule_);
       return IsHTMLVideoElement(element) &&
@@ -1072,8 +1079,14 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return !element.IsDefined() && element.IsUnresolvedV0CustomElement();
     case CSSSelector::kPseudoDefined:
       return element.IsDefined() || element.IsUpgradedV0CustomElement();
-    case CSSSelector::kPseudoHost:
     case CSSSelector::kPseudoHostContext:
+      UseCounter::Count(
+          context.element->GetDocument(),
+          mode_ == kQueryingRules
+              ? WebFeature::kCSSSelectorHostContextInSnapshotProfile
+              : WebFeature::kCSSSelectorHostContextInLiveProfile);
+      FALLTHROUGH;
+    case CSSSelector::kPseudoHost:
       return CheckPseudoHost(context, result);
     case CSSSelector::kPseudoSpatialNavigationFocus:
       DCHECK(is_ua_rule_);

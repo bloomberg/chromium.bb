@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/lock_screen_utils.h"
 #include "chrome/browser/chromeos/login/mojo_system_info_dispatcher.h"
@@ -30,9 +31,7 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/media_perception/media_perception.pb.h"
-#include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -78,8 +77,7 @@ void StartGraphIfNeeded(chromeos::MediaAnalyticsClient* client,
 ViewsScreenLocker::ViewsScreenLocker(ScreenLocker* screen_locker)
     : screen_locker_(screen_locker),
       system_info_updater_(std::make_unique<MojoSystemInfoDispatcher>()),
-      media_analytics_client_(
-          chromeos::DBusThreadManager::Get()->GetMediaAnalyticsClient()) {
+      media_analytics_client_(chromeos::MediaAnalyticsClient::Get()) {
   LoginScreenClient::Get()->SetDelegate(this);
   user_board_view_mojo_ = std::make_unique<UserBoardViewMojo>();
   user_selection_screen_ =

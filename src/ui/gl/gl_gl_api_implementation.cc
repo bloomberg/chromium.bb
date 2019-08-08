@@ -118,14 +118,6 @@ static inline GLenum GetTexInternalFormat(const GLVersionInfo* version,
         if (!version->is_es)
           gl_internal_format = GL_ALPHA32F_ARB;
         break;
-      // RED and RG are reached here because on Desktop GL core profile,
-      // LUMINANCE/ALPHA formats are emulated through RED and RG in Chrome.
-      case GL_RED:
-        gl_internal_format = GL_R32F;
-        break;
-      case GL_RG:
-        gl_internal_format = GL_RG32F;
-        break;
       default:
         // We can't assert here because if the client context is ES3,
         // all sized internal_format will reach here.
@@ -151,16 +143,7 @@ static inline GLenum GetTexInternalFormat(const GLVersionInfo* version,
         if (!version->is_es)
           gl_internal_format = GL_ALPHA16F_ARB;
         break;
-      // RED and RG are reached here because on Desktop GL core profile,
-      // LUMINANCE/ALPHA formats are emulated through RED and RG in Chrome.
-      case GL_RED:
-        gl_internal_format = GL_R16F;
-        break;
-      case GL_RG:
-        gl_internal_format = GL_RG16F;
-        break;
       default:
-        NOTREACHED();
         break;
     }
   }

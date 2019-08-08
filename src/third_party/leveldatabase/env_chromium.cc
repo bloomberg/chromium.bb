@@ -42,6 +42,13 @@
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
 #include "third_party/re2/src/re2/re2.h"
 
+#if defined(OS_WIN)
+#undef DeleteFile
+#define base_DeleteFile base::DeleteFileW
+#else  // defined(OS_WIN)
+#define base_DeleteFile base::DeleteFile
+#endif  // defined(OS_WIN)
+
 using base::FilePath;
 using base::trace_event::MemoryAllocatorDump;
 using base::trace_event::MemoryDumpArgs;
@@ -869,7 +876,7 @@ void ChromiumEnv::DeleteBackupFiles(const FilePath& dir) {
                                   FILE_PATH_LITERAL("*.bak"));
   for (base::FilePath fname = dir_reader.Next(); !fname.empty();
        fname = dir_reader.Next()) {
-    histogram->AddBoolean(base::DeleteFile(fname, false));
+    histogram->AddBoolean(base_DeleteFile(fname, false));
   }
 }
 
@@ -903,7 +910,7 @@ Status ChromiumEnv::DeleteFile(const std::string& fname) {
   Status result;
   FilePath fname_filepath = FilePath::FromUTF8Unsafe(fname);
   // TODO(jorlow): Should we assert this is a file?
-  if (!base::DeleteFile(fname_filepath, false)) {
+  if (!base_DeleteFile(fname_filepath, false)) {
     result = MakeIOError(fname, "Could not delete file.", kDeleteFile);
     RecordErrorAt(kDeleteFile);
   }
@@ -927,7 +934,7 @@ Status ChromiumEnv::CreateDir(const std::string& name) {
 Status ChromiumEnv::DeleteDir(const std::string& name) {
   Status result;
   // TODO(jorlow): Should we assert this is a directory?
-  if (!base::DeleteFile(FilePath::FromUTF8Unsafe(name), false)) {
+  if (!base_DeleteFile(FilePath::FromUTF8Unsafe(name), false)) {
     result = MakeIOError(name, "Could not delete directory.", kDeleteDir);
     RecordErrorAt(kDeleteDir);
   }
@@ -1342,6 +1349,8 @@ class DBTracker::TrackedDBImpl : public base::LinkNode<TrackedDBImpl>,
 
   ~TrackedDBImpl() override {
     tracker_->DatabaseDestroyed(this, shared_read_cache_use_);
+    base::ScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
+    db_.reset();
   }
 
   const std::string& name() const override { return name_; }

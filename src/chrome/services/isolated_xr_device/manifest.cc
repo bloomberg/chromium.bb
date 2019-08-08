@@ -19,7 +19,7 @@ const service_manager::Manifest& GetXrDeviceServiceManifest() {
                            .Build())
           .ExposeCapability("xr_device_test_hook",
                             service_manager::Manifest::InterfaceList<
-                                device_test::mojom::XRTestHookRegistration>())
+                                device_test::mojom::XRServiceTestHook>())
           .ExposeCapability("xr_device_provider",
                             service_manager::Manifest::InterfaceList<
                                 device::mojom::IsolatedXRRuntimeProvider>())

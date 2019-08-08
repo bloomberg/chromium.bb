@@ -182,11 +182,11 @@ bool CXFA_FFWidgetHandler::Redo(CXFA_FFWidget* widget) {
   return widget->Redo();
 }
 
-FWL_WidgetHit CXFA_FFWidgetHandler::OnHitTest(CXFA_FFWidget* hWidget,
+FWL_WidgetHit CXFA_FFWidgetHandler::OnHitTest(CXFA_FFWidget* pWidget,
                                               const CFX_PointF& point) {
-  if (!(hWidget->GetStatus() & XFA_WidgetStatus_Visible))
+  if (!pWidget->GetLayoutItem()->TestStatusBits(XFA_WidgetStatus_Visible))
     return FWL_WidgetHit::Unknown;
-  return hWidget->OnHitTest(hWidget->Rotate2Normal(point));
+  return pWidget->OnHitTest(pWidget->Rotate2Normal(point));
 }
 
 bool CXFA_FFWidgetHandler::OnSetCursor(CXFA_FFWidget* hWidget,
@@ -198,8 +198,9 @@ void CXFA_FFWidgetHandler::RenderWidget(CXFA_FFWidget* hWidget,
                                         CXFA_Graphics* pGS,
                                         const CFX_Matrix& matrix,
                                         bool bHighlight) {
-  hWidget->RenderWidget(pGS, matrix,
-                        bHighlight ? XFA_WidgetStatus_Highlight : 0);
+  hWidget->RenderWidget(
+      pGS, matrix,
+      bHighlight ? CXFA_FFWidget::kHighlight : CXFA_FFWidget::kNoHighlight);
 }
 
 bool CXFA_FFWidgetHandler::HasEvent(CXFA_Node* pNode,
@@ -276,7 +277,7 @@ CXFA_FFWidget* CXFA_FFWidgetHandler::CreateWidget(CXFA_FFWidget* hParent,
   m_pDocView->RunLayout();
   CXFA_LayoutItem* pLayout =
       m_pDocView->GetXFALayout()->GetLayoutItem(pNewFormItem);
-  return ToFFWidget(ToContentLayoutItem(pLayout));
+  return GetFFWidget(ToContentLayoutItem(pLayout));
 }
 
 CXFA_Node* CXFA_FFWidgetHandler::CreateWidgetFormItem(
@@ -554,29 +555,6 @@ CXFA_Node* CXFA_FFWidgetHandler::CreateFontNode(CXFA_Node* pParent) const {
   pFont->JSObject()->SetCData(XFA_Attribute::Typeface, L"Myriad Pro", false,
                               false);
   return pFont;
-}
-
-CXFA_Node* CXFA_FFWidgetHandler::CreateMarginNode(CXFA_Node* pParent,
-                                                  uint32_t dwFlags,
-                                                  float fInsets[4]) const {
-  CXFA_Node* pMargin = CreateCopyNode(XFA_Element::Margin, pParent, nullptr);
-  if (dwFlags & 0x01)
-    pMargin->JSObject()->SetMeasure(XFA_Attribute::LeftInset,
-                                    CXFA_Measurement(fInsets[0], XFA_Unit::Pt),
-                                    false);
-  if (dwFlags & 0x02)
-    pMargin->JSObject()->SetMeasure(XFA_Attribute::TopInset,
-                                    CXFA_Measurement(fInsets[1], XFA_Unit::Pt),
-                                    false);
-  if (dwFlags & 0x04)
-    pMargin->JSObject()->SetMeasure(XFA_Attribute::RightInset,
-                                    CXFA_Measurement(fInsets[2], XFA_Unit::Pt),
-                                    false);
-  if (dwFlags & 0x08)
-    pMargin->JSObject()->SetMeasure(XFA_Attribute::BottomInset,
-                                    CXFA_Measurement(fInsets[3], XFA_Unit::Pt),
-                                    false);
-  return pMargin;
 }
 
 CXFA_Node* CXFA_FFWidgetHandler::CreateValueNode(XFA_Element eValue,

@@ -11,6 +11,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "dbus/object_path.h"
 #include "device/base/features.h"
@@ -319,8 +320,15 @@ TEST_F(TrayBluetoothHelperLegacyTest, BluetoothAddress) {
   base::RunLoop().RunUntilIdle();
 
   const BluetoothDeviceList& devices = helper.GetAvailableBluetoothDevices();
-  ASSERT_EQ(1u, devices.size());
-  EXPECT_EQ(kDisplayPinCodeAddress, devices[0]->address);
+  ASSERT_EQ(3u, devices.size());
+  EXPECT_EQ(base::UTF8ToUTF16(
+                FakeBluetoothDeviceClient::kPairedUnconnectableDeviceAddress),
+            device::GetBluetoothAddressForDisplay(devices[0]->address));
+  EXPECT_EQ(base::UTF8ToUTF16(FakeBluetoothDeviceClient::kPairedDeviceAddress),
+            device::GetBluetoothAddressForDisplay(devices[1]->address));
+  EXPECT_EQ(
+      base::UTF8ToUTF16(FakeBluetoothDeviceClient::kDisplayPinCodeAddress),
+      device::GetBluetoothAddressForDisplay(devices[2]->address));
 }
 
 }  // namespace

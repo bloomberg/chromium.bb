@@ -32,10 +32,12 @@ WallpaperControllerTestApi::WallpaperControllerTestApi(
 WallpaperControllerTestApi::~WallpaperControllerTestApi() = default;
 
 SkColor WallpaperControllerTestApi::ApplyColorProducingWallpaper() {
+  // TODO(manucornet): Figure out where all those "magic numbers" come from
+  // and document/compute them instead of just hard-coding them.
   controller_->ShowWallpaperImage(
       CreateImageWithColor(SkColorSetRGB(60, 40, 40)), kTestWallpaperInfo,
       /*preview_mode=*/false, /*always_on_top=*/false);
-  return SkColorSetRGB(18, 12, 12);
+  return SkColorSetRGB(40, 35, 37);
 }
 
 void WallpaperControllerTestApi::StartWallpaperPreview() {

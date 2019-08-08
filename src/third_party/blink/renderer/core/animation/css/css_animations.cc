@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/animation/interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
+#include "third_party/blink/renderer/core/animation/timing_calculations.h"
 #include "third_party/blink/renderer/core/animation/transition_interpolation.h"
 #include "third_party/blink/renderer/core/animation/worklet_animation_base.h"
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
@@ -110,14 +111,14 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
     for (unsigned j = 0; j < properties.PropertyCount(); j++) {
       const CSSProperty& property = properties.PropertyAt(j).Property();
       specified_properties_for_use_counter.insert(&property);
-      if (property.PropertyID() == CSSPropertyAnimationTimingFunction) {
+      if (property.PropertyID() == CSSPropertyID::kAnimationTimingFunction) {
         const CSSValue& value = properties.PropertyAt(j).Value();
         scoped_refptr<TimingFunction> timing_function;
         if (value.IsInheritedValue() && parent_style->Animations()) {
           timing_function = parent_style->Animations()->TimingFunctionList()[0];
-        } else if (value.IsValueList()) {
-          timing_function = CSSToStyleMap::MapAnimationTimingFunction(
-              ToCSSValueList(value).Item(0));
+        } else if (auto* value_list = DynamicTo<CSSValueList>(value)) {
+          timing_function =
+              CSSToStyleMap::MapAnimationTimingFunction(value_list->Item(0));
         } else {
           DCHECK(value.IsCSSWideKeyword());
           timing_function = CSSTimingData::InitialTimingFunction();
@@ -794,16 +795,14 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   TransitionKeyframeVector keyframes;
 
   TransitionKeyframe* start_keyframe = TransitionKeyframe::Create(property);
-  start_keyframe->SetValue(TypedInterpolationValue::Create(
+  start_keyframe->SetValue(std::make_unique<TypedInterpolationValue>(
       *transition_type, start.interpolable_value->Clone(),
       start.non_interpolable_value));
   start_keyframe->SetOffset(0);
-  start_keyframe->SetEasing(std::move(timing.timing_function));
-  timing.timing_function = LinearTimingFunction::Shared();
   keyframes.push_back(start_keyframe);
 
   TransitionKeyframe* end_keyframe = TransitionKeyframe::Create(property);
-  end_keyframe->SetValue(TypedInterpolationValue::Create(
+  end_keyframe->SetValue(std::make_unique<TypedInterpolationValue>(
       *transition_type, end.interpolable_value->Clone(),
       end.non_interpolable_value));
   end_keyframe->SetOffset(1);
@@ -861,7 +860,7 @@ void CSSAnimations::CalculateTransitionUpdateForStandardProperty(
 
   CSSPropertyID resolved_id =
       resolveCSSPropertyID(transition_property.unresolved_property);
-  bool animate_all = resolved_id == CSSPropertyAll;
+  bool animate_all = resolved_id == CSSPropertyID::kAll;
   const StylePropertyShorthand& property_list =
       animate_all ? PropertiesForTransitionAll()
                   : shorthandForProperty(resolved_id);
@@ -921,7 +920,7 @@ void CSSAnimations::CalculateTransitionUpdate(CSSAnimationUpdate& update,
          ++transition_index) {
       const CSSTransitionData::TransitionProperty& transition_property =
           transition_data->PropertyList()[transition_index];
-      if (transition_property.unresolved_property == CSSPropertyAll) {
+      if (transition_property.unresolved_property == CSSPropertyID::kAll) {
         any_transition_had_transition_all = true;
       }
       if (property_pass == PropertyPass::kCustom) {
@@ -1236,14 +1235,14 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
 
   if (GetDocument().HasListenerType(Document::kTransitionCancelListener)) {
     if (current_phase == AnimationEffect::kPhaseNone) {
-      double cancel_iteration_time =
-          animation_node.Progress().has_value()
-              ? animation_node.Progress().value() *
-                    animation_node.SpecifiedTiming()
-                        .iteration_duration->InSecondsF()
-              : StartTimeFromDelay(
-                    animation_node.SpecifiedTiming().start_delay);
-      EnqueueEvent(event_type_names::kTransitioncancel, cancel_iteration_time);
+      // Per the css-transitions-2 spec, transitioncancel is fired with the
+      // "active time of the animation at the moment it was cancelled,
+      // calculated using a fill mode of both".
+      double cancel_active_time = CalculateActiveTime(
+          animation_node.RepeatedDuration(), Timing::FillMode::BOTH,
+          animation_node.LocalTime(), previous_phase_,
+          animation_node.SpecifiedTiming());
+      EnqueueEvent(event_type_names::kTransitioncancel, cancel_active_time);
     }
   }
 
@@ -1274,22 +1273,21 @@ const StylePropertyShorthand& CSSAnimations::PropertiesForTransitionAll() {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
   DEFINE_STATIC_LOCAL(StylePropertyShorthand, property_shorthand, ());
   if (properties.IsEmpty()) {
-    for (int i = firstCSSProperty; i <= lastCSSProperty; ++i) {
-      CSSPropertyID id = convertToCSSPropertyID(i);
+    for (CSSPropertyID id : CSSPropertyIDList()) {
       // Avoid creating overlapping transitions with perspective-origin and
       // transition-origin.
-      if (id == CSSPropertyWebkitPerspectiveOriginX ||
-          id == CSSPropertyWebkitPerspectiveOriginY ||
-          id == CSSPropertyWebkitTransformOriginX ||
-          id == CSSPropertyWebkitTransformOriginY ||
-          id == CSSPropertyWebkitTransformOriginZ)
+      if (id == CSSPropertyID::kWebkitPerspectiveOriginX ||
+          id == CSSPropertyID::kWebkitPerspectiveOriginY ||
+          id == CSSPropertyID::kWebkitTransformOriginX ||
+          id == CSSPropertyID::kWebkitTransformOriginY ||
+          id == CSSPropertyID::kWebkitTransformOriginZ)
         continue;
       const CSSProperty& property = CSSProperty::Get(id);
       if (property.IsInterpolable())
         properties.push_back(&property);
     }
     property_shorthand = StylePropertyShorthand(
-        CSSPropertyInvalid, properties.begin(), properties.size());
+        CSSPropertyID::kInvalid, properties.begin(), properties.size());
   }
   return property_shorthand;
 }
@@ -1298,27 +1296,27 @@ const StylePropertyShorthand& CSSAnimations::PropertiesForTransitionAll() {
 // animations. https://drafts.csswg.org/web-animations/#not-animatable-section
 bool CSSAnimations::IsAnimationAffectingProperty(const CSSProperty& property) {
   switch (property.PropertyID()) {
-    case CSSPropertyAnimation:
-    case CSSPropertyAnimationDelay:
-    case CSSPropertyAnimationDirection:
-    case CSSPropertyAnimationDuration:
-    case CSSPropertyAnimationFillMode:
-    case CSSPropertyAnimationIterationCount:
-    case CSSPropertyAnimationName:
-    case CSSPropertyAnimationPlayState:
-    case CSSPropertyAnimationTimingFunction:
-    case CSSPropertyContain:
-    case CSSPropertyDirection:
-    case CSSPropertyDisplay:
-    case CSSPropertyTextOrientation:
-    case CSSPropertyTransition:
-    case CSSPropertyTransitionDelay:
-    case CSSPropertyTransitionDuration:
-    case CSSPropertyTransitionProperty:
-    case CSSPropertyTransitionTimingFunction:
-    case CSSPropertyUnicodeBidi:
-    case CSSPropertyWillChange:
-    case CSSPropertyWritingMode:
+    case CSSPropertyID::kAnimation:
+    case CSSPropertyID::kAnimationDelay:
+    case CSSPropertyID::kAnimationDirection:
+    case CSSPropertyID::kAnimationDuration:
+    case CSSPropertyID::kAnimationFillMode:
+    case CSSPropertyID::kAnimationIterationCount:
+    case CSSPropertyID::kAnimationName:
+    case CSSPropertyID::kAnimationPlayState:
+    case CSSPropertyID::kAnimationTimingFunction:
+    case CSSPropertyID::kContain:
+    case CSSPropertyID::kDirection:
+    case CSSPropertyID::kDisplay:
+    case CSSPropertyID::kTextOrientation:
+    case CSSPropertyID::kTransition:
+    case CSSPropertyID::kTransitionDelay:
+    case CSSPropertyID::kTransitionDuration:
+    case CSSPropertyID::kTransitionProperty:
+    case CSSPropertyID::kTransitionTimingFunction:
+    case CSSPropertyID::kUnicodeBidi:
+    case CSSPropertyID::kWillChange:
+    case CSSPropertyID::kWritingMode:
       return true;
     default:
       return false;

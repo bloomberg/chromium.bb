@@ -149,6 +149,11 @@ bool DummyTextInputClient::ShouldDoLearning() {
 void DummyTextInputClient::SetCompositionFromExistingText(
     const gfx::Range& range,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {}
+
+void DummyTextInputClient::SetActiveCompositionForAccessibility(
+    const gfx::Range& range,
+    const base::string16& active_composition_text,
+    bool is_composition_committed) {}
 #endif
 
 }  // namespace ui

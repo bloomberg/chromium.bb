@@ -25,14 +25,22 @@ namespace dawn_wire {
         class Client;
     }
 
+    struct ReservedTexture {
+        DawnTexture texture;
+        uint32_t id;
+        uint32_t generation;
+    };
+
     class DAWN_WIRE_EXPORT WireClient : public CommandHandler {
       public:
         WireClient(CommandSerializer* serializer);
         ~WireClient();
 
-        dawnDevice GetDevice() const;
-        dawnProcTable GetProcs() const;
+        DawnDevice GetDevice() const;
+        DawnProcTable GetProcs() const;
         const char* HandleCommands(const char* commands, size_t size) override final;
+
+        ReservedTexture ReserveTexture(DawnDevice device);
 
       private:
         std::unique_ptr<client::Client> mImpl;

@@ -22,34 +22,57 @@ namespace ui {
 class AX_EXPORT AXEventGenerator : public AXTreeObserver {
  public:
   enum class Event : int32_t {
+    ACCESS_KEY_CHANGED,
     ACTIVE_DESCENDANT_CHANGED,
     ALERT,
     AUTO_COMPLETE_CHANGED,
     CHECKED_STATE_CHANGED,
     CHILDREN_CHANGED,
+    CLASS_NAME_CHANGED,
     COLLAPSED,
+    CONTROLS_CHANGED,
+    DESCRIBED_BY_CHANGED,
     DESCRIPTION_CHANGED,
     DOCUMENT_SELECTION_CHANGED,
     DOCUMENT_TITLE_CHANGED,
+    ENABLED_CHANGED,
     EXPANDED,
+    FLOW_FROM_CHANGED,
+    FLOW_TO_CHANGED,
+    HIERARCHICAL_LEVEL_CHANGED,
     IMAGE_ANNOTATION_CHANGED,
     INVALID_STATUS_CHANGED,
+    KEY_SHORTCUTS_CHANGED,
+    LABELED_BY_CHANGED,
+    LANGUAGE_CHANGED,
+    LAYOUT_INVALIDATED,   // Fired when aria-busy goes false
     LIVE_REGION_CHANGED,  // Fired on the root of a live region.
     LIVE_REGION_CREATED,
     LIVE_REGION_NODE_CHANGED,  // Fired on a node within a live region.
     LOAD_COMPLETE,
     LOAD_START,
     MENU_ITEM_SELECTED,
+    MULTISELECTABLE_STATE_CHANGED,
     NAME_CHANGED,
     OTHER_ATTRIBUTE_CHANGED,
+    PLACEHOLDER_CHANGED,
+    POSITION_IN_SET_CHANGED,
     RELATED_NODE_CHANGED,
+    READONLY_CHANGED,
+    REQUIRED_STATE_CHANGED,
     ROLE_CHANGED,
     ROW_COUNT_CHANGED,
-    SCROLL_POSITION_CHANGED,
+    SCROLL_HORIZONTAL_POSITION_CHANGED,
+    SCROLL_VERTICAL_POSITION_CHANGED,
     SELECTED_CHANGED,
     SELECTED_CHILDREN_CHANGED,
+    SET_SIZE_CHANGED,
     STATE_CHANGED,
+    SUBTREE_CREATED,
     VALUE_CHANGED,
+    VALUE_MAX_CHANGED,
+    VALUE_MIN_CHANGED,
+    VALUE_STEP_CHANGED,
   };
 
   struct EventParams {
@@ -182,6 +205,14 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
   void FireActiveDescendantEvents();
   void FireRelationSourceEvents(AXTree* tree, AXNode* target_node);
   bool ShouldFireLoadEvents(AXNode* node);
+  static void GetRestrictionStates(ax::mojom::Restriction restriction,
+                                   bool* is_enabled,
+                                   bool* is_readonly);
+
+  // Returns a vector of values unique to either |lhs| or |rhs|
+  static std::vector<int32_t> ComputeIntListDifference(
+      const std::vector<int32_t>& lhs,
+      const std::vector<int32_t>& rhs);
 
   AXTree* tree_ = nullptr;  // Not owned.
   std::map<AXNode*, std::set<EventParams>> tree_events_;

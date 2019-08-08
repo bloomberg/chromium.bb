@@ -31,7 +31,7 @@ class NavigatorNFC final : public GarbageCollected<NavigatorNFC>,
   void Trace(blink::Visitor*) override;
 
  private:
-  TraceWrapperMember<NFC> nfc_;
+  Member<NFC> nfc_;
 };
 
 }  // namespace blink

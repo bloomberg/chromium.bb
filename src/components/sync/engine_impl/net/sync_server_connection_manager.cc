@@ -33,7 +33,7 @@ SyncBridgedConnection::~SyncBridgedConnection() {
 }
 
 bool SyncBridgedConnection::Init(const char* path,
-                                 const std::string& auth_token,
+                                 const std::string& access_token,
                                  const std::string& payload,
                                  HttpResponse* response) {
   std::string sync_server;
@@ -45,9 +45,9 @@ bool SyncBridgedConnection::Init(const char* path,
   HttpPostProviderInterface* http = post_provider_;
   http->SetURL(connection_url.c_str(), sync_server_port);
 
-  if (!auth_token.empty()) {
+  if (!access_token.empty()) {
     std::string headers;
-    headers = "Authorization: Bearer " + auth_token;
+    headers = "Authorization: Bearer " + access_token;
     http->SetExtraRequestHeaders(headers.c_str());
   }
 
@@ -60,6 +60,7 @@ bool SyncBridgedConnection::Init(const char* path,
   int http_status_code = 0;
   if (!cancelation_signal_->TryRegisterHandler(this)) {
     // Return early because cancelation signal was signaled.
+    // TODO(crbug.com/951350): Introduce an extra status code for canceled?
     response->server_status = HttpResponse::CONNECTION_UNAVAILABLE;
     return false;
   }
@@ -91,11 +92,6 @@ bool SyncBridgedConnection::Init(const char* path,
   // Write the content into our buffer.
   buffer_.assign(http->GetResponseContent(), http->GetResponseContentLength());
   return true;
-}
-
-void SyncBridgedConnection::Abort() {
-  DCHECK(post_provider_);
-  post_provider_->Abort();
 }
 
 void SyncBridgedConnection::OnSignalReceived() {

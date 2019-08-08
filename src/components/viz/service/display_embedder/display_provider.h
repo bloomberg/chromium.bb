@@ -7,32 +7,31 @@
 
 #include <memory>
 
+#include "components/viz/common/display/update_vsync_parameters_callback.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "services/viz/privileged/interfaces/compositing/display_private.mojom.h"
 
 namespace viz {
 
+class BeginFrameSource;
 class Display;
-class ExternalBeginFrameSource;
 class FrameSinkId;
 class RendererSettings;
-class SyntheticBeginFrameSource;
 
 // Handles creating Display and related classes for FrameSinkManagerImpl.
 class DisplayProvider {
  public:
   virtual ~DisplayProvider() {}
 
-  // Creates a new Display for |surface_handle| with |frame_sink_id|. One of
-  // |external_begin_frame_source| or |synthetic_begin_frame_source| should be
-  // non-null. If creating a Display fails this function will return null.
+  // Creates a new Display for |surface_handle| with |frame_sink_id|. If
+  // creating a Display fails this function will return null.
   virtual std::unique_ptr<Display> CreateDisplay(
       const FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
       bool gpu_compositing,
       mojom::DisplayClient* display_client,
-      ExternalBeginFrameSource* external_begin_frame_source,
-      SyntheticBeginFrameSource* synthetic_begin_frame_source,
+      BeginFrameSource* begin_frame_source,
+      UpdateVSyncParametersCallback update_vsync_callback,
       const RendererSettings& renderer_settings,
       bool send_swap_size_notifications) = 0;
 

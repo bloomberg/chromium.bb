@@ -14,14 +14,13 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "mojo/core/embedder/embedder.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/logging.h"
-#include "remoting/base/oauth_helper.h"
 #include "remoting/base/service_urls.h"
 #include "remoting/base/url_request_context_getter.h"
 #include "remoting/host/setup/host_starter.h"
@@ -135,7 +134,7 @@ int StartHostMain(int argc, char** argv) {
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(settings);
 
-  base::TaskScheduler::CreateAndStartWithDefaultParams("RemotingHostSetup");
+  base::ThreadPool::CreateAndStartWithDefaultParams("RemotingHostSetup");
 
   mojo::core::Init();
 

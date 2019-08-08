@@ -120,19 +120,6 @@ HRESULT ScopedLsaPolicy::AddAccountRights(PSID sid, const wchar_t* right) {
   return S_OK;
 }
 
-HRESULT ScopedLsaPolicy::RemoveAccountRights(PSID sid, const wchar_t* right) {
-  LSA_UNICODE_STRING lsa_right;
-  InitLsaString(right, &lsa_right);
-  NTSTATUS sts = ::LsaRemoveAccountRights(handle_, sid, FALSE, &lsa_right, 1);
-  if (sts != STATUS_SUCCESS) {
-    HRESULT hr = HRESULT_FROM_NT(sts);
-    LOGFN(ERROR) << "LsaRemoveAccountRights sts=" << putHR(sts)
-                 << " hr=" << putHR(hr);
-    return hr;
-  }
-  return S_OK;
-}
-
 HRESULT ScopedLsaPolicy::RemoveAccount(PSID sid) {
   // When all rights are removed from an account, the account itself is also
   // deleted.

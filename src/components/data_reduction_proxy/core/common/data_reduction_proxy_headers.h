@@ -49,23 +49,9 @@ enum DataReductionProxyBypassType {
 #undef BYPASS_EVENT_TYPE
 };
 
-// Values for the bypass actions that can be specified by the Data Reduction
-// Proxy in response to a client request. These are explicit bypass actions
-// specified by the Data Reduction Proxy in the Chrome-Proxy header, block-once,
-// bypass=1, block=300, etc. These are not used for Chrome initiated bypasses
-// due to a server error, missing Via header, etc.
-enum DataReductionProxyBypassAction {
-#define BYPASS_ACTION_TYPE(label, value) BYPASS_ACTION_TYPE_##label = value,
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_action_list.h"
-#undef BYPASS_ACTION_TYPE
-};
-
 // Contains instructions contained in the Chrome-Proxy header.
 struct DataReductionProxyInfo {
-  DataReductionProxyInfo()
-      : bypass_all(false),
-        mark_proxies_as_bad(false),
-        bypass_action(BYPASS_ACTION_TYPE_NONE) {}
+  DataReductionProxyInfo() : bypass_all(false), mark_proxies_as_bad(false) {}
 
   // True if Chrome should bypass all available data reduction proxies. False
   // if only the currently connected data reduction proxy should be bypassed.
@@ -78,9 +64,6 @@ struct DataReductionProxyInfo {
   // Amount of time to bypass the data reduction proxy or proxies. This value is
   // ignored if |mark_proxies_as_bad| is false.
   base::TimeDelta bypass_duration;
-
-  // The bypass action specified by the data reduction proxy.
-  DataReductionProxyBypassAction bypass_action;
 };
 
 // Gets the header used for data reduction proxy requests and responses.

@@ -1621,44 +1621,6 @@ TEST_F(RequestCoordinatorTest,
   EXPECT_TRUE(state() == RequestCoordinatorState::OFFLINING);
 }
 
-TEST_F(RequestCoordinatorTest,
-       SavePageStartsProcessingWhenConnectedOnLowEndDeviceIfFlagEnabled) {
-  // Mark device as low-end device.
-  SetIsLowEndDeviceForTest(true);
-  EXPECT_FALSE(offline_pages::IsOfflinePagesSvelteConcurrentLoadingEnabled());
-
-  // Make a request.
-  EXPECT_NE(0, SavePageLater());
-  PumpLoop();
-
-  // Verify not immediately busy (since low-end device).
-  EXPECT_FALSE(state() == RequestCoordinatorState::OFFLINING);
-
-  // Set feature flag to allow concurrent loads.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      kOfflinePagesSvelteConcurrentLoadingFeature);
-  EXPECT_TRUE(offline_pages::IsOfflinePagesSvelteConcurrentLoadingEnabled());
-
-  // Turn off the callback so that the request stops before processing in
-  // PumpLoop.
-  EnableOfflinerCallback(false);
-
-  // Make another request.
-  RequestCoordinator::SavePageLaterParams params;
-  params.url = kUrl2;
-  params.client_id = kClientId2;
-  params.user_requested = kUserRequested;
-  EXPECT_NE(0, coordinator()->SavePageLater(
-                   params, base::BindOnce(
-                               &RequestCoordinatorTest::SavePageRequestCallback,
-                               base::Unretained(this))));
-  PumpLoop();
-
-  // Verify immediate processing did start this time.
-  EXPECT_TRUE(state() == RequestCoordinatorState::OFFLINING);
-}
-
 TEST_F(RequestCoordinatorTest, SavePageDoesntStartProcessingWhenDisconnected) {
   SetNetworkConnected(false);
   EnableOfflinerCallback(false);

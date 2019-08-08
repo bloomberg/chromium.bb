@@ -173,72 +173,68 @@ FileTasks.TaskPickerType = {
  * @param {!Crostini} crostini
  * @return {!Promise<!FileTasks>}
  */
-FileTasks.create = (
-  volumeManager,
-  metadataModel,
-  directoryModel,
-  ui,
-  entries,
-  mimeTypes,
-  taskHistory,
-  namingController,
-  crostini
-) => {
-  const tasksPromise = new Promise(fulfill => {
-    // getFileTasks supports only native entries.
-    entries = entries.filter(util.isNativeEntry);
-    if (entries.length === 0) {
-      fulfill([]);
-      return;
-    }
-    chrome.fileManagerPrivate.getFileTasks(entries, taskItems => {
-      if (chrome.runtime.lastError) {
-        console.error('Failed to fetch file tasks due to: ' +
-            chrome.runtime.lastError.message);
-        Promise.reject();
-        return;
-      }
+FileTasks.create =
+    (volumeManager, metadataModel, directoryModel, ui, entries, mimeTypes,
+     taskHistory, namingController, crostini) => {
+      const tasksPromise = new Promise(fulfill => {
+        // getFileTasks supports only native entries.
+        entries = entries.filter(util.isNativeEntry);
+        if (entries.length === 0) {
+          fulfill([]);
+          return;
+        }
+        chrome.fileManagerPrivate.getFileTasks(entries, taskItems => {
+          if (chrome.runtime.lastError) {
+            console.error(
+                'Failed to fetch file tasks due to: ' +
+                chrome.runtime.lastError.message);
+            Promise.reject();
+            return;
+          }
 
-      // Linux package installation is currently only supported for a single
-      // file which is inside the Linux container, or in a sharable volume.
-      // TODO(timloh): Instead of filtering these out, we probably should show
-      // a dialog with an error message, similar to when attempting to run
-      // Crostini tasks with non-Crostini entries.
-      if (entries.length !== 1 ||
-          !(FileTasks.isCrostiniEntry(entries[0], volumeManager) ||
-            crostini.canSharePath(entries[0], false /* persist */))) {
-        taskItems = taskItems.filter(item => {
-          const taskParts = item.taskId.split('|');
-          const appId = taskParts[0];
-          const taskType = taskParts[1];
-          const actionId = taskParts[2];
-          return !(
-              appId === chrome.runtime.id && taskType === 'app' &&
-              actionId === 'install-linux-package');
+          // Linux package installation is currently only supported for a single
+          // file which is inside the Linux container, or in a shareable volume.
+          // TODO(timloh): Instead of filtering these out, we probably should
+          // show a dialog with an error message, similar to when attempting to
+          // run Crostini tasks with non-Crostini entries.
+          if (entries.length !== 1 ||
+              !(FileTasks.isCrostiniEntry(entries[0], volumeManager) ||
+                crostini.canSharePath(
+                    constants.DEFAULT_CROSTINI_VM, entries[0],
+                    false /* persist */))) {
+            taskItems = taskItems.filter(item => {
+              const taskParts = item.taskId.split('|');
+              const appId = taskParts[0];
+              const taskType = taskParts[1];
+              const actionId = taskParts[2];
+              return !(
+                  appId === chrome.runtime.id && taskType === 'app' &&
+                  actionId === 'install-linux-package');
+            });
+          }
+
+          // Filters out Pack with Zip Archiver task because it will be
+          // accessible via 'Zip selection' context menu button
+          taskItems = taskItems.filter(item => {
+            return item.taskId !== FileTasks.ZIP_ARCHIVER_ZIP_TASK_ID &&
+                item.taskId !== FileTasks.ZIP_ARCHIVER_ZIP_USING_TMP_TASK_ID;
+          });
+
+          fulfill(FileTasks.annotateTasks_(assert(taskItems), entries));
         });
-      }
-
-      // Filters out Pack with Zip Archiver task because it will be accessible
-      // via 'Zip selection' context menu button
-      taskItems = taskItems.filter(item => {
-        return item.taskId !== FileTasks.ZIP_ARCHIVER_ZIP_TASK_ID &&
-            item.taskId !== FileTasks.ZIP_ARCHIVER_ZIP_USING_TMP_TASK_ID;
       });
 
-      fulfill(FileTasks.annotateTasks_(assert(taskItems), entries));
-    });
-  });
+      const defaultTaskPromise = tasksPromise.then(tasks => {
+        return FileTasks.getDefaultTask(tasks, taskHistory);
+      });
 
-  const defaultTaskPromise = tasksPromise.then(tasks => {
-    return FileTasks.getDefaultTask(tasks, taskHistory);
-  });
-
-  return Promise.all([tasksPromise, defaultTaskPromise]).then(args => {
-    return new FileTasks(
-        volumeManager, metadataModel, directoryModel, ui, entries, mimeTypes,
-        args[0], args[1], taskHistory, namingController, crostini);
-  });
-};
+      return Promise.all([tasksPromise, defaultTaskPromise]).then(args => {
+        return new FileTasks(
+            volumeManager, metadataModel, directoryModel, ui, entries,
+            mimeTypes, args[0], args[1], taskHistory, namingController,
+            crostini);
+      });
+    };
 
 /**
  * Obtains the task items.
@@ -349,7 +345,10 @@ FileTasks.UMA_INDEX_KNOWN_EXTENSIONS = Object.freeze([
  * @private
  */
 FileTasks.EXTENSIONS_TO_SKIP_SUGGEST_APPS_ = Object.freeze([
-  '.crdownload', '.dsc', '.inf', '.crx',
+  '.crdownload',
+  '.dsc',
+  '.inf',
+  '.crx',
 ]);
 
 /**
@@ -383,14 +382,15 @@ FileTasks.isOffline_ = volumeManager => {
  * @param {!*} value Enum value.
  * @param {!Array<*>} values Array of valid values.
  */
-FileTasks.recordEnumWithOnlineAndOffline_ = (volumeManager, name, value, values) => {
-  metrics.recordEnum(name, value, values);
-  if (FileTasks.isOffline_(volumeManager)) {
-    metrics.recordEnum(name + '.Offline', value, values);
-  } else {
-    metrics.recordEnum(name + '.Online', value, values);
-  }
-};
+FileTasks.recordEnumWithOnlineAndOffline_ =
+    (volumeManager, name, value, values) => {
+      metrics.recordEnum(name, value, values);
+      if (FileTasks.isOffline_(volumeManager)) {
+        metrics.recordEnum(name + '.Offline', value, values);
+      } else {
+        metrics.recordEnum(name + '.Online', value, values);
+      }
+    };
 
 /**
  * Records trial of opening file grouped by extensions.
@@ -657,10 +657,11 @@ FileTasks.prototype.maybeShareWithCrostiniOrShowDialog_ = function(
   for (let i = 0; i < this.entries_.length; i++) {
     const entry = this.entries_[i];
     if (FileTasks.isCrostiniEntry(entry, this.volumeManager_) ||
-        this.crostini_.isPathShared(entry)) {
+        this.crostini_.isPathShared(constants.DEFAULT_CROSTINI_VM, entry)) {
       continue;
     }
-    if (!this.crostini_.canSharePath(entry, false /* persist */)) {
+    if (!this.crostini_.canSharePath(
+            constants.DEFAULT_CROSTINI_VM, entry, false /* persist */)) {
       showUnableToOpen = true;
       break;
     }
@@ -689,7 +690,8 @@ FileTasks.prototype.maybeShareWithCrostiniOrShowDialog_ = function(
       FileTasks.CrostiniShareDialogType.ShareBeforeOpen);
   // Set persist to false when sharing paths to open with a crostini app.
   chrome.fileManagerPrivate.sharePathsWithCrostini(
-      entriesToShare, false /* persist */, () => {
+      constants.DEFAULT_CROSTINI_VM, entriesToShare, false /* persist */,
+      () => {
         // It is unexpected to get an error sharing any files since we have
         // already validated that all selected files can be shared.
         // But if it happens, log error, and do not execute callback.
@@ -741,8 +743,7 @@ FileTasks.prototype.executeDefaultInternal_ = function(opt_callback) {
   // a task picker to ask the user to choose one.
   if (nonGenericTasks.length >= 2) {
     this.showTaskPicker(
-        this.ui_.defaultTaskPicker, str('OPEN_WITH_BUTTON_LABEL'),
-        '', task => {
+        this.ui_.defaultTaskPicker, str('OPEN_WITH_BUTTON_LABEL'), '', task => {
           this.execute(task);
         }, FileTasks.TaskPickerType.OpenWith);
     return;
@@ -918,12 +919,11 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
     return okEntriesNum === props.length;
   };
 
-  const containsDriveEntries =
-      this.entries_.some(entry => {
-        const volumeInfo = this.volumeManager_.getVolumeInfo(entry);
-        return volumeInfo && volumeInfo.volumeType ===
-            VolumeManagerCommon.VolumeType.DRIVE;
-      });
+  const containsDriveEntries = this.entries_.some(entry => {
+    const volumeInfo = this.volumeManager_.getVolumeInfo(entry);
+    return volumeInfo &&
+        volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE;
+  });
 
   // Availability is not checked for non-Drive files, as availableOffline, nor
   // availableWhenMetered are not exposed for other types of volumes at this
@@ -937,8 +937,8 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
       VolumeManagerCommon.DriveConnectionType.OFFLINE;
 
   if (isDriveOffline) {
-    this.metadataModel_.get(this.entries_, ['availableOffline', 'hosted']).then(
-        props => {
+    this.metadataModel_.get(this.entries_, ['availableOffline', 'hosted'])
+        .then(props => {
           if (areAll(this.entries_, props, 'availableOffline')) {
             callback();
             return;
@@ -952,12 +952,11 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
                           'HOSTED_OFFLINE_MESSAGE' :
                           'HOSTED_OFFLINE_MESSAGE_PLURAL') :
                   loadTimeData.getStringF(
-                      this.entries_.length === 1 ?
-                          'OFFLINE_MESSAGE' :
-                          'OFFLINE_MESSAGE_PLURAL',
+                      this.entries_.length === 1 ? 'OFFLINE_MESSAGE' :
+                                                   'OFFLINE_MESSAGE_PLURAL',
                       loadTimeData.getString('OFFLINE_COLUMN_LABEL')),
               null, null, null);
-    });
+        });
     return;
   }
 
@@ -980,9 +979,8 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
           }
           this.ui_.confirmDialog.show(
               loadTimeData.getStringF(
-                  this.entries_.length === 1 ?
-                      'CONFIRM_MOBILE_DATA_USE' :
-                      'CONFIRM_MOBILE_DATA_USE_PLURAL',
+                  this.entries_.length === 1 ? 'CONFIRM_MOBILE_DATA_USE' :
+                                               'CONFIRM_MOBILE_DATA_USE_PLURAL',
                   util.bytesToString(sizeToDownload)),
               callback, null, null);
         });
@@ -1035,36 +1033,31 @@ FileTasks.prototype.mountArchivesInternal_ = function() {
   const urls = util.entriesToURLs(this.entries_);
   for (let index = 0; index < urls.length; ++index) {
     // TODO(mtomasz): Pass Entry instead of URL.
-    this.volumeManager_.mountArchive(
-        urls[index],
-        volumeInfo => {
-          if (tracker.hasChanged) {
+    this.volumeManager_.mountArchive(urls[index], volumeInfo => {
+      if (tracker.hasChanged) {
+        tracker.stop();
+        return;
+      }
+      volumeInfo.resolveDisplayRoot(
+          displayRoot => {
+            if (tracker.hasChanged) {
+              tracker.stop();
+              return;
+            }
+            this.directoryModel_.changeDirectoryEntry(displayRoot);
+          },
+          () => {
+            console.warn('Failed to resolve the display root after mounting.');
             tracker.stop();
-            return;
-          }
-          volumeInfo.resolveDisplayRoot(
-              displayRoot => {
-                if (tracker.hasChanged) {
-                  tracker.stop();
-                  return;
-                }
-                this.directoryModel_.changeDirectoryEntry(displayRoot);
-              },
-              () => {
-                console.warn(
-                    'Failed to resolve the display root after mounting.');
-                tracker.stop();
-              });
-        },
-        ((url, error) => {
-          tracker.stop();
-          const path = util.extractFilePath(url);
-          const namePos = path.lastIndexOf('/');
-          this.ui_.alertDialog.show(
-              strf('ARCHIVE_MOUNT_FAILED', path.substr(namePos + 1), error),
-              null,
-              null);
-        }).bind(null, urls[index]));
+          });
+    }, ((url, error) => {
+         tracker.stop();
+         const path = util.extractFilePath(url);
+         const namePos = path.lastIndexOf('/');
+         this.ui_.alertDialog.show(
+             strf('ARCHIVE_MOUNT_FAILED', path.substr(namePos + 1), error),
+             null, null);
+       }).bind(null, urls[index]));
   }
 };
 
@@ -1239,8 +1232,8 @@ FileTasks.prototype.createItems_ = function(tasks) {
   for (let index = 0; index < tasks.length; index++) {
     const task = tasks[index];
     if (task === this.defaultTask_) {
-      const title = task.title + ' ' +
-                  loadTimeData.getString('DEFAULT_TASK_LABEL');
+      const title =
+          task.title + ' ' + loadTimeData.getString('DEFAULT_TASK_LABEL');
       items.push(this.createCombobuttonItem_(task, title, true, true));
     } else {
       items.push(this.createCombobuttonItem_(task));
@@ -1294,18 +1287,19 @@ FileTasks.ComboButtonItem;
  *     list.
  * @private
  */
-FileTasks.prototype.createCombobuttonItem_ = (task, opt_title, opt_bold, opt_isDefault) => {
-  return {
-    type: FileTasks.TaskMenuButtonItemType.RunTask,
-    label: opt_title || task.label || task.title,
-    iconUrl: task.iconUrl || '',
-    iconType: task.iconType || '',
-    task: task,
-    bold: opt_bold || false,
-    isDefault: opt_isDefault || false,
-    isGenericFileHandler: /** @type {boolean} */ (task.isGenericFileHandler)
-  };
-};
+FileTasks.prototype.createCombobuttonItem_ =
+    (task, opt_title, opt_bold, opt_isDefault) => {
+      return {
+        type: FileTasks.TaskMenuButtonItemType.RunTask,
+        label: opt_title || task.label || task.title,
+        iconUrl: task.iconUrl || '',
+        iconType: task.iconType || '',
+        task: task,
+        bold: opt_bold || false,
+        isDefault: opt_isDefault || false,
+        isGenericFileHandler: /** @type {boolean} */ (task.isGenericFileHandler)
+      };
+    };
 
 /**
  * Shows modal task picker dialog with currently available list of tasks.
@@ -1336,13 +1330,9 @@ FileTasks.prototype.showTaskPicker = function(
     }
   }
 
-  taskDialog.showDefaultTaskDialog(
-      title,
-      message,
-      items, defaultIdx,
-      item => {
-        onSuccess(item.task);
-      });
+  taskDialog.showDefaultTaskDialog(title, message, items, defaultIdx, item => {
+    onSuccess(item.task);
+  });
 };
 
 /**

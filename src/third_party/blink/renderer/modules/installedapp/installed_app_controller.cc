@@ -13,31 +13,6 @@
 
 namespace blink {
 
-// Callbacks for the result of
-// WebRelatedAppsFetcher::getManifestRelatedApplications. Calls
-// filterByInstalledApps upon receiving the list of related applications.
-class InstalledAppController::GetRelatedAppsCallbacks
-    : public AppInstalledCallbacks {
- public:
-  GetRelatedAppsCallbacks(InstalledAppController* controller,
-                          std::unique_ptr<AppInstalledCallbacks> callbacks)
-      : controller_(controller), callbacks_(std::move(callbacks)) {}
-
-  // AppInstalledCallbacks overrides:
-  void OnSuccess(
-      const WebVector<WebRelatedApplication>& related_apps) override {
-    if (!controller_)
-      return;
-
-    controller_->FilterByInstalledApps(related_apps, std::move(callbacks_));
-  }
-  void OnError() override { callbacks_->OnError(); }
-
- private:
-  WeakPersistent<InstalledAppController> controller_;
-  std::unique_ptr<AppInstalledCallbacks> callbacks_;
-};
-
 InstalledAppController::~InstalledAppController() = default;
 
 void InstalledAppController::GetInstalledRelatedApps(
@@ -56,7 +31,8 @@ void InstalledAppController::GetInstalledRelatedApps(
   // TODO(mgiuca): This roundtrip to content could be eliminated if the Manifest
   // class was moved from content into Blink.
   related_apps_fetcher_->GetManifestRelatedApplications(
-      std::make_unique<GetRelatedAppsCallbacks>(this, std::move(callbacks)));
+      WTF::Bind(&InstalledAppController::OnGetRelatedAppsCallback,
+                WrapWeakPersistent(this), std::move(callbacks)));
 }
 
 void InstalledAppController::ProvideTo(
@@ -86,6 +62,14 @@ InstalledAppController::InstalledAppController(
 void InstalledAppController::ContextDestroyed(ExecutionContext*) {
   provider_.reset();
   related_apps_fetcher_ = nullptr;
+}
+
+void InstalledAppController::OnGetRelatedAppsCallback(
+    std::unique_ptr<AppInstalledCallbacks> callbacks,
+    const WebVector<WebRelatedApplication>& related_apps) {
+  // TODO: Fix the order of the parameters in ::FilterByInstalledApps
+  // and bound it right away as the completion callback.
+  FilterByInstalledApps(related_apps, std::move(callbacks));
 }
 
 void InstalledAppController::FilterByInstalledApps(

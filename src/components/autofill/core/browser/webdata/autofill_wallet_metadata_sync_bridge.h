@@ -74,6 +74,8 @@ class AutofillWalletMetadataSyncBridge
   void GetAllDataForDebugging(DataCallback callback) override;
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
+  void ApplyStopSyncChanges(std::unique_ptr<syncer::MetadataChangeList>
+                                delete_metadata_change_list) override;
 
   // AutofillWebDataServiceObserverOnDBSequence implementation.
   void AutofillProfileChanged(const AutofillProfileChange& change) override;
@@ -87,6 +89,16 @@ class AutofillWalletMetadataSyncBridge
   // autofill table and pass the latter to the processor so that it can start
   // tracking changes.
   void LoadDataCacheAndMetadata();
+
+  // Deletes old metadata entities that have no corresponding data entities.
+  // This routine is here to help with really corner-case scenarios, e.g.
+  //  - having one client create a metadata entity M for new data D while other
+  //  clients are off;
+  //  - switch off this client forever and remove the entity D from Wallet;
+  //  - turn on other clients so that they receive M from sync;
+  //  - these other clients never knew about D and thus they have no reason to
+  //  delete M when they receive an update from the Walllet server.
+  void DeleteOldOrphanMetadata();
 
   // Reads local wallet metadata from the database and passes them into
   // |callback|. If |storage_keys_set| is not set, it returns all data entries.

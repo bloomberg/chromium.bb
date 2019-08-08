@@ -33,8 +33,10 @@ namespace {
 const int kInvalidResponseCode = -1;
 
 void BindNetworkContextOnUI(network::mojom::CustomProxyConfigPtr config,
-                            network::mojom::NetworkContextRequest request) {
+                            network::mojom::NetworkContextRequest request,
+                            const std::string& user_agent) {
   auto params = network::mojom::NetworkContextParams::New();
+  params->user_agent = user_agent;
   params->initial_custom_proxy_config = std::move(config);
   content::GetNetworkService()->CreateNetworkContext(std::move(request),
                                                      std::move(params));
@@ -47,7 +49,8 @@ WarmupURLFetcher::WarmupURLFetcher(
     CreateCustomProxyConfigCallback create_custom_proxy_config_callback,
     WarmupURLFetcherCallback callback,
     GetHttpRttCallback get_http_rtt_callback,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    const std::string& user_agent)
     : is_fetch_in_flight_(false),
       previous_attempt_counts_(0),
       non_network_service_url_loader_factory_(
@@ -55,6 +58,7 @@ WarmupURLFetcher::WarmupURLFetcher(
       create_custom_proxy_config_callback_(create_custom_proxy_config_callback),
       callback_(callback),
       get_http_rtt_callback_(get_http_rtt_callback),
+      user_agent_(user_agent),
       ui_task_runner_(ui_task_runner) {
   DCHECK(non_network_service_url_loader_factory_);
   DCHECK(create_custom_proxy_config_callback);
@@ -90,15 +94,10 @@ base::TimeDelta WarmupURLFetcher::GetFetchWaitTime() const {
   DCHECK_LT(0u, previous_attempt_counts_);
   DCHECK_GE(2u, previous_attempt_counts_);
 
-  if (previous_attempt_counts_ == 1) {
-    return base::TimeDelta::FromSeconds(GetFieldTrialParamByFeatureAsInt(
-        features::kDataReductionProxyRobustConnection,
-        "warmup_url_fetch_wait_timer_first_retry_seconds", 1));
-  }
+  if (previous_attempt_counts_ == 1)
+    return base::TimeDelta::FromSeconds(1);
 
-  return base::TimeDelta::FromSeconds(GetFieldTrialParamByFeatureAsInt(
-      features::kDataReductionProxyRobustConnection,
-      "warmup_url_fetch_wait_timer_second_retry_seconds", 30));
+  return base::TimeDelta::FromSeconds(30);
 }
 
 void WarmupURLFetcher::FetchWarmupURLNow(
@@ -142,6 +141,11 @@ void WarmupURLFetcher::FetchWarmupURLNow(
   // for loading user initiated requests.
   resource_request->load_flags = net::LOAD_BYPASS_CACHE;
 
+  // TODO(957215): This is a temporary solution to mark the request to go
+  // through the data reduction proxy. Otherwise only navigation requests and
+  // renderer requests will be allowed to use the proxy.
+  resource_request->render_frame_id = MSG_ROUTING_CONTROL;
+
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);
   // |url_loader_| should not retry on 5xx errors. |url_loader_| should retry on
@@ -178,7 +182,7 @@ WarmupURLFetcher::GetNetworkServiceURLLoaderFactory(
       FROM_HERE,
       base::BindOnce(&BindNetworkContextOnUI,
                      create_custom_proxy_config_callback_.Run({proxy_server}),
-                     mojo::MakeRequest(&context_)));
+                     mojo::MakeRequest(&context_), user_agent_));
 
   auto factory_params = network::mojom::URLLoaderFactoryParams::New();
   factory_params->process_id = network::mojom::kBrowserProcessId;
@@ -288,23 +292,15 @@ base::TimeDelta WarmupURLFetcher::GetFetchTimeout() const {
 
   // The timeout value should always be between |min_timeout| and |max_timeout|
   // (both inclusive).
-  const base::TimeDelta min_timeout =
-      base::TimeDelta::FromSeconds(GetFieldTrialParamByFeatureAsInt(
-          features::kDataReductionProxyRobustConnection,
-          "warmup_url_fetch_min_timeout_seconds", 30));
-  const base::TimeDelta max_timeout =
-      base::TimeDelta::FromSeconds(GetFieldTrialParamByFeatureAsInt(
-          features::kDataReductionProxyRobustConnection,
-          "warmup_url_fetch_max_timeout_seconds", 60));
+  const base::TimeDelta min_timeout = base::TimeDelta::FromSeconds(30);
+  const base::TimeDelta max_timeout = base::TimeDelta::FromSeconds(60);
   DCHECK_LT(base::TimeDelta::FromSeconds(0), min_timeout);
   DCHECK_LT(base::TimeDelta::FromSeconds(0), max_timeout);
   DCHECK_LE(min_timeout, max_timeout);
 
   // Set the timeout based on how many times the fetching of the warmup URL
   // has been tried.
-  size_t http_rtt_multiplier = GetFieldTrialParamByFeatureAsInt(
-      features::kDataReductionProxyRobustConnection,
-      "warmup_url_fetch_init_http_rtt_multiplier", 12);
+  size_t http_rtt_multiplier = 12;
   if (previous_attempt_counts_ == 1) {
     http_rtt_multiplier *= 2;
   } else if (previous_attempt_counts_ == 2) {

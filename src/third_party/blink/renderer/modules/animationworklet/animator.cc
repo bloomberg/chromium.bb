@@ -7,19 +7,26 @@
 #include "base/stl_util.h"
 #include "third_party/blink/renderer/bindings/modules/v8/effect_proxy_or_worklet_group_effect_proxy.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_animate_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_state_callback.h"
 #include "third_party/blink/renderer/modules/animationworklet/animator_definition.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
 Animator::Animator(v8::Isolate* isolate,
                    AnimatorDefinition* definition,
                    v8::Local<v8::Value> instance,
-                   int num_effects)
+                   const String& name,
+                   WorkletAnimationOptions options,
+                   const std::vector<base::Optional<TimeDelta>>& local_times)
     : definition_(definition),
       instance_(isolate, instance),
+      name_(name),
+      options_(options),
       group_effect_(
-          MakeGarbageCollected<WorkletGroupEffectProxy>(num_effects)) {
-  DCHECK_GE(num_effects, 1);
+          MakeGarbageCollected<WorkletGroupEffectProxy>(local_times)) {
+  DCHECK_GE(local_times.size(), 1u);
 }
 
 Animator::~Animator() = default;
@@ -68,6 +75,23 @@ std::vector<base::Optional<TimeDelta>> Animator::GetLocalTimes() const {
 
 bool Animator::IsStateful() const {
   return definition_->IsStateful();
+}
+
+v8::Local<v8::Value> Animator::State(v8::Isolate* isolate,
+                                     ExceptionState& exception_state) {
+  if (!IsStateful())
+    return v8::Undefined(isolate);
+
+  v8::Local<v8::Value> instance = instance_.NewLocal(isolate);
+  DCHECK(!IsUndefinedOrNull(instance));
+
+  v8::TryCatch try_catch(isolate);
+  v8::Maybe<ScriptValue> state = definition_->StateFunction()->Invoke(instance);
+  if (try_catch.HasCaught()) {
+    exception_state.RethrowV8Exception(try_catch.Exception());
+    return v8::Undefined(isolate);
+  }
+  return state.ToChecked().V8Value();
 }
 
 }  // namespace blink

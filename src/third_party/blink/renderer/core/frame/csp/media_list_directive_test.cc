@@ -11,7 +11,8 @@ namespace blink {
 
 class MediaListDirectiveTest : public testing::Test {
  public:
-  MediaListDirectiveTest() : csp(ContentSecurityPolicy::Create()) {}
+  MediaListDirectiveTest()
+      : csp(MakeGarbageCollected<ContentSecurityPolicy>()) {}
 
  protected:
   Persistent<ContentSecurityPolicy> csp;

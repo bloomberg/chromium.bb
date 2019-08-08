@@ -51,7 +51,7 @@ class FakeDisplaySchedulerClient : public DisplaySchedulerClient {
     return false;
   }
 
-  void SurfaceDiscarded(const SurfaceId& surface_id) override {}
+  void SurfaceDestroyed(const SurfaceId& surface_id) override {}
 
   void DidFinishFrame(const BeginFrameAck& ack) override {
     last_begin_frame_ack_ = ack;
@@ -202,7 +202,7 @@ TEST_F(DisplaySchedulerTest, ResizeHasLateDeadlineUntilNewRootSurface) {
   EXPECT_GT(late_deadline, scheduler_.DesiredBeginFrameDeadlineTimeForTest());
   scheduler_.DisplayResized();
   EXPECT_EQ(late_deadline, scheduler_.DesiredBeginFrameDeadlineTimeForTest());
-  scheduler_.OnSurfaceDestroyed(root_surface_id1);
+  scheduler_.OnSurfaceMarkedForDestruction(root_surface_id1);
   scheduler_.SetNewRootSurface(root_surface_id2);
   EXPECT_GE(now_src().NowTicks(),
             scheduler_.DesiredBeginFrameDeadlineTimeForTest());
@@ -687,7 +687,8 @@ TEST_F(DisplaySchedulerTest, DidSwapBuffers) {
   AdvanceTimeAndBeginFrameForTest({sid2});
   base::TimeTicks expected_deadline =
       scheduler_.LastUsedBeginFrameArgs().deadline -
-      BeginFrameArgs::DefaultEstimatedParentDrawTime();
+      BeginFrameArgs::DefaultEstimatedDisplayDrawTime(
+          scheduler_.LastUsedBeginFrameArgs().interval);
   EXPECT_EQ(expected_deadline,
             scheduler_.DesiredBeginFrameDeadlineTimeForTest());
   // Still waiting for surface 2. Once it updates, deadline should trigger

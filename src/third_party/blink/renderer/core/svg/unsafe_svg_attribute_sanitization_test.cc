@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/xlink_names.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -71,6 +72,7 @@ String ContentAfterPastingHTML(DummyPageHolder* page_holder,
 
   SystemClipboard::GetInstance().WriteHTML(
       html_to_paste, BlankURL(), "", SystemClipboard::kCannotSmartReplace);
+  SystemClipboard::GetInstance().CommitWrite();
   // Run all tasks in a message loop to allow asynchronous clipboard writing
   // to happen before reading from it synchronously.
   test::RunPendingTasks();
@@ -82,8 +84,7 @@ String ContentAfterPastingHTML(DummyPageHolder* page_holder,
 // Integration tests.
 
 TEST(UnsafeSVGAttributeSanitizationTest, pasteAnchor_javaScriptHrefIsStripped) {
-  std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(1, 1));
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(1, 1));
   static const char kUnsafeContent[] =
       "<svg xmlns='http://www.w3.org/2000/svg' "
       "     width='1cm' height='1cm'>"
@@ -103,8 +104,7 @@ TEST(UnsafeSVGAttributeSanitizationTest, pasteAnchor_javaScriptHrefIsStripped) {
 
 TEST(UnsafeSVGAttributeSanitizationTest,
      pasteAnchor_javaScriptXlinkHrefIsStripped) {
-  std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(1, 1));
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(1, 1));
   static const char kUnsafeContent[] =
       "<svg xmlns='http://www.w3.org/2000/svg' "
       "     xmlns:xlink='http://www.w3.org/1999/xlink'"
@@ -125,8 +125,7 @@ TEST(UnsafeSVGAttributeSanitizationTest,
 
 TEST(UnsafeSVGAttributeSanitizationTest,
      pasteAnchor_javaScriptHrefIsStripped_caseAndEntityInProtocol) {
-  std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(1, 1));
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(1, 1));
   static const char kUnsafeContent[] =
       "<svg xmlns='http://www.w3.org/2000/svg' "
       "     width='1cm' height='1cm'>"
@@ -146,8 +145,7 @@ TEST(UnsafeSVGAttributeSanitizationTest,
 
 TEST(UnsafeSVGAttributeSanitizationTest,
      pasteAnchor_javaScriptXlinkHrefIsStripped_caseAndEntityInProtocol) {
-  std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(1, 1));
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(1, 1));
   static const char kUnsafeContent[] =
       "<svg xmlns='http://www.w3.org/2000/svg' "
       "     xmlns:xlink='http://www.w3.org/1999/xlink'"
@@ -168,8 +166,7 @@ TEST(UnsafeSVGAttributeSanitizationTest,
 
 TEST(UnsafeSVGAttributeSanitizationTest,
      pasteAnchor_javaScriptHrefIsStripped_entityWithoutSemicolonInProtocol) {
-  std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(1, 1));
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(1, 1));
   static const char kUnsafeContent[] =
       "<svg xmlns='http://www.w3.org/2000/svg' "
       "     width='1cm' height='1cm'>"
@@ -190,8 +187,7 @@ TEST(UnsafeSVGAttributeSanitizationTest,
 TEST(
     UnsafeSVGAttributeSanitizationTest,
     pasteAnchor_javaScriptXlinkHrefIsStripped_entityWithoutSemicolonInProtocol) {
-  std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(1, 1));
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(1, 1));
   static const char kUnsafeContent[] =
       "<svg xmlns='http://www.w3.org/2000/svg' "
       "     xmlns:xlink='http://www.w3.org/1999/xlink'"
@@ -217,8 +213,7 @@ TEST(
 // web tests: there is nowhere to source the unsafe content from.
 TEST(UnsafeSVGAttributeSanitizationTest,
      pasteAnimatedAnchor_javaScriptHrefIsStripped_caseAndEntityInProtocol) {
-  std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(1, 1));
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(1, 1));
   static const char kUnsafeContent[] =
       "<svg xmlns='http://www.w3.org/2000/svg' "
       "     width='1cm' height='1cm'>"
@@ -241,8 +236,7 @@ TEST(UnsafeSVGAttributeSanitizationTest,
 TEST(
     UnsafeSVGAttributeSanitizationTest,
     pasteAnimatedAnchor_javaScriptXlinkHrefIsStripped_caseAndEntityInProtocol) {
-  std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(1, 1));
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(1, 1));
   static const char kUnsafeContent[] =
       "<svg xmlns='http://www.w3.org/2000/svg' "
       "     xmlns:xlink='http://www.w3.org/1999/xlink'"
@@ -274,8 +268,8 @@ TEST(
 // SVG animation attributes.
 TEST(UnsafeSVGAttributeSanitizationTest, stringsShouldNotSupportAddition) {
   Document* document = Document::CreateForTest();
-  SVGElement* target = SVGAElement::Create(*document);
-  SVGAnimateElement* element = SVGAnimateElement::Create(*document);
+  auto* target = MakeGarbageCollected<SVGAElement>(*document);
+  auto* element = MakeGarbageCollected<SVGAnimateElement>(*document);
   element->SetTargetElement(target);
   element->SetAttributeName(xlink_names::kHrefAttr);
 
@@ -301,7 +295,7 @@ TEST(UnsafeSVGAttributeSanitizationTest,
   attributes.push_back(Attribute(svg_names::kToAttr, "javascript:own3d()"));
 
   Document* document = Document::CreateForTest();
-  Element* element = SVGAnimateElement::Create(*document);
+  auto* element = MakeGarbageCollected<SVGAnimateElement>(*document);
   element->StripScriptingAttributes(attributes);
 
   EXPECT_EQ(3ul, attributes.size())
@@ -321,7 +315,7 @@ TEST(UnsafeSVGAttributeSanitizationTest,
      isJavaScriptURLAttribute_hrefContainingJavascriptURL) {
   Attribute attribute(svg_names::kHrefAttr, "javascript:alert()");
   Document* document = Document::CreateForTest();
-  Element* element = SVGAElement::Create(*document);
+  auto* element = MakeGarbageCollected<SVGAElement>(*document);
   EXPECT_TRUE(element->IsJavaScriptURLAttribute(attribute))
       << "The 'a' element should identify an 'href' attribute with a "
          "JavaScript URL value as a JavaScript URL attribute";
@@ -331,7 +325,7 @@ TEST(UnsafeSVGAttributeSanitizationTest,
      isJavaScriptURLAttribute_xlinkHrefContainingJavascriptURL) {
   Attribute attribute(xlink_names::kHrefAttr, "javascript:alert()");
   Document* document = Document::CreateForTest();
-  Element* element = SVGAElement::Create(*document);
+  auto* element = MakeGarbageCollected<SVGAElement>(*document);
   EXPECT_TRUE(element->IsJavaScriptURLAttribute(attribute))
       << "The 'a' element should identify an 'xlink:href' attribute with a "
          "JavaScript URL value as a JavaScript URL attribute";
@@ -344,7 +338,7 @@ TEST(
                                       xlink_names::kNamespaceURI);
   Attribute evil_attribute(href_alternate_prefix, "javascript:alert()");
   Document* document = Document::CreateForTest();
-  Element* element = SVGAElement::Create(*document);
+  auto* element = MakeGarbageCollected<SVGAElement>(*document);
   EXPECT_TRUE(element->IsJavaScriptURLAttribute(evil_attribute))
       << "The XLink 'href' attribute with a JavaScript URL value should be "
          "identified as a JavaScript URL attribute, even if the attribute "
@@ -355,7 +349,7 @@ TEST(UnsafeSVGAttributeSanitizationTest,
      isSVGAnimationAttributeSettingJavaScriptURL_fromContainingJavaScriptURL) {
   Attribute evil_attribute(svg_names::kFromAttr, "javascript:alert()");
   Document* document = Document::CreateForTest();
-  Element* element = SVGAnimateElement::Create(*document);
+  auto* element = MakeGarbageCollected<SVGAnimateElement>(*document);
   EXPECT_TRUE(
       element->IsSVGAnimationAttributeSettingJavaScriptURL(evil_attribute))
       << "The animate element should identify a 'from' attribute with a "
@@ -366,7 +360,7 @@ TEST(UnsafeSVGAttributeSanitizationTest,
      isSVGAnimationAttributeSettingJavaScriptURL_toContainingJavaScripURL) {
   Attribute evil_attribute(svg_names::kToAttr, "javascript:window.close()");
   Document* document = Document::CreateForTest();
-  Element* element = SVGSetElement::Create(*document);
+  auto* element = MakeGarbageCollected<SVGSetElement>(*document);
   EXPECT_TRUE(
       element->IsSVGAnimationAttributeSettingJavaScriptURL(evil_attribute))
       << "The set element should identify a 'to' attribute with a JavaScript "
@@ -378,8 +372,7 @@ TEST(
     isSVGAnimationAttributeSettingJavaScriptURL_valuesContainingJavaScriptURL) {
   Attribute evil_attribute(svg_names::kValuesAttr, "hi!; javascript:confirm()");
   Document* document = Document::CreateForTest();
-  Element* element = SVGAnimateElement::Create(*document);
-  element = SVGAnimateElement::Create(*document);
+  auto* element = MakeGarbageCollected<SVGAnimateElement>(*document);
   EXPECT_TRUE(
       element->IsSVGAnimationAttributeSettingJavaScriptURL(evil_attribute))
       << "The animate element should identify a 'values' attribute with a "
@@ -390,7 +383,7 @@ TEST(UnsafeSVGAttributeSanitizationTest,
      isSVGAnimationAttributeSettingJavaScriptURL_innocuousAnimationAttribute) {
   Attribute fine_attribute(svg_names::kFromAttr, "hello, world!");
   Document* document = Document::CreateForTest();
-  Element* element = SVGSetElement::Create(*document);
+  auto* element = MakeGarbageCollected<SVGSetElement>(*document);
   EXPECT_FALSE(
       element->IsSVGAnimationAttributeSettingJavaScriptURL(fine_attribute))
       << "The animate element should not identify a 'from' attribute with an "

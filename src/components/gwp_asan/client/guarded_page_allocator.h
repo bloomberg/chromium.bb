@@ -5,10 +5,9 @@
 #ifndef COMPONENTS_GWP_ASAN_CLIENT_GUARDED_PAGE_ALLOCATOR_H_
 #define COMPONENTS_GWP_ASAN_CLIENT_GUARDED_PAGE_ALLOCATOR_H_
 
-#include <array>
 #include <atomic>
-#include <limits>
 #include <memory>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -23,6 +22,10 @@ namespace internal {
 
 // This class encompasses the allocation and deallocation logic on top of the
 // AllocatorState. Its members are not inspected or used by the crash handler.
+//
+// This class makes use of dynamically-sized arrays like std::vector<> to only
+// allocate as much memory as we need; however, they only reserve memory at
+// initialization-time so there is no risk of malloc reentrancy.
 class GWP_ASAN_EXPORT GuardedPageAllocator {
  public:
   // Default maximum alignment for all returned allocations.
@@ -33,9 +36,11 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   GuardedPageAllocator();
 
   // Configures this allocator to allocate up to max_alloced_pages pages at a
-  // time from a pool of total_pages pages, where:
-  //   1 <= max_alloced_pages <= total_pages <= kGpaMaxPages
-  void Init(size_t max_alloced_pages, size_t total_pages);
+  // time, holding metadata for up to num_metadata allocations, from a pool of
+  // total_pages pages, where:
+  //   1 <= max_alloced_pages <= num_metadata <= kMaxMetadata
+  //   num_metadata <= total_pages <= kMaxSlots
+  void Init(size_t max_alloced_pages, size_t num_metadata, size_t total_pages);
 
   // On success, returns a pointer to size bytes of page-guarded memory. On
   // failure, returns nullptr. The allocation is not guaranteed to be
@@ -46,9 +51,7 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // It must be less than or equal to the allocation size. If it's left as zero
   // it will default to the default alignment the allocator chooses.
   //
-  // Preconditions: Init() must have been called,
-  //                size <= page_size,
-  //                align <= page_size
+  // Preconditions: Init() must have been called.
   void* Allocate(size_t size, size_t align = 0);
 
   // Deallocates memory pointed to by ptr. ptr must have been previously
@@ -56,7 +59,7 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   void Deallocate(void* ptr);
 
   // Returns the size requested when ptr was allocated. ptr must have been
-  // previously returned by a call to Allocate.
+  // previously returned by a call to Allocate, and not have been deallocated.
   size_t GetRequestedSize(const void* ptr) const;
 
   // Get the address of the GuardedPageAllocator crash key (the address of the
@@ -69,11 +72,6 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   }
 
  private:
-  using SlotTy = uint8_t;
-  static_assert(std::numeric_limits<SlotTy>::max() >=
-                    AllocatorState::kGpaMaxPages - 1,
-                "SlotTy can hold all possible slot values");
-
   // Unmaps memory allocated by this class, if Init was called.
   ~GuardedPageAllocator();
 
@@ -91,18 +89,25 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // used by the quarantine.
   void MarkPageInaccessible(void*);
 
-  // Reserves and returns a slot. Returns SIZE_MAX if no slots available.
-  size_t ReserveSlot() LOCKS_EXCLUDED(lock_);
+  // On success, returns true and writes the reserved indices to |slot| and
+  // |metadata_idx|. Otherwise returns false if no allocations are available.
+  bool ReserveSlotAndMetadata(AllocatorState::SlotIdx* slot,
+                              AllocatorState::MetadataIdx* metadata_idx)
+      LOCKS_EXCLUDED(lock_);
 
-  // Marks the specified slot as unreserved.
-  void FreeSlot(size_t slot) LOCKS_EXCLUDED(lock_);
+  // Marks the specified slot and metadata as unreserved.
+  void FreeSlotAndMetadata(AllocatorState::SlotIdx slot,
+                           AllocatorState::MetadataIdx metadata_idx)
+      LOCKS_EXCLUDED(lock_);
 
-  // Record an allocation or deallocation for a given slot index. This
-  // encapsulates the logic for updating the stack traces and metadata for a
-  // given slot.
+  // Record the metadata for an allocation or deallocation for a given metadata
+  // index.
   ALWAYS_INLINE
-  void RecordAllocationMetadata(size_t slot, size_t size, void* ptr);
-  ALWAYS_INLINE void RecordDeallocationMetadata(size_t slot);
+  void RecordAllocationMetadata(AllocatorState::MetadataIdx metadata_idx,
+                                size_t size,
+                                void* ptr);
+  ALWAYS_INLINE void RecordDeallocationMetadata(
+      AllocatorState::MetadataIdx metadata_idx);
 
   // Allocator state shared with with the crash analyzer.
   AllocatorState state_;
@@ -110,26 +115,29 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // Lock that synchronizes allocating/freeing slots between threads.
   base::Lock lock_;
 
-  // Ring buffer used to store free slots.
-  std::array<SlotTy, AllocatorState::kGpaMaxPages> free_slot_ring_buffer_
-      GUARDED_BY(lock_);
-  // Stores the start and end indices into the ring buffer.
-  SlotTy free_slot_start_idx_ GUARDED_BY(lock_) = 0;
-  SlotTy free_slot_end_idx_ GUARDED_BY(lock_) = 0;
+  // Array used to store all free slot indices.
+  std::vector<AllocatorState::SlotIdx> free_slots_ GUARDED_BY(lock_);
+  // Array used to store all free metadata indices.
+  std::vector<AllocatorState::MetadataIdx> free_metadata_ GUARDED_BY(lock_);
 
   // Number of currently-allocated pages.
   size_t num_alloced_pages_ GUARDED_BY(lock_) = 0;
-  // Max number of pages to allocate at once.
+  // Max number of concurrent allocations.
   size_t max_alloced_pages_ = 0;
 
-  // We dynamically allocate the SlotMetadata array to avoid allocating
-  // extraneous memory for when total_pages < kGpaMaxPages.
+  // Array of metadata (e.g. stack traces) for allocations.
+  // TODO(vtsyrklevich): Use an std::vector<> here as well.
   std::unique_ptr<AllocatorState::SlotMetadata[]> metadata_;
+
+  // Maps a slot index to a metadata index (or kInvalidMetadataIdx if no such
+  // mapping exists.)
+  std::vector<AllocatorState::MetadataIdx> slot_to_metadata_idx_;
 
   // Required for a singleton to access the constructor.
   friend base::NoDestructor<GuardedPageAllocator>;
 
   friend class GuardedPageAllocatorTest;
+  FRIEND_TEST_ALL_PREFIXES(CrashAnalyzerTest, StackTraceCollection);
   FRIEND_TEST_ALL_PREFIXES(GuardedPageAllocatorTest,
                            GetNearestValidPageEdgeCases);
   FRIEND_TEST_ALL_PREFIXES(GuardedPageAllocatorTest, GetErrorTypeEdgeCases);

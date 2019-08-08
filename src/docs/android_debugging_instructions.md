@@ -80,7 +80,7 @@ out/Default/bin/run_chrome_junit_tests --wait-for-java-debugger  # Specify custo
 *   Run Android Device Monitor:
 
     ```shell
-    third_party/android_tools/sdk/tools/monitor
+    third_party/android_sdk/public/tools/monitor
     ```
 
 *   Now select the process you want to debug in Device Monitor (the port column

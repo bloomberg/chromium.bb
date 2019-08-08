@@ -79,11 +79,9 @@ const CGFloat kAlphaChangeAnimationDuration = 0.35;
 
 #pragma mark - InfobarConsumer
 
-- (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate
-                      position:(NSInteger)position {
-  DCHECK_LE(static_cast<NSUInteger>(position), [[self.view subviews] count]);
+- (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate {
   UIView* infoBarView = infoBarDelegate.view;
-  [self.view insertSubview:infoBarView atIndex:position];
+  [self.view addSubview:infoBarView];
   infoBarView.translatesAutoresizingMaskIntoConstraints = NO;
   [NSLayoutConstraint activateConstraints:@[
     [infoBarView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],

@@ -19,8 +19,8 @@
 #include "ui/ozone/public/ozone_platform.h"
 
 WebEngineBrowserMainParts::WebEngineBrowserMainParts(
-    zx::channel context_channel)
-    : context_channel_(std::move(context_channel)) {}
+    fidl::InterfaceRequest<fuchsia::web::Context> request)
+    : request_(std::move(request)) {}
 
 WebEngineBrowserMainParts::~WebEngineBrowserMainParts() {
   display::Screen::SetScreenInstance(nullptr);
@@ -44,11 +44,10 @@ void WebEngineBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_ = std::make_unique<WebEngineBrowserContext>(
       base::CommandLine::ForCurrentProcess()->HasSwitch(kIncognitoSwitch));
 
+  DCHECK(request_);
   context_service_ = std::make_unique<ContextImpl>(browser_context_.get());
-
-  context_binding_ = std::make_unique<fidl::Binding<chromium::web::Context>>(
-      context_service_.get(), fidl::InterfaceRequest<chromium::web::Context>(
-                                  std::move(context_channel_)));
+  context_binding_ = std::make_unique<fidl::Binding<fuchsia::web::Context>>(
+      context_service_.get(), std::move(request_));
 
   // Quit the browser main loop when the Context connection is dropped.
   context_binding_->set_error_handler([this](zx_status_t status) {

@@ -16,12 +16,12 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "ios/web/common/features.h"
 #import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/crw_navigation_item_storage.h"
 #import "ios/web/public/crw_session_storage.h"
-#include "ios/web/public/features.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/fake_web_frame.h"
@@ -495,7 +495,7 @@ TEST_P(WebStateImplTest, DelegateTest) {
   EXPECT_EQ(web_state_.get(),
             delegate.last_close_web_state_request()->web_state);
 
-  // Test that OpenURLFromWebState() is called.
+  // Test that OpenURLFromWebState() is called without a virtual URL.
   WebState::OpenURLParams params(GURL("https://chromium.test/"), Referrer(),
                                  WindowOpenDisposition::CURRENT_TAB,
                                  ui::PAGE_TRANSITION_LINK, true);
@@ -506,6 +506,27 @@ TEST_P(WebStateImplTest, DelegateTest) {
   EXPECT_EQ(web_state_.get(), open_url_request->web_state);
   WebState::OpenURLParams actual_params = open_url_request->params;
   EXPECT_EQ(params.url, actual_params.url);
+  EXPECT_EQ(GURL::EmptyGURL(), params.virtual_url);
+  EXPECT_EQ(GURL::EmptyGURL(), actual_params.virtual_url);
+  EXPECT_EQ(params.referrer.url, actual_params.referrer.url);
+  EXPECT_EQ(params.referrer.policy, actual_params.referrer.policy);
+  EXPECT_EQ(params.disposition, actual_params.disposition);
+  EXPECT_TRUE(
+      PageTransitionCoreTypeIs(params.transition, actual_params.transition));
+  EXPECT_EQ(params.is_renderer_initiated, actual_params.is_renderer_initiated);
+
+  // Test that OpenURLFromWebState() is called with a virtual URL.
+  params = WebState::OpenURLParams(
+      GURL("https://chromium.test/"), GURL("https://virtual.chromium.test/"),
+      Referrer(), WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_LINK,
+      true);
+  web_state_->OpenURL(params);
+  open_url_request = delegate.last_open_url_request();
+  ASSERT_TRUE(open_url_request);
+  EXPECT_EQ(web_state_.get(), open_url_request->web_state);
+  actual_params = open_url_request->params;
+  EXPECT_EQ(params.url, actual_params.url);
+  EXPECT_EQ(params.virtual_url, actual_params.virtual_url);
   EXPECT_EQ(params.referrer.url, actual_params.referrer.url);
   EXPECT_EQ(params.referrer.policy, actual_params.referrer.policy);
   EXPECT_EQ(params.disposition, actual_params.disposition);

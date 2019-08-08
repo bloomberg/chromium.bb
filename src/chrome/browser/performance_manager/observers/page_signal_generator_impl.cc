@@ -4,50 +4,34 @@
 
 #include "chrome/browser/performance_manager/observers/page_signal_generator_impl.h"
 
-#include <set>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/flat_set.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
-#include "chrome/browser/performance_manager/resource_coordinator_clock.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
+#include "chrome/browser/performance_manager/performance_manager_clock.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace performance_manager {
 
-namespace {
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class BloatedRendererHandlingInResourceCoordinator {
-  kForwardedToBrowser = 0,
-  kIgnoredDueToMultiplePages = 1,
-  kMaxValue = kIgnoredDueToMultiplePages
-};
-
-void RecordBloatedRendererHandling(
-    BloatedRendererHandlingInResourceCoordinator handling) {
-  UMA_HISTOGRAM_ENUMERATION("BloatedRenderer.HandlingInResourceCoordinator",
-                            handling);
-}
-
-}  // anonymous namespace
-
 PageSignalGeneratorImpl::PageSignalGeneratorImpl() = default;
 
-PageSignalGeneratorImpl::~PageSignalGeneratorImpl() = default;
+PageSignalGeneratorImpl::~PageSignalGeneratorImpl() {
+  // Unregister from the system node, as it may outlive this instance.
+  graph()->FindOrCreateSystemNode()->RemoveObserver(this);
+}
 
 void PageSignalGeneratorImpl::AddReceiver(
     resource_coordinator::mojom::PageSignalReceiverPtr receiver) {
   receivers_.AddPtr(std::move(receiver));
 }
 
-bool PageSignalGeneratorImpl::ShouldObserve(const NodeBase* coordination_unit) {
-  auto cu_type = coordination_unit->id().type;
+bool PageSignalGeneratorImpl::ShouldObserve(const NodeBase* node) {
+  auto cu_type = node->id().type;
   switch (cu_type) {
     case resource_coordinator::CoordinationUnitType::kFrame:
     case resource_coordinator::CoordinationUnitType::kPage:
@@ -61,7 +45,7 @@ bool PageSignalGeneratorImpl::ShouldObserve(const NodeBase* coordination_unit) {
   }
 }
 
-void PageSignalGeneratorImpl::OnNodeCreated(NodeBase* cu) {
+void PageSignalGeneratorImpl::OnNodeAdded(NodeBase* cu) {
   auto cu_type = cu->id().type;
   if (cu_type != resource_coordinator::CoordinationUnitType::kPage)
     return;
@@ -73,7 +57,7 @@ void PageSignalGeneratorImpl::OnNodeCreated(NodeBase* cu) {
   page_data_[page_node].Reset();
 }
 
-void PageSignalGeneratorImpl::OnBeforeNodeDestroyed(NodeBase* cu) {
+void PageSignalGeneratorImpl::OnBeforeNodeRemoved(NodeBase* cu) {
   auto cu_type = cu->id().type;
   if (cu_type != resource_coordinator::CoordinationUnitType::kPage)
     return;
@@ -83,48 +67,9 @@ void PageSignalGeneratorImpl::OnBeforeNodeDestroyed(NodeBase* cu) {
   DCHECK_EQ(1u, count);  // This should always erase exactly one CU.
 }
 
-void PageSignalGeneratorImpl::OnPagePropertyChanged(
-    PageNodeImpl* page_node,
-    resource_coordinator::mojom::PropertyType property_type,
-    int64_t value) {
-  if (property_type ==
-      resource_coordinator::mojom::PropertyType::kLifecycleState) {
-    DispatchPageSignal(
-        page_node,
-        &resource_coordinator::mojom::PageSignalReceiver::SetLifecycleState,
-        static_cast<resource_coordinator::mojom::LifecycleState>(value));
-  }
-}
-
-void PageSignalGeneratorImpl::OnProcessPropertyChanged(
-    ProcessNodeImpl* process_node,
-    resource_coordinator::mojom::PropertyType property_type,
-    int64_t value) {
-  if (property_type == resource_coordinator::mojom::PropertyType::
-                           kExpectedTaskQueueingDuration) {
-    for (auto* frame_node : process_node->GetFrameNodes()) {
-      if (!frame_node->IsMainFrame())
-        continue;
-      auto* page_node = frame_node->GetPageNode();
-      int64_t duration;
-      if (!page_node || !page_node->GetExpectedTaskQueueingDuration(&duration))
-        continue;
-      DispatchPageSignal(page_node,
-                         &resource_coordinator::mojom::PageSignalReceiver::
-                             SetExpectedTaskQueueingDuration,
-                         base::TimeDelta::FromMilliseconds(duration));
-    }
-  }
-}
-
-void PageSignalGeneratorImpl::OnFrameEventReceived(
-    FrameNodeImpl* frame_node,
-    resource_coordinator::mojom::Event event) {
-  if (event !=
-      resource_coordinator::mojom::Event::kNonPersistentNotificationCreated)
-    return;
-
-  auto* page_node = frame_node->GetPageNode();
+void PageSignalGeneratorImpl::OnNonPersistentNotificationCreated(
+    FrameNodeImpl* frame_node) {
+  auto* page_node = frame_node->page_node();
   if (!page_node)
     return;
 
@@ -133,66 +78,64 @@ void PageSignalGeneratorImpl::OnFrameEventReceived(
                          NotifyNonPersistentNotificationCreated);
 }
 
-void PageSignalGeneratorImpl::OnProcessEventReceived(
-    ProcessNodeImpl* process_node,
-    resource_coordinator::mojom::Event event) {
-  if (event == resource_coordinator::mojom::Event::kRendererIsBloated) {
-    std::set<PageNodeImpl*> page_nodes =
-        process_node->GetAssociatedPageCoordinationUnits();
-    // Currently bloated renderer handling supports only a single page.
-    if (page_nodes.size() == 1u) {
-      auto* page_node = *page_nodes.begin();
-      DispatchPageSignal(page_node,
-                         &resource_coordinator::mojom::PageSignalReceiver::
-                             NotifyRendererIsBloated);
-      RecordBloatedRendererHandling(
-          BloatedRendererHandlingInResourceCoordinator::kForwardedToBrowser);
-    } else {
-      RecordBloatedRendererHandling(
-          BloatedRendererHandlingInResourceCoordinator::
-              kIgnoredDueToMultiplePages);
-    }
-  }
-}
-
-void PageSignalGeneratorImpl::OnSystemEventReceived(
-    SystemNodeImpl* system_node,
-    resource_coordinator::mojom::Event event) {
-  if (event == resource_coordinator::mojom::Event::kProcessCPUUsageReady) {
-    base::TimeTicks measurement_start =
-        system_node->last_measurement_start_time();
-
-    for (auto& entry : page_data_) {
-      const PageNodeImpl* page = entry.first;
-      PageData* data = &entry.second;
-      // TODO(siggi): Figure "recency" here, to avoid firing a measurement event
-      //     for state transitions that happened "too long" before a
-      //     measurement started. Alternatively perhaps this bit of policy is
-      //     better done in the observer, in which case it needs the time stamps
-      //     involved.
-      if (page->page_almost_idle() && !data->performance_estimate_issued &&
-          data->last_state_change < measurement_start) {
-        DispatchPageSignal(page,
-                           &resource_coordinator::mojom::PageSignalReceiver::
-                               OnLoadTimePerformanceEstimate,
-                           page->TimeSinceLastNavigation(),
-                           page->cumulative_cpu_usage_estimate(),
-                           page->private_footprint_kb_estimate());
-        data->performance_estimate_issued = true;
-      }
-    }
-  }
-}
-
 void PageSignalGeneratorImpl::OnPageAlmostIdleChanged(PageNodeImpl* page_node) {
-  auto* data = GetPageData(page_node);
-  data->Reset();
+  GetPageData(page_node)->Reset();
 
   if (page_node->page_almost_idle()) {
     // Notify observers that the page is loaded and idle.
     DispatchPageSignal(
         page_node,
         &resource_coordinator::mojom::PageSignalReceiver::NotifyPageAlmostIdle);
+  }
+}
+
+void PageSignalGeneratorImpl::OnLifecycleStateChanged(PageNodeImpl* page_node) {
+  DispatchPageSignal(
+      page_node,
+      &resource_coordinator::mojom::PageSignalReceiver::SetLifecycleState,
+      page_node->lifecycle_state());
+}
+
+void PageSignalGeneratorImpl::OnExpectedTaskQueueingDurationSample(
+    ProcessNodeImpl* process_node) {
+  // Report this measurement to all pages that are hosting a main frame in
+  // the process that was sampled.
+  const base::TimeDelta& sample =
+      process_node->expected_task_queueing_duration();
+  for (auto* frame_node : process_node->GetFrameNodes()) {
+    if (!frame_node->IsMainFrame())
+      continue;
+    auto* page_node = frame_node->page_node();
+    DispatchPageSignal(page_node,
+                       &resource_coordinator::mojom::PageSignalReceiver::
+                           SetExpectedTaskQueueingDuration,
+                       sample);
+  }
+}
+
+void PageSignalGeneratorImpl::OnProcessCPUUsageReady(
+    SystemNodeImpl* system_node) {
+  base::TimeTicks measurement_start =
+      system_node->last_measurement_start_time();
+
+  for (auto& entry : page_data_) {
+    const PageNodeImpl* page = entry.first;
+    PageData* data = &entry.second;
+    // TODO(siggi): Figure "recency" here, to avoid firing a measurement event
+    //     for state transitions that happened "too long" before a
+    //     measurement started. Alternatively perhaps this bit of policy is
+    //     better done in the observer, in which case it needs the time stamps
+    //     involved.
+    if (page->page_almost_idle() && !data->performance_estimate_issued &&
+        data->last_state_change < measurement_start) {
+      DispatchPageSignal(page,
+                         &resource_coordinator::mojom::PageSignalReceiver::
+                             OnLoadTimePerformanceEstimate,
+                         page->TimeSinceLastNavigation(),
+                         page->cumulative_cpu_usage_estimate(),
+                         page->private_footprint_kb_estimate());
+      data->performance_estimate_issued = true;
+    }
   }
 }
 
@@ -204,7 +147,6 @@ void PageSignalGeneratorImpl::BindToInterface(
 
 PageSignalGeneratorImpl::PageData* PageSignalGeneratorImpl::GetPageData(
     const PageNodeImpl* page_node) {
-  DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
   // There are two ways to enter this function:
   // 1. Via On*PropertyChange calls. The backing PageData is guaranteed to
   //    exist in this case as the lifetimes are managed by the CU graph.
@@ -224,13 +166,13 @@ void PageSignalGeneratorImpl::DispatchPageSignal(const PageNodeImpl* page_node,
         (receiver->*m)(
             resource_coordinator::PageNavigationIdentity{
                 page_node->id(), page_node->navigation_id(),
-                page_node->main_frame_url()},
+                page_node->main_frame_url().spec()},
             std::forward<Params>(params)...);
       });
 }
 
 void PageSignalGeneratorImpl::PageData::Reset() {
-  last_state_change = ResourceCoordinatorClock::NowTicks();
+  last_state_change = PerformanceManagerClock::NowTicks();
   performance_estimate_issued = false;
 }
 

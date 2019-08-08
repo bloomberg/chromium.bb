@@ -104,26 +104,26 @@ class MoveLoopMouseWatcher {
 };
 
 // static
-MoveLoopMouseWatcher* MoveLoopMouseWatcher::instance_ = NULL;
+MoveLoopMouseWatcher* MoveLoopMouseWatcher::instance_ = nullptr;
 
 MoveLoopMouseWatcher::MoveLoopMouseWatcher(HWNDMessageHandler* host,
                                            bool hide_on_escape)
     : host_(host),
       hide_on_escape_(hide_on_escape),
       got_mouse_up_(false),
-      mouse_hook_(NULL),
-      key_hook_(NULL) {
+      mouse_hook_(nullptr),
+      key_hook_(nullptr) {
   // Only one instance can be active at a time.
   if (instance_)
     instance_->Unhook();
 
-  mouse_hook_ = SetWindowsHookEx(
-      WH_MOUSE, &MouseHook, NULL, GetCurrentThreadId());
+  mouse_hook_ =
+      SetWindowsHookEx(WH_MOUSE, &MouseHook, nullptr, GetCurrentThreadId());
   if (mouse_hook_) {
     instance_ = this;
     // We don't care if setting the key hook succeeded.
-    key_hook_ = SetWindowsHookEx(
-        WH_KEYBOARD, &KeyHook, NULL, GetCurrentThreadId());
+    key_hook_ =
+        SetWindowsHookEx(WH_KEYBOARD, &KeyHook, nullptr, GetCurrentThreadId());
   }
   if (instance_ != this) {
     // Failed installation. Assume we got a mouse up in this case, otherwise
@@ -144,9 +144,9 @@ void MoveLoopMouseWatcher::Unhook() {
   UnhookWindowsHookEx(mouse_hook_);
   if (key_hook_)
     UnhookWindowsHookEx(key_hook_);
-  key_hook_ = NULL;
-  mouse_hook_ = NULL;
-  instance_ = NULL;
+  key_hook_ = nullptr;
+  mouse_hook_ = nullptr;
+  instance_ = nullptr;
 }
 
 // static
@@ -181,7 +181,7 @@ BOOL CALLBACK EnumChildWindowsForRedraw(HWND hwnd, LPARAM lparam) {
   int flags = RDW_INVALIDATE | RDW_NOCHILDREN | RDW_FRAME;
   if (process_id == GetCurrentProcessId())
     flags |= RDW_UPDATENOW;
-  RedrawWindow(hwnd, NULL, NULL, flags);
+  RedrawWindow(hwnd, nullptr, nullptr, flags);
   return TRUE;
 }
 
@@ -221,14 +221,8 @@ BOOL CALLBACK SendDwmCompositionChanged(HWND window, LPARAM param) {
   return TRUE;
 }
 
-bool IsDwmCompositionEnabled() {
-  BOOL is_dwm_composition_enabled;
-  DwmIsCompositionEnabled(&is_dwm_composition_enabled);
-  return static_cast<bool>(is_dwm_composition_enabled);
-}
-
 // The thickness of an auto-hide taskbar in pixels.
-const int kAutoHideTaskbarThicknessPx = 2;
+constexpr int kAutoHideTaskbarThicknessPx = 2;
 
 bool IsTopLevelWindow(HWND window) {
   long style = ::GetWindowLong(window, GWL_STYLE);
@@ -279,14 +273,14 @@ HitTest GetWindowResizeHitTest(UINT param) {
   }
 }
 
-const int kTouchDownContextResetTimeout = 500;
+constexpr int kTouchDownContextResetTimeout = 500;
 
 // Windows does not flag synthesized mouse messages from touch or pen in all
 // cases. This causes us grief as we don't want to process touch and mouse
 // messages concurrently. Hack as per msdn is to check if the time difference
 // between the touch/pen message and the mouse move is within 500 ms and at the
 // same location as the cursor.
-const int kSynthesizedMouseMessagesTimeDifference = 500;
+constexpr int kSynthesizedMouseMessagesTimeDifference = 500;
 
 }  // namespace
 
@@ -384,37 +378,37 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       waiting_for_close_now_(false),
       use_system_default_icon_(false),
       restored_enabled_(false),
-      current_cursor_(NULL),
-      previous_cursor_(NULL),
+      current_cursor_(nullptr),
+      previous_cursor_(nullptr),
       dpi_(0),
       called_enable_non_client_dpi_scaling_(false),
       active_mouse_tracking_flags_(0),
       is_right_mouse_pressed_on_caption_(false),
       lock_updates_count_(0),
       ignore_window_pos_changes_(false),
-      last_monitor_(NULL),
+      last_monitor_(nullptr),
       is_first_nccalc_(true),
       menu_depth_(0),
       id_generator_(0),
       pen_processor_(
           &id_generator_,
-          base::FeatureList::IsEnabled(features::kDirectManipulationStylus)),
+          base::FeatureList::IsEnabled(::features::kDirectManipulationStylus)),
       touch_down_contexts_(0),
       last_mouse_hwheel_time_(0),
       dwm_transition_desired_(false),
-      dwm_composition_enabled_(IsDwmCompositionEnabled()),
+      dwm_composition_enabled_(ui::win::IsDwmCompositionEnabled()),
       sent_window_size_changing_(false),
       left_button_down_on_caption_(false),
       background_fullscreen_hack_(false),
-      pointer_events_for_touch_(features::IsUsingWMPointerForTouch()),
+      pointer_events_for_touch_(::features::IsUsingWMPointerForTouch()),
       precision_touchpad_scroll_phase_enabled_(base::FeatureList::IsEnabled(
-          features::kPrecisionTouchpadScrollPhase)),
+          ::features::kPrecisionTouchpadScrollPhase)),
       autohide_factory_(this) {}
 
 HWNDMessageHandler::~HWNDMessageHandler() {
   DCHECK(delegate_->GetHWNDMessageDelegateInputMethod());
   delegate_->GetHWNDMessageDelegateInputMethod()->RemoveObserver(this);
-  delegate_ = NULL;
+  delegate_ = nullptr;
   // Prevent calls back into this class via WNDPROC now that we've been
   // destroyed.
   ClearUserData();
@@ -444,9 +438,9 @@ void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
       enable_child_window_dpi_message_func(hwnd(), TRUE);
   }
 
-  prop_window_target_.reset(new ui::ViewProp(hwnd(),
-                            ui::WindowEventTarget::kWin32InputEventTarget,
-                            static_cast<ui::WindowEventTarget*>(this)));
+  prop_window_target_ = std::make_unique<ui::ViewProp>(
+      hwnd(), ui::WindowEventTarget::kWin32InputEventTarget,
+      static_cast<ui::WindowEventTarget*>(this));
   DCHECK(delegate_->GetHWNDMessageDelegateInputMethod());
   delegate_->GetHWNDMessageDelegateInputMethod()->AddObserver(this);
 
@@ -524,7 +518,7 @@ gfx::Rect HWNDMessageHandler::GetRestoredBounds() const {
     return fullscreen_handler_->GetRestoreBounds();
 
   gfx::Rect bounds;
-  GetWindowPlacement(&bounds, NULL);
+  GetWindowPlacement(&bounds, nullptr);
   return bounds;
 }
 
@@ -544,7 +538,7 @@ void HWNDMessageHandler::GetWindowPlacement(
   const bool succeeded = !!::GetWindowPlacement(hwnd(), &wp);
   DCHECK(succeeded);
 
-  if (bounds != NULL) {
+  if (bounds != nullptr) {
     if (wp.showCmd == SW_SHOWNORMAL) {
       // GetWindowPlacement can return misleading position if a normalized
       // window was resized using Aero Snap feature (see comment 9 in bug
@@ -595,7 +589,7 @@ void HWNDMessageHandler::SetDwmFrameExtension(DwmFrameState state) {
 }
 
 void HWNDMessageHandler::SetSize(const gfx::Size& size) {
-  SetWindowPos(hwnd(), NULL, 0, 0, size.width(), size.height(),
+  SetWindowPos(hwnd(), nullptr, 0, 0, size.width(), size.height(),
                SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
 }
 
@@ -695,9 +689,9 @@ void HWNDMessageHandler::Hide() {
     // ShowWindow(SW_HIDE) will automatically activate another window).  This
     // code can be called while a window is being deactivated, and activating
     // another window will screw up the activation that is already in progress.
-    SetWindowPos(hwnd(), NULL, 0, 0, 0, 0,
+    SetWindowPos(hwnd(), nullptr, 0, 0, 0, 0,
                  SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOMOVE |
-                 SWP_NOREPOSITION | SWP_NOSIZE | SWP_NOZORDER);
+                     SWP_NOREPOSITION | SWP_NOSIZE | SWP_NOZORDER);
   }
 }
 
@@ -707,7 +701,7 @@ void HWNDMessageHandler::Maximize() {
 
 void HWNDMessageHandler::Minimize() {
   ExecuteSystemMenuCommand(SC_MINIMIZE);
-  delegate_->HandleNativeBlur(NULL);
+  delegate_->HandleNativeBlur(nullptr);
 }
 
 void HWNDMessageHandler::Restore() {
@@ -781,10 +775,10 @@ void HWNDMessageHandler::EndMoveLoop() {
 }
 
 void HWNDMessageHandler::SendFrameChanged() {
-  SetWindowPos(hwnd(), NULL, 0, 0, 0, 0,
-      SWP_FRAMECHANGED | SWP_NOACTIVATE | SWP_NOCOPYBITS |
-      SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOREPOSITION |
-      SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOZORDER);
+  SetWindowPos(hwnd(), nullptr, 0, 0, 0, 0,
+               SWP_FRAMECHANGED | SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOMOVE |
+                   SWP_NOOWNERZORDER | SWP_NOREPOSITION | SWP_NOSENDCHANGING |
+                   SWP_NOSIZE | SWP_NOZORDER);
 }
 
 void HWNDMessageHandler::FlashFrame(bool flash) {
@@ -846,7 +840,7 @@ void HWNDMessageHandler::SetCursor(HCURSOR cursor) {
     current_cursor_ = cursor;
   } else if (previous_cursor_) {
     ::SetCursor(previous_cursor_);
-    previous_cursor_ = NULL;
+    previous_cursor_ = nullptr;
   }
 }
 
@@ -1233,8 +1227,9 @@ int HWNDMessageHandler::GetAppbarAutohideEdges(HMONITOR monitor) {
   return ViewsDelegate::GetInstance()
              ? ViewsDelegate::GetInstance()->GetAppbarAutohideEdges(
                    monitor,
-                   base::Bind(&HWNDMessageHandler::OnAppbarAutohideEdgesChanged,
-                              autohide_factory_.GetWeakPtr()))
+                   base::BindOnce(
+                       &HWNDMessageHandler::OnAppbarAutohideEdgesChanged,
+                       autohide_factory_.GetWeakPtr()))
              : ViewsDelegate::EDGE_BOTTOM;
 }
 
@@ -1242,7 +1237,7 @@ void HWNDMessageHandler::OnAppbarAutohideEdgesChanged() {
   // This triggers querying WM_NCCALCSIZE again.
   RECT client;
   GetWindowRect(hwnd(), &client);
-  SetWindowPos(hwnd(), NULL, client.left, client.top,
+  SetWindowPos(hwnd(), nullptr, client.left, client.top,
                client.right - client.left, client.bottom - client.top,
                SWP_FRAMECHANGED);
 }
@@ -1402,7 +1397,7 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
   if (!is_translucent_ && !custom_window_region_.is_valid() &&
       (IsFrameSystemDrawn() || !delegate_->HasNonClientView())) {
     if (force)
-      SetWindowRgn(hwnd(), NULL, redraw);
+      SetWindowRgn(hwnd(), nullptr, redraw);
     return;
   }
 
@@ -1416,7 +1411,8 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
   base::win::ScopedRegion new_region;
   if (custom_window_region_.is_valid()) {
     new_region.reset(CreateRectRgn(0, 0, 0, 0));
-    CombineRgn(new_region.get(), custom_window_region_.get(), NULL, RGN_COPY);
+    CombineRgn(new_region.get(), custom_window_region_.get(), nullptr,
+               RGN_COPY);
   } else if (IsMaximized()) {
     HMONITOR monitor = MonitorFromWindow(hwnd(), MONITOR_DEFAULTTONEAREST);
     MONITORINFO mi;
@@ -1434,8 +1430,8 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
       new_region.reset(gfx::CreateHRGNFromSkPath(window_mask));
   }
 
-  const bool has_current_region = current_rgn != 0;
-  const bool has_new_region = new_region != 0;
+  const bool has_current_region = current_rgn != nullptr;
+  const bool has_new_region = new_region != nullptr;
   if (has_current_region != has_new_region ||
       (has_current_region && !EqualRgn(current_rgn.get(), new_region.get()))) {
     // SetWindowRgn takes ownership of the HRGN.
@@ -1498,7 +1494,7 @@ void HWNDMessageHandler::ForceRedrawWindow(int attempts) {
         base::TimeDelta::FromMilliseconds(500));
     return;
   }
-  InvalidateRect(hwnd(), NULL, FALSE);
+  InvalidateRect(hwnd(), nullptr, FALSE);
 }
 
 bool HWNDMessageHandler::IsFrameSystemDrawn() const {
@@ -1620,6 +1616,12 @@ void HWNDMessageHandler::OnDestroy() {
       break;
     }
   }
+
+  if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
+    // Signal to UIA that all objects associated with this HWND can be
+    // discarded.
+    UiaReturnRawElementProvider(hwnd(), 0, 0, nullptr);
+  }
 }
 
 void HWNDMessageHandler::OnDisplayChange(UINT bits_per_pixel,
@@ -1638,7 +1640,7 @@ LRESULT HWNDMessageHandler::OnDwmCompositionChanged(UINT msg,
     return 0;
   }
 
-  bool dwm_composition_enabled = IsDwmCompositionEnabled();
+  bool dwm_composition_enabled = ui::win::IsDwmCompositionEnabled();
   if (dwm_composition_enabled_ != dwm_composition_enabled) {
     // Do not cause the Window to be hidden and shown unless there was
     // an actual change in the theme. This filter is necessary because
@@ -1768,11 +1770,10 @@ LRESULT HWNDMessageHandler::OnGetObject(UINT message,
   // because it sometimes gets sign-extended incorrectly (but not always).
   DWORD obj_id = static_cast<DWORD>(static_cast<DWORD_PTR>(l_param));
 
-  // Accessibility readers will send an OBJID_CLIENT message
-  if (delegate_->GetNativeViewAccessible()) {
-    bool is_uia_request = static_cast<DWORD>(UiaRootObjectId) == obj_id;
-    bool is_msaa_request = static_cast<DWORD>(OBJID_CLIENT) == obj_id;
-
+  bool is_uia_request = static_cast<DWORD>(UiaRootObjectId) == obj_id;
+  bool is_msaa_request = static_cast<DWORD>(OBJID_CLIENT) == obj_id;
+  if ((is_uia_request || is_msaa_request) &&
+      delegate_->GetNativeViewAccessible()) {
     // Expose either the UIA or the MSAA implementation, but not both, depending
     // on the state of the feature flag.
     if (is_uia_request &&
@@ -1791,15 +1792,15 @@ LRESULT HWNDMessageHandler::OnGetObject(UINT message,
       // Retrieve MSAA dispatch object for the root view.
       Microsoft::WRL::ComPtr<IAccessible> root(
           delegate_->GetNativeViewAccessible());
-      reference_result = LresultFromObject(
-          IID_IAccessible, w_param, static_cast<IAccessible*>(root.Detach()));
+      reference_result =
+          LresultFromObject(IID_IAccessible, w_param, root.Get());
     }
   } else if (::GetFocus() == hwnd() && ax_system_caret_ &&
              static_cast<DWORD>(OBJID_CARET) == obj_id) {
     Microsoft::WRL::ComPtr<IAccessible> ax_system_caret_accessible =
         ax_system_caret_->GetCaret();
     reference_result = LresultFromObject(IID_IAccessible, w_param,
-                                         ax_system_caret_accessible.Detach());
+                                         ax_system_caret_accessible.Get());
   }
 
   return reference_result;
@@ -2003,7 +2004,7 @@ LRESULT HWNDMessageHandler::OnNCActivate(UINT message,
     //     themselves leading to issues like http://crbug.com/74604
     //     We redraw out-of-process HWNDs asynchronously to avoid hanging the
     //     whole app if a child HWND belonging to a hung plugin is encountered.
-    RedrawWindow(hwnd(), NULL, NULL,
+    RedrawWindow(hwnd(), nullptr, nullptr,
                  RDW_NOCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW);
     EnumChildWindows(hwnd(), EnumChildWindowsForRedraw, NULL);
   }
@@ -2379,7 +2380,7 @@ LRESULT HWNDMessageHandler::OnSetCursor(UINT message,
       // Use the default value, IDC_ARROW.
       break;
   }
-  ::SetCursor(LoadCursor(NULL, cursor));
+  ::SetCursor(LoadCursor(nullptr, cursor));
   return 1;
 }
 
@@ -2405,8 +2406,9 @@ void HWNDMessageHandler::OnSettingChange(UINT flags, const wchar_t* section) {
       !delegate_->WillProcessWorkAreaChange()) {
     // Fire a dummy SetWindowPos() call, so we'll trip the code in
     // OnWindowPosChanging() below that notices work area changes.
-    ::SetWindowPos(hwnd(), 0, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE |
-        SWP_NOZORDER | SWP_NOREDRAW | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+    ::SetWindowPos(hwnd(), nullptr, 0, 0, 0, 0,
+                   SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW |
+                       SWP_NOACTIVATE | SWP_NOOWNERZORDER);
     SetMsgHandled(TRUE);
   } else {
     if (flags == SPI_SETWORKAREA)
@@ -2427,7 +2429,7 @@ void HWNDMessageHandler::OnSize(UINT param, const gfx::Size& size) {
     delegate_->HandleWindowMinimizedOrRestored(param != SIZE_MINIMIZED);
   last_size_param_ = param;
 
-  RedrawWindow(hwnd(), NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
+  RedrawWindow(hwnd(), nullptr, nullptr, RDW_INVALIDATE | RDW_ALLCHILDREN);
   // ResetWindowRegion is going to trigger WM_NCPAINT. By doing it after we've
   // invoked OnSize we ensure the RootView has been laid out.
   ResetWindowRegion(false, true);
@@ -3021,15 +3023,17 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
   event.latency()->AddLatencyNumberWithTimestamp(
       ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, event_time, 1);
 
-  if (event_type == ui::ET_TOUCH_RELEASED)
-    id_generator_.ReleaseNumber(pointer_id);
-
   // There are cases where the code handling the message destroys the
   // window, so use the weak ptr to check if destruction occurred or not.
   base::WeakPtr<HWNDMessageHandler> ref(msg_handler_weak_factory_.GetWeakPtr());
   delegate_->HandleTouchEvent(&event);
 
   if (ref) {
+    // Release the pointer id only when |HWNDMessageHandler| and |id_generator_|
+    // are not destroyed.
+    if (event_type == ui::ET_TOUCH_RELEASED)
+      id_generator_.ReleaseNumber(pointer_id);
+
     // Mark touch released events handled. These will usually turn into tap
     // gestures, and doing this avoids propagating the event to other windows.
     if (delegate_->GetFrameMode() == FrameMode::SYSTEM_DRAWN) {
@@ -3144,8 +3148,8 @@ void HWNDMessageHandler::PerformDwmTransition() {
     // we don't want windows stealing focus if they're not already active, we
     // set SWP_NOACTIVATE.
     UINT flags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE;
-    SetWindowPos(hwnd(), NULL, 0, 0, 0, 0, flags | SWP_HIDEWINDOW);
-    SetWindowPos(hwnd(), NULL, 0, 0, 0, 0, flags | SWP_SHOWWINDOW);
+    SetWindowPos(hwnd(), nullptr, 0, 0, 0, 0, flags | SWP_HIDEWINDOW);
+    SetWindowPos(hwnd(), nullptr, 0, 0, 0, 0, flags | SWP_SHOWWINDOW);
   }
   // WM_DWMCOMPOSITIONCHANGED is only sent to top level windows, however we want
   // to notify our children too, since we can have MDI child windows who need to
@@ -3259,7 +3263,7 @@ bool HWNDMessageHandler::HandleMouseInputForCaption(unsigned int message,
       // If the DWM is rendering the window controls, we need to give the DWM's
       // default window procedure the chance to repaint the window border icons
       if (HasSystemFrame())
-        handled = DwmDefWindowProc(hwnd(), WM_NCMOUSELEAVE, 0, 0, NULL) != 0;
+        handled = DwmDefWindowProc(hwnd(), WM_NCMOUSELEAVE, 0, 0, nullptr) != 0;
       break;
     }
 
@@ -3277,7 +3281,7 @@ void HWNDMessageHandler::SetBoundsInternal(const gfx::Rect& bounds_in_pixels,
     SetWindowLong(hwnd(), GWL_STYLE, style & ~WS_MAXIMIZE);
 
   gfx::Size old_size = GetClientAreaBounds().size();
-  SetWindowPos(hwnd(), NULL, bounds_in_pixels.x(), bounds_in_pixels.y(),
+  SetWindowPos(hwnd(), nullptr, bounds_in_pixels.x(), bounds_in_pixels.y(),
                bounds_in_pixels.width(), bounds_in_pixels.height(),
                SWP_NOACTIVATE | SWP_NOZORDER);
 

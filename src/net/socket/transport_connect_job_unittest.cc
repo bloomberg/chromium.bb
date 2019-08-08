@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_address.h"
@@ -29,31 +30,48 @@ namespace {
 
 const char kHostName[] = "unresolvable.host.name";
 
-class TransportConnectJobTest : public TestWithScopedTaskEnvironment {
+class TransportConnectJobTest : public WithScopedTaskEnvironment,
+                                public testing::Test {
  public:
-  TransportConnectJobTest() : client_socket_factory_(&net_log_) {}
+  TransportConnectJobTest()
+      : WithScopedTaskEnvironment(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::NowSource::
+                MAIN_THREAD_MOCK_TIME),
+        client_socket_factory_(&net_log_),
+        common_connect_job_params_(
+            &client_socket_factory_,
+            &host_resolver_,
+            nullptr /* http_auth_cache */,
+            nullptr /* http_auth_handler_factory */,
+            nullptr /* spdy_session_pool */,
+            nullptr /* quic_supported_versions */,
+            nullptr /* quic_stream_factory */,
+            nullptr /* proxy_delegate */,
+            nullptr /* http_user_agent_settings */,
+            SSLClientSocketContext(),
+            SSLClientSocketContext(),
+            nullptr /* socket_performance_watcher_factory */,
+            nullptr /* network_quality_estimator */,
+            &net_log_,
+            nullptr /* websocket_endpoint_lock_manager */) {
+    // Set an initial delay to ensure that calls to TimeTicks::Now() do not
+    // return a null value.
+    FastForwardBy(base::TimeDelta::FromSeconds(1));
+  }
 
   ~TransportConnectJobTest() override {}
 
   static scoped_refptr<TransportSocketParams> DefaultParams() {
     return base::MakeRefCounted<TransportSocketParams>(
-        HostPortPair(kHostName, 80), false, OnHostResolutionCallback());
-  }
-
-  CommonConnectJobParams DefaultCommonConnectJobParams() {
-    return CommonConnectJobParams(
-        SocketTag(), &client_socket_factory_, &host_resolver_,
-        nullptr /* proxy_delegate */, SSLClientSocketContext(),
-        SSLClientSocketContext(),
-        nullptr /* socket_performance_watcher_factory */,
-        nullptr /* network_quality_estimator */, &net_log_,
-        nullptr /* websocket_endpoint_lock_manager */);
+        HostPortPair(kHostName, 80), OnHostResolutionCallback());
   }
 
  protected:
   TestNetLog net_log_;
   MockHostResolver host_resolver_;
   MockTransportClientSocketFactory client_socket_factory_;
+  const CommonConnectJobParams common_connect_job_params_;
 };
 
 TEST_F(TransportConnectJobTest, MakeAddrListStartWithIPv4) {
@@ -132,10 +150,10 @@ TEST_F(TransportConnectJobTest, HostResolutionFailure) {
   for (bool host_resolution_synchronous : {false, true}) {
     host_resolver_.set_synchronous_mode(host_resolution_synchronous);
     TestConnectJobDelegate test_delegate;
-    TransportConnectJob transport_conect_job(
-        DEFAULT_PRIORITY, DefaultCommonConnectJobParams(), DefaultParams(),
-        &test_delegate, nullptr /* net_log */);
-    test_delegate.StartJobExpectingResult(&transport_conect_job,
+    TransportConnectJob transport_connect_job(
+        DEFAULT_PRIORITY, SocketTag(), &common_connect_job_params_,
+        DefaultParams(), &test_delegate, nullptr /* net_log */);
+    test_delegate.StartJobExpectingResult(&transport_connect_job,
                                           ERR_NAME_NOT_RESOLVED,
                                           host_resolution_synchronous);
   }
@@ -150,15 +168,80 @@ TEST_F(TransportConnectJobTest, ConnectionFailure) {
               ? MockTransportClientSocketFactory::MOCK_FAILING_CLIENT_SOCKET
               : MockTransportClientSocketFactory::
                     MOCK_PENDING_FAILING_CLIENT_SOCKET);
-      ClientSocketHandle handle;
       TestConnectJobDelegate test_delegate;
-      TransportConnectJob transport_conect_job(
-          DEFAULT_PRIORITY, DefaultCommonConnectJobParams(), DefaultParams(),
-          &test_delegate, nullptr /* net_log */);
+      TransportConnectJob transport_connect_job(
+          DEFAULT_PRIORITY, SocketTag(), &common_connect_job_params_,
+          DefaultParams(), &test_delegate, nullptr /* net_log */);
       test_delegate.StartJobExpectingResult(
-          &transport_conect_job, ERR_CONNECTION_FAILED,
+          &transport_connect_job, ERR_CONNECTION_FAILED,
           host_resolution_synchronous && connection_synchronous);
     }
+  }
+}
+
+TEST_F(TransportConnectJobTest, HostResolutionTimeout) {
+  const base::TimeDelta kTinyTime = base::TimeDelta::FromMicroseconds(1);
+
+  // Make request hang.
+  host_resolver_.set_ondemand_mode(true);
+
+  TestConnectJobDelegate test_delegate;
+  TransportConnectJob transport_connect_job(
+      DEFAULT_PRIORITY, SocketTag(), &common_connect_job_params_,
+      DefaultParams(), &test_delegate, nullptr /* net_log */);
+  ASSERT_THAT(transport_connect_job.Connect(), test::IsError(ERR_IO_PENDING));
+
+  // Right up until just before expiration, the job does not time out.
+  FastForwardBy(TransportConnectJob::ConnectionTimeout() - kTinyTime);
+  EXPECT_FALSE(test_delegate.has_result());
+
+  // But at the exact time of expiration, the job fails.
+  FastForwardBy(kTinyTime);
+  EXPECT_TRUE(test_delegate.has_result());
+  EXPECT_THAT(test_delegate.WaitForResult(), test::IsError(ERR_TIMED_OUT));
+}
+
+TEST_F(TransportConnectJobTest, ConnectionTimeout) {
+  const base::TimeDelta kTinyTime = base::TimeDelta::FromMicroseconds(1);
+
+  // Half the timeout time. In the async case, spend half the time waiting on
+  // host resolution, half on connecting.
+  const base::TimeDelta kFirstHalfOfTimeout =
+      TransportConnectJob::ConnectionTimeout() / 2;
+
+  const base::TimeDelta kSecondHalfOfTimeout =
+      TransportConnectJob::ConnectionTimeout() - kFirstHalfOfTimeout;
+  ASSERT_LE(kTinyTime, kSecondHalfOfTimeout);
+
+  // Make connection attempts hang.
+  client_socket_factory_.set_default_client_socket_type(
+      MockTransportClientSocketFactory::MOCK_STALLED_CLIENT_SOCKET);
+
+  for (bool host_resolution_synchronous : {false, true}) {
+    host_resolver_.set_ondemand_mode(!host_resolution_synchronous);
+    TestConnectJobDelegate test_delegate;
+    TransportConnectJob transport_connect_job(
+        DEFAULT_PRIORITY, SocketTag(), &common_connect_job_params_,
+        DefaultParams(), &test_delegate, nullptr /* net_log */);
+    EXPECT_THAT(transport_connect_job.Connect(), test::IsError(ERR_IO_PENDING));
+
+    // After half the timeout, connection does not timeout.
+    FastForwardBy(kFirstHalfOfTimeout);
+    EXPECT_FALSE(test_delegate.has_result());
+
+    // In the async case, the host resolution completes now.
+    if (!host_resolution_synchronous)
+      host_resolver_.ResolveOnlyRequestNow();
+
+    // After (almost) the second half of timeout, just before the full timeout
+    // period, the ConnectJob is still live.
+    FastForwardBy(kSecondHalfOfTimeout - kTinyTime);
+    EXPECT_FALSE(test_delegate.has_result());
+
+    // But at the exact timeout time, the job fails.
+    FastForwardBy(kTinyTime);
+    EXPECT_TRUE(test_delegate.has_result());
+    EXPECT_THAT(test_delegate.WaitForResult(), test::IsError(ERR_TIMED_OUT));
   }
 }
 
@@ -170,13 +253,12 @@ TEST_F(TransportConnectJobTest, ConnectionSuccess) {
           connection_synchronous
               ? MockTransportClientSocketFactory::MOCK_CLIENT_SOCKET
               : MockTransportClientSocketFactory::MOCK_PENDING_CLIENT_SOCKET);
-      ClientSocketHandle handle;
       TestConnectJobDelegate test_delegate;
-      TransportConnectJob transport_conect_job(
-          DEFAULT_PRIORITY, DefaultCommonConnectJobParams(), DefaultParams(),
-          &test_delegate, nullptr /* net_log */);
+      TransportConnectJob transport_connect_job(
+          DEFAULT_PRIORITY, SocketTag(), &common_connect_job_params_,
+          DefaultParams(), &test_delegate, nullptr /* net_log */);
       test_delegate.StartJobExpectingResult(
-          &transport_conect_job, OK,
+          &transport_connect_job, OK,
           host_resolution_synchronous && connection_synchronous);
     }
   }
@@ -199,10 +281,10 @@ TEST_F(TransportConnectJobTest, IPv6FallbackSocketIPv4FinishesFirst) {
                                            std::string());
 
   TestConnectJobDelegate test_delegate;
-  TransportConnectJob transport_conect_job(
-      DEFAULT_PRIORITY, DefaultCommonConnectJobParams(), DefaultParams(),
-      &test_delegate, nullptr /* net_log */);
-  test_delegate.StartJobExpectingResult(&transport_conect_job, OK,
+  TransportConnectJob transport_connect_job(
+      DEFAULT_PRIORITY, SocketTag(), &common_connect_job_params_,
+      DefaultParams(), &test_delegate, nullptr /* net_log */);
+  test_delegate.StartJobExpectingResult(&transport_connect_job, OK,
                                         false /* expect_sync_result */);
 
   IPEndPoint endpoint;
@@ -239,10 +321,10 @@ TEST_F(TransportConnectJobTest, IPv6FallbackSocketIPv6FinishesFirst) {
                                            std::string());
 
   TestConnectJobDelegate test_delegate;
-  TransportConnectJob transport_conect_job(
-      DEFAULT_PRIORITY, DefaultCommonConnectJobParams(), DefaultParams(),
-      &test_delegate, nullptr /* net_log */);
-  test_delegate.StartJobExpectingResult(&transport_conect_job, OK,
+  TransportConnectJob transport_connect_job(
+      DEFAULT_PRIORITY, SocketTag(), &common_connect_job_params_,
+      DefaultParams(), &test_delegate, nullptr /* net_log */);
+  test_delegate.StartJobExpectingResult(&transport_connect_job, OK,
                                         false /* expect_sync_result */);
 
   IPEndPoint endpoint;
@@ -269,10 +351,10 @@ TEST_F(TransportConnectJobTest, IPv6NoIPv4AddressesToFallbackTo) {
       kHostName, "2:abcd::3:4:ff,3:abcd::3:4:ff", std::string());
 
   TestConnectJobDelegate test_delegate;
-  TransportConnectJob transport_conect_job(
-      DEFAULT_PRIORITY, DefaultCommonConnectJobParams(), DefaultParams(),
-      &test_delegate, nullptr /* net_log */);
-  test_delegate.StartJobExpectingResult(&transport_conect_job, OK,
+  TransportConnectJob transport_connect_job(
+      DEFAULT_PRIORITY, SocketTag(), &common_connect_job_params_,
+      DefaultParams(), &test_delegate, nullptr /* net_log */);
+  test_delegate.StartJobExpectingResult(&transport_connect_job, OK,
                                         false /* expect_sync_result */);
 
   IPEndPoint endpoint;
@@ -292,10 +374,10 @@ TEST_F(TransportConnectJobTest, IPv4HasNoFallback) {
   host_resolver_.rules()->AddIPLiteralRule(kHostName, "1.1.1.1", std::string());
 
   TestConnectJobDelegate test_delegate;
-  TransportConnectJob transport_conect_job(
-      DEFAULT_PRIORITY, DefaultCommonConnectJobParams(), DefaultParams(),
-      &test_delegate, nullptr /* net_log */);
-  test_delegate.StartJobExpectingResult(&transport_conect_job, OK,
+  TransportConnectJob transport_connect_job(
+      DEFAULT_PRIORITY, SocketTag(), &common_connect_job_params_,
+      DefaultParams(), &test_delegate, nullptr /* net_log */);
+  test_delegate.StartJobExpectingResult(&transport_connect_job, OK,
                                         false /* expect_sync_result */);
 
   IPEndPoint endpoint;

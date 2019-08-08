@@ -18,6 +18,7 @@
 #include "ash/host/root_window_transformer.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
@@ -26,6 +27,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/ws/window_service_owner.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -38,7 +40,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/class_property.h"
-#include "ui/base/ime/input_method_factory.h"
+#include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
@@ -92,6 +94,18 @@ aura::Window* GetWindow(AshWindowTreeHost* ash_host) {
 }
 
 const char* GetUICompositorMemoryLimitMB() {
+  bool uses_shader_rounded_corner = features::ShouldUseShaderRoundedCorner();
+  // TODO(oshima): Cleanup once new rounded corners and SPM are launched.
+
+  // The upper limit of the gpu memory each compositor in mus can use on
+  // chromeos.  Please see crbug.com/930163 for more info.
+  if (::features::IsUsingWindowService() && uses_shader_rounded_corner)
+    return "144";
+
+  // Uses 512mb which is default.
+  if (uses_shader_rounded_corner)
+    return "512";
+
   display::DisplayManager* display_manager =
       ash::Shell::Get()->display_manager();
   int width;
@@ -147,12 +161,15 @@ class FocusActivationStore {
     if (active_ && focused_ != active_)
       tracker_.Add(active_);
 
-    // Deactivate the window to close menu / bubble windows.
-    if (clear_focus)
-      activation_client_->DeactivateWindow(active_);
+    // Deactivate the window to close menu / bubble windows. Deactivating by
+    // setting active window to nullptr to avoid side effects of activating an
+    // arbitrary window, such as covering |active_| before Restore().
+    if (clear_focus && active_)
+      activation_client_->ActivateWindow(nullptr);
 
     // Release capture if any.
     capture_client_->SetCapture(nullptr);
+
     // Clear the focused window if any. This is necessary because a
     // window may be deleted when losing focus (fullscreen flash for
     // example).  If the focused window is still alive after move, it'll
@@ -274,6 +291,19 @@ void WindowTreeHostManager::InitHosts() {
       RootWindowController::CreateForSecondaryDisplay(ash_host);
     }
   }
+
+  // Record display zoom for the primary display for https://crbug.com/955071.
+  // This can be removed after M79.
+  const display::ManagedDisplayInfo& display_info =
+      display_manager->GetDisplayInfo(primary_display_id);
+  int zoom_percent = std::round(display_info.zoom_factor() * 100);
+  constexpr int kMaxValue = 300;
+  constexpr int kBucketSize = 5;
+  constexpr int kBucketCount = kMaxValue / kBucketSize + 1;
+  base::LinearHistogram::FactoryGet(
+      "Ash.Display.PrimaryDisplayZoomAtStartup", kBucketSize, kMaxValue,
+      kBucketCount, base::HistogramBase::kUmaTargetedHistogramFlag)
+      ->Add(zoom_percent);
 
   for (auto& observer : observers_)
     observer.OnDisplaysInitialized();

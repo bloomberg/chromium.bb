@@ -81,6 +81,8 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
       const std::vector<TouchscreenDevice>& devices);
   void DispatchMouseDevicesUpdated(const std::vector<InputDevice>& devices);
   void DispatchTouchpadDevicesUpdated(const std::vector<InputDevice>& devices);
+  void DispatchUncategorizedDevicesUpdated(
+      const std::vector<InputDevice>& devices);
   void DispatchDeviceListsComplete();
   void DispatchStylusStateChanged(StylusState stylus_state);
 

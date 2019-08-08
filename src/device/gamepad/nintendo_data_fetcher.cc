@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "device/gamepad/gamepad_service.h"
+#include "device/gamepad/gamepad_uma.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -16,7 +17,12 @@ namespace device {
 NintendoDataFetcher::NintendoDataFetcher()
     : binding_(this), weak_factory_(this) {}
 
-NintendoDataFetcher::~NintendoDataFetcher() = default;
+NintendoDataFetcher::~NintendoDataFetcher() {
+  for (auto& entry : controllers_) {
+    auto& device = *entry.second;
+    device.Shutdown();
+  }
+}
 
 GamepadSource NintendoDataFetcher::source() {
   return Factory::static_source();
@@ -44,10 +50,9 @@ void NintendoDataFetcher::OnGetDevices(
 
 void NintendoDataFetcher::OnDeviceReady(int source_id) {
   auto find_it = controllers_.find(source_id);
-  if (find_it == controllers_.end()) {
-    NOTREACHED();
+  if (find_it == controllers_.end())
     return;
-  }
+
   const auto* ready_device_ptr = find_it->second.get();
   DCHECK(ready_device_ptr);
   if (ready_device_ptr->IsComposite())
@@ -97,19 +102,17 @@ void NintendoDataFetcher::DeviceRemoved(mojom::HidDeviceInfoPtr device_info) {
 
 bool NintendoDataFetcher::AddDevice(mojom::HidDeviceInfoPtr device_info) {
   DCHECK(hid_manager_);
-  if (NintendoController::IsNintendoController(device_info->vendor_id,
-                                               device_info->product_id)) {
-    int source_id = next_source_id_++;
-    auto emplace_result = controllers_.emplace(
-        source_id, NintendoController::Create(source_id, std::move(device_info),
-                                              hid_manager_.get()));
-    if (emplace_result.second) {
-      auto& new_device = emplace_result.first->second;
-      DCHECK(new_device);
-      new_device->Open(base::BindOnce(&NintendoDataFetcher::OnDeviceReady,
-                                      weak_factory_.GetWeakPtr(), source_id));
-      return true;
-    }
+  RecordConnectedGamepad(device_info->vendor_id, device_info->product_id);
+  int source_id = next_source_id_++;
+  auto emplace_result = controllers_.emplace(
+      source_id, NintendoController::Create(source_id, std::move(device_info),
+                                            hid_manager_.get()));
+  if (emplace_result.second) {
+    auto& new_device = emplace_result.first->second;
+    DCHECK(new_device);
+    new_device->Open(base::BindOnce(&NintendoDataFetcher::OnDeviceReady,
+                                    weak_factory_.GetWeakPtr(), source_id));
+    return true;
   }
   return false;
 }
@@ -162,6 +165,15 @@ NintendoDataFetcher::ExtractAssociatedDevice(const NintendoController* device) {
       }
     }
   }
+
+  // Set the PadState source back to the default to signal that the slot
+  // occupied by the associated device is no longer in use.
+  if (associated_device) {
+    PadState* state = GetPadState(associated_device->GetSourceId());
+    if (state)
+      state->source = GAMEPAD_SOURCE_NONE;
+  }
+
   return associated_device;
 }
 

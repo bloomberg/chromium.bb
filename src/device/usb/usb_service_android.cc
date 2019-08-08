@@ -37,6 +37,7 @@ UsbServiceAndroid::UsbServiceAndroid() : UsbService(), weak_factory_(this) {
 }
 
 UsbServiceAndroid::~UsbServiceAndroid() {
+  NotifyWillDestroyUsbService();
   JNIEnv* env = AttachCurrentThread();
   Java_ChromeUsbService_close(env, j_object_);
 }
@@ -75,7 +76,7 @@ void UsbServiceAndroid::DevicePermissionRequestComplete(
     jboolean granted) {
   const auto it = devices_by_id_.find(device_id);
   DCHECK(it != devices_by_id_.end());
-  it->second->PermissionGranted(granted);
+  it->second->PermissionGranted(env, granted);
 }
 
 ScopedJavaLocalRef<jobject> UsbServiceAndroid::OpenDevice(

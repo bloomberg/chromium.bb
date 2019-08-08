@@ -116,7 +116,7 @@ void BaseParallelResourceThrottle::WillStartRequest(bool* defer) {
                                  : request_->extra_request_headers();
 
   resource_request.load_flags = request_->load_flags();
-  resource_request.resource_type = resource_type_;
+  resource_request.resource_type = static_cast<int>(resource_type_);
 
   content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request_);

@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -51,7 +51,7 @@ class HandsOffEnrollmentTest : public MixinBasedInProcessBrowserTest {
     ShowLoginWizard(OobeScreen::SCREEN_TEST_NO_WINDOW);
 
     // Set official build so EULA screen is not skipped by default.
-    WizardController::default_controller()->is_official_build_ = true;
+    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
 
     // Sets all network services into idle state to simulate disconnected state.
     NetworkStateHandler::NetworkStateList networks;
@@ -82,6 +82,7 @@ class HandsOffEnrollmentTest : public MixinBasedInProcessBrowserTest {
 
  protected:
   test::EnrollmentHelperMixin enrollment_helper_{&mixin_host_};
+  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HandsOffEnrollmentTest);

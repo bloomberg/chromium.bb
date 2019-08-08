@@ -79,6 +79,10 @@ class ExtensionDownloaderTestHelper {
   // Clears previously added responses from URL loader factory.
   void ClearURLLoaderFactoryResponses();
 
+  // Create a downloader in a separate pointer. Could be used by, for example,
+  // ExtensionUpdater.
+  std::unique_ptr<ExtensionDownloader> CreateDownloader();
+
  private:
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory>

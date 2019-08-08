@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
@@ -36,14 +37,11 @@
       }
 
       #expand {
-        --iron-icon-height: 16px;
-        --iron-icon-width: 16px;
-        --paper-icon-button-ink-color: var(--paper-grey-900);
-        height: 28px;
-        min-width: 28px;
-        padding: 6px;
+        --cr-icon-button-color: var(--primary-text-color);
+        --cr-icon-button-icon-size: 16px;
+        --cr-icon-button-size: 28px;
+        margin: 0;
         transition: transform 150ms;
-        width: 28px;
       }
 
       :host-context([dir=rtl]) #expand {
@@ -56,9 +54,8 @@
     </style>
     <div id="item" on-click="onClick">
       <paper-ripple></paper-ripple>
-      <paper-icon-button id="expand" icon="cr:chevron-right"
-          on-click="toggleChildren">
-      </paper-icon-button>
+      <cr-icon-button id="expand" iron-icon="cr:chevron-right"
+          on-click="toggleChildren"></cr-icon-button>
       <span id="title" tabindex="0">{{bookmark.title}}</span>
     </div>
     <!-- dom-if will stamp the complex bookmark tree lazily as individual nodes

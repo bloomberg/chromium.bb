@@ -8,10 +8,10 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/hash/sha1.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"

@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -74,7 +75,8 @@ class SyncInvalidationScheduler : public invalidation::Scheduler {
   void RunPostedTask(invalidation::Closure* task);
 
   // Holds all posted tasks that have not yet been run.
-  std::set<std::unique_ptr<invalidation::Closure>> posted_tasks_;
+  std::set<std::unique_ptr<invalidation::Closure>, base::UniquePtrComparator>
+      posted_tasks_;
 
   scoped_refptr<base::SingleThreadTaskRunner> const created_on_task_runner_;
   bool is_started_;

@@ -81,6 +81,8 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RequestFileSystemAccessAsync,
                         OnRequestFileSystemAccessAsync)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowIndexedDB, OnAllowIndexedDB)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowCacheStorage,
+                        OnAllowCacheStorage)
 #if BUILDFLAG(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_IsCrashReportingEnabled,
                         OnIsCrashReportingEnabled)
@@ -289,6 +291,19 @@ void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_frame_id,
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&TabSpecificContentSettings::IndexedDBAccessed,
+                     render_process_id_, render_frame_id, origin_url,
+                     !*allowed));
+}
+
+void ChromeRenderMessageFilter::OnAllowCacheStorage(int render_frame_id,
+                                                    const GURL& origin_url,
+                                                    const GURL& top_origin_url,
+                                                    bool* allowed) {
+  *allowed =
+      cookie_settings_->IsCookieAccessAllowed(origin_url, top_origin_url);
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&TabSpecificContentSettings::CacheStorageAccessed,
                      render_process_id_, render_frame_id, origin_url,
                      !*allowed));
 }

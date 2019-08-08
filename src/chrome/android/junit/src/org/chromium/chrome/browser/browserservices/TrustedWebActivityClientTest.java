@@ -75,9 +75,10 @@ public class TrustedWebActivityClientTest {
         when(mService.getSmallIconId()).thenReturn(SERVICE_SMALL_ICON_ID);
         when(mService.getSmallIconBitmap()).thenReturn(mServiceSmallIconBitmap);
         when(mService.getComponentName()).thenReturn(new ComponentName(CLIENT_PACKAGE_NAME, ""));
+        when(mService.areNotificationsEnabled(any())).thenReturn(true);
         when(mNotificationBuilder.build(any())).thenReturn(mChromeNotification);
 
-        mClient = new TrustedWebActivityClient(mConnection, mRecorder, mNotificationUmaTracker);
+        mClient = new TrustedWebActivityClient(mConnection, mRecorder);
     }
 
     @Test
@@ -139,6 +140,7 @@ public class TrustedWebActivityClientTest {
     }
 
     private void postNotification() {
-        mClient.notifyNotification(Uri.parse(""), "tag", 1, mNotificationBuilder);
+        mClient.notifyNotification(Uri.parse(""), "tag", 1, mNotificationBuilder,
+                mNotificationUmaTracker);
     }
 }

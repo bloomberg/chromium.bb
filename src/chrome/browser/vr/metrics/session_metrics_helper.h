@@ -173,10 +173,10 @@ class VR_BASE_EXPORT SessionMetricsHelper
 
   // WebContentObserver
   void MediaStartedPlaying(const MediaPlayerInfo& media_info,
-                           const MediaPlayerId&) override;
+                           const content::MediaPlayerId&) override;
   void MediaStoppedPlaying(
       const MediaPlayerInfo& media_info,
-      const MediaPlayerId&,
+      const content::MediaPlayerId&,
       WebContentsObserver::MediaStoppedReason reason) override;
   void DidStartNavigation(content::NavigationHandle* handle) override;
   void DidFinishNavigation(content::NavigationHandle* handle) override;

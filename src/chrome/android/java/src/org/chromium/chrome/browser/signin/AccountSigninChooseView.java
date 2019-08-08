@@ -90,7 +90,7 @@ public class AccountSigninChooseView extends FirstRunChooserView {
         // The view at the last position is the "Add account" view.
         View view = mInflater.inflate(R.layout.account_signin_account_view, mRootChildView, false);
         ((ImageView) view.findViewById(R.id.account_image))
-                .setImageResource(R.drawable.add_circle_blue);
+                .setImageResource(R.drawable.ic_add_circle_40dp);
         ((TextView) view.findViewById(R.id.account_name))
                 .setText(getResources().getString(R.string.signin_add_account));
         view.setOnClickListener((View v) -> {

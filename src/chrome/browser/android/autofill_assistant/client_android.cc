@@ -106,9 +106,10 @@ ClientAndroid::~ClientAndroid() {
 void ClientAndroid::ShowOnboarding(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
+    const JavaParamRef<jstring>& jexperiment_ids,
     const JavaParamRef<jobject>& on_accept) {
   ShowUI();
-  ui_controller_android_->ShowOnboarding(env, on_accept);
+  ui_controller_android_->ShowOnboarding(env, jexperiment_ids, on_accept);
 }
 
 base::android::ScopedJavaLocalRef<jobject> ClientAndroid::GetJavaObject() {
@@ -118,13 +119,17 @@ base::android::ScopedJavaLocalRef<jobject> ClientAndroid::GetJavaObject() {
 void ClientAndroid::Start(JNIEnv* env,
                           const JavaParamRef<jobject>& jcaller,
                           const JavaParamRef<jstring>& jinitial_url,
+                          const JavaParamRef<jstring>& jexperiment_ids,
                           const JavaParamRef<jobjectArray>& parameterNames,
                           const JavaParamRef<jobjectArray>& parameterValues) {
   CreateController();
   GURL initial_url(base::android::ConvertJavaStringToUTF8(env, jinitial_url));
   std::map<std::string, std::string> parameters;
   FillParametersFromJava(env, parameterNames, parameterValues, &parameters);
-  controller_->Start(initial_url, parameters);
+  controller_->Start(initial_url, std::make_unique<TriggerContext>(
+                                      std::move(parameters),
+                                      base::android::ConvertJavaStringToUTF8(
+                                          env, jexperiment_ids)));
 }
 
 void ClientAndroid::DestroyUI(
@@ -253,11 +258,10 @@ void ClientAndroid::Shutdown(Metrics::DropOutReason reason) {
   if (!controller_)
     return;
 
-  if (!controller_->Terminate(reason)) {
-    // Controller is responsible for calling Shutdown(reason) again once it's
-    // done.
-    return;
-  }
+  // Lets the controller and the ui controller know shutdown is about to happen.
+  // TODO(b/128300038): Replace Controller::WillShutdown with a Detach call on
+  // ui_controller_android_.
+  controller_->WillShutdown(reason);
 
   Metrics::RecordDropOut(reason);
 

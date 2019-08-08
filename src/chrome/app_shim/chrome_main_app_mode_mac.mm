@@ -31,7 +31,9 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/mac/app_mode_common.h"
 #include "components/crash/content/app/crashpad.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
@@ -57,7 +59,7 @@ extern "C" {
 // upgrade them; the old shim will not be able to dyload the new
 // ChromeAppModeStart, so it will fall back to the upgrade path. See
 // https://crbug.com/561205.
-__attribute__((visibility("default"))) int ChromeAppModeStart_v5(
+__attribute__((visibility("default"))) int APP_SHIM_ENTRY_POINT_NAME(
     const app_mode::ChromeAppModeInfo* info);
 
 }  // extern "C"
@@ -68,28 +70,18 @@ void PostRepeatingDelayedTask() {
       base::TimeDelta::FromDays(1));
 }
 
-int ChromeAppModeStart_v5(const app_mode::ChromeAppModeInfo* info) {
+int APP_SHIM_ENTRY_POINT_NAME(const app_mode::ChromeAppModeInfo* info) {
   base::CommandLine::Init(info->argc, info->argv);
 
   base::mac::ScopedNSAutoreleasePool scoped_pool;
   base::AtExitManager exit_manager;
   chrome::RegisterPathProvider();
 
-  if (info->major_version < app_mode::kCurrentChromeAppModeInfoMajorVersion) {
-    RAW_LOG(ERROR, "App Mode Loader too old.");
-    return 1;
-  }
-  if (info->major_version > app_mode::kCurrentChromeAppModeInfoMajorVersion) {
-    RAW_LOG(ERROR, "Browser Framework too old to load App Shortcut.");
-    return 1;
-  }
-
   // Set bundle paths. This loads the bundles.
   base::mac::SetOverrideOuterBundlePath(
       base::FilePath(info->chrome_outer_bundle_path));
   base::mac::SetOverrideFrameworkBundlePath(
-      base::FilePath(info->chrome_versioned_path)
-          .Append(chrome::kFrameworkName));
+      base::FilePath(info->chrome_framework_path));
 
   ChromeCrashReporterClient::Create();
   crash_reporter::InitializeCrashpad(true, "app_shim");

@@ -81,6 +81,9 @@ GrBackendFormat::GrBackendFormat(VkFormat vkFormat, const GrVkYcbcrConversionInf
         , fTextureType(GrTextureType::k2D) {
     fVk.fFormat = vkFormat;
     fVk.fYcbcrConversionInfo = ycbcrInfo;
+    if (fVk.fYcbcrConversionInfo.isValid()) {
+        fTextureType = GrTextureType::kExternal;
+    }
 }
 
 const VkFormat* GrBackendFormat::getVkFormat() const {
@@ -128,9 +131,16 @@ const GrPixelConfig* GrBackendFormat::getMockFormat() const {
 }
 
 GrBackendFormat GrBackendFormat::makeTexture2D() const {
-    // TODO: once we support ycbcr conversions in Vulkan we need to check if we are using an
-    // external format since they will not be able to be made into a Texture2D.
     GrBackendFormat copy = *this;
+    if (const GrVkYcbcrConversionInfo* ycbcrInfo = this->getVkYcbcrConversionInfo()) {
+        if (ycbcrInfo->isValid()) {
+            // If we have a ycbcr we remove it from the backend format and set the VkFormat to
+            // R8G8B8A8_UNORM
+            SkASSERT(copy.fBackend == GrBackendApi::kVulkan);
+            copy.fVk.fYcbcrConversionInfo = GrVkYcbcrConversionInfo();
+            copy.fVk.fFormat = VK_FORMAT_R8G8B8A8_UNORM;
+        }
+    }
     copy.fTextureType = GrTextureType::k2D;
     return copy;
 }
@@ -329,6 +339,14 @@ bool GrBackendTexture::getMtlTextureInfo(GrMtlTextureInfo* outInfo) const {
 bool GrBackendTexture::getGLTextureInfo(GrGLTextureInfo* outInfo) const {
     if (this->isValid() && GrBackendApi::kOpenGL == fBackend) {
         *outInfo = fGLInfo;
+        return true;
+    } else if (this->isValid() && GrBackendApi::kMock == fBackend) {
+        // Hack! This allows some blink unit tests to work when using the Mock GrContext.
+        // Specifically, tests that rely on CanvasResourceProviderTextureGpuMemoryBuffer.
+        // If that code ever goes away (or ideally becomes backend-agnostic), this can go away.
+        *outInfo = GrGLTextureInfo{ GR_GL_TEXTURE_2D,
+                                    static_cast<GrGLuint>(fMockInfo.fID),
+                                    GR_GL_RGBA8 };
         return true;
     }
     return false;

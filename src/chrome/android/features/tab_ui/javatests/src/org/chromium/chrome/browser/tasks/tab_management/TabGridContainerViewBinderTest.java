@@ -20,14 +20,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DummyUiActivity;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -81,7 +82,7 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
     public void setUpTest() throws Exception {
         super.setUpTest();
 
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mRecyclerView = getActivity().findViewById(R.id.tab_list_view); });
 
         mStartedShowingCallback = new CallbackHelper();
@@ -97,8 +98,10 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
 
     @Test
     @MediumTest
+    @DisabledTest
+    // Failed multiple times on Android CFI https://crbug.com/954145
     public void testShowWithAnimation() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mContainerModel.set(
                     TabListContainerProperties.VISIBILITY_LISTENER, mMockVisibilityListener);
 
@@ -142,7 +145,7 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     public void testHidesWithAnimation() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mContainerModel.set(
                     TabListContainerProperties.VISIBILITY_LISTENER, mMockVisibilityListener);
 
@@ -153,7 +156,7 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
         assertThat(mRecyclerView.getVisibility(), equalTo(View.VISIBLE));
         assertThat(mRecyclerView.getAlpha(), equalTo(1.0f));
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mContainerModel.set(TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES, true);
             mContainerModel.set(TabListContainerProperties.IS_VISIBLE, false);
         });

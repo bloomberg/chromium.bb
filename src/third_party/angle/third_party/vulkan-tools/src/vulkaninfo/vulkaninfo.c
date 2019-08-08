@@ -112,6 +112,13 @@ struct LayerExtensionList {
     VkExtensionProperties *extension_properties;
 };
 
+struct SurfaceNameWHandle {
+    const char *name;
+    VkSurfaceKHR surface;
+    struct SurfaceNameWHandle *pNextSurface;
+    VkBool32 present_support;
+};
+
 struct AppInstance {
     VkInstance instance;
     uint32_t instance_version;
@@ -146,6 +153,7 @@ struct AppInstance {
     VkSharedPresentSurfaceCapabilitiesKHR shared_surface_capabilities;
     VkSurfaceCapabilities2EXT surface_capabilities2_ext;
 
+    struct SurfaceNameWHandle *surface_chain;
     VkSurfaceKHR surface;
     int width, height;
 
@@ -163,7 +171,7 @@ struct AppInstance {
     Window xlib_window;
 #endif
 #ifdef VK_USE_PLATFORM_ANDROID_KHR  // TODO
-    ANativeWindow *window;
+    struct ANativeWindow *window;
 #endif
 #ifdef VK_USE_PLATFORM_MACOS_MVK
     void *window;
@@ -860,6 +868,8 @@ static void AppCreateInstance(struct AppInstance *inst) {
     inst->vulkan_minor = VK_VERSION_MINOR(inst->instance_version);
     inst->vulkan_patch = VK_VERSION_PATCH(VK_HEADER_VERSION);
 
+    inst->surface_chain = NULL;
+
     AppGetInstanceExtensions(inst);
 
     const VkDebugReportCallbackCreateInfoEXT dbg_info = {.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT,
@@ -1149,9 +1159,16 @@ static void AppDestroyWin32Window(struct AppInstance *inst) { DestroyWindow(inst
 //-----------------------------------------------------------
 
 #if defined(VK_USE_PLATFORM_XCB_KHR) || defined(VK_USE_PLATFORM_XLIB_KHR) || defined(VK_USE_PLATFORM_WIN32_KHR) || \
-    defined(VK_USE_PLATFORM_MACOS_MVK) || defined(VK_USE_PLATFORM_WAYLAND_KHR)
+    defined(VK_USE_PLATFORM_MACOS_MVK) || defined(VK_USE_PLATFORM_WAYLAND_KHR) || defined(VK_USE_PLATFORM_ANDROID_KHR)
 static void AppDestroySurface(struct AppInstance *inst) {  // same for all platforms
     vkDestroySurfaceKHR(inst->instance, inst->surface, NULL);
+}
+
+static void AppDestroySurfaceChain(struct AppInstance *inst) {  // same for all platforms
+    for (struct SurfaceNameWHandle *surface_stuff = inst->surface_chain; surface_stuff != NULL;
+         surface_stuff = surface_stuff->pNextSurface) {
+        vkDestroySurfaceKHR(inst->instance, surface_stuff->surface, NULL);
+    }
 }
 #endif
 
@@ -1912,9 +1929,29 @@ static void AppDumpSurfaceExtension(struct AppInstance *inst, struct AppGpu *gpu
         return;
     }
 
+    if (inst->surface) {
+        AppDestroySurface(inst);
+    }
+
     surface_extension->create_window(inst);
+    surface_extension->create_surface(inst);
+
+    struct SurfaceNameWHandle *cur = inst->surface_chain;
+    if (cur == NULL) {
+        cur = (struct SurfaceNameWHandle *)malloc(sizeof(struct SurfaceNameWHandle));
+        inst->surface_chain = cur;
+    } else {
+        for (; cur->pNextSurface != NULL; cur = cur->pNextSurface) {
+        }
+        cur->pNextSurface = (struct SurfaceNameWHandle *)malloc(sizeof(struct SurfaceNameWHandle));
+        cur = cur->pNextSurface;
+    }
+    cur->name = surface_extension->name;
+    cur->surface = inst->surface;
+    cur->pNextSurface = NULL;
+    cur->present_support = VK_FALSE;
+
     for (uint32_t i = 0; i < gpu_count; ++i) {
-        surface_extension->create_surface(inst);
         if (html_output) {
             fprintf(out, "\t\t\t\t<details><summary>GPU id : <div class='val'>%u</div> (%s)</summary>\n", i,
                     gpus[i].props.deviceName);
@@ -1934,6 +1971,7 @@ static void AppDumpSurfaceExtension(struct AppInstance *inst, struct AppGpu *gpu
             printf("\n");
         }
     }
+    inst->surface = VK_NULL_HANDLE;
     surface_extension->destroy_window(inst);
 }
 
@@ -2897,6 +2935,7 @@ static void AppGpuDumpFeatures(const struct AppGpu *gpu, FILE *out) {
                             "\t\t\t\t\t\t<details><summary>shaderSharedInt64Atomics = <div class='val'>%" PRIuLEAST32
                             "</div></summary></details>\n",
                             shader_atomic_int64_features->shaderSharedInt64Atomics);
+                    fprintf(out, "\t\t\t\t\t</details>\n");
                 } else if (human_readable_output) {
                     printf("\nVkPhysicalDeviceShaderAtomicInt64Features:\n");
                     printf("==========================================\n");
@@ -2920,6 +2959,7 @@ static void AppGpuDumpFeatures(const struct AppGpu *gpu, FILE *out) {
                             "\t\t\t\t\t\t<details><summary>geometryStreams   = <div class='val'>%" PRIuLEAST32
                             "</div></summary></details>\n",
                             transform_feedback_features->geometryStreams);
+                    fprintf(out, "\t\t\t\t\t</details>\n");
                 } else if (human_readable_output) {
                     printf("\nVkPhysicalDeviceTransformFeedbackFeatures:\n");
                     printf("==========================================\n");
@@ -2937,6 +2977,7 @@ static void AppGpuDumpFeatures(const struct AppGpu *gpu, FILE *out) {
                             "\t\t\t\t\t\t<details><summary>scalarBlockLayout = <div class='val'>%" PRIuLEAST32
                             "</div></summary></details>\n",
                             scalar_block_layout_features->scalarBlockLayout);
+                    fprintf(out, "\t\t\t\t\t</details>\n");
                 } else if (human_readable_output) {
                     printf("\nVkPhysicalDeviceScalarBlockLayoutFeatures:\n");
                     printf("==========================================\n");
@@ -2961,6 +3002,7 @@ static void AppGpuDumpFeatures(const struct AppGpu *gpu, FILE *out) {
                             "\t\t\t\t\t\t<details><summary>fragmentDensityMapNonSubsampledImages = <div class='val'>%" PRIuLEAST32
                             "</div></summary></details>\n",
                             fragment_density_map_features->fragmentDensityMapNonSubsampledImages);
+                    fprintf(out, "\t\t\t\t\t</details>\n");
                 } else if (human_readable_output) {
                     printf("\nVkPhysicalDeviceFragmentDensityMapFeatures:\n");
                     printf("==========================================\n");
@@ -4456,9 +4498,9 @@ static void AppGpuDumpQueueProps(const struct AppGpu *gpu, uint32_t id, FILE *ou
         props = *props_const;
     }
 
-    VkBool32 supports_present = VK_FALSE;
-    if (gpu->inst->surface) {
-        VkResult err = vkGetPhysicalDeviceSurfaceSupportKHR(gpu->obj, id, gpu->inst->surface, &supports_present);
+    for (struct SurfaceNameWHandle *surface_stuff = gpu->inst->surface_chain; surface_stuff != NULL;
+         surface_stuff = surface_stuff->pNextSurface) {
+        VkResult err = vkGetPhysicalDeviceSurfaceSupportKHR(gpu->obj, id, surface_stuff->surface, &surface_stuff->present_support);
         if (err) ERR_EXIT(err);
     }
 
@@ -4500,8 +4542,13 @@ static void AppGpuDumpQueueProps(const struct AppGpu *gpu, uint32_t id, FILE *ou
                 "class='val'>%d</div>, <div class='val'>%d</div>)</summary></details>\n",
                 props.minImageTransferGranularity.width, props.minImageTransferGranularity.height,
                 props.minImageTransferGranularity.depth);
-        fprintf(out, "\t\t\t\t\t\t<details><summary>present support    = <div class='val'>%s</div></summary></details>\n",
-                supports_present ? "true" : "false");
+        fprintf(out, "\t\t\t\t\t\t<details><summary>present support</summary>\n");
+        for (struct SurfaceNameWHandle *surface_stuff = gpu->inst->surface_chain; surface_stuff != NULL;
+             surface_stuff = surface_stuff->pNextSurface) {
+            fprintf(out, "\t\t\t\t\t\t\t<details><summary>%s = <div class='val'>%s</div></summary></details>\n",
+                    surface_stuff->name, surface_stuff->present_support ? "true" : "false");
+        }
+        fprintf(out, "\t\t\t\t\t\t</details>\n");
         fprintf(out, "\t\t\t\t\t</details>\n");
     } else if (human_readable_output) {
         printf("\n");
@@ -4509,7 +4556,11 @@ static void AppGpuDumpQueueProps(const struct AppGpu *gpu, uint32_t id, FILE *ou
         printf("\ttimestampValidBits = %u\n", props.timestampValidBits);
         printf("\tminImageTransferGranularity = (%d, %d, %d)\n", props.minImageTransferGranularity.width,
                props.minImageTransferGranularity.height, props.minImageTransferGranularity.depth);
-        printf("\tpresent support    = %s\n", supports_present ? "true" : "false");
+        printf("\tpresent support:\n");
+        for (struct SurfaceNameWHandle *surface_stuff = gpu->inst->surface_chain; surface_stuff != NULL;
+             surface_stuff = surface_stuff->pNextSurface) {
+            printf("\t\t%s = %s\n", surface_stuff->name, surface_stuff->present_support ? "true" : "false");
+        }
     }
     if (json_output) {
         printf("\t\t{\n");
@@ -4521,7 +4572,16 @@ static void AppGpuDumpQueueProps(const struct AppGpu *gpu, uint32_t id, FILE *ou
         printf("\t\t\t\"queueCount\": %u,\n", props.queueCount);
         printf("\t\t\t\"queueFlags\": %u,\n", props.queueFlags);
         printf("\t\t\t\"timestampValidBits\": %u,\n", props.timestampValidBits);
-        printf("\t\t\t\"present_support\": %s\n", supports_present ? "\"true\"" : "\"false\"");
+        printf("\t\t\t\"present_support\": {\n");
+        for (struct SurfaceNameWHandle *surface_stuff = gpu->inst->surface_chain; surface_stuff != NULL;
+             surface_stuff = surface_stuff->pNextSurface) {
+            if (surface_stuff->pNextSurface) {
+                printf("\t\t\t\t\"%s\" : %u,\n", surface_stuff->name, surface_stuff->present_support);
+            } else {
+                printf("\t\t\t\t\"%s\" : %u\n", surface_stuff->name, surface_stuff->present_support);
+            }
+        }
+        printf("\t\t\t}\n");
         printf("\t\t}");
     }
 
@@ -4698,6 +4758,10 @@ static void AppGpuDumpMemoryProps(const struct AppGpu *gpu, FILE *out) {
                 fprintf(out,
                         "\t\t\t\t\t\t\t\t\t<details><summary><div "
                         "class='type'>VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT</div></summary></details>\n");
+            if (flags & VK_MEMORY_PROPERTY_PROTECTED_BIT)
+                fprintf(out,
+                        "\t\t\t\t\t\t\t\t\t<details><summary><div "
+                        "class='type'>VK_MEMORY_PROPERTY_PROTECTED_BIT</div></summary></details>\n");
             if (props.memoryTypes[i].propertyFlags > 0) fprintf(out, "\t\t\t\t\t\t\t\t</details>\n");
             fprintf(out, "\t\t\t\t\t\t\t</details>\n");
         } else if (human_readable_output) {
@@ -4706,6 +4770,7 @@ static void AppGpuDumpMemoryProps(const struct AppGpu *gpu, FILE *out) {
             if (flags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) printf("\t\t\tVK_MEMORY_PROPERTY_HOST_COHERENT_BIT\n");
             if (flags & VK_MEMORY_PROPERTY_HOST_CACHED_BIT) printf("\t\t\tVK_MEMORY_PROPERTY_HOST_CACHED_BIT\n");
             if (flags & VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT) printf("\t\t\tVK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT\n");
+            if (flags & VK_MEMORY_PROPERTY_PROTECTED_BIT) printf("\t\t\tVK_MEMORY_PROPERTY_PROTECTED_BIT\n");
         }
     }
     if (html_output) {
@@ -4837,8 +4902,13 @@ static void AppGroupDump(const VkPhysicalDeviceGroupProperties *group, const uin
                                               .physicalDeviceCount = group->physicalDeviceCount,
                                               .pPhysicalDevices = group->physicalDevices};
 
-    VkDeviceQueueCreateInfo q_ci = {
-        .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO, .pNext = NULL, .queueFamilyIndex = 0, .queueCount = 1};
+    float queue_priority = 1.0f;
+
+    VkDeviceQueueCreateInfo q_ci = {.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+                                    .pNext = NULL,
+                                    .queueFamilyIndex = 0,
+                                    .queueCount = 1,
+                                    .pQueuePriorities = &queue_priority};
 
     VkDeviceCreateInfo device_ci = {.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
                                     .pNext = &dg_ci,
@@ -5337,7 +5407,7 @@ int main(int argc, char **argv) {
     free(gpus);
     free(objs);
 
-    AppDestroySurface(&inst);
+    AppDestroySurfaceChain(&inst);
     AppDestroyInstance(&inst);
 
     if (html_output) {

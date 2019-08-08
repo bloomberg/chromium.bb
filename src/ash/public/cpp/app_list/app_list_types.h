@@ -28,7 +28,7 @@ ASH_PUBLIC_EXPORT extern const char kOemFolderId[];
 enum class AppListState {
   kStateApps = 0,
   kStateSearchResults,
-  kStateStart,
+  kStateStart_DEPRECATED,
   kStateEmbeddedAssistant,
   // Add new values here.
 

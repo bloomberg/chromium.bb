@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
@@ -156,8 +155,6 @@ class CORE_EXPORT WorkletGlobalScope
   EventTarget* ErrorEventTarget() final { return nullptr; }
 
   void BindContentSecurityPolicyToExecutionContext() override;
-
-  mojom::RequestContextType GetDestinationForMainScript() override;
 
   // The |url_| and |user_agent_| are inherited from the parent Document.
   const KURL url_;

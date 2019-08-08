@@ -15,7 +15,6 @@ namespace system_logs {
 
 namespace {
 
-constexpr char kIwlwifiDumpKey[] = "iwlwifi_dump";
 constexpr char kIwlwifiDumpLocation[] = "/var/log/last_iwlwifi_dump";
 
 std::unique_ptr<SystemLogsResponse> CheckExistenceOnBlockingTaskRunner() {
@@ -70,20 +69,8 @@ void IwlwifiDumpLogSource::Fetch(SysLogsSourceCallback callback) {
       base::BindOnce(std::move(callback)));
 }
 
-bool ContainsIwlwifiLogs(FeedbackCommon::SystemLogsMap* sys_logs) {
+bool ContainsIwlwifiLogs(const FeedbackCommon::SystemLogsMap* sys_logs) {
   return sys_logs->count(kIwlwifiDumpKey);
-}
-
-void MergeIwlwifiLogs(
-    std::unique_ptr<FeedbackCommon::SystemLogsMap> original_sys_logs,
-    system_logs::SysLogsFetcherCallback callback,
-    std::unique_ptr<system_logs::SystemLogsResponse> fetched_iwlwifi_response) {
-  if (fetched_iwlwifi_response->count(kIwlwifiDumpKey)) {
-    (*original_sys_logs)[kIwlwifiDumpKey] =
-        std::move(fetched_iwlwifi_response->at(kIwlwifiDumpKey));
-  }
-
-  std::move(callback).Run(std::move(original_sys_logs));
 }
 
 }  // namespace system_logs

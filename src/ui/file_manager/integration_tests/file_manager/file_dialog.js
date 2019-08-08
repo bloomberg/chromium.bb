@@ -84,6 +84,11 @@ async function setUpFileEntrySet(volume) {
 async function openFileDialogClickOkButton(
     volume, name, useBrowserOpen = false) {
   const okButton = '.button-panel button.ok:enabled';
+  if (volume !== 'drive' ||
+      await sendTestMessage({name: 'getDriveFsEnabled'}) === 'true') {
+    await sendTestMessage(
+        {name: 'expectFileTask', fileNames: [name], openType: 'open'});
+  }
   let closer = clickOpenFileDialogButton.bind(null, name, okButton);
 
   const entrySet = await setUpFileEntrySet(volume);
@@ -108,6 +113,12 @@ async function openFileDialogClickOkButton(
  */
 async function saveFileDialogClickOkButton(volume, name) {
   const caller = getCaller();
+
+  if (volume !== 'drive' ||
+      await sendTestMessage({name: 'getDriveFsEnabled'}) === 'true') {
+    await sendTestMessage(
+        {name: 'expectFileTask', fileNames: [name], openType: 'saveAs'});
+  }
 
   let closer = async (appId) => {
     const okButton = '.button-panel button.ok:enabled';
@@ -369,4 +380,43 @@ testcase.openFileDialogUnload = async () => {
   chrome.fileSystem.chooseEntry({type: 'openFile'}, (entry) => {});
   const dialog = await remoteCall.waitForWindow('dialog#');
   await unloadOpenFileDialog(dialog);
+};
+
+/**
+ * Tests that the open file dialog's filetype filter does not default to all
+ * types.
+ */
+testcase.openFileDialogDefaultFilter = async () => {
+  const params = {
+    type: 'openFile',
+    accepts: [{extensions: ['jpg']}],
+    acceptsAllTypes: true,
+  };
+  chrome.fileSystem.chooseEntry(params, (entry) => {});
+  const dialog = await remoteCall.waitForWindow('dialog#');
+
+  // Check: 'JPEG image' should be selected.
+  const selectedFilter =
+      await remoteCall.waitForElement(dialog, '.file-type option:checked');
+  chrome.test.assertEq('1', selectedFilter.value);
+  chrome.test.assertEq('JPEG image', selectedFilter.text);
+};
+
+/**
+ * Tests that the save file dialog's filetype filter defaults to all types.
+ */
+testcase.saveFileDialogDefaultFilter = async () => {
+  const params = {
+    type: 'saveFile',
+    accepts: [{extensions: ['jpg']}],
+    acceptsAllTypes: true,
+  };
+  chrome.fileSystem.chooseEntry(params, (entry) => {});
+  const dialog = await remoteCall.waitForWindow('dialog#');
+
+  // Check: 'All files' should be selected.
+  const selectedFilter =
+      await remoteCall.waitForElement(dialog, '.file-type option:checked');
+  chrome.test.assertEq('0', selectedFilter.value);
+  chrome.test.assertEq('All files', selectedFilter.text);
 };

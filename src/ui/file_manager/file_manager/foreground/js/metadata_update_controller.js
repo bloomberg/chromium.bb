@@ -11,10 +11,8 @@
  * @constructor
  * @struct
  */
-function MetadataUpdateController(listContainer,
-                                  directoryModel,
-                                  metadataModel,
-                                  fileMetadataFormatter) {
+function MetadataUpdateController(
+    listContainer, directoryModel, metadataModel, fileMetadataFormatter) {
   /**
    * @private {!DirectoryModel}
    * @const
@@ -51,9 +49,10 @@ function MetadataUpdateController(listContainer,
   today.setMinutes(0);
   today.setSeconds(0);
   today.setMilliseconds(0);
-  setTimeout(this.dailyUpdateModificationTime_.bind(this),
-             today.getTime() + MetadataUpdateController.MILLISECONDS_IN_DAY_ -
-             Date.now() + 1000);
+  setTimeout(
+      this.dailyUpdateModificationTime_.bind(this),
+      today.getTime() + MetadataUpdateController.MILLISECONDS_IN_DAY_ -
+          Date.now() + 1000);
 }
 
 /**
@@ -102,14 +101,15 @@ MetadataUpdateController.prototype.onCachedMetadataUpdate_ = function(event) {
  * @private
  */
 MetadataUpdateController.prototype.dailyUpdateModificationTime_ = function() {
-  const entries = /** @type {!Array<!Entry>} */(
+  const entries = /** @type {!Array<!Entry>} */ (
       this.directoryModel_.getFileList().slice());
   this.metadataModel_.get(entries, ['modificationTime']).then(() => {
     this.listContainer_.currentView.updateListItemsMetadata(
         'filesystem', entries);
   });
-  setTimeout(this.dailyUpdateModificationTime_.bind(this),
-             MetadataUpdateController.MILLISECONDS_IN_DAY_);
+  setTimeout(
+      this.dailyUpdateModificationTime_.bind(this),
+      MetadataUpdateController.MILLISECONDS_IN_DAY_);
 };
 
 /**

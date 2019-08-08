@@ -49,6 +49,7 @@ class NET_EXPORT CookieStore {
       CanonicalCookie::CookieInclusionStatus status)>
       SetCookiesCallback;
   typedef base::OnceCallback<void(uint32_t num_deleted)> DeleteCallback;
+  typedef base::OnceCallback<void(bool success)> SetCookieableSchemesCallback;
 
   virtual ~CookieStore();
 
@@ -65,13 +66,15 @@ class NET_EXPORT CookieStore {
                                          SetCookiesCallback callback) = 0;
 
   // Set the cookie on the cookie store.  |cookie.IsCanonical()| must
-  // be true.  |source_scheme| denotes the scheme of the resource setting this,
-  // and |modify_http_only| indicates if the source of the setting may modify
-  // http_only cookies.  The current time will be used in place of a null
-  // creation time.
+  // be true.  |source_scheme| denotes the scheme of the resource setting this.
+  //
+  // |options| is used to determine the context the operation is run in, and
+  // which cookies it can alter (e.g. http only, or same site).
+  //
+  // The current time will be used in place of a null creation time.
   virtual void SetCanonicalCookieAsync(std::unique_ptr<CanonicalCookie> cookie,
                                        std::string source_scheme,
-                                       bool modify_http_only,
+                                       const CookieOptions& options,
                                        SetCookiesCallback callback) = 0;
 
   // Obtains a CookieList for the given |url| and |options|. The returned
@@ -133,6 +136,14 @@ class NET_EXPORT CookieStore {
 
   // The interface used to observe changes to this CookieStore's contents.
   virtual CookieChangeDispatcher& GetChangeDispatcher() = 0;
+
+  // Resets the list of cookieable schemes to the supplied schemes. Does nothing
+  // (and returns false) if called after first use of the instance (i.e. after
+  // the instance initialization process). Otherwise, this returns true to
+  // indicate success. CookieStores which do not support modifying cookieable
+  // schemes will always return false.
+  virtual void SetCookieableSchemes(const std::vector<std::string>& schemes,
+                                    SetCookieableSchemesCallback callback) = 0;
 
   // Returns true if this cookie store is ephemeral, and false if it is backed
   // by some sort of persistence layer.

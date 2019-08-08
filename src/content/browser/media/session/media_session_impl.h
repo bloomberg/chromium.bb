@@ -134,6 +134,7 @@ class MediaSessionImpl : public MediaSession,
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
   void OnWebContentsFocused(RenderWidgetHost*) override;
   void OnWebContentsLostFocus(RenderWidgetHost*) override;
+  void TitleWasSet(NavigationEntry* entry) override;
 
   // MediaSessionService-related methods
 

@@ -160,9 +160,9 @@ int ColorSpace::GetNextId() {
 
 bool ColorSpace::operator==(const ColorSpace& other) const {
   if (primaries_ != other.primaries_ || transfer_ != other.transfer_ ||
-      matrix_ != other.matrix_ || range_ != other.range_ ||
-      icc_profile_id_ != other.icc_profile_id_)
+      matrix_ != other.matrix_ || range_ != other.range_) {
     return false;
+  }
   if (primaries_ == PrimaryID::CUSTOM) {
     if (memcmp(custom_primary_matrix_, other.custom_primary_matrix_,
                sizeof(custom_primary_matrix_))) {
@@ -192,16 +192,6 @@ bool ColorSpace::FullRangeEncodedValues() const {
          transfer_ == TransferID::IEC61966_2_4;
 }
 
-bool ColorSpace::IsParametricAccurate() const {
-  return icc_profile_id_ == 0;
-}
-
-ColorSpace ColorSpace::GetParametricApproximation() const {
-  ColorSpace result = *this;
-  result.icc_profile_id_ = 0;
-  return result;
-}
-
 bool ColorSpace::operator!=(const ColorSpace& other) const {
   return !(*this == other);
 }
@@ -222,10 +212,6 @@ bool ColorSpace::operator<(const ColorSpace& other) const {
   if (range_ < other.range_)
     return true;
   if (range_ > other.range_)
-    return false;
-  if (icc_profile_id_ < other.icc_profile_id_)
-    return true;
-  if (icc_profile_id_ > other.icc_profile_id_)
     return false;
   if (primaries_ == PrimaryID::CUSTOM) {
     int primary_result =
@@ -369,9 +355,6 @@ std::string ColorSpace::ToString() const {
     PRINT_ENUM_CASE(RangeID, FULL)
     PRINT_ENUM_CASE(RangeID, DERIVED)
   }
-  if (icc_profile_id_) {
-    ss << ", icc_profile_id:" << icc_profile_id_;
-  }
   ss << "}";
   return ss.str();
 }
@@ -408,14 +391,10 @@ ColorSpace ColorSpace::GetScaledColorSpace(float factor) const {
 }
 
 ColorSpace ColorSpace::GetRasterColorSpace() const {
-  // Rasterization can only be done into parametric color spaces.
-  if (icc_profile_id_)
-    return GetParametricApproximation();
-
   // Rasterization doesn't support more than 8 bit unorm values. If the output
   // space has an extended range, use Display P3 for the rasterization space,
   // to get a somewhat wider color gamut.
-  if (HasExtendedSkTransferFn())
+  if (IsHDR())
     return CreateDisplayP3D65();
 
   return *this;
@@ -424,7 +403,7 @@ ColorSpace ColorSpace::GetRasterColorSpace() const {
 ColorSpace ColorSpace::GetBlendingColorSpace() const {
   // HDR output on windows requires output have a linear transfer function.
   // Linear blending breaks the web, so use extended-sRGB for blending.
-  if (transfer_ == TransferID::LINEAR_HDR)
+  if (IsHDR())
     return CreateExtendedSRGB();
   return *this;
 }
@@ -442,19 +421,6 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
   if (range_ != RangeID::FULL) {
     DLOG(ERROR) << "Not creating non-full-range SkColorSpace";
     return nullptr;
-  }
-
-  // If we got a specific SkColorSpace from the ICCProfile that this color space
-  // was created from, use that.
-  if (icc_profile_id_) {
-    sk_sp<SkColorSpace> result =
-        ICCProfile::GetSkColorSpaceFromId(icc_profile_id_);
-    if (result)
-      return result;
-
-    // This will fall through to creating a parametric approximation. The
-    // result will be that we will use an inaccurate transfer function.
-    DLOG(ERROR) << "Unable to find ICCProfile for SkColorSpace.";
   }
 
   // Use the named SRGB and linear-SRGB instead of the generic constructors.

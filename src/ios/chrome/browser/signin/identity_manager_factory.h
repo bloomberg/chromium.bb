@@ -55,8 +55,10 @@ class IdentityManagerFactory : public BrowserStateKeyedServiceFactory {
 
   // BrowserStateKeyedServiceFactory:
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
-      web::BrowserState* browser_state) const override;
+      web::BrowserState* context) const override;
   void BrowserStateShutdown(web::BrowserState* context) override;
+  void RegisterBrowserStatePrefs(
+      user_prefs::PrefRegistrySyncable* registry) override;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManagerFactory);
 };

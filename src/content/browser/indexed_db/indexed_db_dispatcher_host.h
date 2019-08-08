@@ -35,6 +35,7 @@ class Origin;
 namespace content {
 class CursorImpl;
 class IndexedDBContextImpl;
+class IndexedDBTransaction;
 
 // Constructed on UI thread.  All remaining calls (including destruction) should
 // happen on the IDB sequenced task runner.
@@ -58,6 +59,10 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
                         blink::mojom::IDBCursorAssociatedRequest request);
   void RemoveCursorBinding(mojo::BindingId binding_id);
 
+  void AddTransactionBinding(
+      std::unique_ptr<blink::mojom::IDBTransaction> transaction,
+      blink::mojom::IDBTransactionAssociatedRequest request);
+
   // A shortcut for accessing our context.
   IndexedDBContextImpl* context() const { return indexed_db_context_.get(); }
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context() const {
@@ -69,6 +74,11 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   base::WeakPtr<IndexedDBDispatcherHost> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
+
+  void CreateAndBindTransactionImpl(
+      blink::mojom::IDBTransactionAssociatedRequest transaction_request,
+      const url::Origin& origin,
+      base::WeakPtr<IndexedDBTransaction> transaction);
 
   // Called by UI thread. Used to kill outstanding bindings and weak pointers
   // in callbacks.
@@ -94,6 +104,7 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
                 database_callbacks_info,
             const base::string16& name,
             int64_t version,
+            blink::mojom::IDBTransactionAssociatedRequest transaction_request,
             int64_t transaction_id) override;
   void DeleteDatabase(
       blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
@@ -120,13 +131,11 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   };
 
   mojo::BindingSet<blink::mojom::IDBFactory, BindingState> bindings_;
-
   mojo::StrongAssociatedBindingSet<blink::mojom::IDBDatabase>
       database_bindings_;
-
   mojo::StrongAssociatedBindingSet<blink::mojom::IDBCursor> cursor_bindings_;
-
-  std::unique_ptr<IDBSequenceHelper> idb_helper_;
+  mojo::StrongAssociatedBindingSet<blink::mojom::IDBTransaction>
+      transaction_bindings_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

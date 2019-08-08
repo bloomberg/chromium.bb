@@ -113,7 +113,9 @@ ByteReader.readNullTerminatedString = (dataView, pos, size, opt_end) => {
 
   for (let i = 0; i < size; ++i) {
     const code = dataView.getUint8(pos + i);
-    if (code == 0) break;
+    if (code == 0) {
+      break;
+    }
     codes.push(code);
   }
 
@@ -133,27 +135,30 @@ ByteReader.readNullTerminatedString = (dataView, pos, size, opt_end) => {
  * @param {number=} opt_end Maximum position to read from.
  * @return {string} Read string.
  */
-ByteReader.readNullTerminatedStringUTF16 = (dataView, pos, bom, size, opt_end) => {
-  ByteReader.validateRead(pos, size, opt_end || dataView.byteLength);
+ByteReader.readNullTerminatedStringUTF16 =
+    (dataView, pos, bom, size, opt_end) => {
+      ByteReader.validateRead(pos, size, opt_end || dataView.byteLength);
 
-  let littleEndian = false;
-  let start = 0;
+      let littleEndian = false;
+      let start = 0;
 
-  if (bom) {
-    littleEndian = (dataView.getUint8(pos) == 0xFF);
-    start = 2;
-  }
+      if (bom) {
+        littleEndian = (dataView.getUint8(pos) == 0xFF);
+        start = 2;
+      }
 
-  const codes = [];
+      const codes = [];
 
-  for (let i = start; i < size; i += 2) {
-    const code = dataView.getUint16(pos + i, littleEndian);
-    if (code == 0) break;
-    codes.push(code);
-  }
+      for (let i = start; i < size; i += 2) {
+        const code = dataView.getUint16(pos + i, littleEndian);
+        if (code == 0) {
+          break;
+        }
+        codes.push(code);
+      }
 
-  return String.fromCharCode.apply(null, codes);
-};
+      return String.fromCharCode.apply(null, codes);
+    };
 
 /**
  * @const
@@ -161,8 +166,8 @@ ByteReader.readNullTerminatedStringUTF16 = (dataView, pos, bom, size, opt_end) =
  * @private
  */
 ByteReader.base64Alphabet_ =
-    ('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/').
-    split('');
+    ('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/')
+        .split('');
 
 /**
  * Read as a sequence of bytes, returning them as a single base64 encoded
@@ -235,10 +240,10 @@ ByteReader.readImage = (dataView, pos, size, opt_end) => {
 
   // Two bytes is enough to identify the mime type.
   const prefixToMime = {
-    '\x89P' : 'png',
-    '\xFF\xD8' : 'jpeg',
-    'BM' : 'bmp',
-    'GI' : 'gif'
+    '\x89P': 'png',
+    '\xFF\xD8': 'jpeg',
+    'BM': 'bmp',
+    'GI': 'gif',
   };
 
   const prefix = ByteReader.readString(dataView, pos, 2, opt_end);
@@ -376,10 +381,8 @@ ByteReader.prototype.readString = function(size, opt_end) {
  * @return {string} Null-terminated string value.
  */
 ByteReader.prototype.readNullTerminatedString = function(size, opt_end) {
-  const rv = ByteReader.readNullTerminatedString(this.view_,
-                                               this.pos_,
-                                               size,
-                                               opt_end);
+  const rv =
+      ByteReader.readNullTerminatedString(this.view_, this.pos_, size, opt_end);
   this.pos_ += rv.length;
 
   if (rv.length < size) {
@@ -403,8 +406,8 @@ ByteReader.prototype.readNullTerminatedString = function(size, opt_end) {
  * @param {number=} opt_end Maximum position to read from.
  * @return {string} Read string.
  */
-ByteReader.prototype.readNullTerminatedStringUTF16 =
-    function(bom, size, opt_end) {
+ByteReader.prototype.readNullTerminatedStringUTF16 = function(
+    bom, size, opt_end) {
   const rv = ByteReader.readNullTerminatedStringUTF16(
       this.view_, this.pos_, bom, size, opt_end);
 
@@ -436,8 +439,7 @@ ByteReader.prototype.readNullTerminatedStringUTF16 =
  * @param {function(new:Array<*>)=} opt_arrayConstructor Array constructor.
  * @return {Array<*>} Array of bytes.
  */
-ByteReader.prototype.readSlice = function(size, opt_end,
-                                          opt_arrayConstructor) {
+ByteReader.prototype.readSlice = function(size, opt_end, opt_arrayConstructor) {
   this.validateRead(size, opt_end);
 
   const arrayConstructor = opt_arrayConstructor || Uint8Array;

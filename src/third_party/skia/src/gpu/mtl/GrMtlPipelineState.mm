@@ -118,6 +118,13 @@ void GrMtlPipelineState::setData(const GrRenderTarget* renderTarget,
     }
 }
 
+void GrMtlPipelineState::setDrawState(id<MTLRenderCommandEncoder> renderCmdEncoder,
+                                      GrPixelConfig config, const GrXferProcessor& xferProcessor) {
+    this->bind(renderCmdEncoder);
+    this->setBlendConstants(renderCmdEncoder, config, xferProcessor);
+    this->setDepthStencilState(renderCmdEncoder);
+}
+
 void GrMtlPipelineState::bind(id<MTLRenderCommandEncoder> renderCmdEncoder) {
     if (fGeometryUniformBuffer) {
         [renderCmdEncoder setVertexBuffer: fGeometryUniformBuffer->mtlBuffer()
@@ -272,4 +279,29 @@ void GrMtlPipelineState::setDepthStencilState(id<MTLRenderCommandEncoder> render
         id<MTLDepthStencilState> state = [fGpu->device() newDepthStencilStateWithDescriptor:desc];
         [renderCmdEncoder setDepthStencilState:state];
     }
+}
+
+void GrMtlPipelineState::SetDynamicScissorRectState(id<MTLRenderCommandEncoder> renderCmdEncoder,
+                                                    const GrRenderTarget* renderTarget,
+                                                    GrSurfaceOrigin rtOrigin,
+                                                    SkIRect scissorRect) {
+    if (!scissorRect.intersect(SkIRect::MakeWH(renderTarget->width(), renderTarget->height()))) {
+        scissorRect.setEmpty();
+    }
+
+    MTLScissorRect scissor;
+    scissor.x = scissorRect.fLeft;
+    scissor.width = scissorRect.width();
+    if (kTopLeft_GrSurfaceOrigin == rtOrigin) {
+        scissor.y = scissorRect.fTop;
+    } else {
+        SkASSERT(kBottomLeft_GrSurfaceOrigin == rtOrigin);
+        scissor.y = renderTarget->height() - scissorRect.fBottom;
+    }
+    scissor.height = scissorRect.height();
+
+    SkASSERT(scissor.x >= 0);
+    SkASSERT(scissor.y >= 0);
+
+    [renderCmdEncoder setScissorRect: scissor];
 }

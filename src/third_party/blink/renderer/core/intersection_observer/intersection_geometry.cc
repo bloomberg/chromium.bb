@@ -66,7 +66,7 @@ LayoutView* LocalRootView(Element& element) {
 bool ComputeIsVisible(LayoutObject* target, const LayoutRect& rect) {
   DCHECK(RuntimeEnabledFeatures::IntersectionObserverV2Enabled());
   if (target->GetDocument().GetFrame()->LocalFrameRoot().GetOcclusionState() !=
-      kGuaranteedNotOccluded) {
+      FrameOcclusionState::kGuaranteedNotOccluded) {
     return false;
   }
   if (target->HasDistortingVisualEffects())
@@ -202,8 +202,14 @@ LayoutRect IntersectionGeometry::InitializeTargetRect(LayoutObject* target) {
   }
   if (target->IsBox())
     return LayoutRect(ToLayoutBoxModelObject(target)->BorderBoundingBox());
-  if (target->IsLayoutInline())
-    return ToLayoutInline(target)->LinesBoundingBox();
+  if (target->IsLayoutInline()) {
+    return EnclosingLayoutRect(
+        target
+            ->AncestorToLocalQuad(
+                nullptr, FloatQuad(target->AbsoluteBoundingBoxFloatRect()),
+                kUseTransforms | kApplyContainerFlip)
+            .BoundingBox());
+  }
   return ToLayoutText(target)->LinesBoundingBox();
 }
 

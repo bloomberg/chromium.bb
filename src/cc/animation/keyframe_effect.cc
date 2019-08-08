@@ -83,6 +83,9 @@ void KeyframeEffect::BindElementAnimations(
   DCHECK(!element_animations_);
   element_animations_ = element_animations;
 
+  DCHECK(element_id_);
+  DCHECK(element_id_ == element_animations->element_id());
+
   if (has_any_keyframe_model())
     KeyframeModelAdded();
   SetNeedsPushProperties();

@@ -47,9 +47,7 @@ class ValidationMessageClientImpl final
   USING_GARBAGE_COLLECTED_MIXIN(ValidationMessageClientImpl);
 
  public:
-  static ValidationMessageClientImpl* Create(Page&);
-
-  ValidationMessageClientImpl(Page&);
+  explicit ValidationMessageClientImpl(Page&);
   ~ValidationMessageClientImpl() override;
 
   void Trace(blink::Visitor*) override;
@@ -71,7 +69,7 @@ class ValidationMessageClientImpl final
   void DocumentDetached(const Document&) override;
   void WillBeDestroyed() override;
   void LayoutOverlay() override;
-  void PaintOverlay() override;
+  void UpdatePrePaint() override;
   void PaintOverlay(GraphicsContext&) override;
 
   // PopupOpeningObserver function

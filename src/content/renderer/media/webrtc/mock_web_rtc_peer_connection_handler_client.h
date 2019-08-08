@@ -44,6 +44,8 @@ class MockWebRTCPeerConnectionHandlerClient
       std::unique_ptr<blink::WebRTCRtpReceiver> web_rtp_receiver) override {
     DidRemoveReceiverPlanBForMock(&web_rtp_receiver);
   }
+  MOCK_METHOD1(DidModifySctpTransport,
+               void(blink::WebRTCSctpTransportSnapshot snapshot));
   void DidModifyTransceivers(
       std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>>
           web_transceivers,
@@ -73,7 +75,7 @@ class MockWebRTCPeerConnectionHandlerClient
       std::unique_ptr<blink::WebRTCRtpReceiver>* stream_web_rtp_receivers);
 
   const std::string& candidate_sdp() const { return candidate_sdp_; }
-  int candidate_mlineindex() const {
+  const base::Optional<uint16_t>& candidate_mlineindex() const {
     return candidate_mline_index_;
   }
   const std::string& candidate_mid() const { return candidate_mid_ ; }
@@ -82,7 +84,7 @@ class MockWebRTCPeerConnectionHandlerClient
  private:
   blink::WebString remote_stream_id_;
   std::string candidate_sdp_;
-  int candidate_mline_index_;
+  base::Optional<uint16_t> candidate_mline_index_;
   std::string candidate_mid_;
 
   DISALLOW_COPY_AND_ASSIGN(MockWebRTCPeerConnectionHandlerClient);

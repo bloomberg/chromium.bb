@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -1446,7 +1447,7 @@ TestRunner::WorkQueue::~WorkQueue() {
 }
 
 void TestRunner::WorkQueue::ProcessWorkSoon() {
-  if (controller_->top_loading_frame_)
+  if (!controller_->loading_frames_.empty())
     return;
 
   if (!queue_.empty()) {
@@ -1488,8 +1489,9 @@ void TestRunner::WorkQueue::ProcessWork() {
   }
 
   if (!controller_->web_test_runtime_flags_.wait_until_done() &&
-      !controller_->top_loading_frame_)
+      controller_->loading_frames_.empty()) {
     controller_->delegate_->TestFinished();
+  }
 }
 
 TestRunner::TestRunner(TestInterfaces* interfaces)
@@ -1538,7 +1540,7 @@ void TestRunner::SetMainView(blink::WebView* web_view) {
 
 void TestRunner::Reset() {
   is_web_platform_tests_mode_ = false;
-  top_loading_frame_ = nullptr;
+  loading_frames_.clear();
   web_test_runtime_flags_.Reset();
   mock_screen_orientation_client_->ResetData();
   drag_image_.reset();
@@ -1660,65 +1662,43 @@ std::string TestRunner::DumpLayout(blink::WebLocalFrame* frame) {
   return ::test_runner::DumpLayout(frame, web_test_runtime_flags_);
 }
 
-bool TestRunner::DumpPixelsAsync(
-    blink::WebLocalFrame* frame,
+bool TestRunner::CanDumpPixelsFromRenderer() const {
+  return web_test_runtime_flags_.dump_drag_image() ||
+         web_test_runtime_flags_.is_printing();
+}
+
+void TestRunner::DumpPixelsAsync(
+    content::RenderView* render_view,
     base::OnceCallback<void(const SkBitmap&)> callback) {
+  auto* view_proxy = static_cast<WebViewTestProxy*>(render_view);
+  DCHECK(view_proxy->GetWebView()->MainFrame());
+  DCHECK(CanDumpPixelsFromRenderer());
+
   if (web_test_runtime_flags_.dump_drag_image()) {
-    if (drag_image_.isNull()) {
+    if (!drag_image_.isNull()) {
+      std::move(callback).Run(drag_image_);
+    } else {
       // This means the test called dumpDragImage but did not initiate a drag.
       // Return a blank image so that the test fails.
       SkBitmap bitmap;
       bitmap.allocN32Pixels(1, 1);
       bitmap.eraseColor(0);
       std::move(callback).Run(bitmap);
-      return false;
     }
-
-    std::move(callback).Run(drag_image_);
-    return false;
+    return;
   }
 
-  // If we need to do a display compositor pixel dump, then delegate that to the
-  // browser by returning true. Note that printing case can be handled here.
-  if (!web_test_runtime_flags_.is_printing() &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDisplayCompositorPixelDump)) {
-    frame->View()->MainFrameWidget()->RequestPresentationCallbackForTesting(
-        base::BindOnce(
-            [](base::OnceCallback<void(const SkBitmap&)> callback) {
-              SkBitmap bitmap;
-              bitmap.allocN32Pixels(1, 1);
-              bitmap.eraseColor(0);
-              std::move(callback).Run(bitmap);
-            },
-            std::move(callback)));
-    return true;
+  blink::WebLocalFrame* frame =
+      view_proxy->GetWebView()->MainFrame()->ToWebLocalFrame();
+  blink::WebLocalFrame* target_frame = frame;
+  std::string frame_name = web_test_runtime_flags_.printing_frame();
+  if (!frame_name.empty()) {
+    blink::WebFrame* frame_to_print =
+        frame->FindFrameByName(blink::WebString::FromUTF8(frame_name));
+    if (frame_to_print && frame_to_print->IsWebLocalFrame())
+      target_frame = frame_to_print->ToWebLocalFrame();
   }
-
-  // See if we need to draw the selection bounds rect on top of the snapshot.
-  if (web_test_runtime_flags_.dump_selection_rect()) {
-    callback =
-        CreateSelectionBoundsRectDrawingCallback(frame, std::move(callback));
-  }
-
-  // Request appropriate kind of pixel dump.
-  if (web_test_runtime_flags_.is_printing()) {
-    auto* target_frame = frame;
-    std::string frame_name = web_test_runtime_flags_.printing_frame();
-    if (!frame_name.empty()) {
-      auto* frame_to_print =
-          frame->FindFrameByName(blink::WebString::FromUTF8(frame_name));
-      if (frame_to_print && frame_to_print->IsWebLocalFrame())
-        target_frame = frame_to_print->ToWebLocalFrame();
-    }
-    test_runner::PrintFrameAsync(target_frame, std::move(callback));
-  } else {
-    // TODO(lukasza): Ask the |delegate_| to capture the pixels in the browser
-    // process, so that OOPIF pixels are also captured.
-    test_runner::DumpPixelsAsync(frame, delegate_->GetDeviceScaleFactor(),
-                                 std::move(callback));
-  }
-  return false;
+  test_runner::PrintFrameAsync(target_frame, std::move(callback));
 }
 
 void TestRunner::ReplicateWebTestRuntimeFlagsChanges(
@@ -1833,28 +1813,36 @@ bool TestRunner::IsFramePartOfMainTestWindow(blink::WebFrame* frame) const {
   return test_is_running_ && frame->Top()->View() == main_view_;
 }
 
-void TestRunner::tryToSetTopLoadingFrame(blink::WebFrame* frame) {
+void TestRunner::AddLoadingFrame(blink::WebFrame* frame) {
   if (!IsFramePartOfMainTestWindow(frame))
     return;
 
-  if (top_loading_frame_ || web_test_runtime_flags_.have_top_loading_frame())
-    return;
+  if (loading_frames_.empty()) {
+    // Don't do anything if another renderer process is already tracking the
+    // loading frames.
+    if (web_test_runtime_flags_.have_loading_frame())
+      return;
+    web_test_runtime_flags_.set_have_loading_frame(true);
+    OnWebTestRuntimeFlagsChanged();
+  }
 
-  top_loading_frame_ = frame;
-  web_test_runtime_flags_.set_have_top_loading_frame(true);
-  OnWebTestRuntimeFlagsChanged();
+  loading_frames_.push_back(frame);
 }
 
-void TestRunner::tryToClearTopLoadingFrame(blink::WebFrame* frame) {
+void TestRunner::RemoveLoadingFrame(blink::WebFrame* frame) {
   if (!IsFramePartOfMainTestWindow(frame))
     return;
 
-  if (frame != top_loading_frame_)
+  if (!base::ContainsValue(loading_frames_, frame))
     return;
 
-  top_loading_frame_ = nullptr;
-  DCHECK(web_test_runtime_flags_.have_top_loading_frame());
-  web_test_runtime_flags_.set_have_top_loading_frame(false);
+  DCHECK(web_test_runtime_flags_.have_loading_frame());
+
+  base::Erase(loading_frames_, frame);
+  if (!loading_frames_.empty())
+    return;
+
+  web_test_runtime_flags_.set_have_loading_frame(false);
   OnWebTestRuntimeFlagsChanged();
 
   LocationChangeDone();
@@ -2593,7 +2581,7 @@ void TestRunner::CheckResponseMimeType() {
 }
 
 void TestRunner::NotifyDone() {
-  if (web_test_runtime_flags_.wait_until_done() && !top_loading_frame_ &&
+  if (web_test_runtime_flags_.wait_until_done() && loading_frames_.empty() &&
       work_queue_.is_empty())
     delegate_->TestFinished();
   web_test_runtime_flags_.set_wait_until_done(false);

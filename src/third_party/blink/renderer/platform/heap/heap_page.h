@@ -67,11 +67,12 @@ constexpr size_t kBlinkPageBaseMask = ~kBlinkPageOffsetMask;
 constexpr size_t kBlinkPagesPerRegion = 10;
 
 // TODO(nya): Replace this with something like #if ENABLE_NACL.
-#if 0
+#if defined(ARCH_CPU_PPC64)
 // NaCl's system page size is 64 KiB. This causes a problem in Oilpan's heap
 // layout because Oilpan allocates two guard pages for each Blink page (whose
 // size is kBlinkPageSize = 2^17 = 128 KiB). So we don't use guard pages in
 // NaCl.
+// The same issue holds for ppc64 systems, which use a 64k page size.
 constexpr size_t kBlinkGuardPageSize = 0;
 #else
 constexpr size_t kBlinkGuardPageSize = base::kSystemPageSize;
@@ -198,6 +199,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
   static const uint32_t kZappedMagicForbidden = 0x2c2c2c2c;
 
   static HeapObjectHeader* FromPayload(const void*);
+  static HeapObjectHeader* FromInnerAddress(const void*);
 
   // Checks sanity of the header given a payload pointer.
   static void CheckFromPayload(const void*);
@@ -900,6 +902,15 @@ inline HeapObjectHeader* HeapObjectHeader::FromPayload(const void* payload) {
       reinterpret_cast<HeapObjectHeader*>(addr - sizeof(HeapObjectHeader));
   header->CheckHeader();
   return header;
+}
+
+inline HeapObjectHeader* HeapObjectHeader::FromInnerAddress(
+    const void* address) {
+  BasePage* const page = PageFromObject(address);
+  return page->IsLargeObjectPage()
+             ? static_cast<LargeObjectPage*>(page)->ObjectHeader()
+             : static_cast<NormalPage*>(page)->FindHeaderFromAddress(
+                   reinterpret_cast<Address>(const_cast<void*>(address)));
 }
 
 inline void HeapObjectHeader::CheckFromPayload(const void* payload) {

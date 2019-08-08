@@ -68,6 +68,7 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 #include <iterator>
@@ -195,7 +196,7 @@ StaticRangeVector* RangesFromCurrentSelectionOrExtendCaret(
     const LocalFrame& frame,
     SelectionModifyDirection direction,
     TextGranularity granularity) {
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame.GetDocument()->UpdateStyleAndLayout();
   SelectionModifier selection_modifier(
       frame, frame.Selection().GetSelectionInDOMTree());
   selection_modifier.SetSelectionIsDirectional(
@@ -234,6 +235,8 @@ EphemeralRange ComputeRangeForTranspose(LocalFrame& frame) {
 }  // anonymous namespace
 
 class EditorInternalCommand {
+  STACK_ALLOCATED();
+
  public:
   WebEditingCommandType command_type;
   bool (*execute)(LocalFrame&, Event*, EditorCommandSource, const String&);
@@ -350,7 +353,8 @@ static bool ExecuteCreateLink(LocalFrame& frame,
   if (value.IsEmpty())
     return false;
   DCHECK(frame.GetDocument());
-  return CreateLinkCommand::Create(*frame.GetDocument(), value)->Apply();
+  return MakeGarbageCollected<CreateLinkCommand>(*frame.GetDocument(), value)
+      ->Apply();
 }
 
 static bool ExecuteDefaultParagraphSeparator(LocalFrame& frame,
@@ -373,10 +377,10 @@ static void PerformDelete(LocalFrame& frame) {
   if (!frame.GetEditor().CanDelete())
     return;
 
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // |SelectedRange| requires clean layout for visible selection normalization.
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame.GetDocument()->UpdateStyleAndLayout();
 
   frame.GetEditor().AddToKillRing(frame.GetEditor().SelectedRange());
   // TODO(editing-dev): |Editor::performDelete()| has no direction.
@@ -565,9 +569,9 @@ static bool ExecuteDeleteToMark(LocalFrame& frame,
   }
   PerformDelete(frame);
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame.GetDocument()->UpdateStyleAndLayout();
   frame.GetEditor().SetMark();
   return true;
 }
@@ -612,8 +616,8 @@ static bool ExecuteFormatBlock(LocalFrame& frame,
   QualifiedName qualified_tag_name(prefix, local_name, xhtmlNamespaceURI);
 
   DCHECK(frame.GetDocument());
-  FormatBlockCommand* command =
-      FormatBlockCommand::Create(*frame.GetDocument(), qualified_tag_name);
+  auto* command = MakeGarbageCollected<FormatBlockCommand>(*frame.GetDocument(),
+                                                           qualified_tag_name);
   command->Apply();
   return command->DidApply();
 }
@@ -657,8 +661,8 @@ static bool ExecuteIndent(LocalFrame& frame,
                           EditorCommandSource,
                           const String&) {
   DCHECK(frame.GetDocument());
-  return IndentOutdentCommand::Create(*frame.GetDocument(),
-                                      IndentOutdentCommand::kIndent)
+  return MakeGarbageCollected<IndentOutdentCommand>(
+             *frame.GetDocument(), IndentOutdentCommand::kIndent)
       ->Apply();
 }
 
@@ -668,7 +672,7 @@ static bool ExecuteJustifyCenter(LocalFrame& frame,
                                  const String&) {
   return ExecuteApplyParagraphStyle(frame, source,
                                     InputEvent::InputType::kFormatJustifyCenter,
-                                    CSSPropertyTextAlign, "center");
+                                    CSSPropertyID::kTextAlign, "center");
 }
 
 static bool ExecuteJustifyFull(LocalFrame& frame,
@@ -677,7 +681,7 @@ static bool ExecuteJustifyFull(LocalFrame& frame,
                                const String&) {
   return ExecuteApplyParagraphStyle(frame, source,
                                     InputEvent::InputType::kFormatJustifyFull,
-                                    CSSPropertyTextAlign, "justify");
+                                    CSSPropertyID::kTextAlign, "justify");
 }
 
 static bool ExecuteJustifyLeft(LocalFrame& frame,
@@ -686,7 +690,7 @@ static bool ExecuteJustifyLeft(LocalFrame& frame,
                                const String&) {
   return ExecuteApplyParagraphStyle(frame, source,
                                     InputEvent::InputType::kFormatJustifyLeft,
-                                    CSSPropertyTextAlign, "left");
+                                    CSSPropertyID::kTextAlign, "left");
 }
 
 static bool ExecuteJustifyRight(LocalFrame& frame,
@@ -695,7 +699,7 @@ static bool ExecuteJustifyRight(LocalFrame& frame,
                                 const String&) {
   return ExecuteApplyParagraphStyle(frame, source,
                                     InputEvent::InputType::kFormatJustifyRight,
-                                    CSSPropertyTextAlign, "right");
+                                    CSSPropertyID::kTextAlign, "right");
 }
 
 static bool ExecuteOutdent(LocalFrame& frame,
@@ -703,8 +707,8 @@ static bool ExecuteOutdent(LocalFrame& frame,
                            EditorCommandSource,
                            const String&) {
   DCHECK(frame.GetDocument());
-  return IndentOutdentCommand::Create(*frame.GetDocument(),
-                                      IndentOutdentCommand::kOutdent)
+  return MakeGarbageCollected<IndentOutdentCommand>(
+             *frame.GetDocument(), IndentOutdentCommand::kOutdent)
       ->Apply();
 }
 
@@ -739,7 +743,7 @@ static bool ExecuteRemoveFormat(LocalFrame& frame,
                                 EditorCommandSource,
                                 const String&) {
   DCHECK(frame.GetDocument());
-  RemoveFormatCommand::Create(*frame.GetDocument())->Apply();
+  MakeGarbageCollected<RemoveFormatCommand>(*frame.GetDocument())->Apply();
 
   return true;
 }
@@ -886,9 +890,9 @@ static bool ExecuteTranspose(LocalFrame& frame,
 
   Document* const document = frame.GetDocument();
 
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document->UpdateStyleAndLayout();
 
   const EphemeralRange& range = ComputeRangeForTranspose(frame);
   if (range.IsNull())
@@ -912,9 +916,9 @@ static bool ExecuteTranspose(LocalFrame& frame,
   if (frame.GetDocument() != document)
     return false;
 
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document->UpdateStyleAndLayout();
 
   // 'beforeinput' event handler may change selection, we need to re-calculate
   // range.
@@ -954,7 +958,7 @@ static bool ExecuteUnlink(LocalFrame& frame,
                           EditorCommandSource,
                           const String&) {
   DCHECK(frame.GetDocument());
-  return UnlinkCommand::Create(*frame.GetDocument())->Apply();
+  return MakeGarbageCollected<UnlinkCommand>(*frame.GetDocument())->Apply();
 }
 
 static bool ExecuteUnselect(LocalFrame& frame,
@@ -980,9 +984,9 @@ static bool ExecuteYank(LocalFrame& frame,
   if (frame.GetDocument()->GetFrame() != &frame)
     return false;
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited. see http://crbug.com/590369 for more details.
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame.GetDocument()->UpdateStyleAndLayout();
 
   frame.GetEditor().InsertTextWithoutSendingTextEvent(
       yank_string, false, nullptr, InputEvent::InputType::kInsertFromYank);
@@ -1005,9 +1009,9 @@ static bool ExecuteYankAndSelect(LocalFrame& frame,
   if (frame.GetDocument()->GetFrame() != &frame)
     return false;
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited. see http://crbug.com/590369 for more details.
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame.GetDocument()->UpdateStyleAndLayout();
 
   frame.GetEditor().InsertTextWithoutSendingTextEvent(
       frame.GetEditor().GetKillRing().Yank(), true, nullptr,
@@ -1035,7 +1039,7 @@ static bool Enabled(LocalFrame&, Event*, EditorCommandSource) {
 static bool EnabledVisibleSelection(LocalFrame& frame,
                                     Event* event,
                                     EditorCommandSource source) {
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame.GetDocument()->UpdateStyleAndLayout();
 
   if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
@@ -1052,7 +1056,7 @@ static bool EnabledVisibleSelection(LocalFrame& frame,
 static bool EnabledVisibleSelectionAndMark(LocalFrame& frame,
                                            Event* event,
                                            EditorCommandSource source) {
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame.GetDocument()->UpdateStyleAndLayout();
 
   if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
@@ -1068,7 +1072,7 @@ static bool EnabledVisibleSelectionAndMark(LocalFrame& frame,
 static bool EnableCaretInEditableText(LocalFrame& frame,
                                       Event* event,
                                       EditorCommandSource source) {
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame.GetDocument()->UpdateStyleAndLayout();
 
   if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
@@ -1081,7 +1085,7 @@ static bool EnableCaretInEditableText(LocalFrame& frame,
 static bool EnabledInEditableText(LocalFrame& frame,
                                   Event* event,
                                   EditorCommandSource source) {
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame.GetDocument()->UpdateStyleAndLayout();
   if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return false;
@@ -1110,7 +1114,7 @@ static bool EnabledDelete(LocalFrame& frame,
 static bool EnabledInRichlyEditableText(LocalFrame& frame,
                                         Event*,
                                         EditorCommandSource source) {
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame.GetDocument()->UpdateStyleAndLayout();
   if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return false;
@@ -1123,7 +1127,7 @@ static bool EnabledInRichlyEditableText(LocalFrame& frame,
 static bool EnabledRangeInEditableText(LocalFrame& frame,
                                        Event*,
                                        EditorCommandSource source) {
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame.GetDocument()->UpdateStyleAndLayout();
   if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return false;
@@ -1138,7 +1142,7 @@ static bool EnabledRangeInEditableText(LocalFrame& frame,
 static bool EnabledRangeInRichlyEditableText(LocalFrame& frame,
                                              Event*,
                                              EditorCommandSource source) {
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame.GetDocument()->UpdateStyleAndLayout();
   if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return false;
@@ -1158,7 +1162,7 @@ static bool EnabledUndo(LocalFrame& frame, Event*, EditorCommandSource) {
 static bool EnabledUnselect(LocalFrame& frame,
                             Event* event,
                             EditorCommandSource) {
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame.GetDocument()->UpdateStyleAndLayout();
 
   // The term "visible" here includes a caret in editable text or a range in any
   // text.
@@ -1171,9 +1175,9 @@ static bool EnabledUnselect(LocalFrame& frame,
 static bool EnabledSelectAll(LocalFrame& frame,
                              Event*,
                              EditorCommandSource source) {
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame.GetDocument()->UpdateStyleAndLayout();
   const VisibleSelection& selection =
       frame.Selection().ComputeVisibleSelectionInDOMTree();
   if (selection.IsNone())
@@ -1214,19 +1218,19 @@ static EditingTriState StateUnorderedList(LocalFrame& frame, Event*) {
 }
 
 static EditingTriState StateJustifyCenter(LocalFrame& frame, Event*) {
-  return StyleCommands::StateStyle(frame, CSSPropertyTextAlign, "center");
+  return StyleCommands::StateStyle(frame, CSSPropertyID::kTextAlign, "center");
 }
 
 static EditingTriState StateJustifyFull(LocalFrame& frame, Event*) {
-  return StyleCommands::StateStyle(frame, CSSPropertyTextAlign, "justify");
+  return StyleCommands::StateStyle(frame, CSSPropertyID::kTextAlign, "justify");
 }
 
 static EditingTriState StateJustifyLeft(LocalFrame& frame, Event*) {
-  return StyleCommands::StateStyle(frame, CSSPropertyTextAlign, "left");
+  return StyleCommands::StateStyle(frame, CSSPropertyID::kTextAlign, "left");
 }
 
 static EditingTriState StateJustifyRight(LocalFrame& frame, Event*) {
-  return StyleCommands::StateStyle(frame, CSSPropertyTextAlign, "right");
+  return StyleCommands::StateStyle(frame, CSSPropertyID::kTextAlign, "right");
 }
 
 // Value functions
@@ -1830,9 +1834,9 @@ bool Editor::ExecuteCommand(const String& command_name) {
   if (command_name == "DeleteForward")
     return CreateCommand(AtomicString("ForwardDelete")).Execute();
   if (command_name == "AdvanceToNextMisspelling") {
-    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+    // TODO(editing-dev): Use of UpdateStyleAndLayout
     // needs to be audited. see http://crbug.com/590369 for more details.
-    GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetFrame().GetDocument()->UpdateStyleAndLayout();
 
     // We need to pass false here or else the currently selected word will never
     // be skipped.
@@ -1840,10 +1844,10 @@ bool Editor::ExecuteCommand(const String& command_name) {
     return true;
   }
   if (command_name == "ToggleSpellPanel") {
-    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+    // TODO(editing-dev): Use of UpdateStyleAndLayout
     // needs to be audited.
     // see http://crbug.com/590369 for more details.
-    GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetFrame().GetDocument()->UpdateStyleAndLayout();
 
     GetSpellChecker().ShowSpellingGuessPanel();
     return true;
@@ -1864,9 +1868,9 @@ bool Editor::ExecuteCommand(const String& command_name, const String& value) {
         kScrollDownIgnoringWritingMode, kScrollByDocument);
 
   if (command_name == "ToggleSpellPanel") {
-    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+    // TODO(editing-dev): Use of UpdateStyleAndLayout
     // needs to be audited. see http://crbug.com/590369 for more details.
-    GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetFrame().GetDocument()->UpdateStyleAndLayout();
 
     GetSpellChecker().ShowSpellingGuessPanel();
     return true;
@@ -1917,7 +1921,7 @@ bool EditorCommand::Execute(const String& parameter,
     }
   }
 
-  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetFrame().GetDocument()->UpdateStyleAndLayout();
   DEFINE_STATIC_LOCAL(SparseHistogram, command_histogram,
                       ("WebCore.Editing.Commands"));
   command_histogram.Sample(static_cast<int>(command_->command_type));

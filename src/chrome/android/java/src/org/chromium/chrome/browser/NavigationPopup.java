@@ -100,14 +100,14 @@ public class NavigationPopup implements AdapterView.OnItemClickListener {
         mHistory = mNavigationController.getDirectedNavigationHistory(
                 isForward, MAXIMUM_HISTORY_ITEMS);
         mHistory.addEntry(new NavigationEntry(FULL_HISTORY_ENTRY_INDEX, UrlConstants.HISTORY_URL,
-                null, null, null, resources.getString(R.string.show_full_history), null, 0));
+                null, null, null, resources.getString(R.string.show_full_history), null, 0, 0));
 
         mAdapter = new NavigationAdapter();
 
         mPopup = new ListPopupWindow(context, null, 0, R.style.NavigationPopupDialog);
         mPopup.setOnDismissListener(this::onDismiss);
         mPopup.setBackgroundDrawable(ApiCompatibilityUtils.getDrawable(resources,
-                anchorToBottom ? R.drawable.popup_bg_bottom : R.drawable.popup_bg_tinted));
+                anchorToBottom ? R.drawable.popup_bg_bottom_tinted : R.drawable.popup_bg_tinted));
         mPopup.setModal(true);
         mPopup.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
         mPopup.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);

@@ -17,6 +17,7 @@
 #include "api/audio_codecs/audio_encoder.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
+#include "api/audio_codecs/opus/audio_decoder_multi_channel_opus.h"
 #include "api/audio_codecs/opus/audio_decoder_opus.h"
 #include "api/audio_codecs/opus/audio_encoder_opus.h"
 #include "modules/audio_coding/acm2/acm_receive_test.h"
@@ -100,11 +101,11 @@ class PacketizationCallbackStubOldApi : public AudioPacketizationCallback {
  public:
   PacketizationCallbackStubOldApi()
       : num_calls_(0),
-        last_frame_type_(kEmptyFrame),
+        last_frame_type_(AudioFrameType::kEmptyFrame),
         last_payload_type_(-1),
         last_timestamp_(0) {}
 
-  int32_t SendData(FrameType frame_type,
+  int32_t SendData(AudioFrameType frame_type,
                    uint8_t payload_type,
                    uint32_t timestamp,
                    const uint8_t* payload_data,
@@ -129,7 +130,7 @@ class PacketizationCallbackStubOldApi : public AudioPacketizationCallback {
     return rtc::checked_cast<int>(last_payload_vec_.size());
   }
 
-  FrameType last_frame_type() const {
+  AudioFrameType last_frame_type() const {
     rtc::CritScope lock(&crit_sect_);
     return last_frame_type_;
   }
@@ -151,7 +152,7 @@ class PacketizationCallbackStubOldApi : public AudioPacketizationCallback {
 
  private:
   int num_calls_ RTC_GUARDED_BY(crit_sect_);
-  FrameType last_frame_type_ RTC_GUARDED_BY(crit_sect_);
+  AudioFrameType last_frame_type_ RTC_GUARDED_BY(crit_sect_);
   int last_payload_type_ RTC_GUARDED_BY(crit_sect_);
   uint32_t last_timestamp_ RTC_GUARDED_BY(crit_sect_);
   std::vector<uint8_t> last_payload_vec_ RTC_GUARDED_BY(crit_sect_);
@@ -350,11 +351,12 @@ TEST_F(AudioCodingModuleTestOldApi, TransportCallbackIsInvokedForEachPacket) {
   for (int i = 0; i < kLoops; ++i) {
     EXPECT_EQ(i / k10MsBlocksPerPacket, packet_cb_.num_calls());
     if (packet_cb_.num_calls() > 0)
-      EXPECT_EQ(kAudioFrameSpeech, packet_cb_.last_frame_type());
+      EXPECT_EQ(AudioFrameType::kAudioFrameSpeech,
+                packet_cb_.last_frame_type());
     InsertAudioAndVerifyEncoding();
   }
   EXPECT_EQ(kLoops / k10MsBlocksPerPacket, packet_cb_.num_calls());
-  EXPECT_EQ(kAudioFrameSpeech, packet_cb_.last_frame_type());
+  EXPECT_EQ(AudioFrameType::kAudioFrameSpeech, packet_cb_.last_frame_type());
 }
 
 #if defined(WEBRTC_CODEC_ISAC) || defined(WEBRTC_CODEC_ISACFX)
@@ -430,13 +432,20 @@ class AudioCodingModuleTestWithComfortNoiseOldApi
     // that is contain comfort noise.
     const struct {
       int ix;
-      FrameType type;
-    } expectation[] = {
-        {2, kAudioFrameCN},  {5, kEmptyFrame},    {8, kEmptyFrame},
-        {11, kAudioFrameCN}, {14, kEmptyFrame},   {17, kEmptyFrame},
-        {20, kAudioFrameCN}, {23, kEmptyFrame},   {26, kEmptyFrame},
-        {29, kEmptyFrame},   {32, kAudioFrameCN}, {35, kEmptyFrame},
-        {38, kEmptyFrame}};
+      AudioFrameType type;
+    } expectation[] = {{2, AudioFrameType::kAudioFrameCN},
+                       {5, AudioFrameType::kEmptyFrame},
+                       {8, AudioFrameType::kEmptyFrame},
+                       {11, AudioFrameType::kAudioFrameCN},
+                       {14, AudioFrameType::kEmptyFrame},
+                       {17, AudioFrameType::kEmptyFrame},
+                       {20, AudioFrameType::kAudioFrameCN},
+                       {23, AudioFrameType::kEmptyFrame},
+                       {26, AudioFrameType::kEmptyFrame},
+                       {29, AudioFrameType::kEmptyFrame},
+                       {32, AudioFrameType::kAudioFrameCN},
+                       {35, AudioFrameType::kEmptyFrame},
+                       {38, AudioFrameType::kEmptyFrame}};
     for (int i = 0; i < kLoops; ++i) {
       int num_calls_before = packet_cb_.num_calls();
       EXPECT_EQ(i / blocks_per_packet, num_calls_before);
@@ -1502,7 +1511,9 @@ TEST_F(AcmSenderBitExactnessNewApi, MAYBE_OpusFromFormat_stereo_20ms) {
       test::AcmReceiveTestOldApi::kStereoOutput);
 }
 
-TEST_F(AcmSenderBitExactnessNewApi, OpusManyChannels) {
+// TODO(webrtc:8649): Disabled until the Encoder counterpart of
+// https://webrtc-review.googlesource.com/c/src/+/129768 lands.
+TEST_F(AcmSenderBitExactnessNewApi, DISABLED_OpusManyChannels) {
   constexpr int kNumChannels = 4;
   constexpr int kOpusPayloadType = 120;
   constexpr int kBitrateBps = 128000;
@@ -1512,20 +1523,31 @@ TEST_F(AcmSenderBitExactnessNewApi, OpusManyChannels) {
 
   // TODO(webrtc:8649): change to higher level
   // AudioEncoderOpus::MakeAudioEncoder once a multistream encoder can be set up
-  // from SDP.
+  // from SDP. - This is now done for the Decoder.
+
+  // The Encoder and Decoder are set up differently (and the test is disabled)
+  // until the changes from
+  // https://webrtc-review.googlesource.com/c/src/+/121764 land.
   AudioEncoderOpusConfig config = *AudioEncoderOpus::SdpToConfig(
       SdpAudioFormat("opus", 48000, 2, {{"stereo", "1"}}));
   config.num_channels = kNumChannels;
   config.bitrate_bps = kBitrateBps;
 
+  const auto sdp_format = SdpAudioFormat(
+      "multiopus", 48000, kNumChannels,
+      {{"channel_mapping", "0,1,2,3"}, {"coupled_streams", "2"}});
+  const auto decoder_config =
+      AudioDecoderMultiChannelOpus::SdpToConfig(sdp_format);
+  const auto opus_decoder =
+      AudioDecoderMultiChannelOpus::MakeAudioDecoder(*decoder_config);
+
   ASSERT_NO_FATAL_FAILURE(SetUpTestExternalEncoder(
       absl::make_unique<AudioEncoderOpusImpl>(config, kOpusPayloadType),
       kOpusPayloadType));
 
-  AudioDecoderOpusImpl opus_decoder(kNumChannels);
-
   rtc::scoped_refptr<AudioDecoderFactory> decoder_factory =
-      new rtc::RefCountedObject<test::AudioDecoderProxyFactory>(&opus_decoder);
+      new rtc::RefCountedObject<test::AudioDecoderProxyFactory>(
+          opus_decoder.get());
 
   // Set up an EXTERNAL DECODER to parse 4 channels.
   Run(AcmReceiverBitExactnessOldApi::PlatformChecksum(  // audio checksum

@@ -7,6 +7,9 @@
 """This tool synthesizes a very large C program based on a single
 integer argument passed on the command line.
 """
+
+from __future__ import print_function
+
 import sys
 
 # The genareted code alternated between these operators
@@ -42,7 +45,7 @@ def EmitMain(n, out):
 
 def main(argv):
   if len(argv) != 2:
-    print "Expecting integer parameter"
+    print("Expecting integer parameter")
     return 1
   n = int(argv[1])
   out = sys.stdout

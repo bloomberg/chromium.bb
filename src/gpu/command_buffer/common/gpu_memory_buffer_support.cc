@@ -91,10 +91,13 @@ uint32_t GetPlatformSpecificTextureTarget() {
   return GL_TEXTURE_RECTANGLE_ARB;
 #elif defined(OS_ANDROID) || defined(OS_LINUX)
   return GL_TEXTURE_EXTERNAL_OES;
-#elif defined(OS_WIN)
+#elif defined(OS_WIN) || defined(OS_FUCHSIA)
   return GL_TEXTURE_2D;
-#else
+#elif defined(OS_NACL)
+  NOTREACHED();
   return 0;
+#else
+#error Unsupported OS
 #endif
 }
 
@@ -113,8 +116,14 @@ GPU_EXPORT bool NativeBufferNeedsPlatformSpecificTextureTarget(
   // https://crbug.com/916728
   if (format == gfx::BufferFormat::R_8 || format == gfx::BufferFormat::RG_88 ||
       format == gfx::BufferFormat::RGBA_8888 ||
+      format == gfx::BufferFormat::BGRA_8888 ||
       format == gfx::BufferFormat::RGBX_8888 ||
       format == gfx::BufferFormat::BGRX_8888) {
+    return false;
+  }
+#elif defined(OS_ANDROID)
+  if (format == gfx::BufferFormat::BGR_565 ||
+      format == gfx::BufferFormat::RGBA_8888) {
     return false;
   }
 #endif

@@ -22,6 +22,9 @@ namespace safe_browsing {
 const base::Feature kAdSamplerTriggerFeature{"SafeBrowsingAdSamplerTrigger",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kCaptureSafetyNetId{"SafeBrowsingCaptureSafetyNetId",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled in pre-network-service world, SafeBrowsing URL checks are done by
 // applying SafeBrowsing's URLLoaderThrottle subclasses to ThrottlingURLLoader.
 //
@@ -35,14 +38,15 @@ const base::Feature kCheckByURLLoaderThrottle{
 const base::Feature kCommittedSBInterstitials{
     "SafeBrowsingCommittedInterstitials", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kForceEnableResetPasswordWebUI{
-    "ForceEnableResetPasswordWebUI", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kPasswordProtectionForSignedInUsers{
+    "SafeBrowsingPasswordProtectionForSignedInUsers",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSuspiciousSiteTriggerQuotaFeature{
     "SafeBrowsingSuspiciousSiteTriggerQuota", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTelemetryForApkDownloads{
-    "SafeBrowsingTelemetryForApkDownloads", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SafeBrowsingTelemetryForApkDownloads", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kThreatDomDetailsTagAndAttributeFeature{
     "ThreatDomDetailsTagAttributes", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -54,11 +58,14 @@ const base::Feature kTriggerThrottlerDailyQuotaFeature{
 const base::Feature kUseLocalBlacklistsV2{"SafeBrowsingUseLocalBlacklistsV2",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kInspectRarContentFeature{
-    "InspectRarContent", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kInspectRarContentFeature{"InspectRarContent",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kUseAPDownloadProtection{"UseAPDownloadProtection",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kForceUseAPDownloadProtection{
+    "ForceUseAPDownloadProtection", base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace {
 // List of experimental features. Boolean value for each list member should be
@@ -72,13 +79,14 @@ constexpr struct {
     {&kAdSamplerTriggerFeature, false},
     {&kCheckByURLLoaderThrottle, true},
     {&kCommittedSBInterstitials, true},
-    {&kForceEnableResetPasswordWebUI, true},
+    {&kPasswordProtectionForSignedInUsers, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
     {&kTelemetryForApkDownloads, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},
     {&kUseLocalBlacklistsV2, true},
     {&kUseAPDownloadProtection, false},
+    {&kForceUseAPDownloadProtection, false},
 };
 
 // Adds the name and the enabled/disabled status of a given feature.

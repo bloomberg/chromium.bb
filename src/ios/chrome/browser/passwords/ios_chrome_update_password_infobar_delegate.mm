@@ -14,6 +14,7 @@
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
+#include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/infobars/infobar.h"
 #import "ios/chrome/browser/passwords/update_password_infobar_controller.h"
@@ -70,7 +71,7 @@ IOSChromeUpdatePasswordInfoBarDelegate::IOSChromeUpdatePasswordInfoBarDelegate(
     std::unique_ptr<PasswordFormManagerForUI> form_manager)
     : IOSChromePasswordManagerInfoBarDelegate(is_sync_user,
                                               std::move(form_manager)) {
-  selected_account_ = form_to_save()->GetPreferredMatch()->username_value;
+  selected_account_ = form_to_save()->GetPendingCredentials().username_value;
   form_to_save()->GetMetricsRecorder()->RecordPasswordBubbleShown(
       form_to_save()->GetCredentialSource(),
       password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE);
@@ -117,12 +118,10 @@ base::string16 IOSChromeUpdatePasswordInfoBarDelegate::GetButtonLabel(
 
 bool IOSChromeUpdatePasswordInfoBarDelegate::Accept() {
   DCHECK(form_to_save());
-  if (ShowMultipleAccounts()) {
-    form_to_save()->Update(
-        *form_to_save()->GetBestMatches().at(selected_account_));
-  } else {
-    form_to_save()->Update(form_to_save()->GetPendingCredentials());
-  }
+  UpdatePasswordFormUsernameAndPassword(
+      selected_account_, form_to_save()->GetPendingCredentials().password_value,
+      form_to_save());
+  form_to_save()->Save();
   set_infobar_response(password_manager::metrics_util::CLICKED_SAVE);
   return true;
 }
