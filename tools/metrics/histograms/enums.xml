@@ -53864,6 +53864,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Ping"/>
   <int value="2" label="Ack"/>
   <int value="3" label="ClickToCall"/>
+  <int value="4" label="SharedClipboard"/>
 </enum>
 
 <enum name="SharingVapidKeyCreationResult">
