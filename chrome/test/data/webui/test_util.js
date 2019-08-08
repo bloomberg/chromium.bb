@@ -76,7 +76,7 @@ cr.define('test_util', function() {
    * @param {!Element} element
    * @return {!Promise}
    */
-  /* #export */ function waitForRender(element) {
+  /* #export */ function waitBeforeNextRender(element) {
     return new Promise(resolve => {
       Polymer.RenderStatus.beforeNextRender(element, resolve);
     });
@@ -86,7 +86,7 @@ cr.define('test_util', function() {
   return {
     eventToPromise: eventToPromise,
     fakeDataBind: fakeDataBind,
-    waitForRender: waitForRender,
+    waitBeforeNextRender: waitBeforeNextRender,
     whenAttributeIs: whenAttributeIs,
   };
 });

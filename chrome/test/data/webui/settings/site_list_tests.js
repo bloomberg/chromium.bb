@@ -842,7 +842,7 @@ suite('SiteList', function() {
     return browserProxy.whenCalled('getExceptionList')
         .then(function(actualContentType) {
           assertEquals(contentType, actualContentType);
-          return test_util.waitForRender(testElement);
+          return test_util.waitBeforeNextRender(testElement);
         })
         .then(function() {
           assertFalse(testElement.$.category.hidden);
@@ -857,7 +857,7 @@ suite('SiteList', function() {
     return browserProxy.whenCalled('getExceptionList')
         .then(function(actualContentType) {
           assertEquals(contentType, actualContentType);
-          return test_util.waitForRender(testElement);
+          return test_util.waitBeforeNextRender(testElement);
         })
         .then(function() {
           assertFalse(testElement.$.category.hidden);
@@ -872,7 +872,7 @@ suite('SiteList', function() {
     return browserProxy.whenCalled('getExceptionList')
         .then(function(actualContentType) {
           assertEquals(contentType, actualContentType);
-          return test_util.waitForRender(testElement);
+          return test_util.waitBeforeNextRender(testElement);
         })
         .then(function() {
           assertFalse(testElement.$.category.hidden);
@@ -887,7 +887,7 @@ suite('SiteList', function() {
     return browserProxy.whenCalled('getExceptionList')
         .then(function(actualContentType) {
           assertEquals(contentType, actualContentType);
-          return test_util.waitForRender(testElement);
+          return test_util.waitBeforeNextRender(testElement);
         })
         .then(function() {
           assertFalse(testElement.$.category.hidden);
