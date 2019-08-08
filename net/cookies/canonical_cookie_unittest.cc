@@ -7,6 +7,7 @@
 #include "base/optional.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "net/base/features.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_options.h"
@@ -1764,6 +1765,28 @@ TEST(CanonicalCookieTest, CreateSanitizedCookie_Logic) {
       base::Time(), base::Time(), base::Time(), false /*secure*/,
       false /*httponly*/, CookieSameSite::NO_RESTRICTION,
       COOKIE_PRIORITY_DEFAULT));
+
+  // Check that a file URL with an IPv6 host, and matching IPv6 domain, are
+  // valid.
+  EXPECT_TRUE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("file://[A::]"), std::string(), std::string(), "[A::]", "",
+      base::Time(), base::Time(), base::Time(), false /*secure*/,
+      false /*httponly*/, CookieSameSite::NO_RESTRICTION,
+      COOKIE_PRIORITY_DEFAULT));
+
+  // On Windows, URLs beginning with two backslashes are considered file
+  // URLs. On other platforms, they are invalid.
+  auto double_backslash_ipv6_cookie = CanonicalCookie::CreateSanitizedCookie(
+      GURL("\\\\[A::]"), std::string(), std::string(), "[A::]", "",
+      base::Time(), base::Time(), base::Time(), false /*secure*/,
+      false /*httponly*/, CookieSameSite::NO_RESTRICTION,
+      COOKIE_PRIORITY_DEFAULT);
+#if defined(OS_WIN)
+  EXPECT_TRUE(double_backslash_ipv6_cookie);
+  EXPECT_TRUE(double_backslash_ipv6_cookie->IsCanonical());
+#else
+  EXPECT_FALSE(double_backslash_ipv6_cookie);
+#endif
 }
 
 TEST(CanonicalCookieTest, IsSetPermittedInContext) {
