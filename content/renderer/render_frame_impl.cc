@@ -509,7 +509,7 @@ void FillNavigationParamsRequest(
                   signed_exchange_utils::CreateHeaderIntegrityHashString(
                       exchange->header_integrity)),
               exchange->inner_url, web_response,
-              std::move(exchange->loader_factory_handle)));
+              std::move(exchange->loader_factory_handle).PassPipe()));
     }
   }
 
