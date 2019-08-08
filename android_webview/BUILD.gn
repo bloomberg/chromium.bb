@@ -296,6 +296,8 @@ grit("generate_components_resources") {
   # The .grd contains references to generated files.
   source_is_generated = true
 
+  use_brotli = true
+
   # See :generate_webui_resources for an explanation of the whitelist
   _whitelist = "ui/grit_resources_whitelist.txt"
   inputs = [
