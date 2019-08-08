@@ -81,7 +81,7 @@ mojom("interfaces") {
     "private/blpwtk2_process.mojom",
     "private/blpwtk2_webview.mojom",
   ]
-  
+
   deps = []
 
 }
@@ -306,6 +306,7 @@ shared_library("blpwtk2") {
     "//components/services/pdf_compositor/public/interfaces",
     "//components/spellcheck/browser",
     "//components/spellcheck/common:common",
+    "//components/spellcheck/renderer",
     "//components/user_prefs",
     "//content",
     "//content:resources",
