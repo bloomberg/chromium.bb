@@ -2051,7 +2051,7 @@ int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
   // as well.
   interface_mask |= 1 << ATK_TEXT_INTERFACE;
 
-  if (!IsPlainTextField() && !IsChildOfLeaf())
+  if (!IsPlainTextField())
     interface_mask |= 1 << ATK_HYPERTEXT_INTERFACE;
 
   // Value Interface
@@ -3748,12 +3748,6 @@ base::string16 AXPlatformNodeAuraLinux::GetHypertext() const {
   // Special case allows us to get text even in non-HTML case, e.g. browser UI.
   if (IsPlainTextField())
     return GetString16Attribute(ax::mojom::StringAttribute::kValue);
-
-  // Hypertext of platform leaves, which internally are composite objects, are
-  // represented with the inner text of the composite object.
-  if (IsChildOfLeaf())
-    return GetInnerText();
-
   return hypertext_.hypertext;
 }
 
