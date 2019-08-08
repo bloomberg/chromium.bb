@@ -86,8 +86,8 @@ class VideoDecoderTest : public ::testing::Test {
     // Use the new VD-based video decoders if requested.
     config.use_vd = g_env->UseVD();
 
-    auto video_player = VideoPlayer::Create(
-        std::move(frame_renderer), std::move(frame_processors), config);
+    auto video_player = VideoPlayer::Create(config, std::move(frame_renderer),
+                                            std::move(frame_processors));
     LOG_ASSERT(video_player);
     LOG_ASSERT(video_player->Initialize(video));
 
@@ -344,6 +344,17 @@ TEST_F(VideoDecoderTest, Reinitialize) {
   // Try re-initializing the video decoder again.
   EXPECT_TRUE(tvp->Initialize(g_env->Video()));
   EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kInitialized), 3u);
+}
+
+// Create a video decoder and immediately destroy it without initializing. The
+// video decoder will be automatically destroyed when the video player goes out
+// of scope at the end of the test. The test will pass if no asserts or crashes
+// are triggered upon destroying.
+TEST_F(VideoDecoderTest, DestroyBeforeInitialize) {
+  VideoDecoderClientConfig config = VideoDecoderClientConfig();
+  config.use_vd = g_env->UseVD();
+  auto tvp = VideoPlayer::Create(config, FrameRendererDummy::Create());
+  EXPECT_NE(tvp, nullptr);
 }
 
 }  // namespace test

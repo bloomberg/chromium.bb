@@ -61,9 +61,9 @@ class VideoPlayer {
   // |frame_processors| will not be owned by the video player. The caller should
   // guarantee they outlive the video player.
   static std::unique_ptr<VideoPlayer> Create(
+      const VideoDecoderClientConfig& config,
       std::unique_ptr<FrameRenderer> frame_renderer,
-      std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
-      const VideoDecoderClientConfig& config);
+      std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors = {});
 
   // Wait until all frame processors have finished processing. Returns whether
   // processing was successful.
@@ -123,9 +123,9 @@ class VideoPlayer {
   VideoPlayer();
 
   bool CreateDecoderClient(
+      const VideoDecoderClientConfig& config,
       std::unique_ptr<FrameRenderer> frame_renderer,
-      std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
-      const VideoDecoderClientConfig& config);
+      std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors);
   void Destroy();
 
   // Notify the video player an event has occurred (e.g. frame decoded). Returns

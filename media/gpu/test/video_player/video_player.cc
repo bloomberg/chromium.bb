@@ -31,21 +31,21 @@ VideoPlayer::~VideoPlayer() {
 
 // static
 std::unique_ptr<VideoPlayer> VideoPlayer::Create(
+    const VideoDecoderClientConfig& config,
     std::unique_ptr<FrameRenderer> frame_renderer,
-    std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
-    const VideoDecoderClientConfig& config) {
+    std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors) {
   auto video_player = base::WrapUnique(new VideoPlayer());
-  if (!video_player->CreateDecoderClient(std::move(frame_renderer),
-                                         std::move(frame_processors), config)) {
+  if (!video_player->CreateDecoderClient(config, std::move(frame_renderer),
+                                         std::move(frame_processors))) {
     return nullptr;
   }
   return video_player;
 }
 
 bool VideoPlayer::CreateDecoderClient(
+    const VideoDecoderClientConfig& config,
     std::unique_ptr<FrameRenderer> frame_renderer,
-    std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
-    const VideoDecoderClientConfig& config) {
+    std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(video_player_state_, VideoPlayerState::kUninitialized);
   DCHECK(frame_renderer);

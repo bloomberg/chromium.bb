@@ -213,7 +213,8 @@ void VideoDecoderClient::InitializeDecoderTask(const Video* video,
 
 void VideoDecoderClient::DestroyDecoderTask(base::WaitableEvent* done) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
-  DCHECK_EQ(VideoDecoderClientState::kIdle, decoder_client_state_);
+  DCHECK(decoder_client_state_ == VideoDecoderClientState::kUninitialized ||
+         decoder_client_state_ == VideoDecoderClientState::kIdle);
   DCHECK_EQ(0u, num_outstanding_decode_requests_);
   DVLOGF(4);
 
