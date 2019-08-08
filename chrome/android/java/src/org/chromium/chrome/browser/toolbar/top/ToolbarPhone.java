@@ -1806,6 +1806,10 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         }
         mTabSwitcherState = inTabSwitcherMode ? ENTERING_TAB_SWITCHER : EXITING_TAB_SWITCHER;
 
+        // The width of location bar depends on mTabSwitcherState so layout request is needed. See
+        // crbug.com/974745.
+        requestLayout();
+
         mLocationBar.setUrlBarFocusable(false);
 
         finishAnimations();
@@ -1897,6 +1901,10 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             updateVisualsForLocationBarState();
         }
         if (mTabSwitcherState == ENTERING_TAB_SWITCHER) mTabSwitcherState = TAB_SWITCHER;
+
+        // The width of location bar depends on mTabSwitcherState so layout request is needed. See
+        // crbug.com/974745.
+        requestLayout();
 
         mTabSwitcherModePercent = mTabSwitcherState != STATIC_TAB ? 1.0f : 0.0f;
 
