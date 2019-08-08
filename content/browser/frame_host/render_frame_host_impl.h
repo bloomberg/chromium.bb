@@ -997,6 +997,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void GetAudioContextManager(
       mojo::PendingReceiver<blink::mojom::AudioContextManager> receiver);
+  void GetFileSystemManager(
+      mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver);
 
   // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
   network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()

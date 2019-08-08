@@ -13,6 +13,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* rfhi,
                           service_manager::BinderMap* map) {
   map->Add<blink::mojom::AudioContextManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetAudioContextManager, base::Unretained(rfhi)));
+
+  map->Add<blink::mojom::FileSystemManager>(base::BindRepeating(
+      &RenderFrameHostImpl::GetFileSystemManager, base::Unretained(rfhi)));
 }
 
 void PopulateBinderMap(RenderFrameHostImpl* rfhi,

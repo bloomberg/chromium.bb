@@ -4339,10 +4339,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       GetProcess()->GetID(),
       GetProcess()->GetStoragePartition()->GetFileSystemContext(),
       ChromeBlobStorageContext::GetFor(GetProcess()->GetBrowserContext())));
-  registry_->AddInterface(
-      base::BindRepeating(&FileSystemManagerImpl::BindRequest,
-                          base::Unretained(file_system_manager_.get())),
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
 
   registry_->AddInterface(base::BindRepeating(
       &BackgroundFetchServiceImpl::CreateForFrame, GetProcess(), routing_id_));
@@ -6231,6 +6227,15 @@ void RenderFrameHostImpl::GetFrameHostTestInterface(
 void RenderFrameHostImpl::GetAudioContextManager(
     mojo::PendingReceiver<blink::mojom::AudioContextManager> receiver) {
   AudioContextManagerImpl::Create(this, std::move(receiver));
+}
+
+void RenderFrameHostImpl::GetFileSystemManager(
+    mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) {
+  // This is safe because file_system_manager_ is deleted on the IO thread
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&FileSystemManagerImpl::BindRequest,
+                                base::Unretained(file_system_manager_.get()),
+                                std::move(receiver)));
 }
 
 void RenderFrameHostImpl::GetAuthenticator(
