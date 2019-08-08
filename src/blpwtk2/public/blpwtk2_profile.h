@@ -154,6 +154,7 @@ class Profile
         // Write diagnostic information of the specified 'type' onto the
         // file 'filepath'
 
+    virtual std::string getGpuInfo() = 0;
 
     // patch section: embedder ipc
 
