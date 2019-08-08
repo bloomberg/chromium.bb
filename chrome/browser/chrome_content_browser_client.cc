@@ -606,15 +606,6 @@
 #include "chrome/browser/offline_pages/offline_page_url_loader_request_interceptor.h"
 #endif
 
-#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS)
-#include "services/content/simple_browser/public/mojom/constants.mojom.h"
-#include "services/content/simple_browser/simple_browser_service.h"
-#endif
-
-#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
-#include "services/content/simple_browser/public/mojom/constants.mojom.h"
-#endif
-
 #if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #endif
@@ -3956,18 +3947,6 @@ void ChromeContentBrowserClient::RunServiceInstance(
   if (service_name == media::mojom::kMediaServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
         media::CreateMediaService(std::move(*receiver)));
-    return;
-  }
-#endif
-
-#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kLaunchInProcessSimpleBrowserSwitch) &&
-      service_name == simple_browser::mojom::kServiceName) {
-    service_manager::Service::RunAsyncUntilTermination(
-        std::make_unique<simple_browser::SimpleBrowserService>(
-            std::move(*receiver), simple_browser::SimpleBrowserService::
-                                      UIInitializationMode::kUseEnvironmentUI));
     return;
   }
 #endif
